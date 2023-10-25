@@ -4,8 +4,8 @@ FROM gobuffalo/buffalo:v0.18.14 as builder
 
 ENV GOPROXY http://proxy.golang.org
 
-RUN mkdir -p /mc-web-console
-WORKDIR /mc-web-console
+RUN mkdir -p /src/mc-web-console/help
+WORKDIR /src/mc-web-console/help
 
 # this will cache the npm install step, unless package.json changes
 ADD package.json .

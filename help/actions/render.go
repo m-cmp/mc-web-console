@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"mc_web_console/public"
-	"mc_web_console/templates"
+	"mc-web-console/help/public"
+	"mc-web-console/help/templates"
 
 	"github.com/gobuffalo/buffalo/render"
 )
@@ -12,7 +12,7 @@ var r *render.Engine
 func init() {
 	r = render.New(render.Options{
 		// HTML layout to be used for all HTML requests:
-		HTMLLayout: "application.plush.html",
+		HTMLLayout:     "application.plush.html",
 
 		// fs.FS containing templates
 		TemplatesFS: templates.FS(),

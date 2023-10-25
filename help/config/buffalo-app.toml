@@ -1,5 +1,5 @@
-name = "mc_web_console"
-bin = "bin/mc_web_console"
+name = "help"
+bin = "bin/help"
 vcs = "git"
 with_pop = true
 with_sqlite = false
