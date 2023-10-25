@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"sync"
 
-	"mc_web_console/locales"
-	"mc_web_console/models"
-	"mc_web_console/public"
+	"mc-web-console/help/locales"
+	"mc-web-console/help/models"
+	"mc-web-console/help/public"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
@@ -45,7 +45,7 @@ func App() *buffalo.App {
 	appOnce.Do(func() {
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
-			SessionName: "_mcwebconsoleinit_session",
+			SessionName: "_help_session",
 		})
 
 		// Automatically redirect to SSL
