@@ -1,4 +1,4 @@
-module mc-web-console
+module mc_web_console
 
 go 1.19
 
