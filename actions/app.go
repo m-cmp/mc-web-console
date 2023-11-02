@@ -65,7 +65,13 @@ func App() *buffalo.App {
 		// Setup and use translations:
 		app.Use(translations())
 
-		app.GET("/", HomeHandler)
+		// app.GET("/", HomeHandler)
+		app.Use(SkipMiddlewareByRoutePath) // 경로에 따라 middleware skip. ( Authorize 도 같이 처리 함.)
+
+		app.Use(SetCloudProviderList) // 지원하는 cloud prodiver 목록저장 (spider에서 관리)
+
+		// 모든 라우팅 처리
+		RoutesManager(app)
 
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
 	})
@@ -95,4 +101,15 @@ func forceSSL() buffalo.MiddlewareFunc {
 		SSLRedirect:     ENV == "production",
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
+}
+
+// Redirect에 route 정보 전달
+func RedirectTool(c buffalo.Context, p string) error {
+	routes := app.Routes()
+	for _, route := range routes {
+		if route.PathName == p {
+			return c.Redirect(302, route.Path)
+		}
+	}
+	return c.Redirect(302, "/")
 }
