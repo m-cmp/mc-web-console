@@ -1,0 +1,16 @@
+<input type="hidden" id="pmks_cluster_id" value='' />
+<input type="hidden" id="pmks_cluster_name" value='' />
+<input type="hidden" id="pmks_cluster_version" value='' />
+<input type="hidden" id="pmks_cluster_connection" value='' />
+<input type="hidden" id="pmks_nodegroup_id" value='' />
+
+<div class="titlebox">
+    <div class="tit"><img src="/assets/images/common/icon_cont.png" alt="" />Manage / <strong>PMKS</strong></div>
+    <div class="location">Home <span>></span> Operation <span>></span> Manage <span>></span>
+        <strong>PMKS</strong></div>
+</div>
+<%= partial("operations/pmksmng/list.html") %>
+<%= partial("operations/pmksmng/detail.html") %>
+<%= partial("operations/pmksmng/nodegroup_detail.html") %>
+<%= partial("operations/pmksmng/node_detail.html") %>
+<%= javascriptTag("pmksmng/pmksmng.js") %>
