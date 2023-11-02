@@ -12,7 +12,8 @@ var r *render.Engine
 func init() {
 	r = render.New(render.Options{
 		// HTML layout to be used for all HTML requests:
-		HTMLLayout: "application.plush.html",
+		//HTMLLayout: "application.plush.html",
+		HTMLLayout: "application.html",
 
 		// fs.FS containing templates
 		TemplatesFS: templates.FS(),

@@ -2,7 +2,7 @@ package grifts
 
 import (
 	"mc-web-console/help/actions"
-	
+
 	"github.com/gobuffalo/buffalo"
 )
 
