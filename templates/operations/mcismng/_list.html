@@ -1,0 +1,136 @@
+<div class="dashboard dashboard_cont">
+
+	<div class="d_box box_m box_w100">
+		<div class="titbox">
+			<!-- <div class="tit initial"><strong>List of MCIS</strong></div> -->
+			
+			<div class="top_info">
+				<div>
+					<select name="mcisList_field" id="mcisList_field">
+						<option value="status" selected>Status</option>
+						<option value="name">Name</option>
+						<option value="provider">Provider</option>
+					</select>
+					<input type="text" name="mcisList_filter_keyword" value="" id="mcisList_filter_keyword" placeholder="Please Input Keyword"
+					onkeyup="mcpjs['util/util'].setTableFilter('mcisList',this.value)" />
+					<!-- <button onclick="mcpjs['mcismng/mcismng'].clearTableFilter()"><img src="/assets/images/contents/btn_del_s.png"></button> -->
+				</div>
+				<ul>
+					<li>
+						<a href="javascript:void(0);">Column</a>
+						<div class="infobox">
+							<div class="box">
+								<ul>
+									<li>
+										<label class="display-column" data-column="status">Status
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="name">Name
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="provider">Provider
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="running">Running
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="suspended">Suspended
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="terminated">Terminated
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+					<li>
+						<a href="javascript:void(0);">Action</a>
+						<div class="infobox">
+							<div class="box">
+								<ul>
+									<li>
+										<strong>Life Cycle</strong>
+										<ul>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_Life_Reboot"
+													onclick="mcpjs['mcismng/mcismng'].changeLifeCycle('McisLifeCycleReboot')">Reboot</a></li>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_Life_Suspend"
+													onclick="mcpjs['mcismng/mcismng'].changeLifeCycle('McisLifeCycleSuspend')">Suspend</a></li>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_Life_Resume"
+													onclick="mcpjs['mcismng/mcismng'].changeLifeCycle('McisLifeCycleResume')">Resume</a></li>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_Life_Terminate"
+													onclick="mcpjs['mcismng/mcismng'].changeLifeCycle('McisLifeCycleTerminate')">Terminate</a>
+											</li>
+											<li><a href="javascript:void(0);" onclick="mcpjs['mcismng/mcismng'].changeLifeCycle('McisLifeCycleSchedule')">Scheduling</a>
+											</li>
+										</ul>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<strong>Manage</strong>
+										<ul>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_n_New"
+													onclick="mcpjs['util/util'].changePage('McisRegForm')">New</a>
+											</li>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_n_New"
+													onclick="mcpjs['mcismng/mcismng'].deleteCheckMCIS('DeleteMcis')">Delete</a></li>
+										</ul>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<strong>Export</strong>
+										<ul>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-bs-target="#MCIS_n_New" onclick="mcpjs['mcismng/mcismng'].mcisTotalListExport()">Total List (CSV)</a>
+											</li>
+										</ul>
+										<ul>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-bs-target="#MCIS_n_New"
+													onclick="mcpjs['util/util'].commonConfirmOpen('ExportScriptOfMcis')">Export Json</a>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+					<li>
+						<a href="javascript:void(0);"><span class="material-icons md-20">help</span></a>
+						<!-- <a href="javascript:void(0);" onClick="getCommonMcisList('mcismng', true, 'status')"><img
+								src="/assets/images/common/icon_refresh.png" alt="refresh" /></a> -->
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="ds_cont">
+			<div id="mcisList"></div>
+		</div>
+
+	</div>
+
+</div>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <%= partial("header.html") %>
+</head>
+
+<body class="main">
+
+  <!-- <div class="scroll-wrapper wrapper scrollbar-dynamic">
+    <div id="TopWrap" class="wrapper scrollbar-dynamic scroll-content" style="height: inherit;"> -->
+  <div class="header_container">
+    <%= partial("menutop.html") %>
+  </div>
+  <div class="main-container">
+    <div id="lnb">
+      <div id="m_box">
+        <%= partial("menuleft.html") %>
+      </div>
+      <div class="bottom"></div>
+      <a href="javascript:;" id="m_close"></a>
+    </div>
+    <div class="contents">
+      <%= yield %>
+    </div>
+</div>
+  <!-- </div>
+  </div> -->
+  <%= partial("footer.html") %>
+  <%= partial("modal.html") %>
+  <%= partial("components/loadingcontainer.html") %>
+</body>
+  <%= javascriptTag("application.js") %>
+  <%= javascriptTag("component/list.js") %>
+  <%= javascriptTag("ui/mcis.map.js") %>
+  <%= javascriptTag("ui/jquery-ui.min.js") %>
+  <%= javascriptTag("util/pathfinder.js") %>
+  <%= javascriptTag("util/common.js") %>
+  <%= javascriptTag("util/mcislifecycle.js") %>
+  <script>
+    // 좌측메뉴 선택표시			
+    mcpjs['util/common'].lnb_on();
+    mcpjs["util/common"].initJavascriptForCss();
+    //mcpjs["util/pathfinder"].setLeftMenuNamespaceList("menuNameSpaceList","")
+    
+    // router 정보 설정. 아래 구문이 editor에서 오류가 나더라도 정상 동작 함.    
+    <%= for (r) in routes { %>
+      //var key = "<%=r.PathName%>_<%=r.Method%>";
+      var key = "<%=r.PathName%>";// pathName의 첫글자는 소문자로 변경됨. 이름 자체에 "Path" 가 붙음 ex) VpcList -> vpcListPath
+      mcpjs['util/pathfinder'].RouteMap[key] = <%=r%>;      
+    <% } %>
+    //console.log(mcpjs['util/pathfinder'].RouteMap['rootPath_GET'])
+
+    mcpjs['util/pathfinder'].setLeftMenu();
+  </script>
+  
+</html>
+
+
+
+
+
+<% contentFor("extraStyle") { %>
+  <style>
+    .pre_header {
+      color: limegreen;
+      background: black;
+    }
+  </style>
+  <% } %>

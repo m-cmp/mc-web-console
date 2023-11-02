@@ -1,0 +1,90 @@
+<div class="dashboard dashboard_cont register_cont" id="securityGroupCreateBox">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox_n">
+            <div class="tit initial cg"><strong>Create Security Group</strong></div>
+        </div>
+
+        <div class="ds_cont">
+            <div class="register_box reg">
+
+                <div class="top_ipbox">
+                    <div class="ipbox ipbox1">
+                        <ul>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Security Group Name</label>
+                                <input type="text" name="reg_cspSecurityGroupName" id="regCspSecurityGroupName"
+                                    value="" placeholder="Input Name" class="pline" title="" />
+                            </li>
+                            <li class="reg_1">
+                                <label>Description</label>
+                                <textarea name="reg_description" id="regDescription" cols="" rows=""
+                                    placeholder="Description" class="pline" title=""></textarea>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="ipbox ipbox2">
+                        <ul>
+                            <li>
+                                <label>Cloud Provider</label>
+                                <select class="selectbox white pline w3" id="regProviderName" name="reg_provideName"
+                                    onchange="mcpjs['util/util'].getRegionListByProviderForSelectbox(this.value, 'regRegionName')">
+                                    <option value=''>Select Cloud Provider</option>
+                                <%= for (provider) in cloud_os_list {%>
+                                    <option value="<%= provider %>"><%= provider %></option>
+                                <% } %>
+                                </select>
+                            </li>
+                            <li>
+                                <label><span class="ch">*</span>Region</label>
+                                <select class="selectbox white pline w3" id="regRegionName"
+                                    name="reg_regionName"
+                                    onchange="mcpjs['util/util'].getVpcListByRegionForSelectbox('regProviderName', this.value, 'regVNetId')">
+                                    <option selected>Select Region</option>
+                                </select>
+                            </li>
+                            <li>
+                                <label><span class="ch">*</span>VPC</label>
+                                <select class="selectbox white pline w3" name="reg_vNetId" id="regVNetId">
+                                    <option value="1">Select VPC</option>
+                                </select>
+                            </li>
+                            <li>
+                                <label><span class="ch">*</span>Firewall RuleSet</label>
+                                <div class="reg_stxt">
+
+                                    <div class="bubble_box">
+                                        <div class="box">
+                                            <span class="s_txt">Inbound</span>
+                                            <div class="bb_info" id="regInbound"></div>
+                                        </div>,
+                                        <div class="box">
+                                            <span class="s_txt">Outbound</span>
+                                            <div class="bb_info" id="regOutbound"></div>
+                                        </div>
+                                    </div>
+
+                                    <a href="javascript:void(0);" class="ma btn_register"
+                                        onClick="mcpjs['securitygroup/securitygroupmng'].displayInOutBoundRegModal(true)">Edit</a>
+                                    <!-- inbound/outbound 추가버튼-->
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="btnbox">
+                    <div class="btn_center">
+                        <button name="" value="" class="btn_co btn_cr_b w135 btn_cancel"
+                            onclick="mcpjs['securitygroup/securitygroupmng'].displaySecurityGroupInfo('CLOSE')">Cancel</button>
+                        <button name="" value="" class="btn_co btn_cr_g w135 btn_ok"
+                            onclick="mcpjs['securitygroup/securitygroupmng'].createSecurityGroup()">Ok</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
