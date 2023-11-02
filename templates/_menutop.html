@@ -1,0 +1,82 @@
+<!-- container -->
+<div id="container">
+  <!-- header -->
+  <div class="header">
+
+    <a href="javascript:;" id="btn_menu"><span></span></a>
+    <input type="hidden" id="returnMessage" value="{{ .Message }}" />
+    <input type="hidden" id="returnStatusCode" value="{{ .Status }}" />
+
+    <div class="logo"><a href="/main"><img src="/assets/images/common/mcone_logo_simple.png" alt=""></a></div>
+
+  <div class="topmenu">
+    <ul>
+      <li class="namespace">
+        <ul id="menuNameSpaceList">
+          <%= for (ns) in user_namespace_list { %>
+          <li><a href="#" onclick='mcpjs["util/common"].setCurrentNameSpace("TobBox","<%= ns.ID %>")'><%= ns.NsName %></a></li>
+          <% } %>
+        </ul>
+      </li>
+
+      <li class="logout">
+        <a href="javascript:void(0);" data-toggle="modal" data-target="#logout" onclick="mcpjs['util/util'].commonConfirmOpen('Logout')">
+          <span class="material-icons-outlined">logout</span></a>
+      </li>
+      <li class="notice">
+        <span class="material-icons" style="cursor: pointer;">notifications</span>
+        <span class="badge badge-icon" id="badge"></span>
+        <div class="infobox">
+          <div class="notice_table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Type</th>
+                  <th id="thDescription">Description</th>
+                </tr>
+              </thead>
+              <tbody id="callTime">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </li>
+      <li class="setting">
+        <a href="javascript:void(0);"><span class="material-icons">settings</span></a>
+        <div class="infobox">
+          <div class="box">
+            <p>Cloud Setting</p>
+            <ul>
+              <li>
+                <a href="javascript:void(0);" data-toggle="modal" data-target="#Connection"
+                  onClick="mcpjs['util/util'].commonConfirmOpen('MoveToConnection')">[Cloud] Connection</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li class="question">
+        <a href="javascript:void(0);" onclick="mcpjs['util/util'].showHelp()">
+          <span class="material-icons-outlined">help</span>
+        </a>
+      </li>
+      <li class="user">
+       <%= current_user_id %>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+<!-- //header -->
+
+<!-- Loading bar -->
+<div class="loading-container" id="loadingContainer" tabindex="-1" style="display: none">
+  <div class="loading"></div>
+  <div id="loading-text">loading</div>
+</div>
+<!-- // Loading bar -->
+
+
+</div>
+</div>

@@ -1,0 +1,113 @@
+<div class="dashboard dashboard_cont">
+
+	<div class="d_box box_m box_w100">
+		<div class="titbox">
+			<div class="top_info">
+				<!-- <div class="tit initial"><strong>List of PMKS</strong></div> -->
+				<div>
+					<select name="pmksList_field" id="pmksList_field">
+						<option value="IId.NameId">Name</option>
+						<option value="ProviderName">Provider</option>
+					</select>
+					<input type="text" name="pmksList_filter_keyword" value="" id="pmksList_filter_keyword" placeholder="Please Input Keyword"
+					onkeyup="mcpjs['util/util'].setTableFilter('pmksList',this.value)" />
+				</div>
+				<ul>
+					<li>
+						<a href="javascript:void(0);">Column</a>
+						<div class="infobox">
+							<div class="box">
+								<ul>
+									<li>
+										<label class="display-column" data-column="status">Status
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="IId.NameId">Name
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="ProviderName">Provider
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="Network.VpcIID.NameId">VPC
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="Network.SubnetIIDs[0].NameId">Subnet
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="Network.SecurityGroupIIDs[0].NameId">Security Group
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="Node Group">Node Group
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+					<li>
+						<a href="javascript:void(0);">Action</a>
+						<div class="infobox">
+							<div class="box">
+								<ul>
+									<li>
+										<strong>Manage</strong>
+										<ul>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#PMKS_n_New"
+													onclick="mcpjs['util/util'].changePage('PmksRegForm')">New /
+													Extend</a></li>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#PMKS_n_New"
+													onclick="mcpjs['util/util'].commonConfirmOpen('DeletePmks')">Delete</a></li>
+										</ul>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<strong>Export</strong>
+										<ul>
+											<li><a href="javascript:void(0);" onclick="mcpjs['pmksmng/pmksmng'].pmksTotalListExport()">Total List (CSV)</a>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+					
+					<li>
+						<a href="javascript:void(0);"><span class="material-icons md-20">help</span></a>
+						<!-- <a href="javascript:void(0);"><img src="/assets/images/common/icon_question.png" alt="" /></a> -->
+						<!-- <a href="javascript:void(0);" onClick="getCommonAllPmksList('onload')"><img
+								src="/assets/images/common/icon_refresh.png" alt="refresh" /></a> -->
+					</li>					
+				</ul>
+			</div>
+		</div>
+
+		<div class="ds_cont">
+			<div id="pmksList"></div>
+		</div>
+
+	</div>
+
+</div>

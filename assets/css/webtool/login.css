@@ -1,0 +1,1034 @@
+@charset "utf-8";
+@import url("base.css");
+@import url("jquery.scrollbar.css");
+
+html,
+body {
+	height: 100%;
+}
+
+.login-wrapper {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: 100%;
+	background-color: #f3f3f3;
+}
+
+.login-box {
+	display: flex;
+	flex-direction: column;
+	width: 50%;
+	height: 100%;
+}
+
+.login-form-wrapper {
+	width: 350px;
+	margin: auto;
+	align-self: center;
+	transition: all 0.4s ease-in-out;
+}
+
+.login-form-wrapper .title {
+	font-weight: bold;
+	font-size: 30px;
+	color: #252D3A;
+	margin-bottom: 20px;
+}
+
+.login-form {
+	margin-bottom: 20px;
+}
+
+.login-form .form-label {
+	display: block;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 24px;
+	color: #5E636C;
+	margin-bottom: 5px;
+}
+
+.login-form input {
+	width: 100%;
+	height: 50px;
+	padding: 20px;
+	margin-bottom: 10px;
+	font-size: 14px;
+	font-weight: 400;
+	color: #5E636C;
+	background-color: #FFFFFF;
+	border: 1px solid #E8E8E8;
+	border-radius: 4px;
+}
+
+.login-remember {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 25px;
+}
+
+.login-remember label {
+	font-size: 14px;
+	font-weight: 300;
+	color: #5E636C;
+}
+
+.login-remember .forgot-pw {
+	font-size: 14px;
+	font-weight: 300;
+	color: #3C5FB7;
+	cursor: pointer;
+}
+
+.login-btn-box button {
+	width: 100%;
+	height: 50px;
+	padding: 15px;
+	margin-bottom: 20px;
+	font-weight: 700;
+	font-size: 16px;
+	color: #FFFFFF;
+	background-color: #252D3A;
+	border: none;
+	border-radius: 4px;
+}
+
+.login-btn-box button.google {
+	color: #5E636C;
+	background-color: #FFFFFF;
+	border: 1px solid #5E636C;
+}
+
+.login-btn-box button.google img {
+	width: 20px;
+	height: 20px;
+	margin-right: 10px;
+}
+
+.sign-up-box {
+	text-align: center;
+	font-weight: 300;
+	font-size: 16px;
+	color: #5E636C;
+}
+
+.sign-up-box .sign-up-link {
+	font-size: 16px;
+	font-weight: 300;
+	color: #3C5FB7;
+	cursor: pointer;
+}
+
+.login-bg-img {
+	width: 50%;
+	height: 100%;
+}
+
+.login-bg-img img {
+	width: 100%;
+	height: 100%;
+	transition: all 0.4s ease-in-out;
+}
+
+@media screen and (max-width:992px) {
+	.login-bg-img {
+		display: none;
+	}
+
+	.login-box {
+		width: 100%;
+	}
+}
+
+@media screen and (max-width:370px) {
+	.login-form-wrapper {
+		width: 250px;
+	}
+}
+
+#popNamespaceList .modal-dialog {
+	max-width: 100%;
+	width: auto;
+	display: block;
+	top: 50%;
+	transform: translateY(-50%);
+	padding: 0 !important;
+}
+
+#popNamespaceList .modal-content {
+	background: none;
+	border: none;
+	width: 1200px;
+	margin: 0 auto;
+	padding: 0 !important;
+}
+
+#popNamespaceList .modal-content>div {
+	position: relative;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+#popNamespaceList .modal-content>div>div {
+	position: relative;
+	width: 100%;
+}
+
+#popNamespaceList .modal-content .wbox {
+	position: relative;
+	width: 998px;
+	margin-left: 80px;
+	min-height: 598px;
+}
+
+#popNamespaceList .modal-content .popbox {
+	float: left;
+	display: inline-block;
+	width: 455px;
+	padding: 0 0 20px 0;
+	border: 1px solid #e1e1e1;
+	background-color: #fff;
+	border-radius: 10px;
+}
+
+#popNamespaceList .modal-content .popbox.popboxNS {
+	float: none;
+	display: inline-block;
+	transform: translate(50%, 0%);
+}
+
+#popNamespaceList .modal-content .popbox .popcont {
+	padding: 40px 35px 0 35px;
+}
+
+#popNamespaceList .modal-content .popbox .titlebox .tit {
+	color: #5e636c;
+	font-size: 26px;
+	line-height: 28px;
+	font-weight: 400;
+}
+
+#popNamespaceList .modal-content .popbox .titlebox .tit span {
+	color: #06a9b7;
+}
+
+#popNamespaceList .modal-content .popbox .titlebox .txt {
+	margin: 10px 0 0 0;
+	color: #8c929c;
+	font-size: 16px;
+	font-weight: 300;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist {
+	margin: 20px 0 0 0;
+	padding: 9px 10px 10px 10px;
+	background-color: #d5d9df;
+	border-radius: 6px;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist .listbox {
+	max-height: 128px;
+	overflow: auto;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist .listbox .list {
+	cursor: pointer;
+	margin: 6px 0 0 0;
+	width: 343px;
+	height: 61px;
+	background: linear-gradient(to bottom, #fff 70%, #eee);
+	box-shadow: 3px 3px 3px 3px #cbcfd5;
+	border-radius: 8px;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist .listbox .list:nth-of-type(1) {
+	margin: 0;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist .listbox .list .stit {
+	padding: 12px 0 0 28px;
+	color: #5e636c;
+	font-size: 18px;
+	line-height: 18px;
+	font-weight: 500;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist .listbox .list .stxt {
+	padding: 5px 0 0 28px;
+	color: #8c929c;
+	font-size: 14px;
+	line-height: 14px;
+	font-weight: 300;
+}
+
+#popNamespaceList .modal-content .popbox .cloudlist .listbox .list.selected {
+	background: linear-gradient(to bottom, #e3f2f4, #d6e4e6);
+}
+
+#popNamespaceList .modal-content .popbox .addbox {
+	margin: 22px 0 0 0;
+	text-align: right;
+}
+
+#popNamespaceList .modal-content .popbox .addbox .txt {
+	margin: 0 28px 0 0;
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 15px;
+	color: #5e636c;
+	font-weight: 300;
+}
+
+#popNamespaceList .modal-content .popbox .addbox .txt span {
+	font-weight: 500;
+}
+
+#popNamespaceList .modal-content .popbox .addbox button.btn_add {
+	display: inline-block;
+	vertical-align: middle;
+	cursor: pointer;
+	width: 70px;
+	padding: 10px 0;
+	line-height: 12px;
+	border: none;
+	font-size: 12px;
+	font-weight: 600;
+	color: #fff;
+	outline: none;
+	border-radius: 5px;
+	background-color: #06a9b7;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox {
+	display: none;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist {
+	margin: 13px 0 0 0;
+	padding: 0 0 10px 0;
+	min-height: 246px;
+	background-color: #f8f9fa;
+	border-radius: 6px;
+	text-align: right;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist ul {
+	padding: 7px 10px 0 0;
+	min-height: 120px;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li {
+	margin: 5px 0 0 0;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li label {
+	position: relative;
+	display: inline-block;
+	font-size: 16px;
+	color: #5e636c;
+	vertical-align: top;
+	margin: 8px 22px 0 0;
+	font-weight: 400;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li label.chk:before {
+	content: '*';
+	display: block;
+	color: #ff0000;
+	position: absolute;
+	right: -12px;
+	top: 2px;
+	font-weight: 300;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li:first-child label {
+	font-weight: 500;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li input[type="text"],
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li input[type="password"] {
+	display: inline-block;
+	vertical-align: middle;
+	width: calc(100% - 200px);
+	height: 37px;
+	padding: 12px 14px;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	font-size: 15px;
+	font-weight: 300;
+	color: #5e636c;
+	outline: none;
+	background-color: #fff;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li select {
+	display: inline-block;
+	vertical-align: middle;
+	width: calc(100% - 200px);
+	height: 37px;
+	padding: 0 9px;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	font-size: 15px;
+	font-weight: 300;
+	color: #5e636c;
+	outline: none;
+	background-color: #fff;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .iplist li textarea {
+	display: inline-block;
+	vertical-align: middle;
+	width: calc(100% - 200px);
+	height: 40px;
+	line-height: 18px;
+	padding: 0 14px;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	font-size: 15px;
+	font-weight: 300;
+	color: #5e636c;
+	outline: none;
+	background-color: #fff;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .btnbox {
+	margin: 18px 10px 0 0;
+	text-align: right;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .btnbox button {
+	margin: 0 0 0 2px;
+	display: inline-block;
+	vertical-align: middle;
+	cursor: pointer;
+	width: 135px;
+	padding: 12px 0;
+	line-height: 16px;
+	border: none;
+	font-size: 16px;
+	font-weight: 300;
+	color: #fff;
+	outline: none;
+	border-radius: 5px;
+	background-color: #999ea7;
+}
+
+#popNamespaceList .modal-content .popbox .add_ipbox .btnbox button.btn_create {
+	background-color: #06a9b7;
+}
+
+#popNamespaceList .modal-content .arr {
+	display: none;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 52px;
+	height: 52px;
+	border-radius: 100px;
+	background-color: #fff;
+}
+
+#popNamespaceList .modal-content .arr:before {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 13px;
+	height: 16px;
+	background: url(/assets/images/common/icon_arr.png) center center no-repeat;
+}
+
+#popNamespaceList .modal-content button.btn_ok {
+	display: none;
+	position: relative;
+	top: 50%;
+	right: 0;
+	transform: translate(260%, -50%);
+	width: 100px;
+	height: 90px;
+	border: none;
+	font-size: 22px;
+	font-weight: 300;
+	color: #fff;
+	outline: none;
+	border-radius: 9px;
+	background-color: #06a9b7;
+}
+
+@media screen and (max-width:1270px) {
+	#popNamespaceList .modal-content {
+		width: 998px;
+	}
+
+	#popNamespaceList .modal-content .wbox {
+		width: auto;
+		margin-left: 0;
+		height: 705px;
+	}
+
+	#popNamespaceList .modal-dialog {
+		top: 30%;
+		transform: translateY(-30%);
+	}
+
+	#popNamespaceList .modal-content .arr {
+		top: 273px;
+	}
+
+	#popNamespaceList .modal-content button.btn_ok {
+		top: auto;
+		bottom: 40px;
+		right: auto;
+		left: 50%;
+		transform: translate(-240%, 0);
+		position: relative;
+	}
+}
+
+@media screen and (max-width:1024px) {
+	#popNamespaceList .modal-body {
+		max-height: 650px;
+		height: 100%;
+		overflow-y: auto;
+		border-radius: 10px;
+	}
+
+	#popNamespaceList .modal-content .wbox {
+		height: 650px;
+	}
+
+	#popNamespaceList .modal-content {
+		background: none;
+		border: none;
+		width: 475px;
+	}
+
+	#popNamespaceList .modal-content .popbox.popboxNS {
+		float: left;
+		margin: 20px 0 0 0;
+		transform: translate(0%, 0%);
+	}
+
+	#popNamespaceList .modal-content .arr {
+		border: 1px solid #888;
+		transform: rotate(90deg) translate(0, -50%);
+		top: 585px;
+		left: 50%;
+		margin-left: -52px;
+	}
+
+	#popNamespaceList .modal-content button.btn_ok {
+		top: auto;
+		bottom: -40px;
+		right: auto;
+		left: 50%;
+		transform: translate(0, -50%);
+		width: 80px;
+		height: 80px;
+		margin: 20px 0 0 -40px;
+	}
+
+}
+
+@media screen and (max-width:640px) {
+	#popNamespaceList .modal-dialog {
+		top: 30%;
+		transform: translateY(-30%);
+	}
+
+	#popNamespaceList .modal-body {
+		max-height: 540px;
+	}
+
+	#popNamespaceList .modal-content {
+		width: 415px;
+	}
+
+	#popNamespaceList .modal-content .wbox {
+		height: 540px;
+	}
+
+	#popNamespaceList .modal-content .popbox {
+		float: none;
+		width: 415px;
+		margin: 0 auto;
+	}
+
+	#popNamespaceList .modal-content .popbox .popcont {
+		padding: 25px 20px 0 20px;
+	}
+
+	#popNamespaceList .modal-content .popbox.popboxNS {
+		float: none;
+		margin: 15px 0 0 0;
+		transform: translate(0%, 0%);
+	}
+
+	#popNamespaceList .modal-content .popbox .titlebox .tit {
+		font-size: 24px;
+		line-height: 24px;
+	}
+
+	#popNamespaceList .modal-content .popbox .titlebox .txt {
+		margin: 8px 0 0 0;
+		font-size: 15px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist {
+		margin: 15px 0 0 0;
+		padding: 7px 8px 8px 8px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox {
+		max-height: 116px;
+		overflow: auto;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list {
+		margin: 5px 0 0 0;
+		width: 326px;
+		height: 55px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list .stit {
+		padding: 10px 0 0 25px;
+		font-size: 16px;
+		line-height: 16px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list .stxt {
+		padding: 5px 0 0 25px;
+		font-size: 13px;
+		line-height: 13px;
+	}
+
+	#popNamespaceList .modal-content .popbox .addbox {
+		margin: 15px 0 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .addbox .txt {
+		margin: 0 24px 0 0;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .addbox button.btn_add {
+		width: 68px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox {
+		display: none;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist {
+		margin: 10px 0 0 0;
+		min-height: 210px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist ul {
+		padding: 5px 10px 0 0;
+		height: 120px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li {
+		margin: 4px 0 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li label {
+		font-size: 14px;
+		margin: 8px 20px 0 0;
+		width: 80px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li label.chk:before {
+		right: -12px;
+		top: 2px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li input[type="text"],
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li input[type="password"] {
+		width: calc(100% - 170px);
+		height: 32px;
+		padding: 10px 14px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li select {
+		width: calc(100% - 170px);
+		height: 32px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li textarea {
+		width: calc(100% - 170px);
+		height: 80px;
+		line-height: 16px;
+		padding: 0 14px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .btnbox {
+		margin: 18px 10px 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .btnbox button {
+		width: 125px;
+		padding: 12px 0;
+		line-height: 14px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .arr {
+		top: 480px;
+	}
+}
+
+@media screen and (max-width:480px) {
+	#popNamespaceList .modal-content {
+		width: 360px;
+	}
+
+	#popNamespaceList .modal-content .popbox {
+		width: 360px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list {
+		width: 286px;
+	}
+
+	#popNamespaceList .modal-content button.btn_ok {
+		width: 120px;
+		height: 50px;
+		margin: 0 0 0 -60px;
+		bottom: -16px;
+	}
+}
+
+@media screen and (max-width:320px) {
+	#popNamespaceList .modal-body {
+		max-height: 490px;
+	}
+
+	#popNamespaceList .modal-content {
+		width: 280px;
+	}
+
+	#popNamespaceList .modal-content .wbox {
+		height: 490px;
+	}
+
+	#popNamespaceList .modal-content .popbox {
+		float: none;
+		width: 280px;
+		max-height: 470px;
+		margin: 0 auto;
+	}
+
+	#popNamespaceList .modal-content .popbox .popcont {
+		padding: 20px 15px 0 15px;
+	}
+
+	#popNamespaceList .modal-content .popbox.popboxNS {
+		float: none;
+		margin: 10px 0 0 0
+	}
+
+	#popNamespaceList .modal-content .popbox .titlebox .tit {
+		font-size: 18px;
+		line-height: 18px;
+	}
+
+	#popNamespaceList .modal-content .popbox .titlebox .txt {
+		margin: 5px 0 0 0;
+		font-size: 13px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist {
+		margin: 10px 0 0 0;
+		padding: 7px 8px 8px 8px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox {
+		max-height: 116px;
+		overflow: auto;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list {
+		margin: 5px 0 0 0;
+		width: 215px;
+		height: 55px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list .stit {
+		padding: 12px 0 0 12px;
+		font-size: 14px;
+		line-height: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .cloudlist .listbox .list .stxt {
+		padding: 3px 0 0 12px;
+		font-size: 12px;
+		line-height: 12px;
+	}
+
+	#popNamespaceList .modal-content .popbox .addbox {
+		margin: 10px 0 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .addbox .txt {
+		margin: 0 24px 0 0;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .addbox button.btn_add {
+		width: 60px;
+		padding: 8px 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox {
+		display: none;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist {
+		margin: 10px 0 0 0;
+		min-height: 210px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist ul {
+		padding: 5px 10px 0 0;
+		height: 120px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li {
+		margin: 4px 0 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li label {
+		font-size: 12px;
+		margin: 8px 14px 0 0;
+		width: 80px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li:first-child label {
+		width: 80px;
+		margin: 4px 17px 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li label.chk:before {
+		right: -10px;
+		top: 2px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li input[type="text"],
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li input[type="password"] {
+		width: calc(100% - 103px);
+		height: 32px;
+		padding: 10px 10px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li select {
+		width: calc(100% - 103px);
+		height: 32px;
+		font-size: 14px;
+		padding: 0 5px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .iplist li textarea {
+		width: calc(100% - 103px);
+		height: 80px;
+		line-height: 16px;
+		padding: 0 10px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .btnbox {
+		margin: 18px 10px 0 0;
+	}
+
+	#popNamespaceList .modal-content .popbox .add_ipbox .btnbox button {
+		width: 100px;
+		padding: 10px 0;
+		line-height: 14px;
+		font-size: 14px;
+	}
+
+	#popNamespaceList .modal-content .arr {
+		top: 450px;
+	}
+
+	#popNamespaceList .modal-content button.btn_ok {
+		bottom: -20px;
+	}
+}
+
+#required .modal-dialog,
+#idpwLost .modal-dialog {
+	max-width: 100%;
+	width: auto;
+	display: block;
+	top: 50%;
+	transform: translateY(-50%);
+	padding: 0 !important;
+}
+
+#required .modal-content,
+#idpwLost .modal-content {
+	background: none;
+	border: none;
+	width: 400px;
+	margin: 0 auto;
+	padding: 0 !important;
+}
+
+#required .modal-content>div,
+#idpwLost .modal-content>div {
+	position: relative;
+	margin: 0 !important;
+	min-height: 185px;
+	padding: 0 0 20px 0 !important;
+	background-color: #fff;
+	border-radius: 10px;
+	text-align: center;
+}
+
+#required .modal-content .txt {
+	padding: 51px 0 0 0;
+	font-size: 20px;
+	color: #5e636c;
+	font-weight: 300;
+}
+
+#required .modal-content .btnbox {
+	margin: 35px 0 0 0;
+}
+
+#required .modal-content .btnbox button {
+	margin: 0 0 0 2px;
+	display: inline-block;
+	vertical-align: middle;
+	cursor: pointer;
+	width: 145px;
+	padding: 12px 0;
+	line-height: 18px;
+	border: none;
+	font-size: 18px;
+	font-weight: 300;
+	color: #fff;
+	outline: none;
+	border-radius: 5px;
+	background-color: #06a9b7;
+}
+
+#idpwLost .modal-content .txt {
+	padding: 41px 0 0 0;
+	font-size: 16px;
+	color: #5e636c;
+	font-weight: 300;
+}
+
+#idpwLost .modal-content .txt span {
+	display: block;
+	font-size: 20px;
+	font-weight: 400;
+	padding: 0 0 7px 0;
+}
+
+#idpwLost .modal-content .btnbox {
+	margin: 25px 0 0 0;
+}
+
+#idpwLost .modal-content .btnbox button {
+	margin: 0 0 0 2px;
+	display: inline-block;
+	vertical-align: middle;
+	cursor: pointer;
+	width: 145px;
+	padding: 12px 0;
+	line-height: 18px;
+	border: none;
+	font-size: 18px;
+	font-weight: 300;
+	color: #fff;
+	outline: none;
+	border-radius: 5px;
+	background-color: #06a9b7;
+}
+
+#idpwLost .modal-content .btnbox button.btn_cancel {
+	background-color: #999ea7;
+}
+
+@media screen and (max-width:480px) {
+
+	#required .modal-content,
+	#idpwLost .modal-content {
+		width: 300px;
+	}
+
+	#required .modal-content>div,
+	#idpwLost .modal-content>div {
+		min-height: 170px;
+	}
+
+	#required .modal-content .txt {
+		padding: 45px 0 0 0;
+		font-size: 18px;
+	}
+
+	#required .modal-content .btnbox {
+		margin: 30px 0 0 0;
+	}
+
+	#required .modal-content .btnbox button {
+		width: 115px;
+		padding: 10px 0;
+		line-height: 16px;
+		font-size: 16px;
+	}
+
+	#idpwLost .modal-content .txt {
+		padding: 36px 0 0 0;
+		font-size: 15px;
+	}
+
+	#idpwLost .modal-content .txt span {
+		font-size: 18px;
+	}
+
+	#idpwLost .modal-content .btnbox {
+		margin: 20px 0 0 0;
+	}
+
+	#idpwLost .modal-content .btnbox button {
+		width: 115px;
+		padding: 10px 0;
+		line-height: 16px;
+		font-size: 16px;
+	}
+}
+
+@media screen and (max-width:320px) {
+
+	#required .modal-content,
+	#idpwLost .modal-content {
+		width: 260px;
+	}
+
+	#required .modal-content>div,
+	#idpwLost .modal-content>div {
+		min-height: 160px;
+	}
+
+	#required .modal-content .btnbox button {
+		width: 110px;
+	}
+
+	#idpwLost .modal-content .btnbox button {
+		width: 110px;
+	}
+}

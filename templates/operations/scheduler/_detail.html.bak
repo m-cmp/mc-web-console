@@ -1,0 +1,381 @@
+<style>
+  table > tbody {
+    overflow-y: hidden;
+  }
+
+  .container{
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  ul.tabs{
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+  }
+  ul.tabs li{
+    background: none;
+    color: #222;
+    display: inline-block;
+    padding: 10px 15px;
+    cursor: pointer;
+  }
+  
+  ul.tabs li.current{
+    background: #ededed;
+    color: #222;
+  }
+  
+  .tab-content{
+    display: none;
+    background: #ededed;
+    padding: 15px;
+    height: 300px;
+  }
+  
+  .tab-content.current{
+    display: inherit;
+    
+  }
+
+</style>
+  
+  <div class="dashboard dashboard_cont" id="monitoringConfigPolicyInfoBox">
+
+    <div class="d_box box_m box_w100">
+  
+      <div class="titbox_n">
+        <div class="tit initial"><strong>Manage for :</strong>New scheduler(or manage scheduler name)</div>
+        <br>
+        
+      </div>
+      
+      <div class="ds_cont">
+
+        <div class="ipbox ipbox2" style="float: left; width: 60%;">
+
+          <div class="container">
+
+            <ul class="tabs">
+              <li class="tab-link current" data-tab="tab-1">minute</li>
+              <li class="tab-link" data-tab="tab-2">hour</li>
+              <li class="tab-link" data-tab="tab-3">day</li>
+              <li class="tab-link" data-tab="tab-4">month</li>
+              <li class="tab-link" data-tab="tab-5">expert</li>
+              <li class="tab-link" data-tab="tab-6">calender</li>
+            </ul>
+
+            <div id="tab-1" class="tab-content current">
+              <!-- <h1>Minute 입력 </h1> -->
+              <ul>
+                <li class="section-1">
+                  <input type="radio" name="minute" value="1" checked/>Every minute
+                </li>
+                <br>
+                <li class="section-2">
+                  <input type="radio" name="minute" value="2"/>
+                  Every
+                  <select name="minute1">
+                    <%= for (v) in range (0,59){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                  minute(s) starting at minute
+                  <select name="minute1">
+                    <%= for (v) in range (0,59){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+                <li class="section-3">
+                  <input type="radio" name="minute"  value="3"/>Specific minute (choose one or many)<br>
+                  <table style="width: 100%;">
+                    <%= for (b) in range(0,5){ %> 
+                      <tr>
+                      <%= for (v) in range(0,9){ %> 
+                        <td><input type="checkbox" value="<%= v+(b*10) %>"><%= v+(b*10) %></td>
+                      <% } %>
+                      </tr>
+                    <% } %>
+                  </table>
+                </li>
+                <br>
+                <li class="section-4">
+                  <input type="radio" name="minute"  value="4"/>Every minute between minute
+                  <select>
+                    <%= for (v) in range (0,59){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                  and minute
+                  <select>
+                    <%= for (v) in range (0,59){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+              </ul>
+            </div>
+
+            <div id="tab-2" class="tab-content">
+              <!-- <h1>Hour 입력 </h1> -->
+              <ul>
+                <li>
+                  <input type="radio" name="hour" checked/>Every hour
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="hour"/>Every
+                  <select>
+                    <%= for (v) in range (0,23){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                  hour(s) starting at hour
+                  <select>
+                    <%= for (v) in range (0,23){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="hour"/>Specific hour (choose one or many)<br>
+                  <table style="width: 100%;">
+                    <%= for (b) in range(0,2){ %> 
+                      <tr>
+                      <%= for (v) in range(0,9){ %> 
+                        <%= if (23 < v+(b*10)) { %>
+                          <td></td>
+                        <% } else { %>
+                          <td><input type="checkbox" value="<%= v+(b*10) %>"><%= v+(b*10) %></td>
+                        <% } %>
+                      <% } %>
+                      </tr>
+                    <% } %>
+                  </table>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="hour"/>Every hour between hour
+                  <select>
+                    <%= for (v) in range (0,23){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                  and minute
+                  <select>
+                    <%= for (v) in range (0,23){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+              </ul>
+            </div>
+
+            <div id="tab-3" class="tab-content">
+              <!-- <h1>day 입력 </h1> -->
+              <ul>
+                <li>
+                  <input type="radio" name="day" checked/>Every day
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="day"/>Every
+                  <select>
+                    <%= for (v) in range (1,7){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                  day(s) starting on
+                  <select>
+                    <% let week = ["Sunday","Monday","Tueday","Wednesday","Thursday","Friday","Saturday"] %>
+                    <%= for (i,v) in week { %> 
+                      <option value="<%= i %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="day"/>Every
+                  <select>
+                    <%= for (v) in range (1,31){ %> 
+                      <option value="<%= v %>"><%= v %></option>  
+                    <% } %>
+                  </select>
+                  day(s) starting on the
+                  <select>
+                    <%= for (v) in range (1,31){ %> 
+                      <option value="<%= v %>"><%= v %>st</option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="day"/>Specific day of the week (choose one or many)<br>
+                  <table style="width: 100%;">
+                    <tr>
+                      <%= for (v,i) in week { %> 
+                        <td><input type="checkbox" value="<%= v %>"><%= i %></input>
+                      <% } %>
+                    </tr>
+                  </table>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="day"/>Specific day of month (choose one or many)
+                  <table style="width: 100%;">
+                    <%= for (b) in range(0,3){ %> 
+                      <tr>
+                      <%= for (v) in range(1,9){ %> 
+                        <%= if (31 < v+(b*10)) { %>
+                          <td></td>
+                        <% } else { %>
+                          <td><input type="checkbox" value="<%= v+(b*10) %>"><%= v+(b*10) %></td>
+                        <% } %>
+                      <% } %>
+                      </tr>
+                    <% } %>
+                  </table>
+                </li> 
+                <br>
+              </ul>
+            </div>
+
+            <div id="tab-4" class="tab-content">
+              <!-- <h1>month 입력 </h1> -->
+              <ul>
+                <li>
+                  <input type="radio" name="month" checked/>Every month
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="month"/>Every 
+                  <select>
+                    <%= for (v) in range (1,12){ %> 
+                      <option value="<%= v %>"><%= v %></option>
+                    <% } %>
+                  </select>
+                  month(s) starting in
+                  <select>
+                    <% let month = ["January","February","March","April","May","June","July","August","September","October","November","December"] %>
+                    <%= for (v,i) in month { %> 
+                      <option value="<%= v+1 %>"><%= i %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="month"/>Specific hour (choose one or many)<br>
+                  <table style="width: 100%;">
+                    <%= for (b) in range(0,1){ %> 
+                      <tr>
+                      <%= for (v) in range(0,5){ %> 
+                        <td><input type="checkbox" value="<% v+b*6+1 %>"><%= month[v+b*6] %></td>
+                      <% } %>
+                      </tr>
+                    <% } %>
+                  </table>
+                </li>
+                <br>
+                <li>
+                  <input type="radio" name="month"/>Every month between
+                  <select>
+                    <%= for (v,i) in month { %> 
+                      <option value="<%= v+1 %>"><%= i %></option>  
+                    <% } %>
+                  </select>
+                  and
+                  <select>
+                    <%= for (v,i) in month { %> 
+                      <option value="<%= v+1 %>"><%= i %></option>  
+                    <% } %>
+                  </select>
+                </li>
+                <br>
+              </ul>
+            </div>
+
+            <div id="tab-5" class="tab-content">
+              <h1>CRON 입력</h1>
+              <input type="radio" class="radio-value" name="CRON" value="CRON Auto" checked/> 
+              <input type="radio" class="radio-value" name="CRON" value="CRON Manual"/> 
+              <input type="text" class="inputCron" id="CRON" value="" />
+            </div>
+
+            <div id="tab-6" class="tab-content">
+              <h1>당해 날짜 및 시간 입력</h1>
+              <input type='datetime-local' class="inputCrondatetime" id="inputCrondatetime" name="dateTime"/>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="ipbox ipbox1" style="float: left; width: 40%;">
+          <div class="titbox_n">
+            <div class="tit initial">
+              <div><strong>Define Cron Task</strong></div>
+            </div>
+          </div>
+          <div class="container">
+            <input type="hidden" name="name" id="e_name" />
+            <input type="hidden" name="description" id="e_description" />
+            <input type="hidden" name="providerId" id="e_providerId" />
+            <table>
+              <tbody>
+                <tr style="height: 50px;">
+                  <td style="text-align: center;">*TaskName</td>
+                  <td><input type="text" style="width: 100%; height: 30px; border: none; border-bottom: solid 1px"></td>
+                </tr>
+                <tr style="height: 50px;">
+                  <td style="text-align: center;">Description</td>
+                  <td><input type="text" style="width: 100%; height: 30px; border: none; border-bottom: solid 1px"></td>
+                </tr>
+                <tr style="height: 50px;">
+                  <td style="text-align: center;">*CRON</td>
+                  <td> <input style="width:100%;float:left;font-size:30px;border:none;" 
+                    id="userCron"
+                    value="* * * * *"
+                    placeholder="input CRON is here" readonly/></td>
+                </tr>
+                
+                <tr style="height: 50px;">
+                  <td></td>
+                  <td><div id="output" style="float:left;">Humman Readable here!</div></td>
+                </tr>
+                <tr style="height: 50px;">
+                  <td style="text-align: center;">*Action</td>
+                  <td>
+                    <select>
+                      <option value="0">select action</option>  
+                      <option value="reboot">reboot</option>  
+                      <option value="suspend">suspend</option>  
+                      <option value="resume">resume</option>  
+                      <option value="Terminate">reboot</option>  
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td><button class="cron">save</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  
+  
+  <%= javascriptTag("scheduler/schedulermng.js") %> 
+
+  
+  
+  

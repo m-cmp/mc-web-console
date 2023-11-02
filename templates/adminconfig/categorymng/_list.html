@@ -1,0 +1,147 @@
+<div class="dashboard dashboard_cont">
+
+    <input type="hidden" id="sampleMode" value=""/>
+
+	<div class="d_box box_m box_w100">
+
+		<div class="titbox">
+
+			<div class="top_info">
+
+				<div>
+
+					<select name="CategoryListTable_field" id="CategoryListTable_field">
+
+						<option value="category_name" selected>category_name</option>
+						<option value="parent_category_id" selected>parent_category_id</option>
+						<option value="description" selected>description</option>
+						<option value="sort" selected>sort</option>
+						<option value="use_yn" selected>use_yn</option>
+
+					</select>
+
+					<input type="text" name="filter_keyword" value="" id="filter_keyword" placeholder="Please Input Keyword"
+					onkeyup="mcpjs['util/util'].setTableFilter('CategoryListTable',this.value)" />
+
+				</div>
+
+				<ul>
+
+					<li>
+						<a href="javascript:void(0);">Column</a>
+
+						<div class="infobox">
+
+							<div class="box">
+
+								<ul>
+
+									<li>
+										<label class="display-column" data-column="category_name">category_name
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+									<li>
+										<label class="display-column" data-column="parent_category_id">parent_category_id
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+									<li>
+										<label class="display-column" data-column="description">description
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+									<li>
+										<label class="display-column" data-column="sort">sort
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+									<li>
+										<label class="display-column" data-column="created_at">created_at
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+									<li>
+										<label class="display-column" data-column="updated_at">updated_at
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+									<li>
+										<label class="display-column" data-column="use_yn">use_yn
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+
+								</ul>
+
+							</div>
+
+						</div>
+
+					</li>
+
+					<li>
+
+						<a href="javascript:void(0);">Action</a>
+
+						<div class="infobox">
+
+							<div class="box">
+
+								<ul>
+									<li><a href="javascript:void(0);" onclick="mcpjs['util/common'].displayStateChange('category', 'REG')">Add</a>
+                                    </li>
+
+									<li><a href="javascript:void(0);" onclick="mcpjs['adminconfig/categorymng'].editcategory()">Edit</a>
+                                    </li>
+
+                                    <li><a href="javascript:void(0);" onclick="mcpjs['adminconfig/categorymng'].deletecategory()">Delete</a></li>
+									<li class="divider"></li>
+
+									<li>
+										<strong>Export</strong>
+										<ul>
+											<li><a href="javascript:void(0);" onclick="">Total List (CSV)</a>
+											</li>
+										</ul>
+									</li>
+								</ul>
+
+							</div>
+
+						</div>
+
+					</li>
+
+					<li>
+						<a href="javascript:void(0);"><span class="material-icons md-20">help</span></a>
+					</li>
+
+				</ul>
+
+			</div>
+
+		</div>
+
+		<div class="ds_cont">
+
+			<div id="CategoryListTable"></div>
+
+		</div>
+
+	</div>
+
+</div>

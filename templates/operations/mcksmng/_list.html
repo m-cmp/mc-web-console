@@ -1,0 +1,118 @@
+<div class="dashboard dashboard_cont">
+
+	<div class="d_box box_m box_w100">
+		<div class="titbox">
+			<!-- <div class="tit initial"><strong>List of MCIS</strong></div> -->
+			
+			<div class="top_info">
+				<div>
+					<select name="mcksList_field" id="mcksList_field">
+						<option value="name">Name</option>
+					</select>
+					<input type="text" name="mcksList_filter_keyword" value="" id="mcksList_filter_keyword" placeholder="Please Input Keyword"
+					onkeyup="mcpjs['util/util'].setTableFilter('mcksList',this.value)" />
+					<!-- <button onclick="mcpjs['mcksmng/mcksmng'].clearTableFilter()"><img src="/assets/images/contents/btn_del_s.png"></button> -->
+				</div>
+				<ul>
+					<li>
+						<a href="javascript:void(0);">Column</a>
+						<div class="infobox">
+							<div class="box">
+								<ul>
+									<li>
+										<label class="display-column" data-column="status.phase">Status
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="name">Name
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="total">Total Infra
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="controlplane">Control Plane
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="worker">Worker
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="networkCni">NetworkCni
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="cpLeader">CpLeader
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+									<li>
+										<label class="display-column" data-column="mcis">Connection
+											<input type="checkbox" checked="checked">
+											<span class="material-icons">visibility</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+					<li>
+						<a href="javascript:void(0);">Action</a>
+						<div class="infobox">
+							<div class="box">
+								<ul>
+									<li>
+										<strong>Manage</strong>
+										<ul>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_n_New"
+													onclick="mcpjs['util/util'].changePage('McksRegForm')">New / Extend</a>
+											</li>
+											<li><a href="javascript:void(0);" data-toggle="modal"
+													data-target="#MCIS_n_New"
+													onclick="mcpjs['mcksmng/mcksmng'].deleteMCKS()">Delete</a></li>
+										</ul>
+									</li>
+									<li class="divider"></li>
+									<li>
+										<strong>Export</strong>
+										<ul>
+											<li><a href="javascript:void(0);" onclick="mcpjs['mcksmng/mcksmng'].mcksTotalListExport()">Total List (CSV)</a>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+					<li>
+						<a href="javascript:void(0);"><span class="material-icons md-20">help</span></a>
+						<!-- <a href="javascript:void(0);" onClick="getCommonMcisList('mcksmng', true, 'status')"><img
+								src="/assets/images/common/icon_refresh.png" alt="refresh" /></a> -->
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="ds_cont">
+			<div id="mcksList"></div>
+		</div>
+
+	</div>
+
+</div>

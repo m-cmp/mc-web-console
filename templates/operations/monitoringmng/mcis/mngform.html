@@ -1,0 +1,132 @@
+<input type="hidden" id="mcis_id" value='{{ .McisID }}' /><!-- 타화면에서 전환되는 경우 사용-->
+
+<div class="titlebox">
+    <div class="tit"><img src="/assets/images/common/icon_cont.png" alt="" />Monitoring / <strong>MCIS</strong>
+    </div>
+    <div class="location">Home <span>></span> Operation <span>></span> Monitoring <span>></span>
+        <strong>MCIS</strong>
+    </div>
+</div>
+
+<div class="dashboard dashboard_cont">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox">
+            <div class="tit initial"><strong>Monitoring for MCIS</strong></div>
+        </div>
+
+        <div class="ds_cont">
+
+            <div class="monitoring_ipbox">
+
+                <div class="monitoring-cont">
+                    <div class="monitoring_ip">
+                        <div class="mipbox m_ip1">
+                            <select class="selectbox white" id="mcisList" required>                                
+                                <option value="">Choose a Target MCIS for Monitoring</option>                                
+                            </select>                            
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="ds_cont_mbox">
+                <div class="m_title">Selected MCIS <span class="stxt" id="mcis_info_txt">[MCIS Name (MCIS
+                        ID)]</span></div>
+
+                <div class="mtbox">
+                    <div class="txtbox">
+                        <div class="tit">Server List</div>
+                    </div>
+
+                    <div class="g_list">
+                        <!-- Server List scrollbar / common.js -->
+                        <div class="listbox scrollbar-inner">
+                            <ul id="vmArrList">
+                            </ul>
+                        </div>
+                        <!-- //Server List scrollbar -->
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Monitoring view -->
+            <div class="ds_cont_mbox g_detail_view monitoring_view" id="monitoring_viewbox">
+                <input type="hidden" id="vm_id" />
+                <input type="hidden" id="mcis_id" />
+                <div class="view_ipbox">
+
+                    <div class="view-cont">
+                        <div class="view_ip">
+                            <ul>
+                                <!-- <li class="m4">
+                                                <label>Servers</label>
+                                                <input type="text" name="" value="" placeholder="" class="gray" title="" id="sel_vmname" readonly/>
+                                            </li> -->
+                                <li class="m5_n">
+                                    <label>Items</label>
+                                    <select class="selectbox white" required id="select_metric">
+                                        <!-- <option value="sel_vm_item" disabled selected hidden>Select Server's Monitoring Item</option> -->
+                                        <option value="cpu" selected>CPU</option>
+                                        <option value="memory">Memory</option>
+                                        <option value="disk">DiskIO</option>
+                                        <option value="network">Network</option>
+                                    </select>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="view_ip">
+                            <div class="mvbox v_ip2">
+                                <ul>
+                                    <li class="mt_2" id="m_hidden_div">
+                                        <span class="sbox">
+                                            <label>Duration</label>
+                                            <span class="sel_w1">
+                                                <input type="text" name="" value="5" placeholder="" title=""
+                                                    id="input_duration" />
+                                                <select class="selectbox white" id="duration_type">
+                                                    <option value="m" selected>Minute</option>
+                                                    <option value="h">Hour</option>
+                                                    <option value="d">Day</option>
+                                                </select>
+                                            </span>
+                                        </span>
+                                        <span class="sbox">
+                                            <label>Period</label>
+                                            <select class="selectbox white" id="vm_period">
+                                                <option value="m" selected>per Minutely</option>
+                                                <option value="h">per Hourly</option>
+                                                <option value="d">per Daily</option>
+                                            </select>
+                                        </span>
+                                    </li>
+                                    <li class="mt_1">                                        
+                                        <button name="" value="" class="btn_view"
+                                            onclick="btn_view_click()">View</button>
+                                    </li>
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                    
+                    <div class="graphbox">
+                        <canvas id="canvas_vm"></canvas>
+                        <!-- <img src="/assets/img/contents/img_graph_4.jpg" alt=""> -->
+
+                    </div>
+
+                </div>
+            </div>
+            <!-- //Monitoring view -->
+        </div>
+    </div>
+</div>
+<%= javascriptTag("monitoringmng/mcismonitoringmng.js") %>
+

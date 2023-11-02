@@ -1,0 +1,8 @@
+create_table("namespaces") {
+	t.Column("id", "string", {primary: true})
+	t.Column("ns_name", "string", {})
+	t.Column("description", "string", {"null": true})
+	t.Column("user_id", "uuid", {})
+    t.ForeignKey("user_id", {"mc_users": ["id"]})
+	t.Timestamps()
+}
