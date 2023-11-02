@@ -1,0 +1,43 @@
+<div class="topbox">
+	<div class="info">
+		<a href="javascript:void(0);">
+			<p class="txt_1"><%= current_user_id %></p>
+		</a>
+		<div class="txt_2">
+			<input type="hidden" id="topboxDefaultNameSpaceID" value="<%= current_namespace_id %>" />
+			<span id="topboxDefaultNameSpaceName"><%= current_namespace %></span>
+			<div class="infobox">
+				<div class="box">
+					<ul>
+						<li>
+							<a href="javascript:void(0);" style="cursor:default;">Change NameSpace</a>
+							<%=user_namespace_list%>:::
+							<ul id="menuNameSpaceList">
+								<%= for (ns) in user_namespace_list { %>
+								<li><a href="#" onclick='mcpjs["util/common"].setCurrentNameSpace("TobBox","<%= ns.ID %>")'><%= ns.NsName %></a></li>
+								<% } %>
+							</ul>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="javascript:void(0);" style="cursor:default;">Manage NameSpace</a>
+							<ul>
+								<li><a href="javascript:void(0);" data-toggle="modal" data-target="#NewNS"
+										onclick="mcpjs['util/util'].changePage('/namespace/mngform')">new NS</a></li>
+								<li><a href="javascript:void(0);" data-toggle="modal" data-target="#ManageNS"
+										onclick="mcpjs['util/util'].changePage('/namespace/mngform')">Manage NS</a></li>
+							</ul>
+						</li>
+						<input type="hidden" id="select_namespace" />
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+  </div>
+
+<div class="mainnav__inner">
+	<div class="mainnav__top-content scrollable-content pb-5" id="menu_left">  		
+		
+	</div>
+</div>

@@ -1,0 +1,8 @@
+create_table("region_keyvalues") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("key", "string", {})
+	t.Column("value", "string", {})
+	t.Column("region_id", "uuid", {})
+	t.ForeignKey("region_id", {"regions": ["id"] })
+	t.Timestamps()
+}

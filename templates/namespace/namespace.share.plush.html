@@ -1,0 +1,357 @@
+
+<h1>Namespace#NameSpaceShare</h1>
+<div class="row">
+  <div class="col-md-12">
+      <div class="subtitle">
+          <div class="container">
+              <h3>USER LIST</h3>
+          </div>
+      </div>
+  <div class="table-responsive">
+  <table class="table table-striped">
+      <thead>
+          <tr text-align="left">
+            <th><input type="checkbox" /></th>
+            <th>ID</th>
+            <th>USER EMAIL</th>
+            <th>CreatedAt</th>
+          </tr>
+        </thead>
+      <tbody id="share_f_user">
+      
+          <%= if (user_list && len(user_list) > 0) { %>
+              
+              <%= for (index, ul) in user_list { %>
+            <tr>
+                <td>
+                    <input type="checkbox" name="chk_id1[]" id='chk_user_id_<%= index %>' value="<%= ul.ID %>"/>
+                </td>
+                <td item="<%= ul.ID %>" onclick='clickUserID("<%= ul.ID %>");'><%= ul.ID %></td>
+                <td><%= ul.Email %></td>
+                <td><%= ul.CreatedAt %></td>
+
+             </tr>
+              <% } %>
+          <% } else { %>
+          
+                  <td colspan="4">No USER</td>
+          
+          <% } %>
+       
+       
+
+
+      </tbody>
+  
+  </table>
+  <table class="table table-striped" id="getNsTable" display="none;">
+    <thead>
+        <tr text-align="left">
+          <th><input type="checkbox" /></th>
+          <th>ID</th>
+          <th>USER EMAIL</th>
+          <th>CreatedAt</th>
+        </tr>
+      </thead>
+    <tbody id="getNsBody">
+    
+     
+
+
+    </tbody>
+
+</table>
+  </div>
+  </div>
+</div>
+
+<div class="ipbox ipbox2">
+    <ul>
+       <li>
+            <label>Find User</label>
+            <span class="sbox">
+                <input type="text" id="find_user" name="" value="" placeholder=""
+                    class="gray" title="" />
+                <button type="button" onclick="findUser();"name="" value="" class="btn_edit btn_register">Find</button>
+            </span>
+        </li>
+    </ul>
+</div>
+
+  <div class="row">
+    <div class="col-md-12">
+        <div class="subtitle">
+            <div class="container">
+                <h3>SHARED NAMESPACE LIST</h3>
+            </div>
+        </div>
+    <div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr text-align="left">
+              <th><input type="checkbox" /></th>
+              <th>ID</th>
+              <th>NS NAME</th>
+              <th>NS Description</th>
+              <th>CreatedAt</th>
+            </tr>
+          </thead>
+        <tbody>
+          
+            <%= if (ns_list && len(ns_list) > 0) { %>
+                <%= if (user_level != "admin") { %>
+                <%= for (index, nl) in ns_list { %>
+                <tr>
+                    <td>
+                        <input type="checkbox" name="chk_id2[]" value='<%= nl.Namespace.ID %>' id='chk_ns_id_<%= index %>'/>
+                    </td>
+                        <td><%= nl.Namespace.ID %></td>
+                        <td><%= nl.Namespace.NsName %></td>
+                        <td><%= nl.Namespace.Description %></td>
+                        <td><%= nl.CreatedAt %></td>
+                </tr>
+               
+                <% } %>
+                <% }else{ %>
+                    <%= for (index, nl) in ns_list { %>
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="chk_id2[]" value='<%= nl.ID %>' id='chk_ns_id_<%= index %>'/>
+                            </td>
+                                <td><%= nl.ID %></td>
+                                <td><%= nl.NsName %></td>
+                                <td><%= nl.Description %></td>
+                                <td><%= nl.CreatedAt %></td>
+                        </tr>
+                       
+                        <% } %>
+                
+                <% } %>
+            <% } else { %>
+            
+                    <td colspan="4">No Namespaces</td>
+            
+            <% } %>
+            
+  
+  
+        </tbody>
+    
+    </table>
+
+   
+
+    </div>
+    </div>
+  </div>
+
+    <div class="btnbox">
+        <div class="btn_right">
+            <button name="" type="button" class="btn_apply btn_co btn_cr_r"
+            onclick="deAssginNS();"><span>DE-ASSIGN</span></button>
+            <button name="" type="button" class="btn_apply btn_co btn_cr_g"
+                onclick="assginNS();"><span>ASSIGN</span></button>
+            <button name="" value="" class="btn_cancel btn_co btn_cr_b"
+                data-dismiss="modal">cancel</button>
+        </div>
+    </div>
+    <script>
+        function deAssginNS(){
+            //chk_ns_id
+            var ns_arr = new Array()
+            var user_arr = new Array()
+            var ns_cnt = 0
+            var us_cnt = 0
+            $("[id^='chk_ns_id_']:checked").each(function () {
+                ns_id = $(this).val();
+                console.log("checked Id : ",ns_id)
+                ns_arr.push(ns_id);
+                ns_cnt++
+            })
+            $("[id^='chk_user_id_']:checked").each(function () {
+                user_id = $(this).val();
+                console.log("checked Id : ",user_id)
+                user_arr.push(user_id)
+                us_cnt++
+            })
+            if(ns_cnt == 0 || us_cnt == 0){
+                alert("Please select User or Namespace");
+                return; 
+            }
+
+            var frm = {// 바꾼부분1.
+                ns: ns_arr,
+                us: user_arr
+            }
+           
+            var url = "/namespace/deAssign"
+
+
+
+            client.post(url, frm, {
+                    headers: { 
+                        // 'Content-Type': "form-data",                        
+                        // "x-csrf-token": csrfToken 
+                        'Content-type': 'application/json',// 바꾼부분2.
+                    },
+                }).then(result=>{
+                    console.log("assign result : ",result);
+            })
+
+        }
+     
+        function assginNS(){
+            //chk_ns_id
+            var ns_arr = new Array()
+            var user_arr = new Array()
+            var ns_cnt = 0
+            var us_cnt = 0
+            $("[id^='chk_ns_id_']:checked").each(function () {
+                ns_id = $(this).val();
+                console.log("checked Id : ",ns_id)
+                ns_arr.push(ns_id);
+                ns_cnt++
+            })
+            $("[id^='chk_user_id_']:checked").each(function () {
+                user_id = $(this).val();
+                console.log("checked Id : ",user_id)
+                user_arr.push(user_id)
+                us_cnt++
+            })
+            if(ns_cnt == 0 || us_cnt == 0){
+                alert("Please select User or Namespace");
+                return; 
+            }
+
+            var frm = {// 바꾼부분1.
+                ns: ns_arr,
+                us: user_arr
+            }
+           
+            var url = "/namespace/assign"
+        //     $.ajax({
+        //         type: 'post',
+        //         url : url,
+        //         data: req, 
+        //         beforeSend: function (xhr) {
+        //             xhr.setRequestHeader("x-csrf-token", csrfToken );
+        //             xhr.setRequestHeader('Content-Type', "application/json" );
+        //         },
+        //         success: function(result){
+        //             console.log("return data:",result);
+        //         },
+        //         error:function(){  
+        //             //에러가 났을 경우 실행시킬 코드
+        //         }
+	    //  })
+
+
+            client.post(url, frm, {
+                    headers: { 
+                        // 'Content-Type': "form-data",                        
+                        // "x-csrf-token": csrfToken 
+                        'Content-type': 'application/json',// 바꾼부분2.
+                    },
+                }).then(result=>{
+                    console.log("assign result : ",result);
+            })
+
+        }
+        function findUser(){
+            email = $("#find_user").val()
+            console.log("useremail : ",email)
+            if(email != ""){
+                var url = "/find/user";
+                axios.get(url,{
+                 params:{
+                     email
+                 }
+             }).then(result=>{
+                var html = "";
+                var u_html = ""
+                var data = result.data
+                console.log("get user by email : ",result)
+                var status = result.status
+                if(status == 200){
+                    var namespaces = data.Namespaces
+                    var us = data.UserNamespaces
+                    var userId = data.id
+                    console.log("ns : ",data);
+                    u_html +="<tr>"
+                            +"<td><input type='checkbox' id='chk_user_id_f_0' value='"+userId+"'></td>"
+                             +"<td>"+userId+"</td>"
+                             +"<td>"+data.email+"</td>"
+                             +"<td>"+data.created_at+"</td>"
+                             +"</tr>"
+    
+                    us.forEach((item, index) => {
+                        var ns = item.Namespace
+                         html +="<tr>"
+                            +"<td><input type='checkbox' id='chk_ns_id_f_"+index+"' value='"+ns.id+"'></td>"
+                             +"<td>"+ns.id+"</td>"
+                             +"<td>"+ns.name+"</td>"
+                             +"<td>"+ns.description+"</td>"
+                             +"</tr>"
+                     });
+
+                     $("#getNsTable").empty();
+                     $("#getNsTable").append(html);
+                     $("#getNsTable").show();
+    
+                     $("#share_f_user").empty();
+                     $("#share_f_user").append(u_html);
+                     $("#share_f_user").show();
+                    }else{
+                        alert("검색한 사용자가 존재하지 않습니다.\n 다시 입력하세요")
+                        return;
+                    }}).catch(err=>{
+                        console.log("error : ",err.response)
+                        alert("검색한 사용자가 존재하지 않습니다.\n 다시 입력하세요")
+                        return;
+                    })
+                }else{
+                    alert("Please Input the Email");
+                    $("#find_user").focus();
+                }
+                }
+        
+         function clickUserID(uid){
+             url = "/namespace/get/shared/ns"
+             uid = uid
+             console.log("user id : ",uid)
+             if (uid == ""){
+                 alert("Please Select User ID");
+                 return;
+             }
+             axios.get(url,{
+                 params:{
+                     UID: uid
+                 }
+             }).then(result=>{
+                 console.log("get shared ns")
+                 var data = result.data
+                 console.log(data)
+                 html = "";
+                 data.forEach(item => {
+                     ns = item.Namespace
+                     html +="<tr>"
+                         +"<td>"+ns.id+"</td>"
+                         +"<td>"+ns.name+"</td>"
+                         +"<td>"+ns.description+"</td>"
+                         +"</tr>"
+                 });
+    
+                 $("#getNsBody").empty()
+                 $("#getNsBody").append(html)
+                 $("#getNsTable").show();
+    
+             }).catch(result =>{
+    
+             })
+         }
+        $(function(){
+         $("#getNsTable").hide();
+        
+    
+        })
+    </script>

@@ -1,0 +1,96 @@
+<div class="dashboard dashboard_cont">
+    <input type="hidden" id="securityGroupMode" value=""/>
+    <div class="d_box box_m box_w100">
+        <div class="titbox">
+            <div class="top_info">
+                <div>
+					<select name="securityGroupList_field" id="securityGroupList_field">
+						<option value="name" selected>Security Group Name</option>
+					</select>
+					<input type="text" name="securityGroupList_filter_keyword" value="" id="securityGroupList_filter_keyword" placeholder="Please Input Keyword"
+					onkeyup="mcpjs['util/util'].setTableFilter('securityGroupList',this.value)" />
+				</div>
+                <ul>
+                    <li>
+                        <a href="javascript:void(0);">Filter</a>
+                        <div class="infobox">
+                            <div class="box">
+                                <ul>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].commonPromptOpen('RsFltSecurityGroupName', 'securityGroupList')">Security
+                                            Group Name</a></li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].commonPromptOpen('RsFltConnectionName', 'securityGroupList')">Connection
+                                            Name</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);">Sort</a>
+                        <div class="infobox">
+                            <div class="box">
+                                <ul>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="tableSort('securityGroupList', 'SecurityGroup Name')">Security
+                                            Group Name</a></li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="tableSort('securityGroupList', 'Connection Name<')">Connection
+                                            Name</a>
+                                    </li>
+                                    <!--
+                                                <li><a href="javascript:void(0);" onclick='getSGList("cspSecurityGroupName")'>Security Group Name</a></li>
+                                                <li><a href="javascript:void(0);" onclick='getSGList("connectionName")'>Connection Name</a></li>
+                                                -->
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);">Action</a>
+                        <div class="infobox">
+                            <div class="box">
+                                <ul>
+                                    <li><a href="javascript:void(0);" data-toggle="modal"
+                                            data-target="#RegistBox"
+                                            onclick="mcpjs['securitygroup/securitygroupmng'].displaySecurityGroupInfo('REG')">Add</a></li>
+                                    <li><a href="javascript:void(0);" data-toggle="modal"
+                                            data-target="#UnRegist"
+                                            onclick="mcpjs['securitygroup/securitygroupmng'].deleteSecurityGroup()">Delete</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="javascript:void(0);"><img src="/assets/images/common/icon_question.png"
+                                alt="" /></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="ds_cont">
+			<div id="securityGroupList"></div>
+		</div>
+
+        <!-- <div class="ds_cont">
+            <div class="dataTable status_list" id="securityGroupListTable">
+                <table cellpadding="0" cellspacing="0" border="1" summary="" id="securityGroupList">                    
+                    <thead>
+                        <tr>
+                            <th class="column-50px"><input type="checkbox" name="" value="" id="th_chall"
+                                    title="" /><label for="th_chall"></label></td>
+                            <th>SecurityGroup Name</th>
+                            <th>Connection Name</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sgList">
+                        <tr>
+                            <td class="overlay hidden" data-th="" colspan="6">No Data</td>
+                        </tr>            
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+    </div>
+</div>

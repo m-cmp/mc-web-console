@@ -1,0 +1,15 @@
+<h1>Namespace#NameSpaceCreate</h1>
+<div class="auth-wrapper">
+    <div class="sign-form">
+      <h1>Register</h1>
+  
+      <%= formFor(ns, {action: namespaceCreatePath(),method:"POST"}) { %>
+        <%= f.InputTag("Namespace Name",{name:"NsName"}) %>
+        <button class="btn btn-success">Register!</button>
+      <% } %>
+
+      <%= if (errors) {%>
+        <%= errors %>
+        <% } %>
+    </div>
+  </div>

@@ -1,0 +1,85 @@
+<!-- MyImage는 VM에서 export 하기 떄문에 create 없음-->
+
+<div class="dashboard dashboard_cont register_cont" id="myImageCreateBox">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox_n">
+            <div class="tit initial cg"><strong>Create Disk</strong></div>
+        </div>
+
+        <div class="ds_cont">
+            <div class="register_box reg">
+
+                <div class="top_ipbox">
+                    <div class="ipbox ipbox1 ipbox3">
+                        <ul>
+                            <li>
+                                <label><span class="ch">*</span>Disk Name</label>
+                                <input type="text" id="regMyImageName" name="reg_myImageName" value=""
+                                    placeholder="Input Disk Name" class="pline" title="" />
+                            </li>
+                            <li>
+                                <label><span class="ch">*</span>Disk Type</label>
+                                <select class="selectbox white pline w3" id="regMyImageType"
+                                    name="reg_myImageType"
+                                    onchange="diskSize(this.value, 'test_regMyImageSize')">
+                                    <option selected>Select Disk Type</option>
+                                </select>
+                            </li>
+                            <li id="test_regMyImageSize">
+                                <label><span class="ch">*</span>Disk Size</label>
+                                <!-- <input type="text" id="regMyImageSize" name="reg_myImageSize" value=""
+                                placeholder="Input Disk Size" class="pline" title="" /> -->
+                            </li>
+                            <li class="ta_1">
+                                <label>Description</label>
+                                <textarea id="regDescription" name="reg_description" cols="" rows=""
+                                    placeholder="Description" class="pline" title=""></textarea>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="ipbox ipbox2 ipbox4">
+                        <ul>
+                            <li>
+                                <label>Cloud Provider</label>
+                                <select class="selectbox white pline w3" id="providerId" name="ProvideId"
+                                onchange="mcpjs['util/util'].getRegionListByProviderForSelectbox(this.value, 'regionName');"></select>
+                                    <option selected>Select Cloud Provider</option>
+                                    <%= for (provider) in cloud_os_list {%>
+                                        <option value="<%= provider %>"><%= provider %></option>
+                                    <% } %>
+                                </select>
+                            </li>
+                            <li class="reg_1">
+                                <label class="assistLabel"></span>Region Name</label>
+                                <select class="selectbox white pline w3" name="RegionName"
+                                    id="regionName">
+                                    <option value="" selected>Select Region</option>
+                                </select>
+                            </li>
+                            <!-- <li>
+                                <label><span class="ch">*</span>Connection</label>
+                                <select class="selectbox white pline w3" id="regConnectionName"
+                                    name="reg_connectionName">
+                                    <option selected>Select ConnectionName</option>
+                                </select>
+                            </li> -->
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="btnbox">
+                    <div class="btn_center">
+                        <button name="" value="" class="btn_co btn_cr_b w135 btn_cancel"
+                            onclick="displayMyImageInfo('CLOSE')">Cancel</button>
+                        <button name="" value="" class="btn_co btn_cr_g w135 btn_ok"
+                            onclick="createMyImage()">Ok</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

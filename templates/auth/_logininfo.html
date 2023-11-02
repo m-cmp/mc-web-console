@@ -1,0 +1,21 @@
+        <div class="auth-center">
+
+            <%= if (current_user) { %>
+            <h1><%= current_user.Email %></h1>
+
+            <!-- logout page로 보낼때
+            < %= linkTo( authPath( ), { data-method: "DELETE"}){ % >Sign Out< % } % >
+             -->
+
+                <!-- form 전송 method=DELETE로 실제 처리할 때 -->
+                <%= formFor(current_user, {action: authPath(), method: "DELETE"}) { %>
+                <button class="btn btn-success">Sign Out!</button>
+                <% } %>
+
+
+            <% } else { %>
+            <!--< %= getContextPath() % >-->
+            <%= linkTo(newAuthPath()){ %>Sign In<% } %>
+            <%= linkTo(newUsersPath()){ %>Register<% } %>
+            <% } %>
+        </div>

@@ -1,0 +1,50 @@
+<!-- namespace의 vm이 사용가능한 datadisk-->
+<div class="modal fade popup_editBox" id="availableDiskSelectBox" tabindex="-1" role="dialog" aria-hidden="true">
+	<input type="hidden" id="parentsNamespaceAvailableDiskAssist">
+	<input type="hidden" id="parentsNamespaceAvailableDiskProviderID">
+	<input type="hidden" id="parentsNamespaceAvailableDiskRegionName">
+	<input type="hidden" id="parentsNamespaceAvailableDiskMcisID">
+	<input type="hidden" id="parentsNamespaceAvailableDiskVmID">
+	<input type="hidden" id="selectedIndexNamespaceAvailableDiskAssist">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+
+			<div class="modal-body">
+				<div class="pop-body">
+
+					<div class="title_box">
+						<div class="title">Available Disk List</div>
+						<div class="btnbox">
+							<div class="btn_right">
+								<button name="btn_goto_attach_disk" value="" class="btn_attach_disk btn_co btn_cr_g"><span>Attached Disk</span></button>
+								<button class="btn_add btn_co btn_cr_g" value="" name="btn_add_availabledisk">add</button>
+								<button class="btn_delete btn_co btn_cr_g" value="" name="btn_delete_availabledisk">delete</button>
+							</div>
+						</div>
+					</div>
+					
+					<div class="pop-cont">
+						<!-- table scrollbar -->
+						<div id="availableDiskList"></div>
+						<!-- //table scrollbar -->
+
+						<div class="b_txt"><span class="ch">*</span> Select the Disk to be attached to VM by clicking
+							<span class="txt"> “Attach”</span>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="btnbox">
+					<div class="btn_right">
+						<button name="btn_apply_availabledisk" value="" class="btn_apply btn_co btn_cr_g"><span>Attach</span></button>
+						<button name="" value="" class="btn_cancel btn_co btn_cr_b" data-bs-dismiss="modal">cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+<%= javascriptTag("datadisk/namespaceavailabledatadisk_modal.js") %>
