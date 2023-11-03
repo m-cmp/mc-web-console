@@ -11,7 +11,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/frameworkmodel/spider"
 
 	// "mc_web_console/frameworkmodel/tumblebug"
@@ -24,10 +24,10 @@ import (
 
 // 로그인할 때, NameSpace 저장(Create, Delete, Update) 외에는 이 funtion 사용
 // 없으면 tb 조회
-func GetStoredNameSpaceList(c buffalo.Context) ([]tbcommon.TbNsInfo, fwmodel.WebStatus) {
+func GetStoredNameSpaceList(c buffalo.Context) ([]tbcommon.TbNsInfo, frameworkmodel.WebStatus) {
 	fmt.Println("====== GET STORED NAME SPACE ========")
 	nameSpaceList := []tbcommon.TbNsInfo{}
-	nameSpaceErr := fwmodel.WebStatus{}
+	nameSpaceErr := frameworkmodel.WebStatus{}
 
 	if storedNameSpaceList := c.Session().Get(util.STORE_NAMESPACELIST); storedNameSpaceList != nil { // 존재하지 않으면 TB 조회
 		log.Println(storedNameSpaceList)
@@ -52,10 +52,10 @@ func SetStoreNameSpaceList(c buffalo.Context, nameSpaceList []tbcommon.TbNsInfo)
 }
 
 // GetCloudOSList
-func GetStoredCloudOSList(c buffalo.Context) ([]string, fwmodel.WebStatus) {
+func GetStoredCloudOSList(c buffalo.Context) ([]string, frameworkmodel.WebStatus) {
 	fmt.Println("====== GET STORED CloudOS ========")
 	cloudOSList := []string{}
-	cloudOsErr := fwmodel.WebStatus{}
+	cloudOsErr := frameworkmodel.WebStatus{}
 
 	if storedCloudOSList := c.Session().Get(util.STORE_CLOUDOSLIST); storedCloudOSList != nil { // 존재하지 않으면 TB 조회
 		log.Println(storedCloudOSList)
@@ -80,10 +80,10 @@ func SetStoreCloudOSList(c buffalo.Context, cloudOSList []string) error {
 }
 
 // GetRegionList
-func GetStoredRegionList(c buffalo.Context) ([]spider.RegionInfo, fwmodel.WebStatus) {
+func GetStoredRegionList(c buffalo.Context) ([]spider.RegionInfo, frameworkmodel.WebStatus) {
 	fmt.Println("====== GET STORED Region ========")
 	regionList := []spider.RegionInfo{}
-	regionErr := fwmodel.WebStatus{}
+	regionErr := frameworkmodel.WebStatus{}
 
 	if storedRegionList := c.Session().Get(util.STORE_REGIONLIST); storedRegionList != nil { // 존재하지 않으면 TB 조회
 		log.Println(storedRegionList)
@@ -107,10 +107,10 @@ func SetStoreRegionList(c buffalo.Context, regionList []spider.RegionInfo) error
 }
 
 // GetCredentialList
-func GetStoredCredentialList(c buffalo.Context) ([]spider.CredentialInfo, fwmodel.WebStatus) {
+func GetStoredCredentialList(c buffalo.Context) ([]spider.CredentialInfo, frameworkmodel.WebStatus) {
 	fmt.Println("====== GET STORED Region ========")
 	credentialList := []spider.CredentialInfo{}
-	credentialErr := fwmodel.WebStatus{}
+	credentialErr := frameworkmodel.WebStatus{}
 
 	if storedCredentialList := c.Session().Get(util.STORE_CREDENTIALLIST); storedCredentialList != nil { // 존재하지 않으면 TB 조회
 		log.Println(storedCredentialList)
@@ -134,10 +134,10 @@ func SetStoreCredentialList(c buffalo.Context, credentialList []spider.Credentia
 }
 
 // GetDriverList
-func GetStoredDriverList(c buffalo.Context) ([]spider.DriverInfo, fwmodel.WebStatus) {
+func GetStoredDriverList(c buffalo.Context) ([]spider.DriverInfo, frameworkmodel.WebStatus) {
 	fmt.Println("====== GET STORED Driver ========")
 	driverList := []spider.DriverInfo{}
-	driverErr := fwmodel.WebStatus{}
+	driverErr := frameworkmodel.WebStatus{}
 
 	if storedDriverList := c.Session().Get(util.STORE_DRIVERLIST); storedDriverList != nil { // 존재하지 않으면 TB 조회
 		log.Println(storedDriverList)
@@ -162,10 +162,10 @@ func SetStoreDriverList(c buffalo.Context, driverList []spider.DriverInfo) error
 }
 
 // GetCloudConnectionConfigList
-func GetStoredCloudConnectionConfigList(c buffalo.Context) ([]spider.CloudConnectionConfigInfo, fwmodel.WebStatus) {
+func GetStoredCloudConnectionConfigList(c buffalo.Context) ([]spider.CloudConnectionConfigInfo, frameworkmodel.WebStatus) {
 	fmt.Println("====== GET STORED CloudConnectionConfigList ========")
 	connectionConfigList := []spider.CloudConnectionConfigInfo{}
-	connectionConfigErr := fwmodel.WebStatus{}
+	connectionConfigErr := frameworkmodel.WebStatus{}
 
 	if storedConnectionConfigList := c.Session().Get(util.STORE_CLOUDCONNECTIONCONFIGLIST); storedConnectionConfigList != nil { // 존재하지 않으면 TB 조회
 		log.Println(storedConnectionConfigList)

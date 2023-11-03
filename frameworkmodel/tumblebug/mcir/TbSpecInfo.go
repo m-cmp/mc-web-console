@@ -4,7 +4,7 @@ type TbSpecInfo struct {
 	AssociatedObjectList []string `json:"associatedObjectList"`
 
 	ConnectionName string  `json:"connectionName"`
-	ProviderID     string  `json:"providerId"` // 실제 tb에서 사용하지는 않으나 mcone에서 사용할 용도.
+	ProviderID     string  `json:"providerId"` // 실제 tb에서 사용하지는 않으나 mc_web_console에서 사용할 용도.
 	ProviderName   string  `json:"providerName"`
 	RegionName     string  `json:"regionName"`
 	SystemLabel    string  `json:"systemLabel"`

@@ -1,9 +1,15 @@
-.env
-database.yml
-node_modules
-.yarn/install-state.gz
+vendor/
+**/*.log
+**/*.sqlite
+.idea/
+bin/
+tmp/
+node_modules/
 .sass-cache/
 public/assets/
+.vscode/
+.grifter/
+.env
 **/.DS_Store
 *.pid
 coverage
@@ -24,4 +30,3 @@ generated/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-tmp/mc-web-console-build

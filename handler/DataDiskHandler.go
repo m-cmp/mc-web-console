@@ -15,18 +15,18 @@ import (
 
 	// "mc_web_console/frameworkmodel/spider"
 	// "mc_web_console/frameworkmodel/tumblebug"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	tbcommon "mc_web_console/frameworkmodel/tumblebug/common"
 	tbmcir "mc_web_console/frameworkmodel/tumblebug/mcir"
 	"mc_web_console/frameworkmodel/webtool"
 
-	fwmodel "mc_web_console/frameworkmodel"
 	util "mc_web_console/util"
 
 	"github.com/gobuffalo/buffalo"
 )
 
 // DataDisk 목록 조회
-func GetDataDiskList(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbDataDiskInfo, fwmodel.WebStatus) {
+func GetDataDiskList(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbDataDiskInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/dataDisk"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -48,7 +48,7 @@ func GetDataDiskList(nameSpaceID string, optionParam string, filterKeyParam stri
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -61,10 +61,10 @@ func GetDataDiskList(nameSpaceID string, optionParam string, filterKeyParam stri
 	//spew.Dump(body)
 	fmt.Println(dataDiskInfoList["dataDisk"])
 
-	return dataDiskInfoList["dataDisk"], fwmodel.WebStatus{StatusCode: respStatus}
+	return dataDiskInfoList["dataDisk"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func GetDataDiskListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, fwmodel.WebStatus) {
+func GetDataDiskListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, frameworkmodel.WebStatus) {
 	fmt.Println("GetDataDiskListByID ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/dataDisk"
 	var paramMapper = make(map[string]string)
@@ -81,7 +81,7 @@ func GetDataDiskListByID(nameSpaceID string, filterKeyParam string, filterValPar
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -93,11 +93,11 @@ func GetDataDiskListByID(nameSpaceID string, filterKeyParam string, filterValPar
 	dataDiskInfoList := tbcommon.TbIdList{}
 	json.NewDecoder(respBody).Decode(&dataDiskInfoList)
 
-	return dataDiskInfoList.IDList, fwmodel.WebStatus{StatusCode: respStatus}
+	return dataDiskInfoList.IDList, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // List 조회시 optionParam 추가
-func GetDataDiskListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbDataDiskInfo, fwmodel.WebStatus) {
+func GetDataDiskListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbDataDiskInfo, frameworkmodel.WebStatus) {
 	fmt.Println("GetDataDiskListByOption ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/dataDisk"
 	var paramMapper = make(map[string]string)
@@ -119,7 +119,7 @@ func GetDataDiskListByOption(nameSpaceID string, optionParam string, filterKeyPa
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -132,10 +132,10 @@ func GetDataDiskListByOption(nameSpaceID string, optionParam string, filterKeyPa
 	//spew.Dump(body)
 	fmt.Println(dataDiskInfoList["dataDisk"])
 
-	return dataDiskInfoList["dataDisk"], fwmodel.WebStatus{StatusCode: respStatus}
+	return dataDiskInfoList["dataDisk"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func RegDataDisk(nameSpaceID string, dataDiskReqInfo *tbmcir.TbDataDiskReq) (*tbmcir.TbDataDiskInfo, fwmodel.WebStatus) {
+func RegDataDisk(nameSpaceID string, dataDiskReqInfo *tbmcir.TbDataDiskReq) (*tbmcir.TbDataDiskInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/dataDisk"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -151,7 +151,7 @@ func RegDataDisk(nameSpaceID string, dataDiskReqInfo *tbmcir.TbDataDiskReq) (*tb
 	resultDataDiskInfo := tbmcir.TbDataDiskInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultDataDiskInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultDataDiskInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -159,7 +159,7 @@ func RegDataDisk(nameSpaceID string, dataDiskReqInfo *tbmcir.TbDataDiskReq) (*tb
 	fmt.Println("respStatus ", respStatus)
 
 	if respStatus == 500 {
-		webStatus := fwmodel.WebStatus{}
+		webStatus := frameworkmodel.WebStatus{}
 		json.NewDecoder(respBody).Decode(&webStatus)
 		fmt.Println(webStatus)
 		webStatus.StatusCode = respStatus
@@ -169,7 +169,7 @@ func RegDataDisk(nameSpaceID string, dataDiskReqInfo *tbmcir.TbDataDiskReq) (*tb
 	json.NewDecoder(respBody).Decode(&resultDataDiskInfo)
 	fmt.Println(resultDataDiskInfo)
 
-	return &resultDataDiskInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &resultDataDiskInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Async로 Disk 생성 : 항목 안에 attached Vm 정보가 있으면 생성 후 attach까지 한다.
@@ -215,8 +215,8 @@ func AsyncRegDataDisk(nameSpaceID string, dataDiskReqInfo *webtool.DataDiskCreat
 }
 
 // Namespace내 모든 DataDisk 삭제
-func DelAllDataDisk(nameSpaceID string) (fwmodel.WebStatus, fwmodel.WebStatus) {
-	webStatus := fwmodel.WebStatus{}
+func DelAllDataDisk(nameSpaceID string) (frameworkmodel.WebStatus, frameworkmodel.WebStatus) {
+	webStatus := frameworkmodel.WebStatus{}
 
 	var originalUrl = "/ns/{nsId}/resources/dataDisk"
 	var paramMapper = make(map[string]string)
@@ -228,28 +228,28 @@ func DelAllDataDisk(nameSpaceID string) (fwmodel.WebStatus, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := fwmodel.ResultInfo{}
+	resultInfo := frameworkmodel.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return fwmodel.WebStatus{}, fwmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return frameworkmodel.WebStatus{}, frameworkmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, fwmodel.WebStatus{StatusCode: respStatus}
+	return webStatus, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // DataDisk 삭제
-func DelDataDisk(nameSpaceID string, dataDiskID string) (fwmodel.WebStatus, fwmodel.WebStatus) {
-	webStatus := fwmodel.WebStatus{}
+func DelDataDisk(nameSpaceID string, dataDiskID string) (frameworkmodel.WebStatus, frameworkmodel.WebStatus) {
+	webStatus := frameworkmodel.WebStatus{}
 
 	var originalUrl = "/ns/{nsId}/resources/dataDisk/{dataDiskId}"
 	var paramMapper = make(map[string]string)
@@ -262,23 +262,23 @@ func DelDataDisk(nameSpaceID string, dataDiskID string) (fwmodel.WebStatus, fwmo
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := fwmodel.ResultInfo{}
+	resultInfo := frameworkmodel.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return fwmodel.WebStatus{}, fwmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return frameworkmodel.WebStatus{}, frameworkmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, fwmodel.WebStatus{StatusCode: respStatus}
+	return webStatus, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 func AsyncDelDataDisk(nameSpaceID string, dataDiskID string, c buffalo.Context) {
@@ -293,7 +293,7 @@ func AsyncDelDataDisk(nameSpaceID string, dataDiskID string, c buffalo.Context) 
 }
 
 // DataDisk 상세 조회
-func DataDiskGet(nameSpaceID string, dataDiskID string) (*tbmcir.TbDataDiskInfo, fwmodel.WebStatus) {
+func DataDiskGet(nameSpaceID string, dataDiskID string) (*tbmcir.TbDataDiskInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/dataDisk/{dataDiskId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -307,7 +307,7 @@ func DataDiskGet(nameSpaceID string, dataDiskID string) (*tbmcir.TbDataDiskInfo,
 	dataDiskInfo := tbmcir.TbDataDiskInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &dataDiskInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &dataDiskInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -316,10 +316,10 @@ func DataDiskGet(nameSpaceID string, dataDiskID string) (*tbmcir.TbDataDiskInfo,
 	json.NewDecoder(respBody).Decode(&dataDiskInfo)
 	fmt.Println(dataDiskInfo)
 
-	return &dataDiskInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &dataDiskInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func DataDiskPut(nameSpaceID string, dataDiskID string, dataDiskUpsizeReq *tbmcir.TbDataDiskUpsizeReq) (*tbmcir.TbDataDiskInfo, fwmodel.WebStatus) {
+func DataDiskPut(nameSpaceID string, dataDiskID string, dataDiskUpsizeReq *tbmcir.TbDataDiskUpsizeReq) (*tbmcir.TbDataDiskInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/dataDisk/{dataDiskId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -333,7 +333,7 @@ func DataDiskPut(nameSpaceID string, dataDiskID string, dataDiskUpsizeReq *tbmci
 	dataDiskInfoResponse := tbmcir.TbDataDiskInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &dataDiskInfoResponse, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &dataDiskInfoResponse, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	log.Println("resp = ", resp)
 	respBody := resp.Body
@@ -343,7 +343,7 @@ func DataDiskPut(nameSpaceID string, dataDiskID string, dataDiskUpsizeReq *tbmci
 	json.NewDecoder(respBody).Decode(&dataDiskInfoResponse)
 	fmt.Println(dataDiskInfoResponse)
 
-	return &dataDiskInfoResponse, fwmodel.WebStatus{StatusCode: respStatus}
+	return &dataDiskInfoResponse, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Disk 정보 조회

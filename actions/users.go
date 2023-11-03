@@ -3,11 +3,11 @@ package actions
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
-	"github.com/gofrs/uuid"
 
 	"github.com/pkg/errors"
 
@@ -29,8 +29,7 @@ func (a actions) MainForm(c buffalo.Context) error {
 		c.Set("current_namespace", ns)
 	}
 
-	//return c.Render(200, r.HTML("main/index.html"))
-	return c.Render(200, r.HTML("main/userguide.html"))
+	return c.Render(200, r.HTML("main/index.html"))
 }
 
 // UsersCreate registers a new user with the application.
@@ -44,21 +43,20 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 	}
 
 	// default namespace 생성
-	//email := strings.ToLower(strings.TrimSpace(u.Email))
-	// prefix_email := strings.Split(email, "@")
-	// default_ns := prefix_email[0]
-	// u.DefaultNamespace = default_ns
+	email := strings.ToLower(strings.TrimSpace(u.Email))
+	prefix_email := strings.Split(email, "@")
+	default_ns := prefix_email[0]
+	//u.DefaultNamespace = default_ns
 
-	//verrs, err := u.Create(tx)
+	//verrs, err := u.Create(tx)// handler로 이동
 
-	// ns_err := NamespaceCreateDefault(c, default_ns, u)
-	// if ns_err != nil {
-	// 	spew.Dump("=====================")
-	// 	spew.Dump("NamespaceCreateDefault error")
-	// 	spew.Dump("=====================")
-	// 	return errors.WithStack(ns_err)
-	// }
-
+	ns_err := NamespaceCreateDefault(c, default_ns, u)
+	if ns_err != nil {
+		spew.Dump("=====================")
+		spew.Dump("NamespaceCreateDefault error")
+		spew.Dump("=====================")
+		return errors.WithStack(ns_err)
+	}
 	// 사용자가 가입하고 signin 으로 로그인하게 보낼 경우는
 	// 세션에 사용자 ID를 담을 필요가 없음
 	// c.Session().Set("current_user_id", u.ID)
@@ -67,7 +65,8 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 	spew.Dump("여기까지 실행 됐음!!!")
 	spew.Dump("=====================")
 	//return c.Redirect(301, "/auth/signin/mngform/")
-	return RedirectTool(c, "authNewFormPath")
+	//return RedirectTool(c,"authNewFormPath")
+	return RedirectTool(c, "authNewForm")
 }
 
 // 기본 namespace 설정완료.
@@ -177,15 +176,15 @@ func (a actions) GetUserByEmail(c buffalo.Context) error {
 			spew.Dump("====GET FIRST U====")
 			spew.Dump(u)
 			spew.Dump("====GET FIRST U====")
-			// h_err, uns := handler.GetAssignUserNamespaces(u.ID, tx)
-			// if h_err != nil {
-			// 	return c.Render(301, r.JSON(map[string]interface{}{
-			// 		"error":  "cannot find user",
-			// 		"status": "301",
-			// 	}))
-			// }
+			h_err, uns := handler.GetAssignUserNamespaces(u.ID, tx)
+			if h_err != nil {
+				return c.Render(301, r.JSON(map[string]interface{}{
+					"error":  "cannot find user",
+					"status": "301",
+				}))
+			}
 
-			// u.UserNamespaces = *uns
+			u.UserNamespaces = *uns
 
 			if err != nil {
 				return c.Render(301, r.JSON(map[string]interface{}{
@@ -208,27 +207,4 @@ func (a actions) GetUserByEmail(c buffalo.Context) error {
 		}))
 	}
 	return c.Render(http.StatusOK, r.JSON(u))
-}
-
-// User에게 할당된 namespace  McisSubGroupList
-func (a actions) UserNamespaceList(c buffalo.Context) error {
-	tx := c.Value("tx").(*pop.Connection)
-
-	if uid := c.Session().Get("current_user_id"); uid != nil {
-		namespaceList, err := handler.GetAssignUserNamespaces(uid.(uuid.UUID), tx)
-
-		if err != nil {
-			return c.Render(301, r.JSON(map[string]interface{}{
-				"error":  "cannot find user",
-				"status": "301",
-			}))
-		}
-		return c.Render(http.StatusOK, r.JSON(namespaceList))
-	} else {
-		return c.Render(http.StatusExpectationFailed, r.JSON(map[string]interface{}{
-			"error":  "Please input Email",
-			"status": "301",
-		}))
-	}
-
 }

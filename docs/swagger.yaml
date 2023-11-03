@@ -1,0 +1,1978 @@
+basePath: /
+definitions:
+  mcir.TbDataDiskReq:
+    properties:
+      connectionName:
+        type: string
+      cspDataDiskId:
+        type: string
+      description:
+        type: string
+      diskSize:
+        type: string
+      diskType:
+        type: string
+      name:
+        type: string
+      providerId:
+        description: connection 을 provider, regname으로 대체를 위해 추가
+        type: string
+      providerName:
+        type: string
+      regionName:
+        type: string
+      zoneName:
+        type: string
+    type: object
+  mcir.TbDataDiskUpsizeReq:
+    properties:
+      description:
+        type: string
+      diskSize:
+        type: string
+      providerId:
+        type: string
+      providerName:
+        type: string
+      regionName:
+        type: string
+      zoneName:
+        type: string
+    type: object
+  models.Category:
+    properties:
+      category_name:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      parent_category_id:
+        type: string
+      sort:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.CloudConnection:
+    properties:
+      connection_id:
+        type: string
+      connectionName:
+        type: string
+      created_at:
+        type: string
+      credential:
+        $ref: '#/definitions/models.Credential'
+      credential_id:
+        type: string
+      driver:
+        $ref: '#/definitions/models.Driver'
+      driver_id:
+        type: string
+      provider:
+        $ref: '#/definitions/models.CloudProvider'
+      provider_id:
+        description: '사용하는 참조 : fk 설정이 해당 테이블에 되어있어야 함.'
+        type: string
+      region:
+        $ref: '#/definitions/models.Region'
+      region_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.CloudConnections:
+    items:
+      $ref: '#/definitions/models.CloudConnection'
+    type: array
+  models.CloudProvider:
+    properties:
+      created_at:
+        type: string
+      provider_id:
+        type: string
+      provider_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Credential:
+    properties:
+      cloudConnections:
+        allOf:
+        - $ref: '#/definitions/models.CloudConnections'
+        description: 사용 될 참조
+      created_at:
+        type: string
+      credentialKeyValues:
+        description: 여러개는 객체
+        items:
+          $ref: '#/definitions/models.CredentialKeyvalue'
+        type: array
+      credentialName:
+        type: string
+      id:
+        type: string
+      provider:
+        $ref: '#/definitions/models.CloudProvider'
+      provider_id:
+        description: '사용하는 참조 : fk 설정이 해당 테이블에 되어있어야 함.'
+        type: string
+      updated_at:
+        type: string
+      userLevel:
+        type: string
+    type: object
+  models.CredentialKeyvalue:
+    properties:
+      created_at:
+        type: string
+      credential:
+        $ref: '#/definitions/models.Credential'
+      credential_id:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      updated_at:
+        type: string
+      value:
+        type: string
+    type: object
+  models.Driver:
+    properties:
+      cloudConnections:
+        description: CloudConnection *CloudConnection `belongs_to:"cloud_connection"`
+        items:
+          $ref: '#/definitions/models.CloudConnection'
+        type: array
+      created_at:
+        type: string
+      driver_name:
+        type: string
+      id:
+        type: string
+      lib_file_name:
+        type: string
+      provider:
+        $ref: '#/definitions/models.CloudProvider'
+      provider_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Menu:
+    properties:
+      alias:
+        description: |-
+          Path        string `json:"path" db:"path"`
+          Alias       string `json:"alias" db:"alias"`
+        type: string
+      category:
+        $ref: '#/definitions/models.Category'
+      category_id:
+        description: '사용하는 참조 : fk 설정이 해당 테이블에 되어있어야 함.'
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      sort:
+        type: integer
+      updated_at:
+        type: string
+      visible:
+        type: boolean
+    type: object
+  models.Region:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      provider:
+        $ref: '#/definitions/models.CloudProvider'
+      provider_id:
+        type: string
+      regionKeyValue:
+        items:
+          $ref: '#/definitions/models.RegionKeyvalue'
+        type: array
+      regionName:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.RegionGroup:
+    properties:
+      created_at:
+        type: string
+      csp_region_name:
+        description: raw query로 호출하여 return하기위해 추가
+        type: string
+      provider_id:
+        description: '사용하는 참조 : fk 설정이 해당 테이블에 되어있어야 함. transaction으로 호출해야 relation이
+          적용 됨. 그냥 query로 호출하면 null.'
+        type: string
+      provider_name:
+        description: raw query로 호출하여 return하기위해 추가
+        type: string
+      region_group_id:
+        type: string
+      region_group_name:
+        type: string
+      region_id:
+        type: string
+      region_name:
+        description: raw query로 호출하여 return하기위해 추가
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.RegionKeyvalue:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      region:
+        $ref: '#/definitions/models.Region'
+      region_id:
+        type: string
+      updated_at:
+        type: string
+      value:
+        type: string
+    type: object
+  spider.CredentialInfo:
+    properties:
+      CredentialName:
+        description: user(username, password, email)
+        type: string
+      KeyValueInfoList:
+        items:
+          $ref: '#/definitions/spider.SpKeyValueInfo'
+        type: array
+      ProviderName:
+        type: string
+    type: object
+  spider.DriverInfo:
+    properties:
+      DriverLibFileName:
+        type: string
+      DriverName:
+        description: user(username, password, email)
+        type: string
+      ProviderName:
+        type: string
+    type: object
+  spider.RegionInfo:
+    properties:
+      KeyValueInfoList:
+        items:
+          $ref: '#/definitions/spider.SpKeyValueInfo'
+        type: array
+      ProviderName:
+        type: string
+      RegionName:
+        type: string
+    type: object
+  spider.SpKeyValueInfo:
+    properties:
+      Key:
+        type: string
+      Value:
+        type: string
+    type: object
+  webtool.DataDiskCreateReq:
+    properties:
+      attachVmId:
+        description: VmID       string `json:"vmId"`
+        type: string
+      connectionName:
+        type: string
+      cspDataDiskId:
+        type: string
+      description:
+        type: string
+      diskSize:
+        type: string
+      diskType:
+        type: string
+      mcisId:
+        description: Attach VMID
+        type: string
+      name:
+        description: tbmcir.TbDataDiskReq
+        type: string
+    type: object
+  webtool.DataDiskMngReq:
+    properties:
+      attachDataDiskList:
+        description: attach list
+        items:
+          type: string
+        type: array
+      createDataDiskList:
+        description: create disk list
+        items:
+          $ref: '#/definitions/webtool.DataDiskCreateReq'
+        type: array
+      dataDiskList:
+        description: del disk list
+        items:
+          type: string
+        type: array
+      dettachDataDiskList:
+        description: detach list
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:3000
+info:
+  contact:
+    name: MZC-CSC/mc_web_console
+    url: https://github.com/MZC-CSC/mc_web_console
+  description: MZC-CSC/mc_web_console API Swagger page
+  license: {}
+  title: MZC-CSC/mc_web_console API
+  version: ??
+paths:
+  /adminconfig/category/mngform/:
+    get:
+      description: '[CategoryMngForm] Category 설정 폼을 렌더링합니다.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: adminconfig/categorymng/mngform.html
+          schema:
+            type: html
+      summary: Category 설정 폼 렌더링
+      tags:
+      - adminconfig
+  /adminconfig/config/mngform/:
+    get:
+      description: '[AdminMngForm] Admin 관리자 설정 폼을 렌더링합니다. : not implement -- 아직 기획된바
+        없음.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: adminconfig/regiongroup/mngform.html
+          schema:
+            type: html
+      summary: '관리자 설정 폼 렌더링 : not implement -- 아직 기획된바 없음.'
+      tags:
+      - adminconfig
+  /adminconfig/menu/mngform/:
+    get:
+      description: '[MenuMngForm] Menu 설정 폼을 렌더링합니다.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: adminconfig/menumng/mngform.html
+          schema:
+            type: html
+      summary: Menu 설정 폼 렌더링
+      tags:
+      - adminconfig
+  /api/adminconfig/category/:
+    delete:
+      consumes:
+      - application/json
+      description: '[CategoryDel] 카테고리를 삭제합니다.'
+      parameters:
+      - description: models.Category
+        in: body
+        name: Category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'', ''status'': 200}'
+          schema:
+            type: string
+      summary: Category 삭제
+      tags:
+      - adminconfig
+    get:
+      description: '[CategoryList] categoryName을 받아 categoryList를 반환합니다.'
+      parameters:
+      - description: categoryName
+        in: query
+        name: categoryName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message":"success","status":respStatus.StatusCode,"regionGroup":categoryList,}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''respStatus.Message'',''error'':''respStatus.Message''}'
+          schema:
+            type: string
+      security:
+      - CSRFTokenHeader: []
+      summary: Category 리스트 조회
+      tags:
+      - adminconfig
+    post:
+      consumes:
+      - application/json
+      description: '[RegCategory] 카테고리를 등록합니다.'
+      parameters:
+      - description: models.Category
+        in: body
+        name: Category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'', ''status'': 200}'
+          schema:
+            type: string
+      summary: Category 등록
+      tags:
+      - adminconfig
+  /api/adminconfig/category/id/{categoryName}/:
+    get:
+      description: '[CategoryGet] categoryName을 받아 category 단건을 반환합니다.'
+      parameters:
+      - description: categoryName
+        in: query
+        name: categoryName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''category'':''category'',}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      security:
+      - CSRFTokenHeader: []
+      summary: Category 단건 조회
+      tags:
+      - adminconfig
+  /api/adminconfig/menu/:
+    delete:
+      description: '[DelMenu] models.Menu를 받아 메뉴를 단건 삭제합니다.'
+      parameters:
+      - description: models.Menu
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/models.Menu'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200''}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      summary: Menu 삭제
+      tags:
+      - adminconfig
+    get:
+      description: '[MenuList] menuId, menuName, menuAlias, categoryId 중 순서로 마지막 한개를
+        받아 메뉴 리스트를 반환합니다.'
+      parameters:
+      - description: menuId
+        in: query
+        name: menuId
+        type: string
+      - description: menuName
+        in: query
+        name: menuName
+        type: string
+      - description: menuAlias
+        in: query
+        name: menuAlias
+        type: string
+      - description: categoryId
+        in: query
+        name: categoryId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'', ''menuList'':
+            ''menuList''}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      summary: Menu 리스트 조회
+      tags:
+      - adminconfig
+    post:
+      description: '[RegMenu] models.Menu를 받아 메뉴를 단건 등록합니다.'
+      parameters:
+      - description: models.Menu
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/models.Menu'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200''}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      summary: Menu 등록
+      tags:
+      - adminconfig
+    put:
+      description: '[UpdateMenu] models.Menu를 받아 메뉴를 단건 업데이트합니다.'
+      parameters:
+      - description: models.Menu
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/models.Menu'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200''}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      summary: Menu 업데이트
+      tags:
+      - adminconfig
+  /api/adminconfig/menu/id/{menuId}/:
+    get:
+      description: '[GetMenu] menuId와 menuName, menuAlias, categoryId 중 순서로 마지막 한개를
+        받아 메뉴를 반환합니다.'
+      parameters:
+      - description: menuId
+        in: path
+        name: menuId
+        required: true
+        type: string
+      - description: menuName
+        in: query
+        name: menuName
+        type: string
+      - description: menuAlias
+        in: query
+        name: menuAlias
+        type: string
+      - description: categoryId
+        in: query
+        name: categoryId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'', ''menu'': ''menu''}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      summary: Menu 조회
+      tags:
+      - adminconfig
+  /api/adminconfig/menu/tree/:
+    get:
+      description: '[MenuTree] category, menu구조를 tree형태로 쿼리하여 반환합니다.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'', ''menutree'':
+            ''menutree''}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''errors.WithStack(err)''}'
+          schema:
+            type: string
+      summary: Menu Tree 조회
+      tags:
+      - adminconfig
+  /api/adminconfig/regiongroup/:
+    delete:
+      consumes:
+      - application/json
+      description: '[DelRegionGroup] 리전 그룹을 삭제합니다.'
+      parameters:
+      - description: models.RegionGroup
+        in: body
+        name: regionGroup
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegionGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'', ''status'': respStatus.StatusCode}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':''respStatus.Message'',''status'':respStatus.StatusCode}'
+          schema:
+            type: string
+      summary: Region Group 삭제
+      tags:
+      - adminconfig
+    get:
+      description: '[RegionGroupList] providerId 와 regionGroupName 을 받아 RegionGroupList를
+        반환합니다.'
+      parameters:
+      - description: provider
+        in: query
+        name: provider
+        required: true
+        type: string
+      - description: regionGroupName
+        in: query
+        name: regionGroupName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message":"success","status":respStatus.StatusCode,"regionGroup":regionGroupList,}'
+          schema:
+            type: string
+        "400":
+          description: '{''error'':''respStatus.Message'',''error'':''respStatus.Message''}'
+          schema:
+            type: string
+      summary: RegionGroup 리스트 조회
+      tags:
+      - adminconfig
+    post:
+      consumes:
+      - application/json
+      description: '[RegRegionGroup] 리전 그룹을 등록합니다.'
+      parameters:
+      - description: models.RegionGroup
+        in: body
+        name: regionGroup
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegionGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'', ''status'': respStatus.StatusCode}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':''respStatus.Message'',''status'':respStatus.StatusCode}'
+          schema:
+            type: string
+      summary: Region Group 등록
+      tags:
+      - adminconfig
+  /api/adminconfig/regiongroup/{regionGroupId}:
+    get:
+      description: '[GetRegionGroup] regionGroupId와  providerId, regionGroupName,
+        regionId 중 한개를 받아 regionGroup을 반환합니다.'
+      parameters:
+      - description: regionGroupId
+        in: path
+        name: regionGroupId
+        required: true
+        type: string
+      - description: providerId
+        in: query
+        name: providerId
+        type: string
+      - description: regionGroupName
+        in: query
+        name: regionGroupName
+        type: string
+      - description: regionId
+        in: query
+        name: regionId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message":"success","status":respStatus.StatusCode,"regionGroup":regionGroup,}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':''err.Error()'',''status'':''500''}'
+          schema:
+            type: string
+      summary: RegionGroup 단건 Vpc 조회
+      tags:
+      - adminconfig
+  /api/auth/logout/:
+    get:
+      consumes:
+      - application/json
+      description: '[AuthDestroy] 로그아웃을 합니다. clears the session and logs a user out'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''success-Flash'': ''You have been logged out!''}'
+          schema:
+            type: string
+      summary: 로그아웃
+      tags:
+      - auth
+  /api/auth/signin/:
+    post:
+      consumes:
+      - application/json
+      description: '[AuthCreate] 존재하는 계정으로 로그인을 시도합니다. attempts to log the user in
+        with an existing account.'
+      parameters:
+      - description: Email
+        in: formData
+        name: Email
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: Password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'', ''user'': ''u''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':''verrs'',''status'':''http.StatusUnauthorized''}'
+          schema:
+            type: string
+      summary: 로그인
+      tags:
+      - auth
+  /api/settings/connection/:
+    get:
+      consumes:
+      - application/json
+      description: '[CloudConnectionList] connection 리스트를 조회합니다.'
+      parameters:
+      - description: providerId
+        in: query
+        name: providerId
+        required: true
+        type: string
+      - description: regionName
+        in: query
+        name: regionName
+        required: true
+        type: string
+      - description: zoneName
+        in: query
+        name: zoneName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CloudConnection'
+            type: array
+      summary: CloudConnection 리스트 조회
+      tags:
+      - connection
+    post:
+      consumes:
+      - application/json
+      description: |-
+        [CloudConnectionCreate] ConnectionReg 등록 후 connection 목록조회
+        ---- SpiderConnectionReg -> CloudConnectionCreate로 변경
+        ---- is_cb 가 아니면 connection 등록 후 db 저장하도록 보완할 것.
+        ---- TODO : SpiderCloudConnectionConfigReg 로 변경할 것
+        ---- TODO : cloud_connections 저장 MconRegCloudConnection -> 저장실패시 생성한 connection 삭제하도록
+        ---- TODO : cloud_connections table 조회하도록 변경할 것. : MconCloudConnectionList()
+        ---- TODO : SpiderCloudConnectionConfigList 로 변경할 것.
+      parameters:
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: CloudConnection 생성
+      tags:
+      - connection
+    put:
+      consumes:
+      - application/json
+      description: '[CloudConnectionUpdate] Cloud Connection을 수정합니다. -- not implementated
+        yet'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'',''status'':  ''not implementated
+            yet'',}'
+          schema:
+            type: string
+      summary: Cloud Connection을 업데이트 -- not implementated yet
+      tags:
+      - connection
+  /api/settings/connection/available/:
+    get:
+      consumes:
+      - application/json
+      description: '[AvailableCloudConnectionList] 사용가능한 Cloud Connection  목록을 조회합니다.
+        Check avaiable ConnectionConfig list for creating MCIS Dynamically'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: 사용가능한 Cloud Connection 리스트 조회
+      tags:
+      - connection
+  /api/settings/connection/credential/:
+    delete:
+      consumes:
+      - application/json
+      description: '[CredentialDelete] Credential 삭제합니다.'
+      parameters:
+      - description: models.Credential
+        in: body
+        name: paramCredential
+        required: true
+        schema:
+          $ref: '#/definitions/models.Credential'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+      summary: Credential 삭제
+      tags:
+      - connection
+    get:
+      consumes:
+      - application/json
+      description: |-
+        [CredentialList] Credential 리스트를 조회합니다.
+        SpiderCredentialList -> CredentialList 으로 변경 GET
+      parameters:
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message":"success","status":"200","Credential": credentialList,}'
+          schema:
+            type: json
+        "500":
+          description: 'error":  err.Error(),"status": "500",}'
+          schema:
+            type: json
+      summary: Credential 리스트 조회
+      tags:
+      - connection
+    post:
+      consumes:
+      - application/json
+      description: '[CredentialCreate] Credential을 생성합니다.'
+      parameters:
+      - description: spider.CredentialInfo
+        in: body
+        name: credentialInfo
+        required: true
+        schema:
+          $ref: '#/definitions/spider.CredentialInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Credential 생성
+      tags:
+      - connection
+  /api/settings/connection/credential/id/{credential}/:
+    get:
+      consumes:
+      - application/json
+      description: '[CredentialGet] Credential 단건 조회합니다'
+      parameters:
+      - description: iscredential_cb
+        in: path
+        name: credential
+        required: true
+        type: string
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''Credential'':
+            ''credentialInfo'',}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Credential 단건 조회
+      tags:
+      - connection
+  /api/settings/connection/credential/sync/:
+    get:
+      consumes:
+      - application/json
+      description: '[SyncCredential] CB 조회내역을 DB 에 저장합니다. Credential 동기화[handler.SyncCredential(c)]'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Credential 동기화
+      tags:
+      - connection
+  /api/settings/connection/driver/:
+    delete:
+      consumes:
+      - application/json
+      description: '[DriverDelete] Driver를 삭제합니다.'
+      parameters:
+      - description: models.Driver
+        in: body
+        name: paramDriver
+        required: true
+        schema:
+          $ref: '#/definitions/models.Driver'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Driver'
+      summary: Driver 삭제
+      tags:
+      - connection
+    get:
+      consumes:
+      - application/json
+      description: '[DriverList] driver 리스트 조회합니다. -- swagger TEST 오류 확인함.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Driver'
+            type: array
+      summary: Driver 리스트 조회
+      tags:
+      - connection
+    post:
+      consumes:
+      - application/json
+      description: |-
+        [DriverCreate] Driver를 생성합니다.
+        SpiderDriverReg 등록 -> DriverCreate 로 변경 /settings/connection/driver
+      parameters:
+      - description: spider.DriverInfo
+        in: body
+        name: paramdriverInfoDriver
+        required: true
+        schema:
+          $ref: '#/definitions/spider.DriverInfo'
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message": "success","status":  "respStatus",}'
+          schema:
+            type: json
+        "201":
+          description: 'error":  respStatus.Message,"status": respStatus.StatusCode,}'
+          schema:
+            type: json
+        "500":
+          description: 'error":  err.Error(),"status": 500,}'
+          schema:
+            type: json
+      summary: Driver 생성
+      tags:
+      - connection
+  /api/settings/connection/driver/id/{driverId}/:
+    get:
+      consumes:
+      - application/json
+      description: '[DriverGet] Driver를 단건 조회합니다.'
+      parameters:
+      - description: driver
+        in: path
+        name: driver
+        required: true
+        type: string
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'',''status'': ''respStatus'',''Driver'':
+            ''driverInfo'',}'
+          schema:
+            type: string
+      summary: Driver 단건 조회
+      tags:
+      - connection
+  /api/settings/connection/driver/spider/:
+    get:
+      consumes:
+      - application/json
+      description: '[SpiderDriverList] Spider Driver 리스트를 조회합니다.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'',''status'': ''respStatus'',''Driver'':
+            ''driverList'',}'
+          schema:
+            type: string
+      summary: Spider Driver 리스트 조회
+      tags:
+      - connection
+  /api/settings/connection/driver/spider/id/{driver}/:
+    delete:
+      consumes:
+      - application/json
+      description: '[SpiderDriverDelete] Spider Driver를 삭제합니다.'
+      parameters:
+      - description: driver
+        in: path
+        name: driver
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'': ''success'',''status'': ''respStatus''}'
+          schema:
+            type: string
+      summary: Spider Driver 삭제
+      tags:
+      - connection
+  /api/settings/connection/driver/sync/:
+    get:
+      consumes:
+      - application/json
+      description: '[SyncDriver] CB 조회내역을 DB 에 저장합니다. Driver 동기화[handler.SyncDriver(c)]'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Driver 동기화
+      tags:
+      - connection
+  /api/settings/connection/generate/all/bycredential:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        [GenerateConnectionsByAllCredential] credential 별로 지정 Provider의 모든 region에 대해 connection 생성.
+        - 모든 credential에 대해 connection 생성 genconnection
+        - handler.GetCredentialList()
+        - (현재 설정된 credential 목록 : 목록에서는 key의 value는 ...으로 표시)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: credential 별 모든 region connection 생성
+      tags:
+      - connection
+  /api/settings/connection/generate/bycredential:
+    get:
+      consumes:
+      - application/json
+      description: '[GenerateConnectionsByCredential] credential 별로 지정 Provider의 모든
+        region에 대해 connection 생성.'
+      parameters:
+      - description: providerId
+        in: query
+        name: providerId
+        required: true
+        type: string
+      - description: credentialName
+        in: query
+        name: credentialName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: credential 별 지정 Provider 모든 region 생성
+      tags:
+      - connection
+  /api/settings/connection/healthcheck/agent/:
+    get:
+      consumes:
+      - application/json
+      description: '[AgentHealthCheck] MCIS 또는 VM 에 agent 상태 확인'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Agent Health Check -- TODO
+      tags:
+      - connection
+  /api/settings/connection/healthcheck/framework/:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        [FrameworkHealthCheck] 프레임워크 헬스체크
+        - c.Params().Get("framework")
+        - DF의 response 에서 return결과가 ""으로 들어와 204를 return 함.
+        - DF에서 정상적인 message 보내라고 할 것.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Framework Health Check
+      tags:
+      - connection
+  /api/settings/connection/id/{configName}/:
+    delete:
+      consumes:
+      - application/json
+      description: '[CloudConnectionDelete] Connection을 삭제합니다.'
+      parameters:
+      - description: paramConfigName
+        in: path
+        name: paramConfigName
+        required: true
+        type: string
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+      summary: Connection 삭제
+      tags:
+      - connection
+  /api/settings/connection/id/{connectionId}/:
+    get:
+      consumes:
+      - application/json
+      description: '[CloudConnectionGet] connection 단건 조회합니다.'
+      parameters:
+      - description: connectionId
+        in: path
+        name: connectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CloudConnection'
+            type: array
+      summary: connection 단건 조회
+      tags:
+      - connection
+  /api/settings/connection/provider/sync/:
+    get:
+      consumes:
+      - application/json
+      description: '[SyncCloudProvider] CB 조회내역을 DB 에 저장합니다. CloudProvider 동기화[handler.SyncCloudProvider(c)]'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: CloudProvider 동기화
+      tags:
+      - connection
+  /api/settings/connection/providers/:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        [CloudProviderList] Cloud Provider 리스트를 조회합니다.
+        DB에서 가져오게 할 것인가?
+        SpiderProviderList 삭제 함 23.07.06
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus'',''Region'':''resionInfo''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Cloud Provider 리스트 조회
+      tags:
+      - connection
+  /api/settings/connection/region/:
+    delete:
+      consumes:
+      - application/json
+      description: '[RegionDelete] Region을 삭제합니다.'
+      parameters:
+      - description: models.Region
+        in: body
+        name: paramRegion
+        required: true
+        schema:
+          $ref: '#/definitions/models.Region'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Driver'
+      summary: Region 삭제
+      tags:
+      - connection
+    get:
+      consumes:
+      - application/json
+      description: '[RegionList] Region 리스트를 조회합니다.'
+      parameters:
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      - description: filterKeyParam
+        in: query
+        name: filterKeyParam
+        required: true
+        type: string
+      - description: filterValParam
+        in: query
+        name: filterValParam
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''Region'':''regionList''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Region 리스트 조회
+      tags:
+      - connection
+    post:
+      consumes:
+      - application/json
+      description: '[RegionCreate] Region을 생성합니다.'
+      parameters:
+      - description: spider.RegionInfo
+        in: body
+        name: regionInfo
+        required: true
+        schema:
+          $ref: '#/definitions/spider.RegionInfo'
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Region 생성
+      tags:
+      - connection
+  /api/settings/connection/region/all:
+    get:
+      consumes:
+      - application/json
+      description: '[RegionAllList] Region의 모든 리스트를 조회합니다.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Region'
+            type: array
+      summary: Region 모든 리스트를 조회
+      tags:
+      - connection
+  /api/settings/connection/region/id/{paramRegion}/:
+    get:
+      consumes:
+      - application/json
+      description: '[RegionGet] Region 단건 조회합니다.'
+      parameters:
+      - description: paramRegion
+        in: path
+        name: paramRegion
+        required: true
+        type: string
+      - description: is_cb
+        in: query
+        name: is_cb
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus'',''Region'':''resionInfo''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Region 단건 조회
+      tags:
+      - connection
+  /api/settings/connection/region/sync/:
+    get:
+      consumes:
+      - application/json
+      description: '[SyncRegion] CB 조회내역을 DB 에 저장합니다. Region 동기화[handler.SyncRegion(c)]'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Region 동기화
+      tags:
+      - connection
+  /api/settings/connection/spider/:
+    get:
+      consumes:
+      - application/json
+      description: '[SpiderConnectionList] SPIDER connection 리스트를 조회합니다.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: SPIDER ConnectionList 목록조회
+      tags:
+      - connection
+  /api/settings/connection/spider/id/{connectionId}/:
+    get:
+      consumes:
+      - application/json
+      description: '[SpiderConnectionGet] SPIDER connection 단건을 조회합니다.'
+      parameters:
+      - description: connectionId
+        in: path
+        name: connectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: SPIDER Connection 단건조회
+      tags:
+      - connection
+  /api/settings/connection/sync/:
+    get:
+      consumes:
+      - application/json
+      description: '[SyncConnection] CB 조회내역을 DB 에 저장합니다. Connection 동기화[handler.SyncConnection(c)]'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Connection 동기화
+      tags:
+      - connection
+  /api/settings/resources/datadisk/:
+    get:
+      consumes:
+      - application/json
+      description: '[DataDiskList] Data Disk List를 조회합니다.'
+      parameters:
+      - description: option
+        in: query
+        name: option
+        required: true
+        type: string
+      - description: filterKey
+        in: query
+        name: filterKey
+        required: true
+        type: string
+      - description: filterVal
+        in: query
+        name: filterVal
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''defaultNameSpaceID'':
+            namespaceID,''status'': respStatus.StatusCode,}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Data Disk List 조회
+      tags:
+      - datadisk
+    post:
+      consumes:
+      - application/json
+      description: '[DataDiskReg] Data Disk를 생성합니다.'
+      parameters:
+      - description: tbmcir.TbDataDiskReq
+        in: body
+        name: dataDiskRegInfo
+        required: true
+        schema:
+          $ref: '#/definitions/mcir.TbDataDiskReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: DataDisk 생성
+      tags:
+      - datadisk
+  /api/settings/resources/datadisk/availabledisk/:
+    get:
+      consumes:
+      - application/json
+      description: '[McisVmAvailableDataDiskList] VM 이사용가능한 DataDisk Id 목록 조회'
+      parameters:
+      - description: mcisId
+        in: query
+        name: mcisId
+        required: true
+        type: string
+      - description: vmID
+        in: query
+        name: vmID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''dataDiskInfoList'':dataDiskInfoList}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Mcis Vm Available Data Disk List 조회
+      tags:
+      - datadisk
+  /api/settings/resources/datadisk/id/{dataDiskId}/:
+    delete:
+      consumes:
+      - application/json
+      description: '[DataDiskDel] Data Disk를 삭제합니다.'
+      parameters:
+      - description: dataDiskId
+        in: path
+        name: dataDiskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Data Disk 삭제
+      tags:
+      - datadisk
+    get:
+      consumes:
+      - application/json
+      description: '[DataDiskGet] Data Disk를 dataDiskId로 조회합니다.'
+      parameters:
+      - description: dataDiskId
+        in: path
+        name: dataDiskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''dataDiskInfo'':
+            dataDiskInfo}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Data Disk 단건 조회
+      tags:
+      - datadisk
+    put:
+      consumes:
+      - application/json
+      description: '[DataDiskPut] Data Disk를 변경합니다.'
+      parameters:
+      - description: dataDiskId
+        in: path
+        name: dataDiskId
+        required: true
+        type: string
+      - description: tbmcir.TbDataDiskUpsizeReq
+        in: body
+        name: dataDiskUpsizeReq
+        required: true
+        schema:
+          $ref: '#/definitions/mcir.TbDataDiskUpsizeReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''DataDiskInfo'':
+            DataDiskInfo}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Data Disk 변경
+      tags:
+      - datadisk
+  /api/settings/resources/datadisk/lookup/:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        [AvailableDataDiskTypeList] Provider, Region에서 사용가능한 DiskType 조회(DiskLookup)
+        spider의 cloudos_meta.yaml 참조
+      parameters:
+      - description: providerId
+        in: query
+        name: providerId
+        required: true
+        type: string
+      - description: regionName
+        in: query
+        name: regionName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''DiskInfoList'':availableDiskTypeList}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Available Data Disk List 조회
+      tags:
+      - datadisk
+  /api/settings/resources/datadisk/mngdata/:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        [DataDiskMng] Data Disk Mng(CRD) 합니다.
+        Create, Update, Delete가 한번에 일어나는 경우 사용
+        ex) table에 addRow로 추가하고 delet로 삭제한 것들을 한번에 저장할 때.
+      parameters:
+      - description: webtool.DataDiskMngReq
+        in: body
+        name: dataDiskRegInfo
+        required: true
+        schema:
+          $ref: '#/definitions/webtool.DataDiskMngReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Data Disk CRD 한번에
+      tags:
+      - datadisk
+  /api/settings/resources/datadisk/region/:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        [DataDiskListByRegion] Data Disk List를 connection으로 조회합니다.
+        해당리전에 등록 된 DataDisk 목록. connection 필요
+        UI 에서 용이하게 쓰기 위함 (콤보 선택용)
+      parameters:
+      - description: option
+        in: query
+        name: option
+        required: true
+        type: string
+      - description: connectionName
+        in: query
+        name: filterValParam
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''200'',''defaultNameSpaceID'':
+            namespaceID,''dataDiskInfoList'': dataDiskInfoList,}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: Data Disk List 조회 (connection)
+      tags:
+      - datadisk
+  /api/test/apitest/searchapi/:
+    post:
+      description: '[ApiSearch] Api 핸들러를 찾아 Swagger 로 이동합니다.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: redirect
+          schema:
+            type: html
+      summary: 'Api Search swagger : todo : 삭제'
+      tags:
+      - debug
+  /api/test/connection/list/:
+    get:
+      consumes:
+      - application/json
+      description: '[CloudConnectionAllList] 모든 connection을 조회합니다.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CloudConnection'
+            type: array
+      summary: 모든 connection 조회
+      tags:
+      - debug
+  /api/test/connection/list/bycred:
+    post:
+      consumes:
+      - application/json
+      description: '[TestCloudConnection] credential로 가능한 Connection 조회합니다.'
+      parameters:
+      - description: models.Credentials
+        in: body
+        name: credential
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Credential'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{''message'':''success'',''status'':''respStatus''}'
+          schema:
+            type: string
+        "500":
+          description: '{''error'':  err.Error(),''status'': ''500'',}'
+          schema:
+            type: string
+      summary: credential로 가능한 Connection 조회
+      tags:
+      - debug
+  /auth/landing/mngform/:
+    get:
+      description: '[AuthLandingForm] 렌딩 화면을 렌더링합니다. AuthLanding shows a landing page
+        to login'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: auth/landing.html
+          schema:
+            type: html
+      summary: 렌딩 화면 렌더링
+      tags:
+      - auth
+  /auth/signin/mngform/:
+    get:
+      description: '[AuthNewForm] 로그인 화면을 렌더링합니다. AuthNew loads the signin page'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: auth/new.html
+          schema:
+            type: html
+      summary: 로그인 화면 렌더링
+      tags:
+      - auth
+  /operations/globaldashboard/mngform/:
+    get:
+      description: '[GlobalDashboardGet] Global Dashboard 폼을 렌더링 합니다. GlobalDashboardMngForm
+        default implementation.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: operations/globaldashboard/mngform.html
+          schema:
+            type: html
+      summary: 'Global Dashboard 폼 렌더링 : TODO'
+      tags:
+      - globaldashboard
+  /settings/connection/mngform/:
+    get:
+      description: '[ConnectionMngForm] ConnectionForm은 Connection 설정 폼을 렌더링합니다.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: settings/connection/mngform.html
+          schema:
+            type: html
+      summary: Connection 설정 폼 렌더링
+      tags:
+      - connection
+  /settings/resources/datadisk/mngform/:
+    get:
+      description: '[DataDiskMngForm] 데이터 디스크 화면을 렌더링합니다.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: settings/datadisk/mngform.html
+          schema:
+            type: html
+      summary: 데이터 디스크 화면 렌더링
+      tags:
+      - datadisk
+  /test/apitest/mngform/:
+    get:
+      description: '[ApiTestForm] ApiTest를 렌더링 합니다.'
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: adminconfig/apitest/mngform.html
+          schema:
+            type: html
+      summary: 'Api test mngform : todo : 삭제'
+      tags:
+      - debug
+swagger: "2.0"

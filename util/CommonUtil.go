@@ -20,6 +20,7 @@ import (
 	// "io/ioutil"
 
 	"github.com/gobuffalo/buffalo"
+	// "mc_web_console/frameworkmodel"
 )
 
 func GetStoredUserInfo(c buffalo.Context, userID string) map[string]string {

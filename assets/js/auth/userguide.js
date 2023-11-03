@@ -3,6 +3,10 @@
 
 $(document).ready(function () {
 
+	// const getData = async() => {
+	// 	const {data:result} = await axios.get("server adress");
+	// 	return result;
+	// }
 	console.log("start!! " + Date.now());
 	// namespace  caller, isCallback, targetObjId, searchOption
 	mcpjs['util/pathfinder'].getCommonNameSpaceList("mainnamespace", true, '', "id")

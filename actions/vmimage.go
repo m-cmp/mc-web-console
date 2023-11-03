@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/frameworkmodel/tumblebug/mcir"
 	"mc_web_console/handler"
 	"mc_web_console/models"
@@ -100,7 +100,7 @@ func (a actions) VmImageReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
-	respStatus := fwmodel.WebStatus{}
+	respStatus := frameworkmodel.WebStatus{}
 
 	resultVirtualMachineImageInfo := new(mcir.TbImageInfo)
 
