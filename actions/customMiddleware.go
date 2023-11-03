@@ -5,12 +5,14 @@ import (
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
+	//"github.com/gobuffalo/pop/v6"
 	"github.com/gofrs/uuid"
 
 	"github.com/pkg/errors"
 
 	_ "mc_web_console/docs" //mc_web_console의 경우
 	"mc_web_console/handler"
+	//"mc_web_console/models"
 )
 
 /*
@@ -125,47 +127,63 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		// 	return c.Redirect(302, "/signin")
 		// }
 
+		c.Set("assigned_ns_list", "")
+		c.Set("current_user", "")
+		c.Set("current_user_id", "")
+		c.Set("current_user_level", "")
+		c.Set("current_namespace_id", "")
+
 		if uid := c.Session().Get("current_user_id"); uid != nil {
 			// u := &models.MCUser{}
 			// tx := c.Value("tx").(*pop.Connection)
 			// err := tx.Find(u, uid)
 			// if err != nil {
 			// 	c.Session().Clear()
-			// 	spew.Dump("user Find  error : ", &err)
+			// 	//spew.Dump("user Find  error : ", &err)
 			// 	return c.Redirect(302, "/")
 			// 	//return errors.WithStack(err)
 			// }
 			u, _ := handler.GetUserById(uid.(uuid.UUID))
 
-			if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
-				// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
-				// c.Set("current_namespace", ns.NsName)
-				// c.Set("current_namespace_id", ns.ID)
+			// if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
+			// 	// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
+			// 	// c.Set("current_namespace", ns.NsName)
+			// 	// c.Set("current_namespace_id", ns.ID)
 
-				c.Set("current_namespace", "")
-				c.Set("current_namespace_id", "")
+			// 	c.Set("current_namespace", "")
+			// 	c.Set("current_namespace_id", "")
+			// 	c.Set("current_namespace_uuid", "")
 
+			// } else {
+			// 	current_namespace := c.Session().Get("current_namespace")
+			// 	c.Set("current_namespace", current_namespace)
+			// 	c.Set("current_namespace_id", current_namespace_id)
+			// 	c.Set("current_namespace_uuid", "")
+
+			// }
+
+			userNamespaceList, err := handler.GetAssignUserNamespaces(uid.(uuid.UUID), nil)
+			// sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
+			if err != nil {
+				log.Println("GetAssignUserNamespaces err  ", err)
 			} else {
-				current_namespace := c.Session().Get("current_namespace")
-				c.Set("current_namespace", current_namespace)
-				c.Set("current_namespace_id", current_namespace_id)
-
+				log.Println("userNamespaceList ", userNamespaceList)
+				c.Set("assigned_ns_list", userNamespaceList)
 			}
 
 			//shared_ns_list := GetSharedNamespaceList(u.ID, tx)
-			sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
-			if err != nil {
-				log.Println("err  ", err)
-			}
-
+			// sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
+			// if err != nil {
+			// 	log.Println("err  ", err)
+			// }
 			//c.Session().Set("shared_ns_list", shared_ns_list)
 
-			c.Set("shared_ns_list", sharedNamespaceList)
+			// c.Set("shared_ns_list", sharedNamespaceList)
 			c.Set("current_user", u)
 			c.Set("current_user_id", u.Email)
 			c.Set("current_user_level", u.UserLevel)
 			//c.Set("current_credential", u.DefaultCredential)
-			log.Println("shared_ns_list length ", sharedNamespaceList)
+			// log.Println("shared_ns_list length ", sharedNamespaceList)
 		}
 
 		// Menu Tree
