@@ -120,9 +120,12 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 	c.Session().Session.Options.MaxAge = 20
 	c.Session().Set("current_user_id", u.ID)
 
-	c.Session().Set("current_namespace_id", "")
-	c.Session().Set("current_namespace", "")
+	c.Session().Set("current_namespace_id", "") // 대상 framework의 id
+	c.Session().Set("current_namespace", "")    // 대상 framework의 이름
 	c.Session().Set("current_credential", "")
+
+	c.Set("current_namespace_id", "")
+
 	// if u.DefaultNamespace != "" {
 	// 	ns, err := handler.GetNamespaceById(u.DefaultNamespace)
 	// 	if err != nil {

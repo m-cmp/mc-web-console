@@ -339,21 +339,32 @@ func UserNameSpaceListFromDB(userId uuid.UUID, tx *pop.Connection) ([]tbcommon.T
 	return returnNsList, frameworkmodel.WebStatus{StatusCode: 200}
 }
 
+// User가 해당 Namespace를 사용하는지 확인.
 func CheckExistsUserNamespace(userId uuid.UUID, nsId string, tx *pop.Connection) (bool, *models.UserNamespace) {
 	un := &models.UserNamespace{}
-	q := tx.Where("user_id = ?", userId).Where("ns_id = ?", nsId)
-	b, err := q.Exists(un)
-	if b {
-		err2 := q.First(un)
-		if err2 != nil {
-			errors.WithStack(err2)
-		}
-	}
+	// q := tx.Where("user_id = ?", userId).Where("ns_id = ?", nsId)
+	// b, err := q.Exists(un)
+	// if b {
+	// 	err2 := q.First(un)
+	// 	if err2 != nil {
+	// 		errors.WithStack(err2)
+	// 	}
+	// }
+	// if err != nil {
+	// 	errors.WithStack(err)
+	// }
+
+	query := models.DB.Q()
+	query = query.Where("user_id = ?", userId).Where("ns_id = ?", nsId)
+	err := query.First(un)
+	//b, err := query.Exists(un)
+
 	if err != nil {
-		errors.WithStack(err)
+		log.Println("CheckExistsUserNamespace ", err)
+		return false, un
 	}
 
-	return b, un
+	return true, un
 }
 func RegUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
 	spew.Dump("=====================")
@@ -423,14 +434,28 @@ func DelUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
 	return nil
 }
 
-func GetAssignUserNamespaces(user_id uuid.UUID, tx *pop.Connection) (error, *models.UserNamespaces) {
+// TODO : UserNamespace와 Namespace table을 조인하여 TB NS로 return 하도록 변경할 것
+func GetAssignUserNamespaces(user_id uuid.UUID, tx *pop.Connection) (*models.UserNamespaces, error) {
 	un := &models.UserNamespaces{}
-	q := tx.Eager().Where("user_id = ?", user_id)
-	err := q.All(un)
-	if err != nil {
-		return errors.WithStack(err), un
+	if tx == nil {
+		query := models.DB.Q()
+		query = query.Where("user_id = ?", user_id)
+		err := query.All(un)
+		if err != nil {
+			log.Println("user namespace err", err)
+			return un, errors.WithStack(err)
+		}
+
+	} else {
+		q := tx.Eager().Where("user_id = ?", user_id)
+		err := q.All(un)
+		if err != nil {
+			log.Println("user namespace err2", err)
+			return un, errors.WithStack(err)
+		}
 	}
-	return err, un
+
+	return un, nil
 
 }
 
