@@ -3,7 +3,7 @@ import "bootstrap";
 import {client} from '/assets/js/util/util'
 
 $(document).ready(function () {
-    order_type = "ConfigName"
+    var order_type = "ConfigName"
 
     var defaultNameSpaceID = $('#topboxDefaultNameSpaceID').val();// Topbox에 기본 namespaceID를 set 함.
     if (defaultNameSpaceID == '' || defaultNameSpaceID == undefined) {

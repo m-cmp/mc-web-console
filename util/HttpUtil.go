@@ -24,6 +24,7 @@ import (
 	// "io/ioutil"
 	// echosession "github.com/go-session/echo-session"
 	// "github.com/labstack/echo"
+	// "mc_web_console/frameworkmodel"
 )
 
 type KeepZero float64

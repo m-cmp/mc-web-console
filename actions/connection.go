@@ -12,8 +12,7 @@ import (
 	"github.com/gobuffalo/pop/v6"
 	"github.com/pkg/errors"
 
-	//"mc_web_console/frameworkmodel"
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/frameworkmodel/spider"
 	"mc_web_console/frameworkmodel/tumblebug/mcis"
 	"mc_web_console/handler"
@@ -541,6 +540,7 @@ func (a actions) DriverCreate(c buffalo.Context) error {
 
 	if is_cb == "N" {
 		paramDriver := &models.Driver{}
+		//paramDriver.Provider.ProviderID = driverInfo.ProviderName
 		paramDriver.Provider.ID = driverInfo.ProviderName
 		paramDriver.DriverName = driverInfo.DriverName
 		paramDriver.LibFileName = driverInfo.DriverLibFileName
@@ -1188,7 +1188,7 @@ func (a actions) GenerateConnectionsByAllCredential(c buffalo.Context) error {
 func (a actions) FrameworkHealthCheck(c buffalo.Context) error {
 	framework := c.Params().Get("framework")
 
-	respStatus := fwmodel.WebStatus{}
+	respStatus := frameworkmodel.WebStatus{}
 
 	if strings.EqualFold(framework, "SPIDER") {
 		respStatus = handler.GetSpiderHealthCheck()

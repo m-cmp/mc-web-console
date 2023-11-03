@@ -19,7 +19,7 @@ import (
 
 	// spider "mc_web_console/frameworkmodel/spider"
 
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/frameworkmodel/spider"
 	"mc_web_console/models"
 	"mc_web_console/models/views"
@@ -46,14 +46,14 @@ type GVC struct {
 }
 
 // Get Framework Health : spider를 호출하여 결과가 있으면 OK
-func GetSpiderHealthCheck() fwmodel.WebStatus {
+func GetSpiderHealthCheck() frameworkmodel.WebStatus {
 	_, respStatus := GetCloudOSList()
 
 	return respStatus
 }
 
 // Get Framework Health
-func GetTumblebugHealthCheck() fwmodel.WebStatus {
+func GetTumblebugHealthCheck() frameworkmodel.WebStatus {
 	var originalUrl = "/health"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	url := util.TUMBLEBUG + urlParam
@@ -62,18 +62,18 @@ func GetTumblebugHealthCheck() fwmodel.WebStatus {
 
 	if err != nil {
 		fmt.Println(err)
-		return fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 	log.Println(respBody)
 
-	return fwmodel.WebStatus{StatusCode: respStatus}
+	return frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Get Framework Health
-func GetDragonflyHealthCheck() fwmodel.WebStatus {
+func GetDragonflyHealthCheck() frameworkmodel.WebStatus {
 	var originalUrl = "/healthcheck"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	url := util.DRAGONFLY + urlParam
@@ -82,17 +82,17 @@ func GetDragonflyHealthCheck() fwmodel.WebStatus {
 
 	if err != nil {
 		fmt.Println(err)
-		return fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 	log.Println(respBody)
 
-	return fwmodel.WebStatus{StatusCode: respStatus}
+	return frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func GetCloudOSList() ([]string, fwmodel.WebStatus) {
+func GetCloudOSList() ([]string, frameworkmodel.WebStatus) {
 
 	var originalUrl = "/cloudos"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -102,7 +102,7 @@ func GetCloudOSList() ([]string, fwmodel.WebStatus) {
 	// defer resp.Close()
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -112,7 +112,7 @@ func GetCloudOSList() ([]string, fwmodel.WebStatus) {
 	json.NewDecoder(respBody).Decode(&cloudOs)
 	fmt.Println(cloudOs["cloudos"])
 
-	return cloudOs["cloudos"], fwmodel.WebStatus{StatusCode: respStatus}
+	return cloudOs["cloudos"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // provider 별 connection count, connection 있는 provider 수
@@ -139,7 +139,7 @@ func GetCloudConnectionCountMap(cloudConnectionConfigInfoList []spider.CloudConn
 }
 
 // 현재 설정된 connection 목록 GetConnectionConfigListData -> GetCloudConnectionConfigList로 변경
-func GetCloudConnectionConfigList() ([]spider.CloudConnectionConfigInfo, fwmodel.WebStatus) {
+func GetCloudConnectionConfigList() ([]spider.CloudConnectionConfigInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/connectionconfig"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	url := util.SPIDER + urlParam
@@ -149,7 +149,7 @@ func GetCloudConnectionConfigList() ([]spider.CloudConnectionConfigInfo, fwmodel
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -159,11 +159,11 @@ func GetCloudConnectionConfigList() ([]spider.CloudConnectionConfigInfo, fwmodel
 	json.NewDecoder(respBody).Decode(&cloudConnectionConfigInfo)
 	fmt.Println(cloudConnectionConfigInfo["connectionconfig"])
 
-	return cloudConnectionConfigInfo["connectionconfig"], fwmodel.WebStatus{StatusCode: respStatus}
+	return cloudConnectionConfigInfo["connectionconfig"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Connection 상세
-func GetCloudConnectionConfigData(configName string) (spider.CloudConnectionConfigInfo, fwmodel.WebStatus) {
+func GetCloudConnectionConfigData(configName string) (spider.CloudConnectionConfigInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/connectionconfig/{{config_name}}"
 
 	var paramMapper = make(map[string]string)
@@ -181,7 +181,7 @@ func GetCloudConnectionConfigData(configName string) (spider.CloudConnectionConf
 
 	if err != nil {
 		fmt.Println(err)
-		return cloudConnectionConfigInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return cloudConnectionConfigInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -189,12 +189,12 @@ func GetCloudConnectionConfigData(configName string) (spider.CloudConnectionConf
 
 	json.NewDecoder(respBody).Decode(&cloudConnectionConfigInfo)
 	fmt.Println(cloudConnectionConfigInfo)
-	return cloudConnectionConfigInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return cloudConnectionConfigInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // CloudConnectionConfigInfo 등록
-// func RegCloudConnectionConfig(cloudConnectionConfigInfo *fwmodel.CloudConnectionConfigInfo) (io.ReadCloser, fwmodel.WebStatus) {
-func RegCloudConnectionConfig(cloudConnectionConfigInfo *spider.CloudConnectionConfigInfo) (*spider.CloudConnectionConfigInfo, fwmodel.WebStatus) {
+// func RegCloudConnectionConfig(cloudConnectionConfigInfo *frameworkmodel.CloudConnectionConfigInfo) (io.ReadCloser, frameworkmodel.WebStatus) {
+func RegCloudConnectionConfig(cloudConnectionConfigInfo *spider.CloudConnectionConfigInfo) (*spider.CloudConnectionConfigInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/connectionconfig"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -210,26 +210,26 @@ func RegCloudConnectionConfig(cloudConnectionConfigInfo *spider.CloudConnectionC
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 	// if err != nil {
 	// 	fmt.Println(err)
-	// 	return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
 
 	// respBody := resp.Body
 	// respStatus := resp.StatusCode
 	//cloudConnectionConfigInfo
-	// return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	// return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 
 	returnCloudConnectionConfigInfo := spider.CloudConnectionConfigInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &returnCloudConnectionConfigInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnCloudConnectionConfigInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -243,7 +243,7 @@ func RegCloudConnectionConfig(cloudConnectionConfigInfo *spider.CloudConnectionC
 }
 
 // CloudConnectionConfigInfo 삭제
-func DelCloudConnectionConfig(configName string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelCloudConnectionConfig(configName string) (io.ReadCloser, frameworkmodel.WebStatus) {
 	var originalUrl = "/connectionconfig/{{config_name}}"
 
 	var paramMapper = make(map[string]string)
@@ -265,17 +265,17 @@ func DelCloudConnectionConfig(configName string) (io.ReadCloser, fwmodel.WebStat
 
 	if err != nil {
 		log.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 현재 설정된 region 목록
-func GetRegionList() ([]spider.RegionInfo, fwmodel.WebStatus) {
+func GetRegionList() ([]spider.RegionInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/region"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -289,7 +289,7 @@ func GetRegionList() ([]spider.RegionInfo, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -299,7 +299,7 @@ func GetRegionList() ([]spider.RegionInfo, fwmodel.WebStatus) {
 	json.NewDecoder(respBody).Decode(&regionList)
 	//fmt.Println(regionList["region"])
 
-	return regionList["region"], fwmodel.WebStatus{StatusCode: respStatus}
+	return regionList["region"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 func MconRegionList(region *models.Region, c buffalo.Context) ([]models.Region, error) {
@@ -330,7 +330,7 @@ func MconRegionList(region *models.Region, c buffalo.Context) ([]models.Region, 
 	return regions, nil
 }
 
-func GetRegionData(regionName string) (*tbcommon.TbRegion, fwmodel.WebStatus) {
+func GetRegionData(regionName string) (*tbcommon.TbRegion, frameworkmodel.WebStatus) {
 	var originalUrl = "/region/{regionName}"
 
 	var paramMapper = make(map[string]string)
@@ -348,7 +348,7 @@ func GetRegionData(regionName string) (*tbcommon.TbRegion, fwmodel.WebStatus) {
 	regionInfo := tbcommon.TbRegion{}
 	if err != nil {
 		fmt.Println(err)
-		return &regionInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &regionInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -363,7 +363,7 @@ func GetRegionData(regionName string) (*tbcommon.TbRegion, fwmodel.WebStatus) {
 	json.NewDecoder(respBody).Decode(&regionInfo)
 	// fmt.Println(regionInfo)
 	// fmt.Println(regionInfo.KeyValueInfoList)
-	return &regionInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &regionInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // region 단건 조회
@@ -396,8 +396,8 @@ func MconRegionGet(region *models.Region) (models.Region, error) {
 }
 
 // Region 등록
-// func RegRegion(regionInfo *spider.RegionInfo) (io.ReadCloser, fwmodel.WebStatus) {
-func RegRegion(regionInfo *spider.RegionInfo) (*spider.RegionInfo, fwmodel.WebStatus) {
+// func RegRegion(regionInfo *spider.RegionInfo) (io.ReadCloser, frameworkmodel.WebStatus) {
+func RegRegion(regionInfo *spider.RegionInfo) (*spider.RegionInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/region"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -415,26 +415,26 @@ func RegRegion(regionInfo *spider.RegionInfo) (*spider.RegionInfo, fwmodel.WebSt
 
 	// if err != nil {
 	// 	fmt.Println(err)
-	// 	return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
 
 	// respBody := resp.Body
 	// respStatus := resp.StatusCode
 
-	// return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	// return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	returnRegionInfo := spider.RegionInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnRegionInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnRegionInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -469,7 +469,7 @@ func MconRegionCreate(region *models.Region, c buffalo.Context) error {
 }
 
 // Region 삭제
-func DelRegion(regionName string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelRegion(regionName string) (io.ReadCloser, frameworkmodel.WebStatus) {
 	var originalUrl = "/region/{{region_name}}"
 
 	var paramMapper = make(map[string]string)
@@ -491,17 +491,17 @@ func DelRegion(regionName string) (io.ReadCloser, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 현재 설정된 credential 목록 : 목록에서는 key의 value는 ...으로 표시
-func GetCredentialList() ([]spider.CredentialInfo, fwmodel.WebStatus) {
+func GetCredentialList() ([]spider.CredentialInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/credential"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -516,7 +516,7 @@ func GetCredentialList() ([]spider.CredentialInfo, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -536,7 +536,7 @@ func GetCredentialList() ([]spider.CredentialInfo, fwmodel.WebStatus) {
 		// fmt.Println("after keyValueInfoList : ", keyValueInfoList)
 	}
 
-	return credentialList["credential"], fwmodel.WebStatus{StatusCode: respStatus}
+	return credentialList["credential"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // credential 목록 조회
@@ -572,7 +572,7 @@ func MconCredentialList(credential *models.Credential, c buffalo.Context) ([]mod
 }
 
 // Credential 상세조회
-func GetCredentialData(credentialName string) (*spider.CredentialInfo, fwmodel.WebStatus) {
+func GetCredentialData(credentialName string) (*spider.CredentialInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/credential/{{credential_name}}"
 
 	var paramMapper = make(map[string]string)
@@ -589,7 +589,7 @@ func GetCredentialData(credentialName string) (*spider.CredentialInfo, fwmodel.W
 	credentialInfo := spider.CredentialInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &credentialInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &credentialInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -598,7 +598,7 @@ func GetCredentialData(credentialName string) (*spider.CredentialInfo, fwmodel.W
 	json.NewDecoder(respBody).Decode(&credentialInfo)
 	// fmt.Println(credentialInfo)
 	// fmt.Println(credentialInfo.KeyValueInfoList)
-	return &credentialInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &credentialInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // credential 단건 조회
@@ -626,7 +626,7 @@ func MconCredentialGet(credential *models.Credential) (models.Credential, error)
 }
 
 // Credential 등록
-func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInfo, fwmodel.WebStatus) {
+func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/credential"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -634,7 +634,7 @@ func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInf
 
 	fmt.Println("RegCredential : ", credentialInfo)
 	returnCredentialInfo := spider.CredentialInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	// GCP의 경우 value에 \n 이 포함되어 있기 때문에 이것이 넘어올 때는 \\n 형태로 넘어온다.  이것을 \으로 replace 해야
 	//
@@ -687,14 +687,14 @@ func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInf
 		// resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 		if err != nil {
 			fmt.Println(err)
-			return &returnCredentialInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+			return &returnCredentialInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 		}
 
 		respBody := resp.Body
 		respStatus := resp.StatusCode
 
 		if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-			errorInfo := fwmodel.ErrorInfo{}
+			errorInfo := frameworkmodel.ErrorInfo{}
 			json.NewDecoder(respBody).Decode(&errorInfo)
 			fmt.Println("respStatus != 200 reason ", errorInfo)
 			returnStatus.Message = errorInfo.Message
@@ -751,14 +751,14 @@ func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInf
 		// resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 		if err != nil {
 			fmt.Println(err)
-			return &returnCredentialInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+			return &returnCredentialInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 		}
 
 		respBody := resp.Body
 		respStatus := resp.StatusCode
 
 		if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-			errorInfo := fwmodel.ErrorInfo{}
+			errorInfo := frameworkmodel.ErrorInfo{}
 			json.NewDecoder(respBody).Decode(&errorInfo)
 			fmt.Println("respStatus != 200 reason ", errorInfo)
 			returnStatus.Message = errorInfo.Message
@@ -781,14 +781,14 @@ func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInf
 
 		if err != nil {
 			fmt.Println(err)
-			return &returnCredentialInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+			return &returnCredentialInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 		}
 
 		respBody := resp.Body
 		respStatus := resp.StatusCode
 
 		if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-			errorInfo := fwmodel.ErrorInfo{}
+			errorInfo := frameworkmodel.ErrorInfo{}
 			json.NewDecoder(respBody).Decode(&errorInfo)
 			fmt.Println("respStatus != 200 reason ", errorInfo)
 			returnStatus.Message = errorInfo.Message
@@ -801,25 +801,25 @@ func RegCredential(credentialInfo *spider.CredentialInfo) (*spider.CredentialInf
 
 	// if err != nil {
 	// 	fmt.Println(err)
-	// 	return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
 
 	// respBody := resp.Body
 	// respStatus := resp.StatusCode
 
 	// // util.DisplayResponse(resp)
-	// return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	// return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 
 	// respBody := resp.Body
 	// respStatus := resp.StatusCode
 
 	// if err != nil {
 	// 	fmt.Println(err)
-	// 	return &returnCredentialInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return &returnCredentialInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
 
 	// if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-	// 	errorInfo := fwmodel.ErrorInfo{}
+	// 	errorInfo := frameworkmodel.ErrorInfo{}
 	// 	json.NewDecoder(respBody).Decode(&errorInfo)
 	// 	fmt.Println("respStatus != 200 reason ", errorInfo)
 	// 	returnStatus.Message = errorInfo.Message
@@ -850,8 +850,8 @@ func MconCredentialCreate(credential *models.Credential, c buffalo.Context) erro
 }
 
 // Credential 삭제
-func DelCredential(credentialName string) (fwmodel.WebStatus, fwmodel.WebStatus) {
-	webStatus := fwmodel.WebStatus{}
+func DelCredential(credentialName string) (frameworkmodel.WebStatus, frameworkmodel.WebStatus) {
+	webStatus := frameworkmodel.WebStatus{}
 
 	var originalUrl = "/credential/{{credential_name}}"
 
@@ -871,28 +871,28 @@ func DelCredential(credentialName string) (fwmodel.WebStatus, fwmodel.WebStatus)
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := fwmodel.ResultInfo{}
+	resultInfo := frameworkmodel.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return fwmodel.WebStatus{}, fwmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return frameworkmodel.WebStatus{}, frameworkmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, fwmodel.WebStatus{StatusCode: respStatus}
-	//return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return webStatus, frameworkmodel.WebStatus{StatusCode: respStatus}
+	//return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 현재 설정된 Driver 목록
-func GetDriverList() ([]spider.DriverInfo, fwmodel.WebStatus) {
+func GetDriverList() ([]spider.DriverInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/driver"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -906,7 +906,7 @@ func GetDriverList() ([]spider.DriverInfo, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -916,11 +916,11 @@ func GetDriverList() ([]spider.DriverInfo, fwmodel.WebStatus) {
 	json.NewDecoder(respBody).Decode(&driverList)
 	fmt.Println(driverList["driver"])
 
-	return driverList["driver"], fwmodel.WebStatus{StatusCode: respStatus}
+	return driverList["driver"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Driver 상세조회
-func SpiderDriverGet(driverlName string) (*spider.DriverInfo, fwmodel.WebStatus) {
+func SpiderDriverGet(driverlName string) (*spider.DriverInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/driver/{{driver_name}}"
 
 	var paramMapper = make(map[string]string)
@@ -937,7 +937,7 @@ func SpiderDriverGet(driverlName string) (*spider.DriverInfo, fwmodel.WebStatus)
 	driverInfo := spider.DriverInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &driverInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &driverInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -945,7 +945,7 @@ func SpiderDriverGet(driverlName string) (*spider.DriverInfo, fwmodel.WebStatus)
 
 	json.NewDecoder(respBody).Decode(&driverInfo)
 	fmt.Println(driverInfo)
-	return &driverInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &driverInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // driver 단건 조회
@@ -966,7 +966,7 @@ func MconDriverGet(c buffalo.Context) (models.Driver, error) {
 }
 
 // Driver 등록
-func RegDriver(driverInfo *spider.DriverInfo) (*spider.DriverInfo, fwmodel.WebStatus) {
+func RegDriver(driverInfo *spider.DriverInfo) (*spider.DriverInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/driver"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -981,26 +981,26 @@ func RegDriver(driverInfo *spider.DriverInfo) (*spider.DriverInfo, fwmodel.WebSt
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 	// if err != nil {
 	// 	fmt.Println(err)
-	// 	return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
 
 	// respBody := resp.Body
 	// respStatus := resp.StatusCode
-	// return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	// return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	returnDriverInfo := spider.DriverInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnDriverInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnDriverInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -1031,7 +1031,7 @@ func MconDriverCreate(driver *models.Driver, c buffalo.Context) error {
 }
 
 // Driver 삭제
-func DelDriver(driverName string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelDriver(driverName string) (io.ReadCloser, frameworkmodel.WebStatus) {
 	var originalUrl = "/driver/{{driver_name}}"
 
 	var paramMapper = make(map[string]string)
@@ -1050,17 +1050,17 @@ func DelDriver(driverName string) (io.ReadCloser, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // /////////// Config
 // 현재 설정된 Config 목록  TODO :Spider에서 /config 가 없는 것 같은데.... 나중에 확인해서 안쓰면 제거할 것
-func GetConfigList() ([]spider.ConfigInfo, fwmodel.WebStatus) {
+func GetConfigList() ([]spider.ConfigInfo, frameworkmodel.WebStatus) {
 	url := util.SPIDER + "/config"
 	fmt.Println("=========== GetConfigListData : ", url)
 
@@ -1069,7 +1069,7 @@ func GetConfigList() ([]spider.ConfigInfo, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1079,11 +1079,11 @@ func GetConfigList() ([]spider.ConfigInfo, fwmodel.WebStatus) {
 	json.NewDecoder(respBody).Decode(&configList)
 	fmt.Println(configList["config"])
 
-	return configList["config"], fwmodel.WebStatus{StatusCode: respStatus}
+	return configList["config"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Config 상세조회
-func GetConfigData(configID string) (*spider.ConfigInfo, fwmodel.WebStatus) {
+func GetConfigData(configID string) (*spider.ConfigInfo, frameworkmodel.WebStatus) {
 	url := util.SPIDER + "/config/" + configID
 	fmt.Println("=========== GetConfigData : ", url)
 
@@ -1092,7 +1092,7 @@ func GetConfigData(configID string) (*spider.ConfigInfo, fwmodel.WebStatus) {
 	configInfo := spider.ConfigInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &configInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &configInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1100,11 +1100,11 @@ func GetConfigData(configID string) (*spider.ConfigInfo, fwmodel.WebStatus) {
 
 	json.NewDecoder(respBody).Decode(&configInfo)
 	fmt.Println(configInfo)
-	return &configInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &configInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Driver 등록
-func RegConfig(configInfo *spider.ConfigInfo) (*spider.ConfigInfo, fwmodel.WebStatus) {
+func RegConfig(configInfo *spider.ConfigInfo) (*spider.ConfigInfo, frameworkmodel.WebStatus) {
 	// buff := bytes.NewBuffer(pbytes)
 	url := util.SPIDER + "/config"
 
@@ -1115,25 +1115,25 @@ func RegConfig(configInfo *spider.ConfigInfo) (*spider.ConfigInfo, fwmodel.WebSt
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 	// if err != nil {
 	// 	fmt.Println(err)
-	// 	return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
 
 	// respBody := resp.Body
 	// respStatus := resp.StatusCode
-	// return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	// return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	returnConfigInfo := spider.ConfigInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnConfigInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnConfigInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -1147,7 +1147,7 @@ func RegConfig(configInfo *spider.ConfigInfo) (*spider.ConfigInfo, fwmodel.WebSt
 }
 
 // Driver 삭제
-func DelConfig(configID string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelConfig(configID string) (io.ReadCloser, frameworkmodel.WebStatus) {
 
 	// buff := bytes.NewBuffer(pbytes)
 	url := util.SPIDER + "/config/" + configID
@@ -1160,12 +1160,12 @@ func DelConfig(configID string) (io.ReadCloser, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 ////// DB 사용
@@ -1273,6 +1273,12 @@ func CheckExistsCloudConnection(connectionView views.ViewCloudConnection) bool {
 // 	}
 // 	return b
 
+// 	// uc := &models.UserCredential{}
+// 	// q := tx.Where("id = ?", providerName)
+// 	// b, err := q.Exists(dr)
+// 	// if err != nil {
+// 	// 	errors.WithStack(err)
+// 	// }
 // }
 
 // connection정보
@@ -1322,6 +1328,20 @@ func SaveConnectionMapping(connectionMapping *models.CloudConnectionMapping, c b
 	}
 
 	return nil
+
+	// ID        uuid.UUID `json:"id" db:"id"`
+	// CreatedAt time.Time `json:"created_at" db:"created_at"`
+	// UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+
+	// // vpc, securitygroup, sshkey, vmimage, vmspec, nlb, vm, mckscontrolplane, mcksworkernode, pmks
+	// ResourceType string `json:"resource_type" db:"resource_type"`
+	// ResourceID   string `json:"resource_id" db:"resource_id"` // 해당 resource의 ID를 string으로
+
+	// ConnectionID    uuid.UUID        `json:"connection_id" db:"connection_id"`
+	// CloudConnection *CloudConnection `belongs_to:"cloud_connection"`
+
+	// CredentialID uuid.UUID   `json:"credential_id" db:"credential_id"`
+	// Credential   *Credential `belongs_to:"credential"`
 }
 
 // provider와 region, zone 으로 해당 유저가 사용가능한 connection 목록 return
@@ -1663,8 +1683,8 @@ func GetAvailableConnection(viewCloudConnection views.ViewCloudConnection, c buf
 	// user 정보 가져오기
 	//log.Println(c.Session().Get("current_user"))
 	//log.Println(c.Session().Get("current_user_id"))
-	//user := c.Session().Get("current_user").(*models.User)
-	//user := c.Value("current_user").(*models.User)
+	//user := c.Session().Get("current_user").(*models.MCUser)
+	//user := c.Value("current_user").(*models.MCUser)
 	userId := c.Session().Get("current_user_id").(uuid.UUID)
 	if userId == uuid.Nil {
 		return connection, errors.New("failed to get User")
@@ -1673,9 +1693,9 @@ func GetAvailableConnection(viewCloudConnection views.ViewCloudConnection, c buf
 	//userCredentialID := c.Session().Get("current_credential") // user가 수시로 바꿀 수 있으면 session에 set하도록 변경 필요
 	// credential 조회 : 해당 provider의 credential에 defautl 설정이 되어 있으면 해당 값 사용.
 	//userCredentialID := user.DefaultCredential
-	userCredentialID := ""
+	// userCredentialID := ""
 	// credentialExist := CheckExistsUserCredential(userId.String(), viewCloudConnection.ProviderID)
-	// //
+	//
 	// if credentialExist {
 	// 	userDefaultCredential, err := GetDefaultUserCredential(viewCloudConnection.ProviderID, userId.String())
 	// 	if err != nil {
@@ -1687,17 +1707,17 @@ func GetAvailableConnection(viewCloudConnection views.ViewCloudConnection, c buf
 	// 	}
 	// }
 
-	if userCredentialID == "" { // 없으면 가용 user credential 조회
-		publicCredentials, err := ListPublicCredentialByName(viewCloudConnection.ProviderID, "", c) // credential이름은 없이, user_level == 'admin' 인것만 조회
-		if err != nil {
-			return connection, err
-		}
+	// if userCredentialID == "" { // 없으면 가용 user credential 조회
+	// 	publicCredentials, err := ListPublicCredentialByName(viewCloudConnection.ProviderID, "", c) // credential이름은 없이, user_level == 'admin' 인것만 조회
+	// 	if err != nil {
+	// 		return connection, err
+	// 	}
 
-		if len(publicCredentials) == 0 {
-			return connection, errors.New("failed to get Credential")
-		}
-		userCredentialID = publicCredentials[0].ID.String()
-	}
+	// 	if len(publicCredentials) == 0 {
+	// 		return connection, errors.New("failed to get Credential")
+	// 	}
+	// 	userCredentialID = publicCredentials[0].ID.String()
+	// }
 
 	// user가 사용가능한 credentialId 1개 조회. 여러개 중 1개
 	/*
@@ -1715,7 +1735,7 @@ func GetAvailableConnection(viewCloudConnection views.ViewCloudConnection, c buf
 	*/
 
 	query := models.DB.Q()
-	query = query.Where("credential_id = ?", userCredentialID)
+	// query = query.Where("credential_id = ?", userCredentialID)
 	if viewCloudConnection.ProviderID != "" {
 		query = query.Where("provider_id = ?", viewCloudConnection.ProviderID)
 	}
@@ -2003,18 +2023,17 @@ func ListViewConnection(namespace string, viewCloudConnection views.ViewCloudCon
 	}
 
 	//userCredentialID := c.Session().Get("current_credential") // user가 수시로 바꿀 수 있으면 session에 set하도록 변경 필요
-	userCredentialID := ""
 	// userCredentialID := user.DefaultCredential
-	if userCredentialID == "" { // 없으면 가용 user credential 조회
-		publicCredentials, err := ListPublicCredentialByName(viewCloudConnection.ProviderID, "", c) // credential이름은 없이, user_level == 'admin' 인것만 조회
-		if err != nil {
-			return connectionList, err
-		}
-		userCredentialID = publicCredentials[0].ID.String()
-	}
+	// if userCredentialID == "" { // 없으면 가용 user credential 조회
+	// 	publicCredentials, err := ListPublicCredentialByName(viewCloudConnection.ProviderID, "", c) // credential이름은 없이, user_level == 'admin' 인것만 조회
+	// 	if err != nil {
+	// 		return connectionList, err
+	// 	}
+	// 	userCredentialID = publicCredentials[0].ID.String()
+	// }
 
 	query := models.DB.Q()
-	query = query.Where("credential_id = ?", userCredentialID)
+	// query = query.Where("credential_id = ?", userCredentialID)
 	if viewCloudConnection.ProviderID != "" {
 		query = query.Where("provider_id = ?", viewCloudConnection.ProviderID)
 	}
@@ -2162,6 +2181,7 @@ func SyncCloudProvider(c buffalo.Context) error {
 		cspId := strings.ToUpper(csp)
 		b := CheckExistsCloudProvider(cspId, tx)
 		cp := &models.CloudProvider{}
+		//cp.ProviderID = cspId
 		cp.ID = cspId
 		cp.ProviderName = csp
 		if !b { // 없으면 create

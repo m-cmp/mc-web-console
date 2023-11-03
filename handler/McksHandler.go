@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	tbcommon "mc_web_console/frameworkmodel/tumblebug/common"
 
 	// spider "mc_web_console/frameworkmodel/spider"
@@ -21,7 +21,7 @@ import (
 )
 
 // Health Check
-func GetHealthy() fwmodel.WebStatus {
+func GetHealthy() frameworkmodel.WebStatus {
 	var originalUrl = "/healthy"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	url := util.MCKS + urlParam
@@ -30,7 +30,7 @@ func GetHealthy() fwmodel.WebStatus {
 
 	if err != nil {
 		fmt.Println(err)
-		return fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -40,11 +40,11 @@ func GetHealthy() fwmodel.WebStatus {
 	json.NewDecoder(respBody).Decode(&result)
 	log.Println(result)
 
-	return fwmodel.WebStatus{StatusCode: respStatus, Message: result}
+	return frameworkmodel.WebStatus{StatusCode: respStatus, Message: result}
 }
 
 // Cluster 목록 조회
-func GetClusterList(nameSpaceID string) ([]ladybug.ClusterInfo, fwmodel.WebStatus) {
+func GetClusterList(nameSpaceID string) ([]ladybug.ClusterInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters"
 
 	var paramMapper = make(map[string]string)
@@ -58,7 +58,7 @@ func GetClusterList(nameSpaceID string) ([]ladybug.ClusterInfo, fwmodel.WebStatu
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -72,10 +72,10 @@ func GetClusterList(nameSpaceID string) ([]ladybug.ClusterInfo, fwmodel.WebStatu
 	log.Println(respBody)
 	// util.DisplayResponse(resp) // 수신내용 확인
 
-	return clusterList["items"], fwmodel.WebStatus{StatusCode: respStatus}
+	return clusterList["items"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func GetClusterListByID(nameSpaceID string) ([]string, fwmodel.WebStatus) {
+func GetClusterListByID(nameSpaceID string) ([]string, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters"
 
 	var paramMapper = make(map[string]string)
@@ -89,7 +89,7 @@ func GetClusterListByID(nameSpaceID string) ([]string, fwmodel.WebStatus) {
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -106,11 +106,11 @@ func GetClusterListByID(nameSpaceID string) ([]string, fwmodel.WebStatus) {
 	for _, keyMcksInfo := range clusterList["items"] {
 		ids = append(ids, keyMcksInfo.Mcis) // ID값이 없어 MCIS항목으로 처리
 	}
-	return ids, fwmodel.WebStatus{StatusCode: respStatus}
+	return ids, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 특정 Cluster 조회
-func GetClusterData(nameSpaceID string, cluster string) (*ladybug.ClusterInfo, fwmodel.WebStatus) {
+func GetClusterData(nameSpaceID string, cluster string) (*ladybug.ClusterInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters/{cluster}"
 
 	var paramMapper = make(map[string]string)
@@ -127,7 +127,7 @@ func GetClusterData(nameSpaceID string, cluster string) (*ladybug.ClusterInfo, f
 	clusterInfo := ladybug.ClusterInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &clusterInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &clusterInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -137,11 +137,11 @@ func GetClusterData(nameSpaceID string, cluster string) (*ladybug.ClusterInfo, f
 	json.NewDecoder(respBody).Decode(&clusterInfo)
 	fmt.Println(clusterInfo)
 
-	return &clusterInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &clusterInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Cluster 생성
-func RegCluster(nameSpaceID string, clusterReq *ladybug.ClusterRegReq) (*ladybug.ClusterInfo, fwmodel.WebStatus) {
+func RegCluster(nameSpaceID string, clusterReq *ladybug.ClusterRegReq) (*ladybug.ClusterInfo, frameworkmodel.WebStatus) {
 
 	var originalUrl = "/ns/{namespace}/clusters"
 
@@ -155,18 +155,18 @@ func RegCluster(nameSpaceID string, clusterReq *ladybug.ClusterRegReq) (*ladybug
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnClusterInfo := ladybug.ClusterInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnClusterInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnClusterInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -204,7 +204,7 @@ func RegClusterByAsync(nameSpaceID string, clusterReq *ladybug.ClusterRegReq, c 
 	respStatus := resp.StatusCode
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		//errorInfo := fwmodel.ErrorInfo{}
+		//errorInfo := frameworkmodel.ErrorInfo{}
 		//json.NewDecoder(respBody).Decode(&errorInfo)
 		//fmt.Println("respStatus != 200 reason ", errorInfo)
 		//returnStatus.Message = errorInfo.Message
@@ -223,7 +223,7 @@ func RegClusterByAsync(nameSpaceID string, clusterReq *ladybug.ClusterRegReq, c 
 }
 
 // Cluster 삭제
-func DelCluster(nameSpaceID string, clusterName string) (*ladybug.StatusInfo, fwmodel.WebStatus) {
+func DelCluster(nameSpaceID string, clusterName string) (*ladybug.StatusInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters/{cluster}"
 
 	var paramMapper = make(map[string]string)
@@ -233,7 +233,7 @@ func DelCluster(nameSpaceID string, clusterName string) (*ladybug.StatusInfo, fw
 	url := util.MCKS + urlParam
 
 	if clusterName == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
@@ -241,7 +241,7 @@ func DelCluster(nameSpaceID string, clusterName string) (*ladybug.StatusInfo, fw
 	statusInfo := ladybug.StatusInfo{}
 	if err != nil {
 		fmt.Println("delCluster ", err)
-		return &statusInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &statusInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -252,9 +252,9 @@ func DelCluster(nameSpaceID string, clusterName string) (*ladybug.StatusInfo, fw
 
 	if respStatus != 200 && respStatus != 201 {
 		fmt.Println(respBody)
-		return &statusInfo, fwmodel.WebStatus{StatusCode: respStatus, Message: statusInfo.Message}
+		return &statusInfo, frameworkmodel.WebStatus{StatusCode: respStatus, Message: statusInfo.Message}
 	}
-	return &statusInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &statusInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Cluster 삭제 비동기 처리
@@ -268,7 +268,7 @@ func DelClusterByAsync(nameSpaceID string, clusterName string, c buffalo.Context
 	url := util.MCKS + urlParam
 
 	//if clusterName == "" {
-	//	return nil, fwmodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
+	//	return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
 	//}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
@@ -277,7 +277,7 @@ func DelClusterByAsync(nameSpaceID string, clusterName string, c buffalo.Context
 	//statusInfo := ladybug.StatusInfo{}
 	//if err != nil {
 	//	fmt.Println("delCluster ", err)
-	//	return &statusInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	//	return &statusInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	//}
 
 	//respBody := resp.Body
@@ -297,7 +297,7 @@ func DelClusterByAsync(nameSpaceID string, clusterName string, c buffalo.Context
 	respStatus := resp.StatusCode
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		//errorInfo := fwmodel.ErrorInfo{}
+		//errorInfo := frameworkmodel.ErrorInfo{}
 		//json.NewDecoder(respBody).Decode(&errorInfo)
 		//fmt.Println("respStatus != 200 reason ", errorInfo)
 		//returnStatus.Message = errorInfo.Message
@@ -370,7 +370,7 @@ func GetSimpleNodeCountMap(cluster ladybug.ClusterInfo) ([]ladybug.NodeSimpleInf
 ////////
 
 // Node 목록 조회
-func GetNodeList(nameSpaceID string, clusterName string) (ladybug.NodeList, fwmodel.WebStatus) {
+func GetNodeList(nameSpaceID string, clusterName string) (ladybug.NodeList, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters/{cluster}/nodes"
 
 	var paramMapper = make(map[string]string)
@@ -386,7 +386,7 @@ func GetNodeList(nameSpaceID string, clusterName string) (ladybug.NodeList, fwmo
 	nodeList := ladybug.NodeList{} // 이름은 List이나 1개의 객체임
 	if err != nil {
 		fmt.Println(err)
-		return nodeList, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nodeList, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -397,11 +397,11 @@ func GetNodeList(nameSpaceID string, clusterName string) (ladybug.NodeList, fwmo
 	log.Println(respBody)
 	// util.DisplayResponse(resp) // 수신내용 확인
 
-	return nodeList, fwmodel.WebStatus{StatusCode: respStatus}
+	return nodeList, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 특정 Cluster 조회
-func GetNodeData(nameSpaceID string, clusterName string, node string) (*ladybug.NodeInfo, fwmodel.WebStatus) {
+func GetNodeData(nameSpaceID string, clusterName string, node string) (*ladybug.NodeInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters/{cluster}/nodes/{node}"
 
 	var paramMapper = make(map[string]string)
@@ -419,7 +419,7 @@ func GetNodeData(nameSpaceID string, clusterName string, node string) (*ladybug.
 	nodeInfo := ladybug.NodeInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &nodeInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &nodeInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -429,11 +429,11 @@ func GetNodeData(nameSpaceID string, clusterName string, node string) (*ladybug.
 	json.NewDecoder(respBody).Decode(&nodeInfo)
 	fmt.Println(nodeInfo)
 
-	return &nodeInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &nodeInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Node 생성
-func RegNode(nameSpaceID string, clusterName string, nodeRegReq *ladybug.NodeRegReq) (*ladybug.NodeInfo, fwmodel.WebStatus) {
+func RegNode(nameSpaceID string, clusterName string, nodeRegReq *ladybug.NodeRegReq) (*ladybug.NodeInfo, frameworkmodel.WebStatus) {
 
 	var originalUrl = "/ns/{namespace}/clusters/{cluster}/nodes"
 
@@ -448,18 +448,18 @@ func RegNode(nameSpaceID string, clusterName string, nodeRegReq *ladybug.NodeReg
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnNodeInfo := ladybug.NodeInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnNodeInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnNodeInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -473,7 +473,7 @@ func RegNode(nameSpaceID string, clusterName string, nodeRegReq *ladybug.NodeReg
 }
 
 // Node 삭제
-func DelNode(nameSpaceID string, clusterName string, node string) (*ladybug.StatusInfo, fwmodel.WebStatus) {
+func DelNode(nameSpaceID string, clusterName string, node string) (*ladybug.StatusInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{namespace}/clusters/{cluster}/nodes/{node}"
 
 	var paramMapper = make(map[string]string)
@@ -484,23 +484,23 @@ func DelNode(nameSpaceID string, clusterName string, node string) (*ladybug.Stat
 	url := util.MCKS + urlParam
 
 	if clusterName == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
 	}
 	if node == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "node is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "node is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	statusInfo := ladybug.StatusInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &statusInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &statusInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -510,5 +510,5 @@ func DelNode(nameSpaceID string, clusterName string, node string) (*ladybug.Stat
 	json.NewDecoder(respBody).Decode(&statusInfo)
 	fmt.Println(statusInfo)
 
-	return &statusInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &statusInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }

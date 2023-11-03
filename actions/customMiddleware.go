@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	tbcommon "mc_web_console/frameworkmodel/tumblebug/common"
+	_ "mc_web_console/docs" //mc_web_console의 경우
 	"mc_web_console/handler"
 )
 
@@ -68,7 +68,8 @@ func SkipMiddlewareByRoutePath(next buffalo.Handler) buffalo.Handler {
 			log.Println("Flash().Add ~~~~~~ c.Redirect")
 			//return c.Redirect(302, "/signin/mngform/")
 			//return c.Redirect(302, "/auth/signin/mngform/")
-			return RedirectTool(c, "authNewFormPath")
+			// return RedirectTool(c,"authNewFormPath")
+			return RedirectTool(c, "authNewForm")
 		}
 
 		return SetCurrentUser(next)(c)
@@ -115,7 +116,7 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		// 	return c.Redirect(302, "/signin")
 		// }
 
-		// u := &models.User{}
+		// u := &models.MCUser{}
 		// tx := c.Value("tx").(*pop.Connection)
 		// err := tx.Find(u, uid)
 		// if err != nil {
@@ -125,7 +126,7 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		// }
 
 		if uid := c.Session().Get("current_user_id"); uid != nil {
-			// u := &models.User{}
+			// u := &models.MCUser{}
 			// tx := c.Value("tx").(*pop.Connection)
 			// err := tx.Find(u, uid)
 			// if err != nil {
@@ -140,6 +141,10 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 				// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
 				// c.Set("current_namespace", ns.NsName)
 				// c.Set("current_namespace_id", ns.ID)
+
+				c.Set("current_namespace", "")
+				c.Set("current_namespace_id", "")
+
 			} else {
 				current_namespace := c.Session().Get("current_namespace")
 				c.Set("current_namespace", current_namespace)
@@ -147,36 +152,20 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 
 			}
 
-			// middleware에서 사용자에게 할당된 namespace 목록 조회
-			namespaceList, respStatus := handler.AssignedUserNamespaceList(u.ID)
-			if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
-				c.Set("user_namespace_list", namespaceList)
-			} else {
-				returnNsList := []tbcommon.TbNsInfo{}
-				for _, ns := range namespaceList {
-					//for _, ns := range nsList {
-					returnNsList = append(returnNsList, tbcommon.TbNsInfo{ID: ns.ID, Name: ns.NsName})
-				}
-
-				c.Set("user_namespace_list", returnNsList)
-				//c.Session().Set("user_namespace_list", returnNsList)
-
+			//shared_ns_list := GetSharedNamespaceList(u.ID, tx)
+			sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
+			if err != nil {
+				log.Println("err  ", err)
 			}
 
-			//shared_ns_list := GetSharedNamespaceList(u.ID, tx)
-			// sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
-			// if err != nil {
-			// 	log.Println("err  ", err)
-			// }
+			//c.Session().Set("shared_ns_list", shared_ns_list)
 
-			// //c.Session().Set("shared_ns_list", shared_ns_list)
-
-			// c.Set("shared_ns_list", sharedNamespaceList)
+			c.Set("shared_ns_list", sharedNamespaceList)
 			c.Set("current_user", u)
 			c.Set("current_user_id", u.Email)
 			c.Set("current_user_level", u.UserLevel)
 			//c.Set("current_credential", u.DefaultCredential)
-			//log.Println("shared_ns_list length ", sharedNamespaceList)
+			log.Println("shared_ns_list length ", sharedNamespaceList)
 		}
 
 		// Menu Tree
@@ -189,7 +178,7 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		c.Set("menutree", menutree)
 
 		//log.Println("menutree length ", len(*menutree))
-		//log.Println("menutree ", menutree)
+		log.Println("menutree ", menutree)
 		//for _, item := range *menutree {
 		//	log.Println("menutree  ", item)
 		//}
@@ -227,7 +216,7 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 			}
 
 			c.Flash().Add("danger", "You must be authorized to see that page")
-			log.Println("Flash().Add ~~~~~~ c.Redirect")
+			log.Println("Authorize Flash().Add ~~~~~~ c.Redirect")
 			//return c.Redirect(302, "/auth/signin/mngform/")
 			return RedirectTool(c, "authNewFormPath")
 

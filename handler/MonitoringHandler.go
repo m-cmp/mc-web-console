@@ -13,8 +13,7 @@ import (
 	// "os"
 
 	// "mc_web_console/frameworkmodel/spider"
-
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/frameworkmodel/dragonfly"
 
 	// "mc_web_console/frameworkmodel/tumblebug"
@@ -28,7 +27,7 @@ import (
 
 // VM 에 모니터링 Agent 설치
 // /ns/{nsId}/monitoring/install/mcis/{mcisId}
-func RegBenchmarkAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgentReg *tbmcis.McisCmdReq) (*tbmcis.AgentInstallContentWrapper, fwmodel.WebStatus) {
+func RegBenchmarkAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgentReg *tbmcis.McisCmdReq) (*tbmcis.AgentInstallContentWrapper, frameworkmodel.WebStatus) {
 	fmt.Println("RegBenchmarkAgentInVm ************ : ")
 	var originalUrl = "/ns/{nsId}/monitoring/install/mcis/{mcisId}"
 
@@ -47,15 +46,15 @@ func RegBenchmarkAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgentR
 	vmMonitoringAgentInfo := tbmcis.AgentInstallContentWrapper{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmMonitoringAgentInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmMonitoringAgentInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -68,7 +67,7 @@ func RegBenchmarkAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgentR
 	return &vmMonitoringAgentInfo, returnStatus
 }
 
-func RegMonitoringAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgentReg *dragonfly.VmMonitoringInstallReg) (*fwmodel.WebStatus, fwmodel.WebStatus) {
+func RegMonitoringAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgentReg *dragonfly.VmMonitoringInstallReg) (*frameworkmodel.WebStatus, frameworkmodel.WebStatus) {
 	fmt.Println("RegMonitoringAgentInVm ************ : ")
 	//var originalUrl = "/agent/install"
 	var originalUrl = "/agent"
@@ -107,30 +106,30 @@ func RegMonitoringAgentInVm(nameSpaceID string, mcisID string, vmMonitoringAgent
 	pbytes, _ := json.Marshal(vmMonitoringAgentReg)
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
-	webStatus := fwmodel.WebStatus{}
+	webStatus := frameworkmodel.WebStatus{}
 	if err != nil {
 		fmt.Println(err)
-		return &webStatus, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &webStatus, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := fwmodel.ResultInfo{}
+	resultInfo := frameworkmodel.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return &fwmodel.WebStatus{}, fwmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return &frameworkmodel.WebStatus{}, frameworkmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return &webStatus, fwmodel.WebStatus{StatusCode: respStatus}
+	return &webStatus, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // TB 호출을 통한 Get Monitoring Data
-func GetMcisMonitoringDurationInfo(nameSpaceID string, mcisID string, metric string) (*tbmcis.MonResultSimpleResponse, fwmodel.WebStatus) {
+func GetMcisMonitoringDurationInfo(nameSpaceID string, mcisID string, metric string) (*tbmcis.MonResultSimpleResponse, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/monitoring/mcis/{mcisId}/metric/{metric}"
 
 	var paramMapper = make(map[string]string)
@@ -148,7 +147,7 @@ func GetMcisMonitoringDurationInfo(nameSpaceID string, mcisID string, metric str
 	vmMonitoringResult := tbmcis.MonResultSimpleResponse{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmMonitoringResult, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmMonitoringResult, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -157,20 +156,20 @@ func GetMcisMonitoringDurationInfo(nameSpaceID string, mcisID string, metric str
 	if respStatus != 200 && respStatus != 201 {
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return nil, fwmodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return nil, frameworkmodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&vmMonitoringResult)
 	fmt.Println(vmMonitoringResult)
 
-	return &vmMonitoringResult, fwmodel.WebStatus{StatusCode: respStatus}
+	return &vmMonitoringResult, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // VM monitoring
 // Get vm monitoring info
 // 멀티 클라우드 인프라 VM 모니터링 정보 조회
-func GetVmMonitoring(vmMonitoring *dragonfly.VmMonitoringReq) (map[string]interface{}, fwmodel.WebStatus) {
-	//func GetVmMonitoring(vmMonitoring *dragonfly.VmMonitoring) (*dragonfly.VmMonitoringInfo, fwmodel.WebStatus) {
+func GetVmMonitoring(vmMonitoring *dragonfly.VmMonitoringReq) (map[string]interface{}, frameworkmodel.WebStatus) {
+	//func GetVmMonitoring(vmMonitoring *dragonfly.VmMonitoring) (*dragonfly.VmMonitoringInfo, frameworkmodel.WebStatus) {
 	nameSpaceID := vmMonitoring.NameSpaceID
 	mcisID := vmMonitoring.McisID
 	vmID := vmMonitoring.VmID
@@ -205,7 +204,7 @@ func GetVmMonitoring(vmMonitoring *dragonfly.VmMonitoringReq) (map[string]interf
 	vmMonitoringInfo := make(map[string]interface{})
 	if err != nil {
 		fmt.Println(err)
-		return vmMonitoringInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -241,14 +240,14 @@ func GetVmMonitoring(vmMonitoring *dragonfly.VmMonitoringReq) (map[string]interf
 	//json.NewDecoder(respBody).Decode(&vmMonitoringInfo)
 	//fmt.Println(vmMonitoringInfo)
 
-	//return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: respStatus}
-	return vmMonitoringInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	//return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
+	return vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 멀티 클라우드 인프라 MCIS 온디맨드 모니터링 정보 조회
 // Get MCIS on-demand monitoring metric info
 // TODO : 현재 DF의 function 정의가 잘못되어 있음. mcis 모니터링인데 vm과 vm ip를 넣어서 보냄( vm 모티너링과 param이 동일함.) 수정요청할 것
-func GetMcisOnDemandMonitoringMetricInfo(mcisVmMonitoring *dragonfly.McisMonitoringOnDemandInfoReq) (*dragonfly.McisMonitoringOnDemandInfo, fwmodel.WebStatus) {
+func GetMcisOnDemandMonitoringMetricInfo(mcisVmMonitoring *dragonfly.McisMonitoringOnDemandInfoReq) (*dragonfly.McisMonitoringOnDemandInfo, frameworkmodel.WebStatus) {
 
 	var originalUrl = "/ns/:ns_id/mcis/:mcis_id/mcis_metric/:metric_name/mcis-monitoring-info"
 	//{{ip}}:{{port}}/dragonfly/ns/:ns_id/mcis/:mcis_id/vm/:vm_id/agent_ip/:agent_ip/mcis_metric/:metric_name/mcis-monitoring-info
@@ -266,7 +265,7 @@ func GetMcisOnDemandMonitoringMetricInfo(mcisVmMonitoring *dragonfly.McisMonitor
 	mcisMonitoringInfo := dragonfly.McisMonitoringOnDemandInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &mcisMonitoringInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &mcisMonitoringInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -276,12 +275,12 @@ func GetMcisOnDemandMonitoringMetricInfo(mcisVmMonitoring *dragonfly.McisMonitor
 	json.NewDecoder(respBody).Decode(&mcisMonitoringInfo)
 	fmt.Println(mcisMonitoringInfo)
 
-	return &mcisMonitoringInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &mcisMonitoringInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 멀티 클라우드 인프라 VM 온디맨드 모니터링 정보 조회
 // Get vm on-demand monitoring metric info  GetMcisVmOnDemandMonitoringMetricInfo
-func GetMcisVmOnDemandMonitoringMetricInfo(vmMonitoring *dragonfly.VmMonitoringReq) (*dragonfly.VmMonitoringOnDemandInfo, fwmodel.WebStatus) {
+func GetMcisVmOnDemandMonitoringMetricInfo(vmMonitoring *dragonfly.VmMonitoringReq) (*dragonfly.VmMonitoringOnDemandInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/:ns_id/mcis/:mcis_id/vm/:vm_id/agent_ip/:agent_ip/metric/:metric_name/ondemand-monitoring-info"
 	// {{ip}}:{{port}}/dragonfly/ns/:ns_id/mcis/:mcis_id/vm/:vm_id/agent_ip/:agent_ip/metric/:metric_name/ondemand-monitoring-info
 	var paramMapper = make(map[string]string)
@@ -300,7 +299,7 @@ func GetMcisVmOnDemandMonitoringMetricInfo(vmMonitoring *dragonfly.VmMonitoringR
 	vmMonitoringInfo := dragonfly.VmMonitoringOnDemandInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -310,10 +309,10 @@ func GetMcisVmOnDemandMonitoringMetricInfo(vmMonitoring *dragonfly.VmMonitoringR
 	json.NewDecoder(respBody).Decode(&vmMonitoringInfo)
 	fmt.Println(vmMonitoringInfo)
 
-	return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func GetMcisVmOnDemandNetworkPacketInfo(vmMonitoring *dragonfly.VmMonitoringReq) (*dragonfly.VmMonitoringOnDemandInfo, fwmodel.WebStatus) {
+func GetMcisVmOnDemandNetworkPacketInfo(vmMonitoring *dragonfly.VmMonitoringReq) (*dragonfly.VmMonitoringOnDemandInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/:ns_id/mcis/:mcis_id/vm/:vm_id/watchtime/:watch_time/mcis-networkpacket-info"
 
 	var paramMapper = make(map[string]string)
@@ -332,7 +331,7 @@ func GetMcisVmOnDemandNetworkPacketInfo(vmMonitoring *dragonfly.VmMonitoringReq)
 	vmMonitoringInfo := dragonfly.VmMonitoringOnDemandInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -342,10 +341,10 @@ func GetMcisVmOnDemandNetworkPacketInfo(vmMonitoring *dragonfly.VmMonitoringReq)
 	json.NewDecoder(respBody).Decode(&vmMonitoringInfo)
 	fmt.Println(vmMonitoringInfo)
 
-	return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func GetMcisVmOnDemandProcessUsageInfo(vmMonitoring *dragonfly.VmMonitoringReq) (*dragonfly.VmMonitoringOnDemandInfo, fwmodel.WebStatus) {
+func GetMcisVmOnDemandProcessUsageInfo(vmMonitoring *dragonfly.VmMonitoringReq) (*dragonfly.VmMonitoringOnDemandInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/agent_ip/:agent_ip/mcis-process-info"
 
 	var paramMapper = make(map[string]string)
@@ -360,7 +359,7 @@ func GetMcisVmOnDemandProcessUsageInfo(vmMonitoring *dragonfly.VmMonitoringReq) 
 	vmMonitoringInfo := dragonfly.VmMonitoringOnDemandInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -370,12 +369,12 @@ func GetMcisVmOnDemandProcessUsageInfo(vmMonitoring *dragonfly.VmMonitoringReq) 
 	json.NewDecoder(respBody).Decode(&vmMonitoringInfo)
 	fmt.Println(vmMonitoringInfo)
 
-	return &vmMonitoringInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &vmMonitoringInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 모니터링 정책 조회
 // Get monitoring config
-func GetMonitoringConfig() (*dragonfly.MonitoringConfig, fwmodel.WebStatus) {
+func GetMonitoringConfig() (*dragonfly.MonitoringConfig, frameworkmodel.WebStatus) {
 	var originalUrl = "/config"
 	//{{ip}}:{{port}}/dragonfly/config
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -389,7 +388,7 @@ func GetMonitoringConfig() (*dragonfly.MonitoringConfig, fwmodel.WebStatus) {
 
 	if err != nil {
 		log.Println(err)
-		return &monitoringConfig, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &monitoringConfig, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 	respBody := resp.Body
@@ -398,11 +397,11 @@ func GetMonitoringConfig() (*dragonfly.MonitoringConfig, fwmodel.WebStatus) {
 	json.NewDecoder(respBody).Decode(&monitoringConfig)
 	log.Println(monitoringConfig)
 
-	return &monitoringConfig, fwmodel.WebStatus{StatusCode: respStatus}
+	return &monitoringConfig, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 모니터링 정책 설정
-func PutMonigoringConfig(monitoringConfigReg *dragonfly.MonitoringConfigReg) (*dragonfly.MonitoringConfig, fwmodel.WebStatus) {
+func PutMonigoringConfig(monitoringConfigReg *dragonfly.MonitoringConfigReg) (*dragonfly.MonitoringConfig, frameworkmodel.WebStatus) {
 	var originalUrl = "/config"
 	//{{ip}}:{{port}}/dragonfly/config
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -431,7 +430,7 @@ func PutMonigoringConfig(monitoringConfigReg *dragonfly.MonitoringConfigReg) (*d
 		log.Println("-----1111")
 		fmt.Println(err.Error())
 		log.Println("-----222")
-		return &resultMonitoringConfig, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultMonitoringConfig, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -439,21 +438,21 @@ func PutMonigoringConfig(monitoringConfigReg *dragonfly.MonitoringConfigReg) (*d
 	log.Println("respStatusCode = ", resp.StatusCode)
 	log.Println("respStatus = ", resp.Status)
 	if respStatus != 200 && respStatus != 201 {
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println(errorInfo)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: errorInfo.Message}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: errorInfo.Message}
 	}
 
 	// 응답에 생성한 객체값이 옴
 	json.NewDecoder(respBody).Decode(&resultMonitoringConfig)
 	fmt.Println(resultMonitoringConfig)
 	// return respBody, respStatusCode
-	return &resultMonitoringConfig, fwmodel.WebStatus{StatusCode: respStatus}
+	return &resultMonitoringConfig, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 모니터링 정책 초기화
-func ResetMonigoringConfig(monitoringConfig *dragonfly.MonitoringConfig) (*dragonfly.MonitoringConfig, fwmodel.WebStatus) {
+func ResetMonigoringConfig(monitoringConfig *dragonfly.MonitoringConfig) (*dragonfly.MonitoringConfig, frameworkmodel.WebStatus) {
 	var originalUrl = "/config/reset"
 	//{{ip}}:{{port}}/dragonfly/config/reset
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -469,7 +468,7 @@ func ResetMonigoringConfig(monitoringConfig *dragonfly.MonitoringConfig) (*drago
 		log.Println("-----1111")
 		fmt.Println(err.Error())
 		log.Println("-----222")
-		return &resultMonitoringConfig, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultMonitoringConfig, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -477,22 +476,22 @@ func ResetMonigoringConfig(monitoringConfig *dragonfly.MonitoringConfig) (*drago
 	log.Println("respStatusCode = ", resp.StatusCode)
 	log.Println("respStatus = ", resp.Status)
 	if respStatus != 200 && respStatus != 201 {
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println(errorInfo)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: errorInfo.Message}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: errorInfo.Message}
 	}
 
 	// 응답에 생성한 객체값이 옴
 	json.NewDecoder(respBody).Decode(&resultMonitoringConfig)
 	fmt.Println(resultMonitoringConfig)
 	// return respBody, respStatusCode
-	return &resultMonitoringConfig, fwmodel.WebStatus{StatusCode: respStatus}
+	return &resultMonitoringConfig, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Install agent to vm
 // 모니터링 에이전트 설치 : 위에 RegMonitoringAgentInVm 와 뭐가 다른거지?
-func InstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.VmMonitoringInstallReg) (*dragonfly.VmMonitoringInstallReg, fwmodel.WebStatus) {
+func InstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.VmMonitoringInstallReg) (*dragonfly.VmMonitoringInstallReg, frameworkmodel.WebStatus) {
 	//var originalUrl = "/agent/install"
 	var originalUrl = "/agent/install"
 	//{{ip}}:{{port}}/dragonfly/agent/install
@@ -505,18 +504,18 @@ func InstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.VmMo
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnVmMonitoringInstallReg := dragonfly.VmMonitoringInstallReg{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnVmMonitoringInstallReg, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnVmMonitoringInstallReg, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -531,7 +530,7 @@ func InstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.VmMo
 
 // 모니터링 에이전트 제거
 // Uninstall agent to vm
-func UnInstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.VmMonitoringInstallReg) (*dragonfly.VmMonitoringInstallReg, fwmodel.WebStatus) {
+func UnInstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.VmMonitoringInstallReg) (*dragonfly.VmMonitoringInstallReg, frameworkmodel.WebStatus) {
 	//var originalUrl = "/agent/uninstall"
 	var originalUrl = "/agent"
 	//{{ip}}:{{port}}/dragonfly/agent/uninstall
@@ -544,18 +543,18 @@ func UnInstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.Vm
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnVmMonitoringInstallReg := dragonfly.VmMonitoringInstallReg{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnVmMonitoringInstallReg, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnVmMonitoringInstallReg, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -570,7 +569,7 @@ func UnInstallAgentToVm(nameSpaceID string, vmMonitoringInstallReg *dragonfly.Vm
 
 // 알람 목록 조회
 // List monitoring alert
-func GetMonitoringAlertList() ([]dragonfly.VmMonitoringAlertInfo, fwmodel.WebStatus) {
+func GetMonitoringAlertList() ([]dragonfly.VmMonitoringAlertInfo, frameworkmodel.WebStatus) {
 	fmt.Print("#########GetMonitoringAlertList############")
 	var originalUrl = "/alert/tasks"
 	// {{ip}}:{{port}}/dragonfly/alert/tasks
@@ -584,7 +583,7 @@ func GetMonitoringAlertList() ([]dragonfly.VmMonitoringAlertInfo, fwmodel.WebSta
 	vmMonitoringAlertInfoList := []dragonfly.VmMonitoringAlertInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return vmMonitoringAlertInfoList, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return vmMonitoringAlertInfoList, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -599,12 +598,12 @@ func GetMonitoringAlertList() ([]dragonfly.VmMonitoringAlertInfo, fwmodel.WebSta
 	// json.NewDecoder(respBody).Decode(&vmMonitoringAlertInfoList)
 	// fmt.Println(vmMonitoringAlertInfoList)
 
-	return vmMonitoringAlertInfoList, fwmodel.WebStatus{StatusCode: respStatus}
+	return vmMonitoringAlertInfoList, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 알람  조회
 // monitoring alert
-func GetMonitoringAlertData(taskName string) (dragonfly.VmMonitoringAlertInfo, fwmodel.WebStatus) {
+func GetMonitoringAlertData(taskName string) (dragonfly.VmMonitoringAlertInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/alert/task/:task_name"
 	// {{ip}}:{{port}}/dragonfly/alert/task/:task_name
 	var paramMapper = make(map[string]string)
@@ -618,7 +617,7 @@ func GetMonitoringAlertData(taskName string) (dragonfly.VmMonitoringAlertInfo, f
 	vmMonitoringAlertInfo := dragonfly.VmMonitoringAlertInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return vmMonitoringAlertInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return vmMonitoringAlertInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -626,12 +625,12 @@ func GetMonitoringAlertData(taskName string) (dragonfly.VmMonitoringAlertInfo, f
 
 	json.NewDecoder(respBody).Decode(&vmMonitoringAlertInfo)
 
-	return vmMonitoringAlertInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return vmMonitoringAlertInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 알람 생성
 // Create Monitoring Alert
-func RegMonitoringAlert(vmMonitoringAlertInfo *dragonfly.VmMonitoringAlertInfo) (*dragonfly.VmMonitoringAlertInfo, fwmodel.WebStatus) {
+func RegMonitoringAlert(vmMonitoringAlertInfo *dragonfly.VmMonitoringAlertInfo) (*dragonfly.VmMonitoringAlertInfo, frameworkmodel.WebStatus) {
 	fmt.Println("RegMonitoringAlert ************ : ")
 	var originalUrl = "/alert/task"
 	// {{ip}}:{{port}}/dragonfly/alert/task
@@ -655,15 +654,15 @@ func RegMonitoringAlert(vmMonitoringAlertInfo *dragonfly.VmMonitoringAlertInfo) 
 	resultVmMonitoringAlertInfo := dragonfly.VmMonitoringAlertInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultVmMonitoringAlertInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultVmMonitoringAlertInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -678,7 +677,7 @@ func RegMonitoringAlert(vmMonitoringAlertInfo *dragonfly.VmMonitoringAlertInfo) 
 
 // 알람 수정
 // Update Monitoring Alert
-func PutMonitoringAlert(taskName string, vmMonitoringAlertInfo *dragonfly.VmMonitoringAlertInfo) (*dragonfly.VmMonitoringAlertInfo, fwmodel.WebStatus) {
+func PutMonitoringAlert(taskName string, vmMonitoringAlertInfo *dragonfly.VmMonitoringAlertInfo) (*dragonfly.VmMonitoringAlertInfo, frameworkmodel.WebStatus) {
 	fmt.Println("PutMonitoringAlert ************ : ")
 	var originalUrl = "/alert/task"
 	// {{ip}}:{{port}}/dragonfly/alert/task
@@ -694,15 +693,15 @@ func PutMonitoringAlert(taskName string, vmMonitoringAlertInfo *dragonfly.VmMoni
 	resultVmMonitoringAlertInfo := dragonfly.VmMonitoringAlertInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultVmMonitoringAlertInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultVmMonitoringAlertInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -717,7 +716,7 @@ func PutMonitoringAlert(taskName string, vmMonitoringAlertInfo *dragonfly.VmMoni
 
 // 알람 제거
 // Delete Monitoring Alert
-func DelMonitoringAlert(taskName string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelMonitoringAlert(taskName string) (io.ReadCloser, frameworkmodel.WebStatus) {
 	var originalUrl = "/alert/task/:task_name"
 	// {{ip}}:{{port}}/dragonfly/alert/task/:task_name
 	var paramMapper = make(map[string]string)
@@ -728,26 +727,26 @@ func DelMonitoringAlert(taskName string) (io.ReadCloser, fwmodel.WebStatus) {
 	// url := util.DRAGONFLY + "/alert/task/" + taskName
 
 	if taskName == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "TaskName is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "TaskName is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 알람 이벤트 핸들러 조회
 // Get monitoring alert event-handler
 // type : 이벤트 핸들러 유형 ( "slack" | "smtp" )
 // name : slackHandler(EventHandlerName)
-func GetMonitoringAlertEventHandlerData(eventHandlerType string, eventName string) (dragonfly.VmMonitoringAlertInfo, fwmodel.WebStatus) {
+func GetMonitoringAlertEventHandlerData(eventHandlerType string, eventName string) (dragonfly.VmMonitoringAlertInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/alert/eventhandler/type/:type/event/:name"
 	//{{ip}}:{{port}}/dragonfly/alert/eventhandler/type/:type/event/:name
 	var paramMapper = make(map[string]string)
@@ -763,7 +762,7 @@ func GetMonitoringAlertEventHandlerData(eventHandlerType string, eventName strin
 	vmMonitoringAlertInfo := dragonfly.VmMonitoringAlertInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return vmMonitoringAlertInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return vmMonitoringAlertInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -771,12 +770,12 @@ func GetMonitoringAlertEventHandlerData(eventHandlerType string, eventName strin
 
 	json.NewDecoder(respBody).Decode(&vmMonitoringAlertInfo)
 
-	return vmMonitoringAlertInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return vmMonitoringAlertInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 알람 이벤트 핸들러 목록 조회(slack, smtp...)
 // List monitoring alert event handler
-func GetMonitoringAlertEventHandlerList() ([]dragonfly.VmMonitoringAlertEventHandlerInfo, fwmodel.WebStatus) {
+func GetMonitoringAlertEventHandlerList() ([]dragonfly.VmMonitoringAlertEventHandlerInfo, frameworkmodel.WebStatus) {
 	fmt.Print("#########GetMonitoringAlertEventHandlerList############")
 	var originalUrl = "/alert/eventhandlers"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -787,7 +786,7 @@ func GetMonitoringAlertEventHandlerList() ([]dragonfly.VmMonitoringAlertEventHan
 	vmMonitoringAlertEventHandlerInfoList := []dragonfly.VmMonitoringAlertEventHandlerInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return vmMonitoringAlertEventHandlerInfoList, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return vmMonitoringAlertEventHandlerInfoList, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -795,12 +794,12 @@ func GetMonitoringAlertEventHandlerList() ([]dragonfly.VmMonitoringAlertEventHan
 
 	json.NewDecoder(respBody).Decode(&vmMonitoringAlertEventHandlerInfoList)
 
-	return vmMonitoringAlertEventHandlerInfoList, fwmodel.WebStatus{StatusCode: respStatus}
+	return vmMonitoringAlertEventHandlerInfoList, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 알람 이벤트 핸들러 생성
 // Create monitoring alert event-handler
-func RegMonitoringAlertEventHandler(vmMonitoringAlertEventHandlerInfoReg *dragonfly.VmMonitoringAlertEventHandlerInfoReg) (*dragonfly.VmMonitoringAlertEventHandlerInfoReg, fwmodel.WebStatus) {
+func RegMonitoringAlertEventHandler(vmMonitoringAlertEventHandlerInfoReg *dragonfly.VmMonitoringAlertEventHandlerInfoReg) (*dragonfly.VmMonitoringAlertEventHandlerInfoReg, frameworkmodel.WebStatus) {
 	fmt.Println("RegMonitoringAlertEventHandler ************ : ")
 	var originalUrl = "/alert/eventhandler"
 	// {{ip}}:{{port}}/dragonfly/alert/eventhandler
@@ -824,15 +823,15 @@ func RegMonitoringAlertEventHandler(vmMonitoringAlertEventHandlerInfoReg *dragon
 	resultVmMonitoringAlertEventHandlerInfoReg := dragonfly.VmMonitoringAlertEventHandlerInfoReg{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultVmMonitoringAlertEventHandlerInfoReg, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultVmMonitoringAlertEventHandlerInfoReg, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -846,7 +845,7 @@ func RegMonitoringAlertEventHandler(vmMonitoringAlertEventHandlerInfoReg *dragon
 }
 
 // 알람 이벤트 핸들러 수정( handlerType=slack)
-func PutMonitoringAlertEventHandlerSlack(eventHandlerType string, eventName string, vmMonitoringAlertEventHandlerSlackInfo *dragonfly.EventHandlerOptionSlack) (*dragonfly.VmMonitoringAlertEventHandlerSlackInfo, fwmodel.WebStatus) {
+func PutMonitoringAlertEventHandlerSlack(eventHandlerType string, eventName string, vmMonitoringAlertEventHandlerSlackInfo *dragonfly.EventHandlerOptionSlack) (*dragonfly.VmMonitoringAlertEventHandlerSlackInfo, frameworkmodel.WebStatus) {
 	fmt.Println("PutMonitoringAlertEventHandler ************ : ")
 	var originalUrl = "/alert/eventhandler/type/:type/event/:name"
 	// {{ip}}:{{port}}/dragonfly/alert/eventhandler/type/:type/event/:name
@@ -865,15 +864,15 @@ func PutMonitoringAlertEventHandlerSlack(eventHandlerType string, eventName stri
 	resultVmMonitoringAlertEventHandlerInfo := dragonfly.VmMonitoringAlertEventHandlerSlackInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultVmMonitoringAlertEventHandlerInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultVmMonitoringAlertEventHandlerInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -887,7 +886,7 @@ func PutMonitoringAlertEventHandlerSlack(eventHandlerType string, eventName stri
 }
 
 // 알람 이벤트 핸들러 수정( handlerType=smtp)
-func PutMonitoringAlertEventHandlerSmtp(eventHandlerType string, eventName string, vmMonitoringAlertEventHandlerInfo *dragonfly.EventHandlerOptionSmtp) (*dragonfly.VmMonitoringAlertEventHandlerSmtpInfo, fwmodel.WebStatus) {
+func PutMonitoringAlertEventHandlerSmtp(eventHandlerType string, eventName string, vmMonitoringAlertEventHandlerInfo *dragonfly.EventHandlerOptionSmtp) (*dragonfly.VmMonitoringAlertEventHandlerSmtpInfo, frameworkmodel.WebStatus) {
 	fmt.Println("PutMonitoringAlertEventHandlerSmtp ************ : ")
 	var originalUrl = "/alert/eventhandler/type/:type/event/:name"
 	// {{ip}}:{{port}}/dragonfly/alert/eventhandler/type/:type/event/:name
@@ -907,15 +906,15 @@ func PutMonitoringAlertEventHandlerSmtp(eventHandlerType string, eventName strin
 	resultVmMonitoringAlertEventHandlerInfo := dragonfly.VmMonitoringAlertEventHandlerSmtpInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultVmMonitoringAlertEventHandlerInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultVmMonitoringAlertEventHandlerInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -930,7 +929,7 @@ func PutMonitoringAlertEventHandlerSmtp(eventHandlerType string, eventName strin
 
 // 알람 제거
 // Delete monitoring alert event-handler
-func DelMonitoringAlertEventHandler(eventHandlerType string, eventName string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelMonitoringAlertEventHandler(eventHandlerType string, eventName string) (io.ReadCloser, frameworkmodel.WebStatus) {
 	var originalUrl = "/alert/eventhandler/type/:type/event/:name"
 	// {{ip}}:{{port}}/dragonfly/alert/eventhandler/type/:type/event/:name
 	var paramMapper = make(map[string]string)
@@ -942,27 +941,27 @@ func DelMonitoringAlertEventHandler(eventHandlerType string, eventName string) (
 	// url := util.DRAGONFLY + "/alert/eventhandler/type/" + eventHandlerType + "/event/" + eventName
 
 	if eventHandlerType == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "eventHandlerType is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "eventHandlerType is required"}
 	}
 	if eventName == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "eventName is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "eventName is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // 알람 로그 정보 목록 조회
 // List monitoring alert event
-func GetMonitoringAlertLogList(taskName string, logLevel string) ([]dragonfly.VmMonitoringAlertLog, fwmodel.WebStatus) {
+func GetMonitoringAlertLogList(taskName string, logLevel string) ([]dragonfly.VmMonitoringAlertLog, frameworkmodel.WebStatus) {
 	if logLevel == "" {
 		logLevel = "warning"
 	}
@@ -980,7 +979,7 @@ func GetMonitoringAlertLogList(taskName string, logLevel string) ([]dragonfly.Vm
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -992,5 +991,5 @@ func GetMonitoringAlertLogList(taskName string, logLevel string) ([]dragonfly.Vm
 	// fmt.Println("check")
 	// fmt.Println(vmMonitoringAlertLogList)
 
-	return vmMonitoringAlertLogList, fwmodel.WebStatus{StatusCode: respStatus}
+	return vmMonitoringAlertLogList, frameworkmodel.WebStatus{StatusCode: respStatus}
 }

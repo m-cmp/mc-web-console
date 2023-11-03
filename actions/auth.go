@@ -13,12 +13,9 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 
+	//"mc_web_console/handler"
 	"mc_web_console/models"
 )
-
-// func init() {
-// 	gob.Register(map[int64]models.Namespace{})
-// }
 
 // AuthLanding shows a landing page to login
 // AuthLandingForm는 렌딩 화면을 렌더링합니다.
@@ -29,11 +26,14 @@ import (
 //	@Produce		html
 //	@Success		200	{html}	html	"auth/landing.html"
 //	@Router			/auth/landing/mngform/ [get]
+func (a actions) AuthLandingForm(c buffalo.Context) error {
+	return c.Render(200, r.HTML("auth/landing.html"))
+}
 func (a actions) AuthLandingMngForm(c buffalo.Context) error {
 	return c.Render(200, r.HTML("auth/landing.html"))
 }
 
-// AuthNewFormMng 새로운 로그인 화면을 렌더링합니다.
+// AuthNewFormdms 새로운 로그인 화면을 렌더링합니다.
 // AuthNew loads the signin page
 //
 //	@Summary		로그인 화면 렌더링
@@ -43,7 +43,7 @@ func (a actions) AuthLandingMngForm(c buffalo.Context) error {
 //	@Success		200	{html}	html	"auth/new.html"
 //	@Router			/auth/signin/mngform/ [GET]
 func (a actions) AuthNewForm(c buffalo.Context) error {
-	log.Println("AuthNewForm start")
+	log.Println("AuthNewForm startt")
 	c.Set("user", models.MCUser{})
 	log.Println("AuthNewForm 'models.MCUser{}'")
 
@@ -51,14 +51,14 @@ func (a actions) AuthNewForm(c buffalo.Context) error {
 	return c.Render(200, r.HTML("auth/new.html", "application_login.html"))
 }
 
-// func (a actions) AuthNewMng(c buffalo.Context) error {
-// 	log.Println("AuthNewMng start")
-// 	c.Set("user", models.MCUser{})
-// 	log.Println("AuthNewMng 'models.MCUser{}'")
+func (a actions) AuthNewMngForm(c buffalo.Context) error {
+	log.Println("AuthNewForm startt")
+	c.Set("user", models.MCUser{})
+	log.Println("AuthNewForm 'models.MCUser{}'")
 
-// 	//r.Options.HTMLLayout = "application_login.plush.html"
-// 	return c.Render(200, r.HTML("auth/new.html", "application_login.html"))
-// }
+	//r.Options.HTMLLayout = "application_login.plush.html"
+	return c.Render(200, r.HTML("auth/new.html", "application_login.html"))
+}
 
 // AuthCreate attempts to log the user in with an existing account.
 //
@@ -86,7 +86,7 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 
 	// find a user with the email
 	err := tx.Where("email = ?", strings.ToLower(strings.TrimSpace(u.Email))).First(u)
-	log.Print("abcde")
+
 	// helper function to handle bad attempts
 	bad := func() error {
 		verrs := validate.NewErrors()
@@ -101,7 +101,7 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 			"status": http.StatusUnauthorized,
 		}))
 	}
-	log.Print("fgf")
+
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			// couldn't find an user with the supplied email address.
@@ -109,22 +109,38 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 		}
 		return errors.WithStack(err)
 	}
-	log.Print("CompareHashAndPassword")
+
 	// confirm that the given password matches the hashed password from the db
 	err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(u.Password))
 	if err != nil {
 		return bad()
 	}
 	//_, ns := handler.GetNamespaceById(u.DefaultNamespace, tx)
-	// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
+
 	c.Session().Session.Options.MaxAge = 20
 	c.Session().Set("current_user_id", u.ID)
-	c.Session().Set("current_namespace_id", "") // 로그인 시에는 없음.
-	c.Session().Set("current_namespace", "")
 
-	// c.Session().Set("current_namespace_id", ns.ID)
-	// c.Session().Set("current_namespace", ns.NsName)
-	// c.Session().Set("current_credential", u.DefaultCredential)
+	c.Session().Set("current_namespace_id", "")
+	c.Session().Set("current_namespace", "")
+	c.Session().Set("current_credential", "")
+	// if u.DefaultNamespace != "" {
+	// 	ns, err := handler.GetNamespaceById(u.DefaultNamespace)
+	// 	if err != nil {
+	// 		c.Session().Set("current_namespace_id", "")
+	// 		c.Session().Set("current_namespace", "")
+	// 	} else {
+	// 		c.Session().Set("current_namespace_id", ns.ID)
+	// 		c.Session().Set("current_namespace", ns.NsName)
+	// 	}
+
+	// } else {
+	// 	c.Session().Set("current_namespace_id", "")
+	// 	c.Session().Set("current_namespace", "")
+	// }
+	// log.Println("login step. ")
+	// if u.DefaultCredential != "" {
+	// 	c.Session().Set("current_credential", u.DefaultCredential)
+	// }
 	c.Flash().Add("success", "Welcome Back to Buffalo!")
 
 	// redirectURL := "/"

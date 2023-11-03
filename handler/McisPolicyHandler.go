@@ -11,7 +11,7 @@ import (
 
 	// "mc_web_console/frameworkmodel/spider"
 
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	tbcommon "mc_web_console/frameworkmodel/tumblebug/common"
 
 	// tbmcir "mc_web_console/frameworkmodel/tumblebug/mcir"
@@ -21,7 +21,7 @@ import (
 )
 
 // List all MCIS Policys
-func GetMcisPolicyList(nameSpaceID string) ([]tbmcis.RestGetAllMcisPolicyResponse, fwmodel.WebStatus) {
+func GetMcisPolicyList(nameSpaceID string) ([]tbmcis.RestGetAllMcisPolicyResponse, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/policy/mcis"
 
 	var paramMapper = make(map[string]string)
@@ -36,7 +36,7 @@ func GetMcisPolicyList(nameSpaceID string) ([]tbmcis.RestGetAllMcisPolicyRespons
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -48,11 +48,11 @@ func GetMcisPolicyList(nameSpaceID string) ([]tbmcis.RestGetAllMcisPolicyRespons
 	log.Println(respBody)
 	util.DisplayResponse(resp) // 수신내용 확인
 
-	return mcisPolicyList["mcisPolicy"], fwmodel.WebStatus{StatusCode: respStatus}
+	return mcisPolicyList["mcisPolicy"], frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Get McisPolish Data
-func GetMcisPolicyInfoData(nameSpaceID string, mcisID string) (*tbmcis.RestGetAllMcisPolicyResponse, fwmodel.WebStatus) {
+func GetMcisPolicyInfoData(nameSpaceID string, mcisID string) (*tbmcis.RestGetAllMcisPolicyResponse, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/policy/mcis/{mcisId}"
 
 	var paramMapper = make(map[string]string)
@@ -69,7 +69,7 @@ func GetMcisPolicyInfoData(nameSpaceID string, mcisID string) (*tbmcis.RestGetAl
 	mcisPolicyInfo := tbmcis.RestGetAllMcisPolicyResponse{}
 	if err != nil {
 		fmt.Println(err)
-		return &mcisPolicyInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &mcisPolicyInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -79,10 +79,10 @@ func GetMcisPolicyInfoData(nameSpaceID string, mcisID string) (*tbmcis.RestGetAl
 	json.NewDecoder(respBody).Decode(&mcisPolicyInfo)
 	fmt.Println(mcisPolicyInfo)
 
-	return &mcisPolicyInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return &mcisPolicyInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func RegMcisPolicy(nameSpaceID string, mcisID string, mcisPolicyInfo *tbmcis.McisPolicyInfo) (*tbmcis.McisPolicyInfo, fwmodel.WebStatus) {
+func RegMcisPolicy(nameSpaceID string, mcisID string, mcisPolicyInfo *tbmcis.McisPolicyInfo) (*tbmcis.McisPolicyInfo, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/policy/mcis/{mcisId}"
 
 	var paramMapper = make(map[string]string)
@@ -97,18 +97,18 @@ func RegMcisPolicy(nameSpaceID string, mcisID string, mcisPolicyInfo *tbmcis.Mci
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnMcisPolicyInfo := tbmcis.McisPolicyInfo{}
-	returnStatus := fwmodel.WebStatus{}
+	returnStatus := frameworkmodel.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnMcisPolicyInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnMcisPolicyInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := fwmodel.ErrorInfo{}
+		errorInfo := frameworkmodel.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -121,7 +121,7 @@ func RegMcisPolicy(nameSpaceID string, mcisID string, mcisPolicyInfo *tbmcis.Mci
 	return &returnMcisPolicyInfo, returnStatus
 }
 
-func DelAllMcisPolicy(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodel.WebStatus) {
+func DelAllMcisPolicy(nameSpaceID string) (tbcommon.TbSimpleMsg, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/policy/mcis"
 
 	var paramMapper = make(map[string]string)
@@ -135,7 +135,7 @@ func DelAllMcisPolicy(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodel.WebStat
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -146,13 +146,13 @@ func DelAllMcisPolicy(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodel.WebStat
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, fwmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, frameworkmodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, fwmodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-func DelMcisPolicy(nameSpaceID string, mcisID string) (io.ReadCloser, fwmodel.WebStatus) {
+func DelMcisPolicy(nameSpaceID string, mcisID string) (io.ReadCloser, frameworkmodel.WebStatus) {
 	var originalUrl = "/ns/{nsId}/policy/mcis/{mcisId}"
 
 	var paramMapper = make(map[string]string)
@@ -164,17 +164,17 @@ func DelMcisPolicy(nameSpaceID string, mcisID string) (io.ReadCloser, fwmodel.We
 	// url := util.TUMBLEBUG + "/ns/" + nameSpaceID + "/policy/mcis/" + mcisID
 
 	if mcisID == "" {
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: "MCIS ID is required"}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: "MCIS ID is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return nil, fwmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	return respBody, fwmodel.WebStatus{StatusCode: respStatus}
+	return respBody, frameworkmodel.WebStatus{StatusCode: respStatus}
 }

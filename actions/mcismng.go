@@ -426,7 +426,7 @@ func (a actions) McisSubGroupList(c buffalo.Context) error {
 }
 
 // Mcis 의 subgroup 조회 : 해당 subgroup VM 목록 ID 만 반환
-func (a actions) McisSubGroupGet(c buffalo.Context) error {
+func (a actions) McisSubgroupGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
