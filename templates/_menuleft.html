@@ -11,11 +11,12 @@
 					<ul>
 						<li>
 							<a href="javascript:void(0);" style="cursor:default;">Change NameSpace</a>
-							<%=user_namespace_list%>:::
 							<ul id="menuNameSpaceList">
-								<%= for (ns) in user_namespace_list { %>
-								<li><a href="#" onclick='mcpjs["util/common"].setCurrentNameSpace("TobBox","<%= ns.ID %>")'><%= ns.NsName %></a></li>
-								<% } %>
+								
+									<%= for (ns) in assigned_ns_list { %>
+									<li><a href="#" onclick='mcpjs["util/common"].setCurrentNameSpace("TobBox","<%= ns.NamespaceID %>")'><%= ns.NamespaceID %></a></li>
+									<% } %>
+									
 							</ul>
 						</li>
 						<li class="divider"></li>

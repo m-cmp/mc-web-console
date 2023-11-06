@@ -1,11 +1,11 @@
 # This is a multi-stage Dockerfile and requires >= Docker 17.05
 # https://docs.docker.com/engine/userguide/eng-image/multistage-build/
-FROM gobuffalo/buffalo:v0.18.14 as builder
+FROM gobuffalo/buffalo:v0.18.12 as builder
 
 ENV GOPROXY http://proxy.golang.org
 
-RUN mkdir -p /mc-web-console
-WORKDIR /mc-web-console
+RUN mkdir -p /src/web_console
+WORKDIR /src/web_console
 
 # this will cache the npm install step, unless package.json changes
 ADD package.json .

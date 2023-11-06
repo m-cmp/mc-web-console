@@ -2,9 +2,9 @@ package actions
 
 import (
 	"log"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/frameworkmodel/tumblebug/common"
 
-	fwmodel "mc_web_console/frameworkmodel"
 	tbmcir "mc_web_console/frameworkmodel/tumblebug/mcir"
 	tbmcis "mc_web_console/frameworkmodel/tumblebug/mcis"
 	"mc_web_console/handler"
@@ -141,7 +141,7 @@ func (a actions) VmSpecReg(c buffalo.Context) error {
 
 	paramVMSpecregisteringMethod := c.Param("specregisteringMethod")
 
-	respStatus := fwmodel.WebStatus{}
+	respStatus := frameworkmodel.WebStatus{}
 	paramViewConnection := views.ViewCloudConnection{}
 
 	if strings.EqualFold(paramVMSpecregisteringMethod, "registerWithInfo") {

@@ -3,12 +3,13 @@ package actions
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
-	"github.com/gofrs/uuid"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	"mc_web_console/handler"
@@ -29,8 +30,7 @@ func (a actions) MainForm(c buffalo.Context) error {
 		c.Set("current_namespace", ns)
 	}
 
-	//return c.Render(200, r.HTML("main/index.html"))
-	return c.Render(200, r.HTML("main/userguide.html"))
+	return c.Render(200, r.HTML("main/index.html"))
 }
 
 // UsersCreate registers a new user with the application.
@@ -44,21 +44,20 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 	}
 
 	// default namespace 생성
-	//email := strings.ToLower(strings.TrimSpace(u.Email))
-	// prefix_email := strings.Split(email, "@")
-	// default_ns := prefix_email[0]
-	// u.DefaultNamespace = default_ns
+	email := strings.ToLower(strings.TrimSpace(u.Email))
+	prefix_email := strings.Split(email, "@")
+	default_ns := prefix_email[0]
+	//u.DefaultNamespace = default_ns
 
-	//verrs, err := u.Create(tx)
+	//verrs, err := u.Create(tx)// handler로 이동
 
-	// ns_err := NamespaceCreateDefault(c, default_ns, u)
-	// if ns_err != nil {
-	// 	spew.Dump("=====================")
-	// 	spew.Dump("NamespaceCreateDefault error")
-	// 	spew.Dump("=====================")
-	// 	return errors.WithStack(ns_err)
-	// }
-
+	ns_err := NamespaceCreateDefault(c, default_ns, u)
+	if ns_err != nil {
+		spew.Dump("=====================")
+		spew.Dump("NamespaceCreateDefault error")
+		spew.Dump("=====================")
+		return errors.WithStack(ns_err)
+	}
 	// 사용자가 가입하고 signin 으로 로그인하게 보낼 경우는
 	// 세션에 사용자 ID를 담을 필요가 없음
 	// c.Session().Set("current_user_id", u.ID)
@@ -67,7 +66,8 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 	spew.Dump("여기까지 실행 됐음!!!")
 	spew.Dump("=====================")
 	//return c.Redirect(301, "/auth/signin/mngform/")
-	return RedirectTool(c, "authNewFormPath")
+	//return RedirectTool(c,"authNewFormPath")
+	return RedirectTool(c, "authNewForm")
 }
 
 // 기본 namespace 설정완료.
@@ -79,20 +79,58 @@ func (a actions) SetCurrentNamespace(c buffalo.Context) error {
 	spew.Dump("======setCurrenttNamespace======")
 	namespaceID := c.Param("nsId")
 	log.Println(namespaceID)
-	//tx := c.Value("tx").(*pop.Connection)
-	//ns_err, get_ns := handler.GetNamespaceById(namespaceID, tx)
-	ns, ns_err := handler.GetNamespaceById(namespaceID)
-	if ns_err != nil {
-		spew.Dump(ns_err)
+
+	//ns, ns_err := handler.GetNamespaceById(namespaceID)
+	// namespaceName := ns.NsName
+	// c.Session().Set("current_namespace_id", namespaceID)
+	// c.Session().Set("current_namespace", namespaceName)
+	// c.Set("current_namespace_id", namespaceID)
+	// c.Set("current_namespace", namespaceName)
+	// namespace가 해당 user에게 할당되어 있으면 current_namespace로 설정한다
+
+	log.Println(c.Session().Get("current_user_id"))
+	uid := c.Session().Get("current_user_id").(uuid.UUID)
+	if uid == uuid.Nil {
+		return c.Render(301, r.JSON(map[string]interface{}{
+			"error":  "user session doesn't exist",
+			"status": "301",
+		}))
 	}
-	namespaceName := ns.NsName
-	c.Session().Set("current_namespace_id", namespaceID)
-	c.Session().Set("current_namespace", namespaceName)
-	c.Set("current_namespace_id", namespaceID)
-	c.Set("current_namespace", namespaceName)
+
+	// 에러 : ERRO[2023-11-03T17:16:27+09:00] interface conversion: interface {} is nil, not *models.MCUser
+	//currentUser := c.Session().Get("current_user").(*models.MCUser)
+	//log.Println("currentUser ", currentUser)
+
+	tx := c.Value("tx").(*pop.Connection)
+
+	// user, _ := handler.GetUserById(uid)
+	// log.Println("user ", user)
+	//exists, userNamespace := handler.CheckExistsUserNamespace(uid, namespaceID, tx)
+	exists, _ := handler.CheckExistsUserNamespace(uid, namespaceID, tx)
+	if !exists {
+		return c.Render(301, r.JSON(map[string]interface{}{
+			"error":  "cannot find the user's namespace of user",
+			"status": "301",
+		}))
+	}
+	// log.Println("UserNamespace ", userNamespace)
+
+	// Model에 관계정의를 하면 자동으로 Join이 되어야 하는데... 안되어서 ns만 다시 조회
+	ns, err := handler.GetNamespaceById(namespaceID)
+	if err != nil {
+		return c.Render(301, r.JSON(map[string]interface{}{
+			"error":  "cannot find the user's namespace of user",
+			"status": "301",
+		}))
+	}
+	log.Println("UserNamespace ns ", ns)
+	c.Session().Set("current_namespace_id", ns.ID)
+	c.Session().Set("current_namespace", ns.NsName)
+	c.Set("current_namespace_id", ns.ID)
+	c.Set("current_namespace", ns.NsName)
 
 	return c.Render(200, r.JSON(map[string]interface{}{
-		"CurrentNameSpaceID": namespaceID,
+		"CurrentNamespaceID": ns.NsName,
 	}))
 }
 
@@ -177,15 +215,15 @@ func (a actions) GetUserByEmail(c buffalo.Context) error {
 			spew.Dump("====GET FIRST U====")
 			spew.Dump(u)
 			spew.Dump("====GET FIRST U====")
-			// h_err, uns := handler.GetAssignUserNamespaces(u.ID, tx)
-			// if h_err != nil {
-			// 	return c.Render(301, r.JSON(map[string]interface{}{
-			// 		"error":  "cannot find user",
-			// 		"status": "301",
-			// 	}))
-			// }
+			uns, h_err := handler.GetAssignUserNamespaces(u.ID, tx)
+			if h_err != nil {
+				return c.Render(301, r.JSON(map[string]interface{}{
+					"error":  "cannot find user",
+					"status": "301",
+				}))
+			}
 
-			// u.UserNamespaces = *uns
+			u.UserNamespaces = *uns
 
 			if err != nil {
 				return c.Render(301, r.JSON(map[string]interface{}{
@@ -208,27 +246,4 @@ func (a actions) GetUserByEmail(c buffalo.Context) error {
 		}))
 	}
 	return c.Render(http.StatusOK, r.JSON(u))
-}
-
-// User에게 할당된 namespace  McisSubGroupList
-func (a actions) UserNamespaceList(c buffalo.Context) error {
-	tx := c.Value("tx").(*pop.Connection)
-
-	if uid := c.Session().Get("current_user_id"); uid != nil {
-		namespaceList, err := handler.GetAssignUserNamespaces(uid.(uuid.UUID), tx)
-
-		if err != nil {
-			return c.Render(301, r.JSON(map[string]interface{}{
-				"error":  "cannot find user",
-				"status": "301",
-			}))
-		}
-		return c.Render(http.StatusOK, r.JSON(namespaceList))
-	} else {
-		return c.Render(http.StatusExpectationFailed, r.JSON(map[string]interface{}{
-			"error":  "Please input Email",
-			"status": "301",
-		}))
-	}
-
 }

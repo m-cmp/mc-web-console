@@ -7,7 +7,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-//go:embed * */*
 var files embed.FS
 
 func FS() fs.FS {

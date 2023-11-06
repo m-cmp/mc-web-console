@@ -3,7 +3,7 @@ package actions
 import (
 	"log"
 	"math/rand"
-	fwmodel "mc_web_console/frameworkmodel"
+	frameworkmodel "mc_web_console/frameworkmodel"
 	"mc_web_console/handler"
 	"mc_web_console/models"
 	"net/http"
@@ -116,7 +116,7 @@ func (a actions) NamespaceGet(c buffalo.Context) error {
 
 func (a actions) NamespaceUpdate(c buffalo.Context) error {
 
-	return c.Render(http.StatusBadRequest, r.JSON(fwmodel.WebStatus{StatusCode: 500, Message: "not implementated yet"}))
+	return c.Render(http.StatusBadRequest, r.JSON(frameworkmodel.WebStatus{StatusCode: 500, Message: "not implementated yet"}))
 }
 
 // share namespace
@@ -437,9 +437,9 @@ func NamespaceCreateDefault(c buffalo.Context, default_ns string, user *models.M
 
 	//사용자 Default namespace 에 위에서 생성한 ID값 집어 넣기
 	//user.DefaultNamespace = ns.ID
-	//log.Println("defaultNamespace@@@@@@@@@@@= ")
+	log.Println("defaultNamespace@@@@@@@@@@@= ")
 	// 사용자 생성
-	vuerr, uerr := user.Create(tx)
+	vuerr, uerr := user.ValidateCreate(tx)
 	if uerr != nil {
 		spew.Dump("====1 어디서 에러 났나 보자 1====")
 		spew.Dump(uerr)
@@ -456,71 +456,71 @@ func NamespaceCreateDefault(c buffalo.Context, default_ns string, user *models.M
 		return c.Render(301, r.HTML("users/new.html"))
 	}
 	// default namespace 생성
-	ns.NsName = default_ns
+	// ns.NsName = default_ns
 
-	ns.Description = "This is default namespace"
-	log.Println("CreateDefault NS @@@@@@@@@@@= ")
-	log.Println(ns.NsName)
+	// ns.Description = "This is default namespace"
+	// log.Println("CreateDefault NS @@@@@@@@@@@= ")
+	// log.Println(ns.NsName)
 
-	ns.User = user
-	ns.UserID = user.ID
+	// ns.User = user
+	// ns.UserID = user.ID
 
-	//check dupe ns name
-	// 이름 중복 허용
-	// dupe_err := CheckDupeNamespaceName(c, ns.NsName)
+	// //check dupe ns name
+	// // 이름 중복 허용
+	// // dupe_err := CheckDupeNamespaceName(c, ns.NsName)
 
-	// if dupe_err != nil {
-	// 	return dupe_err
+	// // if dupe_err != nil {
+	// // 	return dupe_err
+	// // }
+
+	// //namespace create
+	// verrs, err := ns.ValidateCreate(tx)
+	// if err != nil {
+	// 	return errors.WithStack(err)
 	// }
-
-	//namespace create
-	verrs, err := ns.ValidateCreate(tx)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	if verrs.HasAny() {
-		spew.Dump("validate error", verrs)
-		c.Set("errors", verrs)
-		// return c.Render(301, r.HTML("namespace/create.html"))
-	}
+	// if verrs.HasAny() {
+	// 	spew.Dump("validate error", verrs)
+	// 	c.Set("errors", verrs)
+	// 	// return c.Render(301, r.HTML("namespace/create.html"))
+	// }
 
 	// 이쪽을 따로 때어서 권한 관리와 같이 엮어서 처리
 	// user_namespace create
-	un := &models.UserNamespace{}
+	// un := &models.UserNamespace{}
 
-	//if ns.ID == "" {// ns의 ID는 stringWithCharset로 생성하므로 의미없음 by yhnoh
-	if ns.NsName == "" {
-		c.Flash().Add("warning", "cannot find namespace")
-		//return c.Redirect(301, "/")// ajax로 넘어오므로 redirect는 의미 없음 by yhnoh
-		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
-			"error":  "cannot find namespace",
-			"status": "301",
-		}))
-	}
+	// //if ns.ID == "" {// ns의 ID는 stringWithCharset로 생성하므로 의미없음 by yhnoh
+	// if ns.NsName == "" {
+	// 	c.Flash().Add("warning", "cannot find namespace")
+	// 	//return c.Redirect(301, "/")// ajax로 넘어오므로 redirect는 의미 없음 by yhnoh
+	// 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+	// 		"error":  "cannot find namespace",
+	// 		"status": "301",
+	// 	}))
+	// }
 
-	un.NamespaceID = ns.ID
-	un.UserID = user.ID
-	un.Namespace = ns
-	un.User = user
+	// un.NamespaceID = ns.ID
+	// un.UserID = user.ID
+	// un.Namespace = ns
+	// un.User = user
 
-	verr, err := un.ValidateCreate(tx)
+	// verr, err := un.ValidateCreate(tx)
 
-	if verr.HasAny() {
-		spew.Dump("user_namespace", *verr)
-		//return c.Redirect(200, "/namespace/list/")// ajax로 넘어오므로 redirect는 의미 없음 by yhnoh
-		return c.Render(http.StatusMovedPermanently, r.JSON(map[string]interface{}{
-			"error":  verr.Error,
-			"status": "301",
-		}))
-	}
-	if err != nil {
-		spew.Dump("user_namespace", un)
-		//return errors.WithStack(err)
-		return c.Render(http.StatusMovedPermanently, r.JSON(map[string]interface{}{
-			"error":  err.Error,
-			"status": "301",
-		}))
-	}
+	// if verr.HasAny() {
+	// 	spew.Dump("user_namespace", *verr)
+	// 	//return c.Redirect(200, "/namespace/list/")// ajax로 넘어오므로 redirect는 의미 없음 by yhnoh
+	// 	return c.Render(http.StatusMovedPermanently, r.JSON(map[string]interface{}{
+	// 		"error":  verr.Error,
+	// 		"status": "301",
+	// 	}))
+	// }
+	// if err != nil {
+	// 	spew.Dump("user_namespace", un)
+	// 	//return errors.WithStack(err)
+	// 	return c.Render(http.StatusMovedPermanently, r.JSON(map[string]interface{}{
+	// 		"error":  err.Error,
+	// 		"status": "301",
+	// 	}))
+	// }
 	//return c.Render(http.StatusOK, r.HTML("namespace/update.html"))
 	//spew.Dump("namespace create before redirect")
 
@@ -529,21 +529,21 @@ func NamespaceCreateDefault(c buffalo.Context, default_ns string, user *models.M
 	// 2. TB에 namespace 생성
 	//TB 에서 우리가 생성한 ID값으로 namespace 를 생성하려면
 	// namespaceInfo.Name 에  ID 값을 넣어주어야 함.
-	nameSpaceInfo := &tbcommon.TbNsInfo{}
-	//nameSpaceInfo.ID = ns.ID
-	//여기에 우리가 생성한 ID값을 넣어주어야 생성이 됨
+	// nameSpaceInfo := &tbcommon.TbNsInfo{}
+	// //nameSpaceInfo.ID = ns.ID
+	// //여기에 우리가 생성한 ID값을 넣어주어야 생성이 됨
 
-	nameSpaceInfo.Name = ns.ID
-	nameSpaceInfo.Description = ns.Description
+	// nameSpaceInfo.Name = ns.ID
+	// nameSpaceInfo.Description = ns.Description
 
-	tbNamespace, nsStatus := handler.RegNameSpace(nameSpaceInfo)
-	if nsStatus.StatusCode == 500 {
-		return c.Render(http.StatusMovedPermanently, r.JSON(map[string]interface{}{
-			"error":  nsStatus.Message,
-			"status": nsStatus.StatusCode,
-		}))
-	}
-	log.Println("tbNamespace!!!!!!!!!!!!!!!!!!!= ", tbNamespace)
+	// tbNamespace, nsStatus := handler.RegNameSpace(nameSpaceInfo)
+	// if nsStatus.StatusCode == 500 {
+	// 	return c.Render(http.StatusMovedPermanently, r.JSON(map[string]interface{}{
+	// 		"error":  nsStatus.Message,
+	// 		"status": nsStatus.StatusCode,
+	// 	}))
+	// }
+	// log.Println("tbNamespace!!!!!!!!!!!!!!!!!!!= ", tbNamespace)
 
 	// // 3. 해당 user의 namespace 목록 조회
 	// userNamespaceList, nsStatus := handler.UserNameSpaceListFromDB(user.ID, tx)
