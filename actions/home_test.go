@@ -9,7 +9,7 @@ func (as *ActionSuite) Test_HomeHandler() {
 }
 
 func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
-	u := &models.User{
+	u := &models.MCUser{
 		Email:                "mark@example.com",
 		Password:             "password",
 		PasswordConfirmation: "password",

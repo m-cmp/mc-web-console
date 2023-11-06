@@ -107,41 +107,46 @@ export function goFocus(target) {
 // todo : 일부정지인데 stop으로 표시하고 있는데....
 export function getMcisStatusDisp(mcisFullStatus) {
   console.log("getMcisStatus " + mcisFullStatus);
-  var statusArr = mcisFullStatus.split("-");
-  var returnStatus = statusArr[0].toLowerCase();
+  var returnStatus = mcisFullStatus
+  try{
+    var statusArr = mcisFullStatus.split("-");
+    returnStatus = statusArr[0].toLowerCase();
 
-  // const MCIS_STATUS_RUNNING = "running"
-  // const MCIS_STATUS_INCLUDE = "include"
-  // const MCIS_STATUS_SUSPENDED = "suspended"
-  // const MCIS_STATUS_TERMINATED = "terminated"
-  // const MCIS_STATUS_PARTIAL = "partial"
-  // const MCIS_STATUS_ETC = "etc"
-  // console.log("before status " + returnStatus)
-  // if (returnStatus == MCIS_STATUS_RUNNING) {
-  // 	returnStatus = "running"
-  // } else if (returnStatus == MCIS_STATUS_INCLUDE) {
-  // 	returnStatus = "stop"
-  // } else if (returnStatus == MCIS_STATUS_SUSPENDED) {
-  // 	returnStatus = "stop"
-  // } else if (returnStatus == MCIS_STATUS_TERMINATED) {
-  // 	returnStatus = "terminate"
-  // } else if (returnStatus == MCIS_STATUS_PARTIAL) {
-  // 	returnStatus = "stop"
-  // } else if (returnStatus == MCIS_STATUS_ETC) {
-  // 	returnStatus = "stop"
-  // } else {
-  // 	returnStatus = "stop"
-  // }
+    // const MCIS_STATUS_RUNNING = "running"
+    // const MCIS_STATUS_INCLUDE = "include"
+    // const MCIS_STATUS_SUSPENDED = "suspended"
+    // const MCIS_STATUS_TERMINATED = "terminated"
+    // const MCIS_STATUS_PARTIAL = "partial"
+    // const MCIS_STATUS_ETC = "etc"
+    // console.log("before status " + returnStatus)
+    // if (returnStatus == MCIS_STATUS_RUNNING) {
+    // 	returnStatus = "running"
+    // } else if (returnStatus == MCIS_STATUS_INCLUDE) {
+    // 	returnStatus = "stop"
+    // } else if (returnStatus == MCIS_STATUS_SUSPENDED) {
+    // 	returnStatus = "stop"
+    // } else if (returnStatus == MCIS_STATUS_TERMINATED) {
+    // 	returnStatus = "terminate"
+    // } else if (returnStatus == MCIS_STATUS_PARTIAL) {
+    // 	returnStatus = "stop"
+    // } else if (returnStatus == MCIS_STATUS_ETC) {
+    // 	returnStatus = "stop"
+    // } else {
+    // 	returnStatus = "stop"
+    // }
 
-  if (mcisFullStatus.toLowerCase().indexOf("running") > -1) {
-    returnStatus = "running";
-  } else if (mcisFullStatus.toLowerCase().indexOf("suspend") > -1) {
-    returnStatus = "stop";
-  } else if (mcisFullStatus.toLowerCase().indexOf("terminate") > -1) {
-    returnStatus = "terminate";
-    // TODO : partial도 있는데... 처리를 어떻게 하지??
-  } else {
-    returnStatus = "terminate";
+    if (mcisFullStatus.toLowerCase().indexOf("running") > -1) {
+      returnStatus = "running";
+    } else if (mcisFullStatus.toLowerCase().indexOf("suspend") > -1) {
+      returnStatus = "stop";
+    } else if (mcisFullStatus.toLowerCase().indexOf("terminate") > -1) {
+      returnStatus = "terminate";
+      // TODO : partial도 있는데... 처리를 어떻게 하지??
+    } else {
+      returnStatus = "terminate";
+    }
+  }catch(e){
+    console.log(e)
   }
   console.log("after status " + returnStatus);
   return returnStatus;
@@ -558,29 +563,75 @@ export function initJavascriptForCss() {
 // namespace 목록에서 한 개 선택. 해당값을 임시로 저장하고 confirm 창 띄우기
 // 실제 set은  setDefaultNameSpace function에서  ajax호출로
 // set과 select 혼돈하지 말 것.
-export function setCurrentNameSpace(caller, nameSpaceID) {
-  // 변경할 namespaceId를 임시로
-  console.log("setCurrentNameSpace " + caller + ", " + nameSpaceID);
-  if (caller == "TobBox") {
-    $("#topboxDefaultNameSpaceID").val(nameSpaceID);
-    mcpjs["util/util"].commonConfirmOpen("ChangeNameSpace");
-  } else if (caller == "LNBPopup") {
-    console.log(
-      "setCurrentNameSpace " + caller + ", " + nameSpaceID + " set!!"
+// export function setCurrentNameSpace(caller, nameSpaceID) {
+//   // 변경할 namespaceId를 임시로
+//   console.log("setCurrentNameSpace " + caller + ", " + nameSpaceID);
+//   if (caller == "TobBox") {
+//     //$("#topboxDefaultNameSpaceID").val(nameSpaceID);    
+//     //mcpjs["util/util"].commonConfirmOpen("ChangeNameSpace");
+
+//     var orgNameSpaceId = $("#current_namespace_id").val();
+//     // 없다가 set 하는경우
+//     // 있다가 없는것로 set 하는경우(?)
+//     // 다른 것으로 바꾸는 경우
+//     if( nameSpaceID != "" && nameSpaceID != orgNameSpaceId){
+//       // 물어보지 않고 변경 후 화면 reloading
+//       mcpjs["util/common"].setCurrentNameSpace(changeNameSpaceID);
+//     }
+    
+//   } else if (caller == "LNBPopup") {
+//     console.log(
+//       "setCurrentNameSpace " + caller + ", " + nameSpaceID + " set!!"
+//     );
+//     // Modal 내 namespace 값을 hidden으로 set
+//     $("#tempSelectedNameSpaceID").val(nameSpaceID);
+//     // 선택했고 OK버튼이 나타난다. OK버튼 클릭시 저장 됨
+//     console.log("선택했음. Set을 해야 실제로 저장 됨");
+//   } else if (caller == "Main") {
+//     console.log(
+//       "setCurrentNameSpace " + caller + ", " + nameSpaceID + " set!!"
+//     );
+//     // Modal 내 namespace 값을 hidden으로 set
+//     $("#tempSelectedNameSpaceID").val(nameSpaceID);
+//     console.log("선택했음. Set을 해야 실제로 저장 됨");
+//   }
+// }
+// 사용할 namespace set
+// nnamespace 선택하면 화면 reload.
+export function setCurrentNameSpace(caller, nsId) {
+  console.log("setNameSpace : " + nsId);
+  if (nsId) {
+    var obj = {};    
+    var controllerKeyName = "SetCurrentNamespace";
+    var optionParamMap = new Map();
+    optionParamMap.set("{nsId}", nsId);
+    mcpjs["util/pathfinder"].postCommonData(
+      caller,
+      controllerKeyName,
+      optionParamMap,
+      obj,
+      mcpjs["util/common"].setCurrentNamespaceCallbackSuccess
     );
-    // Modal 내 namespace 값을 hidden으로 set
-    $("#tempSelectedNameSpaceID").val(nameSpaceID);
-    // 선택했고 OK버튼이 나타난다. OK버튼 클릭시 저장 됨
-    console.log("선택했음. Set을 해야 실제로 저장 됨");
-  } else if (caller == "Main") {
-    console.log(
-      "setCurrentNameSpace " + caller + ", " + nameSpaceID + " set!!"
+
+  } else {
+    mcpjs["util/util"].commonAlert(
+      "NameSpace가 선택되어 있지 않습니다.\n등록되어 있지 않은 경우 등록하세요."
     );
-    // Modal 내 namespace 값을 hidden으로 set
-    $("#tempSelectedNameSpaceID").val(nameSpaceID);
-    console.log("선택했음. Set을 해야 실제로 저장 됨");
+    //location.href ="/NS/reg";
   }
 }
+
+// namespace 변경완료 시 화면 reloading
+export function setCurrentNamespaceCallbackSuccess(caller, result){
+  console.log(result)
+  if (result.status == 200 || result.status == 201) {
+    //mcpjs['util/util'].commonAlert(data.message)
+    location.reload();
+  } else {
+      mcpjs['util/util'].commonAlert(result.data.error)
+  }
+}
+
 
 // namespace 선택 후 OK 버튼 클릭시(modal, main)에서
 export function nameSpaceSet(caller) {
