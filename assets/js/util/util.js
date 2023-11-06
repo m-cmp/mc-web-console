@@ -247,7 +247,7 @@ export function commonConfirmOpen(targetAction, caller) {
       "Would you like to register NameSpace <br />Resource ?",
     ],
     ["NameSpace", "Would you like to move <br />selected NameSpace?"],
-    ["ChangeNameSpace", "Would you like to move <br />selected NameSpace?"],
+    ["ChangeNameSpace", "Would you like to move <br />selected NameSpace??"],
     ["DeleteNameSpace", "Would you like to delete <br />selected NameSpace?"],
 
     ["AddNewVpc", "Would you like to create a new Network <br />Resource ?"],
