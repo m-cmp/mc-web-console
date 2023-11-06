@@ -1383,7 +1383,7 @@ export function calculateMcisStatusCount(mcisData) {
   mcisStatusCountMap.set("terminate", 0);
   try {
     var mcisStatus = mcisData.status;
-    var mcisDispStatus = getMcisStatusDisp(mcisStatus); // 화면 표시용 status
+    var mcisDispStatus = mcpjs["util/common"].getMcisStatusDisp(mcisStatus); // 화면 표시용 status
 
     if (mcisStatus != "") {
       // mcis status 가 없는 경우는 skip
@@ -1395,7 +1395,7 @@ export function calculateMcisStatusCount(mcisData) {
       }
     }
   } catch (e) {
-    console.log("mcis status error");
+    console.log("mcis status error u ", e);
   }
   // console.log(mcisStatusCountMap);
   return mcisStatusCountMap;
@@ -1448,7 +1448,7 @@ export function calculateVmStatusCount(aMcis) {
       for (var vmIndex in vmList) {
         var aVm = vmList[vmIndex];
         var vmStatus = aVm.status;
-        var vmDispStatus = getVmStatusDisp(vmStatus);
+        var vmDispStatus = mcpjs["util/common"].getVmStatusDisp(vmStatus);
 
         if (vmStatus != "") {
           // vm status 가 없는 경우는 skip
@@ -1462,7 +1462,7 @@ export function calculateVmStatusCount(aMcis) {
       }
     }
   } catch (e) {
-    console.log("mcis status error");
+    console.log("mcis status error 4 ", e);
   }
   return vmStatusCountMap;
 }
