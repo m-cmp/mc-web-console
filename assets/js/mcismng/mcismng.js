@@ -653,7 +653,8 @@ export function clickListOfMcis(mcisID) {
     var caller = "mcismng";
     var actionName = "McisGet";
     var optionParamMap = new Map();
-    optionParamMap.set("mcisId", mcisID)
+    optionParamMap.set("{mcisId}", mcisID)// path param  : {}
+    optionParamMap.set("mcisId", mcisID)// query param
     mcpjs['util/pathfinder'].getCommonData(caller, actionName, optionParamMap, mcpjs['mcismng/mcismng'].getCommonMcisDataCallbackSuccess)
 
     // MCIS Info area set

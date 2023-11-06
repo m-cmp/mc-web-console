@@ -145,22 +145,22 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 			// }
 			u, _ := handler.GetUserById(uid.(uuid.UUID))
 
-			// if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
-			// 	// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
-			// 	// c.Set("current_namespace", ns.NsName)
-			// 	// c.Set("current_namespace_id", ns.ID)
+			if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
+				// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
+				// c.Set("current_namespace", ns.NsName)
+				// c.Set("current_namespace_id", ns.ID)
 
-			// 	c.Set("current_namespace", "")
-			// 	c.Set("current_namespace_id", "")
-			// 	c.Set("current_namespace_uuid", "")
+				c.Set("current_namespace", "")
+				c.Set("current_namespace_id", "")
+				c.Set("current_namespace_uuid", "")
 
-			// } else {
-			// 	current_namespace := c.Session().Get("current_namespace")
-			// 	c.Set("current_namespace", current_namespace)
-			// 	c.Set("current_namespace_id", current_namespace_id)
-			// 	c.Set("current_namespace_uuid", "")
+			} else {
+				current_namespace := c.Session().Get("current_namespace")
+				c.Set("current_namespace", current_namespace)
+				c.Set("current_namespace_id", current_namespace_id)
+				c.Set("current_namespace_uuid", "")
 
-			// }
+			}
 
 			userNamespaceList, err := handler.GetAssignUserNamespaces(uid.(uuid.UUID), nil)
 			// sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)

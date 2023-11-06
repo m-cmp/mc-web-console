@@ -143,9 +143,6 @@ export function enterKeyForLogin() {
 
 // 유저의 namespace 목록 조회
 export function getNameSpace() {
-  //var url = "/ns";
-  //var url = "/setting/namespaces/namespace/list";
-  //var url = "/namespace/list";
   var url = "/api/namespace/";
 
   // token
