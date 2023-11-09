@@ -163,7 +163,7 @@ func MenuTree() (*models.MenuTree, frameworkmodel.WebStatus) {
 		return nil, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
-	log.Println("menuTrees", menuTrees)
+	//log.Println("menuTrees", menuTrees)
 	return menuTrees, frameworkmodel.WebStatus{StatusCode: 200}
 }
 
@@ -173,6 +173,18 @@ func GetUserById(userId uuid.UUID) (*models.MCUser, frameworkmodel.WebStatus) {
 	//query := models.DB.Q()
 	//err := query.Find(user, userId)
 	err := models.DB.Find(user, userId)
+	if err != nil {
+		return user, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+
+	log.Println("user", user)
+	return user, frameworkmodel.WebStatus{StatusCode: 200}
+}
+
+func GetUserByEmail(email string) (*models.MCUser, frameworkmodel.WebStatus) {
+	user := &models.MCUser{}
+	err := models.DB.Where("mcuser_id = ?", email).Last(&user)
+
 	if err != nil {
 		return user, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
