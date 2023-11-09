@@ -15,7 +15,8 @@ import (
 type actions struct{}
 
 // 관리자 설정
-func RoutesManager(app *buffalo.App) *buffalo.App {
+func RoutesManager() {
+	//func RoutesManager(app *buffalo.App) *buffalo.App {
 
 	// TODO : DB에서 path와 handler를 가져오도록
 	// 1. handler 구현한 뒤에 화면을 통해 db에 등록하는 process를 가져가도록
@@ -55,8 +56,24 @@ func RoutesManager(app *buffalo.App) *buffalo.App {
 	err := query.All(&routerList)
 	if err != nil {
 		log.Println("query err ", err)
-		return app
+		return
+		//return app
 	}
+
+	//for _, router := range routerList {
+	//	switch router.Method {
+	//	case "GET":
+	// app.GET(route.Path, GetHandler).Name(router.HandlerName)
+	//	case "POST":
+	// app.POST(route.Path, PostHandler).Name(router.HandlerName)
+	//	}
+	//}
+
+	//routers := c.Value("router").(*buffalo.App).Router()
+	log.Println("routers")
+	//log.Println(routers)
+	actionsType := reflect.TypeOf(app)
+	log.Println(actionsType)
 
 	for _, router := range routerList {
 		//log.Println(router)
@@ -96,7 +113,39 @@ func RoutesManager(app *buffalo.App) *buffalo.App {
 
 	}
 
-	return app
+	app.GET("/api/auth/user/", getHandlerFuncByName("UserInfo")).Name("UserInfo")
+	app.POST("/api/auth/user/workspace/", getHandlerFuncByName("SetCurrentWorkspace")).Name("SetCurrentWorkspace")
+	//app.GET("/api/auth/user/namespace/", getHandlerFuncByName("SetCurrentNamespace")).Name("SetCurrentNamespace")
+
+	// 임시로 workspace, role route 추가 : db로 변경 후 삭제할 것
+	// workspace
+	app.GET("/api/workspace/", getHandlerFuncByName("WorkspaceList")).Name("WorkspaceList")
+	app.GET("/api/workspace/id/{workspaceId}", getHandlerFuncByName("GetWorkspace")).Name("GetWorkspace")
+
+	// project
+	app.GET("/api/project/", getHandlerFuncByName("ProjectList")).Name("ProjectList")
+	app.GET("/api/project/id/{roleId}", getHandlerFuncByName("GetProject")).Name("GetProject")
+	app.PUT("/api/project/id/{roleId}", getHandlerFuncByName("UpdateProject")).Name("UpdateProject")
+	app.POST("/api/project/", getHandlerFuncByName("RegProject")).Name("RegProject")
+	app.DELETE("/api/project/id/{roleId}", getHandlerFuncByName("DeleteProject")).Name("DeleteProject")
+
+	// role
+	app.GET("/api/role/", getHandlerFuncByName("MCIamRoleList")).Name("MCIamRoleList")
+	app.GET("/api/role/id/{roleId}", getHandlerFuncByName("GetMCIamRole")).Name("GetMCIamRole")
+	app.PUT("/api/role/id/{roleId}", getHandlerFuncByName("UpdateMCIamRole")).Name("UpdateMCIamRole")
+	app.POST("/api/role/", getHandlerFuncByName("RegMCIamRole")).Name("RegMCIamRole")
+	app.DELETE("/api/role/id/{roleId}", getHandlerFuncByName("DeleteMCIamRole")).Name("DeleteMCIamRole")
+
+	// workspace, user, project mapping
+	app.POST("/api/mapping/ws_user", getHandlerFuncByName("RegUserMCIamRoleMapping")).Name("RegUserMCIamRoleMapping")
+	app.POST("/api/mapping/ws_user_role", getHandlerFuncByName("RegWorkspaceUserMCIamRoleMapping")).Name("RegWorkspaceUserMCIamRoleMapping")
+	app.POST("/api/mapping/ws_project", getHandlerFuncByName("RegWorkspaceProjectMapping")).Name("RegWorkspaceProjectMapping")
+	app.GET("/api/mapping/ws/id/{workspaceId}/project", getHandlerFuncByName("WorkspaceProjectList")).Name("WorkspaceProjectList")
+	app.DELETE("/api/mapping/ws/id/{workspaceId}/project/id/{projectId}", getHandlerFuncByName("DeleteWorkspaceProjectMapping")).Name("DeleteWorkspaceProjectMapping")
+
+	app.GET("/getget/", GetGet)
+
+	// return app
 }
 
 // Get the handler function by its name
@@ -114,6 +163,16 @@ func getHandlerFuncByName(handlerName string) buffalo.Handler {
 
 	// 핸들러 함수를 호출할 수 있는 함수 생성
 	handlerFunc := func(c buffalo.Context) error {
+		// 빈 c 값을 set.
+		c.Set("current_user", "h")
+		c.Set("current_user_id", "hhh")
+		c.Set("current_user_level", "hhh")
+		c.Set("current_workspace", "hhh")
+		c.Set("current_workspace_id", "hhh")
+		c.Set("current_namespace", "hh")
+		c.Set("current_namespace_id", "hhh")
+		c.Set("assigned_ws_list", []interface{}{})
+		c.Set("assigned_ns_list", []interface{}{})
 		// 새로운 인스턴스 생성
 		act := reflect.New(actionsType.Elem()).Interface()
 

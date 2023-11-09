@@ -11,8 +11,10 @@ import (
 	"github.com/pkg/errors"
 
 	_ "mc_web_console/docs" //mc_web_console의 경우
+	//iammanager "mc_web_console/frameworkmodel/iammanager"
 	"mc_web_console/handler"
-	//"mc_web_console/models"
+	"mc_web_console/models"
+	util "mc_web_console/util"
 )
 
 /*
@@ -31,6 +33,10 @@ func SkipMiddlewareByRoutePath(next buffalo.Handler) buffalo.Handler {
 		log.Println("RouteMiddleware ***************", c.Request().URL.Path)
 		if c.Request().URL.Path == "/" {
 			log.Println("this path is root ", c.Request().URL.Path)
+			return next(c)
+		}
+		if c.Request().URL.Path == "/getget/" || c.Request().URL.Path == "/getget2/" {
+			log.Println("this path is getget ", c.Request().URL.Path)
 			return next(c)
 		}
 
@@ -82,8 +88,9 @@ func SkipMiddlewareByRoutePath(next buffalo.Handler) buffalo.Handler {
 // html tempalte에서 사용할 수 있게 만들자.
 func SetCloudProviderList(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		log.Println("SetCloudProviderList ~~~~")
+		//log.Println("SetCloudProviderList ~~~~")
 		if cloudOsList := c.Session().Get("cloud_os_list"); cloudOsList == nil { // 존재하지 않으면 조회
+			log.Println("SetCloudProviderList ~~~~")
 			cloudOsList, respStatus := handler.GetCloudOSList()
 			if respStatus.StatusCode == 500 {
 				return next(c)
@@ -127,48 +134,131 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		// 	return c.Redirect(302, "/signin")
 		// }
 
-		c.Set("assigned_ns_list", "")
-		c.Set("current_user", "")
-		c.Set("current_user_id", "")
-		c.Set("current_user_level", "")
-		c.Set("current_namespace_id", "")
+		// 의미없네?? 왜? session에 넣어야하나? => render 직전에 c.Set 또는 routeInfo의 getHandlerFuncByName에서
+		// c.Set("current_user", "xx")
+		// c.Set("current_user_id", "xxx")
+		// c.Set("current_user_level", "xxxx")
+		// c.Set("current_workspace", "yy")
+		// c.Set("current_workspace_id", "yyy") // 의미없네?? 왜? session에 넣어야하나?
+		// c.Set("current_namespace", "nn")
+		// c.Set("current_namespace_id", "nnn")
+		// c.Set("assigned_ws_list", []interface{}{})
+		// c.Set("assigned_ns_list", []interface{}{})
+		log.Println("c get xx 11111111111111111111111111111111")
+		//c.Set("iamAccessToken", "")
+
+		if uid := c.Session().Get("current_workspace_id"); uid != nil {
+			c.Session().Set("current_workspace_id", "")
+		}
+		if uid := c.Session().Get("current_namespace"); uid != nil {
+			c.Session().Set("current_namespace", "")
+		}
+		if uid := c.Session().Get("current_namespace_id"); uid != nil {
+			c.Session().Set("current_namespace_id", "")
+		}
 
 		if uid := c.Session().Get("current_user_id"); uid != nil {
-			// u := &models.MCUser{}
-			// tx := c.Value("tx").(*pop.Connection)
-			// err := tx.Find(u, uid)
-			// if err != nil {
-			// 	c.Session().Clear()
-			// 	//spew.Dump("user Find  error : ", &err)
-			// 	return c.Redirect(302, "/")
-			// 	//return errors.WithStack(err)
-			// }
-			u, _ := handler.GetUserById(uid.(uuid.UUID))
+			log.Println("uid ", uid)
 
-			if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
-				// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
-				// c.Set("current_namespace", ns.NsName)
-				// c.Set("current_namespace_id", ns.ID)
-
-				c.Set("current_namespace", "")
-				c.Set("current_namespace_id", "")
-				c.Set("current_namespace_uuid", "")
-
-			} else {
-				current_namespace := c.Session().Get("current_namespace")
+			if current_namespace := c.Session().Get("current_namespace"); current_namespace == nil {
 				c.Set("current_namespace", current_namespace)
+			}
+			if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
 				c.Set("current_namespace_id", current_namespace_id)
-				c.Set("current_namespace_uuid", "")
-
 			}
 
-			userNamespaceList, err := handler.GetAssignUserNamespaces(uid.(uuid.UUID), nil)
-			// sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
-			if err != nil {
-				log.Println("GetAssignUserNamespaces err  ", err)
+			// default Namespace는 현재 지정하지 않으므로 주석처리
+			// if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
+			// 	// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
+			// 	// c.Set("current_namespace", ns.NsName)
+			// 	// c.Set("current_namespace_id", ns.ID)
+			// } else {
+			// 	current_namespace := c.Session().Get("current_namespace")
+			// 	c.Set("current_namespace", current_namespace)
+			// 	c.Set("current_namespace_id", current_namespace_id)
+			// }
+
+			if util.USE_MCIAM == "Y" {
+				//workspaceList := []iammanager.MCIamWorkspace{}
+				// workspace 목록 조회
+
+				authSession := models.AuthSession{}
+				//err := models.DB.Where("mcuser_id = ?", uid.(string)).Last(&authSession)
+				err := models.DB.Last(&authSession)
+				// where expire 추가
+				if err != nil {
+					log.Println("AuthSession search err ", err)
+					return errors.WithStack(err)
+				}
+				iamAccessToken := authSession.IamManagerAccessToken
+
+				// TODO : valid token 로직 추가
+
+				workspaceList, respStatus := handler.IamManagerWorkspaceList(iamAccessToken)
+				if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
+					log.Println("respStatus-")
+					log.Println(respStatus)
+
+					if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
+						log.Println(respStatus)
+						c.Flash().Add("fail", "IAM Session expired")
+						// return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
+						//  	"message": "Session expired. please login again",
+						//  	"status":  "fail",
+						// }))
+						return errors.WithStack(errors.New(respStatus.Message))
+					}
+
+					// token이 expired 면 다시 받아온다.
+					// user 정보조회 : id/pw 필요.
+					// c.Session().Set("current_user_pw", u.Password)//TODO : 자동으로 로그인 시킬지 refreshtoken을 받아서 처리될지에 따라 보완
+
+					// iamLoginInfo := iammanager.IamLoginInfo{}
+					// iamLoginInfo.UserName = uid.(string)
+					// if upw := c.Session().Get("current_user_pw"); upw != nil {
+					// 	iamLoginInfo.Password = upw.(string)
+					// }
+					// refreshIamAccessToken, respStatus := handler.IamManagerLogin(iamLoginInfo)
+					// if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
+					// 	// return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
+					// 	// 	"message": "login failed",
+					// 	// 	"status":  "fail",
+					// 	// }))
+					// 	log.Println(respStatus)
+					// 	c.Flash().Add("fail", "IAM Session expired")
+					// 	return errors.WithStack(errors.New(respStatus.Message))
+					// }
+					// c.Set("iamAccessToken", refreshIamAccessToken)
+					// log.Println("refresh token으로 다시 시도")
+					// workspaceList, respStatus := handler.IamManagerWorkspaceList(refreshIamAccessToken)
+					// c.Set("assigned_ws_list", workspaceList)
+				} else {
+					// log.Println(workspaceList)
+					// for _, workspace := range workspaceList {
+					// 	assignedWorkspaceMap[workspace.ID] = workspace.Name
+					// }
+					// log.Println(assignedWorkspaceMap)
+					c.Set("assigned_ws_list", workspaceList)
+				}
+				log.Println("c.set curent_user_id ", uid)
+				c.Set("current_user_id", uid.(string))
+				log.Println("c.set curent_user_id2 ", uid)
+				//c.Set("current_user_level", u.UserLevel)
 			} else {
-				log.Println("userNamespaceList ", userNamespaceList)
-				c.Set("assigned_ns_list", userNamespaceList)
+				log.Println("getUser By id from db")
+				// user정보를 db에서 처리
+				u, _ := handler.GetUserById(uid.(uuid.UUID))
+				userNamespaceList, err := handler.GetAssignUserNamespaces(uid.(uuid.UUID), nil)
+				// sharedNamespaceList, err := handler.SharedNamespaceList(u.ID)
+				if err != nil {
+					log.Println("GetAssignUserNamespaces err  ", err)
+				} else {
+					log.Println("userNamespaceList ", userNamespaceList)
+					c.Set("assigned_ns_list", userNamespaceList)
+				}
+
+				c.Set("current_user_id", u.Email)
+				c.Set("current_user_level", u.UserLevel)
 			}
 
 			//shared_ns_list := GetSharedNamespaceList(u.ID, tx)
@@ -179,9 +269,9 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 			//c.Session().Set("shared_ns_list", shared_ns_list)
 
 			// c.Set("shared_ns_list", sharedNamespaceList)
-			c.Set("current_user", u)
-			c.Set("current_user_id", u.Email)
-			c.Set("current_user_level", u.UserLevel)
+			//c.Set("current_user", u)
+			//c.Set("current_user_id", u.Email)
+			//c.Set("current_user_level", u.UserLevel)
 			//c.Set("current_credential", u.DefaultCredential)
 			// log.Println("shared_ns_list length ", sharedNamespaceList)
 		}
