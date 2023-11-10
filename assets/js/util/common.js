@@ -597,14 +597,16 @@ export function initJavascriptForCss() {
 //   }
 // }
 // 사용할 namespace set
-// nnamespace 선택하면 화면 reload.
+// namespace 선택하면 화면 reload. 물어보지 않고 바로 Set.
 export function setCurrentNameSpace(caller, nsId) {
   console.log("setNameSpace : " + nsId);
-  if (nsId) {
-    var obj = {};    
+  if (nsId) {    
+    var obj = {
+      ID: nsId,
+    };
     var controllerKeyName = "SetCurrentNamespace";
     var optionParamMap = new Map();
-    optionParamMap.set("{nsId}", nsId);
+    
     mcpjs["util/pathfinder"].postCommonData(
       caller,
       controllerKeyName,
@@ -617,7 +619,7 @@ export function setCurrentNameSpace(caller, nsId) {
     mcpjs["util/util"].commonAlert(
       "NameSpace가 선택되어 있지 않습니다.\n등록되어 있지 않은 경우 등록하세요."
     );
-    //location.href ="/NS/reg";
+   
   }
 }
 
@@ -625,7 +627,6 @@ export function setCurrentNameSpace(caller, nsId) {
 export function setCurrentNamespaceCallbackSuccess(caller, result){
   console.log(result)
   if (result.status == 200 || result.status == 201) {
-    //mcpjs['util/util'].commonAlert(data.message)
     location.reload();
   } else {
       mcpjs['util/util'].commonAlert(result.data.error)
@@ -856,5 +857,41 @@ export function displayStateChange(target, action, row) {
     }
 
     //
+  }
+}
+
+export function setCurrentWorkspace(caller, wsId) {
+  console.log("setCurrentWorkspace : " + wsId);
+  if (wsId) {
+    var obj = {
+      ID: wsId,
+    };
+    var controllerKeyName = "SetCurrentWorkspace";
+    var optionParamMap = new Map();
+    optionParamMap.set("{wsId}", wsId);
+    mcpjs["util/pathfinder"].postCommonData(
+      caller,
+      controllerKeyName,
+      optionParamMap,
+      obj,
+      mcpjs["util/common"].setCurrentWorkSpaceCallbackSuccess
+    );
+
+  } else {
+    mcpjs["util/util"].commonAlert(
+      "WorkSpace가 선택되어 있지 않습니다.\n등록되어 있지 않은 경우 등록하세요."
+    );
+    //location.href ="/NS/reg";
+  }
+}
+
+// namespace 변경완료 시 화면 reloading
+export function setCurrentWorkSpaceCallbackSuccess(caller, result){
+  console.log(result)
+  if (result.status == 200 || result.status == 201) {
+    //mcpjs['util/util'].commonAlert(data.message)
+    location.reload();
+  } else {
+      mcpjs['util/util'].commonAlert(result.data.error)
   }
 }
