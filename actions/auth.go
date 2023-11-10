@@ -141,7 +141,7 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 			}
 
 			//if err := tx.Update(authSession); err != nil {
-			if err := tx.Save(authSession); err != nil {
+			if err := tx.UpdateColumns(authSession, "iam_manager_access_token"); err != nil {
 				log.Println("authSession update Create save err ", err)
 				return err
 			}
