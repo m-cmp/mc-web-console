@@ -68,7 +68,7 @@ func (a actions) NamespaceList(c buffalo.Context) error {
 	ns := &models.Namespaces{}
 
 	if uid := c.Session().Get("current_user_id"); uid != nil {
-
+		log.Println("(a actions) NamespaceList ", uid)
 		tx := c.Value("tx").(*pop.Connection)
 
 		q := tx.Eager().Where("user_id = ?", uid)
