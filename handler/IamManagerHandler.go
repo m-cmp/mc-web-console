@@ -258,7 +258,7 @@ func DelIamManagerRole(iamAccessToken string, mciamRoleId string) (frameworkmode
 	return webStatus, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
-// Workspace 조회
+// Iam에 등록된 모든 Workspace 조회
 func IamManagerWorkspaceList(iamAccessToken string) ([]iammanager.MCIamWorkspace, frameworkmodel.WebStatus) {
 	workspaceList := []iammanager.MCIamWorkspace{}
 
@@ -278,25 +278,48 @@ func IamManagerWorkspaceList(iamAccessToken string) ([]iammanager.MCIamWorkspace
 
 	body, _ := ioutil.ReadAll(respBody)
 	json.Unmarshal(body, &workspaceList)
-
-	// 오류인데도 200을 반환함. 수정 필요.
-	if len(workspaceList) == 0 {
-		//var target interface{}
-		var target map[string]interface{}
-		json.Unmarshal(body, &target)
-		fmt.Println(fmt.Println(target))
-		fmt.Println(target["err"])
-		fmt.Println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-		if target["err"] != nil {
-			return workspaceList, frameworkmodel.WebStatus{StatusCode: 500, Message: target["err"].(string)}
-		}
-	}
-
-	log.Println(" workspace resp 111111111111111111")
 	log.Println(workspaceList)
-	// fmt.Println(dataDiskInfoList["dataDisk"])
 
 	return workspaceList, frameworkmodel.WebStatus{StatusCode: respStatus}
+}
+
+// user에게 할당된 workspace 목록
+func IamManagerWorkspaceUserRoleMappingListByUserId(iamAccessToken string, userId string) ([]iammanager.MCIamWsUserRoleMapping, frameworkmodel.WebStatus) {
+	workspaceList := []iammanager.MCIamWsUserRoleMapping{}
+
+	var originalUrl = "/api/v1/mapping/user/id/{userId}/workspace/"
+	var paramMapper = make(map[string]string)
+	paramMapper["{userId}"] = userId
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+	url := util.IAMMANAGER + urlParam
+
+	resp, err := util.CommonIamHttp(url, nil, http.MethodGet, iamAccessToken)
+	if err != nil {
+		fmt.Println("IamManagerWorkspaceListByUser err ", err)
+		fmt.Println("IamManagerWorkspaceListByUser resp ", resp)
+		return workspaceList, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+	log.Println(" resp ", resp)
+
+	// defer body.Close()
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+
+	returnStatus := frameworkmodel.WebStatus{}
+	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
+		errorInfo := iammanager.MCIamRequestFail{}
+		json.NewDecoder(respBody).Decode(&errorInfo)
+		returnStatus.Message = errorInfo.Error
+		//returnStatus.StatusCode = errorInfo.Code
+	} else {
+		// body, _ := ioutil.ReadAll(respBody)
+		// json.Unmarshal(body, &workspaceList)
+		json.NewDecoder(respBody).Decode(&workspaceList)
+	}
+	returnStatus.StatusCode = respStatus
+	log.Println(workspaceList)
+
+	return workspaceList, returnStatus
 }
 
 // id로 workspace 조회
@@ -419,10 +442,11 @@ func DelIamManagerWorkspace(iamAccessToken string, mciamWorkspaceId string) (fra
 }
 
 // Iam의 Workspace내 Namespace 조회
-func IamManagerProjectList(iamAccessToken string, workspaceId string) ([]iammanager.MCIamProject, frameworkmodel.WebStatus) {
-	fmt.Println("IamManagerNamespaceList ************ : ")
-	mciamProjectList := []iammanager.MCIamProject{}
-	var originalUrl = "/api/v1/workspace/id/{workspaceId}/namespace/"
+func IamManagerProjectList(iamAccessToken string, workspaceId string) (iammanager.MCIamWsProjectMapping, frameworkmodel.WebStatus) {
+	fmt.Println("IamManagerNamespaceList")
+	mciamWorkspaceProjectList := iammanager.MCIamWsProjectMapping{}
+	//var originalUrl = "/api/v1/workspace/id/{workspaceId}/namespace/"
+	var originalUrl = "/api/v1/mapping/ws/id/{workspaceId}/project/"
 	var paramMapper = make(map[string]string)
 	paramMapper["{workspaceId}"] = workspaceId
 	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
@@ -432,27 +456,30 @@ func IamManagerProjectList(iamAccessToken string, workspaceId string) ([]iammana
 
 	if err != nil {
 		fmt.Println(err)
-		return mciamProjectList, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return mciamWorkspaceProjectList, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	body, _ := ioutil.ReadAll(respBody)
-	json.Unmarshal(body, &mciamProjectList)
+	json.Unmarshal(body, &mciamWorkspaceProjectList)
 
 	// return respBody, respStatus
 	log.Println(respBody)
 	//json.NewDecoder(respBody).Decode(&mciamNamespaceList)
 
-	return mciamProjectList, frameworkmodel.WebStatus{StatusCode: respStatus}
+	return mciamWorkspaceProjectList, frameworkmodel.WebStatus{StatusCode: respStatus}
 }
 
 // Iam의 Namespace 조회
+// valid하면 해당 project 정보를 반환.
 func GetIamManagerProject(iamAccessToken string, workspaceId string, projectId string) (iammanager.MCIamProject, frameworkmodel.WebStatus) {
 	fmt.Println("GetIamManagerRoleByID ************ : ")
-	mciamProject := iammanager.MCIamProject{}
-	var originalUrl = "/api/v1/workspace/id/{workspaceId}/project/id/{projectId}"
+	//mciamProject := iammanager.MCIamProject{}
+	mciamProject := iammanager.MCIamProjectResp{}
+	//var originalUrl = "/api/v1/workspace/id/{workspaceId}/project/id/{projectId}"
+	var originalUrl = "/api/v1/mapping/ws/id/{workspaceId}/project/id/{projectId}" // TODO : ws -> workspace로 변경 필요
 	var paramMapper = make(map[string]string)
 	paramMapper["{workspaceId}"] = workspaceId
 	paramMapper["{projectId}"] = projectId
@@ -463,7 +490,7 @@ func GetIamManagerProject(iamAccessToken string, workspaceId string, projectId s
 
 	if err != nil {
 		fmt.Println(err)
-		return mciamProject, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return mciamProject.Project, frameworkmodel.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -474,5 +501,5 @@ func GetIamManagerProject(iamAccessToken string, workspaceId string, projectId s
 
 	json.NewDecoder(respBody).Decode(&mciamProject)
 
-	return mciamProject, frameworkmodel.WebStatus{StatusCode: respStatus}
+	return mciamProject.Project, frameworkmodel.WebStatus{StatusCode: respStatus}
 }

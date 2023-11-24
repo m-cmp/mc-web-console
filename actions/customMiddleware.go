@@ -150,33 +150,29 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		if uid := c.Session().Get("current_workspace_id"); uid != nil {
 			c.Session().Set("current_workspace_id", "")
 		}
-		if uid := c.Session().Get("current_namespace"); uid != nil {
-			c.Session().Set("current_namespace", "")
+		//if uid := c.Session().Get("current_namespace"); uid != nil {
+		//	c.Session().Set("current_namespace", "")
+		//}
+		//if uid := c.Session().Get("current_namespace_id"); uid != nil {
+		//	c.Session().Set("current_namespace_id", "")
+		//}
+
+		if uid := c.Session().Get("current_project_name"); uid != nil {
+			c.Session().Set("current_project_name", "")
 		}
-		if uid := c.Session().Get("current_namespace_id"); uid != nil {
-			c.Session().Set("current_namespace_id", "")
+		if uid := c.Session().Get("current_project_id"); uid != nil {
+			c.Session().Set("current_project_id", "")
 		}
 
 		if uid := c.Session().Get("current_user_id"); uid != nil {
 			log.Println("uid ", uid)
 
-			if current_namespace := c.Session().Get("current_namespace"); current_namespace == nil {
-				c.Set("current_namespace", current_namespace)
+			if current_project_name := c.Session().Get("current_project_name"); current_project_name == nil {
+				c.Set("current_project_name", current_project_name)
 			}
-			if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
-				c.Set("current_namespace_id", current_namespace_id)
+			if current_project_id := c.Session().Get("current_project_id"); current_project_id == nil {
+				c.Set("current_project_id", current_project_id)
 			}
-
-			// default Namespace는 현재 지정하지 않으므로 주석처리
-			// if current_namespace_id := c.Session().Get("current_namespace_id"); current_namespace_id == nil {
-			// 	// ns, _ := handler.GetNamespaceById(u.DefaultNamespace)
-			// 	// c.Set("current_namespace", ns.NsName)
-			// 	// c.Set("current_namespace_id", ns.ID)
-			// } else {
-			// 	current_namespace := c.Session().Get("current_namespace")
-			// 	c.Set("current_namespace", current_namespace)
-			// 	c.Set("current_namespace_id", current_namespace_id)
-			// }
 
 			if util.USE_MCIAM == "Y" {
 				//workspaceList := []iammanager.MCIamWorkspace{}
@@ -193,8 +189,9 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 				iamAccessToken := authSession.IamManagerAccessToken
 
 				// TODO : valid token 로직 추가
-
-				workspaceList, respStatus := handler.IamManagerWorkspaceList(iamAccessToken)
+				//mappingPath := app.Group(apiPath + "mapping")
+				//mappingPath.POST("/ws/user", MappingWsUser)
+				workspaceUserRoleMappingList, respStatus := handler.IamManagerWorkspaceUserRoleMappingListByUserId(iamAccessToken, authSession.MCUserID)
 				if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
 					log.Println("respStatus-")
 					log.Println(respStatus)
@@ -202,47 +199,36 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 					if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
 						log.Println(respStatus)
 						c.Flash().Add("fail", "IAM Session expired")
-						// return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
-						//  	"message": "Session expired. please login again",
-						//  	"status":  "fail",
-						// }))
-						return errors.WithStack(errors.New(respStatus.Message))
+
+						// 할당된 workspace가 없을 수도 있음
+
+						// currentWorkspace 가 설정되어 있으면 project 목록도.
+						//IamManagerProjectList(iamAccessToken string, workspaceId string)
+					} else {
+						currentWorkspaceID := c.Session().Get("current_workspace_id").(string)
+						for _, wsMapping := range workspaceUserRoleMappingList {
+							wsID := wsMapping.ID
+							if wsID == currentWorkspaceID {
+								// project 목록 조회.
+								projectList, respStatus := handler.IamManagerProjectList(iamAccessToken, currentWorkspaceID)
+								if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
+									log.Println(respStatus)
+									c.Set("project_list", projectList)
+								}
+							}
+						}
 					}
-
-					// token이 expired 면 다시 받아온다.
-					// user 정보조회 : id/pw 필요.
-					// c.Session().Set("current_user_pw", u.Password)//TODO : 자동으로 로그인 시킬지 refreshtoken을 받아서 처리될지에 따라 보완
-
-					// iamLoginInfo := iammanager.IamLoginInfo{}
-					// iamLoginInfo.UserName = uid.(string)
-					// if upw := c.Session().Get("current_user_pw"); upw != nil {
-					// 	iamLoginInfo.Password = upw.(string)
-					// }
-					// refreshIamAccessToken, respStatus := handler.IamManagerLogin(iamLoginInfo)
-					// if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
-					// 	// return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
-					// 	// 	"message": "login failed",
-					// 	// 	"status":  "fail",
-					// 	// }))
-					// 	log.Println(respStatus)
-					// 	c.Flash().Add("fail", "IAM Session expired")
-					// 	return errors.WithStack(errors.New(respStatus.Message))
-					// }
-					// c.Set("iamAccessToken", refreshIamAccessToken)
-					// log.Println("refresh token으로 다시 시도")
-					// workspaceList, respStatus := handler.IamManagerWorkspaceList(refreshIamAccessToken)
-					// c.Set("assigned_ws_list", workspaceList)
-				} else {
-					// log.Println(workspaceList)
-					// for _, workspace := range workspaceList {
-					// 	assignedWorkspaceMap[workspace.ID] = workspace.Name
-					// }
-					// log.Println(assignedWorkspaceMap)
-					c.Set("assigned_ws_list", workspaceList)
 				}
+				c.Set("assigned_ws_list", workspaceUserRoleMappingList)
+
 				log.Println("c.set curent_user_id ", uid)
-				c.Set("current_user_id", uid.(string))
-				log.Println("c.set curent_user_id2 ", uid)
+				uuidValue, ok := uid.(uuid.UUID)
+				if !ok {
+					log.Println("uid is not of type uuid.UUID")
+				}
+				//c.Set("current_user_id", uid.(string))
+				c.Set("current_user_id", uuidValue.String())
+				log.Println("c.set curent_user_id2 ", uuidValue)
 				//c.Set("current_user_level", u.UserLevel)
 			} else {
 				log.Println("getUser By id from db")

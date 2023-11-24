@@ -7,6 +7,7 @@ import (
 	"encoding/gob"
 	"net/http"
 	"strings"
+
 	//"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -18,6 +19,8 @@ import (
 	middleware "mc_web_console/actions/middleware"
 	frameworkmodel "mc_web_console/frameworkmodel"
 	iammanager "mc_web_console/frameworkmodel/iammanager"
+	"mc_web_console/frameworkmodel/tumblebug/common"
+	tbcommon "mc_web_console/frameworkmodel/tumblebug/common"
 	"mc_web_console/handler"
 	"mc_web_console/models"
 
@@ -116,9 +119,9 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 		log.Println("get iammanager access token ", iamAccessToken)
 		// token을 db에 저장 : session에 저장하기에 너무 길어서 db에 저장.
 		authSession := &models.AuthSession{
-			MCUserID:              u.Email,
-			MCAccessToken:         u.Password, // 이걸 빼?
-			IamManagerAccessToken: iamAccessToken,
+			MCUserID:      u.Email,
+			MCAccessToken: u.Password, // 이걸 빼?
+			//IamManagerAccessToken: iamAccessToken,
 		}
 		tx := c.Value("tx").(*pop.Connection)
 		err := tx.Where("mcuser_id = ?", authSession.MCUserID).First(authSession)
@@ -134,17 +137,46 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 				return err
 			}
 		} else { // 있으면 update
-			if verrs, err := authSession.Validate(tx); err != nil {
-				log.Println("authSession update Validate verrs ", verrs)
-				log.Println("authSession update Validate save err ", err)
-				return err
-			}
+			authSession.IamManagerAccessToken = iamAccessToken
 
-			//if err := tx.Update(authSession); err != nil {
+			// verrs, err := authSession.Validate(tx)
+			// if verrs != nil {
+			// 	log.Println("authSession update Validate verrs ", verrs)
+			// 	return err
+			// }
+			// if err != nil {
+			// 	log.Println("authSession update Validate save err ", err)
+			// 	return err
+			// }
+
+			// if err := tx.Update(authSession); err != nil {
+			// log.Println("update iam sccess Token to")
+			// log.Println(authSession.IamManagerAccessToken)
+			// }
 			if err := tx.UpdateColumns(authSession, "iam_manager_access_token"); err != nil {
 				log.Println("authSession update Create save err ", err)
 				return err
 			}
+
+			// query := models.DB.Q()
+			// query = query.Where("mcuser_id = ?", authSession.MCUserID)
+			// updateCount, err := query.UpdateQuery(authSession)
+			// if err != nil {
+			// 	log.Println("UpdateQuery authSession err", err)
+			// 	return err
+			// }
+			// //if updateCount == 0{
+			// log.Println("UpdateQuery authSession updated ", updateCount)
+			// //}
+
+			// 됨.
+			// sql := "UPDATE auth_sessions SET iam_manager_access_token = $1 WHERE mcuser_id = $2"
+			// if err := tx.RawQuery(sql, iamAccessToken, authSession.MCUserID).Exec(); err != nil {
+			// 	log.Println("UpdateQuery authSession err", err)
+			// 	return err
+			// }
+
+			//UpdateQuery(model interface{}, columnNames ...string) (int64, error)
 		}
 
 		//err = tx.Create(authSession)
@@ -310,8 +342,9 @@ func (a actions) UserInfo(c buffalo.Context) error {
 		}))
 	}
 
-	workspaceList := []iammanager.MCIamWorkspace{}
-	namespaceList := []models.Namespace{}
+	workspaceUserRoleMappingList := []iammanager.MCIamWsUserRoleMapping{}
+	//namespaceList := []models.Namespace{}
+	namespaceList := []tbcommon.TbNsInfo{}
 	respStatus := frameworkmodel.WebStatus{}
 
 	// Iam Manager로 로그인
@@ -332,9 +365,9 @@ func (a actions) UserInfo(c buffalo.Context) error {
 			}))
 		}
 		log.Println(authSession)
-		log.Println("Get user workspaces")
+		log.Println("Get user workspaces at auth")
 		// iam manager에서 workspace 목록 조회
-		workspaceList, respStatus = handler.IamManagerWorkspaceList(authSession.IamManagerAccessToken)
+		workspaceUserRoleMappingList, respStatus = handler.IamManagerWorkspaceUserRoleMappingListByUserId(authSession.IamManagerAccessToken, authSession.MCUserID)
 		log.Println("respStatus", respStatus)
 		if respStatus.StatusCode != 200 {
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
@@ -342,27 +375,57 @@ func (a actions) UserInfo(c buffalo.Context) error {
 				"status": respStatus.StatusCode,
 			}))
 		}
-		log.Println(workspaceList)
+		log.Println(workspaceUserRoleMappingList)
+		log.Println("current_workspace_id ")
+
+		if userInfo.CurrentWorkspaceID != "" {
+			currentWorkspaceID := userInfo.CurrentWorkspaceID
+			for _, wsMapping := range workspaceUserRoleMappingList {
+				log.Println("compare  wsMapping id")
+				log.Println("currentWorkspaceID = ", currentWorkspaceID)
+				log.Println("Workspace.ID = ", wsMapping.Workspace.ID)
+				wsID := wsMapping.Workspace.ID
+				// ws가 선택되어 있으면 project 목록을 넘긴다.
+				if wsID == currentWorkspaceID {
+					// project 목록 조회.
+					mappingProjectList, respStatus := handler.IamManagerProjectList(authSession.IamManagerAccessToken, currentWorkspaceID)
+					if respStatus.StatusCode != 200 && respStatus.StatusCode != 201 {
+						log.Println(respStatus)
+						//c.Set("project_list", projectList)
+					} else {
+						for _, project := range mappingProjectList.Projects {
+							namespaceList = append(namespaceList, common.TbNsInfo{ID: project.ID, Name: project.Name})
+						}
+					}
+					// spew.Dump(userInfo)
+					// spew.Dump(mappingProjectList)
+				}
+			}
+		}
+
+		//if c.Session().Get("current_namespace_id") != nil {
+		//	log.Println("Get user namespaces")
+		// iam manager에서 workspace의 namespace 목록 조회 또는 추출
+		//namespaceList = append(namespaceList, models.Namespace{ID: "ns01", NsName: "ns01"})
+		//}
+
 		//"id": "83f1636c-a4c2-479b-a31f-83b73e1e5674",
 		// "name": "test_workspace",
 		// "description": "test_workspace create",
 		// "created_at": "2023-11-02T18:22:23.719184Z",
 		// "updated_at": "2023-11-02T18:22:23.719184Z"
-		log.Println("Get user namespaces")
-		// iam manager에서 workspace의 namespace 목록 조회 또는 추출
-		namespaceList = append(namespaceList, models.Namespace{ID: "ns01", NsName: "ns01"})
 
 	} else {
-		// userNamespace 목록 조회
-		namespaceList = append(namespaceList, models.Namespace{ID: "ns01", NsName: "ns01"})
+		// userNamespace 목록 조회 // TODO : IAM Manager를 사용하지 않는 경우에는 local db에서 nsList를 조회하여 넘겨야 함.
+		namespaceList = append(namespaceList, common.TbNsInfo{ID: "ns01", Name: "ns01"})
 	}
 	middleware.SetUserSession(c, userInfo)
 
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
-		"message":       "success",
-		"status":        200,
-		"userInfo":      userInfo,
-		"workspaceList": workspaceList,
-		"namespaceList": namespaceList,
+		"message":                      "success",
+		"status":                       200,
+		"userInfo":                     userInfo,
+		"workspaceUserRoleMappingList": workspaceUserRoleMappingList,
+		"namespaceList":                namespaceList,
 	}))
 }

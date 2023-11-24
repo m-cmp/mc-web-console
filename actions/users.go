@@ -2,6 +2,7 @@ package actions
 
 import (
 	"log"
+	//frameworkmodel "mc_web_console/frameworkmodel"
 	"net/http"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 
 	middleware "mc_web_console/actions/middleware"
 	iammanager "mc_web_console/frameworkmodel/iammanager"
+	"mc_web_console/frameworkmodel/tumblebug/common"
 	tbcommon "mc_web_console/frameworkmodel/tumblebug/common"
 
 	util "mc_web_console/util"
@@ -71,30 +73,31 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 
 	ns_err := NamespaceCreateDefault(c, default_ns, u)
 	if ns_err != nil {
-		spew.Dump("=====================")
-		spew.Dump("NamespaceCreateDefault error")
-		spew.Dump("=====================")
+		log.Println("=====================")
+		log.Println("NamespaceCreateDefault error")
+		log.Println("=====================")
 		return errors.WithStack(ns_err)
 	}
 	// 사용자가 가입하고 signin 으로 로그인하게 보낼 경우는
 	// 세션에 사용자 ID를 담을 필요가 없음
 	// c.Session().Set("current_user_id", u.ID)
 	// c.Flash().Add("success", "Welcome to Buffalo!")
-	spew.Dump("=====================")
-	spew.Dump("여기까지 실행 됐음!!!")
-	spew.Dump("=====================")
+	log.Println("go to authNewForm ")
 	//return c.Redirect(301, "/auth/signin/mngform/")
 	//return RedirectTool(c,"authNewFormPath")
 	return RedirectTool(c, "authNewForm")
 }
 
 // 현재 사용자의 workspace 설정
+// workspace 변경시에는 projectList반환
 func (a actions) SetCurrentWorkspace(c buffalo.Context) error {
 	log.Println("SetCurrentWorkspace")
 
 	//WorkspaceID
 	mcimWorkspace := &iammanager.MCIamWorkspace{}
+	namespaceList := []tbcommon.TbNsInfo{} // TODO : mciam을 사용하지 않는 경우 namespace라고 해야하나? project로 통일 필요
 	if err := c.Bind(mcimWorkspace); err != nil {
+		log.Println("Bind error ", err)
 		return c.Render(http.StatusBadRequest, r.JSON(err))
 	}
 	workspaceID := mcimWorkspace.ID
@@ -120,14 +123,36 @@ func (a actions) SetCurrentWorkspace(c buffalo.Context) error {
 		tx := c.Value("tx").(*pop.Connection)
 		err := tx.Where("mcuser_id = ?", userInfo.UserID).First(authSession)
 		if err != nil {
+			log.Println(" get user info failed ", err)
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
 				"error": err,
 			}))
 		}
 		log.Println(authSession)
-		log.Println("Get user workspaces")
-		// iam manager에서 workspace 조회
-		workspace, respStatus := handler.GetIamManagerWorkspaceByID(authSession.IamManagerAccessToken, workspaceID)
+		log.Println("Get user workspaces at users")
+		// iam manager에서 workspace 조회( 검증 )
+
+		// 1안 : workspaceId 로 조회하여 검증
+		//workspace, respStatus := handler.GetIamManagerWorkspaceByID(authSession.IamManagerAccessToken, workspaceID)
+		//log.Println("respStatus", respStatus)
+		//if respStatus.StatusCode != 200 {
+		//	return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
+		//		"error":  respStatus.Message,
+		//		"status": respStatus.StatusCode,
+		//	}))
+		//}
+		//if workspace.ID == "" {
+		//	log.Println("workspace doesn't exist")
+		//	return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
+		//		"error":  respStatus.Message,
+		//		"status": respStatus.StatusCode,
+		//	}))
+		//}
+		//log.Println(workspace)
+
+		// 2안 : 할당된 workspace정보중에서 현재 workspace가 있는지 확인
+		//// 해당 workspace에 할당된 namespace 목록 조회 : 검증만 하고 return 하므로 projectList 조회를 할 필요 없음(화면 reload되면서 조회함)
+		workspaceMapiingProjectList, respStatus := handler.IamManagerProjectList(authSession.IamManagerAccessToken, workspaceID)
 		log.Println("respStatus", respStatus)
 		if respStatus.StatusCode != 200 {
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
@@ -135,20 +160,26 @@ func (a actions) SetCurrentWorkspace(c buffalo.Context) error {
 				"status": respStatus.StatusCode,
 			}))
 		}
-		if workspace.ID == "" {
-			log.Println("workspace doesn't exist")
-			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
-				"error":  respStatus.Message,
-				"status": respStatus.StatusCode,
-			}))
+		log.Println(workspaceMapiingProjectList)
+		log.Println("workspaceID = ", workspaceID)
+		log.Println("workspaceMapiingProjectList.WsID = ", workspaceMapiingProjectList.WsID)
+
+		if workspaceID == workspaceMapiingProjectList.WsID {
+			log.Println("settled CurrentWorkspace")
+
+			userInfo.CurrentWorkspaceID = workspaceMapiingProjectList.WsID
+			userInfo.CurrentWorkspaceName = workspaceMapiingProjectList.Ws.Name
+			userInfo.CurrentNamespaceID = ""   // workspace변경이되면 namespace는 초기화
+			userInfo.CurrentNamespaceName = "" // workspace변경이되면 namespace는 초기화
+			middleware.SetUserSession(c, userInfo)
+
+			for _, project := range workspaceMapiingProjectList.Projects {
+				namespaceList = append(namespaceList, common.TbNsInfo{ID: project.ID, Name: project.Name})
+			}
 		}
-		log.Println(workspace)
-		userInfo.CurrentWorkspaceID = workspace.ID
-		userInfo.CurrentWorkspaceName = workspace.Name
-		userInfo.CurrentNamespaceID = ""   // workspace변경이되면 namespace는 초기화
-		userInfo.CurrentNamespaceName = "" // workspace변경이되면 namespace는 초기화
-		middleware.SetUserSession(c, userInfo)
+		log.Println("settled CurrentWorkspace")
 	} else {
+		log.Println(" mciam is not activated ")
 		// MCIAM을 사용해야 workspace를 이용할 수 있음.
 		return c.Render(301, r.JSON(map[string]interface{}{
 			"error":  "Please activate MCIAM-Manager ",
@@ -161,6 +192,7 @@ func (a actions) SetCurrentWorkspace(c buffalo.Context) error {
 		"CurrentWorkspaceName": userInfo.CurrentWorkspaceName,
 		"CurrentNamespaceID":   userInfo.CurrentNamespaceID,
 		"CurrentNamespaceName": userInfo.CurrentNamespaceName,
+		"ProjectList":          namespaceList,
 	}))
 }
 
@@ -217,7 +249,8 @@ func (a actions) SetCurrentNamespace(c buffalo.Context) error {
 				"status": respStatus.StatusCode,
 			}))
 		}
-		if project.ID != "" {
+		log.Println(project)
+		if project.ID == "" {
 			log.Println("namespace doesn't exist")
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
 				"error":  respStatus.Message,
