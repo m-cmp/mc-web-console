@@ -15,6 +15,7 @@ type UserSession struct {
 	UserID               string
 	CurrentWorkspaceName string
 	CurrentWorkspaceID   string
+	CurrentWorkspaceRole string
 	CurrentNamespaceName string
 	CurrentNamespaceID   string
 	CurrentUserToken     string // iam manager를 위해 set 해야 함

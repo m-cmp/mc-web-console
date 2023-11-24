@@ -626,7 +626,7 @@ export function setCurrentNameSpace(caller, nsId) {
 // namespace 변경완료 시 화면 reloading
 export function setCurrentNamespaceCallbackSuccess(caller, result){
   console.log(result)
-  if (result.status == 200 || result.status == 201) {
+  if (result.status == 200 || result.status == 201) {    
     location.reload();
   } else {
       mcpjs['util/util'].commonAlert(result.data.error)
@@ -885,12 +885,40 @@ export function setCurrentWorkspace(caller, wsId) {
   }
 }
 
-// namespace 변경완료 시 화면 reloading
+// workspace 변경시 project 목록 , role 등을 가지고 있어 해당 값으로 Set.
 export function setCurrentWorkSpaceCallbackSuccess(caller, result){
   console.log(result)
   if (result.status == 200 || result.status == 201) {
+
     //mcpjs['util/util'].commonAlert(data.message)
-    location.reload();
+    //location.reload();
+    // getProjectListByWorkspace();
+
+    //var currentNameSpaceID = document.getElementById("currentNameSpaceID").val();
+    var currentNameSpaceID = document.getElementById("currentNameSpaceID").value;
+    console.log(" currentNameSpaceID ======= ", currentNameSpaceID)
+    var userProjectList = result.data.ProjectList;// 선택한 ws의 namespace 또는 user의 namespace 목록
+    var nsLiHtml = "";
+    var nsSelectHtml = '<option value="">Select a Project</option>'
+    for (var i in userProjectList) {
+      
+      var project = userProjectList[i];
+      console.log(project)
+      //if (project.id != "") {
+        //nsLiHtml += '<li><a href="#" onclick="mcpjs[\'util/common\'].setCurrentNameSpace(\'TobBox\',\'' + namespace.id + '\')">' + namespace.name + '</a></li>';          
+        //console.log(nsLiHtml)          
+      //}        
+      
+      if (currentNameSpaceID == project.id) {
+        nsSelectHtml += '<option value="' + project.id + '" selected>' + project.name + '</option>'
+      }else{
+        nsSelectHtml += '<option value="' + project.id + '">' + project.name + '</option>'
+      }
+    }
+    //$("#menuNameSpaceList").append(nsLiHtml);
+    $("#topProjectList").empty()
+    $("#topProjectList").append(nsSelectHtml)
+    
   } else {
       mcpjs['util/util'].commonAlert(result.data.error)
   }

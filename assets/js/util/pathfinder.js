@@ -2283,6 +2283,7 @@ export function setLeftMenu() {
 // userName, namespace, workspace, wsList, nsList 등.
 export function GetUserInfo() {
   var url = getURL("UserInfo");
+  console.log(url)
   axios
     .get(url, {
       headers: {
@@ -2310,15 +2311,20 @@ export function GetUserInfo() {
       $("#currentWorkSpaceID").val(currentWorkspaceId);
       $("#currentNameSpaceID").val(currentWorkspaceId);
 
-      var userWorkspace = result.data.workspaceList;// 유저의 모든 ws      
+
+      console.log("GetUserInfo =======================");
+      console.log("currentWorkspaceId = ", currentWorkspaceId);
+      console.log("currentNamespaceId = ", currentNamespaceId);
+
+      var workspaceUserRoleMappingList = result.data.workspaceUserRoleMappingList;// 유저의 모든 ws      
       var wsLiHtml = "";
       var wsSelectHtml = '<option value="">Select a Workspace</option>'
-      for (var i in userWorkspace) {
+      for (var i in workspaceUserRoleMappingList) {
         
-        var workspace = userWorkspace[i];
+        var workspace = workspaceUserRoleMappingList[i].Ws;
         console.log(workspace)
         console.log("workspace.name ", workspace.name)
-        //'<tr onclick="setValueToFormObj(\'es_imageList\', \'tab_vmImage\', \'vmImage\',' + vImageIndex + ', \'e_imageId\');">'
+        
         if (workspace.name != "") {
           wsLiHtml += '<li><a href="#" onclick="mcpjs[\'util/common\'].setCurrentWorkspace(\'TobBox\',\'' + workspace.id + '\')">' + workspace.name + '</a></li>';
           console.log(wsLiHtml)          
@@ -2358,6 +2364,6 @@ export function GetUserInfo() {
     })
     .catch((error) => {
       console.warn(error);
-      mcpjs["util/util"].commonAlert(error);
+      mcpjs["util/util"].commonAlert("failed to get User Info " + error.message);
     });
 }

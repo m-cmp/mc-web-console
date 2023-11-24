@@ -121,6 +121,7 @@ func RoutesManager() {
 	// workspace
 	app.GET("/api/workspace/", getHandlerFuncByName("WorkspaceList")).Name("WorkspaceList")
 	app.GET("/api/workspace/id/{workspaceId}", getHandlerFuncByName("GetWorkspace")).Name("GetWorkspace")
+	app.GET("/api/workspace/user/", getHandlerFuncByName("WorkspaceListByUser")).Name("WorkspaceListByUser") // 세션에 있는 유저정보사용
 
 	// project
 	app.GET("/api/project/", getHandlerFuncByName("ProjectList")).Name("ProjectList")
