@@ -100,12 +100,16 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 		app.Use(translations())
 
+		RoutesManager()
+
 		app.Use(SkipMiddlewareByRoutePath) // 경로에 따라 middleware skip. ( Authorize 도 같이 처리 함.)
 
 		//app.Use(Authorize)
 		app.Use(SetCloudProviderList)
 
-		RoutesManager(app)
+		//app.Use(middleware.DynamicRoutes)
+		//RoutesManager(app)
+
 		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
 
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory

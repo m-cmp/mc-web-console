@@ -15,7 +15,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// TODO : Mcismng -> McisMng(대문자) 으로 이름 변경할 것.(app.go 도 함께.)
 func (a actions) McisMngForm(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("operations/mcismng/mngform.html"))
 }

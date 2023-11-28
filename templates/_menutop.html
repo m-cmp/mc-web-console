@@ -11,6 +11,20 @@
 
     <div class="logo"><a href="/main"><img src="/assets/images/common/img_logo.png" alt=""></a></div>
 
+    <!-- workspace, project-->
+    <div>
+      <span>Workspace</span>
+      
+      <select id="topWorkspaceList" onchange="mcpjs['util/common'].setCurrentWorkspace('', this.value)">
+        <option value="" selected>Select a Workspace</option>
+      </select>
+      
+      <span>Project</span>      
+      <select id="topProjectList" onchange="mcpjs['util/common'].setCurrentNameSpace('', this.value)">
+        <option value="" selected>Select a Project</option>
+      </select>
+    </div>
+
   <div class="topmenu">
     <ul>
       <li class="logout">
@@ -56,7 +70,9 @@
         </a>
       </li>
       <li class="user">
-       <%= current_user_id %>
+        <a href="javascript:void(0);" onclick="mcpjs['util/util'].showHelp()">
+          <span class="material-icons">person</span>
+          <span id="currentUserID"></span>
         </a>
       </li>
     </ul>

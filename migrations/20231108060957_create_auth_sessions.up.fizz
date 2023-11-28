@@ -1,0 +1,8 @@
+create_table("auth_sessions") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("mcuser_id", "string", {})	
+	t.Column("mcaccess_token", "string", {})
+    t.Column("iam_manager_access_token", "string", {})	
+    t.Column("expired_at", "timestamp", {})
+	t.Timestamps()
+}
