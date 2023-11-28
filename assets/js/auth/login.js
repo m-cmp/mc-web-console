@@ -54,7 +54,7 @@ $(document).ready(function () {
         .then((result) => {
           console.log("login result : ", result);
           if (result.status == 200) {
-            getNameSpace();
+            //getNameSpace();
             //console.log("get result Data : ", result.data.LoginInfo);
             //$("#popNamespaceList").modal("toggle");
             location.href = "/main";
@@ -144,7 +144,7 @@ export function enterKeyForLogin() {
 // 유저의 namespace 목록 조회
 export function getNameSpace() {
   var url = "/api/namespace/";
-
+  
   // token
   axios
     .get(url, {
@@ -293,11 +293,11 @@ export function createNameSpace() {
 
           //mcpjs["util/util"].commonAlert("Success Create NameSpace")
 
-          getNameSpace(); // 생성 후 namespace목록 조회
-          $("#btnToggleNamespace").click();
+          //getNameSpace(); // 생성 후 namespace목록 조회
+          //$("#btnToggleNamespace").click();
           // $("#namespace").val('')
           // $("#nsDesc").val('')
-          clearNameSpaceCreateForm();
+          //clearNameSpaceCreateForm();
         } else {
           mcpjs["util/util"].commonAlert("Fail Create NameSpace");
         }

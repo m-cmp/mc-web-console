@@ -2277,3 +2277,93 @@ export function setLeftMenu() {
       mcpjs["util/util"].commonAlert(error);
     });
 }
+
+
+// 사용자 정보 설정
+// userName, namespace, workspace, wsList, nsList 등.
+export function GetUserInfo() {
+  var url = getURL("UserInfo");
+  console.log(url)
+  axios
+    .get(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    .then((result) => {
+      var data = result.data;
+      console.log("get data : ", data);
+      var userInfo = result.data.userInfo;
+      console.log("userInfo")
+      console.log(userInfo)
+
+      var currentUserId = userInfo.UserID;
+      //var currentUserName = userInfo.UserName;
+      var currentWorkspaceId = userInfo.CurrentWorkspaceID;
+      var currentWorkspaceName = userInfo.CurrentWorkspaceName;
+      var currentNamespaceId = userInfo.CurrentNamespaceID;
+      var currentNamespaceName = userInfo.CurrentNamespaceName;
+      //var currentUserToken = userInfo.CurrentUserToken;
+
+      $("#user_id").text(currentUserId);
+      //$("#currentUserID").text(currentUserId);// Top Right에 있는 userId
+      
+      $("#currentWorkSpaceID").val(currentWorkspaceId);
+      $("#currentNameSpaceID").val(currentWorkspaceId);
+
+
+      console.log("GetUserInfo =======================");
+      console.log("currentWorkspaceId = ", currentWorkspaceId);
+      console.log("currentNamespaceId = ", currentNamespaceId);
+
+      var workspaceUserRoleMappingList = result.data.workspaceUserRoleMappingList;// 유저의 모든 ws      
+      var wsLiHtml = "";
+      var wsSelectHtml = '<option value="">Select a Workspace</option>'
+      for (var i in workspaceUserRoleMappingList) {
+        
+        var workspace = workspaceUserRoleMappingList[i].Ws;
+        console.log(workspace)
+        console.log("workspace.name ", workspace.name)
+        
+        if (workspace.name != "") {
+          wsLiHtml += '<li><a href="#" onclick="mcpjs[\'util/common\'].setCurrentWorkspace(\'TobBox\',\'' + workspace.id + '\')">' + workspace.name + '</a></li>';
+          console.log(wsLiHtml)          
+        }
+        
+        if (currentWorkspaceId == workspace.id) {
+          wsSelectHtml += '<option value="' + workspace.id + '" selected>' + workspace.name + '</option>'
+        }else{
+          wsSelectHtml += '<option value="' + workspace.id + '">' + workspace.name + '</option>'
+        }                
+      }
+      $("#menuWorkSpaceList").append(wsLiHtml);
+      $("#topWorkspaceList").empty()
+      $("#topWorkspaceList").append(wsSelectHtml)        
+
+      var userNamespace = result.data.namespaceList;// 선택한 ws의 namespace 또는 user의 namespace 목록
+      var nsLiHtml = "";
+      var nsSelectHtml = '<option value="">Select a Project</option>'
+      for (var i in userNamespace) {
+        
+        var namespace = userNamespace[i];
+        console.log(namespace)
+        if (namespace.name != "") {
+          nsLiHtml += '<li><a href="#" onclick="mcpjs[\'util/common\'].setCurrentNameSpace(\'TobBox\',\'' + namespace.id + '\')">' + namespace.name + '</a></li>';          
+          console.log(nsLiHtml)          
+        }        
+        
+        if (currentNamespaceId == namespace.id) {
+          nsSelectHtml += '<option value="' + namespace.id + '" selected>' + namespace.name + '</option>'
+        }else{
+          nsSelectHtml += '<option value="' + namespace.id + '">' + namespace.name + '</option>'
+        }
+      }
+      $("#menuNameSpaceList").append(nsLiHtml);
+      $("#topProjectList").empty()
+      $("#topProjectList").append(nsSelectHtml)
+    })
+    .catch((error) => {
+      console.warn(error);
+      mcpjs["util/util"].commonAlert("failed to get User Info " + error.message);
+    });
+}

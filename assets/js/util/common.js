@@ -597,14 +597,16 @@ export function initJavascriptForCss() {
 //   }
 // }
 // 사용할 namespace set
-// nnamespace 선택하면 화면 reload.
+// namespace 선택하면 화면 reload. 물어보지 않고 바로 Set.
 export function setCurrentNameSpace(caller, nsId) {
   console.log("setNameSpace : " + nsId);
-  if (nsId) {
-    var obj = {};    
+  if (nsId) {    
+    var obj = {
+      ID: nsId,
+    };
     var controllerKeyName = "SetCurrentNamespace";
     var optionParamMap = new Map();
-    optionParamMap.set("{nsId}", nsId);
+    
     mcpjs["util/pathfinder"].postCommonData(
       caller,
       controllerKeyName,
@@ -617,15 +619,14 @@ export function setCurrentNameSpace(caller, nsId) {
     mcpjs["util/util"].commonAlert(
       "NameSpace가 선택되어 있지 않습니다.\n등록되어 있지 않은 경우 등록하세요."
     );
-    //location.href ="/NS/reg";
+   
   }
 }
 
 // namespace 변경완료 시 화면 reloading
 export function setCurrentNamespaceCallbackSuccess(caller, result){
   console.log(result)
-  if (result.status == 200 || result.status == 201) {
-    //mcpjs['util/util'].commonAlert(data.message)
+  if (result.status == 200 || result.status == 201) {    
     location.reload();
   } else {
       mcpjs['util/util'].commonAlert(result.data.error)
@@ -856,5 +857,69 @@ export function displayStateChange(target, action, row) {
     }
 
     //
+  }
+}
+
+export function setCurrentWorkspace(caller, wsId) {
+  console.log("setCurrentWorkspace : " + wsId);
+  if (wsId) {
+    var obj = {
+      ID: wsId,
+    };
+    var controllerKeyName = "SetCurrentWorkspace";
+    var optionParamMap = new Map();
+    optionParamMap.set("{wsId}", wsId);
+    mcpjs["util/pathfinder"].postCommonData(
+      caller,
+      controllerKeyName,
+      optionParamMap,
+      obj,
+      mcpjs["util/common"].setCurrentWorkSpaceCallbackSuccess
+    );
+
+  } else {
+    mcpjs["util/util"].commonAlert(
+      "WorkSpace가 선택되어 있지 않습니다.\n등록되어 있지 않은 경우 등록하세요."
+    );
+    //location.href ="/NS/reg";
+  }
+}
+
+// workspace 변경시 project 목록 , role 등을 가지고 있어 해당 값으로 Set.
+export function setCurrentWorkSpaceCallbackSuccess(caller, result){
+  console.log(result)
+  if (result.status == 200 || result.status == 201) {
+
+    //mcpjs['util/util'].commonAlert(data.message)
+    //location.reload();
+    // getProjectListByWorkspace();
+
+    //var currentNameSpaceID = document.getElementById("currentNameSpaceID").val();
+    var currentNameSpaceID = document.getElementById("currentNameSpaceID").value;
+    console.log(" currentNameSpaceID ======= ", currentNameSpaceID)
+    var userProjectList = result.data.ProjectList;// 선택한 ws의 namespace 또는 user의 namespace 목록
+    var nsLiHtml = "";
+    var nsSelectHtml = '<option value="">Select a Project</option>'
+    for (var i in userProjectList) {
+      
+      var project = userProjectList[i];
+      console.log(project)
+      //if (project.id != "") {
+        //nsLiHtml += '<li><a href="#" onclick="mcpjs[\'util/common\'].setCurrentNameSpace(\'TobBox\',\'' + namespace.id + '\')">' + namespace.name + '</a></li>';          
+        //console.log(nsLiHtml)          
+      //}        
+      
+      if (currentNameSpaceID == project.id) {
+        nsSelectHtml += '<option value="' + project.id + '" selected>' + project.name + '</option>'
+      }else{
+        nsSelectHtml += '<option value="' + project.id + '">' + project.name + '</option>'
+      }
+    }
+    //$("#menuNameSpaceList").append(nsLiHtml);
+    $("#topProjectList").empty()
+    $("#topProjectList").append(nsSelectHtml)
+    
+  } else {
+      mcpjs['util/util'].commonAlert(result.data.error)
   }
 }

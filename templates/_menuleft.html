@@ -1,23 +1,23 @@
 <div class="topbox">
 	<div class="info">
 		<a href="javascript:void(0);">
-			<p class="txt_1"><%= current_user_id %></p>
+			<p class="txt_1"><span id="user_id"></span></p>
 		</a>
 		<div class="txt_2">
-			<input type="hidden" id="topboxDefaultNameSpaceID" value="<%= current_namespace_id %>" />
-			<span id="topboxDefaultNameSpaceName"><%= current_namespace %></span>
+			<input type="hidden" id="currentWorkSpaceID" />
+			<input type="hidden" id="currentNameSpaceID" />
+			
 			<div class="infobox">
 				<div class="box">
 					<ul>
 						<li>
-							<a href="javascript:void(0);" style="cursor:default;">Change NameSpace</a>
-							<ul id="menuNameSpaceList">
-								
-									<%= for (ns) in assigned_ns_list { %>
-									<li><a href="#" onclick='mcpjs["util/common"].setCurrentNameSpace("TobBox","<%= ns.NamespaceID %>")'><%= ns.NamespaceID %></a></li>
-									<% } %>
-									
-							</ul>
+							<a href="javascript:void(0);" style="cursor:default;">Workspace</a>
+							<ul id="menuWorkSpaceList"></ul>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="javascript:void(0);" style="cursor:default;">NameSpace</a>
+							<ul id="menuNameSpaceList"></ul>
 						</li>
 						<li class="divider"></li>
 						<li>
