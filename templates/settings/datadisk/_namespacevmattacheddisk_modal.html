@@ -1,0 +1,54 @@
+<!-- vm에 attache 된 disk 목록 표시 _namespacevmattacheddisk_modal.html -->
+
+<!-- attached disk list -->
+<div class="modal fade popup_editBox" id="attachDiskSelectBox" tabindex="-1" role="dialog" aria-hidden="true">
+	<input type="hidden" id="parentsNamespaceVmAttachedDiskAssist">
+	<input type="hidden" id="parentsNamespaceVmAttachedDiskMcisID">
+	<input type="hidden" id="parentsNamespaceVmAttachedDiskVmID">
+	<input type="hidden" id="parentsNamespaceVmAttachedDiskConnectionName">
+	<input type="hidden" id="parentsNamespaceVmAttachedProviderID">
+	<input type="hidden" id="parentsNamespaceVmAttachedRegionName">
+	<input type="hidden" id="selectedIndexNamespaceVmAttachedDiskAssist">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+
+			<div class="modal-body">
+				<div class="pop-body">
+
+					<div class="title_box">
+						<div class="title">Attached Disk List to VM</div>
+					</div>
+					<div class="btnbox">
+						<div class="btn_right">
+							<button name="" value="" class="btn_available_disk btn_co btn_cr_g"><span>Available Disk</span></button>
+						</div>
+					</div>
+
+					<div class="pop-cont">
+
+						<!-- table scrollbar -->
+						<div id="attachedDiskList"></div>
+						<!-- //table scrollbar -->
+
+						<div class="b_txt"><span class="ch">*</span> Select the Disk to be detached from VM by clicking
+							<span class="txt"> “Detach”</span>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="btnbox">
+					<div class="btn_right">
+						<button name="" value="" class="btn_diskdetach btn_co btn_cr_g"><span>Detach</span></button>
+						<button name="" value="" class="btn_cancel btn_co btn_cr_b" data-dismiss="modal">cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+<!-- //attached disk list -->
+
+<%= javascriptTag("datadisk/namespacevmattacheddisk_modal.js") %>

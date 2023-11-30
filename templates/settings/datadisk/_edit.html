@@ -1,0 +1,113 @@
+<div class="dashboard dashboard_cont edit_box" id="dataEditBox">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox_n">
+            <div class="tit initial"><strong>Disk Info</strong> [ <span class="stxt" id="dataDiskName"></span>
+                ] </div>
+        </div>
+
+        <div class="ds_cont">
+            <div class="register_box">
+
+                <div class="top_ipbox">
+                    <div class="ipbox ipbox1">
+                        <ul>
+                            <li>
+                                <label>Disk Name</label>
+                                <span class="sbox">
+                                    <input type="text" id="dtlDiskName" name="dtlDiskName" value=""
+                                        placeholder="" class="gray" title="" disabled />
+                                    <input type="hidden" id="dtlDiskId" name="dtlDiskId" value=""
+                                        placeholder="" />
+                                </span>
+                            </li>
+                            <li>
+                                <label>Disk Type</label>
+                                <span class="sbox">
+                                    <input type="text" id="dtlDiskType" name="dtlDiskType" value=""
+                                        placeholder="" class="gray" title="" disabled />
+                                </span>
+                            </li>
+                            <li>
+                                <label>Disk Size(GB)</label>
+                                <span class="sbox">
+                                    <input type="text" id="dtlPreDiskSize" name="dtlDiskSize" value=""
+                                        placeholder="" class="gray" title="" disabled />
+                                    <!-- <input type="hidden" id="dtlPreDiskSize" name="dtlPreDiskSize" /> -->
+                                </span>
+                            </li>
+                            <li>
+                                <label>Update Disk Size(GB)</label>
+                                <span class="sbox">
+                                    <input type="text" id="dtlDiskSize" name="dtlDiskSize" value=""
+                                        placeholder="" class="" title="" />
+                                </span>
+                            </li>
+                            <li>
+                                <label>Associated Object</label>
+                                <span class="sbox">
+                                    <input type="text" id="dtlAssoObj" name="dtlAssoObj" value="" placeholder=""
+                                        class="gray" title="" disabled />
+
+                                </span>
+                            </li>
+                            <li>
+                                <label>Description</label>
+                                <span class="sbox">
+                                    <textarea id="dtlDescription" name="dtlDescription" cols="" rows=""
+                                        placeholder="" class="" title=""></textarea>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="ipbox ipbox2">
+                        <ul>
+                            <li>
+                                <label>Cloud Provider</label>
+                                <input type="text" id="dtlProvider" name="dtlProvider" value="" placeholder=""
+                                    class="gray" title="" readonly />
+                                <!-- <select class="selectbox w1 ">
+                                                <option value="1">Select Provider</option>
+                                                <option value="2" disabled>Select disabled</option>
+                                            </select>
+                                            <select class="selectbox w2">
+                                                <option value="1">Select Region</option>
+                                            </select> -->
+
+                            </li>
+                            <li>
+                                <label>Connection Name</label>
+                                <input type="text" id="dtlConnectionName" name="dtlConnectionName" value=""
+                                    placeholder="" class="gray" title="" readonly />
+                            </li>
+                            <!-- <li>
+                            <label>CidrBlock</label>
+                            <input type="text" id="dtlCidrBlock" name="dtlCidrBlock" value="" placeholder=""
+                                class="gray" title="" readonly />
+                        </li>
+                        <li>
+                            <label>Subnet</label>
+                            <span class="sbox">
+                                <input type="text" id="dtlSubnet" name="dtlSubnet" value="" placeholder=""
+                                    class="gray" title="" readonly />
+                                <button name="" value="" class="btn_edit btn_register">Edit</button>
+                                
+                            </span>
+                        </li> -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="btnbox">
+                    <div class="btn_center">
+                        <button name="" value="" class="btn_co btn_cr_b w135 btn_cancel">Cancel</button>
+                        <button name="" value="" class="btn_co btn_cr_g w135 btn_modify"
+                            onclick="putDataDisk();">Update</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

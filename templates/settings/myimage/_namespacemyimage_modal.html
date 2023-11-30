@@ -1,0 +1,135 @@
+<!-- My Image popup setValueToFormObj('es_imageList', 'tab_vmImage', 'vmImage', '{ {$vmImageIndex} }', 'e_imageId') 팝업 닫히기 전에 호출해야함-->
+<div class="modal fade popup_editBox" id="namespaceMyImageAssist" tabindex="-1" role="dialog" aria-hidden="true">
+	<input type="hidden" id="parentsNamespaceMyImageAssist">
+	<input type="hidden" id="parentsNamespaceMyImageConnectionName">
+	<input type="hidden" id="selectedIndexNamespaceMyImageAssist">
+
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+
+			<div class="modal-body">
+				<div class="pop-body">
+
+					<div class="title_box">
+						<div class="title">My Image List</div>
+					</div>
+
+					<div class="pop-cont">
+						<div class="image_box">
+							<div class="toptxt search">
+								<label>Search</label>
+								<ul>
+									<li class="reg_1">
+										<label class="assistLabel">Cloud Provider</label>
+										<select class="selectbox white pline w3" name="AssistMyImageProviderName"
+											id="assistMyImageProviderName"
+											onchange="mcpjs['util/util'].getRegionListByProviderForSelectbox(this.value, 'assistMyImageRegionName');">
+											<option value="" selected>Select Cloud Provider</option>
+											<%= for (provider) in cloud_os_list {%>
+                                                <option value="<%= provider %>"><%= provider %></option>
+                                            <% } %>
+										</select>
+
+									</li>
+									<li class="reg_1">
+										<label class="assistLabel"></span>Region</label>
+										<select class="selectbox white pline w3" name="AssistMyImageRegionName"
+											id="assistMyImageRegionName">
+											<option value="" selected>Select Region</option>
+										</select>
+									</li>
+									<!-- <li class="reg_1">
+										<label class="assistLabel">Connection</label>
+										<select class="selectbox white pline w3" name="myImageConnectionName"
+											id="myImageConnectionName">
+											<option value="" selected>Select ConnectionName</option>
+										</select>
+									</li> -->
+								</ul>
+							</div>
+							<div>
+								<input type="text" id="keywordMyImage" placeholder="Input Keyword"
+									class="pline image"
+									onkeyup="mcpjs['myimage/namespacemyimage_modal'].searchAssistMyImageByEnter(event, 'searchVmMyImageAtReg')" />
+								<input type="button" name="" class="btn_search_image" title="" value=""
+									onclick="mcpjs['myimage/namespacemyimage_modal'].searchMyImageByKeyword('searchVmMyImageAtReg')" />
+							</div>
+							<div class="keyword_box" id="searchMyImageKeywords">
+								<input type="submit" name="" class="btn_del_all" title="" value="필터 지우기"
+									onclick="mcpjs['util/util'].delAllKeyword()" />
+							</div>
+						</div>
+
+						<!-- <div class="toptxt">
+							<label>My Image List : <span id="myImageCount"></span></label>
+						</div> -->
+
+
+
+						<!-- <div class="top_info">
+							<ul>
+								<li>
+									<a href="javascript:void(0);">Filter</a>
+									<div class="infobox">
+										<div class="box">
+											<ul>
+												<li><a href="javascript:void(0);"
+														onclick="mcpjs['util/util'].commonPromptOpen('RsFltSrvImgId', 'serverImageList')">Image
+														ID</a></li>
+												<li><a href="javascript:void(0);"
+														onclick="mcpjs['util/util'].commonPromptOpen('RsFltSrvImgName', 'serverImageList')">Image
+														Name</a></li>
+											</ul>
+										</div>
+									</div>
+								</li>
+								<li>
+									<a href="javascript:void(0);">Sort</a>
+									<div class="infobox">
+										<div class="box">
+											<ul>
+												<li><a href="javascript:void(0);"
+														onclick="tableSort('assistSpecList', 'Name')">Name</a></li>
+												<li><a href="javascript:void(0);"
+														onclick="tableSort('assistSpecList', 'Status')">Status</a>
+												</li>
+												<li><a href="javascript:void(0);"
+														onclick="tableSort('assistSpecList', 'GuestOS')">GuestOS</a>
+												</li>
+												<li><a href="javascript:void(0);"
+														onclick="tableSort('assistSpecList', 'IID nameId')">IID
+														nameId</a></li>
+											</ul>
+										</div>
+									</div>
+								</li>
+								<li><a href="javascript:void(0);"><img src="/assets/images/common/icon_question.png"
+											alt="" /></a>
+								</li>
+							</ul>
+						</div> -->
+
+
+						<!-- table scrollbar -->
+						<div id="assistMyImageList"></div>
+						<!-- //table scrollbar -->
+
+					</div>
+
+				</div>
+
+				<div class="btnbox">
+					<div class="btn_right">
+						<button name="" value="" class="btn_apply btn_co btn_cr_g" data-dismiss="modal"><span>Apply</span></button>						
+						<button name="" value="" class="btn_cancel btn_co btn_cr_b" data-dismiss="modal">cancel</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+</div>
+<!-- My Image popup -->
+<%= javascriptTag("myimage/namespacemyimage_modal.js") %>

@@ -1,0 +1,73 @@
+<div class="dashboard dashboard_cont register_cont" id="vmSpecCreateBox">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox_n">
+            <div class="tit initial cg"><strong>Register Server Spec</strong></div>
+        </div>
+
+        <div class="ds_cont">
+            <div class="register_box reg">
+
+                <div class="top_ipbox">
+                    <div class="ipbox ipbox1">
+                        <ul>
+                            <li class="reg_2">
+                                <label><span class="ch">*</span>Spec Name</label>
+                                <input type="text" id="regSpecName" name="reg_specName" value=""
+                                    placeholder="input spec name" class="pline" title="" />
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="ipbox ipbox2">
+                        <ul>
+                            <li class="reg_1">
+                                <label>Cloud Provider</label>
+                                <select class="selectbox white pline w3" name="ProviderName" id="regProvider"
+                                    onchange="mcpjs['util/util'].getRegionListByProviderForSelectbox(this.value, 'regRegionName')">
+                                    <option value="">Select Cloud Provider</option>
+                                <%= for (provider) in cloud_os_list {%>
+                                    <option value="<%= provider %>"><%= provider %></option>
+                                <% } %>
+                                  
+                                </select>
+
+                            </li>
+                            <!-- <li class="reg_1">
+                                <label><span class="ch">*</span>Connection Name</label>
+                                <select class="selectbox white pline w3" id="regConnectionName"
+                                    name="reg_connectionName">
+                                    <option value='' selected>Select Connection</option>
+                                </select>
+                            </li> -->
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Region</label>
+                                <select class="selectbox white pline w3" id="regRegionName"
+                                name="reg_regionName">
+                                <option value="" selected>Select Region</option>
+                                </select>
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>CSP Spec Name</label>
+                                <input type="text" id="regCspSpecName" name="reg_cspSpecName" value=""
+                                    placeholder="input csp spec name" class="pline ip_w1" title="" />
+                                <a href="javascript:void(0);" class="btn_assist">Assist</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="btnbox">
+                    <div class="btn_center">
+                        <button name="" value="" class="btn_co btn_cr_b w135 btn_cancel"
+                            onclick="mcpjs['vmspec/vmspecmng'].displayVmSpecInfo('CLOSE')">Cancel</button>
+                        <button name="" value="" class="btn_co btn_cr_g w135 btn_ok"
+                            onclick="mcpjs['vmspec/vmspecmng'].createVmSpec()">Ok</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

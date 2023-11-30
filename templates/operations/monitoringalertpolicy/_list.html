@@ -1,0 +1,104 @@
+<div class="dashboard dashboard_cont">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox">
+            <div class="tit initial"><strong>List of Threshold</strong></div>
+            <div class="top_info">
+                <ul>
+                    <li>
+                        <a href="javascript:void(0);">Filter</a>
+                        <div class="infobox">
+                            <div class="box">
+                                <ul>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].commonPromptOpen('AlertPolicyName', 'monitoringAlertPolicyList')">Name</a>
+                                    </li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].commonPromptOpen('AlertPolicyMeasurement', 'monitoringAlertPolicyList')">Measurement</a>
+                                    </li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].commonPromptOpen('AlertPolicyTargetType', 'monitoringAlertPolicyList')">Target
+                                            Type</a></li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].commonPromptOpen('AlertPolicyEventType', 'monitoringAlertPolicyList')">Alert
+                                            Event Type</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);">Sort</a>
+                        <div class="infobox">
+                            <div class="box">
+                                <ul>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].tableSort('monitoringAlertPolicyList', 'Name')">Name</a>
+                                    </li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].tableSort('monitoringAlertPolicyList', 'Measurement')">Measurement</a>
+                                    </li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].tableSort('monitoringAlertPolicyList', 'Target Type')">Target
+                                            Type</a></li>
+                                    <li><a href="javascript:void(0);"
+                                            onclick="mcpjs['util/util'].tableSort('monitoringAlertPolicyList', 'Alert Event Type')">Alert
+                                            Event Type</a></li>
+
+                                    <!-- <li><a href="javascript:void(0);">Date</a></li> -->
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);">Action</a>
+                        <div class="infobox">
+                            <div class="box">
+                                <ul>
+                                    <li><a href="javascript:void(0);" data-toggle="modal"
+                                            data-target="#RegistBox"
+                                            onClick="mcpjs['policies/monitoringalertpolicymng'].displayMonitoringAlertPolicyInfo('REG')">Add</a></li>                                    
+                                    <li><a href="javascript:void(0);" data-toggle="modal"
+                                        data-target="#monitoringAlertEditBox"
+                                        onClick="mcpjs['policies/monitoringalertpolicymng'].updateMonitoringAlertPolicy()">Update</a>
+                                </li>
+                                    <li><a href="javascript:void(0);" data-toggle="modal"
+                                            data-target="#UnRegist"
+                                            onClick="mcpjs['util/util'].commonConfirmOpen('DeleteMonitoringAlertPolicy')">Delete</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="javascript:void(0);"><img src="/assets/images/common/icon_question.png"
+                                alt="" /></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="ds_cont">
+            <div id="alertList"></div>
+        </div>
+        
+        <!-- <div class="ds_cont">
+            <div class="dataTable status_list" id="monitoringAlertListTable">
+                <table cellpadding="0" cellspacing="0" border="1" summary="" id="monitoringAlertPolicyList">                    
+                    <thead>
+                        <tr>
+                            <th class="column-50px-chk"><input type="checkbox" name="" value="" id="th_chall"
+                                    title="" /><label for="th_chall"></label></td>
+                            <th class="column-14percent">Name</th>
+                            <th class="column-16percent">Measurement</th>
+                            <th class="column-15percent">Target Type</th>
+                            <th class="column-15percent">Target ID</th>
+                            <th class="column-15percent">Alert Event Type</th>
+                            <th>Alert Event Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertList">
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+    </div>
+</div>

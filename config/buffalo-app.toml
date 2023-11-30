@@ -1,0 +1,13 @@
+name = "mc_web_console"
+bin = "bin/mc_web_console"
+vcs = "git"
+with_pop = true
+with_sqlite = false
+with_dep = false
+with_webpack = false
+with_nodejs = true
+with_yarn = true
+with_docker = true
+with_grifts = true
+as_web = true
+as_api = false
