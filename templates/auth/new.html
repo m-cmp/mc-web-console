@@ -1,0 +1,35 @@
+<div class="login-wrapper">
+  <div class="login-box">
+      <input type="hidden" id="sel_ns" />
+      <div class="login-form-wrapper">
+          <p class="title">Log in</p>
+          <div class="login-form">
+              <label class="form-label">ID</label><input type="text" name="userid" id="userID" value="" title=""
+                  autofocus />
+              <label class="form-label">Password</label><input type="password" name="password" id="password" value=""
+                  title="" onkeydown="mcpjs['auth/login'].enterKeyForLogin();" />
+          </div>
+          <div class="login-remember">
+              <label class="check-container">
+                  <input type="checkbox">
+                  <span class="checkmark"></span>
+                  Remember me
+              </label>
+              <div><span class="forgot-pw" onclick="mcpjs['util/util'].commonConfirmOpen('idpwLost')">Forgot password?</span></div>
+          </div>
+          <div class="login-btn-box">
+              <button name="" value="" class="login-btn" data-toggle="modal" data-target id="sign_btn">Log in</button>
+              <button name="" value="" class="login-btn google"><img src="/assets/images/common/login_logo_google.png"
+                      alt="google">Log in with google</button>
+          </div>
+          <div class="sign-up-box" onclick="goSignup();">Dont have an account? <span class="sign-up-link">Join free today</span></div>
+      </div>
+  </div>
+  <div class="login-bg-img"><img src="/assets/images/common/bg_login_black.png" alt="mc_web_console"></div>
+</div>
+<%= javascriptTag("auth/login.js") %>
+<script>
+    function goSignup(){
+        location.href = "/users/new"
+    }
+</script>

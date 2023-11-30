@@ -1,0 +1,159 @@
+<div class="dashboard dashboard_cont register_cont" id="monitoringAlertPolicyCreateBox">
+
+    <div class="d_box box_m box_w100">
+        <div class="titbox_n">
+            <div class="tit initial cg"><strong>Create Threshold</strong></div>
+        </div>
+
+        <div class="ds_cont">
+            <div class="register_box reg">
+
+                <div class="top_ipbox">
+                    <div class="ipbox ipbox1">
+                        <ul>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Name</label>
+                                <input type="text" name="" value="" placeholder="insert a task name"
+                                    class="pline" title="" id="regMonitoringAlertName" />
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Measurement</label>
+                                <select id="regMonitoringAlertMeasure" class="selectbox2 white pline w_ip1"
+                                    required>
+                                    <option value="" selected>Select Measurement</option>
+                                    <option value="cpu">cpu</option>
+                                    <option value="mem">memory</option>
+                                    <option value="disk">disk</option>
+                                </select>
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Target Type</label>
+                                <select id="regMonitoringAlertTargetType" class="selectbox2 white pline w_ip1"
+                                    required>
+                                    <option value="" selected>Select Target Type</option>
+                                    <option value="NS">NS</option>
+                                    <option value="MCIS">MCIS</option>
+                                    <option value="VM">VM</option>
+                                </select>
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Target ID</label>
+                                <input type="text" name="" value=""
+                                    placeholder="insert a target ID (MCIS, Server)" class="pline" title=""
+                                    id="regMonitoringAlertTargetID" />
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Event Duration</label>
+                                <input type="text" name="" value="" placeholder="insert duration (1m, 5m, ...)"
+                                    class="pline" title="" id="regMonitoringAlertEventDuration" />
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Metric</label>
+                                <select id="regMonitoringAlertMetric" class="selectbox2 white pline w_ip1"
+                                    required>
+                                    <option value="" selected>Select Metric</option>
+                                    <option value="usage_utilization">[CPU] usage_utilization</option>
+                                    <option value="used_percent">[Memory] used_percent</option>
+                                    <option value="used_percent">[Disk] used_percent</option>
+                                </select>
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Alert Math Expression</label>
+                                <select id="regMonitoringAlertAlertMathExpression"
+                                    class="selectbox2 white pline w_ip1" required>
+                                    <option value="" selected>Select Alert Math Expression</option>
+                                    <option value="equal">equal</option>
+                                    <option value="greater">greater</option>
+                                    <option value="equalgreater">equalgreater</option>
+                                    <option value="less">less</option>
+                                    <option value="equalless">equalless</option>
+                                </select>
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Alert Threshold</label>
+                                <input type="text" name="" value="" placeholder="insert treshold value"
+                                    class="pline" title="" id="regMonitoringAlertAlertThreshold" />
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Warn Event Count</label>
+                                <input type="text" name="" value="" placeholder="insert count for warning event"
+                                    class="pline" title="" id="regMonitoringAlertWarnEventCount" />
+                            </li>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Critic Event Count</label>
+                                <input type="text" name="" value=""
+                                    placeholder="insert count for critical event" class="pline" title=""
+                                    id="regMonitoringAlertCriticEventCount" />
+                            </li>
+                            <li class="reg_1">
+                                <input type="hidden" id="regMonitoringAlertEventType" name="" value=""
+                                    class="pline" title="" />
+                                <input type="hidden" id="regMonitoringAlertEventName" name="" value=""
+                                    class="pline" title="" />
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="ipbox ipbox1">
+                        <ul>
+                            <li class="reg_1">
+                                <div class="iptable_box2">
+                                    <div class="table_plist" style="width:100%;">
+                                        <div class="tit"><label><span class="ch">*</span>Monitoring Alert
+                                                Event-Handler</label></div>
+                                        <div class="btn_s">
+                                            <button class="btn_write" value="" name="" data-toggle="modal"
+                                                data-target="#Add_MonitoringAlertEventHandler"
+                                                onClick="mcpjs['policies/monitoringalertpolicymng'].addMonitoringAlertEventHandler()">write</button>
+                                            <button class="btn_delete" value="" name=""
+                                                onClick="mcpjs['util/util'].commonConfirmOpen('deleteMonitoringAlertEventHandler')">delete</button>
+                                        </div>
+                                        <div class="dataTable first_over">
+                                            <div id="monitoringAlertEventHandlerList"></div>
+                                            <!-- <table cellpadding="0" cellspacing="0" border="1" summary=""
+                                                id="maEventHandlerList" style="width: auto;">                                               
+                                                <thead>
+                                                    <tr>
+                                                        <th class="column-50px">
+                                                            <label for="th_chall"></label>
+                                                            </td>
+                                                        <th class="column-30percent">Type</th>
+                                                        <th>Name</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="monitoringAlertEventHandlerList">
+                                                </tbody>
+                                            </table> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="top_ipbox">
+                    <div class="ipbox ipbox1" style="width: 100%;">
+                        <ul>
+                            <li class="reg_1">
+                                <label><span class="ch">*</span>Monitoring Alert Event Message</label>
+                                <input type="text" name="" value="" placeholder="type event message"
+                                    class="pline" title="" id="regMonitoringAlertEventMessage" />
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="btnbox">
+                    <div class="btn_center">
+                        <button name="" value="" class="btn_co btn_cr_b w135 btn_cancel">Cancel</button>
+                        <button name="" value="" class="btn_co btn_cr_g w135 btn_ok"
+                            onclick="mcpjs['policies/monitoringalertpolicymng'].createMonitoringAlertPolicy()">Ok</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

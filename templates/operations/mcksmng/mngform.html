@@ -1,0 +1,13 @@
+<input type="hidden" id="mcks_uid" value='' />
+<input type="hidden" id="mcks_name" value='' />
+<input type="hidden" id="node_name" value='' />
+
+<div class="titlebox">
+    <div class="tit"><img src="/assets/images/common/icon_cont.png" alt="" />Manage / <strong>MCKS</strong></div>
+    <div class="location">Home <span>></span> Operation <span>></span> Manage <span>></span>
+        <strong>MCKS</strong></div>
+</div>
+<%= partial("operations/mcksmng/list.html") %>
+<%= partial("operations/mcksmng/detail.html") %>
+<%= partial("operations/mcksmng/node_detail.html") %>
+<%= javascriptTag("mcksmng/mcksmng.js") %>

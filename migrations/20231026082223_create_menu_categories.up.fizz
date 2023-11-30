@@ -1,0 +1,10 @@
+create_table("menu_categories") {
+	t.Column("id", "string", {primary: true})
+	t.Timestamps()
+
+	t.Column("category_name", "string", {})
+	t.Column("parent_category_id", "string", {})
+	t.Column("description", "string", {})
+	t.Column("sort", "int", {})
+	t.Column("use_yn", "boolean", {default:true, null: false})	
+}

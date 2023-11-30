@@ -1,0 +1,15 @@
+<input type="hidden" id="mcks_uid" value='' />
+<input type="hidden" id="mcks_name" value='' />
+<input type="hidden" id="node_uid" value='' />
+<input type="hidden" id="node_name" value='' />
+
+<div class="titlebox">
+    <div class="tit"><img src="/assets/images/common/icon_cont.png" alt="" />Service / <strong>NLB</strong></div>
+    <div class="location">Home <span>></span> Operation <span>></span> Service <span>></span>
+        <strong>NLB</strong></div>
+</div>
+
+<%= partial("operations/nlb/list.html") %>
+<%= partial("operations/nlb/detail.html") %>
+<%= partial("operations/nlb/create.html") %>
+<%= javascriptTag("nlb/nlbmng.js") %>

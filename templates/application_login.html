@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!-- 로그인 화면-->
+<html>
+
+<head>
+
+  <%= partial("auth/headerlogin.html") %>
+
+</head>
+
+<body class="bg_login">
+
+  <%= partial("flash.html") %>
+    <%= yield %>
+
+  <%= partial("auth/loginpopup.html") %>
+  <%= partial("settings/namespace/SelectNamespaceModal.html") %>
+</body>
+
+<%= javascriptTag("application.js") %>
+<%= javascriptTag("util/util.js") %>
+<%= javascriptTag("util/common.js") %>
+</html>

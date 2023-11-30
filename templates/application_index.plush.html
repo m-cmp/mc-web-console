@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!-- 로그인 정보 없는 화면-->
+<html>
+  <head>
+      <%= partial("header.html") %>
+      <%= partial("modal.html") %>
+  </head>
+  <body>
+    <div class="container">
+      <%= partial("flash.html") %>
+      <%= yield %>
+    </div>
+    <%= partial("footer.html") %>
+  </body>
+
+  <%= javascriptTag("application.js") %>
+  <%= javascriptTag("util/pathfinder.js") %>
+  <script>
+    console.log("application_index.plush.html");
+    // router 정보 설정 : TODO : route 정보 사용하지 않으면 제거        
+    // 아래 구문이 editor에서 오류가 나더라도 정상 동작 함.    
+    <%= for (r) in routes { %>
+      var routeName = "<%=r.PathName%>";
+      //var routeAlias = "< %=r.Alias% >"// alias 단독은 없음
+      //var routeAliases = "<%=r.Aliases%>"
+      console.log("routeName = ", routeName)
+      //console.log("routeAlias = ", routeAlias)
+      //console.log("routeAliases = ", routeAliases)
+      //var key = "<%=r.PathName%>Path_<%=r.Method%>";// r.PathName + "Path" + "_" + r.Method
+      var key = "<%=r.PathName%>";// pathName의 첫글자는 소문자로 변경됨.
+      mcpjs['util/pathfinder'].RouteMap[key] = <%=r%>;
+      //console.log(< %=r% >);
+      console.log("key ", key);
+      console.log(mcpjs['util/pathfinder'].RouteMap[key])
+    <% } %>
+    //console.log(mcpjs['util/pathfinder'].RouteMap['rootPath_GET'])
+  </script>
+</html>

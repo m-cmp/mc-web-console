@@ -1,0 +1,94 @@
+<div class="contbox">
+    <input type="hidden" name="mcks_id" id="mcks_id" value="<%= mcks_id %>"/>
+    <input type="hidden" name="mcks_name" id="mcks_name" value="<%= mcks_name %>"/>
+    <div class="titlebox">
+        <div class="tit"><img src="/assets/images/common/icon_cont.png" />Manage / <strong>MCKS</strong></div>
+        <div class="location">Home <span>></span> Operation <span>></span> Manage <span>></span>
+            <strong>MCKS</strong></div>
+    </div>
+
+
+    <!-- Node list -->
+    <div class="dashboard dashboard_cont">
+
+        <div class="d_box box_m box_w100">
+            <div class="titbox line_none">
+                <div class="tit initial"><strong>Extend Nodes</strong><span id="current_mcks"></span></div>
+
+                <div class="step_box">
+                    <div class="on">STEP 1 <div class="bar"></div>
+                    </div>
+                    <div>STEP 2 <div class="bar"></div>
+                    </div>
+                    <div>STEP 3 <div class="bar"></div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="ds_cont">
+
+                <div class="area_cont">
+
+                    <div class="box">
+
+                        <div class="create_box">
+
+                            <div class="create_top">
+
+
+                                <!-- Nodes -->
+                                <div class="servers_box">
+                                    <div class="title">Nodes</div>
+
+                                    <div class="list">
+
+                                        <ul id="mcks_node_list">
+                                            <%= for (node) in node_list {%>
+                                            <li>
+                                                <div class='server server_on bgbox_g'>
+                                                    <div class='icon'></div>
+                                                    <div class='txt'>
+                                                        <%= node.Name %>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <% } %>
+                                        </ul>
+                                    </div>
+
+                                </div>
+                                <!-- //nodes -->
+
+                                <div>
+                                    <span class="text-center" id="nodeRegistResult">&nbsp;</span>
+                                </div>
+
+                                <%= partial("operations/mcksmng/node_create.html") %>
+
+                            </div>
+                            <!-- button -->
+                            <div class="btnbox spec_select_box">
+                                <div class="btnbox spec_select_box">
+                                    <div class="btn_right">
+                                        <button type="button" name="" value="" class="btn_done btn_co btn_cr_g"
+                                            onclick="mcpjs['mcksmng/nodeconfigure'].nodeDone_btn();"><span>DONE</span></button>
+                                        <button type="button" name="" value=""
+                                            class="btn_clear btn_co btn_cr  _b">CLEAR</button>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- //button -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<%= javascriptTag("mcksmng/mcksnodecreate.js") %>

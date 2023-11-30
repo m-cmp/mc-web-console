@@ -1,0 +1,120 @@
+<!-- popup alert : 원래는 공통으로 사용하는 modal.html을 import 하지만 login만 따로... alertArea에 대한 style 정의 필요 -->
+<div class="modal fade layerpopup" id="alertArea" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+  
+        <div class="modal-body">
+          <div class="txt"><span id="alertText"></div>
+          <div class="btnbox">
+            <input type="hidden" id="alertOkAction" value="">
+            <button type="button" class="btn_ok" data-dismiss="modal" onclick="mcpjs['util/util'].commonAlertClose()">OK</button>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+  <!-- //popup alert -->
+
+
+	<!-- popup modal -->
+	<div class="modal fade layerpopup" id="confirmArea" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				
+				<div class="modal-body">
+					<div class="txt"><span id="confirmText"/></div>
+					<div class="btnbox">
+						<input type="hidden" id="confirmOkAction" value=""><!-- modal에서 OK버튼 클릭 시 수행할 action 지정-->
+						<input type="hidden" id="confirmCaller" value=""><!-- 구분자-->
+						<button type="button" class="btn_cancel" data-dismiss="modal" onclick="mcpjs['util/util'].commonConfirmClose()">Cancel</button>
+						<button type="button" class="btn_ok" data-dismiss="modal" onclick="mcpjs['util/util'].commonConfirmOk()">OK</button>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+	<!-- //popup modal -->
+
+	<!-- popup prompt -->
+	<div class="modal fade layerpopup" id="promptArea" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">				
+				<div class="modal-body">
+					<div class="txt"><span id="promptQuestion"/></div>
+					<div class="txt">
+						<input type="text" name="promptText" id="promptText" onkeyup="mcpjs['util/util'].commonPromptEnter(event);"/>
+					</div>
+					<div class="btnbox">
+						<input type="hidden" id="promptOkAction" value=""><!-- modal에서 OK버튼 클릭 시 수행할 action 지정-->
+						<input type="hidden" id="promptTargetObjId" value=""><!-- modal에서 값을 전달할 대상 object 지정-->
+						
+						<button type="button" class="btn_cancel" data-dismiss="modal" onclick="mcpjs['util/util'].commonPromptClose()">Cancel</button>
+						<button type="button" class="btn_ok" data-dismiss="modal" onclick="mcpjs['util/util'].commonPromptOk()">OK</button>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+	<!-- //popup prompt -->
+
+	<!-- popup alert -->
+	<div class="modal fade layerpopup" id="alertResultArea" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+
+				<div class="modal-body">
+					<div class="txt"><span id="alertResultText"/></div>
+					<div class="btnbox">
+						<input type="hidden" id="alertResultOkAction" value="">
+						<button type="button" class="btn_ok" data-dismiss="modal" onclick="mcpjs['util/util'].commonResultAlertClose()">OK</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!-- //popup alert -->
+
+	<!-- popup Help -->
+	<div class="modal fade layerpopup" id="helpArea" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				
+				<div class="modal-body">
+					<div class="txt"><span id="helpText"/>How To Use</div>
+					<div class="btnbox">						
+						<button type="button" class="btn_ok" data-dismiss="modal">OK</button>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+	<!-- //popup Help -->
+
+		<!-- popup Guide -->
+	<div class="modal fade" id="guideArea" tabindex="-1" role="dialog" aria-hidden="true">           
+		<div class="modal-dialog" role="document">
+			<div class="modal-content2">
+				<div class="modal-body2">
+					
+					<div class="pop-body2">
+						
+						<!-- <div class="titbox">
+							<div class="tit" ><span class="ch">Help : click or press OK button to disappear.</span></div>
+						</div> -->
+						<img src="/assets/images/bg_guide.png" class="img" style="width: 100%;" onclick="mcpjs['util/util'].guideAreaHide()" />								
+			
+
+					</div>
+					<div class="btnbox">
+						<button name="" value="" class="btn_ok" data-dismiss="modal" >OK</button> 
+					</div>			
+				</div>				
+			</div>
+		</div>
+	</div>
+	<!-- //popup Guide -->

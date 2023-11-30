@@ -1,0 +1,11 @@
+create_table("route_infoes") {
+	t.Column("id", "uuid", {primary: true})
+	t.Timestamps()
+
+	t.Column("method", "string", {})
+	t.Column("path", "string", {})
+	t.Column("handler_name", "string", {})
+	t.Column("resource_name", "string", {})
+	t.Column("path_name", "string", {})
+	t.Column("aliases", "string", {})
+}
