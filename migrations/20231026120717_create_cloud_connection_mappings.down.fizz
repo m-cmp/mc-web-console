@@ -1,1 +1,0 @@
-drop_table("cloud_connection_mappings")

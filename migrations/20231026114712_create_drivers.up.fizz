@@ -1,8 +1,0 @@
-create_table("drivers") {
-	t.Column("id", "uuid", {primary: true})
-	t.Column("driver_name", "string", {})
-	t.Column("lib_file_name", "string", {})
-	t.Column("provider_id", "string", {})
-	t.ForeignKey("provider_id", {"cloud_providers": ["id"] })
-	t.Timestamps()
-}
