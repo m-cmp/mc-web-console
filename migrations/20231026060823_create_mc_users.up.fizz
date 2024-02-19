@@ -1,7 +1,0 @@
-create_table("mc_users") {
-	t.Column("id", "uuid", {primary: true})
-	t.Column("email", "string", {})
-    t.Column("user_level", "string", {})
-    t.Column("password_hash", "string", {})
-	t.Timestamps()
-}
