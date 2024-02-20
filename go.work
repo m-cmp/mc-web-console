@@ -1,8 +1,0 @@
-go 1.21.0
-
-
-// use go.work to manage two different projects. @raccoon-mh
-use (
-	./mc_web_console_apiserver
-	./mc_web_console_frontserver
-)
