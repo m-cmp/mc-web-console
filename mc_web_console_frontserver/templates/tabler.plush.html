@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html>
+  
+<%= partial("partials/layout/header.html") %>
+
+  <body>
+    <!-- theme js -->
+    <%= javascriptTag("common/tabler/demo-theme.js") %>
+
+    <div class="page">
+
+      <%= partial("partials/layout/sidebar.html") %>
+      <%= partial("partials/layout/navbar.html") %>
+
+      <div class="page-wrapper">
+        <%= yield %>
+        <%= partial("partials/layout/footer.html") %>
+      </div>
+
+    </div>
+    
+    <!-- common js -->
+    <%= javascriptTag("application.js") %>
+    <%= javascriptTag("common/tabler/tabler.js") %>
+    <%= javascriptTag("common/tabler/demo.js") %>
+
+  </body>
+
+</html>
