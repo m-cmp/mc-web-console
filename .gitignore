@@ -68,7 +68,6 @@ mc_web_console_frontserver/!.yarn/sdks
 mc_web_console_frontserver/!.yarn/versions
 mc_web_console_frontserver/database.yml
 
-
 # deploy
 devlog/mc_web_console_api.log
 devlog/mc_web_console_api.pid
