@@ -74,3 +74,10 @@ devlog/mc_web_console_api.log
 devlog/mc_web_console_api.pid
 devlog/mc_web_console_front.log
 devlog/mc_web_console_front.pid
+devlog/mc_web_console_api_build.log
+devlog/mc_web_console_api_front.log
+
+# bin
+bin/mc-web-console-api
+bin/mc-web-console-front
+
