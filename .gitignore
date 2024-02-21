@@ -5,6 +5,7 @@ mc_web_console_apiserver/**/*.sqlite
 mc_web_console_apiserver/.idea/
 mc_web_console_apiserver/bin/
 mc_web_console_apiserver/tmp/
+mc_web_console_apiserver/tmp/*
 mc_web_console_apiserver/node_modules/
 mc_web_console_apiserver/.sass-cache/
 mc_web_console_apiserver/public/assets/
