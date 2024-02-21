@@ -1,5 +1,5 @@
 name = "mc-web-console-api"
-bin = "bin/mc-web-console-api"
+bin = "../bin/mc-web-console-api"
 vcs = "git"
 with_pop = true
 with_sqlite = false

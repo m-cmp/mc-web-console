@@ -1,5 +1,5 @@
 name = "mc-web-console-front"
-bin = "bin/mc-web-console-front"
+bin = "../bin/mc-web-console-front"
 vcs = "git"
 with_pop = false
 with_sqlite = false
