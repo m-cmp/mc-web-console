@@ -11,3 +11,10 @@ import (
 func HomeHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.JSON(map[string]string{"message": "Welcome to Buffalo!"}))
 }
+
+func DEBUGRalive(c buffalo.Context) error {
+	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+		"status": 200,
+		"msg":    "goodtogo",
+	}))
+}
