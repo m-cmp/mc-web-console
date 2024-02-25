@@ -8,6 +8,13 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
+func DEBUGRalive(c buffalo.Context) error {
+	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+		"status": 200,
+		"msg":    "goodtogo",
+	}))
+}
+
 func DEBUGRouteHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("_debug/buffaloRoute/index.html"))
 }

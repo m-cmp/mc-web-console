@@ -59,7 +59,29 @@ func App() *buffalo.App {
 		// Setup and use translations:
 		app.Use(translations())
 
+		//////////////// debug section start ////////////////
+		debug := app.Group("/debug")
+		// common debug
+		debug.GET("/", DEBUGRouteHandler)
+
+		// alive debug
+		debug.GET("/alive", DEBUGRalive)
+
+		// flowchart debug
+		debug.GET("/flow", DEBUGWorkflowHandler)
+
+		// tabler debug
+		debug.GET("/tabler", DEBUGTablerMainHandler)
+		debug.GET("/tabler/{target}", DEBUGTablerHandler)
+
+		// page sample
+		debug.GET("/sample", DEBUGSamplePageHandler)
+		//////////////// debug section end ////////////////
+
+		// pages
 		app.GET("/", HomeHandler)
+		app.GET("/home", HomeHandler)
+		app.GET("/login", AuthLoginHandler)
 
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
 	}
