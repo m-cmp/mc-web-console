@@ -21,6 +21,8 @@ require("jsvectormap/dist/maps/world-merc.js");
 // import litepicker
 require("litepicker/dist/litepicker.js");
 
+// import tabulator
+require("tabulator-tables/dist/js/tabulator.min.js");
 $(() => {
 
 });

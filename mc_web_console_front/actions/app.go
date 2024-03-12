@@ -76,6 +76,8 @@ func App() *buffalo.App {
 
 		// page sample
 		debug.GET("/sample", DEBUGSamplePageHandler)
+		app.GET("/sy", SyPageController)
+		app.GET("/test", TestPageController)
 		//////////////// debug section end ////////////////
 
 		// pages
