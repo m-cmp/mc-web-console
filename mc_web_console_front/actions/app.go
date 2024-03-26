@@ -74,16 +74,20 @@ func App() *buffalo.App {
 		debug.GET("/tabler", DEBUGTablerMainHandler)
 		debug.GET("/tabler/{target}", DEBUGTablerHandler)
 
+		// tabulator debug
+		debug.GET("/tabulator", DEBUGTabulatorHandler)
+
 		// page sample
 		debug.GET("/sample", DEBUGSamplePageHandler)
-		app.GET("/sy", SyPageController)
-		app.GET("/test", TestPageController)
 		//////////////// debug section end ////////////////
 
 		// pages
 		app.GET("/", HomeHandler)
 		app.GET("/home", HomeHandler)
 		app.GET("/login", AuthLoginHandler)
+
+		// app.GET("/sy", SyPageController)
+		// app.GET("/test", TestPageController)
 
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
 	}

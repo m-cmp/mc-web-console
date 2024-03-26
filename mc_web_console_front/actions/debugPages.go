@@ -49,12 +49,16 @@ func DEBUGSamplePageHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("_debug/tabler/main.html"))
 }
 
+func DEBUGTabulatorHandler(c buffalo.Context) error {
+	return c.Render(http.StatusOK, r.HTML("_debug/tabulator/tabulator.html"))
+}
+
 // sy sample page
 func SyPageController(c buffalo.Context) error {
 	//logger.Info("syPage")
-	return c.Render(http.StatusOK, r.HTML("sy/extra.html"))
+	return c.Render(http.StatusOK, r.HTML("_debug/sy/extra.html"))
 }
 func TestPageController(c buffalo.Context) error {
 
-	return c.Render(http.StatusOK, r.HTML("test/main.html"))
+	return c.Render(http.StatusOK, r.HTML("_debug/sy/est/main.html"))
 }
