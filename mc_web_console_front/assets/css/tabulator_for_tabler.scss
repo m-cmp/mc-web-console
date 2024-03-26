@@ -9,7 +9,7 @@ $headerBackgroundColor:transparent; //border to tabulator
 $headerTextColor:inherit; //header text color
 $headerBorderColor: var(--tblr-border-color-translucent);  //header border color
 $headerSeparatorColor:var(--tblr-table-border-color); //header bottom separator color
-$headerMargin:4px; //padding round header
+$headerMargin:8px; //padding round header
 
 //column header arrows
 $sortArrowHover: #555;
@@ -48,55 +48,37 @@ $rangeHeaderTextHighlightBackground: #000000; //header text color when highlight
 // Tabulator 기본 SCSS. 아래서 재 정의.
 @import  "~tabulator-tables/src/scss/tabulator.scss";
 
-
-
 // 기본 CSS BS5 일부 참조
-.tabulator {
-    position: relative;
-    text-align: left;
-    overflow: hidden;
-    -webkit-transform: translateZ(0);
-    -moz-transform: translateZ(0);
-    -ms-transform: translateZ(0);
-    -o-transform: translateZ(0);
-    transform: translateZ(0);
-}
-
 .tabulator .tabulator-header {
+    padding: $headerMargin;
     position: relative;
     box-sizing: border-box;
     width: 100%;
+    font-size: $textSize*0.8;
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
-    -moz-user-select: none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -o-user-select: none;
     outline: none;
 }
 
-.tabulator-row {
-    justify-content: center;
-    align-items: center;
-    vertical-align: middle;
+// .tabulator-row .tabulator-cell {
+//     position: relative;
+//     box-sizing: border-box;
+//     border-top: 1px solid var(--tblr-border-color-translucent);
+//     min-height: $textSize + ($headerMargin * 4);
+//     // padding: 0.75rem 0.75rem;
+//     color: var(--tblr-table-color-state, var(--tblr-table-color-type, var(--tblr-table-color)));
+// }
+
+.tabulator-row .tabulator-cell {
+    display: inline-block;
     position: relative;
     box-sizing: border-box;
-    min-height: 50px;
+    padding: $headerMargin * 2;
     border-top: 1px solid var(--tblr-border-color-translucent);
-    // padding: 0.75rem 0.75rem;
-    color: var(--tblr-table-color-state, var(--tblr-table-color-type, var(--tblr-table-color)));
-}
-
-
-.tabulator-row .tabulator-row-resize-handle {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 5px;
-}
-
-.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title .tabulator-header-popup-button + .tabulator-title-editor {
-    width: calc(100%);
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    outline: none;
 }
