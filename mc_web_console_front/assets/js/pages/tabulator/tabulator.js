@@ -22,8 +22,16 @@ var tabledata = [
 var table = new Tabulator("#example-table", {
 	data: tabledata, //assign data to table
 	layout:"fitColumns",
+    resizableColumnFit:true,
+	
+	pagination:"local",
+    paginationSize:6,
+    paginationSizeSelector:[3, 6, 8, 10],
+    movableColumns:true,
+    paginationCounter:"rows",
+
 	columns:[ //Define Table Columns
-		{title:"Name", field:"name", width:150, formatter:"html"},
+		{title:"Name", field:"name", formatter:"html"},
 		{title:"Age", field:"age", hozAlign:"left", formatter:"progress"},
 		{title:"Favourite Color", field:"col"},
 		{title:"Date Of Birth", field:"dob", sorter:"date", hozAlign:"center"},
