@@ -7,7 +7,7 @@ $textSize:16px; //table text size
 //header theming
 $headerBackgroundColor:transparent; //border to tabulator
 $headerTextColor:inherit; //header text color
-$headerBorderColor:var(--tblr-table-border-color);  //header border color
+$headerBorderColor: var(--tblr-border-color-translucent);  //header border color
 $headerSeparatorColor:var(--tblr-table-border-color); //header bottom separator color
 $headerMargin:4px; //padding round header
 
@@ -17,8 +17,8 @@ $sortArrowActive: #666;
 $sortArrowInactive: #bbb;
 
 //row theming
-$rowBackgroundColor:rgba(0, 0, 0, 0.01); //table row background color
-$rowAltBackgroundColor:rgba(0, 0, 0, 0.03); //table row background color
+$rowBackgroundColor:transparent; //table row background color
+$rowAltBackgroundColor:transparent; //table row background color
 $rowBorderColor:var(--tblr-table-border-color); //table border color
 $rowTextColor:inherit; //table text color
 $rowHoverBackground:rgba(0, 0, 0, 0.1); //row background color on hover
@@ -51,7 +51,7 @@ $rangeHeaderTextHighlightBackground: #000000; //header text color when highlight
 
 
 // 기본 CSS BS5 일부 참조
-.tabulator{
+.tabulator {
     position: relative;
     text-align: left;
     overflow: hidden;
@@ -76,6 +76,27 @@ $rangeHeaderTextHighlightBackground: #000000; //header text color when highlight
     outline: none;
 }
 
+.tabulator-row {
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+    position: relative;
+    box-sizing: border-box;
+    min-height: 50px;
+    border-top: 1px solid var(--tblr-border-color-translucent);
+    // padding: 0.75rem 0.75rem;
+    color: var(--tblr-table-color-state, var(--tblr-table-color-type, var(--tblr-table-color)));
+}
+
+
+.tabulator-row .tabulator-row-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 5px;
+}
+
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title .tabulator-header-popup-button + .tabulator-title-editor {
-    width: calc(100% - 22px);
+    width: calc(100%);
 }
