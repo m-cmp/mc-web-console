@@ -3,24 +3,10 @@
 @import '~sequential-workflow-designer/css/designer-light.css';
 @import '~sequential-workflow-designer/css/designer-dark.css';
 
-// tabler import
-@import '~@tabler/core/dist/css/tabler.css';
-@import '~@tabler/core/dist/css/tabler-flags.css';
-@import '~@tabler/core/dist/css/tabler-payments.css';
-@import '~@tabler/core/dist/css/tabler-vendors.css';
+@import './tabler_custom.scss';
 
-@import '~@tabler/core/dist/css/demo.css';
+
 @import './inter/inter.css';
 
 // tabulator Custom CSS
 @import  "./tabulator_for_tabler.scss";
-
-
-// Default for tabler
-// :root {
-//     --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-// }
-
-// body {
-//     font-feature-settings: "cv03", "cv04", "cv11";
-// }
