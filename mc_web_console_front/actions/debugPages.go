@@ -50,7 +50,7 @@ func DEBUGSamplePageHandler(c buffalo.Context) error {
 }
 
 func DEBUGTabulatorHandler(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("_debug/tabulator/tabulator.html"))
+	return c.Render(http.StatusOK, tr.HTML("_debug/tabulator/tabulator.html"))
 }
 
 // sy sample page
