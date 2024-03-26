@@ -1,0 +1,81 @@
+
+//Main Theme Variables
+$backgroundColor: var(--tblr-table-bg); //background color of tabulator
+$borderColor:var(--tblr-table-border-color); //border to tabulator
+$textSize:16px; //table text size
+
+//header theming
+$headerBackgroundColor:transparent; //border to tabulator
+$headerTextColor:inherit; //header text color
+$headerBorderColor:var(--tblr-table-border-color);  //header border color
+$headerSeparatorColor:var(--tblr-table-border-color); //header bottom separator color
+$headerMargin:4px; //padding round header
+
+//column header arrows
+$sortArrowHover: #555;
+$sortArrowActive: #666;
+$sortArrowInactive: #bbb;
+
+//row theming
+$rowBackgroundColor:rgba(0, 0, 0, 0.01); //table row background color
+$rowAltBackgroundColor:rgba(0, 0, 0, 0.03); //table row background color
+$rowBorderColor:var(--tblr-table-border-color); //table border color
+$rowTextColor:inherit; //table text color
+$rowHoverBackground:rgba(0, 0, 0, 0.1); //row background color on hover
+
+$rowSelectedBackground: var(--tblr-link-color); //row background color when selected
+$rowSelectedBackgroundHover: var(--tblr-link-hover-color);//row background color when selected and hovered
+
+$editBoxColor:#1D68CD; //border color for edit boxes
+$errorColor:#dd0000; //error indication
+
+//footer theming
+$footerBackgroundColor:#e6e6e6; //border to tabulator
+$footerTextColor:#555; //footer text color
+$footerBorderColor:#aaa; //footer border color
+$footerSeparatorColor:#999; //footer bottom separator color
+$footerActiveColor:#d00; //footer bottom active text color
+
+//range selection
+$rangeBorderColor: #2975DD; //range border color
+$rangeHandleColor: $rangeBorderColor; //range handle color
+$rangeHeaderSelectedBackground: #3876ca; //header background color when selected
+$rangeHeaderSelectedTextColor: #FFFFFF; //header text color when selected
+$rangeHeaderHighlightBackground: #D6D6D6; //header background color when highlighted
+$rangeHeaderTextHighlightBackground: #000000; //header text color when highlighted
+
+
+// Tabulator 기본 SCSS. 아래서 재 정의.
+@import  "~tabulator-tables/src/scss/tabulator.scss";
+
+
+
+// 기본 CSS BS5 일부 참조
+.tabulator{
+    position: relative;
+    text-align: left;
+    overflow: hidden;
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+.tabulator .tabulator-header {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    outline: none;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title .tabulator-header-popup-button + .tabulator-title-editor {
+    width: calc(100% - 22px);
+}
