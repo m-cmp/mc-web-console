@@ -1,6 +1,7 @@
 $border-color: rgba(72, 110, 149, 0.14);
 $primary:  #0054a6;
 $primary-darker:  #002345;
+$green:  #2fb344;
 
 //Main Theme Variables
 $backgroundColor: transparent; //background color of tabulator
@@ -36,8 +37,8 @@ $errorColor:#dd0000; //error indication
 $footerBackgroundColor:transparent; //border to tabulator
 $footerTextColor:inherit; //footer text color
 $footerBorderColor: $border-color; //footer border color
-$footerSeparatorColor: $border-color; //footer bottom separator color
-$footerActiveColor: $primary; //footer bottom active text color
+$footerSeparatorColor: transparent; //footer bottom separator color
+$footerActiveColor: #555; //footer bottom active text color
 
 //range selection
 $rangeBorderColor: $primary; //range border color
@@ -84,7 +85,8 @@ $rangeHeaderTextHighlightBackground: #000000; //header text color when highlight
 	font-weight: unset;
 }
 
-.tabulator .tabulator-footer .tabulator-footer-contents {
-	// border-top: 1px solid var(--tblr-border-color-translucent);
-	
+.tabulator-page{
+    &.active{
+        font-weight: bold;
+    }
 }
