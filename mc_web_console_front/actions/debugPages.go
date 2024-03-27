@@ -62,3 +62,7 @@ func TestPageController(c buffalo.Context) error {
 
 	return c.Render(http.StatusOK, r.HTML("_debug/sy/est/main.html"))
 }
+
+func DEBUGPolicyHandler(c buffalo.Context) error {
+	return c.Render(http.StatusOK, tr.HTML("_debug/policy/monitoring.html"))
+}

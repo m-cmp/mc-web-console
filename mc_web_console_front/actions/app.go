@@ -79,6 +79,9 @@ func App() *buffalo.App {
 
 		// page sample
 		debug.GET("/sample", DEBUGSamplePageHandler)
+
+		// under construct
+		debug.GET("/policy", DEBUGPolicyHandler)
 		//////////////// debug section end ////////////////
 
 		// pages
