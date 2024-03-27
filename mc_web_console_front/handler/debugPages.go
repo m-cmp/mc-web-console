@@ -1,12 +1,27 @@
-package actions
+package handler
 
 import (
 	"io/ioutil"
+
 	"net/http"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
 )
+
+// /////// test /////
+func HomeHandler(c buffalo.Context) error {
+	c.Set("pretitle", "pretitle")
+	c.Set("title", "title")
+	return c.Render(http.StatusOK, tr.HTML("_debug/home/dash.html"))
+}
+
+// 로그인 폼 -> 로그인폼은 기본 렌더를 따름.
+func AuthLoginHandler(c buffalo.Context) error {
+	return c.Render(http.StatusOK, r.HTML("auth/sign-in.html"))
+}
+
+///// DEBUG /////
 
 func DEBUGRalive(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
@@ -61,8 +76,4 @@ func SyPageController(c buffalo.Context) error {
 func TestPageController(c buffalo.Context) error {
 
 	return c.Render(http.StatusOK, r.HTML("_debug/sy/est/main.html"))
-}
-
-func DEBUGPolicyHandler(c buffalo.Context) error {
-	return c.Render(http.StatusOK, tr.HTML("_debug/policy/monitoring.html"))
 }
