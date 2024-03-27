@@ -1,15 +1,18 @@
 // tabler import
-@import '~@tabler/core/dist/css/tabler.css';
+// @import '~@tabler/core/dist/css/tabler.css';
+@import './tabler.css';
 
 // for demo -> 삭제예정
-@import '~@tabler/core/dist/css/tabler-flags.css';
-@import '~@tabler/core/dist/css/tabler-payments.css';
-@import '~@tabler/core/dist/css/tabler-vendors.css';
-@import '~@tabler/core/dist/css/demo.css';
+// @import '~@tabler/core/dist/css/tabler-flags.css';
+// @import '~@tabler/core/dist/css/tabler-payments.css';
+// @import '~@tabler/core/dist/css/tabler-vendors.css';
+// @import '~@tabler/core/dist/css/demo.css';
 
 
 // tabler Custom Style
+
+//this is for sideMenu depth
 .navbar-nav .nav-item.box-link {
-    padding: 0 calc(calc(0.625rem * 2) / 2);
-    justify-content: flex-start;
-  }
+  padding: 0 calc(calc(0.625rem * 2) / 2);
+  justify-content: flex-start;
+}
