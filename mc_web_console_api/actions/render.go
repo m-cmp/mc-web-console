@@ -8,6 +8,7 @@ var r *render.Engine
 
 func init() {
 	r = render.New(render.Options{
-		DefaultContentType: "application/json",
+
+		Helpers: render.Helpers{},
 	})
 }
