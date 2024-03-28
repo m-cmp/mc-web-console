@@ -7,15 +7,6 @@ var tabledata = [
 	{id:4, name:"Brendon Philips", age:"125", col:"orange", dob:"01/08/1980"},
 	{id:5, name:"Margret Marmajuke", age:"16", col:"yellow", dob:"31/01/1999"},
 	{id:5, name:"Margret 1", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:6, name:"Margret 2", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:7, name:"Margret 3", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:8, name:"Margret 4", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:9, name:"Margret 5", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:10, name:"Margret 6", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:11, name:"Margret 7", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:12, name:"Margret 8", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:13, name:"Margret 9", age:"16", col:"yellow", dob:"31/01/1999"},
-	{id:14, name:"Margret 10", age:"16", col:"yellow", dob:"31/01/1999"},
 ];
 
 //create Tabulator on DOM element with id "example-table"
@@ -31,10 +22,12 @@ var table = new Tabulator("#example-table", {
     paginationCounter:"rows",
 
 	columns:[ //Define Table Columns
-		{title:"Name", field:"name", formatter:"html"},
-		{title:"Age", field:"age", hozAlign:"left", formatter:"progress"},
-		{title:"Favourite Color", field:"col"},
-		{title:"Date Of Birth", field:"dob", sorter:"date", hozAlign:"center"},
-	],
+		 {title:"Name", field:"name"},
+		 {title:"Measurement", field:"col"},
+		 {title:"Target Type", field:"col"},
+		 {title:"Targer ID", field:"col"},
+		 {title:"Alert Event Type", field:"col"},
+		 {title:"Alert Event Name", field:"col"},
+		],
 	
 });
