@@ -12,27 +12,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// McksmngForm default implementation.
-func (a actions) McksMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/mcksmng/mngform.html"))
-}
-
-func (a actions) McksRegForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/mcksmng/regform.html"))
-}
-
-func (a actions) McksNodeRegForm(c buffalo.Context) error {
-	namespaceID := c.Session().Get("current_namespace_id").(string)
-	mcksID := c.Param("mcksId")
-	mcksName := c.Param("mcksName")
-	mcksInfo, _ := handler.GetClusterData(namespaceID, mcksName)
-
-	c.Set("mcks_id", mcksID)
-	c.Set("mcks_name", mcksName)
-	c.Set("node_list", mcksInfo.Nodes)
-	return c.Render(http.StatusOK, r.HTML("operations/mcksmng/node_regform.html"))
-}
-
 // McksmngGet default implementation.
 // todo : mcks 가져오는 로직으로 변경할것것
 func (a actions) McksGet(c buffalo.Context) error {

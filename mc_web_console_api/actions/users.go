@@ -15,25 +15,6 @@ import (
 	"mc_web_console_api/models"
 )
 
-func (a actions) UsersNewForm(c buffalo.Context) error {
-	u := models.User{}
-	c.Set("user", u)
-	//r.HTMLLayout = "application"
-	return c.Render(200, r.HTML("users/new.html", "application_login.html"))
-}
-
-func (a actions) MainForm(c buffalo.Context) error {
-	u := models.User{}
-	c.Set("user", u)
-	if ns := c.Session().Get("current_namespace"); ns != nil {
-		c.Set("current_namespace", ns)
-	}
-
-	return c.Render(200, r.HTML("main/index.html"))
-}
-
-// UsersCreate registers a new user with the application.
-
 // UsersNew renders the users form
 
 func (a actions) UsersCreate(c buffalo.Context) error {
@@ -50,13 +31,14 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 
 	//verrs, err := u.Create(tx)
 
-	ns_err := NamespaceCreateDefault(c, default_ns, u)
-	if ns_err != nil {
-		spew.Dump("=====================")
-		spew.Dump("NamespaceCreateDefault error")
-		spew.Dump("=====================")
-		return errors.WithStack(ns_err)
-	}
+	// ns_err := NamespaceCreateDefault(c, default_ns, u)
+
+	// if ns_err != nil {
+	// 	spew.Dump("=====================")
+	// 	spew.Dump("NamespaceCreateDefault error")
+	// 	spew.Dump("=====================")
+	// 	return errors.WithStack(ns_err)
+	// }
 	// 사용자가 가입하고 signin 으로 로그인하게 보낼 경우는
 	// 세션에 사용자 ID를 담을 필요가 없음
 	// c.Session().Set("current_user_id", u.ID)

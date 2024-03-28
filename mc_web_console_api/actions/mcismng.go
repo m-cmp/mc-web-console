@@ -15,23 +15,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// TODO : Mcismng -> McisMng(대문자) 으로 이름 변경할 것.(app.go 도 함께.)
-func (a actions) McisMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/mcismng/mngform.html"))
-}
-func (a actions) McisRegForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/mcismng/regform.html"))
-}
-func (a actions) McisVmRegForm(c buffalo.Context) error {
-
-	//
-	mcisID := c.Param("mcisId")
-	mcisName := c.Param("mcisName")
-	c.Set("mcis_id", mcisID)
-	c.Set("mcis_name", mcisName)
-	return c.Render(http.StatusOK, r.HTML("operations/mcismng/vmregform.html"))
-}
-
 // McismngList 목록조회
 func (a actions) McisList(c buffalo.Context) error {
 
@@ -610,16 +593,6 @@ func (a actions) McisAppendVmReg(c buffalo.Context) error {
 		"message": "success",
 		"status":  200,
 	}))
-}
-
-func (a actions) McisAppendVmRegForm(c buffalo.Context) error {
-	namespaceID := c.Session().Get("current_namespace_id").(string)
-	mcisId := c.Param("mcisId")
-	mcisInfo, _ := handler.GetMcisData(namespaceID, mcisId)
-
-	c.Set("mcis_id", mcisId)
-	c.Set("vm_list", mcisInfo.Vm)
-	return c.Render(http.StatusOK, r.HTML("operations/mcismng/vmregform.html"))
 }
 
 // 등록되지 않은 CSP의 VM을 system에 등록. namespace 지정 필요

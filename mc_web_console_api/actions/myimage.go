@@ -14,18 +14,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (a actions) MyImageMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/myimage/mngform.html"))
-}
-
-// 이미지 생성은 Vm 으로만 할 것.
-// TODO :
-// 현재 VM 이미지 생성은 MCIS에서 VM 을 선택한뒤 스냅샷 기능으로만 만들고 있음
-// 추후에 RegForm 필요할 것을 예상됨.
-func (a actions) MyImageRegForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/myimage/mngform.html"))
-}
-
 func (a actions) MyImageReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)

@@ -17,10 +17,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (a actions) VmSpecMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/vmspec/mngform.html"))
-}
-
 // Get "/lookupvmspecs"
 func (a actions) VmSpecLookupList(c buffalo.Context) error {
 	connectionName := &common.TbConnectionName{}

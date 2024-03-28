@@ -37,34 +37,8 @@ var (
 	app     *buffalo.App
 	appOnce sync.Once
 	T       *i18n.Translator
-	//w       worker.Worker
-	//q *amqpw.Adapter
 )
 
-// App is where all routes and middleware for buffalo
-// should be defined. This is the nerve center of your
-// application.
-//
-// Routing, middleware, groups, etc... are declared TOP -> DOWN.
-// This means if you add a middleware to `app` *after* declaring a
-// group, that group will NOT have that new middleware. The same
-// is true of resource declarations as well.
-//
-// It also means that routes are checked in the order they are declared.
-// `ServeFiles` is a CATCH-ALL route, so it should always be
-// placed last in the route declarations, as it will prevent routes
-// declared after it to never be called.
-
-// @title			  API
-// @version		??
-// @description	  API Swagger page
-// @contact.name
-// @contact.url	https://github.com/
-// @contact.email
-// @license.name
-// @license.url
-// @host		localhost:3000
-// @BasePath	/
 func App() *buffalo.App {
 	appOnce.Do(func() {
 		app = buffalo.New(buffalo.Options{
@@ -77,37 +51,25 @@ func App() *buffalo.App {
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
-		// Automatically redirect to SSL
 		app.Use(forceSSL())
-
-		// Log request parameters (filters apply).
 		app.Use(paramlogger.ParameterLogger)
-
-		// Set the request content type to JSON
 		app.Use(contenttype.Set("application/json"))
-
-		// Wraps each request in a transaction.
-		//   c.Value("tx").(*pop.Connection)
-		// Remove to disable this.
 		app.Use(popmw.Transaction(models.DB))
 
-		app.Use(SkipMiddlewareByRoutePath) // 경로에 따라 middleware skip. ( Authorize 도 같이 처리 함.)
+		// app.Use(SkipMiddlewareByRoutePath)
+		// app.Use(SetCloudProviderList)
 
-		//app.Use(Authorize)
-		app.Use(SetCloudProviderList)
-
-		RoutesManager(app)
 		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
+		RoutesManager(app)
 
-		// app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
-
+		//// DEBUG ////
+		app.GET("/debug/alive", alive)
 	})
 
 	return app
 }
 
 // middleware moved to middleware.go
-
 // translations, forceSSL는 buffalo 에서 정의한 커스텀 미들웨어이므로 이동시키지 않음.
 
 // translations will load locale files, set up the translator `actions.T`,
@@ -143,4 +105,10 @@ func RedirectTool(c buffalo.Context, p string) error {
 		}
 	}
 	return c.Redirect(302, "/")
+}
+
+func alive(c buffalo.Context) error {
+	return c.Render(200, r.JSON(map[string]interface{}{
+		"status": "OK",
+	}))
 }

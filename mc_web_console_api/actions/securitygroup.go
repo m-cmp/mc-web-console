@@ -14,10 +14,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (a actions) SecurityGroupMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/securitygroup/mngform.html"))
-}
-
 // SecuritygroupList
 func (a actions) SecurityGroupList(c buffalo.Context) error {
 	log.Println("GetSecirityGroupList : ")
