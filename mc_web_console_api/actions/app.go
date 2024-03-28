@@ -1,20 +1,32 @@
 package actions
 
 import (
-	"mc_web_console_api/locales"
-	"mc_web_console_api/models"
 	"os"
+	"sync"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
 	contenttype "github.com/gobuffalo/mw-contenttype"
 	forcessl "github.com/gobuffalo/mw-forcessl"
-	i18n "github.com/gobuffalo/mw-i18n/v2"
-	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/gobuffalo/x/sessions"
 	"github.com/rs/cors"
 	"github.com/unrolled/secure"
+
+	// gwa "github.com/gobuffalo/gocraft-work-adapter"
+
+	i18n "github.com/gobuffalo/mw-i18n/v2"
+	paramlogger "github.com/gobuffalo/mw-paramlogger"
+
+	// "github.com/gomodule/redigo/redis"
+
+	"mc_web_console_api/locales"
+	"mc_web_console_api/models"
+
+	_ "mc_web_console_api/docs" //mcone의 경우
+
+	buffaloSwagger "github.com/swaggo/buffalo-swagger"
+	"github.com/swaggo/buffalo-swagger/swaggerFiles"
 )
 
 // ENV is used to help switch settings based on where the
@@ -22,8 +34,11 @@ import (
 var ENV = envy.Get("GO_ENV", "development")
 
 var (
-	app *buffalo.App
-	T   *i18n.Translator
+	app     *buffalo.App
+	appOnce sync.Once
+	T       *i18n.Translator
+	//w       worker.Worker
+	//q *amqpw.Adapter
 )
 
 // App is where all routes and middleware for buffalo
@@ -39,8 +54,19 @@ var (
 // `ServeFiles` is a CATCH-ALL route, so it should always be
 // placed last in the route declarations, as it will prevent routes
 // declared after it to never be called.
+
+// @title			  API
+// @version		??
+// @description	  API Swagger page
+// @contact.name
+// @contact.url	https://github.com/
+// @contact.email
+// @license.name
+// @license.url
+// @host		localhost:3000
+// @BasePath	/
 func App() *buffalo.App {
-	if app == nil {
+	appOnce.Do(func() {
 		app = buffalo.New(buffalo.Options{
 			Env:          ENV,
 			SessionStore: sessions.Null{},
@@ -64,13 +90,25 @@ func App() *buffalo.App {
 		//   c.Value("tx").(*pop.Connection)
 		// Remove to disable this.
 		app.Use(popmw.Transaction(models.DB))
-		app.GET("/", HomeHandler)
 
-		app.GET("/debug/alive", DEBUGRalive)
-	}
+		app.Use(SkipMiddlewareByRoutePath) // 경로에 따라 middleware skip. ( Authorize 도 같이 처리 함.)
+
+		//app.Use(Authorize)
+		app.Use(SetCloudProviderList)
+
+		RoutesManager(app)
+		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
+
+		// app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
+
+	})
 
 	return app
 }
+
+// middleware moved to middleware.go
+
+// translations, forceSSL는 buffalo 에서 정의한 커스텀 미들웨어이므로 이동시키지 않음.
 
 // translations will load locale files, set up the translator `actions.T`,
 // and will return a middleware to use to load the correct locale for each
@@ -94,4 +132,15 @@ func forceSSL() buffalo.MiddlewareFunc {
 		SSLRedirect:     ENV == "production",
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
+}
+
+// Redirect에 route 정보 전달
+func RedirectTool(c buffalo.Context, p string) error {
+	routes := app.Routes()
+	for _, route := range routes {
+		if route.PathName == p {
+			return c.Redirect(302, route.Path)
+		}
+	}
+	return c.Redirect(302, "/")
 }
