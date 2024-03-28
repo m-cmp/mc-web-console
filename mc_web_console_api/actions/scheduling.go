@@ -62,16 +62,6 @@ func NextScheduleTimeByTag(t string) time.Time {
 	return nextTime
 }
 
-func (a actions) schedulerMngForm(c buffalo.Context) error {
-	mcisId := c.Param("mcisId")
-	mcisName := c.Param("mcisName")
-
-	c.Set("mcisId", mcisId)
-	c.Set("mcisName", mcisName)
-
-	return c.Render(http.StatusOK, r.HTML("operations/scheduler/mngform.html"))
-}
-
 func (a actions) SchedulingReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 

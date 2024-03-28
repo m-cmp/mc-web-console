@@ -14,11 +14,6 @@ import (
 	"mc_web_console_api/models/views"
 )
 
-// VnetForm default implementation.
-func (a actions) VpcMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/vnet/mngform.html"))
-}
-
 func (a actions) VpcReg(c buffalo.Context) error {
 	// 현재 namespace 정보 가져오기
 	namespaceID := c.Session().Get("current_namespace_id").(string)

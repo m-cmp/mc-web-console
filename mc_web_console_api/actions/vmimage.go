@@ -14,10 +14,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (a actions) VmImageMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/vmimage/mngform.html"))
-}
-
 // VmimageList default implementation.
 func (a actions) VmImageList(c buffalo.Context) error {
 	log.Println("GetVirtualMachineImageList : ")

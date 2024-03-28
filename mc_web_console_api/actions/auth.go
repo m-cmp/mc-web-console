@@ -1,8 +1,6 @@
 package actions
 
 import (
-	"log"
-
 	"database/sql"
 	"net/http"
 	"strings"
@@ -16,37 +14,6 @@ import (
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 )
-
-// AuthLanding shows a landing page to login
-// AuthLandingForm는 렌딩 화면을 렌더링합니다.
-//
-//	@Summary		렌딩 화면 렌더링
-//	@Description	[AuthLandingForm] 렌딩 화면을 렌더링합니다. AuthLanding shows a landing page to login
-//	@Tags			auth
-//	@Produce		html
-//	@Success		200	{html}	html	"auth/landing.html"
-//	@Router			/auth/landing/mngform/ [get]
-func (a actions) AuthLandingForm(c buffalo.Context) error {
-	return c.Render(200, r.HTML("auth/landing.html"))
-}
-
-// AuthNewFormdms 새로운 로그인 화면을 렌더링합니다.
-// AuthNew loads the signin page
-//
-//	@Summary		로그인 화면 렌더링
-//	@Description	[AuthNewForm] 로그인 화면을 렌더링합니다. AuthNew loads the signin page
-//	@Tags			auth
-//	@Produce		html
-//	@Success		200	{html}	html	"auth/new.html"
-//	@Router			/auth/signin/mngform/ [GET]
-func (a actions) AuthNewForm(c buffalo.Context) error {
-	log.Println("AuthNewForm startt")
-	c.Set("user", models.User{})
-	log.Println("AuthNewForm 'models.User{}'")
-
-	//r.Options.HTMLLayout = "application_login.plush.html"
-	return c.Render(200, r.HTML("auth/new.html", "application_login.html"))
-}
 
 // AuthCreate attempts to log the user in with an existing account.
 //
@@ -83,7 +50,6 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 		c.Set("errors", verrs)
 		c.Set("user", u)
 
-		// return c.Render(, r.HTML("auth/new.plush.html"))
 		return c.Render(http.StatusUnauthorized, r.JSON(map[string]interface{}{
 			"error":  verrs,
 			"status": http.StatusUnauthorized,

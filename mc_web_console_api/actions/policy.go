@@ -9,11 +9,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// Monitoring Config 정책 화면
-func (a actions) MonitoringConfigPolicyMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/monitoringconfigpolicy/mngform.html"))
-}
-
 // Monitoring Config 정책 조회
 func (a actions) MonitoringConfigPolicyData(c buffalo.Context) error {
 
@@ -51,11 +46,6 @@ func (a actions) MonitoringConfigPolicyUpdate(c buffalo.Context) error {
 		"status":           respStatus.StatusCode,
 		"MonitoringConfig": resultMonitoringConfigInfo,
 	}))
-}
-
-// Monitoring alert 임계치 설정 화면
-func (a actions) MonitoringAlertPolicyMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/monitoringalertpolicy/mngform.html"))
 }
 
 // Monitoring alert 임계치 등록 처리

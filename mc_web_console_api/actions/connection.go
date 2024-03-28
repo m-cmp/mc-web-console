@@ -20,18 +20,6 @@ import (
 	"mc_web_console_api/models/views"
 )
 
-// ConnectionForm은 Connection 설정 폼을 렌더링합니다.
-//
-//	@Summary		Connection 설정 폼 렌더링
-//	@Description	[ConnectionMngForm] ConnectionForm은 Connection 설정 폼을 렌더링합니다.
-//	@Tags			connection
-//	@Produce		html
-//	@Success		200	{html}	html	"settings/connection/mngform.html"
-//	@Router			/settings/connection/mngform/ [get]
-func (a actions) ConnectionMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/connection/mngform.html"))
-}
-
 // CloudConnectionAllList
 //
 //	@Summary		모든 connection 조회

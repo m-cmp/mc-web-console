@@ -12,40 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO : db를 handling하는 부분은 handler로 옮길 것.
-
-// @Summary		관리자 설정 폼 렌더링 : not implement -- 아직 기획된바 없음.
-// @Description	[AdminMngForm] Admin 관리자 설정 폼을 렌더링합니다. : not implement -- 아직 기획된바 없음.
-// @Tags			adminconfig
-// @Produce		html
-// @Success		200	{html}	html	"adminconfig/regiongroup/mngform.html"
-// @Router			/adminconfig/config/mngform/ [get]
-func (a actions) AdminMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("adminconfig/regiongroup/mngform.html"))
-}
-
-// @Summary		Menu 설정 폼 렌더링
-// @Description	[MenuMngForm] Menu 설정 폼을 렌더링합니다.
-// @Tags			adminconfig
-// @Produce		html
-// @Success		200	{html}	html	"adminconfig/menumng/mngform.html"
-// @Router			/adminconfig/menu/mngform/ [get]
-func (a actions) MenuMngForm(c buffalo.Context) error {
-	log.Println("in MenumngForm")
-	return c.Render(http.StatusOK, r.HTML("adminconfig/menumng/mngform.html"))
-}
-
-// @Summary		Category 설정 폼 렌더링
-// @Description	[CategoryMngForm] Category 설정 폼을 렌더링합니다.
-// @Tags			adminconfig
-// @Produce		html
-// @Success		200	{html}	html	"adminconfig/categorymng/mngform.html"
-// @Router			/adminconfig/category/mngform/ [get]
-func (a actions) CategoryMngForm(c buffalo.Context) error {
-	log.Println("in CategorymngForm")
-	return c.Render(http.StatusOK, r.HTML("adminconfig/categorymng/mngform.html"))
-}
-
 // @Summary		RegionGroup 리스트 조회
 // @Description	[RegionGroupList] providerId 와 regionGroupName 을 받아 RegionGroupList를 반환합니다.
 // @Tags			adminconfig
@@ -507,29 +473,6 @@ func (a actions) MenuTree(c buffalo.Context) error {
 		"status":   "200",
 		"menutree": menutree,
 	}))
-}
-
-// @Summary		Api test mngform : todo : 삭제
-// @Description	[ApiTestForm] ApiTest를 렌더링 합니다.
-// @Tags			debug
-// @Produce		html
-// @Success		200	{html}	html	"adminconfig/apitest/mngform.html"
-// @Router			/test/apitest/mngform/ [get]
-func (a actions) ApiTestForm(c buffalo.Context) error {
-	routerList := models.RouteInfoes{}
-	query := models.DB.Q()
-	err := query.All(&routerList)
-	if err != nil {
-		log.Println("query err ", err)
-	}
-	var routerAppend []string
-	for _, router := range routerList {
-		routerAppend = append(routerAppend, router.Path, ",")
-	}
-
-	c.Set("routerList", routerAppend)
-
-	return c.Render(http.StatusOK, r.HTML("adminconfig/apitest/mngform.html"))
 }
 
 // @Summary		Api Search swagger : todo : 삭제

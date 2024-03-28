@@ -19,16 +19,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// @Summary		데이터 디스크 화면 렌더링
-// @Description	[DataDiskMngForm] 데이터 디스크 화면을 렌더링합니다.
-// @Tags			datadisk
-// @Produce		html
-// @Success		200	{html}	html	"settings/datadisk/mngform.html"
-// @Router			/settings/resources/datadisk/mngform/ [get]
-func (a actions) DataDiskMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/datadisk/mngform.html"))
-}
-
 // @Summary		DataDisk 생성
 // @Description	[DataDiskReg] Data Disk를 생성합니다.
 // @Tags			datadisk

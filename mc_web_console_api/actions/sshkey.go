@@ -13,10 +13,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (a actions) SshKeyMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("settings/sshkey/mngform.html"))
-}
-
 // SshkeyList default implementation.
 func (a actions) SshKeyList(c buffalo.Context) error {
 	log.Println("GetSshKeyList : ")

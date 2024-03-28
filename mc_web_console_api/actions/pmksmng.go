@@ -13,15 +13,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// PmksmngForm default implementation.
-func (a actions) PmksMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/pmksmng/mngform.html"))
-}
-
-func (a actions) PmksRegForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/pmksmng/regform.html"))
-}
-
 func (a actions) PmksRegProc(c buffalo.Context) error {
 
 	clusterReqInfo := &spider.ClusterReqInfo{}
@@ -164,12 +155,6 @@ func (a actions) PmksNodeGroupRegProc(c buffalo.Context) error {
 	}))
 }
 
-// PmksmngGet default implementation.
-// todo : PMKS GET
-func (a actions) PmksMngGet(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/pmksmng/get.html"))
-}
-
 func (a actions) PmksListOfNamespace(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -241,11 +226,6 @@ func (a actions) PmksMngList(c buffalo.Context) error {
 			"PmksList":           pmksList,
 		}))
 	}
-}
-
-func (a actions) PmksNodeGroupRegForm(c buffalo.Context) error {
-
-	return c.Render(http.StatusOK, r.HTML("operations/pmksmng/nodegroupregfrom.html"))
 }
 
 func (a actions) GetPmksInfoData(c buffalo.Context) error {

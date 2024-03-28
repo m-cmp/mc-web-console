@@ -10,12 +10,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// 화면 표시
-// TODO : func name 규칙 -> 템플릿 따라서 갈 수 있도록 변경 할 것.
-func (a actions) MonitoringMngForm(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("operations/monitoringmng/mcis/mngform.html"))
-}
-
 func (a actions) McisMonitoringDurationMetric(c buffalo.Context) error {
 	log.Println("McisMonitoringData")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
