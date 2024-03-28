@@ -1,4 +1,4 @@
-package handler
+package actions
 
 import (
 	"mc_web_console_front/public"
@@ -7,12 +7,12 @@ import (
 	"github.com/gobuffalo/buffalo/render"
 )
 
-var tr *render.Engine
+var r *render.Engine
 
 func init() {
-	tr = render.New(render.Options{
+	r = render.New(render.Options{
 		// HTML layout to be used for all HTML requests:
-		HTMLLayout: "tabler.plush.html",
+		HTMLLayout: "application.plush.html",
 
 		// fs.FS containing templates
 		TemplatesFS: templates.FS(),

@@ -1,4 +1,4 @@
-package handler
+package actions
 
 import (
 	"net/http"
@@ -6,24 +6,24 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func OperationPageHandler(c buffalo.Context) error {
+func OperationPageController(c buffalo.Context) error {
 	category := c.Param("category")
 	page := c.Param("page")
 	renderHtml := "/operation/" + category + "/" + page + ".html"
 
-	c.Set("pretitle", category)
-	c.Set("title", page)
+	c.Set("category", category)
+	c.Set("page", page)
 
 	return c.Render(http.StatusOK, tr.HTML(renderHtml))
 }
 
-func SettingPageHandler(c buffalo.Context) error {
+func SettingPageController(c buffalo.Context) error {
 	category := c.Param("category")
 	page := c.Param("page")
 	renderHtml := "/setting/" + category + "/" + page + ".html"
 
-	c.Set("pretitle", category)
-	c.Set("title", page)
+	c.Set("category", category)
+	c.Set("page", page)
 
 	return c.Render(http.StatusOK, tr.HTML(renderHtml))
 }

@@ -14,8 +14,6 @@ import (
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/unrolled/secure"
-
-	"mc_web_console_front/handler"
 )
 
 // ENV is used to help switch settings based on where the
@@ -64,31 +62,31 @@ func App() *buffalo.App {
 		//////////////// debug section start ////////////////
 		debug := app.Group("/debug")
 		// common debug
-		debug.GET("/", handler.DEBUGRouteHandler)
+		debug.GET("/", DEBUGRouteHandler)
 
 		// alive debug
-		debug.GET("/alive", handler.DEBUGRalive)
+		debug.GET("/alive", DEBUGRalive)
 
 		// flowchart debug
-		debug.GET("/flow", handler.DEBUGWorkflowHandler)
+		debug.GET("/flow", DEBUGWorkflowHandler)
 
 		// tabler debug
-		debug.GET("/tabler", handler.DEBUGTablerMainHandler)
-		debug.GET("/tabler/{target}", handler.DEBUGTablerHandler)
+		debug.GET("/tabler", DEBUGTablerMainHandler)
+		debug.GET("/tabler/{target}", DEBUGTablerHandler)
 
 		// tabulator debug
-		debug.GET("/tabulator", handler.DEBUGTabulatorHandler)
+		debug.GET("/tabulator", DEBUGTabulatorHandler)
 
 		// page sample
-		debug.GET("/sample", handler.DEBUGSamplePageHandler)
+		debug.GET("/sample", DEBUGSamplePageHandler)
 		//////////////// debug section end ////////////////
 
 		//home redirect to dash
 		app.Redirect(302, "/", "/operation/dashboard/ns")
 
 		// pages
-		app.GET("/operation/{category}/{page}", handler.OperationPageHandler)
-		app.GET("/setting/{category}/{page}", handler.SettingPageHandler)
+		app.GET("/operation/{category}/{page}", OperationPageController)
+		app.GET("/setting/{category}/{page}", SettingPageController)
 
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
 	}
