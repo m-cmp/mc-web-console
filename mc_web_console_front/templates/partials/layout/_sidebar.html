@@ -24,8 +24,8 @@
                     </span>
                 </li>
                 <!-- Operation Dashboard-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_dashboard">
+                    <div class="nav-link dropdown-toggle" name="sidebar_dashboard" href="#navbar-base" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -43,13 +43,13 @@
                         <span class="nav-link-title">
                             Dashboard
                         </span>
-                    </a>
-                    <div class="dropdown-menu">
+                    </div>
+                    <div class="dropdown-menu" name="sidebar_dashboard">
                         <div class="dropdown-menu-column">
-                            <a class="dropdown-item" href="/operation/dashboard/ns">
+                            <a class="dropdown-item" href="/operation/dashboard/ns" id="sidebar_dashboard_ns">
                                 NS
                             </a>
-                            <a class="dropdown-item" href="/operation/dashboard/global">
+                            <a class="dropdown-item" href="/operation/dashboard/global" id="sidebar_dashboard_global">
                                 Global
                             </a>
                         </div>
@@ -57,8 +57,8 @@
                     </div>
                 </li>
                 <!-- Operation Manage-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_manage">
+                    <div class="nav-link dropdown-toggle" name="sidebar_manage" href="#navbar-extra" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -76,17 +76,17 @@
                         <span class="nav-link-title">
                             Manage
                         </span>
-                    </a>
-                    <div class="dropdown-menu">
+                    </div>
+                    <div class="dropdown-menu" name="sidebar_manage">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/operation/manage/mcis">
+                                <a class="dropdown-item" href="/operation/manage/mcis" id="sidebar_manage_mcis">
                                     MCIS
                                 </a>
-                                <a class="dropdown-item" href="/operation/manage/mcks">
+                                <a class="dropdown-item" href="/operation/manage/mcks" id="sidebar_manage_mcks">
                                     MCKS
                                 </a>
-                                <a class="dropdown-item" href="/operation/manage/pmks">
+                                <a class="dropdown-item" href="/operation/manage/pmks" id="sidebar_manage_pmks">
                                     PMKS
                                 </a>
                             </div>
@@ -95,8 +95,8 @@
                     </div>
                 </li>
                 <!-- Operation Monitoring-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_monitoring">
+                    <div class="nav-link dropdown-toggle"  name="sidebar_monitoring" href="#navbar-extra" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -115,11 +115,11 @@
                         <span class="nav-link-title">
                             Monitoring
                         </span>
-                    </a>
-                    <div class="dropdown-menu">
+                    </div>
+                    <div class="dropdown-menu"  name="sidebar_monitoring">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/operation/monitoring/mcis">
+                                <a class="dropdown-item" href="/operation/monitoring/mcis"  id="sidebar_monitoring_mcis">
                                     MCIS
                                 </a>
                             </div>
@@ -127,8 +127,8 @@
                     </div>
                 </li>
                 <!-- Operation Policy-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_policy">
+                    <div class="nav-link dropdown-toggle" name="sidebar_policy" href="#navbar-extra" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -148,14 +148,14 @@
                         <span class="nav-link-title">
                             Policy
                         </span>
-                    </a>
-                    <div class="dropdown-menu">
+                    </div>
+                    <div class="dropdown-menu" name="sidebar_policy">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/operation/policy/monitoring">
+                                <a class="dropdown-item" href="/operation/policy/monitoring" id="sidebar_policy_monitoring">
                                     Monitoring
                                 </a>
-                                <a class="dropdown-item" href="/operation/policy/threshold">
+                                <a class="dropdown-item" href="/operation/policy/threshold" id="sidebar_policy_threshold">
                                     Threshold
                                 </a>
                             </div>
@@ -163,9 +163,8 @@
                     </div>
                 </li>
                 <!-- Operation Service-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
-                        data-bs-auto-close="false" role="button" aria-expanded="false">
+                <li class="nav-item box-link dropdown" name="sidebar_service">
+                    <div class="nav-link dropdown-toggle" name="sidebar_service"href="#navbar-extra" data-bs-toggle="dropdown"data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -179,11 +178,11 @@
                         <span class="nav-link-title">
                             Service
                         </span>
-                    </a>
-                    <div class="dropdown-menu">
+                    </div>
+                    <div class="dropdown-menu" name="sidebar_service">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/operation/service/nlb">
+                                <a class="dropdown-item" href="/operation/service/nlb" id="sidebar_service_nlb">
                                     NLB
                                 </a>
                             </div>
@@ -191,8 +190,8 @@
                     </div>
                 </li>
                 <!-- Operation about-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_about">
+                    <div class="nav-link dropdown-toggle" name="sidebar_about" href="#navbar-extra" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -215,11 +214,11 @@
                         <span class="nav-link-title">
                             About
                         </span>
-                    </a>
-                    <div class="dropdown-menu">
+                    </div>
+                    <div class="dropdown-menu" name="sidebar_about">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/operation/about/about">
+                                <a class="dropdown-item" href="/operation/about/about" id="sidebar_about_about">
                                     About
                                 </a>
                             </div>
@@ -279,8 +278,8 @@
                     </div>
                 </li>
                 <!-- Setting Cloudconn-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_cloudconnections">
+                    <a class="nav-link dropdown-toggle" name="sidebar_cloudconnections"href="#navbar-extra" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -296,10 +295,10 @@
                             Cloud Connections
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu" name="sidebar_cloudconnections">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/setting/cloudconnections/cloudconnections">
+                                <a class="dropdown-item" href="/setting/cloudconnections/cloudconnections" id="sidebar_cloudconnections_cloudconnections">
                                     Cloud Connections
                                 </a>
                             </div>
@@ -307,8 +306,8 @@
                     </div>
                 </li>
                 <!-- Setting ns-->
-                <li class="nav-item box-link dropdown">
-                    <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown"
+                <li class="nav-item box-link dropdown" name="sidebar_namespace">
+                    <a class="nav-link dropdown-toggle" name="sidebar_namespace" href="#navbar-extra" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
                             class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -326,16 +325,17 @@
                             NameSpace
                         </span>
                     </a>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu" name="sidebar_namespace">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="/setting/namespace/namespace">
+                                <a class="dropdown-item" href="/setting/namespace/namespace" id="sidebar_namespace_namespace">
                                     NameSpace
                                 </a>
                             </div>
                         </div>
                     </div>
                 </li>
+
             </ul>
         </div>
     </div>
