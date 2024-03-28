@@ -3,9 +3,9 @@
 @import '~sequential-workflow-designer/css/designer-light.css';
 @import '~sequential-workflow-designer/css/designer-dark.css';
 
+//tabler
+@import './inter/inter.css'; // font
 @import './tabler_custom.scss';
-
-@import './inter/inter.css';
 
 // tabulator Custom CSS
 @import  "./tabulator_for_tabler.scss";
