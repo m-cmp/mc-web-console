@@ -68,6 +68,10 @@ func DEBUGTabulatorHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, tr.HTML("_debug/tabulator/tabulator.html"))
 }
 
+func DEBUGApicallPageController(c buffalo.Context) error {
+	return c.Render(http.StatusOK, tr.HTML("_debug/apicall/apicall.html"))
+}
+
 // sy sample page
 func SyPageController(c buffalo.Context) error {
 	//logger.Info("syPage")

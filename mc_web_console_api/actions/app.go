@@ -63,7 +63,7 @@ func App() *buffalo.App {
 		RoutesManager(app)
 
 		//// DEBUG ////
-		app.GET("/debug/alive", alive)
+		app.ANY("/debug/alive", alive)
 	})
 
 	return app
@@ -110,5 +110,6 @@ func RedirectTool(c buffalo.Context, p string) error {
 func alive(c buffalo.Context) error {
 	return c.Render(200, r.JSON(map[string]interface{}{
 		"status": "OK",
+		"method": c.Request().Method,
 	}))
 }

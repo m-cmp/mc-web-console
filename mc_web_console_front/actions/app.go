@@ -79,6 +79,9 @@ func App() *buffalo.App {
 
 		// page sample
 		debug.GET("/sample", DEBUGSamplePageHandler)
+
+		// debug call Test
+		debug.GET("/apicall", DEBUGApicallPageController)
 		//////////////// debug section end ////////////////
 
 		//home redirect to dash

@@ -22,12 +22,12 @@ var table = new Tabulator("#example-table", {
     paginationCounter:"rows",
 
 	columns:[ //Define Table Columns
-		 {title:"Name", field:"name"},
-		 {title:"Measurement", field:"col"},
-		 {title:"Target Type", field:"col"},
-		 {title:"Targer ID", field:"col"},
-		 {title:"Alert Event Type", field:"col"},
-		 {title:"Alert Event Name", field:"col"},
+		{title:"Name", field:"name"},
+		{title:"Measurement", field:"col"},
+		{title:"Target Type", field:"col"},
+		{title:"Targer ID", field:"col"},
+		{title:"Alert Event Type", field:"col"},
+		{title:"Alert Event Name", field:"col"},
 		],
 	
 });
