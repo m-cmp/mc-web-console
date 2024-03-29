@@ -91,6 +91,9 @@ func App() *buffalo.App {
 		app.GET("/operation/{category}/{page}", OperationPageController)
 		app.GET("/setting/{category}/{page}", SettingPageController)
 
+		apiVersion := os.Getenv("API_VERSION")
+		app.ANY("/api/"+apiVersion+"/{path:.+}", ApiCaller)
+
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
 	}
 

@@ -63,7 +63,8 @@ func App() *buffalo.App {
 		RoutesManager(app)
 
 		//// DEBUG ////
-		app.ANY("/debug/alive", alive)
+		apiVersion := os.Getenv("API_VERSION")
+		app.ANY("/api/"+apiVersion+"/debug/alive", alive)
 	})
 
 	return app
