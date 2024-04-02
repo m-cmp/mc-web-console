@@ -54,12 +54,17 @@ func App() *buffalo.App {
 
 		// Protect against CSRF attacks. https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
 		// Remove to disable this.
+
+		// 프론트에서 CSRF 설정이 되어 있음!
+		// 백에서 처리할 시 아래 주석 할 것.
 		app.Use(csrf.New)
 
 		// Setup and use translations:
 		app.Use(translations())
 
 		//////////////// debug section start ////////////////
+		// debug 이므로 별도 라우팅 처리...
+		// TODO : build에 포함되지 않도록 처리 할 것..
 		debug := app.Group("/debug")
 		// common debug
 		debug.GET("/", DEBUGRouteHandler)
@@ -96,6 +101,8 @@ func App() *buffalo.App {
 		// API 호출 Proxy to backend API buffalo
 		// /api/{version}/* 콜 REST 모두 라우팅..
 		app.ANY("/api/{path:.+}", ApiCaller)
+
+		// 향후 API 버전 컨트롤 할 때 사용 예정..
 		// app.ANY("/api/"+apiVersion+"/{path:.+}", ApiCaller)
 
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
