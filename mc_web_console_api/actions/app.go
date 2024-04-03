@@ -64,18 +64,17 @@ func App() *buffalo.App {
 		// RoutesManager(app)
 
 		//// MANUAL ROUTE ////
-		apiPath := "/api/"
+		apiPath := "/api"
 
 		// DEBUG START //
-		debug := app.Group(apiPath + "debug")
+		debug := app.Group(apiPath + "/debug")
 		debug.ANY("/alive", alive)
 		//  DEBUG END  //
 
-		mcauth := app.Group(apiPath + "mcauth")
-		mcauth.POST("/login", MCAuthLoginHandler)
-		mcauth.POST("/logout", MCAuthLogoutHandler)
-		mcauth.POST("/securitykey", MCAuthGetSecurityKeyHandler)
-
+		mciamauth := app.Group(apiPath + "/mciam/auth")
+		mciamauth.POST("/login", McIamAuthLoginHandler)
+		mciamauth.POST("/logout", McIamAuthLogoutHandler)
+		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
 	})
 
 	return app
