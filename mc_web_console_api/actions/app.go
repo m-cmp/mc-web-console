@@ -63,6 +63,10 @@ func App() *buffalo.App {
 
 		// RoutesManager(app)
 
+		app.Use(McIamAuthMiddleware)
+		app.Middleware.Skip(McIamAuthMiddleware,
+			McIamAuthLoginHandler)
+
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
 
