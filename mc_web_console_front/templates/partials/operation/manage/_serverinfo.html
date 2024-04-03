@@ -1,8 +1,8 @@
 <!-- server list 클릭 시 -->
 
-<div class="card bg-secondary-lt">
+<div class="card">
     <div class="card-header">
-        <h3 class="card-title">Server Info<span id="region_mcis" class="text-inf"> [ aws-sao-server-1 / aws-sao-mcis ]
+        <h3 class="card-title">Server Info<span id="region_mcis" class="text-info"> [ aws-sao-server-1 / aws-sao-mcis ]
             </span> </h3>
     </div>
     <div class="card-body">
@@ -167,17 +167,9 @@
             </div>
         </div>
     </div>
-
-
-
-
-
-    <div class="row">
-        <div class="col-12">
-            <%= partial("partials/operation/manage/servertabcards.html") %>
+    <div class="row p-4">
+        <div class="col">
+            <%= partial("partials/operation/manage/serverdetailinfo.html") %>
         </div>
     </div>
-
-
-
 </div>
