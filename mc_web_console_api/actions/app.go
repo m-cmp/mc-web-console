@@ -56,15 +56,26 @@ func App() *buffalo.App {
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
 
+		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
+
 		// app.Use(SkipMiddlewareByRoutePath)
 		// app.Use(SetCloudProviderList)
 
-		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
-		RoutesManager(app)
+		// RoutesManager(app)
 
-		//// DEBUG ////
-		apiVersion := os.Getenv("API_VERSION")
-		app.ANY("/api/"+apiVersion+"/debug/alive", alive)
+		//// MANUAL ROUTE ////
+		apiPath := "/api/"
+
+		// DEBUG START //
+		debug := app.Group(apiPath + "debug")
+		debug.ANY("/alive", alive)
+		//  DEBUG END  //
+
+		mcauth := app.Group(apiPath + "mcauth")
+		mcauth.POST("/login", MCAuthLoginHandler)
+		mcauth.POST("/logout", MCAuthLogoutHandler)
+		mcauth.POST("/securitykey", MCAuthGetSecurityKeyHandler)
+
 	})
 
 	return app

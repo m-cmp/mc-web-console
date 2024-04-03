@@ -16,6 +16,7 @@ require (
 	github.com/gobuffalo/nulls v0.4.2
 	github.com/gobuffalo/pop/v6 v6.1.1
 	github.com/gobuffalo/suite/v4 v4.0.4
+	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/gobuffalo/validate/v3 v3.3.3
 	github.com/gobuffalo/x v0.0.0-20190224155809-6bb134105960
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -86,6 +87,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
+	github.com/serenize/snaker v0.0.0-20171204205717-a683aaf2d516 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d // indirect
