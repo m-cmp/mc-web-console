@@ -2,6 +2,8 @@ package actions
 
 import (
 	"log"
+	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
@@ -229,6 +231,37 @@ func SkipMiddleware(next buffalo.Handler) buffalo.Handler {
 			log.Println("c.RequestURL.Path ", c.Request().URL.Path)
 			// 건너뛰고자 하는 경우에는 다음 미들웨어나 핸들러를 호출하지 않고 종료합니다.
 			return nil
+		}
+
+		return next(c)
+	}
+}
+
+func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		accessToken := c.Request().Header.Get("Authorization")
+
+		getUserInfoPath := "/api/auth/validate"
+		getUserInfoEndpoint := baseURL.ResolveReference(&url.URL{Path: getUserInfoPath})
+
+		req, err := http.NewRequest("GET", getUserInfoEndpoint.String(), nil)
+		if err != nil {
+			return c.Render(http.StatusServiceUnavailable,
+				r.JSON(map[string]string{"error": err.Error()}))
+		}
+		req.Header.Set("Authorization", accessToken)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return c.Render(http.StatusServiceUnavailable,
+				r.JSON(map[string]string{"error": err.Error()}))
+		}
+		defer resp.Body.Close()
+
+		if resp.Status != "200 OK" {
+			return c.Render(http.StatusUnauthorized,
+				r.JSON(map[string]string{"code": "401 Unauthorized"}))
 		}
 
 		return next(c)
