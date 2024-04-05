@@ -1,5 +1,0 @@
-create_table("cloud_providers") {
-	t.Column("id", "string", {primary: true})
-	t.Column("provider_name", "string", {})
-	t.Timestamps()
-}

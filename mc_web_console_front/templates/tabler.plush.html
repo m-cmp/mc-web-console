@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+  
+<%= partial("partials/layout/header.html") %>
+
+  <body>
+    <!-- theme js -->
+    <%= javascriptTag("common/tabler/themeMode.js") %>
+
+    <div class="page">
+
+      <%= partial("partials/layout/sidebar.html") %>
+      <%= partial("partials/layout/navbar.html") %>
+
+      <div class="page-wrapper">
+        <%= yield %> <!--페이지 표현할 것들 -->
+        <%= partial("partials/layout/footer.html") %>
+      </div>
+
+    </div>
+    
+    <!-- common js -->
+    <%= javascriptTag("application.js") %>
+    <%= javascriptTag("common/view/sideMenu.js") %>
+    <%= javascriptTag("common/tabler/tabler.js") %>
+    <%= javascriptTag("common/tabler/tablerHelper.js") %>
+
+  </body>
+
+</html>

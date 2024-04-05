@@ -1,0 +1,11 @@
+// sequential-workflow-designer import
+@import '~sequential-workflow-designer/css/designer.css';
+@import '~sequential-workflow-designer/css/designer-light.css';
+@import '~sequential-workflow-designer/css/designer-dark.css';
+
+//tabler
+@import './inter/inter.css'; // font
+@import './tabler_custom.scss';
+
+// tabulator Custom CSS
+@import  "./tabulator_for_tabler.scss";

@@ -1,0 +1,72 @@
+<%= partial("partials/layout/pageheader/default.html") %>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row row-deck row-cards">
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default_sm.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default_sm.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default_sm.html") %>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <%= partial("partials/card/default_sm.html") %>
+            </div>
+
+            <div class="col-md-12 col-lg-12">
+                <%= partial("partials/card/table.html") %>
+            </div>
+
+            <div class="col-md-12 col-lg-12">
+                <%= partial("partials/card/map.html") %>
+            </div>
+
+            <div class="col-md-12 col-lg-12">
+                <%= partial("partials/card/graph.html") %>
+            </div>
+
+            <div class="col-12">
+                <%= partial("partials/card/actiontable.html") %>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <a href="https://github.com/sponsors/codecalm" class="card card-sponsor" target="_blank" rel="noopener" style="background-image: url(/assets/static/sponsor-banner-homepage.svg)" aria-label="Sponsor Tabler!">
+                    <div class="card-body"></div>
+                </a>
+            </div>
+    
+            <div class="col-md-6 col-lg-4">
+                <div id="example-table"></div>
+            </div>
+            
+
+        </div>
+
+    </div>
+</div>
+
+<%= javascriptTag("debug/home/dash.js") %>
