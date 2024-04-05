@@ -169,5 +169,5 @@ func McIamAuthGetUserInfoHandler(c buffalo.Context) error {
 			r.JSON(map[string]string{"err": err.Error()}))
 	}
 
-	return c.Render(http.StatusOK, r.JSON(userinfo))
+	return c.Render(http.StatusOK, nil)
 }
