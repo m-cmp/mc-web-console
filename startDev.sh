@@ -53,7 +53,6 @@ while !($APISERVER_HEALTH); do
 done
 echo $http_status
 
-
 echo -en "\n## Deploy Front server Development Mode\n";
 cd $rootDir/mc_web_console_front/
 buffalo dev > $rootDir/devlog/mc_web_console_front.log 2>&1 &
