@@ -93,8 +93,16 @@ func App() *buffalo.App {
 		app.Redirect(302, "/", "/operation/dashboard/ns")
 
 		// pages
-		app.GET("/operation/{category}/{page}", OperationPageController)
-		app.GET("/setting/{category}/{page}", SettingPageController)
+		pageController := app.Group("/")
+		pageController.Use(McIamAuthMiddleware)
+		pageController.GET("/operation/{category}/{page}", OperationPageController)
+		pageController.GET("/setting/{category}/{page}", SettingPageController)
+
+		// Auth pages
+		auth := app.Group("/auth")
+		auth.GET("/login", UserLoginpageHandler)
+		auth.POST("/login", UserLoginpageHandler)
+		auth.GET("/register", UserRegisterHandler)
 
 		// apiVersion := os.Getenv("API_VERSION")
 
