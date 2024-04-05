@@ -16,11 +16,11 @@ import (
 )
 
 // McismngList 목록조회
-func (a actions) McisList(c buffalo.Context) error {
+func McisList(c buffalo.Context) error {
 
 	// namespace
-	namespaceID := c.Session().Get("current_namespace_id").(string)
-
+	// namespaceID := c.Session().Get("current_namespace_id").(string)
+	namespaceID := c.Params().Get("namespaceid")
 	optionParam := c.Params().Get("option")
 	filterKeyParam := c.Params().Get("filterKey")
 	filterValParam := c.Params().Get("filterVal")

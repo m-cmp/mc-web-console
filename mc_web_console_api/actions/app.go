@@ -70,6 +70,14 @@ func App() *buffalo.App {
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
 
+		mciamauth := app.Group(apiPath + "/mciam/auth")
+		mciamauth.POST("/login", McIamAuthLoginHandler)
+		mciamauth.POST("/logout", McIamAuthLogoutHandler)
+		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
+
+		mcis := app.Group(apiPath + "/mcis")
+		mcis.GET("/mcislist", McisList)
+
 		// DEBUG START //
 
 		//  DEBUG END  //
