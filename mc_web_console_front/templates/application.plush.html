@@ -6,8 +6,8 @@
   <meta charset="utf-8">
   <title>Buffalo - Buffalo Sequential Workflow</title>
   <%= stylesheetTag("application.css") %>
-  <meta name="csrf-param" content="authenticity_token" />
-  <meta name="csrf-token" content="<%= authenticity_token %>" />
+  <meta id="csrf-param" content="authenticity_token" />
+  <meta id="csrf-token" content="<%= authenticity_token %>" />
 </head>
 <%= yield %>
 <%= javascriptTag("application.js") %>

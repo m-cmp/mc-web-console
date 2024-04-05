@@ -26,6 +26,7 @@
     "litepicker": "^2.0.12",
     "nouislider": "^15.7.1",
     "plyr": "^3.7.8",
+    "qs": "^6.12.0",
     "sequential-workflow-designer": "^0.18.5",
     "star-rating.js": "^4.3.0",
     "tabulator-tables": "^5.6.1",
