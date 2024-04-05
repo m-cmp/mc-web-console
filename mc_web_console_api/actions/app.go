@@ -2,6 +2,7 @@ package actions
 
 import (
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/gobuffalo/buffalo"
@@ -51,6 +52,9 @@ func App() *buffalo.App {
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
+		mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+		app.ANY("/alive", alive)
+
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
@@ -63,29 +67,29 @@ func App() *buffalo.App {
 
 		// RoutesManager(app)
 
-		//MC-IAM-MANAGER REQUIRERD
-		// app.Use(McIamAuthMiddleware)
-		// app.Middleware.Skip(McIamAuthMiddleware,
-		// 	McIamAuthLoginHandler)
-
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
 
 		// DEBUG START //
-		debug := app.Group(apiPath + "/debug")
-		debug.ANY("/alive", alive)
 
 		//  DEBUG END  //
 
 		mciamauth := app.Group(apiPath + "/mciam/auth")
-
+		// MC-IAM-MANAGER REQUIRERD
+		if mciamUse {
+			mciamauth.Use(McIamAuthMiddleware)
+			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginHandler, McIamAuthGetUserInfoHandler)
+		}
 		mciamauth.POST("/login", McIamAuthLoginHandler)
 		mciamauth.POST("/logout", McIamAuthLogoutHandler)
 		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
 
-		protected := app.Group(apiPath + "/protected")
-		protected.Use(McIamAuthMiddleware)
-		protected.ANY("/alive", alive)
+		protectedtest := app.Group(apiPath + "/protected")
+		// MC-IAM-MANAGER REQUIRERD
+		if mciamUse {
+			protectedtest.Use(McIamAuthMiddleware)
+		}
+		protectedtest.ANY("/alive", alive)
 	})
 
 	return app
