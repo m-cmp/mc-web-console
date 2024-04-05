@@ -15,8 +15,17 @@ import (
 	"github.com/gobuffalo/validate/validators"
 )
 
+var apiHost url.URL
+
+func init() {
+	APIADDR := os.Getenv("API_ADDR")
+	APIPORT := os.Getenv("API_PORT")
+
+	apiHost.Scheme = "http"
+	apiHost.Host = APIADDR + ":" + APIPORT
+}
+
 func UserLoginpageHandler(c buffalo.Context) error {
-	fmt.Println(c.Request().Method)
 	if c.Request().Method == "POST" {
 		user := &iammodels.UserLogin{}
 		user.Id = c.Request().FormValue("id")
@@ -36,13 +45,6 @@ func UserLoginpageHandler(c buffalo.Context) error {
 		formData := url.Values{
 			"id":       {user.Id},
 			"password": {user.Password},
-		}
-		APIADDR := os.Getenv("API_ADDR")
-		APIPORT := os.Getenv("API_PORT")
-
-		apiHost := &url.URL{
-			Scheme: "http",
-			Host:   APIADDR + ":" + APIPORT,
 		}
 
 		tokenPath := "/api/mciam/auth/login"

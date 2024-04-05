@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,7 +23,6 @@ func init() {
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		accessToken := c.Session().Get("Authorization").(string)
-		fmt.Println(accessToken)
 
 		getUserInfoPath := "/api/auth/validate"
 		getUserInfoEndpoint := baseURL.ResolveReference(&url.URL{Path: getUserInfoPath})
@@ -43,8 +41,6 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 				r.JSON(map[string]string{"error": err.Error()}))
 		}
 		defer resp.Body.Close()
-
-		fmt.Println(resp.Status)
 
 		if resp.Status != "200 OK" {
 			// return c.Render(http.StatusUnauthorized,
