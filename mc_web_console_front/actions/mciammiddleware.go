@@ -23,7 +23,6 @@ func init() {
 
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		fmt.Println("###################McIamAuthMiddleware")
 		accessToken := c.Session().Get("Authorization").(string)
 		fmt.Println(accessToken)
 
@@ -52,7 +51,6 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 			// 	r.JSON(map[string]string{"code": "401 Unauthorized"}))
 			return c.Redirect(302, "/auth/login/")
 		}
-		fmt.Println("###################McIamAuthMiddleware done")
 		return next(c)
 	}
 }

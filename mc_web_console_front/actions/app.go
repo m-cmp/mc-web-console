@@ -3,6 +3,7 @@ package actions
 import (
 	"net/http"
 	"os"
+	"strconv"
 
 	"mc_web_console_front/locales"
 	"mc_web_console_front/public"
@@ -46,6 +47,10 @@ func App() *buffalo.App {
 			Addr:        os.Getenv("FRONT_ADDR") + ":" + os.Getenv("FRONT_PORT"),
 		})
 
+		mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+
+		app.ANY("/alive", alive)
+
 		// Automatically redirect to SSL
 		app.Use(forceSSL())
 
@@ -70,7 +75,7 @@ func App() *buffalo.App {
 		debug.GET("/", DEBUGRouteHandler)
 
 		// alive debug
-		debug.GET("/alive", DEBUGRalive)
+		// debug.GET("/alive", DEBUGRalive)
 
 		// flowchart debug
 		debug.GET("/flow", DEBUGWorkflowHandler)
@@ -94,12 +99,18 @@ func App() *buffalo.App {
 
 		// pages
 		pageController := app.Group("/")
-		pageController.Use(McIamAuthMiddleware)
+		if mciamUse {
+			pageController.Use(McIamAuthMiddleware)
+		}
 		pageController.GET("/operation/{category}/{page}", OperationPageController)
 		pageController.GET("/setting/{category}/{page}", SettingPageController)
 
 		// Auth pages
 		auth := app.Group("/auth")
+		if mciamUse {
+			pageController.Use(McIamAuthMiddleware)
+			pageController.Middleware.Skip(McIamAuthMiddleware, UserLoginpageHandler, UserRegisterHandler)
+		}
 		auth.GET("/login", UserLoginpageHandler)
 		auth.POST("/login", UserLoginpageHandler)
 		auth.GET("/register", UserRegisterHandler)
@@ -141,4 +152,11 @@ func forceSSL() buffalo.MiddlewareFunc {
 		SSLRedirect:     ENV == "production",
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
+}
+
+func alive(c buffalo.Context) error {
+	return c.Render(200, r.JSON(map[string]interface{}{
+		"status": "OK",
+		"method": c.Request().Method,
+	}))
 }
