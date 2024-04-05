@@ -63,7 +63,6 @@ func App() *buffalo.App {
 
 		// RoutesManager(app)
 
-		//MC-IAM-MANAGER REQUIRERD
 		// app.Use(McIamAuthMiddleware)
 		// app.Middleware.Skip(McIamAuthMiddleware,
 		// 	McIamAuthLoginHandler)
@@ -71,21 +70,20 @@ func App() *buffalo.App {
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
 
+		mciamauth := app.Group(apiPath + "/mciam/auth")
+		mciamauth.POST("/login", McIamAuthLoginHandler)
+		mciamauth.POST("/logout", McIamAuthLogoutHandler)
+		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
+
+		mcis := app.Group(apiPath + "/mcis")
+		mcis.GET("/mcislist", McisList)
+
 		// DEBUG START //
 		debug := app.Group(apiPath + "/debug")
 		debug.ANY("/alive", alive)
 
 		//  DEBUG END  //
 
-		mciamauth := app.Group(apiPath + "/mciam/auth")
-
-		mciamauth.POST("/login", McIamAuthLoginHandler)
-		mciamauth.POST("/logout", McIamAuthLogoutHandler)
-		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
-
-		protected := app.Group(apiPath + "/protected")
-		protected.Use(McIamAuthMiddleware)
-		protected.ANY("/alive", alive)
 	})
 
 	return app
