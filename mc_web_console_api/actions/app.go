@@ -11,7 +11,6 @@ import (
 	contenttype "github.com/gobuffalo/mw-contenttype"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	"github.com/gobuffalo/x/sessions"
-	"github.com/rs/cors"
 	"github.com/unrolled/secure"
 
 	// gwa "github.com/gobuffalo/gocraft-work-adapter"
@@ -42,10 +41,10 @@ func App() *buffalo.App {
 		app = buffalo.New(buffalo.Options{
 			Env:          ENV,
 			SessionStore: sessions.Null{},
-			PreWares: []buffalo.PreWare{
-				cors.Default().Handler,
+			PreWares:     []buffalo.PreWare{
+				// cors.Default().Handler,
 			},
-			SessionName: "_mc_web_console_api_session",
+			SessionName: "mc_web_console",
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
@@ -81,10 +80,10 @@ func App() *buffalo.App {
 		}
 		protectedtest.ANY("/alive", alive)
 
-		// DEBUG START //
+		// DEBUG START //api/debug/tumblebug
 		if ENV == "development" {
-			debug := app.Group("/debug")
-			debug.ANY("/fwcall/{targetfw}/{path:.*}", DebugFwCaller)
+			debug := app.Group(apiPath + "/debug")
+			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
 		}
 		//  DEBUG END  //
 

@@ -43,7 +43,7 @@ func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
-			SessionName: "_mc_web_console_front_session",
+			SessionName: "mc_web_console",
 			Addr:        os.Getenv("FRONT_ADDR") + ":" + os.Getenv("FRONT_PORT"),
 		})
 
@@ -75,12 +75,13 @@ func App() *buffalo.App {
 		}
 
 		// API 호출 Proxy to backend API buffalo
-		app.ANY("/api/{path:.+}", ApiCaller)
+		apiPath := "/api"
+		api := app.Group(apiPath)
+		api.ANY("/{path:.+}", ApiCaller)
 
 		//////////////// debug section start ////////////////
 		// debug 이므로 별도 라우팅 처리... build에 포함되지 않도록 처리 할 것..
 		if ENV == "development" {
-
 			debug := app.Group("/debug")
 			// common debug
 			debug.GET("/", DEBUGRouteHandler)
@@ -100,7 +101,6 @@ func App() *buffalo.App {
 
 			// debug call Test
 			debug.GET("/apicall", DEBUGApicallPageController)
-			debug.ANY("/fwcall/{targetfw}/{path:.+}", DebugFwCaller)
 		}
 		//////////////// debug section end ////////////////
 

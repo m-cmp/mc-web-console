@@ -7,41 +7,16 @@ import (
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
-
-	"log"
-	"net/http/httputil"
-	"net/url"
-	"os"
 )
 
-var debugproxy *httputil.ReverseProxy
-
-func init() {
-	apiaddr := os.Getenv("API_ADDR")
-	apiport := os.Getenv("API_PORT")
-	targetURL, err := url.Parse("http://" + apiaddr + ":" + apiport)
-	if err != nil {
-		log.Fatal("Error parsing target URL:", err)
-	}
-	debugproxy = httputil.NewSingleHostReverseProxy(targetURL)
-}
-
-// /////// test /////
-func HomeHandler(c buffalo.Context) error {
-	c.Set("pretitle", "pretitle")
-	c.Set("title", "title")
-	return c.Render(http.StatusOK, tr.HTML("_debug/home/dash.html"))
+// 디버그 API Call Test Page 렌더
+func DEBUGApicallPageController(c buffalo.Context) error {
+	return c.Render(http.StatusOK, tr.HTML("_debug/apicall/apicall.html"))
 }
 
 // 로그인 폼 -> 로그인폼은 기본 렌더를 따름.
 func AuthLoginHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("auth/sign-in.html"))
-}
-
-// /// DEBUG /////
-func DebugFwCaller(c buffalo.Context) error {
-	debugproxy.ServeHTTP(c.Response(), c.Request())
-	return nil
 }
 
 func DEBUGRouteHandler(c buffalo.Context) error {
@@ -80,10 +55,6 @@ func DEBUGSamplePageHandler(c buffalo.Context) error {
 
 func DEBUGTabulatorHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, tr.HTML("_debug/tabulator/tabulator.html"))
-}
-
-func DEBUGApicallPageController(c buffalo.Context) error {
-	return c.Render(http.StatusOK, tr.HTML("_debug/apicall/apicall.html"))
 }
 
 // sy sample page

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import qs from 'qs';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 
@@ -13,9 +12,9 @@ document.getElementById("sendBtn").addEventListener('click', function () {
         alert("not implement")
         return
     } else if (target == "self") {
-        targetPath = path
+        targetPath = "/api/debug/" + path
     } else {
-        targetPath = "/debug/fwcall/" + target + path
+        targetPath = "/api/debug/" + target + path
     }
 
     if (document.getElementById("CSRFSelect").value == "True") {
@@ -27,36 +26,33 @@ document.getElementById("sendBtn").addEventListener('click', function () {
 
     if (document.getElementById("authorizationSelect").value == "BearerToken") {
         axios.defaults.headers.common['Authorization'] = "Bearer " + document.getElementById("bearerToken").value;
-        console.log(axios.defaults.headers)
     }
     
-    let formData = ""
+    let jsonData
     if (document.getElementById("bodyArea").value){
-        let jsonData =  JSON.parse(document.getElementById("bodyArea").value)
-        formData = qs.stringify(jsonData);
+        jsonData = JSON.parse(document.getElementById("bodyArea").value)
     }
     
 
     if (method == "POST") {
-        axios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded';
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
     }
 
     axios({
         method: method,
         url: paramsTable.getData().length > 0 ? targetPath + '?' + buildQueryString(paramsTable.getData()) : targetPath,
-        data: formData
+        data: jsonData
     }).then(function (response) {
         document.getElementById("RequestTarget").innerText = paramsTable.getData().length > 0 ? targetPath + '?' + buildQueryString(paramsTable.getData()) : targetPath;
         document.getElementById("ResponseData").innerText = JSON.stringify(response.data, null, 2);
         document.getElementById("ResponseHeaders").innerText = response.headers;
         console.log(response.data);
-    })
-        .catch(function (error) {
-            document.getElementById("RequestTarget").innerText = "";
-            document.getElementById("ResponseData").innerText = error;
-            document.getElementById("ResponseHeaders").innerText = "";
-            console.error(error);
-        });
+    }).catch(function (error) {
+        document.getElementById("RequestTarget").innerText = "";
+        document.getElementById("ResponseData").innerText = error;
+        document.getElementById("ResponseHeaders").innerText = "";
+        console.error(error);
+    });
 
     });
 
