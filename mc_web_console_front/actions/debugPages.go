@@ -7,7 +7,24 @@ import (
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
+
+	"log"
+	"net/http/httputil"
+	"net/url"
+	"os"
 )
+
+var debugproxy *httputil.ReverseProxy
+
+func init() {
+	apiaddr := os.Getenv("API_ADDR")
+	apiport := os.Getenv("API_PORT")
+	targetURL, err := url.Parse("http://" + apiaddr + ":" + apiport)
+	if err != nil {
+		log.Fatal("Error parsing target URL:", err)
+	}
+	debugproxy = httputil.NewSingleHostReverseProxy(targetURL)
+}
 
 // /////// test /////
 func HomeHandler(c buffalo.Context) error {
@@ -21,7 +38,11 @@ func AuthLoginHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("auth/sign-in.html"))
 }
 
-///// DEBUG /////
+// /// DEBUG /////
+func DebugFwCaller(c buffalo.Context) error {
+	debugproxy.ServeHTTP(c.Response(), c.Request())
+	return nil
+}
 
 func DEBUGRouteHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("_debug/buffaloRoute/index.html"))

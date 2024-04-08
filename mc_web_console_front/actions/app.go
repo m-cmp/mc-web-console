@@ -100,6 +100,7 @@ func App() *buffalo.App {
 
 			// debug call Test
 			debug.GET("/apicall", DEBUGApicallPageController)
+			debug.ANY("/fwcall/{targetfw}/{path:.+}", DebugFwCaller)
 		}
 		//////////////// debug section end ////////////////
 
