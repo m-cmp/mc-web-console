@@ -25,9 +25,6 @@ import (
 	"mc_web_console_api/models"
 
 	_ "mc_web_console_api/docs" //mcone의 경우
-
-	buffaloSwagger "github.com/swaggo/buffalo-swagger"
-	"github.com/swaggo/buffalo-swagger/swaggerFiles"
 )
 
 // ENV is used to help switch settings based on where the
@@ -53,32 +50,22 @@ func App() *buffalo.App {
 		})
 
 		mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
-		app.ANY("/alive", alive)
 
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
-
-		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
-
-		// app.Use(SkipMiddlewareByRoutePath)
-		// app.Use(SetCloudProviderList)
-
 		// RoutesManager(app)
 
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
+		app.ANY(apiPath+"/alive", alive)
 
 		mcis := app.Group(apiPath + "/mcis")
 		mcis.GET("/mcislist", McisList)
 
-		// DEBUG START //
-
-		//  DEBUG END  //
-
 		mciamauth := app.Group(apiPath + "/mciam/auth")
-		// MC-IAM-MANAGER REQUIRERD
+		// MC-IAM-MANAGER REQUIRERD q
 		if mciamUse {
 			mciamauth.Use(McIamAuthMiddleware)
 			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginHandler, McIamAuthGetUserInfoHandler)
@@ -93,6 +80,14 @@ func App() *buffalo.App {
 			protectedtest.Use(McIamAuthMiddleware)
 		}
 		protectedtest.ANY("/alive", alive)
+
+		// DEBUG START //
+		if ENV == "development" {
+			debug := app.Group("/debug")
+			debug.ANY("/fwcall/{targetfw}/{path:.*}", DebugFwCaller)
+		}
+		//  DEBUG END  //
+
 	})
 
 	return app

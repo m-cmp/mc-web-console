@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 
 	// "reflect"
 	// "io"
@@ -52,16 +53,15 @@ func (mf myFloat64) MarshalJSON() ([]byte, error) {
 func AuthenticationHandler() string {
 
 	// conf 파일에 정의
-	//api_username := os.Getenv("API_USERNAME")
-	//api_password := os.Getenv("API_PASSWORD")
-	api_username := "default"
-	api_password := "default"
+	apiusername := os.Getenv("API_USERNAME")
+	apipassword := os.Getenv("API_PASSWORD")
 
 	//The header "KEY: VAL" is "Authorization: Basic {base64 encoded $USERNAME:$PASSWORD}".
-	apiUserInfo := api_username + ":" + api_password
+	apiUserInfo := apiusername + ":" + apipassword
 	log.Println("API USER INFO ************ : ", apiUserInfo)
 	encA := base64.StdEncoding.EncodeToString([]byte(apiUserInfo))
 	//req.Header.Add("Authorization", "Basic"+encA)
+	fmt.Println("Basic " + encA)
 	return "Basic " + encA
 
 }
@@ -226,6 +226,7 @@ func CommonHttpWithoutParam(url string, httpMethod string) (*http.Response, erro
 	authInfo := AuthenticationHandler()
 	log.Println("************ Authinfo: ", authInfo)
 	log.Println("CommonHttpWithoutParam "+httpMethod+", ", url)
+	fmt.Println("CommonHttpWithoutParam "+httpMethod+", ", url)
 	// log.Println("authInfo ", authInfo)
 	client := &http.Client{}
 	req, err := http.NewRequest(httpMethod, url, nil)
