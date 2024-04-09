@@ -1,10 +1,7 @@
 package actions
 
 import (
-	"log"
 	"net/http/httputil"
-	"net/url"
-	"os"
 
 	"github.com/gobuffalo/buffalo"
 )
@@ -12,13 +9,7 @@ import (
 var proxy *httputil.ReverseProxy
 
 func init() {
-	APIADDR := os.Getenv("API_ADDR")
-	APIPORT := os.Getenv("API_PORT")
-	targetURL, err := url.Parse("http://" + APIADDR + ":" + APIPORT)
-	if err != nil {
-		log.Fatal("Error parsing target URL:", err)
-	}
-	proxy = httputil.NewSingleHostReverseProxy(targetURL)
+	proxy = httputil.NewSingleHostReverseProxy(APIbaseHost)
 }
 
 func ApiCaller(c buffalo.Context) error {

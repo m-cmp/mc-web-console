@@ -3,6 +3,7 @@
 <html>
   
 <%= partial("partials/layout/header.html") %>
+<%= partial("partials/layout/flash.html") %>
 
   <body>
     <!-- theme js -->
@@ -14,7 +15,8 @@
       <%= partial("partials/layout/navbar.html") %>
 
       <div class="page-wrapper">
-        <%= yield %> <!--페이지 표현할 것들 -->
+        <%= partial("partials/layout/flash.html") %>
+        <%= yield %>
         <%= partial("partials/layout/footer.html") %>
       </div>
 
