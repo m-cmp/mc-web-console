@@ -56,22 +56,20 @@ func App() *buffalo.App {
 		app.ANY("/alive", alive)
 
 		// pages
-		pageController := app.Group("/")
+		app.Redirect(http.StatusMovedPermanently, "/", "/webconsole/operation/dashboard/ns") //home redirect to dash
+		pages := app.Group("/webconsole")
 		if mciamUse {
-			pageController.Use(McIamAuthMiddleware)
+			pages.Use(McIamAuthMiddleware)
 		}
-		pageController.Redirect(302, "/", "/operation/dashboard/ns") //home redirect to dash
-		pageController.GET("/operation/{category}/{page}", OperationPageController)
-		pageController.GET("/setting/{category}/{page}", SettingPageController)
+		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		// mciamAuth pages
 		if mciamUse {
 			auth := app.Group("/auth")
-			auth.Use(McIamAuthMiddleware)
-			auth.Middleware.Skip(McIamAuthMiddleware, UserLoginpageHandler, UserRegisterHandler)
 			auth.GET("/login", UserLoginpageHandler)
-			auth.POST("/login", UserLoginpageHandler)
-			auth.GET("/register", UserRegisterHandler)
+			auth.POST("/login", UserLoginHandler)
+			auth.GET("/logout", UserLoginHandler)
+			auth.GET("/register", UserRegisterpageHandler)
 		}
 
 		// API 호출 Proxy to backend API buffalo

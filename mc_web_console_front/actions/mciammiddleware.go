@@ -3,50 +3,44 @@ package actions
 import (
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/gobuffalo/buffalo"
 )
 
-var (
-	mcIamManagerHost string
-	baseURL          url.URL
-)
-
-func init() {
-	mcIamManagerHost = os.Getenv("MCIAM_HOST")
-
-	baseURL.Scheme = "http"
-	baseURL.Host = mcIamManagerHost
-}
-
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		accessToken := c.Session().Get("Authorization").(string)
+		accessToken := c.Session().Get("Authorization")
+		if accessToken == nil {
+			c.Flash().Add("danger", "No session")
+			c.Session().Clear()
+			return c.Redirect(http.StatusUnauthorized, LoginPath)
+		}
 
-		getUserInfoPath := "/api/auth/validate"
-		getUserInfoEndpoint := baseURL.ResolveReference(&url.URL{Path: getUserInfoPath})
+		getUserInfoEndpoint := APIbaseHost.ResolveReference(&url.URL{Path: APIValidatePath})
 
 		req, err := http.NewRequest("GET", getUserInfoEndpoint.String(), nil)
 		if err != nil {
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"error": err.Error()}))
+			c.Session().Clear()
+			c.Flash().Add("danger", "Error creating authentication session request")
+			return c.Redirect(http.StatusUnauthorized, LoginPath)
 		}
-		req.Header.Set("Authorization", "Bearer "+accessToken)
+		req.Header.Set("Authorization", "Bearer "+accessToken.(string))
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"error": err.Error()}))
+			c.Session().Clear()
+			c.Flash().Add("danger", "Authentication Server Error")
+			return c.Redirect(http.StatusUnauthorized, LoginPath)
 		}
 		defer resp.Body.Close()
 
 		if resp.Status != "200 OK" {
-			// return c.Render(http.StatusUnauthorized,
-			// 	r.JSON(map[string]string{"code": "401 Unauthorized"}))
-			return c.Redirect(302, "/auth/login/")
+			c.Session().Clear()
+			c.Flash().Add("danger", "Session Expiration")
+			return c.Redirect(http.StatusUnauthorized, LoginPath)
 		}
+
 		return next(c)
 	}
 }

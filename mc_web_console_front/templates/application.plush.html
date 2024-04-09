@@ -1,15 +1,16 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta charset="utf-8">
-  <title>Buffalo - Buffalo Sequential Workflow</title>
-  <%= stylesheetTag("application.css") %>
-  <meta id="csrf-param" content="authenticity_token" />
-  <meta id="csrf-token" content="<%= authenticity_token %>" />
-</head>
-<%= yield %>
-<%= javascriptTag("application.js") %>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Buffalo - Buffalo Sequential Workflow</title>
+    <%= stylesheetTag("application.css") %>
+    <meta id="csrf-param" content="authenticity_token" />
+    <meta id="csrf-token" content="<%= authenticity_token %>" />
+    <%= partial("partials/layout/flash.html") %>
+  </head>
+  <%= yield %>
+  <%= javascriptTag("application.js") %>
 </html>
 

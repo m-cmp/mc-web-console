@@ -1,13 +1,13 @@
 package actions
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/validate"
@@ -30,8 +30,10 @@ func init() {
 
 func McIamAuthLoginHandler(c buffalo.Context) error {
 	user := &iammodels.UserLogin{}
-	user.Id = c.Request().FormValue("id")
-	user.Password = c.Request().FormValue("password")
+	if err := c.Bind(user); err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": err.Error()}))
+	}
 
 	validateErr := validate.Validate(
 		&validators.StringIsPresent{Field: user.Id, Name: "id"},
@@ -43,21 +45,19 @@ func McIamAuthLoginHandler(c buffalo.Context) error {
 			r.JSON(map[string]string{"err": validateErr.Error()}))
 	}
 
-	formData := url.Values{
-		"id":       {user.Id},
-		"password": {user.Password},
+	jsonData, err := json.Marshal(user)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": validateErr.Error()}))
 	}
 
 	tokenPath := "/api/auth/login"
 	tokenEndpoint := baseURL.ResolveReference(&url.URL{Path: tokenPath})
-	req, _ := http.NewRequest("POST", tokenEndpoint.String(), strings.NewReader(formData.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := http.Post(tokenEndpoint.String(), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
+		fmt.Println(err.Error())
 		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"error": err.Error()}))
+			r.JSON(map[string]string{"err": validateErr.Error()}))
 	}
 	defer resp.Body.Close()
 
@@ -73,7 +73,7 @@ func McIamAuthLoginHandler(c buffalo.Context) error {
 			r.JSON(map[string]string{"err": err.Error()}))
 	}
 
-	var accessTokenResponse iammodels.KeycloakAccessTokenResponse
+	var accessTokenResponse iammodels.AccessTokenResponse
 	jsonerr := json.Unmarshal(respBody, &accessTokenResponse)
 	if jsonerr != nil {
 		fmt.Println("Failed to parse response:", err)
@@ -85,12 +85,16 @@ func McIamAuthLoginHandler(c buffalo.Context) error {
 }
 
 func McIamAuthLogoutHandler(c buffalo.Context) error {
-	accessToken := c.Request().Header.Get("Authorization")
-	refreshToken := c.Request().FormValue("refresh_token")
+	accessTokenRequest := &iammodels.AccessTokenRequest{}
+	if err := c.Bind(accessTokenRequest); err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": err.Error()}))
+	}
+	accessTokenRequest.AccessToken = c.Request().Header.Get("Authorization")
 
 	validateErr := validate.Validate(
-		&validators.StringIsPresent{Field: accessToken, Name: "Authorization"},
-		&validators.StringIsPresent{Field: refreshToken, Name: "refresh_token"},
+		&validators.StringIsPresent{Field: accessTokenRequest.AccessToken, Name: "Authorization"},
+		&validators.StringIsPresent{Field: accessTokenRequest.RefreshToken, Name: "refresh_token"},
 	)
 	if validateErr.HasAny() {
 		fmt.Println(validateErr)
@@ -98,20 +102,22 @@ func McIamAuthLogoutHandler(c buffalo.Context) error {
 			r.JSON(map[string]string{"err": validateErr.Error()}))
 	}
 
-	formData := url.Values{
-		"refresh_token": {refreshToken},
+	jsonData, err := json.Marshal(accessTokenRequest.RefreshToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": validateErr.Error()}))
 	}
 
 	endSessionPath := "/api/auth/logout"
 	endSessionEndpoint := baseURL.ResolveReference(&url.URL{Path: endSessionPath})
 
-	req, err := http.NewRequest("POST", endSessionEndpoint.String(), strings.NewReader(formData.Encode()))
+	req, err := http.NewRequest("POST", endSessionEndpoint.String(), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"error": err.Error()}))
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", accessToken)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", accessTokenRequest.AccessToken)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

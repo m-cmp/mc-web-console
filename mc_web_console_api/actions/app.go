@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"net/http"
 	"os"
 	"strconv"
 	"sync"
@@ -124,10 +125,10 @@ func RedirectTool(c buffalo.Context, p string) error {
 	routes := app.Routes()
 	for _, route := range routes {
 		if route.PathName == p {
-			return c.Redirect(302, route.Path)
+			return c.Redirect(http.StatusFound, route.Path)
 		}
 	}
-	return c.Redirect(302, "/")
+	return c.Redirect(http.StatusFound, "/")
 }
 
 func alive(c buffalo.Context) error {
