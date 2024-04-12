@@ -6,15 +6,24 @@ import (
 )
 
 var (
-	LoginPath       = "/auth/login/"
-	APIbaseHost     *url.URL
-	APILoginPath    = "/api/mciam/auth/login"
-	APILogoutPath   = "/api/mciam/auth/logout"
-	APIValidatePath = "/api/mciam/auth/validate"
+	APIbaseHost               *url.URL
+	APILoginPath              = "/api/mciam/auth/login"
+	APILogoutPath             = "/api/mciam/auth/logout"
+	APIUserValidatePath       = "/api/mciam/auth/validate"
+	APIUserInfoPath           = "/api/mciam/auth/userinfo"
+	RootPathForRedirect       map[string]interface{}
+	RootPathForRedirectString string
 )
 
 func init() {
 	APIADDR := os.Getenv("API_ADDR")
 	APIPORT := os.Getenv("API_PORT")
 	APIbaseHost, _ = url.Parse("http://" + APIADDR + ":" + APIPORT)
+
+	RootPathForRedirect = map[string]interface{}{
+		"depth1": "operation",
+		"depth2": "dashboard",
+		"depth3": "ns",
+	}
+	RootPathForRedirectString = "/webconsole/operation/dashboard/ns"
 }

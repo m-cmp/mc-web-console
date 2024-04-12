@@ -3,8 +3,10 @@ package actions
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"mc_web_console_front/models"
 	"net/http"
 	"net/url"
 	"os"
@@ -136,44 +138,72 @@ func McIamAuthLogoutHandler(c buffalo.Context) error {
 }
 
 func McIamAuthGetUserInfoHandler(c buffalo.Context) error {
+	userInfo, err := getUserInfo(c)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	return c.Render(http.StatusOK, r.JSON(userInfo))
+}
+
+func McIamAuthGetUserValidateHandler(c buffalo.Context) error {
+	_, err := getUserInfo(c)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	return c.Render(http.StatusOK, nil)
+}
+
+func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+
+		_, err := getUserInfo(c)
+		if err != nil {
+			return c.Render(http.StatusServiceUnavailable,
+				r.JSON(map[string]string{"error": err.Error()}))
+		}
+
+		return next(c)
+	}
+}
+
+func getUserInfo(c buffalo.Context) (models.UserInfo, error) {
+
+	var userinfoReturn models.UserInfo
+
 	accessToken := c.Request().Header.Get("Authorization")
 
-	getUserInfoPath := "/api/auth/validate"
+	getUserInfoPath := "/api/auth/userinfo"
 	getUserInfoEndpoint := baseURL.ResolveReference(&url.URL{Path: getUserInfoPath})
 
 	req, err := http.NewRequest("GET", getUserInfoEndpoint.String(), nil)
 	if err != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"error": err.Error()}))
+		return userinfoReturn, err
 	}
 	req.Header.Set("Authorization", accessToken)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"error": err.Error()}))
+		return userinfoReturn, err
 	}
 	defer resp.Body.Close()
-
-	if resp.Status != "200 OK" {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"code": resp.Status}))
-	}
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Failed to read response body:", err)
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": err.Error()}))
+		return userinfoReturn, err
 	}
 
-	var userinfo map[string]interface{}
-	if err := json.Unmarshal([]byte(respBody), &userinfo); err != nil {
+	if resp.StatusCode != 200 {
+		return userinfoReturn, errors.New(string(respBody))
+	}
+	fmt.Println("#########", string(respBody))
+	if err := json.Unmarshal([]byte(respBody), &userinfoReturn); err != nil {
 		fmt.Println("JSON 파싱 에러:", err)
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": err.Error()}))
+		return userinfoReturn, err
 	}
 
-	return c.Render(http.StatusOK, nil)
+	return userinfoReturn, nil
 }
