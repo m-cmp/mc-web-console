@@ -3,9 +3,9 @@ package actions
 import (
 	"fmt"
 	"log"
-	"mc_web_console_api/echomodel/dragonfly"
-	tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
-	"mc_web_console_api/echomodel/webtool"
+	"mc_web_console_api/fwmodels/dragonfly"
+	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
+	"mc_web_console_api/fwmodels/webtool"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models/views"
 	"mc_web_console_api/util"

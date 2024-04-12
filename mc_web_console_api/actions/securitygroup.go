@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gofrs/uuid"

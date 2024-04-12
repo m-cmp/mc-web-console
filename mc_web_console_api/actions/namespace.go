@@ -3,14 +3,14 @@ package actions
 import (
 	"log"
 	"math/rand"
-	"mc_web_console_api/echomodel"
+	"mc_web_console_api/fwmodels"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"net/http"
 	"time"
 
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
-	"mc_web_console_api/echomodel/webtool"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	"mc_web_console_api/fwmodels/webtool"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/buffalo"
@@ -97,7 +97,7 @@ func (a actions) NamespaceGet(c buffalo.Context) error {
 //
 
 func (a actions) NamespaceUpdate(c buffalo.Context) error {
-	return c.Render(http.StatusBadRequest, r.JSON(echomodel.WebStatus{StatusCode: 500, Message: "not implementated yet"}))
+	return c.Render(http.StatusBadRequest, r.JSON(fwmodels.WebStatus{StatusCode: 500, Message: "not implementated yet"}))
 }
 
 // SetAssignNamespace

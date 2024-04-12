@@ -2,7 +2,7 @@ package handler
 
 import (
 	"log"
-	echomodel "mc_web_console_api/echomodel"
+	fwmodels "mc_web_console_api/fwmodels"
 	"mc_web_console_api/models"
 	"strings"
 
@@ -15,7 +15,7 @@ import (
 // 메뉴, 공통코드, region 등...
 // TODO: commonHandler와 합쳐야 하나?
 
-func RegionGroupList(paramRegionGroup models.RegionGroup) (models.RegionGroups, echomodel.WebStatus) {
+func RegionGroupList(paramRegionGroup models.RegionGroup) (models.RegionGroups, fwmodels.WebStatus) {
 	regionGroupList := []models.RegionGroup{}
 	//err := models.DB.All(&regionGroupList)
 	//query := models.DB.Q()
@@ -23,7 +23,7 @@ func RegionGroupList(paramRegionGroup models.RegionGroup) (models.RegionGroups, 
 	regionGroupList, err := models.RegionGroupList(paramRegionGroup)
 	if err != nil {
 		log.Println("RegionGroupList err ", err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	//query := models.DB.Q()
@@ -39,14 +39,14 @@ func RegionGroupList(paramRegionGroup models.RegionGroup) (models.RegionGroups, 
 	//if err != nil {
 	//	log.Println("regionGroupList err", err)
 	// 	//return errors.WithStack(err)
-	//	return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	//	return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	//}
 	log.Println("regionGroupList", regionGroupList)
-	return regionGroupList, echomodel.WebStatus{StatusCode: 200}
+	return regionGroupList, fwmodels.WebStatus{StatusCode: 200}
 }
 
 // regionList 조건에 ID를 넣으면 1개만 조회 됨.
-func GetRegionGroup(paramRegionGroup models.RegionGroup) (models.RegionGroup, echomodel.WebStatus) {
+func GetRegionGroup(paramRegionGroup models.RegionGroup) (models.RegionGroup, fwmodels.WebStatus) {
 
 	returnRegionGroup := models.RegionGroup{}
 
@@ -54,19 +54,19 @@ func GetRegionGroup(paramRegionGroup models.RegionGroup) (models.RegionGroup, ec
 	regionGroupList, err := models.RegionGroupList(paramRegionGroup)
 	if err != nil {
 		log.Println("GetRegionGroup err ", err)
-		return returnRegionGroup, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return returnRegionGroup, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	log.Println("GetRegionGroup 1 length = ", len(regionGroupList))
 	if len(regionGroupList) > 1 {
-		return returnRegionGroup, echomodel.WebStatus{StatusCode: 500, Message: "more than one result value"}
+		return returnRegionGroup, fwmodels.WebStatus{StatusCode: 500, Message: "more than one result value"}
 	}
 	log.Println("GetRegionGroup 2")
 	if len(regionGroupList) < 1 {
-		return returnRegionGroup, echomodel.WebStatus{StatusCode: 500, Message: "no results"}
+		return returnRegionGroup, fwmodels.WebStatus{StatusCode: 500, Message: "no results"}
 	}
 	log.Println("GetRegionGroup 3")
 	returnRegionGroup = regionGroupList[0] // 1개만 있어야 함.
-	return returnRegionGroup, echomodel.WebStatus{StatusCode: 200}
+	return returnRegionGroup, fwmodels.WebStatus{StatusCode: 200}
 
 	// regionGroup := models.RegionGroup{}
 	// valueCount := 0
@@ -86,17 +86,17 @@ func GetRegionGroup(paramRegionGroup models.RegionGroup) (models.RegionGroup, ec
 
 	// if valueCount == 0 {
 	// 	errMsg := "There are no search conditions"
-	// 	return regionGroup, echomodel.WebStatus{StatusCode: 500, Message: errMsg}
+	// 	return regionGroup, fwmodels.WebStatus{StatusCode: 500, Message: errMsg}
 	// }
 	// err := query.First(&regionGroup)
 
 	// if err != nil {
-	// 	return regionGroup, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+	// 	return regionGroup, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	// }
-	// return regionGroup, echomodel.WebStatus{StatusCode: 200}
+	// return regionGroup, fwmodels.WebStatus{StatusCode: 200}
 }
 
-func SaveRegionGroup(regionGroup *models.RegionGroup, c buffalo.Context) (models.RegionGroup, echomodel.WebStatus) {
+func SaveRegionGroup(regionGroup *models.RegionGroup, c buffalo.Context) (models.RegionGroup, fwmodels.WebStatus) {
 	//regionGroup := &models.RegionGroup{}
 
 	tx := c.Value("tx").(*pop.Connection)
@@ -104,32 +104,32 @@ func SaveRegionGroup(regionGroup *models.RegionGroup, c buffalo.Context) (models
 	vErrors, err := regionGroup.Create(tx)
 	if vErrors.HasAny() {
 		log.Println("Reg RegionGroup vErrors", vErrors.Error())
-		return *regionGroup, echomodel.WebStatus{StatusCode: 500, Message: vErrors.Error()}
+		return *regionGroup, fwmodels.WebStatus{StatusCode: 500, Message: vErrors.Error()}
 	}
 	if err != nil {
 		log.Println("Reg RegionGroup err", err)
-		return *regionGroup, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return *regionGroup, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
-	return *regionGroup, echomodel.WebStatus{StatusCode: 200}
+	return *regionGroup, fwmodels.WebStatus{StatusCode: 200}
 }
 
-func DeleteRegionGroup(regionGroup *models.RegionGroup, c buffalo.Context) (models.RegionGroup, echomodel.WebStatus) {
+func DeleteRegionGroup(regionGroup *models.RegionGroup, c buffalo.Context) (models.RegionGroup, fwmodels.WebStatus) {
 
 	tx := c.Value("tx").(*pop.Connection)
 
 	err := regionGroup.Destroy(tx)
 	if err != nil {
 		log.Println("Del RegionGroup err", err)
-		return *regionGroup, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return *regionGroup, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
-	return *regionGroup, echomodel.WebStatus{StatusCode: 200}
+	return *regionGroup, fwmodels.WebStatus{StatusCode: 200}
 }
 
 // 메뉴 Tree 조회
 // category, menu구조를 tree형태로 쿼리
-func MenuTree() (*models.MenuTree, echomodel.WebStatus) {
+func MenuTree() (*models.MenuTree, fwmodels.WebStatus) {
 	menuTrees := &models.MenuTree{}
 
 	db := models.DB
@@ -159,23 +159,23 @@ func MenuTree() (*models.MenuTree, echomodel.WebStatus) {
 	err := q.All(menuTrees)
 	if err != nil {
 		log.Println("menu err", err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	log.Println("menuTrees", menuTrees)
-	return menuTrees, echomodel.WebStatus{StatusCode: 200}
+	return menuTrees, fwmodels.WebStatus{StatusCode: 200}
 }
 
 // 임시 User 조회
-func GetUserById(userId uuid.UUID) (*models.User, echomodel.WebStatus) {
+func GetUserById(userId uuid.UUID) (*models.User, fwmodels.WebStatus) {
 	user := &models.User{}
 	//query := models.DB.Q()
 	//err := query.Find(user, userId)
 	err := models.DB.Find(user, userId)
 	if err != nil {
-		return user, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return user, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	log.Println("user", user)
-	return user, echomodel.WebStatus{StatusCode: 200}
+	return user, fwmodels.WebStatus{StatusCode: 200}
 }

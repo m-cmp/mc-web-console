@@ -7,8 +7,8 @@ import (
 	"mc_web_console_api/models/views"
 	"net/http"
 
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gofrs/uuid"

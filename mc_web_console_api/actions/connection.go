@@ -12,9 +12,9 @@ import (
 	"github.com/gobuffalo/pop/v6"
 	"github.com/pkg/errors"
 
-	"mc_web_console_api/echomodel"
-	"mc_web_console_api/echomodel/spider"
-	"mc_web_console_api/echomodel/tumblebug/mcis"
+	"mc_web_console_api/fwmodels"
+	"mc_web_console_api/fwmodels/spider"
+	"mc_web_console_api/fwmodels/tumblebug/mcis"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"
@@ -1175,7 +1175,7 @@ func (a actions) GenerateConnectionsByAllCredential(c buffalo.Context) error {
 func (a actions) FrameworkHealthCheck(c buffalo.Context) error {
 	framework := c.Params().Get("framework")
 
-	respStatus := echomodel.WebStatus{}
+	respStatus := fwmodels.WebStatus{}
 
 	if strings.EqualFold(framework, "SPIDER") {
 		respStatus = handler.GetSpiderHealthCheck()

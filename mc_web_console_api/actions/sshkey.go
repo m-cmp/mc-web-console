@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"

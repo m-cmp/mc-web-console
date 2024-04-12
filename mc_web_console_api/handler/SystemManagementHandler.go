@@ -12,19 +12,19 @@ import (
 
 	//"github.com/davecgh/go-spew/spew"
 
-	// "mc_web_console_api/echomodel/spider"
-	// "mc_web_console_api/echomodel/tumblebug"
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
+	// "mc_web_console_api/fwmodels/spider"
+	// "mc_web_console_api/fwmodels/tumblebug"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
 
-	// tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	// tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	// tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	// tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
 	util "mc_web_console_api/util"
 	// "github.com/labstack/echo"
 )
 
-func GetCheckResourceExistence(nameSpaceID string, resourceType string, resourceId string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func GetCheckResourceExistence(nameSpaceID string, resourceType string, resourceId string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/{nsId}/checkResource/{resourceType}/{resourceId}"
 
 	var paramMapper = make(map[string]string)
@@ -42,7 +42,7 @@ func GetCheckResourceExistence(nameSpaceID string, resourceType string, resource
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -53,13 +53,13 @@ func GetCheckResourceExistence(nameSpaceID string, resourceType string, resource
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetHealth() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func GetHealth() (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Check Tumblebug alive start")
 	var originalUrl = "/health"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -73,7 +73,7 @@ func GetHealth() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -84,13 +84,13 @@ func GetHealth() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func DelObject(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelObject(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Delete object start")
 	var originalUrl = "/object"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -104,7 +104,7 @@ func DelObject(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -115,13 +115,13 @@ func DelObject(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetObject(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func GetObject(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Get object start")
 	var originalUrl = "/object"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -135,7 +135,7 @@ func GetObject(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -146,13 +146,13 @@ func GetObject(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func DelObjects(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelObjects(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Delete objects start")
 	var originalUrl = "/objects"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -166,7 +166,7 @@ func DelObjects(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) 
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -177,13 +177,13 @@ func DelObjects(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) 
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetObjectList(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func GetObjectList(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Get object list start")
 	var originalUrl = "/objects"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -197,7 +197,7 @@ func GetObjectList(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatu
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -208,13 +208,13 @@ func GetObjectList(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatu
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetAPIDocument(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func GetAPIDocument(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Get API document start")
 	var originalUrl = "/swaggerActive"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -228,7 +228,7 @@ func GetAPIDocument(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStat
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -239,8 +239,8 @@ func GetAPIDocument(optionParam string) (tbcommon.TbSimpleMsg, echomodel.WebStat
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }

@@ -2,8 +2,8 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel"
-	"mc_web_console_api/echomodel/dragonfly"
+	"mc_web_console_api/fwmodels"
+	"mc_web_console_api/fwmodels/dragonfly"
 	"mc_web_console_api/handler"
 	"net/http"
 
@@ -87,7 +87,7 @@ func (a actions) McisVmMonitoringOndemand(c buffalo.Context) error {
 	}
 
 	returnVMMonitoringInfo := &dragonfly.VmMonitoringOnDemandInfo{}
-	respStatus := echomodel.WebStatus{}
+	respStatus := fwmodels.WebStatus{}
 
 	vmMonitoringReq.NameSpaceID = namespaceID
 

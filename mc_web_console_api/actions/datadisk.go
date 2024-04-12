@@ -12,8 +12,8 @@ import (
 	"mc_web_console_api/models/views"
 	"net/http"
 
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	"mc_web_console_api/echomodel/webtool"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	"mc_web_console_api/fwmodels/webtool"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gofrs/uuid"

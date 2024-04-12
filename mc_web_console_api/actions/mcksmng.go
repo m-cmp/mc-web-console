@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel/ladybug"
+	"mc_web_console_api/fwmodels/ladybug"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models/views"
 	"mc_web_console_api/util"

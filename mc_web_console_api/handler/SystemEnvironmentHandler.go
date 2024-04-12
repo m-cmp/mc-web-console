@@ -9,12 +9,12 @@ import (
 	"net/http"
 	// "strconv"
 	// "sync"
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
 	util "mc_web_console_api/util"
 )
 
-func DelAllTbConfig() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelAllTbConfig() (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Delete all configs start")
 	var originalUrl = "/config"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -28,7 +28,7 @@ func DelAllTbConfig() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -39,13 +39,13 @@ func DelAllTbConfig() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetAllTbConfig() (tbcommon.TbRestGetAllConfigResponse, echomodel.WebStatus) {
+func GetAllTbConfig() (tbcommon.TbRestGetAllConfigResponse, fwmodels.WebStatus) {
 	fmt.Println("Get all configs list start")
 	var originalUrl = "/config"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -59,7 +59,7 @@ func GetAllTbConfig() (tbcommon.TbRestGetAllConfigResponse, echomodel.WebStatus)
 	resultAllConfigInfo := tbcommon.TbRestGetAllConfigResponse{}
 
 	if err != nil {
-		return resultAllConfigInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultAllConfigInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -70,16 +70,16 @@ func GetAllTbConfig() (tbcommon.TbRestGetAllConfigResponse, echomodel.WebStatus)
 	if respStatus != 200 && respStatus != 201 {
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultAllConfigInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return resultAllConfigInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultAllConfigInfo)
 	log.Println(resultAllConfigInfo)
 
-	return resultAllConfigInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultAllConfigInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func RegOrUpdateConfig(configReg tbcommon.TbConfigReq) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
+func RegOrUpdateConfig(configReg tbcommon.TbConfigReq) (tbcommon.TbConfigInfo, fwmodels.WebStatus) {
 	fmt.Println("Create or Update config ")
 	//https://www.javaer101.com/ko/article/5704925.html 참조 : 값이 있는 것만 넘기기
 	var originalUrl = "​/config"
@@ -92,7 +92,7 @@ func RegOrUpdateConfig(configReg tbcommon.TbConfigReq) (tbcommon.TbConfigInfo, e
 	resultConfigInfo := tbcommon.TbConfigInfo{}
 
 	if err != nil {
-		return resultConfigInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultConfigInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -101,17 +101,17 @@ func RegOrUpdateConfig(configReg tbcommon.TbConfigReq) (tbcommon.TbConfigInfo, e
 	if respStatus != 200 && respStatus != 201 {
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultConfigInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return resultConfigInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultConfigInfo)
 	fmt.Println(resultConfigInfo)
 
-	return resultConfigInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultConfigInfo, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
-func DelTbConfig(configID string) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
+func DelTbConfig(configID string) (tbcommon.TbConfigInfo, fwmodels.WebStatus) {
 	var originalUrl = "/config/{configId}"
 
 	var paramMapper = make(map[string]string)
@@ -124,7 +124,7 @@ func DelTbConfig(configID string) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
 	resultConfigInfo := tbcommon.TbConfigInfo{}
 
 	if err != nil {
-		return resultConfigInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultConfigInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -133,16 +133,16 @@ func DelTbConfig(configID string) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
 	if respStatus != 200 && respStatus != 201 {
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultConfigInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return resultConfigInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultConfigInfo)
 	fmt.Println(resultConfigInfo)
 
-	return resultConfigInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultConfigInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetTbConfig(configID string) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
+func GetTbConfig(configID string) (tbcommon.TbConfigInfo, fwmodels.WebStatus) {
 	var originalUrl = "/config/{configId}"
 
 	var paramMapper = make(map[string]string)
@@ -155,7 +155,7 @@ func GetTbConfig(configID string) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
 	resultConfigInfo := tbcommon.TbConfigInfo{}
 
 	if err != nil {
-		return resultConfigInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultConfigInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -164,11 +164,11 @@ func GetTbConfig(configID string) (tbcommon.TbConfigInfo, echomodel.WebStatus) {
 	if respStatus != 200 && respStatus != 201 {
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultConfigInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return resultConfigInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultConfigInfo)
 	fmt.Println(resultConfigInfo)
 
-	return resultConfigInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultConfigInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }

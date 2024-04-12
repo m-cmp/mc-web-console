@@ -2,11 +2,11 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel"
-	"mc_web_console_api/echomodel/tumblebug/common"
+	"mc_web_console_api/fwmodels"
+	"mc_web_console_api/fwmodels/tumblebug/common"
 
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"
@@ -137,7 +137,7 @@ func (a actions) VmSpecReg(c buffalo.Context) error {
 
 	paramVMSpecregisteringMethod := c.Param("specregisteringMethod")
 
-	respStatus := echomodel.WebStatus{}
+	respStatus := fwmodels.WebStatus{}
 	paramViewConnection := views.ViewCloudConnection{}
 
 	if strings.EqualFold(paramVMSpecregisteringMethod, "registerWithInfo") {
