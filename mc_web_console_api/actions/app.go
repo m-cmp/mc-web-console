@@ -74,11 +74,11 @@ func App() *buffalo.App {
 		if mciamUse {
 			mciamauth := app.Group(apiPath + "/mciam/auth")
 			mciamauth.Use(McIamAuthMiddleware)
-			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginHandler, McIamAuthGetUserInfoHandler)
-			mciamauth.POST("/login", McIamAuthLoginHandler)
-			mciamauth.POST("/logout", McIamAuthLogoutHandler)
-			mciamauth.GET("/validate", McIamAuthGetUserValidateHandler)
-			mciamauth.GET("/userinfo", McIamAuthGetUserInfoHandler)
+			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginContorller, McIamAuthGetUserInfoContorller)
+			mciamauth.POST("/login", McIamAuthLoginContorller)
+			mciamauth.POST("/logout", McIamAuthLogoutContorller)
+			mciamauth.GET("/validate", McIamAuthGetUserValidateContorller)
+			mciamauth.GET("/userinfo", McIamAuthGetUserInfoContorller)
 		}
 
 		protectedtest := app.Group(apiPath + "/protected")
