@@ -56,7 +56,8 @@ func App() *buffalo.App {
 		app.ANY("/alive", alive)
 
 		// pages
-		app.Redirect(http.StatusMovedPermanently, "/", "/webconsole/operation/dashboard/ns") //home redirect to dash
+		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
+
 		pages := app.Group("/webconsole")
 		if mciamUse {
 			pages.Use(McIamAuthMiddleware)
@@ -66,9 +67,9 @@ func App() *buffalo.App {
 		// mciamAuth pages
 		if mciamUse {
 			auth := app.Group("/auth")
-			auth.GET("/login", UserLoginpageHandler)
+			auth.GET("/login", UserLoginHandler)
 			auth.POST("/login", UserLoginHandler)
-			auth.GET("/logout", UserLoginHandler)
+			auth.GET("/logout", UserLogoutHandler)
 			auth.GET("/register", UserRegisterpageHandler)
 		}
 

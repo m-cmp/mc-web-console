@@ -57,6 +57,12 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 		// RoutesManager(app)
 
+		// controller func naming Rule
+		// 데이터 처리 관점으로
+		// 단건, 맵도 한개 :  XXXData
+		// 목록 : XXXList
+		// 등록(Reg), 생성(Create), 수정(Edit), 삭제(Del), 해제(Rel) : XXXProc
+
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
 		app.ANY(apiPath+"/alive", alive)
@@ -64,15 +70,16 @@ func App() *buffalo.App {
 		mcis := app.Group(apiPath + "/mcis")
 		mcis.GET("/mcislist", McisList)
 
-		mciamauth := app.Group(apiPath + "/mciam/auth")
-		// MC-IAM-MANAGER REQUIRERD q
+		// MC-IAM-MANAGER REQUIRERD
 		if mciamUse {
+			mciamauth := app.Group(apiPath + "/mciam/auth")
 			mciamauth.Use(McIamAuthMiddleware)
 			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginHandler, McIamAuthGetUserInfoHandler)
+			mciamauth.POST("/login", McIamAuthLoginHandler)
+			mciamauth.POST("/logout", McIamAuthLogoutHandler)
+			mciamauth.GET("/validate", McIamAuthGetUserValidateHandler)
+			mciamauth.GET("/userinfo", McIamAuthGetUserInfoHandler)
 		}
-		mciamauth.POST("/login", McIamAuthLoginHandler)
-		mciamauth.POST("/logout", McIamAuthLogoutHandler)
-		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
 
 		protectedtest := app.Group(apiPath + "/protected")
 		// MC-IAM-MANAGER REQUIRERD

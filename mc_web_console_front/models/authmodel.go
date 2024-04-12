@@ -9,6 +9,14 @@ type UserLogout struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type UserInfo struct {
+	FamilyName       string `json:"family_name"`
+	GivenName        string `json:"given_name"`
+	Name             string `json:"name"`
+	PreferredUsename string `json:"preferred_username"`
+	Sub              string `json:"sub"`
+}
+
 type AccessTokenRequest struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
