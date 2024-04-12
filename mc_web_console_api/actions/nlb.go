@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel/tumblebug/mcis"
+	"mc_web_console_api/fwmodels/tumblebug/mcis"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"

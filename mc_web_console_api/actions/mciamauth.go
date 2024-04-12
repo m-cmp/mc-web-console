@@ -60,24 +60,24 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 	accessTokenRequest := &models.AccessTokenRequest{}
 	if err := c.Bind(accessTokenRequest); err != nil {
 		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": err.Error()}))
+			r.JSON(map[string]string{"Binderr": err.Error()}))
 	}
-	accessTokenRequest.AccessToken = c.Request().Header.Get("Authorization")
+	accessToken := c.Request().Header.Get("Authorization")
 
 	validateErr := validate.Validate(
-		&validators.StringIsPresent{Field: accessTokenRequest.AccessToken, Name: "Authorization"},
+		&validators.StringIsPresent{Field: accessToken, Name: "Authorization"},
 		&validators.StringIsPresent{Field: accessTokenRequest.RefreshToken, Name: "refresh_token"},
 	)
 	if validateErr.HasAny() {
 		fmt.Println(validateErr)
 		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": validateErr.Error()}))
+			r.JSON(map[string]string{"validateErr": validateErr.Error()}))
 	}
 
-	jsonData, err := json.Marshal(accessTokenRequest.RefreshToken)
+	jsonData, err := json.Marshal(accessTokenRequest)
 	if err != nil {
 		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": validateErr.Error()}))
+			r.JSON(map[string]string{"Marshalerr": err.Error()}))
 	}
 
 	endSessionPath := "/api/auth/logout"
@@ -89,7 +89,7 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 			r.JSON(map[string]string{"error": err.Error()}))
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", accessTokenRequest.AccessToken)
+	req.Header.Set("Authorization", accessToken)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -99,8 +99,8 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.Status != "204 No Content" {
-		return c.Render(http.StatusServiceUnavailable,
+	if resp.StatusCode != 204 {
+		return c.Render(resp.StatusCode,
 			r.JSON(map[string]string{"code": resp.Status}))
 	}
 

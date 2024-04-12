@@ -25,7 +25,7 @@ import (
 	// "io/ioutil"
 	// echosession "github.com/go-session/echo-session"
 	// "github.com/labstack/echo"
-	// "mcone/echomodel"
+	// "mcone/fwmodels"
 )
 
 type KeepZero float64

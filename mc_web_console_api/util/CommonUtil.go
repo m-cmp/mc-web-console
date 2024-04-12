@@ -20,7 +20,7 @@ import (
 	// "io/ioutil"
 
 	"github.com/gobuffalo/buffalo"
-	// "mcone/echomodel"
+	// "mcone/fwmodels"
 )
 
 func GetStoredUserInfo(c buffalo.Context, userID string) map[string]string {

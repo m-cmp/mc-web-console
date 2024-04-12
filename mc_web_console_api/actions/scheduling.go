@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel/webtool"
+	"mc_web_console_api/fwmodels/webtool"
 	"net/http"
 	"time"
 
