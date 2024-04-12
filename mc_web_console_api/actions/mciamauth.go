@@ -10,12 +10,16 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/pop/v6"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 
-	"models"
+	"mc_web_console_api/models"
+
+	MWCmodels "models"
 )
 
 var (
@@ -31,7 +35,7 @@ func init() {
 }
 
 func McIamAuthLoginContorller(c buffalo.Context) error {
-	user := &models.UserLogin{}
+	user := &MWCmodels.UserLogin{}
 	if err := c.Bind(user); err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"err": err.Error()}))
@@ -53,11 +57,33 @@ func McIamAuthLoginContorller(c buffalo.Context) error {
 			r.JSON(map[string]string{"err": err.Error()}))
 	}
 
+	userInfo, err := getUserInfo("Bearer " + accessTokenResponse.AccessToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+
+	usersess := &models.Usersession{
+		Subject:          userInfo.Sub,
+		UpdatedAt:        time.Now(),
+		AccessToken:      accessTokenResponse.AccessToken,
+		ExpiresIn:        accessTokenResponse.ExpiresIn,
+		RefreshToken:     accessTokenResponse.RefreshToken,
+		RefreshExpiresIn: accessTokenResponse.RefreshExpiresIn,
+	}
+
+	tx := c.Value("tx").(*pop.Connection)
+	txerr := tx.Save(usersess)
+	if txerr != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"txerr": txerr.Error()}))
+	}
+
 	return c.Render(http.StatusOK, r.JSON(accessTokenResponse))
 }
 
 func McIamAuthLogoutContorller(c buffalo.Context) error {
-	accessTokenRequest := &models.AccessTokenRequest{}
+	accessTokenRequest := &MWCmodels.AccessTokenRequest{}
 	if err := c.Bind(accessTokenRequest); err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"Binderr": err.Error()}))
@@ -108,7 +134,8 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 }
 
 func McIamAuthGetUserInfoContorller(c buffalo.Context) error {
-	userInfo, err := getUserInfo(c)
+	accessToken := c.Request().Header.Get("Authorization")
+	userInfo, err := getUserInfo(accessToken)
 	if err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"error": err.Error()}))
@@ -117,7 +144,8 @@ func McIamAuthGetUserInfoContorller(c buffalo.Context) error {
 }
 
 func McIamAuthGetUserValidateContorller(c buffalo.Context) error {
-	_, err := getUserInfo(c)
+	accessToken := c.Request().Header.Get("Authorization")
+	_, err := getUserInfo(accessToken)
 	if err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"error": err.Error()}))
@@ -127,8 +155,8 @@ func McIamAuthGetUserValidateContorller(c buffalo.Context) error {
 
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-
-		_, err := getUserInfo(c)
+		accessToken := c.Request().Header.Get("Authorization")
+		_, err := getUserInfo(accessToken)
 		if err != nil {
 			return c.Render(http.StatusServiceUnavailable,
 				r.JSON(map[string]string{"error": err.Error()}))
@@ -138,11 +166,9 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	}
 }
 
-func getUserInfo(c buffalo.Context) (models.UserInfo, error) {
+func getUserInfo(accessToken string) (MWCmodels.UserInfo, error) {
 
-	var userinfoReturn models.UserInfo
-
-	accessToken := c.Request().Header.Get("Authorization")
+	var userinfoReturn MWCmodels.UserInfo
 
 	getUserInfoPath := "/api/auth/userinfo"
 	getUserInfoEndpoint := baseURL.ResolveReference(&url.URL{Path: getUserInfoPath})
@@ -178,8 +204,8 @@ func getUserInfo(c buffalo.Context) (models.UserInfo, error) {
 	return userinfoReturn, nil
 }
 
-func getUserToken(user *models.UserLogin) (*models.AccessTokenResponse, error) {
-	var accessTokenResponse models.AccessTokenResponse
+func getUserToken(user *MWCmodels.UserLogin) (*MWCmodels.AccessTokenResponse, error) {
+	var accessTokenResponse MWCmodels.AccessTokenResponse
 
 	jsonData, err := json.Marshal(user)
 	if err != nil {

@@ -22,8 +22,6 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/pkg/errors v0.9.1
-	github.com/rs/cors v1.10.1
-	github.com/swaggo/buffalo-swagger v1.4.0
 	github.com/swaggo/swag v1.16.1
 	github.com/unrolled/secure v1.14.0
 	golang.org/x/crypto v0.11.0
