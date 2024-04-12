@@ -3,17 +3,17 @@ package actions
 import (
 	"encoding/json"
 	"log"
-	"mc_web_console_front/models"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
+
+	"models"
 )
 
 func UserLoginHandler(c buffalo.Context) error {
 	if c.Request().Method == "POST" {
-
 		user := &models.UserLogin{}
 		if err := c.Bind(user); err != nil {
 			return c.Render(http.StatusServiceUnavailable,

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mc_web_console_front/models"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,7 +15,7 @@ import (
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 
-	"mc_web_console_api/iammodels"
+	"models"
 )
 
 var (
@@ -30,8 +30,8 @@ func init() {
 	baseURL.Host = mcIamManagerHost
 }
 
-func McIamAuthLoginHandler(c buffalo.Context) error {
-	user := &iammodels.UserLogin{}
+func McIamAuthLoginContorller(c buffalo.Context) error {
+	user := &models.UserLogin{}
 	if err := c.Bind(user); err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"err": err.Error()}))
@@ -47,47 +47,17 @@ func McIamAuthLoginHandler(c buffalo.Context) error {
 			r.JSON(map[string]string{"err": validateErr.Error()}))
 	}
 
-	jsonData, err := json.Marshal(user)
+	accessTokenResponse, err := getUserToken(user)
 	if err != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": validateErr.Error()}))
-	}
-
-	tokenPath := "/api/auth/login"
-	tokenEndpoint := baseURL.ResolveReference(&url.URL{Path: tokenPath})
-	resp, err := http.Post(tokenEndpoint.String(), "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		fmt.Println(err.Error())
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": validateErr.Error()}))
-	}
-	defer resp.Body.Close()
-
-	if resp.Status != "200 OK" {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"code": resp.Status}))
-	}
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Failed to read response body:", err)
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"err": err.Error()}))
-	}
-
-	var accessTokenResponse iammodels.AccessTokenResponse
-	jsonerr := json.Unmarshal(respBody, &accessTokenResponse)
-	if jsonerr != nil {
-		fmt.Println("Failed to parse response:", err)
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": jsonerr.Error()}))
 	}
 
 	return c.Render(http.StatusOK, r.JSON(accessTokenResponse))
 }
 
-func McIamAuthLogoutHandler(c buffalo.Context) error {
-	accessTokenRequest := &iammodels.AccessTokenRequest{}
+func McIamAuthLogoutContorller(c buffalo.Context) error {
+	accessTokenRequest := &models.AccessTokenRequest{}
 	if err := c.Bind(accessTokenRequest); err != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"err": err.Error()}))
@@ -137,7 +107,7 @@ func McIamAuthLogoutHandler(c buffalo.Context) error {
 	return c.Render(http.StatusNoContent, nil)
 }
 
-func McIamAuthGetUserInfoHandler(c buffalo.Context) error {
+func McIamAuthGetUserInfoContorller(c buffalo.Context) error {
 	userInfo, err := getUserInfo(c)
 	if err != nil {
 		return c.Render(http.StatusServiceUnavailable,
@@ -146,7 +116,7 @@ func McIamAuthGetUserInfoHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.JSON(userInfo))
 }
 
-func McIamAuthGetUserValidateHandler(c buffalo.Context) error {
+func McIamAuthGetUserValidateContorller(c buffalo.Context) error {
 	_, err := getUserInfo(c)
 	if err != nil {
 		return c.Render(http.StatusServiceUnavailable,
@@ -206,4 +176,42 @@ func getUserInfo(c buffalo.Context) (models.UserInfo, error) {
 	}
 
 	return userinfoReturn, nil
+}
+
+func getUserToken(user *models.UserLogin) (*models.AccessTokenResponse, error) {
+	var accessTokenResponse models.AccessTokenResponse
+
+	jsonData, err := json.Marshal(user)
+	if err != nil {
+		log.Println(err.Error())
+		return &accessTokenResponse, err
+	}
+
+	tokenPath := "/api/auth/login"
+	tokenEndpoint := baseURL.ResolveReference(&url.URL{Path: tokenPath})
+	resp, err := http.Post(tokenEndpoint.String(), "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println(err.Error())
+		return &accessTokenResponse, err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Failed to read response body:", err.Error())
+		return &accessTokenResponse, err
+	}
+
+	if resp.StatusCode != 200 {
+		log.Println(resp.Status)
+		return &accessTokenResponse, errors.New(string(respBody))
+	}
+
+	jsonerr := json.Unmarshal(respBody, &accessTokenResponse)
+	if jsonerr != nil {
+		log.Println("Failed to parse response:", err.Error())
+		return &accessTokenResponse, err
+	}
+
+	return &accessTokenResponse, nil
 }

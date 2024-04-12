@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"mc_web_console_front/models"
 	"net/http"
 	"net/url"
 
 	"github.com/gobuffalo/buffalo"
+
+	"models"
 )
 
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {

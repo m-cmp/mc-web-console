@@ -1,4 +1,4 @@
-package iammodels
+package models
 
 type AccessTokenRequest struct {
 	AccessToken  string `json:"access_token"`
@@ -14,4 +14,17 @@ type AccessTokenResponse struct {
 	NotBeforePolicy  int    `json:"not-before-policy"`
 	SessionState     string `json:"session_state"`
 	Scope            string `json:"scope"`
+}
+
+type UserLogin struct {
+	Id       string `json:"id"`
+	Password string `json:"password"`
+}
+
+type UserInfo struct {
+	FamilyName       string `json:"family_name"`
+	GivenName        string `json:"given_name"`
+	Name             string `json:"name"`
+	PreferredUsename string `json:"preferred_username"`
+	Sub              string `json:"sub"`
 }
