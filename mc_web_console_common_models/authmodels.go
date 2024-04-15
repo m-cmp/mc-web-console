@@ -1,4 +1,4 @@
-package models
+package mc_web_console_common_models
 
 type AccessTokenRequest struct {
 	RefreshToken string `json:"refresh_token"`
