@@ -12,8 +12,8 @@ import (
 
 // Usersession is used by pop to map your usersessions database table to your go code.
 type Usersession struct {
-	ID               uuid.UUID `json:"id" db:"id"`           // DB idx - PK
-	Subject          string    `json:"subject" db:"subject"` // jwt 에서 유저에 대한 UUID
+	ID uuid.UUID `json:"id" db:"id"` // DB idx - PK
+	// Subject          string    `json:"subject" db:"subject"` // jwt 에서 유저에 대한 UUID
 	AccessToken      string    `json:"access_token" db:"access_token"`
 	ExpiresIn        int       `json:"expires_in" db:"expires_in"`
 	RefreshToken     string    `json:"refresh_token" db:"refresh_token"`
@@ -41,7 +41,7 @@ func (u Usersessions) String() string {
 // This method is not required and may be deleted.
 func (u *Usersession) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
-		&validators.StringIsPresent{Field: u.Subject, Name: "Subject"},
+		&validators.StringIsPresent{Field: u.ID.String(), Name: "Subject"},
 		&validators.StringIsPresent{Field: u.AccessToken, Name: "AccessToken"},
 		&validators.IntIsPresent{Field: u.ExpiresIn, Name: "ExpiresIn"},
 		&validators.IntIsPresent{Field: u.RefreshExpiresIn, Name: "RefreshExpiresIn"},
