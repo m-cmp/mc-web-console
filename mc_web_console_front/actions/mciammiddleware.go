@@ -9,7 +9,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 
-	"models"
+	mcmodels "mc_web_console_common_models"
 )
 
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
@@ -54,7 +54,7 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 			return c.Redirect(http.StatusSeeOther, "authLoginPath()")
 		}
 
-		var userinfo models.UserInfo
+		var userinfo mcmodels.UserInfo
 		if err := json.Unmarshal([]byte(respBody), &userinfo); err != nil {
 			c.Session().Clear()
 			c.Flash().Add("danger", "Authentication Info Error")

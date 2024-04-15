@@ -12,14 +12,14 @@ import (
 
 // Usersession is used by pop to map your usersessions database table to your go code.
 type Usersession struct {
-	ID               uuid.UUID `json:"id" db:"id"`
-	Subject          string    `json:"subject" db:"subject"`
-	UpdatedAt        time.Time `json:"updated_at" db:"updated_at"`
+	ID               uuid.UUID `json:"id" db:"id"`           // DB idx - PK
+	Subject          string    `json:"subject" db:"subject"` // jwt 에서 유저에 대한 UUID
 	AccessToken      string    `json:"access_token" db:"access_token"`
 	ExpiresIn        int       `json:"expires_in" db:"expires_in"`
-	RefreshExpiresIn int       `json:"refresh_expires_in" db:"refresh_expires_in"`
 	RefreshToken     string    `json:"refresh_token" db:"refresh_token"`
+	RefreshExpiresIn int       `json:"refresh_expires_in" db:"refresh_expires_in"`
 	CreatedAt        time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // String is not required by pop and may be deleted

@@ -9,12 +9,12 @@ import (
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 
-	"models"
+	mcmodels "mc_web_console_common_models"
 )
 
 func UserLoginHandler(c buffalo.Context) error {
 	if c.Request().Method == "POST" {
-		user := &models.UserLogin{}
+		user := &mcmodels.UserLogin{}
 		if err := c.Bind(user); err != nil {
 			return c.Render(http.StatusServiceUnavailable,
 				r.JSON(map[string]string{"err": err.Error()}))
@@ -42,7 +42,7 @@ func UserLoginHandler(c buffalo.Context) error {
 			)
 		}
 
-		var accessTokenResponse models.AccessTokenResponse
+		var accessTokenResponse mcmodels.AccessTokenResponse
 		jsonerr := json.Unmarshal(respBody, &accessTokenResponse)
 		if jsonerr != nil {
 			log.Println(jsonerr.Error())
