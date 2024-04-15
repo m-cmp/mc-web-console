@@ -8,15 +8,17 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
+
 func PageController(c buffalo.Context) error {
-	renderHtmlPath, err := breadCrumb(c)
+	renderHtmlPath, err := getRenderedFilePath(c)
 	if err != nil {
-		return c.Render(http.StatusNotFound, tr.HTML("error-404.html"))
+		return c.Render(http.StatusNotFound, tablerRender.HTML("error-404.html"))
 	}
-	return c.Render(http.StatusOK, tr.HTML(renderHtmlPath))
+	return c.Render(http.StatusOK, tablerRender.HTML(renderHtmlPath))
 }
 
-func breadCrumb(c buffalo.Context) (string, error) {
+// 주어진 경로를 이용하여 render할 파일경로 return.
+func getRenderedFilePath(c buffalo.Context) (string, error) {
 	depth1 := c.Param("depth1")
 	depth2 := c.Param("depth2")
 	depth3 := c.Param("depth3")
