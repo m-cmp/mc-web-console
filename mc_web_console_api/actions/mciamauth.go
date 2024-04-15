@@ -10,11 +10,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/pop/v6"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
+	"github.com/gofrs/uuid"
 
 	"mc_web_console_api/models"
 
@@ -62,33 +63,27 @@ func McIamAuthLoginContorller(c buffalo.Context) error {
 			r.JSON(map[string]string{"error": err.Error()}))
 	}
 
-	existUsersession := &models.Usersession{
-		Subject: userInfo.Sub,
-	}
-	txerr := models.DB.Where("subject = ?", existUsersession.Subject).First(existUsersession)
-	if txerr != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"txerr": txerr.Error()}))
-	}
-
+	targetSubject, _ := uuid.FromString(userInfo.Sub)
 	usersess := &models.Usersession{
-		Subject:          userInfo.Sub,
+		ID:               targetSubject,
 		AccessToken:      accessTokenResponse.AccessToken,
 		ExpiresIn:        accessTokenResponse.ExpiresIn,
 		RefreshToken:     accessTokenResponse.RefreshToken,
 		RefreshExpiresIn: accessTokenResponse.RefreshExpiresIn,
 	}
 
-	var txsaveErr error
-	if existUsersession.Subject != "" {
-		usersess.ID = existUsersession.ID
-		txsaveErr = models.DB.Update(usersess)
-	} else {
-		txsaveErr = models.DB.Save(usersess)
-	}
-	if txsaveErr != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"txsaveErr": txsaveErr.Error()}))
+	txerr := models.DB.Create(usersess)
+	if txerr != nil {
+		if strings.Contains(txerr.Error(), "SQLSTATE 23505") { // unique constraint violation catch
+			txerr = models.DB.Update(usersess)
+			if txerr != nil {
+				return c.Render(http.StatusServiceUnavailable,
+					r.JSON(map[string]string{"err": txerr.Error()}))
+			}
+		} else {
+			return c.Render(http.StatusServiceUnavailable,
+				r.JSON(map[string]string{"err": txerr.Error()}))
+		}
 	}
 
 	return c.Render(http.StatusOK, r.JSON(accessTokenResponse))
@@ -101,6 +96,13 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 			r.JSON(map[string]string{"Binderr": err.Error()}))
 	}
 	accessToken := c.Request().Header.Get("Authorization")
+
+	userInfo, err := getUserInfo(accessToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	targetSubject, _ := uuid.FromString(userInfo.Sub)
 
 	validateErr := validate.Validate(
 		&validators.StringIsPresent{Field: accessToken, Name: "Authorization"},
@@ -137,30 +139,27 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 204 {
+	if resp.StatusCode != 200 {
 		return c.Render(resp.StatusCode,
 			r.JSON(map[string]string{"code": resp.Status}))
 	}
 
-	userinfo, err := getUserInfo(accessToken)
-	if err != nil {
-		return c.Render(resp.StatusCode,
-			r.JSON(map[string]string{"getUserInfoerr": err.Error()}))
+	usersess := &models.Usersession{
+		ID: targetSubject,
 	}
-	usersess := &models.Usersession{}
 
-	tx := c.Value("tx").(*pop.Connection)
-	txerr := tx.Find(usersess, userinfo.Sub)
+	existusersess := &models.Usersession{}
+
+	txerr := models.DB.Find(existusersess, usersess.ID)
 	if txerr != nil {
 		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"txerr": txerr.Error()}))
+			r.JSON(map[string]string{"err": txerr.Error()}))
 	}
 
-	fmt.Println("usersess###########", usersess)
-	destroyerr := tx.Destroy(usersess)
-	if destroyerr != nil {
+	txerr = models.DB.Destroy(existusersess)
+	if txerr != nil {
 		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"destroyerr": destroyerr.Error()}))
+			r.JSON(map[string]string{"err": txerr.Error()}))
 	}
 
 	return c.Render(http.StatusNoContent, nil)
