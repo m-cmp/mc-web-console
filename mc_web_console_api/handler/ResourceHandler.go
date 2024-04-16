@@ -358,6 +358,84 @@ func DelAllVpc(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 
 }
 
+// Create Subnet
+func RegSubnet(nameSpaceID string, vnetId string, subnetReqInfo *tbmcir.TbSubnetReq) (*tbmcir.TbSubnetInfo, fwmodels.WebStatus) {
+	var originalUrl = "/ns/{nsId}/resources/vNet/{vNetId}/subnet"
+	var paramMapper = make(map[string]string)
+	paramMapper["{nsId}"] = nameSpaceID
+	paramMapper["{vNetId}"] = vnetId
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+
+	url := util.TUMBLEBUG + urlParam
+	// url := util.TUMBLEBUG + "/ns/" + nameSpaceID + "/resources/vNet"
+
+	fmt.Println("subnetReqInfo : ", subnetReqInfo)
+
+	pbytes, _ := json.Marshal(subnetReqInfo)
+	fmt.Println(string(pbytes))
+	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
+	subnetInfo := tbmcir.TbSubnetInfo{}
+	if err != nil {
+		fmt.Println(err)
+		return &subnetInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+	fmt.Println("respStatus ", respStatus)
+
+	if respStatus == 500 {
+		webStatus := fwmodels.WebStatus{}
+		json.NewDecoder(respBody).Decode(&webStatus)
+		fmt.Println(webStatus)
+		webStatus.StatusCode = respStatus
+		return &subnetInfo, webStatus
+	}
+	// 응답에 생성한 객체값이 옴
+	json.NewDecoder(respBody).Decode(&subnetInfo)
+	fmt.Println(subnetInfo)
+
+	return &subnetInfo, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
+// Delete Subnet
+func DelSubnet(nameSpaceID string, vNetID string, subnetID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
+	
+	var originalUrl = "/ns/{nsId}/resources/vNet/{vNetId}/subnet/{subnetId}"
+	var paramMapper = make(map[string]string)
+	paramMapper["{nsId}"] = nameSpaceID
+	paramMapper["{vNetId}"] = vNetID
+	paramMapper["{subnetId}"] = subnetID
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+	url := util.TUMBLEBUG + urlParam
+
+	fmt.Println("vNetID : ", vNetID)
+	fmt.Println("subnetID : ", subnetID)
+	
+	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
+
+	if err != nil {
+		fmt.Println(err)
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+	// return body, err
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+	resultInfo := fwmodels.ResultInfo{}
+
+	json.NewDecoder(respBody).Decode(&resultInfo)
+	log.Println(resultInfo)
+	log.Println("ResultMessage : " + resultInfo.Message)
+
+	if respStatus != 200 && respStatus != 201 {
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+	}
+	webStatus.StatusCode = respStatus
+	webStatus.Message = resultInfo.Message
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
 // 해당 namespace의 SecurityGroup 목록 조회
 func GetSecurityGroupList(nameSpaceID string) ([]tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	fmt.Println("GetSecurityGroupList ************ : ")
