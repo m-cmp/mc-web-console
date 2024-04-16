@@ -4,7 +4,16 @@ import (
 	"log"
 	fwmodels "mc_web_console_api/fwmodels"
 	"mc_web_console_api/models"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	//tbnetutil "mc_web_console_api/fwmodels/tumblebug/netutil"
+
+	util "mc_web_console_api/util"
+
+	"net/http"
+	"fmt"
 	"strings"
+	"encoding/json"
+	"io"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -179,3 +188,159 @@ func GetUserById(userId uuid.UUID) (*models.User, fwmodels.WebStatus) {
 	log.Println("user", user)
 	return user, fwmodels.WebStatus{StatusCode: 200}
 }
+
+
+/////////// CB-TB Admin 기능 start /////
+
+///requests Get all requests
+func GetAllRequestsTB(status string, method string, callUrl string, time string, savefile string) (tbcommon.TbRequestDetails, fwmodels.WebStatus) {
+	var originalUrl = "/requests"
+
+	var paramMapper = make(map[string]string)
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+
+	urlParam += "?status="
+	if status != ""{// Handling, Error, Success
+		urlParam += "" + status
+	}
+	if method != ""{// GET, POST, etc
+		urlParam += "&method=" + method
+	}
+	if callUrl != ""{// request URL
+		urlParam += "&url=" + callUrl
+	}
+	if time != ""{// GET, POST, etc
+		urlParam += "&time=" + time
+	}
+	if savefile != ""{// GET, POST, etc
+		urlParam += "&savefile=" + savefile
+	}
+	
+	url := util.TUMBLEBUG + urlParam
+	resp, err := util.CommonHttp(url, nil, http.MethodGet)
+
+	requestDetails := tbcommon.TbRequestDetails{}
+	if err != nil {
+		fmt.Println(err)
+		return requestDetails, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+
+	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
+		failResultInfo := tbcommon.TbSimpleMsg{}
+		json.NewDecoder(respBody).Decode(&failResultInfo)
+		return requestDetails, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+	}
+
+	json.NewDecoder(respBody).Decode(&requestDetails)
+	
+	fmt.Println(requestDetails)
+
+	return requestDetails, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
+// Get details of a specific request
+func GetRequestByIdTB(reqId string) (tbcommon.TbRequestDetails, fwmodels.WebStatus) {
+	var originalUrl = "/request/{reqId}"
+
+	var paramMapper = make(map[string]string)
+	paramMapper["{reqId}"] = reqId
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+
+	url := util.TUMBLEBUG + urlParam
+
+	requestDetail := tbcommon.TbRequestDetails{}
+	if reqId == "" {
+		return requestDetail, fwmodels.WebStatus{StatusCode: 500, Message: "req ID is required"}
+	}
+
+	resp, err := util.CommonHttp(url, nil, http.MethodGet)
+
+	
+
+	if err != nil {
+		fmt.Println(err)
+		return requestDetail, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+	
+	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
+		failResultInfo := tbcommon.TbSimpleMsg{}
+		json.NewDecoder(respBody).Decode(&failResultInfo)
+		return requestDetail, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+	}
+
+	json.NewDecoder(respBody).Decode(&requestDetail)
+	//spew.Dump(body)
+	fmt.Println(requestDetail)
+
+	return requestDetail, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
+// Delete all requests' details
+func DeleteAllRequestsTB() (io.ReadCloser, fwmodels.WebStatus) {
+	var originalUrl = "/requests"
+
+	var paramMapper = make(map[string]string)
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+
+	url := util.TUMBLEBUG + urlParam
+
+	// 경로안에 parameter가 있어 추가 param없이 호출 함.
+	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
+	if err != nil {
+		fmt.Println(err)
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+
+	if respStatus != 200 && respStatus != 201 {
+		failResultInfo := tbcommon.TbSimpleMsg{}
+		json.NewDecoder(respBody).Decode(&failResultInfo)
+		log.Println("DeleteAllRequestsTB ", failResultInfo)
+		return nil, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+	}
+
+	return respBody, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
+// Delete a specific request's details
+func DeleteRequestByIdTB(reqId string) (io.ReadCloser, fwmodels.WebStatus) {
+	var originalUrl = "/request/{reqId}"
+
+	var paramMapper = make(map[string]string)
+	paramMapper["{reqId}"] = reqId
+	
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+
+	url := util.TUMBLEBUG + urlParam
+
+	if reqId == "" {
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: "req ID is required"}
+	}
+
+	// 경로안에 parameter가 있어 추가 param없이 호출 함.
+	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
+	if err != nil {
+		fmt.Println(err)
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+
+	if respStatus != 200 && respStatus != 201 {
+		failResultInfo := tbcommon.TbSimpleMsg{}
+		json.NewDecoder(respBody).Decode(&failResultInfo)
+		log.Println("DelNLB ", failResultInfo)
+		return nil, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+	}
+
+	return respBody, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
+/////////// CB-TB Admin 기능 end /////
