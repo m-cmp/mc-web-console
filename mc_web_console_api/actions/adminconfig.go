@@ -21,7 +21,7 @@ import (
 // @Success		200				{string}	string	"{"message":"success","status":respStatus.StatusCode,"regionGroup":regionGroupList,}"
 // @Failure		400				{string}	string	"{'error':'respStatus.Message','error':'respStatus.Message'}"
 // @Router			/api/adminconfig/regiongroup/ [get]
-func (a actions) RegionGroupList(c buffalo.Context) error {
+func RegionGroupList(c buffalo.Context) error {
 
 	providerId := c.Params().Get("provider")             //id
 	regionGroupName := c.Params().Get("regionGroupName") //name
@@ -56,7 +56,7 @@ func (a actions) RegionGroupList(c buffalo.Context) error {
 // @Success		200				{string}	string	"{"message":"success","status":respStatus.StatusCode,"regionGroup":regionGroup,}"
 // @Failure		500				{string}	string	"{'error':'err.Error()','status':'500'}"
 // @Router			/api/adminconfig/regiongroup/{regionGroupId} [get]
-func (a actions) GetRegionGroup(c buffalo.Context) error {
+func GetRegionGroup(c buffalo.Context) error {
 
 	regionGroupId := c.Param("regionGroupId")
 	providerId := c.Params().Get("provider") //id
@@ -116,7 +116,7 @@ func (a actions) GetRegionGroup(c buffalo.Context) error {
 // @Success		200			{string}	string				"{'message': 'success', 'status': respStatus.StatusCode}"
 // @Failure		500			{string}	string				"{'error':'respStatus.Message','status':respStatus.StatusCode}"
 // @Router			/api/adminconfig/regiongroup/ [post]
-func (a actions) RegRegionGroup(c buffalo.Context) error {
+func RegRegionGroup(c buffalo.Context) error {
 
 	regionGroup := &models.RegionGroup{}
 	if err := c.Bind(regionGroup); err != nil {
@@ -147,7 +147,7 @@ func (a actions) RegRegionGroup(c buffalo.Context) error {
 // @Success		200			{string}	string				"{'message': 'success', 'status': respStatus.StatusCode}"
 // @Failure		500			{string}	string				"{'error':'respStatus.Message','status':respStatus.StatusCode}"
 // @Router			/api/adminconfig/regiongroup/ [delete]
-func (a actions) DelRegionGroup(c buffalo.Context) error {
+func DelRegionGroup(c buffalo.Context) error {
 
 	regionGroup := &models.RegionGroup{}
 	if err := c.Bind(regionGroup); err != nil {
@@ -177,7 +177,7 @@ func (a actions) DelRegionGroup(c buffalo.Context) error {
 // @Param			Category	body		models.Category	true	"models.Category"
 // @Success		200			{string}	string			"{'message': 'success', 'status': 200}"
 // @Router			/api/adminconfig/category/ [post]
-func (a actions) CategoryReg(c buffalo.Context) error {
+func CategoryReg(c buffalo.Context) error {
 	category := &models.Category{}
 	if err := c.Bind(category); err != nil {
 		return errors.WithStack(err)
@@ -204,7 +204,7 @@ func (a actions) CategoryReg(c buffalo.Context) error {
 // @Param			Category	body		models.Category	true	"models.Category"
 // @Success		200			{string}	string			"{'message': 'success', 'status': 200}"
 // @Router			/api/adminconfig/category/ [delete]
-func (a actions) CategoryDel(c buffalo.Context) error {
+func CategoryDel(c buffalo.Context) error {
 	category := &models.Category{}
 	if err := c.Bind(category); err != nil {
 		return errors.WithStack(err)
@@ -231,7 +231,7 @@ func (a actions) CategoryDel(c buffalo.Context) error {
 // @Failure		400				{string}	string	"{'error':'respStatus.Message','error':'respStatus.Message'}"
 // @Security		CSRFTokenHeader
 // @Router			/api/adminconfig/category/ [get]
-func (a actions) CategoryList(c buffalo.Context) error {
+func CategoryList(c buffalo.Context) error {
 	categoryList := []models.Category{}
 
 	categoryName := c.Params().Get("categoryName")
@@ -262,7 +262,7 @@ func (a actions) CategoryList(c buffalo.Context) error {
 // @Failure		400				{string}	string	"{'error':'errors.WithStack(err)'}"
 // @Security		CSRFTokenHeader
 // @Router			/api/adminconfig/category/id/{categoryName}/ [get]
-func (a actions) CategoryGet(c buffalo.Context) error {
+func CategoryGet(c buffalo.Context) error {
 	category := models.Category{}
 
 	categoryName := c.Params().Get("categoryName")
@@ -291,7 +291,7 @@ func (a actions) CategoryGet(c buffalo.Context) error {
 // @Success		200		{string}	string		"{'message':'success','status':'200'}"
 // @Failure		400		{string}	string		"{'error':'errors.WithStack(err)'}"
 // @Router			/api/adminconfig/menu/ [post]
-func (a actions) RegMenu(c buffalo.Context) error {
+func RegMenu(c buffalo.Context) error {
 	menu := &models.Menu{}
 	if err := c.Bind(menu); err != nil {
 		return errors.WithStack(err)
@@ -318,7 +318,7 @@ func (a actions) RegMenu(c buffalo.Context) error {
 // @Success		200		{string}	string		"{'message':'success','status':'200'}"
 // @Failure		400		{string}	string		"{'error':'errors.WithStack(err)'}"
 // @Router			/api/adminconfig/menu/ [put]
-func (a actions) UpdateMenu(c buffalo.Context) error {
+func UpdateMenu(c buffalo.Context) error {
 	menu := &models.Menu{}
 	if err := c.Bind(menu); err != nil {
 		return errors.WithStack(err)
@@ -345,7 +345,7 @@ func (a actions) UpdateMenu(c buffalo.Context) error {
 // @Success		200		{string}	string		"{'message':'success','status':'200'}"
 // @Failure		400		{string}	string		"{'error':'errors.WithStack(err)'}"
 // @Router			/api/adminconfig/menu/ [delete]
-func (a actions) DelMenu(c buffalo.Context) error {
+func DelMenu(c buffalo.Context) error {
 	menu := &models.Menu{}
 	if err := c.Bind(menu); err != nil {
 		return errors.WithStack(err)
@@ -375,7 +375,7 @@ func (a actions) DelMenu(c buffalo.Context) error {
 // @Success		200			{string}	string	"{'message':'success','status':'200', 'menuList': 'menuList'}"
 // @Failure		400			{string}	string	"{'error':'errors.WithStack(err)'}"
 // @Router			/api/adminconfig/menu/ [get]
-func (a actions) MenuList(c buffalo.Context) error {
+func MenuList(c buffalo.Context) error {
 	menuList := []models.Menu{}
 
 	menuId := c.Params().Get("menuId")
@@ -421,7 +421,7 @@ func (a actions) MenuList(c buffalo.Context) error {
 // @Success		200			{string}	string	"{'message':'success','status':'200', 'menu': 'menu'}"
 // @Failure		400			{string}	string	"{'error':'errors.WithStack(err)'}"
 // @Router			/api/adminconfig/menu/id/{menuId}/ [get]
-func (a actions) GetMenu(c buffalo.Context) error {
+func GetMenu(c buffalo.Context) error {
 	menu := models.Menu{}
 
 	menuId := c.Param("menuId")
@@ -461,7 +461,7 @@ func (a actions) GetMenu(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'200', 'menutree': 'menutree'}"
 // @Failure		400	{string}	string	"{'error':'errors.WithStack(err)'}"
 // @Router			/api/adminconfig/menu/tree/ [get]
-func (a actions) MenuTree(c buffalo.Context) error {
+func MenuTree(c buffalo.Context) error {
 
 	menutree, respStatus := handler.MenuTree()
 	if respStatus.StatusCode == 500 {
@@ -481,7 +481,7 @@ func (a actions) MenuTree(c buffalo.Context) error {
 // @Produce		html
 // @Success		200	{html}	html	"redirect"
 // @Router			/api/test/apitest/searchapi/ [post]
-func (a actions) ApiSearch(c buffalo.Context) error {
+func ApiSearch(c buffalo.Context) error {
 
 	route := &models.RouteInfo{}
 

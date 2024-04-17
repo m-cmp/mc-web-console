@@ -15,7 +15,7 @@ import (
 )
 
 // SecuritygroupList
-func (a actions) SecurityGroupList(c buffalo.Context) error {
+func SecurityGroupList(c buffalo.Context) error {
 	log.Println("GetSecirityGroupList : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -54,7 +54,7 @@ func (a actions) SecurityGroupList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) SecurityGroupListByRegion(c buffalo.Context) error {
+func SecurityGroupListByRegion(c buffalo.Context) error {
 	log.Println("SecuritygroupListByRegion : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -193,7 +193,7 @@ func (a actions) SecurityGroupListByRegion(c buffalo.Context) error {
 }
 
 // 단건조회
-func (a actions) SecurityGroupGet(c buffalo.Context) error {
+func SecurityGroupGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	paramSecurityGroupID := c.Param("securityGroupId")
@@ -223,7 +223,7 @@ func (a actions) SecurityGroupGet(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) SecurityGroupReg(c buffalo.Context) error {
+func SecurityGroupReg(c buffalo.Context) error {
 	// 현재 namespace 정보 가져오기
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
@@ -291,7 +291,7 @@ func (a actions) SecurityGroupReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) SecurityGroupDel(c buffalo.Context) error {
+func SecurityGroupDel(c buffalo.Context) error {
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
@@ -342,7 +342,7 @@ func (a actions) SecurityGroupDel(c buffalo.Context) error {
 
 // security group rule 추가
 // firewall 은 connection과 상관없이 sg에 종속이므로 별도로 mapping table에서 관리하지 않음
-func (a actions) FirewallRuleReg(c buffalo.Context) error {
+func FirewallRuleReg(c buffalo.Context) error {
 	// 현재 namespace 정보 가져오기
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -369,7 +369,7 @@ func (a actions) FirewallRuleReg(c buffalo.Context) error {
 }
 
 // firewall rule 삭제 :
-func (a actions) FirewallRuleDel(c buffalo.Context) error {
+func FirewallRuleDel(c buffalo.Context) error {
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
