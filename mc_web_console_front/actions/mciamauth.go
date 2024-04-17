@@ -16,7 +16,7 @@ func UserLoginHandler(c buffalo.Context) error {
 	if c.Request().Method == "POST" {
 		user := &mcmodels.UserLogin{}
 		if err := c.Bind(user); err != nil {
-			return c.Render(http.StatusServiceUnavailable,
+			return c.Render(http.StatusBadRequest,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
 
@@ -26,19 +26,19 @@ func UserLoginHandler(c buffalo.Context) error {
 		)
 		if validateErr.HasAny() {
 			log.Println(validateErr)
-			return c.Render(http.StatusServiceUnavailable,
+			return c.Render(http.StatusBadRequest,
 				r.JSON(map[string]string{"err": validateErr.Error()}))
 		}
 
-		status, respBody, err := CommonAPIPost(APILoginPath, user)
+		status, respBody, err := CommonAPIPostWithoutAccessToken(APILoginPath, user)
 		if err != nil {
 			log.Println(err.Error())
-			return c.Render(http.StatusServiceUnavailable,
+			return c.Render(status.StatusCode,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
-		if status != "200 OK" {
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"err": status}),
+		if status.StatusCode != 200 {
+			return c.Render(status.StatusCode,
+				r.JSON(map[string]string{"err": status.Status}),
 			)
 		}
 
@@ -71,7 +71,18 @@ func UserLoginHandler(c buffalo.Context) error {
 }
 
 func UserLogoutHandler(c buffalo.Context) error {
-	//TODO : 세션 로그아웃 유저 모델 토큰 필요
+	status, _, err := CommonAPIGet(APILogoutPath, c)
+	if err != nil {
+		log.Println(err.Error())
+		return c.Render(status.StatusCode,
+			r.JSON(map[string]string{"err": err.Error()}))
+	}
+	if status.StatusCode != 200 {
+		return c.Render(status.StatusCode,
+			r.JSON(map[string]string{"err": status.Status}),
+		)
+	}
+
 	c.Session().Clear()
 	c.Flash().Add("success", "Logout")
 	return c.Redirect(http.StatusSeeOther, "authLoginPath()")
