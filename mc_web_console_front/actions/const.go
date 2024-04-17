@@ -8,6 +8,7 @@ import (
 var (
 	APIbaseHost               *url.URL
 	APILoginPath              = "/api/mciam/auth/login"
+	APILoginRefreshPath       = "/api/mciam/auth/login/refresh"
 	APILogoutPath             = "/api/mciam/auth/logout"
 	APIUserValidatePath       = "/api/mciam/auth/validate"
 	APIUserInfoPath           = "/api/mciam/auth/userinfo"

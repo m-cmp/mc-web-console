@@ -76,7 +76,7 @@ func App() *buffalo.App {
 			mciamauth.Use(McIamAuthMiddleware)
 			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginContorller, McIamAuthGetUserInfoContorller)
 			mciamauth.POST("/login", McIamAuthLoginContorller)
-			mciamauth.POST("/logout", McIamAuthLogoutContorller)
+			mciamauth.GET("/logout", McIamAuthLogoutContorller)
 			mciamauth.GET("/validate", McIamAuthGetUserValidateContorller)
 			mciamauth.GET("/userinfo", McIamAuthGetUserInfoContorller)
 		}

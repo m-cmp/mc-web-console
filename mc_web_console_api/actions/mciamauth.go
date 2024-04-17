@@ -90,11 +90,6 @@ func McIamAuthLoginContorller(c buffalo.Context) error {
 }
 
 func McIamAuthLogoutContorller(c buffalo.Context) error {
-	accessTokenRequest := &mcmodels.AccessTokenRequest{}
-	if err := c.Bind(accessTokenRequest); err != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"Binderr": err.Error()}))
-	}
 	accessToken := c.Request().Header.Get("Authorization")
 
 	userInfo, err := getUserInfo(accessToken)
@@ -104,14 +99,25 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 	}
 	targetSubject, _ := uuid.FromString(userInfo.Sub)
 
+	usersess := &models.Usersession{}
+	txerr := models.DB.Find(usersess, targetSubject)
+	if txerr != nil {
+		return c.Render(http.StatusBadRequest,
+			r.JSON(map[string]string{"txerr": txerr.Error()}))
+	}
+
 	validateErr := validate.Validate(
 		&validators.StringIsPresent{Field: accessToken, Name: "Authorization"},
-		&validators.StringIsPresent{Field: accessTokenRequest.RefreshToken, Name: "refresh_token"},
+		&validators.StringIsPresent{Field: usersess.RefreshToken, Name: "refresh_token"},
 	)
 	if validateErr.HasAny() {
 		fmt.Println(validateErr)
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"validateErr": validateErr.Error()}))
+	}
+
+	accessTokenRequest := &mcmodels.AccessTokenRequest{
+		RefreshToken: usersess.RefreshToken,
 	}
 
 	jsonData, err := json.Marshal(accessTokenRequest)
@@ -144,19 +150,7 @@ func McIamAuthLogoutContorller(c buffalo.Context) error {
 			r.JSON(map[string]string{"code": resp.Status}))
 	}
 
-	usersess := &models.Usersession{
-		ID: targetSubject,
-	}
-
-	existusersess := &models.Usersession{}
-
-	txerr := models.DB.Find(existusersess, usersess.ID)
-	if txerr != nil {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": txerr.Error()}))
-	}
-
-	txerr = models.DB.Destroy(existusersess)
+	txerr = models.DB.Destroy(usersess)
 	if txerr != nil {
 		return c.Render(http.StatusServiceUnavailable,
 			r.JSON(map[string]string{"err": txerr.Error()}))
