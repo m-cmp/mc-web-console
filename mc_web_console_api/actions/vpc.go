@@ -14,7 +14,7 @@ import (
 	"mc_web_console_api/models/views"
 )
 
-func (a actions) VpcReg(c buffalo.Context) error {
+func VpcReg(c buffalo.Context) error {
 	// 현재 namespace 정보 가져오기
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
@@ -91,7 +91,7 @@ func (a actions) VpcReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) VpcDel(c buffalo.Context) error {
+func VpcDel(c buffalo.Context) error {
 	log.Println("VnetDel")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
@@ -141,7 +141,7 @@ func (a actions) VpcDel(c buffalo.Context) error {
 }
 
 // 단건 조회 by id
-func (a actions) VpcGet(c buffalo.Context) error {
+func VpcGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	paramVNetID := c.Param("vpcId")
@@ -175,7 +175,7 @@ func (a actions) VpcGet(c buffalo.Context) error {
 }
 
 // VnetList default implementation.
-func (a actions) VpcList(c buffalo.Context) error {
+func VpcList(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	optionParam := c.Params().Get("option")
@@ -215,7 +215,7 @@ func (a actions) VpcList(c buffalo.Context) error {
 }
 
 // 해당 namespace의 Region내 vnet 목록 조회
-func (a actions) VpcListByRegion(c buffalo.Context) error {
+func VpcListByRegion(c buffalo.Context) error {
 	log.Println("VnetListByRegion")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 

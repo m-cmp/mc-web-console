@@ -28,7 +28,7 @@ type pushMessage struct {
 // WebSocketDataList
 //
 
-func (a actions) WebSocketDataList(c buffalo.Context) error {
+func WebSocketDataList(c buffalo.Context) error {
 	// Upgrade the incoming request to a WebSocket connection
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {

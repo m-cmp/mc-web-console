@@ -14,7 +14,7 @@ import (
 )
 
 // namespace의 특정 mcis안에 있는 nlb 목록 조회
-func (a actions) NlbList(c buffalo.Context) error {
+func NlbList(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -53,7 +53,7 @@ func (a actions) NlbList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) NlbDel(c buffalo.Context) error {
+func NlbDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -103,7 +103,7 @@ func (a actions) NlbDel(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) AllNlbListOfNamespace(c buffalo.Context) error {
+func AllNlbListOfNamespace(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	//namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -139,7 +139,7 @@ func (a actions) AllNlbListOfNamespace(c buffalo.Context) error {
 
 }
 
-func (a actions) NlbReg(c buffalo.Context) error {
+func NlbReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -210,7 +210,7 @@ func (a actions) NlbReg(c buffalo.Context) error {
 
 }
 
-func (a actions) NlbGet(c buffalo.Context) error {
+func NlbGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
