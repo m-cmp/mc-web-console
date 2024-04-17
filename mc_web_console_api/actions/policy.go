@@ -10,7 +10,7 @@ import (
 )
 
 // Monitoring Config 정책 조회
-func (a actions) MonitoringConfigPolicyData(c buffalo.Context) error {
+func MonitoringConfigPolicyData(c buffalo.Context) error {
 
 	//MonitoringConfig
 	monitoringConfig, respStatus := handler.GetMonitoringConfig()
@@ -22,7 +22,7 @@ func (a actions) MonitoringConfigPolicyData(c buffalo.Context) error {
 }
 
 // Monitoring Config 정책 수정
-func (a actions) MonitoringConfigPolicyUpdate(c buffalo.Context) error {
+func MonitoringConfigPolicyUpdate(c buffalo.Context) error {
 
 	monitoringConfigRegInfo := &dragonfly.MonitoringConfigReg{}
 	if err := c.Bind(monitoringConfigRegInfo); err != nil {
@@ -49,7 +49,7 @@ func (a actions) MonitoringConfigPolicyUpdate(c buffalo.Context) error {
 }
 
 // Monitoring alert 임계치 등록 처리
-func (a actions) MonitoringAlertPolicyReg(c buffalo.Context) error {
+func MonitoringAlertPolicyReg(c buffalo.Context) error {
 	log.Println("MonitoringAlertPolicyReg : ")
 
 	monitoringAlertRegInfo := &dragonfly.VmMonitoringAlertInfo{}
@@ -79,7 +79,7 @@ func (a actions) MonitoringAlertPolicyReg(c buffalo.Context) error {
 }
 
 // Monitoring alert 임계치 설정 목록
-func (a actions) MonitoringAlertPolicyList(c buffalo.Context) error {
+func MonitoringAlertPolicyList(c buffalo.Context) error {
 
 	// alarm 설정 목록 조회
 	monitoringAlertPolicyList, respStatus := handler.GetMonitoringAlertList()
@@ -101,7 +101,7 @@ func (a actions) MonitoringAlertPolicyList(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) MonitoringAlertPolicyData(c buffalo.Context) error {
+func MonitoringAlertPolicyData(c buffalo.Context) error {
 
 	monitoringAlertId := c.Param("monitoringAlertId")
 
@@ -126,7 +126,7 @@ func (a actions) MonitoringAlertPolicyData(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) MonitoringAlertPolicyDel(c buffalo.Context) error {
+func MonitoringAlertPolicyDel(c buffalo.Context) error {
 	log.Println("MonitoringAlertPolicyDelProc : ")
 
 	paramMonitoringAlertID := c.Param("monitoringAlertId")
@@ -150,7 +150,7 @@ func (a actions) MonitoringAlertPolicyDel(c buffalo.Context) error {
 
 // alarm 발생이력 조회
 // 설정한 alarm, 조회할 level(ok, warning, critical)
-func (a actions) MonitoringAlertLogList(c buffalo.Context) error {
+func MonitoringAlertLogList(c buffalo.Context) error {
 	//namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	monitoringAlertId := c.Param("monitoringAlertId")
@@ -172,7 +172,7 @@ func (a actions) MonitoringAlertLogList(c buffalo.Context) error {
 }
 
 // Monitoring alert 를 전송할 매체 목록(smtp, slack)
-func (a actions) MonitoringAlertEventHandlerList(c buffalo.Context) error {
+func MonitoringAlertEventHandlerList(c buffalo.Context) error {
 	log.Println("GetMonitoringAlertEventHandlerList ************ : ")
 
 	// Monitoring Alert Event Handler 호출
@@ -192,7 +192,7 @@ func (a actions) MonitoringAlertEventHandlerList(c buffalo.Context) error {
 }
 
 // Monitoring Alert Event-Handler 등록 처리
-func (a actions) MonitoringAlertEventHandlerReg(c buffalo.Context) error {
+func MonitoringAlertEventHandlerReg(c buffalo.Context) error {
 	log.Println("MonitoringAlertEventHandlerRegProc : ")
 
 	monitoringAlertEventHandlerRegInfo := &dragonfly.VmMonitoringAlertEventHandlerInfoReg{}
@@ -219,7 +219,7 @@ func (a actions) MonitoringAlertEventHandlerReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) MonitoringAlertEventHandlerDel(c buffalo.Context) error {
+func MonitoringAlertEventHandlerDel(c buffalo.Context) error {
 	log.Println("MonitoringAlertEventHandlerDelProc : ")
 
 	paramMonitoringAlertEvantHandlerType := c.Param("handlerType")

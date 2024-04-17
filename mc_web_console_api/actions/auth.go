@@ -27,7 +27,7 @@ import (
 //	@Success		200			{string}	string	"{'message': 'success', 'user': 'u'}"
 //	@Failure		500			{string}	string	"{'error':'verrs','status':'http.StatusUnauthorized'}"
 //	@Router			/api/auth/signin/ [post]
-func (a actions) AuthCreate(c buffalo.Context) error {
+func AuthCreate(c buffalo.Context) error {
 	u := &models.User{}
 	//spew.Dump("buffalo context : ", c)
 	u.Email = c.Request().FormValue("Email")
@@ -98,7 +98,7 @@ func (a actions) AuthCreate(c buffalo.Context) error {
 //	@Produce		json
 //	@Success		200	{string}	string	"{'success-Flash': 'You have been logged out!'}"
 //	@Router			/api/auth/logout/ [get]
-func (a actions) AuthDestroy(c buffalo.Context) error {
+func AuthDestroy(c buffalo.Context) error {
 	c.Session().Clear()
 	c.Flash().Add("success", "You have been logged out!")
 	//return c.Redirect(302, "/auth/signin/mngform/")

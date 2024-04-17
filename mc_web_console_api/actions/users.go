@@ -17,7 +17,7 @@ import (
 
 // UsersNew renders the users form
 
-func (a actions) UsersCreate(c buffalo.Context) error {
+func UsersCreate(c buffalo.Context) error {
 	u := &models.User{}
 	if err := c.Bind(u); err != nil {
 		return errors.WithStack(err)
@@ -54,7 +54,7 @@ func (a actions) UsersCreate(c buffalo.Context) error {
 // SetCurrentNamespace
 //
 
-func (a actions) SetCurrentNamespace(c buffalo.Context) error {
+func SetCurrentNamespace(c buffalo.Context) error {
 	log.Println("SetCurrentNamespace")
 	spew.Dump("======setCurrenttNamespace======")
 	namespaceID := c.Param("nsId")
@@ -79,7 +79,7 @@ func (a actions) SetCurrentNamespace(c buffalo.Context) error {
 // SetDefaultNamespace
 //
 
-func (a actions) SetDefaultNamespace(c buffalo.Context) error {
+func SetDefaultNamespace(c buffalo.Context) error {
 	log.Println("SetDefaultNamespace")
 	spew.Dump("======setDefaultNamespace======")
 	namespace := c.Param("nsId")
@@ -136,7 +136,7 @@ func (a actions) SetDefaultNamespace(c buffalo.Context) error {
 // GetUserByEmail
 //
 
-func (a actions) GetUserByEmail(c buffalo.Context) error {
+func GetUserByEmail(c buffalo.Context) error {
 	tx := c.Value("tx").(*pop.Connection)
 	email := c.Param("email")
 

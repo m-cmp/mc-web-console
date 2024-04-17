@@ -18,7 +18,7 @@ import (
 )
 
 // Get "/lookupvmspecs"
-func (a actions) VmSpecLookupList(c buffalo.Context) error {
+func VmSpecLookupList(c buffalo.Context) error {
 	connectionName := &common.TbConnectionName{}
 
 	paramProviderId := c.Params().Get("providerId")
@@ -51,7 +51,7 @@ func (a actions) VmSpecLookupList(c buffalo.Context) error {
 }
 
 // VmspecList default implementation.
-func (a actions) VmSpecList(c buffalo.Context) error {
+func VmSpecList(c buffalo.Context) error {
 	log.Println("GetVmSpecList : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	// TODO : defaultNameSpaceID 가 없으면 설정화면으로 보낼 것
@@ -103,7 +103,7 @@ func (a actions) VmSpecList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) VmSpecGet(c buffalo.Context) error {
+func VmSpecGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	paramVmSpecId := c.Param("vmSpecId")
@@ -127,7 +127,7 @@ func (a actions) VmSpecGet(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) VmSpecReg(c buffalo.Context) error {
+func VmSpecReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -211,7 +211,7 @@ func (a actions) VmSpecReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) VmSpecDel(c buffalo.Context) error {
+func VmSpecDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -261,7 +261,7 @@ func (a actions) VmSpecDel(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) FetchVmSpecList(c buffalo.Context) error {
+func FetchVmSpecList(c buffalo.Context) error {
 	log.Println("FetchVMSpecList : ")
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
@@ -281,7 +281,7 @@ func (a actions) FetchVmSpecList(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) FilterVmSpecList(c buffalo.Context) error {
+func FilterVmSpecList(c buffalo.Context) error {
 	log.Println("FilterVmspecList : ")
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
@@ -308,7 +308,7 @@ func (a actions) FilterVmSpecList(c buffalo.Context) error {
 }
 
 // 추천 VMSpec 목록 조회
-func (a actions) RecommendVmSpecList(c buffalo.Context) error {
+func RecommendVmSpecList(c buffalo.Context) error {
 	mcisDeploymentPlan := &tbmcis.DeploymentPlan{}
 	if err := c.Bind(mcisDeploymentPlan); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{

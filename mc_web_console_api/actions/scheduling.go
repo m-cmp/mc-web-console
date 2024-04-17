@@ -62,7 +62,7 @@ func NextScheduleTimeByTag(t string) time.Time {
 	return nextTime
 }
 
-func (a actions) SchedulingReg(c buffalo.Context) error {
+func SchedulingReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	// mcisLifeCycle := &webtool.McisLifeCycle{}

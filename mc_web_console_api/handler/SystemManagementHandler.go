@@ -126,7 +126,14 @@ func GetObject(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/object"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
-	url := util.TUMBLEBUG + urlParam + "?option=" + optionParam
+	//"?key=" + key
+	optionParamVal := ""
+	// install, init, cpus, cpum, memR, memW, fioR, fioW, dbR, dbW, rtt, mrtt, clean
+	if optionParam != "" {
+		optionParamVal = "?key=" + optionParam
+	}
+
+	url := util.TUMBLEBUG + urlParam + optionParamVal
 	// url := util.TUMBLEBUG + "/ns"
 
 	resp, err := util.CommonHttp(url, nil, http.MethodGet)
@@ -157,7 +164,14 @@ func DelObjects(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/objects"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
-	url := util.TUMBLEBUG + urlParam + "?option=" + optionParam
+	//"?key=" + key
+	optionParamVal := ""
+	// install, init, cpus, cpum, memR, memW, fioR, fioW, dbR, dbW, rtt, mrtt, clean
+	if optionParam != "" {
+		optionParamVal = "?key=" + optionParam
+	}
+
+	url := util.TUMBLEBUG + urlParam + optionParamVal
 	// url := util.TUMBLEBUG + "/ns"
 
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
@@ -188,7 +202,14 @@ func GetObjectList(optionParam string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus
 	var originalUrl = "/objects"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
-	url := util.TUMBLEBUG + urlParam + "?option=" + optionParam
+	//"?key=" + key
+	optionParamVal := ""
+	// install, init, cpus, cpum, memR, memW, fioR, fioW, dbR, dbW, rtt, mrtt, clean
+	if optionParam != "" {
+		optionParamVal = "?key=" + optionParam
+	}
+
+	url := util.TUMBLEBUG + urlParam + optionParamVal
 	// url := util.TUMBLEBUG + "/ns"
 
 	resp, err := util.CommonHttp(url, nil, http.MethodGet)
