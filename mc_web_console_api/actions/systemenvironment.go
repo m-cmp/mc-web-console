@@ -7,7 +7,7 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func TBconfig(c buffalo.Context) error {
+func TbConfig(c buffalo.Context) error {
 
 	configInfo, webStatus := handler.GetAllTbConfig()
 
@@ -17,7 +17,7 @@ func TBconfig(c buffalo.Context) error {
 	}))
 }
 
-func TBconfigbyId(c buffalo.Context) error {
+func TbConfigbyId(c buffalo.Context) error {
 	configId := c.Session().Get("id").(string)
 	configInfo, webStatus := handler.GetTbConfig(configId)
 

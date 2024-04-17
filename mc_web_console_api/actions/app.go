@@ -79,7 +79,7 @@ func App() *buffalo.App {
 
 		// List all configs
 		config := app.Group(apiPath + "/config")
-		config.GET("/", TBconfig)
+		config.GET("/", TbConfig)
 
 		// Get config
 		// configByid := app.Group(apiPath + "/config")
