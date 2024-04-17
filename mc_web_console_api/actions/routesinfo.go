@@ -190,7 +190,7 @@ func getHandlerFuncByName(handlerName string) buffalo.Handler {
 }
 
 // 삭제 예정
-func (a actions) GetHome(c buffalo.Context) error {
+func GetHome(c buffalo.Context) error {
 	log.Println("action GetHome")
 	//return GetHome(c)
 	return c.Render(200, r.String("Hello from GetHome"))
@@ -201,7 +201,7 @@ func (a actions) GetHome(c buffalo.Context) error {
 //	return c.Render(200, r.String("Hello from GetHome"))
 //}
 
-func (a actions) AboutHandler(c buffalo.Context) error {
+func AboutHandler(c buffalo.Context) error {
 	//return c.Render(200, r.String("Hello from AboutHandler"))
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"message":  "success",

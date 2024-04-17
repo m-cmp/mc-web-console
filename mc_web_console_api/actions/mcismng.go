@@ -95,10 +95,10 @@ func McisList(c buffalo.Context) error {
 }
 
 // McismngGet 단건조회
-func (a actions) McisGet(c buffalo.Context) error {
-	namespaceID := c.Session().Get("current_namespace_id").(string)
-
-	mcisID := c.Param("mcisId")
+func McisGet(c buffalo.Context) error {
+	//namespaceID := c.Session().Get("current_namespace_id").(string)
+	namespaceID := c.Param("nsid")
+	mcisID := c.Param("mcisid")
 	log.Println("mcisId= " + mcisID)
 	optionParam := c.Params().Get("option")
 
@@ -152,7 +152,7 @@ func (a actions) McisGet(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) McisReg(c buffalo.Context) error {
+func McisReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisReqInfo := &tbmcis.TbMcisReq{}
@@ -215,7 +215,7 @@ func (a actions) McisReg(c buffalo.Context) error {
 // McisDynamicReg
 // /ns/{nsId}/loadDefaultResource 로 해당 namespace에 기본 리소스(vnet, sg, sshkey) 를 가져오는 작업이 선행되어야 함. 없으면 에러
 // error message : cannot find the key /ns/workation/resources/vNet/workation-systemdefault-gcp-asia-northeast1
-func (a actions) McisDynamicReg(c buffalo.Context) error {
+func McisDynamicReg(c buffalo.Context) error {
 	log.Println("McisDynamicReg")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -280,7 +280,7 @@ func (a actions) McisDynamicReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) McisDel(c buffalo.Context) error {
+func McisDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -303,7 +303,7 @@ func (a actions) McisDel(c buffalo.Context) error {
 }
 
 // MCIS의 status변경
-func (a actions) McisLifeCycle(c buffalo.Context) error {
+func McisLifeCycle(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisLifeCycle := &webtool.McisLifeCycle{}
@@ -335,7 +335,7 @@ func (a actions) McisLifeCycle(c buffalo.Context) error {
 }
 
 // VM의 LifeCycle status변경
-func (a actions) McisVmLifeCycle(c buffalo.Context) error {
+func McisVmLifeCycle(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	vmLifeCycle := &webtool.VmLifeCycle{}
@@ -361,7 +361,7 @@ func (a actions) McisVmLifeCycle(c buffalo.Context) error {
 }
 
 // Mcis 내 특정 VM 조회
-func (a actions) McisVmGet(c buffalo.Context) error {
+func McisVmGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -388,7 +388,7 @@ func (a actions) McisVmGet(c buffalo.Context) error {
 }
 
 // Mcis 의 subgroup 목록 조회 : id만 return
-func (a actions) McisSubGroupList(c buffalo.Context) error {
+func McisSubGroupList(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -409,7 +409,7 @@ func (a actions) McisSubGroupList(c buffalo.Context) error {
 }
 
 // Mcis 의 subgroup 조회 : 해당 subgroup VM 목록 ID 만 반환
-func (a actions) McisSubgroupGet(c buffalo.Context) error {
+func McisSubgroupGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -431,7 +431,7 @@ func (a actions) McisSubgroupGet(c buffalo.Context) error {
 }
 
 // Mcis 내 특정 VM 모니터링 조회
-func (a actions) McisVmMonitoring(c buffalo.Context) error {
+func McisVmMonitoring(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace").(string)
 
 	// mcisID := c.Param("mcisID")
@@ -462,7 +462,7 @@ func (a actions) McisVmMonitoring(c buffalo.Context) error {
 }
 
 // 특정 resource를 사용하는 mcis와 그안의 vm 들을 filter 하여 return
-func (a actions) McisListByResource(c buffalo.Context) error {
+func McisListByResource(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	filterKeyParam := c.Params().Get("filterKey")
@@ -509,7 +509,7 @@ func (a actions) McisListByResource(c buffalo.Context) error {
 }
 
 // MCIS의 특정 vnet을 사용하는 vm 들만 추출
-func (a actions) McisVmListByVnet(c buffalo.Context) error {
+func McisVmListByVnet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	// TODO : post로 넘어오면 bind 해야하는지 확인 필요
@@ -541,7 +541,7 @@ func (a actions) McisVmListByVnet(c buffalo.Context) error {
 }
 
 // MCIS에 VM 목록으로 추가 등록
-func (a actions) McisAppendVmListReg(c buffalo.Context) error {
+func McisAppendVmListReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -570,7 +570,7 @@ func (a actions) McisAppendVmListReg(c buffalo.Context) error {
 }
 
 // MCIS에 VM 추가 등록
-func (a actions) McisAppendVmReg(c buffalo.Context) error {
+func McisAppendVmReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")
@@ -596,7 +596,7 @@ func (a actions) McisAppendVmReg(c buffalo.Context) error {
 }
 
 // 등록되지 않은 CSP의 VM을 system에 등록. namespace 지정 필요
-func (a actions) RegisterCspVm(c buffalo.Context) error {
+func RegisterCspVm(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisReq := &tbmcis.TbMcisReq{}
@@ -623,7 +623,7 @@ func (a actions) RegisterCspVm(c buffalo.Context) error {
 }
 
 // VmDynamicReg
-func (a actions) McisVmDynamicReg(c buffalo.Context) error {
+func McisVmDynamicReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	mcisID := c.Param("mcisId")

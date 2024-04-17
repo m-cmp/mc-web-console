@@ -15,7 +15,7 @@ import (
 )
 
 // VmimageList default implementation.
-func (a actions) VmImageList(c buffalo.Context) error {
+func VmImageList(c buffalo.Context) error {
 	log.Println("GetVirtualMachineImageList : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -69,7 +69,7 @@ func (a actions) VmImageList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) VmImageGet(c buffalo.Context) error {
+func VmImageGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	paramVirtualMachineImage := c.Param("vmImageId")
@@ -92,7 +92,7 @@ func (a actions) VmImageGet(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) VmImageReg(c buffalo.Context) error {
+func VmImageReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -182,7 +182,7 @@ func (a actions) VmImageReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) VmImageDel(c buffalo.Context) error {
+func VmImageDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -234,7 +234,7 @@ func (a actions) VmImageDel(c buffalo.Context) error {
 
 }
 
-func (a actions) LookupCspVirtualMachineImageList(c buffalo.Context) error {
+func LookupCspVirtualMachineImageList(c buffalo.Context) error {
 
 	// paramConnectionName := c.Param("connectionName")
 
@@ -268,13 +268,14 @@ func (a actions) LookupCspVirtualMachineImageList(c buffalo.Context) error {
 }
 
 // lookupImage 상세정보
-func (a actions) LookupVirtualMachineImageData(c buffalo.Context) error {
+func LookupVirtualMachineImageData(c buffalo.Context) error {
 	log.Println("LookupVirtualMachineImageData : ")
 
 	restLookupImageRequest := new(mcir.RestLookupImageRequest)
 
 	paramProviderId := c.Params().Get("providerId")
 	paramRegionName := c.Params().Get("regionName")
+	log.Println("paramProviderId paramRegionName : ", paramProviderId, paramRegionName)
 	paramViewConnection := views.ViewCloudConnection{}
 	paramViewConnection.ProviderID = paramProviderId
 	paramViewConnection.RegionName = paramRegionName
@@ -305,7 +306,7 @@ func (a actions) LookupVirtualMachineImageData(c buffalo.Context) error {
 }
 
 // lookupImage 상세정보
-func (a actions) SearchVirtualMachineImageList(c buffalo.Context) error {
+func SearchVirtualMachineImageList(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	restSearchImageRequest := new(mcir.RestSearchImageRequest)
@@ -326,7 +327,7 @@ func (a actions) SearchVirtualMachineImageList(c buffalo.Context) error {
 }
 
 // TODO : Fetch 의 의미 파악
-func (a actions) FetchVirtualMachineImageList(c buffalo.Context) error {
+func FetchVirtualMachineImageList(c buffalo.Context) error {
 	log.Println("FetchVirtualMachineImageList : ")
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
