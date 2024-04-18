@@ -18,8 +18,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"mc_web_console_api/models"
-
 	mcmodels "mc_web_console_common_models"
+	util "mc_web_console_api/util"
 )
 
 var (
@@ -180,6 +180,191 @@ func McIamAuthGetUserValidateContorller(c buffalo.Context) error {
 }
 
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		accessToken := c.Request().Header.Get("Authorization")
+		_, err := getUserInfo(accessToken)
+		if err != nil {
+			return c.Render(http.StatusServiceUnavailable,
+				r.JSON(map[string]string{"error": err.Error()}))
+		}
+
+		return next(c)
+	}
+}
+
+
+/////////////////// AUTH ////////////////////////////////
+// 로그인 요청 : id/pw를 받아 로그인 
+func AuthLogin(c buffalo.Context) error {
+
+	if !util.MCIAM_USE { 
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": "not yet"}))
+	}
+
+
+	user := &mcmodels.UserLogin{}
+	if err := c.Bind(user); err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": err.Error()}))
+	}
+
+	validateErr := validate.Validate(
+		&validators.StringIsPresent{Field: user.Id, Name: "id"},
+		&validators.StringIsPresent{Field: user.Password, Name: "password"},
+	)
+	if validateErr.HasAny() {
+		fmt.Println(validateErr)
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": validateErr.Error()}))
+	}
+
+	accessTokenResponse, err := getUserToken(user)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": err.Error()}))
+	}
+
+	userInfo, err := getUserInfo("Bearer " + accessTokenResponse.AccessToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+
+	targetSubject, _ := uuid.FromString(userInfo.Sub)
+	usersess := &models.Usersession{
+		ID:               targetSubject,
+		AccessToken:      accessTokenResponse.AccessToken,
+		ExpiresIn:        accessTokenResponse.ExpiresIn,
+		RefreshToken:     accessTokenResponse.RefreshToken,
+		RefreshExpiresIn: accessTokenResponse.RefreshExpiresIn,
+	}
+
+	txerr := models.DB.Create(usersess)
+	if txerr != nil {
+		if strings.Contains(txerr.Error(), "SQLSTATE 23505") { // unique constraint violation catch
+			txerr = models.DB.Update(usersess)
+			if txerr != nil {
+				return c.Render(http.StatusServiceUnavailable,
+					r.JSON(map[string]string{"err": txerr.Error()}))
+			}
+		} else {
+			return c.Render(http.StatusServiceUnavailable,
+				r.JSON(map[string]string{"err": txerr.Error()}))
+		}
+	}
+
+	return c.Render(http.StatusOK, r.JSON(accessTokenResponse))
+}
+
+func AuthLogout(c buffalo.Context) error {
+
+	if !util.MCIAM_USE { 
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": "not yet"}))
+	}
+
+	accessToken := c.Request().Header.Get("Authorization")
+
+	userInfo, err := getUserInfo(accessToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	targetSubject, _ := uuid.FromString(userInfo.Sub)
+
+	usersess := &models.Usersession{}
+	txerr := models.DB.Find(usersess, targetSubject)
+	if txerr != nil {
+		return c.Render(http.StatusBadRequest,
+			r.JSON(map[string]string{"txerr": txerr.Error()}))
+	}
+
+	validateErr := validate.Validate(
+		&validators.StringIsPresent{Field: accessToken, Name: "Authorization"},
+		&validators.StringIsPresent{Field: usersess.RefreshToken, Name: "refresh_token"},
+	)
+	if validateErr.HasAny() {
+		fmt.Println(validateErr)
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"validateErr": validateErr.Error()}))
+	}
+
+	accessTokenRequest := &mcmodels.AccessTokenRequest{
+		RefreshToken: usersess.RefreshToken,
+	}
+
+	jsonData, err := json.Marshal(accessTokenRequest)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"Marshalerr": err.Error()}))
+	}
+
+	endSessionPath := "/api/auth/logout"
+	endSessionEndpoint := baseURL.ResolveReference(&url.URL{Path: endSessionPath})
+
+	req, err := http.NewRequest("POST", endSessionEndpoint.String(), bytes.NewBuffer(jsonData))
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", accessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return c.Render(resp.StatusCode,
+			r.JSON(map[string]string{"code": resp.Status}))
+	}
+
+	txerr = models.DB.Destroy(usersess)
+	if txerr != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": txerr.Error()}))
+	}
+
+	return c.Render(http.StatusNoContent, nil)
+}
+
+func AuthGetUserInfo(c buffalo.Context) error {
+	if !util.MCIAM_USE { 
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": "not yet"}))
+	}
+
+	accessToken := c.Request().Header.Get("Authorization")
+	userInfo, err := getUserInfo(accessToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	return c.Render(http.StatusOK, r.JSON(userInfo))
+}
+
+func AuthGetUserValidate(c buffalo.Context) error {
+
+	if !util.MCIAM_USE { 
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"err": "not yet"}))
+	}
+
+	accessToken := c.Request().Header.Get("Authorization")
+	_, err := getUserInfo(accessToken)
+	if err != nil {
+		return c.Render(http.StatusServiceUnavailable,
+			r.JSON(map[string]string{"error": err.Error()}))
+	}
+	return c.Render(http.StatusOK, nil)
+}
+// header의 assessToken 이 있으면 사용자 정보를 가져온다.
+func AuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		accessToken := c.Request().Header.Get("Authorization")
 		_, err := getUserInfo(accessToken)
