@@ -47,7 +47,7 @@ func UsersCreate(c buffalo.Context) error {
 	spew.Dump("여기까지 실행 됐음!!!")
 	spew.Dump("=====================")
 	//return c.Redirect(301, "/auth/signin/mngform/")
-	return RedirectTool(c, "authNewFormPath")
+	return nil
 }
 
 // 기본 namespace 설정완료.

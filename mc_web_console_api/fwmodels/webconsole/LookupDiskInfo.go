@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 type LookupDiskInfo struct {
 	// create disk list

@@ -7,9 +7,9 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func HomeForm(c buffalo.Context) error {
-	return RedirectTool(c, "mainFormPath")
-}
+// func HomeForm(c buffalo.Context) error {
+// 	return RedirectTool(c, "mainFormPath")
+// }
 
 // @Summary		경로정보
 // @Description	[RouteList] 경로정보를 반환 합니다.

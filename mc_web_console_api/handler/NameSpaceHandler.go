@@ -9,7 +9,7 @@ import (
 
 	"mc_web_console_api/fwmodels"
 	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
-	"mc_web_console_api/fwmodels/webtool"
+	"mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
 
 	// tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
@@ -355,7 +355,7 @@ func CheckExistsUserNamespace(userId uuid.UUID, nsId string, tx *pop.Connection)
 
 	return b, un
 }
-func RegUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
+func RegUserNamespace(un *webconsole.UserNamespaceReq, tx *pop.Connection) error {
 	spew.Dump("=====================")
 	spew.Dump(un)
 	spew.Dump("=====================")
@@ -389,7 +389,7 @@ func RegUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
 	return nil
 }
 
-func DelUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
+func DelUserNamespace(un *webconsole.UserNamespaceReq, tx *pop.Connection) error {
 	spew.Dump("=====================")
 	spew.Dump(un)
 	spew.Dump("=====================")

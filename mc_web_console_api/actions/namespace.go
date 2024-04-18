@@ -10,7 +10,7 @@ import (
 	"time"
 
 	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
-	"mc_web_console_api/fwmodels/webtool"
+	"mc_web_console_api/fwmodels/webconsole"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/buffalo"
@@ -104,7 +104,7 @@ func NamespaceUpdate(c buffalo.Context) error {
 //
 
 func SetAssignNamespace(c buffalo.Context) error {
-	obj := &webtool.UserNamespaceReq{}
+	obj := &webconsole.UserNamespaceReq{}
 
 	err := c.Bind(obj)
 
@@ -133,7 +133,7 @@ func SetAssignNamespace(c buffalo.Context) error {
 //
 
 func SetDeAssignNamespace(c buffalo.Context) error {
-	obj := &webtool.UserNamespaceReq{}
+	obj := &webconsole.UserNamespaceReq{}
 
 	err := c.Bind(obj)
 
@@ -234,7 +234,7 @@ func NamespaceReg(c buffalo.Context) error {
 		c.Flash().Add("warning", "Cannot Find User")
 
 		//return c.Redirect(301, "/")
-		return RedirectTool(c, "homeFormPath")
+		// return RedirectTool(c, "homeFormPath")
 	}
 
 	ns.User = u

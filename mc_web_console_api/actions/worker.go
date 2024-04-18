@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"mc_web_console_api/fwmodels/webtool"
+	"mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/handler"
 	"sync"
 
@@ -24,17 +24,17 @@ func init() {
 //		return c.Render(http.StatusOK, r.JSON("success"))
 //	}
 func LifeCycleScheduler(a worker.Args) error {
-	//var mcisLifeCycle *webtool.McisLifeCycle
+	//var mcisLifeCycle *webconsole.McisLifeCycle
 
-	mcisLifeCycle := a["mcisLifeCycle"].(*webtool.McisLifeCycle)
+	mcisLifeCycle := a["mcisLifeCycle"].(*webconsole.McisLifeCycle)
 
 	handler.McisLifeCycle(mcisLifeCycle)
 
 	return nil
 }
 
-func DoWork(m *webtool.McisLifeCycle) {
-	// var mcisLifeCycle *webtool.McisLifeCycle
+func DoWork(m *webconsole.McisLifeCycle) {
+	// var mcisLifeCycle *webconsole.McisLifeCycle
 	// mcisLifeCycle.McisID =
 	// mcisLifeCycle.NameSpaceID = a["namespaceID"].(string)
 	a := map[string]interface{}{

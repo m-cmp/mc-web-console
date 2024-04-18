@@ -13,7 +13,7 @@ import (
 	"net/http"
 
 	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
-	"mc_web_console_api/fwmodels/webtool"
+	"mc_web_console_api/fwmodels/webconsole"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gofrs/uuid"
@@ -107,7 +107,7 @@ func DataDiskReg(c buffalo.Context) error {
 func DataDiskMng(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	log.Println("DataDiskMng in")
-	dataDiskRegInfo := &webtool.DataDiskMngReq{}
+	dataDiskRegInfo := &webconsole.DataDiskMngReq{}
 	if err := c.Bind(dataDiskRegInfo); err != nil {
 		log.Println("DataDiskMng err ", err)
 		return c.Render(http.StatusBadRequest, r.JSON(err))

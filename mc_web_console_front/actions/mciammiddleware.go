@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
+	"time"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/golang-jwt/jwt/v4"
 
 	mcmodels "mc_web_console_common_models"
 )
@@ -20,23 +21,29 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 			c.Session().Clear()
 			return c.Redirect(http.StatusSeeOther, "authLoginPath()")
 		}
-
-		userinfo, msg, err := getUserInfo(c)
-		if err != nil {
-			log.Println(err.Error())
+		jwtDecode, _ := jwtDecode(accessToken.(string))
+		t := time.Unix(int64(jwtDecode["exp"].(float64)), 0)
+		if t.Before(time.Now()) {
+			fmt.Println(time.Since(t))
 			c.Session().Clear()
-			c.Flash().Add("danger", msg)
+			c.Flash().Add("danger", "Session Expired")
 			return c.Redirect(http.StatusSeeOther, "authLoginPath()")
 		}
 
-		fmt.Println("userinfo.Name", userinfo.Name)
-
-		c.Set("name", userinfo.Name)
+		c.Set("name", jwtDecode["name"])
 
 		return next(c)
 	}
 }
 
+// userinfo, msg, err := getUserInfo(c)
+//
+//	if err != nil {
+//		log.Println(err.Error())
+//		c.Session().Clear()
+//		c.Flash().Add("danger", msg)
+//		return c.Redirect(http.StatusSeeOther, "authLoginPath()")
+//	}
 func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, string, error) {
 	userinfo := &mcmodels.UserInfo{}
 
@@ -56,4 +63,13 @@ func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, string, error) {
 	}
 
 	return *userinfo, "", nil
+}
+
+func jwtDecode(jwtToken string) (jwt.MapClaims, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
+	if err != nil {
+		return claims, err
+	}
+	return claims, nil
 }
