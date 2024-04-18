@@ -1,15 +1,15 @@
 package actions
 
 import (
-	"log"	
+	"errors"
+	"log"
 	"net/http"
 	"reflect"
 	"strings"
-	"errors"
 
 	"mc_web_console_api/actions/tumblebug"
+	webconsole "mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
-	webtool "mc_web_console_api/fwmodels/webtool"
 
 	"github.com/gobuffalo/buffalo"
 )
@@ -30,31 +30,31 @@ func PostRouteController(c buffalo.Context) error {
 
 	log.Println("in RoutePostController")
 
-	commonResponse := &webtool.CommonResponse{}
-	commonRequest := &webtool.CommonRequest{}
+	commonResponse := &webconsole.CommonResponse{}
+	commonRequest := &webconsole.CommonRequest{}
 
 	if err := c.Bind(commonRequest); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(err))
 	}
 
-	// 권한 check??? 
+	// 권한 check???
 	// 1차 메뉴 권한
 	// 2차 project 권한 체크 -- middle ware
 	// 3차 resource 권한 체크 -- middle ware ( 추후. not now)
 	// case
 	switch commonRequest.TargetController {
-	case "McisList":// Get Type
-		// 
+	case "McisList": // Get Type
+		//
 		// mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
 		// commonResponse.ResponseData = mcisList
 		// commonResponse.Status = respStatus
 		commonResponse = tumblebug.TbMcisList(c, commonRequest)
-	case "McisReg":// Post Type
+	case "McisReg": // Post Type
 		// namespaceID := c.Params().Get("namespaceid")
 		// optionParam := c.Params().Get("option")
 		// filterKeyParam := c.Params().Get("filterKey")
 		// filterValParam := c.Params().Get("filterVal")
-		
+
 		// responseData, err := McisReg(dataObj, pathParam, queryParam)
 	case "Login":
 		return AuthLogin(c)
@@ -64,22 +64,17 @@ func PostRouteController(c buffalo.Context) error {
 		return AuthGetUserValidate(c)
 	case "UserInfo":
 		return AuthGetUserInfo(c)
-		
-	//defaut :
-		// TODO : a action를 찾아 실행하도록 
+
+		//defaut :
+		// TODO : a action를 찾아 실행하도록
+
 	}
 
 	if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
-		return c.Render(commonResponse.Status.StatusCode, r.JSON(map[string]interface{}{
-			"responseData":  commonResponse.ResponseData,
-			"status": commonResponse.Status,
-		}))
+		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
 
-	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
-		"responseData":  commonResponse.ResponseData,
-		"status": commonResponse.Status,
-	}))
+	return c.Render(http.StatusOK, r.JSON(commonResponse))
 }
 
 // Get으로 전송되는 data 처리를 위하여
@@ -94,15 +89,15 @@ func GetRouteController(c buffalo.Context) error {
 	parts := strings.Split(path, "/")
 
 	var part1, part2 string
-    if len(parts) > 1 {
-        part1 = parts[1]
-    }
-    if len(parts) > 2 {
-        part2 = parts[2]
-    }
-    // if len(parts) > 3 {
-    //     part3 = parts[3]
-    // }
+	if len(parts) > 1 {
+		part1 = parts[1]
+	}
+	if len(parts) > 2 {
+		part2 = parts[2]
+	}
+	// if len(parts) > 3 {
+	//     part3 = parts[3]
+	// }
 
 	if part1 != "api" {
 		return errors.New("Unauthorized access")
@@ -118,11 +113,10 @@ func GetRouteController(c buffalo.Context) error {
 		return errors.New("not allowed api call")
 	}
 
-	
 	// query param 추출
 	// switch commonRequest.TargetController {
 	// case "McisList":// Get Type
-	// 	// 
+	// 	//
 	// 	mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
 	// 	commonResponse.ResponseData = mcisList
 	// 	commonResponse.Status = respStatus
@@ -131,11 +125,11 @@ func GetRouteController(c buffalo.Context) error {
 	// 	// optionParam := c.Params().Get("option")
 	// 	// filterKeyParam := c.Params().Get("filterKey")
 	// 	// filterValParam := c.Params().Get("filterVal")
-		
+
 	// 	// responseData, err := McisReg(dataObj, pathParam, queryParam)
 
 	// //defaut :
-	// 	// TODO : a action를 찾아 실행하도록 
+	// 	// TODO : a action를 찾아 실행하도록
 	// }
 
 	// if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {

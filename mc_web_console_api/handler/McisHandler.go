@@ -26,7 +26,7 @@ import (
 	// tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
 	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
-	webtool "mc_web_console_api/fwmodels/webtool"
+	webconsole "mc_web_console_api/fwmodels/webconsole"
 
 	// "github.com/go-session/echo-session"
 
@@ -861,7 +861,7 @@ func GetMcisStatusCountMap(mcisInfo tbmcis.TbMcisInfo) map[string]int {
 
 // MCIS의 vm별 statun와 vm 상태별 count
 // key는 vmID + vmName, value는 vmStatus
-func GetSimpleVmWithStatusCountMap(mcisInfo tbmcis.TbMcisInfo) ([]webtool.VmSimpleInfo, map[string]int) {
+func GetSimpleVmWithStatusCountMap(mcisInfo tbmcis.TbMcisInfo) ([]webconsole.VmSimpleInfo, map[string]int) {
 	// log.Println(" mcisInfo  ", index, mcisInfo)
 	// vmStatusMap := make(map[string]int)
 	// vmStatusMap := map[string]string{} // vmName : vmStatus
@@ -869,7 +869,7 @@ func GetSimpleVmWithStatusCountMap(mcisInfo tbmcis.TbMcisInfo) ([]webtool.VmSimp
 	vmStatusCountMap := map[string]int{}
 	totalVmStatusCount := 0
 	vmList := mcisInfo.Vm
-	var vmSimpleList []webtool.VmSimpleInfo
+	var vmSimpleList []webconsole.VmSimpleInfo
 	for vmIndex, vmInfo := range vmList {
 		// log.Println(" vmInfo  ", vmIndex, vmInfo)
 		vmStatus := util.GetVmStatus(vmInfo.Status) // lowercase로 변환
@@ -880,7 +880,7 @@ func GetSimpleVmWithStatusCountMap(mcisInfo tbmcis.TbMcisInfo) ([]webtool.VmSimp
 
 		log.Println(locationInfo)
 		//
-		vmSimpleObj := webtool.VmSimpleInfo{
+		vmSimpleObj := webconsole.VmSimpleInfo{
 			VmIndex:   vmIndex + 1,
 			VmID:      vmInfo.ID,
 			VmName:    vmInfo.Name,
@@ -1081,7 +1081,7 @@ func GetVMofMcisData(nameSpaceID string, mcisID string, vmID string) (*tbmcis.Tb
 
 // MCIS의 Status변경
 // LifeCycle 의 경우 요청에 대한 응답이 바로 오므로 asyncMethod를 따로 만들지 않음. 응답시간이 오래걸리는 경우 syncXXX 를 만들고 echo 를 같이 넘겨 결과 처리하도록 해야 함.
-func McisLifeCycle(mcisLifeCycle *webtool.McisLifeCycle) (*webtool.McisLifeCycle, fwmodels.WebStatus) {
+func McisLifeCycle(mcisLifeCycle *webconsole.McisLifeCycle) (*webconsole.McisLifeCycle, fwmodels.WebStatus) {
 	nameSpaceID := mcisLifeCycle.NameSpaceID
 	mcisID := mcisLifeCycle.McisID
 	action := mcisLifeCycle.Action
@@ -1103,7 +1103,7 @@ func McisLifeCycle(mcisLifeCycle *webtool.McisLifeCycle) (*webtool.McisLifeCycle
 	//pbytes, _ := json.Marshal(mcisLifeCycle)
 	//resp, err := util.CommonHttp(url, pbytes, http.MethodGet) // POST로 받기는 했으나 실제로는 Get으로 날아감.
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
-	resultMcisLifeCycle := webtool.McisLifeCycle{}
+	resultMcisLifeCycle := webconsole.McisLifeCycle{}
 	if err != nil {
 		fmt.Println("McisLifeCycle err")
 		fmt.Println(err)
@@ -1148,7 +1148,7 @@ func McisLifeCycle(mcisLifeCycle *webtool.McisLifeCycle) (*webtool.McisLifeCycle
 	return &resultMcisLifeCycle, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
-func McisLifeCycleByAsync(mcisLifeCycle *webtool.McisLifeCycle, c buffalo.Context) {
+func McisLifeCycleByAsync(mcisLifeCycle *webconsole.McisLifeCycle, c buffalo.Context) {
 	nameSpaceID := mcisLifeCycle.NameSpaceID
 	mcisID := mcisLifeCycle.McisID
 	action := mcisLifeCycle.Action
@@ -1186,7 +1186,7 @@ func McisLifeCycleByAsync(mcisLifeCycle *webtool.McisLifeCycle, c buffalo.Contex
 		log.Println("McisLifeCycle ", failResultInfo)
 		StoreWebsocketMessage(util.TASK_TYPE_MCIS, taskKey, action, util.TASK_STATUS_FAIL, c) // session에 작업내용 저장
 	} else {
-		resultMcisLifeCycle := webtool.McisLifeCycle{}
+		resultMcisLifeCycle := webconsole.McisLifeCycle{}
 		json.NewDecoder(respBody).Decode(&resultMcisLifeCycle)
 		fmt.Println(resultMcisLifeCycle)
 		StoreWebsocketMessage(util.TASK_TYPE_MCIS, taskKey, action, util.TASK_STATUS_COMPLETE, c) // session에 작업내용 저장
@@ -1195,7 +1195,7 @@ func McisLifeCycleByAsync(mcisLifeCycle *webtool.McisLifeCycle, c buffalo.Contex
 }
 
 // MCIS의 VM Status변경 : 요청에 대한 응답이 바로 오므로 async 만들지 않음
-func McisVmLifeCycle(vmLifeCycle *webtool.VmLifeCycle) (*webtool.VmLifeCycle, fwmodels.WebStatus) {
+func McisVmLifeCycle(vmLifeCycle *webconsole.VmLifeCycle) (*webconsole.VmLifeCycle, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/control/mcis/{mcisId}/vm/{vmId}?action={action}&force={force}"
 
 	var paramMapper = make(map[string]string)
@@ -1213,7 +1213,7 @@ func McisVmLifeCycle(vmLifeCycle *webtool.VmLifeCycle) (*webtool.VmLifeCycle, fw
 	//pbytes, _ := json.Marshal(vmLifeCycle)
 	//resp, err := util.CommonHttp(url, pbytes, http.MethodGet) // POST로 받기는 했으나 실제로는 Get으로 날아감.
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
-	resultVmLifeCycle := webtool.VmLifeCycle{}
+	resultVmLifeCycle := webconsole.VmLifeCycle{}
 	if err != nil {
 		fmt.Println("McisVmLifeCycle err")
 		fmt.Println(err)
@@ -1237,7 +1237,7 @@ func McisVmLifeCycle(vmLifeCycle *webtool.VmLifeCycle) (*webtool.VmLifeCycle, fw
 	return &resultVmLifeCycle, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func McisVmLifeCycleByAsync(vmLifeCycle *webtool.VmLifeCycle, c buffalo.Context) {
+func McisVmLifeCycleByAsync(vmLifeCycle *webconsole.VmLifeCycle, c buffalo.Context) {
 	var originalUrl = "/ns/{nsId}/control/mcis/{mcisId}/vm/{vmId}?action={action}&force={force}"
 
 	var paramMapper = make(map[string]string)
@@ -1250,7 +1250,7 @@ func McisVmLifeCycleByAsync(vmLifeCycle *webtool.VmLifeCycle, c buffalo.Context)
 
 	url := util.TUMBLEBUG + urlParam
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
-	resultVmLifeCycle := webtool.VmLifeCycle{}
+	resultVmLifeCycle := webconsole.VmLifeCycle{}
 
 	taskKey := vmLifeCycle.NameSpaceID + "||" + "vm" + "||" + vmLifeCycle.McisID + "||" + vmLifeCycle.VmID
 

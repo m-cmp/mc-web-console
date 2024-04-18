@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 type AvailableDiskType struct {
 	// create disk list

@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 // Life Cycle command 전송용
 type VmLifeCycle struct {

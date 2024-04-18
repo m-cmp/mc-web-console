@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 type UserNamespaceReq struct {
 	Ns []string `json:"ns"`

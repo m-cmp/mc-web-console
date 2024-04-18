@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 // VM의 상태정보
 // 원래는 상태정보(VmStatus), 위치정보(Latitude, Longitude) 만 있었으나

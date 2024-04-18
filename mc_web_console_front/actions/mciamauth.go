@@ -91,3 +91,7 @@ func UserLogoutHandler(c buffalo.Context) error {
 func UserRegisterpageHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("auth/login.html"))
 }
+
+// func GetUserRefreshTokenHandler(c buffalo.Context) (mcmodels.AccessTokenResponse, string, error) {
+// 	status, respBody, err := CommonAPIPost(APILoginRefreshPath, accessTokenRequest, c)
+// }

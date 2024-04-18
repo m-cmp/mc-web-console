@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 // MCIS의 일부정보만 추려서
 type McisSimpleInfo struct {

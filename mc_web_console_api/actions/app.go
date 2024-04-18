@@ -1,9 +1,7 @@
 package actions
 
 import (
-	"net/http"
 	"os"
-	"strconv"
 	"sync"
 
 	"github.com/gobuffalo/buffalo"
@@ -49,171 +47,30 @@ func App() *buffalo.App {
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
-		mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
-
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
 		// RoutesManager(app)
 
-		/////////// middleware ////////////
+		// middleware START //
 		app.Use(AuthMiddleware)
 		app.Middleware.Skip(AuthMiddleware, AuthLogin, AuthGetUserInfo)
+		// middleware END //
 
 		// controller func naming Rule
 		// 데이터 처리 관점으로
 		// 단건, 맵도 한개 :  XXXData
 		// 목록 : XXXList
 		// 등록(Reg), 생성(Create), 수정(Edit), 삭제(Del), 해제(Rel) : XXXProc
-
 		apiPath := "/api"
 		api := app.Group(apiPath)
 		api.GET("/{path:.+}", GetRouteController)
 		api.POST("/{path:.+}", PostRouteController)
 
-		/*
-		//// MANUAL ROUTE ////
-		apiPath := "/api"
-		app.ANY(apiPath+"/alive", alive)
-
-		// API TEST
-		setting := app.Group(apiPath + "/setting")
-		namespaces := setting.Group("/namespaces")
-		namespace := namespaces.Group("/namespace")
-		namespace.GET("/list", NamespaceAllList)
-		namespace.POST("/reg/proc", NamespaceReg)
-
-		lu := app.Group(apiPath + "/lu")
-		lu.POST("/setting/resources/machineimage/lookupimage", LookupVirtualMachineImageData)
-
-		// List all configs
-		config := app.Group(apiPath + "/config")
-		config.GET("/", TbConfig)
-
-		// Get config
-		// configByid := app.Group(apiPath + "/config")
-		// configByid.GET("/", TBconfigbyId)
-
-		// loadcommonresource
-		loadcommonresource := app.Group(apiPath + "loadcommonresource")
-		loadcommonresource.GET("/", LoadCommonResource)
-
-		// [Admin] Multi-Cloud Environment Configuration
-		health := app.Group(apiPath + "/health")
-		health.GET("/", GetTBHealth)
-
-		// GET CSP Resources Overview
-		resources := setting.Group("/resources")
-		resources.GET("/inspectresourcesoverview", GetInspectResourcesOverview)
-
-		// Get value of an object
-		object := app.Group(apiPath + "/object")
-		object.GET("/", GetObjectThroughTB)
-
-		// List all objects for a given key
-		objects := app.Group(apiPath + "/objects")
-		objects.GET("/", GetObjectListThroughTB)
-
-		// [Infra service] MCIS Provisioning management
-		operation := app.Group(apiPath + "/operation")
-		manages := operation.Group("/manages")
-		mcismng := manages.Group("/mcismng")
-
-		// List all MCISs or MCISs' ID
-		mcismng.GET("/list", McisList)
-		// Get MCIS, Action to MCIS (status, suspend, resume, reboot, terminate, refine), or Get VMs' ID
-		//mcismng.GET("/", McisGet)
-
-		ns := app.Group(apiPath + "/ns")
-		nsid := ns.Group("/{nsid}")
-		mciss := nsid.Group("/mcis")
-		mcisid := mciss.Group("/{mcisid}")
-		mcisid.GET("/", McisGet)
-
-		// List SubGroup IDs in a specified MCIS
-		mcismng.GET("/{mcisid}"+"/subgroup", McisSubGroupList)
-
-		mcis := app.Group(apiPath + "/mcis")
-		mcis.GET("/mcislist", McisList)
-		*/
-
-		//////////////////////////////////////////////////////////////////////
-		// TOBE PATH
-
-		// ns
-
-		// ns/{nsid}
-
-		// benchmark
-
-		// cluster
-
-		// cmd
-
-		// control
-
-		// mcis
-
-		// mcis/{mcisid}/nlb
-
-		// mcis/{mcisid}/subgroup
-
-		// mcis/{mcisid}/vm
-
-		// monitoring
-
-		// network
-
-		// policy/mcis
-
-		// resources/customImage
-
-		// resources/dataDisk
-
-		// resources/
-
-		// resources/image
-
-		// resources/securityGroup
-
-		// resources/spec
-
-		// resources/sshKey
-
-		// resources/vNET
-
-		// object
-
-		// objects
-
-		//
-		if mciamUse {
-			//log.Println("use mciam manager fw")
-		}
-		/*
-		// MC-IAM-MANAGER REQUIRERD
-		if mciamUse {
-			mciamauth := app.Group(apiPath + "/mciam/auth")
-			mciamauth.Use(McIamAuthMiddleware)
-			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginContorller, McIamAuthGetUserInfoContorller)
-			mciamauth.POST("/login", McIamAuthLoginContorller)
-			mciamauth.GET("/logout", McIamAuthLogoutContorller)
-			mciamauth.GET("/validate", McIamAuthGetUserValidateContorller)
-			mciamauth.GET("/userinfo", McIamAuthGetUserInfoContorller)
-		}
-
-		protectedtest := app.Group(apiPath + "/protected")
-		// MC-IAM-MANAGER REQUIRERD
-		if mciamUse {
-			protectedtest.Use(McIamAuthMiddleware)
-		}
-		protectedtest.ANY("/alive", alive)
-		*/
-
-		// DEBUG START //api/debug/tumblebug -> /debug/tumblebug 로 변경
+		// DEBUG START //
 		if ENV == "development" {
-			debug := app.Group("/debug")
+			debug := app.Group(apiPath + "/debug")
 			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
 		}
 		//  DEBUG END  //
@@ -250,20 +107,20 @@ func forceSSL() buffalo.MiddlewareFunc {
 	})
 }
 
-// Redirect에 route 정보 전달
-func RedirectTool(c buffalo.Context, p string) error {
-	routes := app.Routes()
-	for _, route := range routes {
-		if route.PathName == p {
-			return c.Redirect(http.StatusFound, route.Path)
-		}
-	}
-	return c.Redirect(http.StatusFound, "/")
-}
+// // Redirect에 route 정보 전달
+// func RedirectTool(c buffalo.Context, p string) error {
+// 	routes := app.Routes()
+// 	for _, route := range routes {
+// 		if route.PathName == p {
+// 			return c.Redirect(http.StatusFound, route.Path)
+// 		}
+// 	}
+// 	return c.Redirect(http.StatusFound, "/")
+// }
 
-func alive(c buffalo.Context) error {
-	return c.Render(200, r.JSON(map[string]interface{}{
-		"status": "OK",
-		"method": c.Request().Method,
-	}))
-}
+// func alive(c buffalo.Context) error {
+// 	return c.Render(200, r.JSON(map[string]interface{}{
+// 		"status": "OK",
+// 		"method": c.Request().Method,
+// 	}))
+// }

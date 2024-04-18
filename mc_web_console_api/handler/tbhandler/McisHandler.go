@@ -1,25 +1,25 @@
 package tbhandler
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	util "mc_web_console_api/util"
 	"net/http"
-	"fmt"
-	"encoding/json"
-	"log"
 	"strings"
 
-	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
 	fwmodels "mc_web_console_api/fwmodels"
-	webtool "mc_web_console_api/fwmodels/webtool"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
 	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
+	webconsole "mc_web_console_api/fwmodels/webconsole"
 )
 
-func McisList(request *webtool.CommonRequest)([]tbmcis.TbMcisInfo, fwmodels.WebStatus){
+func McisList(request *webconsole.CommonRequest) ([]tbmcis.TbMcisInfo, fwmodels.WebStatus) {
 	//var originalUrl = "/ns/{nsId}/mcis"
 	returnMcisList := map[string][]tbmcis.TbMcisInfo{}
 	returnStatus := fwmodels.WebStatus{}
 
-	resp, err := GetFrameworkCall(request)	
+	resp, err := GetFrameworkCall(request)
 	if err != nil {
 		fmt.Println(err)
 		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
@@ -42,31 +42,30 @@ func McisList(request *webtool.CommonRequest)([]tbmcis.TbMcisInfo, fwmodels.WebS
 	return returnMcisList["mcis"], returnStatus
 }
 
-func GetFrameworkCall(request *webtool.CommonRequest)(*http.Response, error){
+func GetFrameworkCall(request *webconsole.CommonRequest) (*http.Response, error) {
 	var targetUrl = ""
-	
+
 	if request.PathParam != nil {
 		targetUrl = request.OriginalUrl
-		for key, value := range request.PathParam {		
+		for key, value := range request.PathParam {
 			placeholder := "{" + key + "}"
 			targetUrl = strings.Replace(targetUrl, placeholder, fmt.Sprint(value), -1)
 		}
 	}
-	
+
 	if request.QueryParam != nil {
 		query := "?"
-		for key, value := range request.QueryParam {		
+		for key, value := range request.QueryParam {
 			query += key + "=" + fmt.Sprint(value) + "&"
 		}
 		targetUrl += query
 	}
-	
+
 	url := request.TargetFramework + targetUrl
 	resp, err := util.CommonHttp(url, nil, http.MethodGet)
-	
+
 	return resp, err
 }
-
 
 // func McisList(pathParam map[string]interface{}, queryParam map[string]interface{})([]tbmcis.TbMcisInfo, fwmodels.WebStatus){
 // 	var originalUrl = "/ns/{nsId}/mcis"
@@ -75,23 +74,23 @@ func GetFrameworkCall(request *webtool.CommonRequest)(*http.Response, error){
 // 	returnStatus := fwmodels.WebStatus{}
 
 // 	if pathParam != nil {
-// 		for key, value := range pathParam {		
+// 		for key, value := range pathParam {
 // 			placeholder := "{" + key + "}"
 // 			targetUrl = strings.Replace(originalUrl, placeholder, fmt.Sprint(value), -1)
 // 		}
 // 	}
-	
+
 // 	if queryParam != nil {
 // 		query := "?"
-// 		for key, value := range queryParam {		
+// 		for key, value := range queryParam {
 // 			query += key + "=" + fmt.Sprint(value) + "&"
 // 		}
 // 		targetUrl += query
 // 	}
-	
+
 // 	url := util.TUMBLEBUG + targetUrl
 // 	resp, err := util.CommonHttp(url, nil, http.MethodGet)
-	
+
 // 	if err != nil {
 // 		fmt.Println(err)
 // 		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}

@@ -1,4 +1,4 @@
-package webtool
+package webconsole
 
 type DataDiskCreateReq struct {
 

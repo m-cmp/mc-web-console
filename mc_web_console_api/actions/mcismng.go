@@ -5,7 +5,7 @@ import (
 	"log"
 	"mc_web_console_api/fwmodels/dragonfly"
 	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
-	"mc_web_console_api/fwmodels/webtool"
+	"mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models/views"
 	"mc_web_console_api/util"
@@ -306,7 +306,7 @@ func McisDel(c buffalo.Context) error {
 func McisLifeCycle(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
-	mcisLifeCycle := &webtool.McisLifeCycle{}
+	mcisLifeCycle := &webconsole.McisLifeCycle{}
 	if err := c.Bind(mcisLifeCycle); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
 			"message": "fail",
@@ -338,7 +338,7 @@ func McisLifeCycle(c buffalo.Context) error {
 func McisVmLifeCycle(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
-	vmLifeCycle := &webtool.VmLifeCycle{}
+	vmLifeCycle := &webconsole.VmLifeCycle{}
 	if err := c.Bind(vmLifeCycle); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
 			"message": "fail",
