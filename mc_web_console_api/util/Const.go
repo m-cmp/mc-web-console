@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"strconv"
 )
 
 // 상수 정의
@@ -15,7 +16,16 @@ var SPIDER = os.Getenv("SPIDER_URL")
 var TUMBLEBUG = os.Getenv("TUMBLE_URL")
 var DRAGONFLY = os.Getenv("DRAGONFLY_URL")
 var LADYBUG = os.Getenv("LADYBUG_URL")
-var MCKS = os.Getenv("MCKS_URL")
+var MCKS = os.Getenv("IAMMANAGER_URL")
+
+var MCIAMMANAGER = os.Getenv("MCKS_URL")
+var MCIAM_USE =  isUseMciamManager()
+// MCIAM Manager 사용윰
+func isUseMciamManager() bool{
+	mciamUse, err := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+	if err !=nil{ return false }
+	return mciamUse
+}
 
 var HTTP_CALL_SUCCESS = 200
 var HTTP_POST_SUCCESS = 201

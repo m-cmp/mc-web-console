@@ -57,12 +57,22 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 		// RoutesManager(app)
 
+		/////////// middleware ////////////
+		app.Use(AuthMiddleware)
+		app.Middleware.Skip(AuthMiddleware, AuthLogin, AuthGetUserInfo)
+
 		// controller func naming Rule
 		// 데이터 처리 관점으로
 		// 단건, 맵도 한개 :  XXXData
 		// 목록 : XXXList
 		// 등록(Reg), 생성(Create), 수정(Edit), 삭제(Del), 해제(Rel) : XXXProc
 
+		apiPath := "/api"
+		api := app.Group(apiPath)
+		api.GET("/{path:.+}", GetRouteController)
+		api.POST("/{path:.+}", PostRouteController)
+
+		/*
 		//// MANUAL ROUTE ////
 		apiPath := "/api"
 		app.ANY(apiPath+"/alive", alive)
@@ -126,6 +136,7 @@ func App() *buffalo.App {
 
 		mcis := app.Group(apiPath + "/mcis")
 		mcis.GET("/mcislist", McisList)
+		*/
 
 		//////////////////////////////////////////////////////////////////////
 		// TOBE PATH
@@ -177,6 +188,10 @@ func App() *buffalo.App {
 		// objects
 
 		//
+		if mciamUse {
+			//log.Println("use mciam manager fw")
+		}
+		/*
 		// MC-IAM-MANAGER REQUIRERD
 		if mciamUse {
 			mciamauth := app.Group(apiPath + "/mciam/auth")
@@ -194,10 +209,11 @@ func App() *buffalo.App {
 			protectedtest.Use(McIamAuthMiddleware)
 		}
 		protectedtest.ANY("/alive", alive)
+		*/
 
-		// DEBUG START //api/debug/tumblebug
+		// DEBUG START //api/debug/tumblebug -> /debug/tumblebug 로 변경
 		if ENV == "development" {
-			debug := app.Group(apiPath + "/debug")
+			debug := app.Group("/debug")
 			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
 		}
 		//  DEBUG END  //
