@@ -15,12 +15,14 @@ import (
 func UserLoginHandler(c buffalo.Context) error {
 	if c.Request().Method == "POST" {
 
+		// user bind ------------------------------ 1
 		user := &mcmodels.UserLogin{}
 		if err := c.Bind(user); err != nil {
 			return c.Render(http.StatusBadRequest,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
 
+		// validateErr ------------------------------ 2
 		validateErr := validate.Validate(
 			&validators.StringIsPresent{Field: user.Id, Name: "id"},
 			&validators.StringIsPresent{Field: user.Password, Name: "password"},
@@ -31,9 +33,11 @@ func UserLoginHandler(c buffalo.Context) error {
 				r.JSON(map[string]string{"err": validateErr.Error()}))
 		}
 
+		// commonRequest RequestData 할당 ------------------------------ 3
 		commonRequest := &mcmodels.CommonRequest{}
 		commonRequest.RequestData = user
 
+		// API 호출 ------------------------------ 4
 		status, commonRes, err := CommonAPIPostWithoutAccessToken(APILoginPath, commonRequest)
 		if err != nil {
 			return c.Render(status.StatusCode,
@@ -45,6 +49,7 @@ func UserLoginHandler(c buffalo.Context) error {
 			)
 		}
 
+		// commonRes to return 할당 ------------------------------ 5
 		accessTokenResponse := &mcmodels.AccessTokenResponse{}
 		decodeerr := mapstructure.Decode(commonRes.ResponseData, accessTokenResponse)
 		if decodeerr != nil {
