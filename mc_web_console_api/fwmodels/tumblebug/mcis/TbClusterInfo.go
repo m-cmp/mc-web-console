@@ -19,7 +19,7 @@ type TbClusterInfo struct { // Tumblebug
 	AccessInfo    TbClusterAccessInfo
 	Addons        TbClusterAddonsInfo
 
-	Status ClusterStatus `json:"status" example:"Creating"` // Creating, Active, Inactive, Updating, Deleting
+	Status TbClusterStatus `json:"status" example:"Creating"` // Creating, Active, Inactive, Updating, Deleting
 
 	CreatedTime  time.Time             `json:"createdTime" example:"1970-01-01T00:00:00.00Z"`
 	KeyValueList []tbcommon.TbKeyValue `json:"keyValueList"`
