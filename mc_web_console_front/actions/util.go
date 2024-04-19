@@ -46,14 +46,15 @@ func CommonAPIPostWithoutAccessToken(path string, s *mcmodels.CommonRequest) (*h
 	return resp, commonResponse, nil
 }
 
-func CommonAPIPost(path string, s interface{}, c buffalo.Context) (*http.Response, []byte, error) {
+func CommonAPIPost(path string, s *mcmodels.CommonRequest, c buffalo.Context) (*http.Response, *mcmodels.CommonResponse, error) {
 	jsonData, err := json.Marshal(s)
 	if err != nil {
 		log.Println("CommonAPIPostWithAccesstoken ERR : json.Marshal : ", err.Error())
 		return nil, nil, err
 	}
 
-	accessToken := c.Session().Get("Authorization").(string)
+	accessToken := c.Session().Get("Authorization")
+	accessTokenHeader := "Bearer " + accessToken.(string)
 
 	req, err := http.NewRequest("POST", APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -61,7 +62,7 @@ func CommonAPIPost(path string, s interface{}, c buffalo.Context) (*http.Respons
 		return nil, nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Authorization", accessTokenHeader)
 	req.Header.Set("Content-Type", "application/json") // Content-Type 설정
 
 	client := &http.Client{}
@@ -80,10 +81,17 @@ func CommonAPIPost(path string, s interface{}, c buffalo.Context) (*http.Respons
 		return resp, nil, err
 	}
 
-	return resp, respBody, nil
+	commonResponse := &mcmodels.CommonResponse{}
+	jsonerr := json.Unmarshal(respBody, &commonResponse)
+	if jsonerr != nil {
+		log.Println(jsonerr.Error())
+		return resp, commonResponse, nil
+	}
+
+	return resp, commonResponse, nil
 }
 
-func CommonAPIGetWithoutAccessToken(path string) (*http.Response, []byte, error) {
+func CommonAPIGetWithoutAccessToken(path string) (*http.Response, *mcmodels.CommonResponse, error) {
 	resp, err := http.Get(APIbaseHost.ResolveReference(&url.URL{Path: path}).String())
 	if err != nil {
 		log.Println("commonPostERR : http.Post : ", err.Error())
@@ -98,10 +106,17 @@ func CommonAPIGetWithoutAccessToken(path string) (*http.Response, []byte, error)
 		return resp, nil, err
 	}
 
-	return resp, respBody, nil
+	commonResponse := &mcmodels.CommonResponse{}
+	jsonerr := json.Unmarshal(respBody, &commonResponse)
+	if jsonerr != nil {
+		log.Println(jsonerr.Error())
+		return resp, commonResponse, nil
+	}
+
+	return resp, commonResponse, nil
 }
 
-func CommonAPIGet(path string, c buffalo.Context) (*http.Response, []byte, error) {
+func CommonAPIGet(path string, c buffalo.Context) (*http.Response, *mcmodels.CommonResponse, error) {
 	accessToken := c.Session().Get("Authorization").(string)
 
 	req, err := http.NewRequest("GET", APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), nil)
@@ -128,5 +143,12 @@ func CommonAPIGet(path string, c buffalo.Context) (*http.Response, []byte, error
 		return resp, nil, err
 	}
 
-	return resp, respBody, nil
+	commonResponse := &mcmodels.CommonResponse{}
+	jsonerr := json.Unmarshal(respBody, &commonResponse)
+	if jsonerr != nil {
+		log.Println(jsonerr.Error())
+		return resp, commonResponse, nil
+	}
+
+	return resp, commonResponse, nil
 }

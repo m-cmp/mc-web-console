@@ -342,7 +342,7 @@ func DisplayResponse(resp *http.Response) {
 
 // Common POST application/json
 // status, data, err := CommonAPIPostWithoutAccessToken(url string, s interface{})
-func CommonAPIPostWithoutAccessToken(url string, s interface{}) (*http.Response, []byte, error) {
+func CommonPostWithoutAccessToken(url string, s interface{}) (*http.Response, []byte, error) {
 	jsonData, err := json.Marshal(s)
 	if err != nil {
 		log.Println("CommonAPIPostWithoutAccessToken ERR : json.Marshal : ", err.Error())
@@ -368,14 +368,14 @@ func CommonAPIPostWithoutAccessToken(url string, s interface{}) (*http.Response,
 
 // Common POST application/json with Accesstoken
 // status, data, err := CommonAPIPost(url string, s interface{})
-func CommonAPIPost(url string, s interface{}, c buffalo.Context) (*http.Response, []byte, error) {
+func CommonPost(url string, s interface{}, c buffalo.Context) (*http.Response, []byte, error) {
+	accessToken := c.Request().Header.Get("Authorization")
+
 	jsonData, err := json.Marshal(s)
 	if err != nil {
 		log.Println("CommonAPIPostWithAccesstoken ERR : json.Marshal : ", err.Error())
 		return nil, nil, err
 	}
-
-	accessToken := c.Session().Get("Authorization").(string)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -383,7 +383,7 @@ func CommonAPIPost(url string, s interface{}, c buffalo.Context) (*http.Response
 		return nil, nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Authorization", accessToken)
 	req.Header.Set("Content-Type", "application/json") // Content-Type 설정
 
 	client := &http.Client{}
@@ -407,7 +407,7 @@ func CommonAPIPost(url string, s interface{}, c buffalo.Context) (*http.Response
 
 // Common GET
 // status, data, err := CommonAPIGetWithoutAccessToken(url string)
-func CommonAPIGetWithoutAccessToken(url string) (*http.Response, []byte, error) {
+func CommonGetWithoutAccessToken(url string) (*http.Response, []byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("commonPostERR : http.Post : ", url, err.Error())
@@ -427,7 +427,7 @@ func CommonAPIGetWithoutAccessToken(url string) (*http.Response, []byte, error) 
 
 // Common GET with Accesstoken
 // status, data, err := CommonAPIGet(url string, c buffalo.Context)
-func CommonAPIGet(url string, c buffalo.Context) (*http.Response, []byte, error) {
+func CommonGet(url string, c buffalo.Context) (*http.Response, []byte, error) {
 	headerAccessToken := c.Request().Header.Get("Authorization")
 
 	req, err := http.NewRequest("GET", url, nil)

@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
@@ -140,12 +141,10 @@ func AuthMcIamRefresh(c buffalo.Context, commonReq *webconsole.CommonRequest) (*
 }
 
 func AuthMcIamLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
-	accessToken := c.Request().Header.Get("Authorization")
-	userInfo, err := getUserInfo(c)
-	if err != nil {
-		return webconsole.CommonResponseStatusInternalServerError(nil), err
-	}
-	targetSubject, _ := uuid.FromString(userInfo.Sub)
+	headerAccessToken := c.Request().Header.Get("Authorization")
+	accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
+	jwtDecode := jwtDecode(accessToken)
+	targetSubject, _ := uuid.FromString(jwtDecode["sub"].(string))
 
 	usersess := &models.Usersession{}
 	txerr := models.DB.Find(usersess, targetSubject)
@@ -164,15 +163,14 @@ func AuthMcIamLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) (*w
 	accessTokenRequest := &mcmodels.AccessTokenRequest{
 		RefreshToken: usersess.RefreshToken,
 	}
-
-	status, _, err := util.CommonAPIPost(suspendAccesstokenEndPoint, accessTokenRequest, c)
+	status, _, err := util.CommonPost(suspendAccesstokenEndPoint, accessTokenRequest, c)
 	if err != nil {
+		fmt.Println(err)
 		return webconsole.CommonResponseStatusInternalServerError(nil), err
 	}
 	if status.StatusCode != 200 {
 		return webconsole.CommonResponseStatusInternalServerError(nil), errors.New(status.Status)
 	}
-
 	txerr = models.DB.Destroy(usersess)
 	if txerr != nil {
 		return webconsole.CommonResponseStatusInternalServerError(nil), txerr
@@ -200,7 +198,7 @@ func AuthMcIamGetUserValidate(c buffalo.Context, commonReq *webconsole.CommonReq
 func getUserTokenWithIdPassword(user *mcmodels.UserLogin) (*mcmodels.AccessTokenResponse, error) {
 	accessTokenResponse := &mcmodels.AccessTokenResponse{}
 
-	status, data, err := util.CommonAPIPostWithoutAccessToken(getAccesstokenEndPoint, user)
+	status, data, err := util.CommonPostWithoutAccessToken(getAccesstokenEndPoint, user)
 	if err != nil {
 		log.Println(err.Error())
 		return accessTokenResponse, err
@@ -222,7 +220,7 @@ func getUserTokenWithIdPassword(user *mcmodels.UserLogin) (*mcmodels.AccessToken
 func getUserTokenWithRefreshToken(accessTokenRequest *mcmodels.AccessTokenRequest, c buffalo.Context) (*mcmodels.AccessTokenResponse, error) {
 	accessTokenResponse := &mcmodels.AccessTokenResponse{}
 
-	status, data, err := util.CommonAPIPost(accesstokenRefreshEndPoint, accessTokenRequest, c)
+	status, data, err := util.CommonPost(accesstokenRefreshEndPoint, accessTokenRequest, c)
 	if err != nil {
 		log.Println(err.Error())
 		return accessTokenResponse, err
@@ -243,7 +241,7 @@ func getUserTokenWithRefreshToken(accessTokenRequest *mcmodels.AccessTokenReques
 
 func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, error) {
 	var userinfo mcmodels.UserInfo
-	status, data, err := util.CommonAPIGet(getUserInfoEndPoint, c)
+	status, data, err := util.CommonGet(getUserInfoEndPoint, c)
 	if err != nil {
 		return userinfo, err
 	}
