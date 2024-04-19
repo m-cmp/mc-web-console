@@ -54,8 +54,7 @@ func App() *buffalo.App {
 		// RoutesManager(app)
 
 		// middleware START //
-		app.Use(AuthMiddleware)
-		app.Middleware.Skip(AuthMiddleware, AuthLogin, AuthGetUserInfo)
+		// app.Use(AuthMiddleware)
 		// middleware END //
 
 		// controller func naming Rule
@@ -66,7 +65,7 @@ func App() *buffalo.App {
 		apiPath := "/api"
 		api := app.Group(apiPath)
 		api.GET("/{path:.+}", GetRouteController)
-		api.POST("/{path:.+}", PostRouteController)
+		api.POST("/{targetController}/{path:.+}", PostRouteController)
 
 		// DEBUG START //
 		if ENV == "development" {

@@ -7,8 +7,7 @@ import (
 
 // 모든 요청을 Post로 하고 CommonRequest에 각 내용을 담아 요청한다.
 type CommonRequest struct {
-	TargetController string                 `json:"targetController"`
-	RequestData      map[string]interface{} `json:"requestData"`
+	RequestData interface{} `json:"requestData"`
 	//RequestData      map[string]interface{} `json:"requestData"`
 	PathParam  map[string]interface{} `json:"pathParam"`
 	QueryParam map[string]interface{} `json:"queryParam"`
@@ -25,45 +24,45 @@ type CommonResponse struct {
 	Status fwmodels.WebStatus `json:"status"`
 }
 
-func CommonResponseStatusOK(responseData interface{}) CommonResponse {
+func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
 	webStatus := fwmodels.WebStatus{
 		StatusCode: http.StatusOK,
 		Message:    http.StatusText(http.StatusOK),
 	}
-	return CommonResponse{
+	return &CommonResponse{
 		ResponseData: responseData,
 		Status:       webStatus,
 	}
 }
 
-func CommonResponseStatusStatusUnauthorized(responseData interface{}) CommonResponse {
+func CommonResponseStatusStatusUnauthorized(responseData interface{}) *CommonResponse {
 	webStatus := fwmodels.WebStatus{
 		StatusCode: http.StatusUnauthorized,
 		Message:    http.StatusText(http.StatusUnauthorized),
 	}
-	return CommonResponse{
+	return &CommonResponse{
 		ResponseData: responseData,
 		Status:       webStatus,
 	}
 }
 
-func CommonResponseStatusBadRequest(responseData interface{}) CommonResponse {
+func CommonResponseStatusBadRequest(responseData interface{}) *CommonResponse {
 	webStatus := fwmodels.WebStatus{
 		StatusCode: http.StatusBadRequest,
 		Message:    http.StatusText(http.StatusBadRequest),
 	}
-	return CommonResponse{
+	return &CommonResponse{
 		ResponseData: responseData,
 		Status:       webStatus,
 	}
 }
 
-func CommonResponseStatusInternalServerError(responseData interface{}) CommonResponse {
+func CommonResponseStatusInternalServerError(responseData interface{}) *CommonResponse {
 	webStatus := fwmodels.WebStatus{
 		StatusCode: http.StatusInternalServerError,
 		Message:    http.StatusText(http.StatusInternalServerError),
 	}
-	return CommonResponse{
+	return &CommonResponse{
 		ResponseData: responseData,
 		Status:       webStatus,
 	}

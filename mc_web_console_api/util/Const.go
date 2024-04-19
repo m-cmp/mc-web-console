@@ -23,7 +23,7 @@ var LADYBUG = os.Getenv("LADYBUG_URL")
 var MCKS = os.Getenv("MCKS_URL")
 
 var MCIAMMANAGER = os.Getenv("IAMMANAGER_URL")
-var MCIAM_USE = false // MCIAMMANAGER 사용여부, init 에서 재정의
+var MCIAM_USE = false // MC-IAM-MANAGER 사용여부, init 에서 재정의
 
 var HTTP_CALL_SUCCESS = 200
 var HTTP_POST_SUCCESS = 201

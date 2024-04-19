@@ -3,16 +3,15 @@ package auth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 	"github.com/gofrs/uuid"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/mitchellh/mapstructure"
 
 	"mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
@@ -29,9 +28,17 @@ var (
 	suspendAccesstokenEndPoint = mcIamManagerUrl + "/api/auth/logout"
 )
 
-func AuthMcIamLogin(c buffalo.Context, commonReq webconsole.CommonRequest) (webconsole.CommonResponse, error) {
+func AuthMcIamMiddleware(c buffalo.Context) error {
+	_, err := AuthMcIamGetUserValidate(c, &webconsole.CommonRequest{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func AuthMcIamLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
 	user := &mcmodels.UserLogin{}
-	if err := c.Bind(user); err != nil {
+	if err := mapstructure.Decode(commonReq.RequestData, user); err != nil {
 		return webconsole.CommonResponseStatusBadRequest(nil), err
 	}
 
@@ -48,12 +55,8 @@ func AuthMcIamLogin(c buffalo.Context, commonReq webconsole.CommonRequest) (webc
 		return webconsole.CommonResponseStatusInternalServerError(nil), err
 	}
 
-	userInfo, err := getUserInfo("Bearer " + accessTokenResponse.AccessToken)
-	if err != nil {
-		return webconsole.CommonResponseStatusInternalServerError(nil), err
-	}
-
-	targetSubject, _ := uuid.FromString(userInfo.Sub)
+	jwtDecode := jwtDecode(accessTokenResponse.AccessToken)
+	targetSubject, _ := uuid.FromString(jwtDecode["sub"].(string))
 	usersess := &models.Usersession{
 		ID:               targetSubject,
 		AccessToken:      accessTokenResponse.AccessToken,
@@ -78,7 +81,7 @@ func AuthMcIamLogin(c buffalo.Context, commonReq webconsole.CommonRequest) (webc
 }
 
 // NOT IMPL
-func AuthMcIamRefresh(c buffalo.Context, commonReq webconsole.CommonRequest) (webconsole.CommonResponse, error) {
+func AuthMcIamRefresh(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
 	commonResponse := &webconsole.CommonResponse{}
 	// headerAccessToken := c.Request().Header.Get("Authorization")
 	// accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
@@ -133,12 +136,12 @@ func AuthMcIamRefresh(c buffalo.Context, commonReq webconsole.CommonRequest) (we
 	// }
 
 	// return c.Render(http.StatusOK, r.JSON(accessTokenResponse))
-	return *commonResponse, nil
+	return commonResponse, nil
 }
 
-func AuthMcIamLogout(c buffalo.Context, commonReq webconsole.CommonRequest) (webconsole.CommonResponse, error) {
+func AuthMcIamLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
 	accessToken := c.Request().Header.Get("Authorization")
-	userInfo, err := getUserInfo(accessToken)
+	userInfo, err := getUserInfo(c)
 	if err != nil {
 		return webconsole.CommonResponseStatusInternalServerError(nil), err
 	}
@@ -178,57 +181,20 @@ func AuthMcIamLogout(c buffalo.Context, commonReq webconsole.CommonRequest) (web
 	return webconsole.CommonResponseStatusOK(nil), nil
 }
 
-func AuthMcIamGetUserInfo(c buffalo.Context, commonReq webconsole.CommonRequest) (webconsole.CommonResponse, error) {
-	accessToken := c.Request().Header.Get("Authorization")
-	userInfo, err := getUserInfo(accessToken)
+func AuthMcIamGetUserInfo(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
+	userInfo, err := getUserInfo(c)
 	if err != nil {
 		return webconsole.CommonResponseStatusInternalServerError(nil), err
 	}
 	return webconsole.CommonResponseStatusOK(userInfo), nil
 }
 
-func AuthMcIamGetUserValidate(c buffalo.Context, commonReq webconsole.CommonRequest) (webconsole.CommonResponse, error) {
-	accessToken := c.Request().Header.Get("Authorization")
-	_, err := getUserInfo(accessToken)
+func AuthMcIamGetUserValidate(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
+	_, err := getUserInfo(c)
 	if err != nil {
 		return webconsole.CommonResponseStatusStatusUnauthorized(nil), err
 	}
 	return webconsole.CommonResponseStatusOK(nil), nil
-}
-
-func getUserInfo(accessToken string) (mcmodels.UserInfo, error) {
-
-	var userinfoReturn mcmodels.UserInfo
-
-	req, err := http.NewRequest("GET", getUserInfoEndPoint, nil)
-	if err != nil {
-		return userinfoReturn, err
-	}
-	req.Header.Set("Authorization", accessToken)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return userinfoReturn, err
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Failed to read response body:", err)
-		return userinfoReturn, err
-	}
-
-	if resp.StatusCode != 200 {
-		return userinfoReturn, errors.New(resp.Status)
-	}
-	fmt.Println("#########", string(respBody))
-	if err := json.Unmarshal([]byte(respBody), &userinfoReturn); err != nil {
-		fmt.Println("JSON 파싱 에러:", err)
-		return userinfoReturn, err
-	}
-
-	return userinfoReturn, nil
 }
 
 func getUserTokenWithIdPassword(user *mcmodels.UserLogin) (*mcmodels.AccessTokenResponse, error) {
@@ -246,7 +212,7 @@ func getUserTokenWithIdPassword(user *mcmodels.UserLogin) (*mcmodels.AccessToken
 
 	jsonerr := json.Unmarshal(data, accessTokenResponse)
 	if jsonerr != nil {
-		log.Println("getUserToken Unmarshal err :", err.Error())
+		log.Println("getUserToken Unmarshal err :", jsonerr.Error())
 		return accessTokenResponse, err
 	}
 
@@ -275,16 +241,24 @@ func getUserTokenWithRefreshToken(accessTokenRequest *mcmodels.AccessTokenReques
 	return accessTokenResponse, nil
 }
 
-// 외부에서 정의
-// func AuthMcIamMiddleware(c buffalo.Handler) buffalo.Handler {
-// 	return func(c buffalo.Context) error {
-// 		accessToken := c.Request().Header.Get("Authorization")
-// 		_, err := getUserInfo(accessToken)
-// 		if err != nil {
-// 			return c.Render(http.StatusServiceUnavailable,
-// 				r.JSON(map[string]string{"error": err.Error()}))
-// 		}
+func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, error) {
+	var userinfo mcmodels.UserInfo
+	status, data, err := util.CommonAPIGet(getUserInfoEndPoint, c)
+	if err != nil {
+		return userinfo, err
+	}
+	if status.StatusCode != 200 {
+		return userinfo, errors.New(status.Status)
+	}
 
-// 		return next(c)
-// 	}
-// }
+	if err := json.Unmarshal(data, &userinfo); err != nil {
+		return userinfo, err
+	}
+	return userinfo, nil
+}
+
+func jwtDecode(jwtToken string) jwt.MapClaims {
+	claims := jwt.MapClaims{}
+	jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
+	return claims
+}
