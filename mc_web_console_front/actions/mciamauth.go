@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -21,8 +20,6 @@ func UserLoginHandler(c buffalo.Context) error {
 			return c.Render(http.StatusBadRequest,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
-
-		fmt.Println("user", user)
 
 		validateErr := validate.Validate(
 			&validators.StringIsPresent{Field: user.Id, Name: "id"},
@@ -76,7 +73,7 @@ func UserLoginHandler(c buffalo.Context) error {
 }
 
 func UserLogoutHandler(c buffalo.Context) error {
-	status, _, err := CommonAPIGet(APILogoutPath, c)
+	status, _, err := CommonAPIPost(APILogoutPath, &mcmodels.CommonRequest{}, c)
 	if err != nil {
 		log.Println(err.Error())
 		return c.Render(status.StatusCode,

@@ -25,13 +25,14 @@ type actions struct{}
 // Client에서 전송되는 data type은 POST 임 //
 // case문에서 controller이름 추출하여 controller 호출
 func PostRouteController(c buffalo.Context) error {
+
 	// param 종류( pathParam, queryParam)
 	// target controller 이름.
 
 	log.Println("in RoutePostController")
 
 	targetController := c.Param("targetController")
-	fmt.Println("targetController", targetController)
+	fmt.Printf("targetController :: [ %s ]\n", targetController)
 
 	commonResponse := &webconsole.CommonResponse{}
 	commonRequest := &webconsole.CommonRequest{}
@@ -61,8 +62,8 @@ func PostRouteController(c buffalo.Context) error {
 		// responseData, err := McisReg(dataObj, pathParam, queryParam)
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
-	case "Logout":
-		return AuthLogout(c)
+	case "authlogout":
+		commonResponse = AuthLogout(c, commonRequest)
 	case "Validate":
 		return AuthGetUserValidate(c)
 	case "UserInfo":

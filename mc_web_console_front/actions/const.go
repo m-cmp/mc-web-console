@@ -9,7 +9,7 @@ var (
 	APIbaseHost               *url.URL
 	APILoginPath              = "/api/authlogin/1234"
 	APILoginRefreshPath       = "/api/mciam/auth/login/refresh"
-	APILogoutPath             = "/api/mciam/auth/logout"
+	APILogoutPath             = "/api/authlogout/1234"
 	APIUserValidatePath       = "/api/mciam/auth/validate"
 	APIUserInfoPath           = "/api/mciam/auth/userinfo"
 	RootPathForRedirect       map[string]interface{}

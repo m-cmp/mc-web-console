@@ -26,15 +26,18 @@ func AuthLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconso
 	return webconsole.CommonResponseStatusInternalServerError(nil)
 }
 
-func AuthLogout(c buffalo.Context) error {
+func AuthLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
+	commonResponse := &webconsole.CommonResponse{}
+	var err error
 	if util.MCIAM_USE {
-		fmt.Println("MCIAM_USE")
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON("MCIAM_USE"))
-	} else {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": "Auth Service Is Not Available"}))
+		commonResponse, err = auth.AuthMcIamLogout(c, commonReq)
+		if err != nil {
+			log.Println(err.Error())
+			return commonResponse
+		}
+		return commonResponse
 	}
+	return webconsole.CommonResponseStatusInternalServerError(nil)
 }
 
 func AuthGetUserInfo(c buffalo.Context) error {

@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/mitchellh/mapstructure"
 
 	mcmodels "mc_web_console_common_models"
 )
@@ -36,18 +36,10 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	}
 }
 
-// userinfo, msg, err := getUserInfo(c)
-//
-//	if err != nil {
-//		log.Println(err.Error())
-//		c.Session().Clear()
-//		c.Flash().Add("danger", msg)
-//		return c.Redirect(http.StatusSeeOther, "authLoginPath()")
-//	}
 func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, string, error) {
 	userinfo := &mcmodels.UserInfo{}
 
-	status, userinfoByte, err := CommonAPIGet(APIUserInfoPath, c)
+	status, commonRes, err := CommonAPIGet(APIUserInfoPath, c)
 	if err != nil {
 		msg := status.Status + " Error Get Userinfo from MC-IAM-MANAGER"
 		return *userinfo, msg, err
@@ -57,9 +49,9 @@ func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, string, error) {
 		return *userinfo, msg, errors.New(msg)
 	}
 
-	if err := json.Unmarshal([]byte(userinfoByte), &userinfo); err != nil {
+	if decodeerr := mapstructure.Decode(commonRes.ResponseData, userinfo); decodeerr != nil {
 		msg := "Authentication Info Error"
-		return *userinfo, msg, err
+		return *userinfo, msg, decodeerr
 	}
 
 	return *userinfo, "", nil
