@@ -1,4 +1,4 @@
-package webconsole
+package mc_web_console_common_models
 
 import (
 	"mc_web_console_api/fwmodels"

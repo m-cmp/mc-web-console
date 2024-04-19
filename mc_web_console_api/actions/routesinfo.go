@@ -39,7 +39,6 @@ func PostRouteController(c buffalo.Context) error {
 	if err := c.Bind(commonRequest); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(err))
 	}
-	fmt.Println(commonRequest)
 
 	// 권한 check???
 	// 1차 메뉴 권한

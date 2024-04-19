@@ -4,7 +4,7 @@ document.getElementById("loginbtn").addEventListener('click',function () {
     let csrfToken = document.getElementById("csrf-token").getAttribute('content');
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-    const userData = {
+    const userData ={
         id: document.getElementById("id").value,
         password: document.getElementById("password").value,
     };
@@ -14,6 +14,7 @@ document.getElementById("loginbtn").addEventListener('click',function () {
         if (response.status != 200){
             alert(response.data)
         }else{
+
             window.location = response.data.redirect
         }
         
