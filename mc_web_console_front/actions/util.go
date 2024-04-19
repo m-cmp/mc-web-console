@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"mc_web_console_api/fwmodels/webconsole"
 	"net/http"
 	"net/url"
 
 	"github.com/gobuffalo/buffalo"
 )
 
-func CommonAPIPostWithoutAccessToken(path string, s interface{}) (*http.Response, []byte, error) {
+func CommonAPIPostWithoutAccessToken(path string, s interface{}) (*http.Response, *webconsole.CommonResponse, error) {
 	jsonData, err := json.Marshal(s)
 	if err != nil {
 		log.Println("commonPostERR : json.Marshal : ", err.Error())
@@ -32,7 +33,14 @@ func CommonAPIPostWithoutAccessToken(path string, s interface{}) (*http.Response
 		return resp, nil, err
 	}
 
-	return resp, respBody, nil
+	commonResponse := &webconsole.CommonResponse{}
+	jsonerr := json.Unmarshal(respBody, &commonResponse)
+	if jsonerr != nil {
+		log.Println(jsonerr.Error())
+		return resp, commonResponse, nil
+	}
+
+	return resp, commonResponse, nil
 }
 
 func CommonAPIPost(path string, s interface{}, c buffalo.Context) (*http.Response, []byte, error) {

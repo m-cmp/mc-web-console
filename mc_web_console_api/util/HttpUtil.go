@@ -345,13 +345,13 @@ func DisplayResponse(resp *http.Response) {
 func CommonAPIPostWithoutAccessToken(url string, s interface{}) (*http.Response, []byte, error) {
 	jsonData, err := json.Marshal(s)
 	if err != nil {
-		log.Println("commonPostERR : json.Marshal : ", err.Error())
+		log.Println("CommonAPIPostWithoutAccessToken ERR : json.Marshal : ", err.Error())
 		return nil, nil, err
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Println("commonPostERR : http.Post : ", err.Error())
+		log.Println("CommonAPIPostWithoutAccessToken ERR : http.Post : ", err.Error())
 		return resp, nil, err
 	}
 
@@ -359,7 +359,7 @@ func CommonAPIPostWithoutAccessToken(url string, s interface{}) (*http.Response,
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("commonPostERR : io.ReadAll : ", err.Error())
+		log.Println("CommonAPIPostWithoutAccessToken ERR : io.ReadAll : ", err.Error())
 		return resp, nil, err
 	}
 
@@ -428,7 +428,7 @@ func CommonAPIGetWithoutAccessToken(url string) (*http.Response, []byte, error) 
 // Common GET with Accesstoken
 // status, data, err := CommonAPIGet(url string, c buffalo.Context)
 func CommonAPIGet(url string, c buffalo.Context) (*http.Response, []byte, error) {
-	accessToken := c.Session().Get("Authorization").(string)
+	headerAccessToken := c.Request().Header.Get("Authorization")
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -436,7 +436,7 @@ func CommonAPIGet(url string, c buffalo.Context) (*http.Response, []byte, error)
 		return nil, nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Authorization", "Bearer "+headerAccessToken)
 
 	client := &http.Client{}
 

@@ -1,13 +1,14 @@
 package actions
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
+	"github.com/mitchellh/mapstructure"
 
 	mcmodels "mc_web_console_common_models"
 )
@@ -30,27 +31,33 @@ func UserLoginHandler(c buffalo.Context) error {
 				r.JSON(map[string]string{"err": validateErr.Error()}))
 		}
 
-		status, respBody, err := CommonAPIPostWithoutAccessToken(APILoginPath, user)
+		status, commonRes, err := CommonAPIPostWithoutAccessToken(APILoginPath, user)
 		if err != nil {
 			log.Println(err.Error())
+			fmt.Println(status.StatusCode)
+
 			return c.Render(status.StatusCode,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
 		if status.StatusCode != 200 {
+
+			fmt.Println(status.StatusCode)
 			return c.Render(status.StatusCode,
 				r.JSON(map[string]string{"err": status.Status}),
 			)
 		}
 
-		var accessTokenResponse mcmodels.AccessTokenResponse
-		jsonerr := json.Unmarshal(respBody, &accessTokenResponse)
-		if jsonerr != nil {
-			log.Println(jsonerr.Error())
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"err": jsonerr.Error()}))
+		fmt.Println(commonRes)
+
+		accessTokenResponse := &mcmodels.AccessTokenResponse{}
+		decodeerr := mapstructure.Decode(commonRes, accessTokenResponse)
+		if decodeerr != nil {
+			fmt.Println("구조체로 바인딩하는 중 에러 발생:", err)
 		}
 
-		c.Session().Set("Authorization", accessTokenResponse.AccessToken)
+		// c.Session().Set("Authorization", accessTokenResponse.AccessToken)
+
+		fmt.Println("accessTokenResponse#################", accessTokenResponse.AccessToken)
 
 		return c.Render(http.StatusOK,
 			r.JSON(map[string]string{

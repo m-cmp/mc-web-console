@@ -16,8 +16,8 @@ type AccessTokenResponse struct {
 }
 
 type UserLogin struct {
-	Id       string `json:"id"`
-	Password string `json:"password"`
+	Id       string
+	Password string
 }
 
 type UserInfo struct {

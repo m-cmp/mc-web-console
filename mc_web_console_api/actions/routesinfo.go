@@ -2,12 +2,12 @@ package actions
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"reflect"
 	"strings"
 
-	"mc_web_console_api/actions/tumblebug"
 	webconsole "mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
 
@@ -30,25 +30,29 @@ func PostRouteController(c buffalo.Context) error {
 
 	log.Println("in RoutePostController")
 
+	targetController := c.Param("targetController")
+	fmt.Println("targetController", targetController)
+
 	commonResponse := &webconsole.CommonResponse{}
 	commonRequest := &webconsole.CommonRequest{}
 
 	if err := c.Bind(commonRequest); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(err))
 	}
+	fmt.Println(commonRequest)
 
 	// 권한 check???
 	// 1차 메뉴 권한
 	// 2차 project 권한 체크 -- middle ware
 	// 3차 resource 권한 체크 -- middle ware ( 추후. not now)
 	// case
-	switch commonRequest.TargetController {
+	switch targetController {
 	case "McisList": // Get Type
 		//
 		// mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
 		// commonResponse.ResponseData = mcisList
 		// commonResponse.Status = respStatus
-		commonResponse = tumblebug.TbMcisList(c, commonRequest)
+		// commonResponse = tumblebug.TbMcisList(c)
 	case "McisReg": // Post Type
 		// namespaceID := c.Params().Get("namespaceid")
 		// optionParam := c.Params().Get("option")
@@ -56,8 +60,8 @@ func PostRouteController(c buffalo.Context) error {
 		// filterValParam := c.Params().Get("filterVal")
 
 		// responseData, err := McisReg(dataObj, pathParam, queryParam)
-	case "Login":
-		return AuthLogin(c)
+	case "authlogin":
+		commonResponse = AuthLogin(c, commonRequest)
 	case "Logout":
 		return AuthLogout(c)
 	case "Validate":
@@ -70,9 +74,9 @@ func PostRouteController(c buffalo.Context) error {
 
 	}
 
-	if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
-		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
-	}
+	// if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
+	// 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	// }
 
 	return c.Render(http.StatusOK, r.JSON(commonResponse))
 }
