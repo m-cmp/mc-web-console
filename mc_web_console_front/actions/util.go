@@ -3,7 +3,6 @@ package actions
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	mcmodels "mc_web_console_common_models"
@@ -19,8 +18,6 @@ func CommonAPIPostWithoutAccessToken(path string, s *mcmodels.CommonRequest) (*h
 		log.Println("commonPostERR : json.Marshal : ", err.Error())
 		return nil, nil, err
 	}
-
-	fmt.Printf("jsonData %s", jsonData)
 
 	resp, err := http.Post(APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
