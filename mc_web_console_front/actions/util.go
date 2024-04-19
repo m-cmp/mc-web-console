@@ -3,21 +3,24 @@ package actions
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
-	"mc_web_console_api/fwmodels/webconsole"
+	mcmodels "mc_web_console_common_models"
 	"net/http"
 	"net/url"
 
 	"github.com/gobuffalo/buffalo"
 )
 
-func CommonAPIPostWithoutAccessToken(path string, s interface{}) (*http.Response, *webconsole.CommonResponse, error) {
+func CommonAPIPostWithoutAccessToken(path string, s *mcmodels.CommonRequest) (*http.Response, *mcmodels.CommonResponse, error) {
 	jsonData, err := json.Marshal(s)
 	if err != nil {
 		log.Println("commonPostERR : json.Marshal : ", err.Error())
 		return nil, nil, err
 	}
+
+	fmt.Printf("jsonData %s", jsonData)
 
 	resp, err := http.Post(APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -33,7 +36,7 @@ func CommonAPIPostWithoutAccessToken(path string, s interface{}) (*http.Response
 		return resp, nil, err
 	}
 
-	commonResponse := &webconsole.CommonResponse{}
+	commonResponse := &mcmodels.CommonResponse{}
 	jsonerr := json.Unmarshal(respBody, &commonResponse)
 	if jsonerr != nil {
 		log.Println(jsonerr.Error())

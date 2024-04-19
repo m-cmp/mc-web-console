@@ -15,11 +15,14 @@ import (
 
 func UserLoginHandler(c buffalo.Context) error {
 	if c.Request().Method == "POST" {
+
 		user := &mcmodels.UserLogin{}
 		if err := c.Bind(user); err != nil {
 			return c.Render(http.StatusBadRequest,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
+
+		fmt.Println("user", user)
 
 		validateErr := validate.Validate(
 			&validators.StringIsPresent{Field: user.Id, Name: "id"},
@@ -31,33 +34,28 @@ func UserLoginHandler(c buffalo.Context) error {
 				r.JSON(map[string]string{"err": validateErr.Error()}))
 		}
 
-		status, commonRes, err := CommonAPIPostWithoutAccessToken(APILoginPath, user)
-		if err != nil {
-			log.Println(err.Error())
-			fmt.Println(status.StatusCode)
+		commonRequest := &mcmodels.CommonRequest{}
+		commonRequest.RequestData = user
 
+		status, commonRes, err := CommonAPIPostWithoutAccessToken(APILoginPath, commonRequest)
+		if err != nil {
 			return c.Render(status.StatusCode,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
 		if status.StatusCode != 200 {
-
-			fmt.Println(status.StatusCode)
 			return c.Render(status.StatusCode,
 				r.JSON(map[string]string{"err": status.Status}),
 			)
 		}
 
-		fmt.Println(commonRes)
-
 		accessTokenResponse := &mcmodels.AccessTokenResponse{}
-		decodeerr := mapstructure.Decode(commonRes, accessTokenResponse)
+		decodeerr := mapstructure.Decode(commonRes.ResponseData, accessTokenResponse)
 		if decodeerr != nil {
-			fmt.Println("구조체로 바인딩하는 중 에러 발생:", err)
+			return c.Render(status.StatusCode,
+				r.JSON(map[string]string{"err": decodeerr.Error()}))
 		}
 
-		// c.Session().Set("Authorization", accessTokenResponse.AccessToken)
-
-		fmt.Println("accessTokenResponse#################", accessTokenResponse.AccessToken)
+		c.Session().Set("Authorization", accessTokenResponse.AccessToken)
 
 		return c.Render(http.StatusOK,
 			r.JSON(map[string]string{
