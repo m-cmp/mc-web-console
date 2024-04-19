@@ -68,7 +68,126 @@ func App() *buffalo.App {
 		api.GET("/{path:.+}", GetRouteController)
 		api.POST("/{path:.+}", PostRouteController)
 
-		// DEBUG START //
+		// API TEST
+		setting := app.Group(apiPath + "/setting")
+		namespaces := setting.Group("/namespaces")
+		namespace := namespaces.Group("/namespace")
+		namespace.GET("/list", NamespaceAllList)
+		namespace.POST("/reg/proc", NamespaceReg)
+
+		lu := app.Group(apiPath + "/lu")
+		lu.POST("/setting/resources/machineimage/lookupimage", LookupVirtualMachineImageData)
+
+		// List all configs
+		config := app.Group(apiPath + "/config")
+		config.GET("/", TbConfig)
+
+		// Get config
+		// configByid := app.Group(apiPath + "/config")
+		// configByid.GET("/", TBconfigbyId)
+
+		// loadcommonresource
+		loadcommonresource := app.Group(apiPath + "loadcommonresource")
+		loadcommonresource.GET("/", LoadCommonResource)
+
+		// [Admin] Multi-Cloud Environment Configuration
+		health := app.Group(apiPath + "/health")
+		health.GET("/", GetTBHealth)
+
+		// GET CSP Resources Overview
+		resources := setting.Group("/resources")
+		resources.GET("/inspectresourcesoverview", GetInspectResourcesOverview)
+
+		// Get value of an object
+		object := app.Group(apiPath + "/object")
+		object.GET("/", GetObjectThroughTB)
+
+		// List all objects for a given key
+		objects := app.Group(apiPath + "/objects")
+		objects.GET("/", GetObjectListThroughTB)
+
+		// [Infra service] MCIS Provisioning management
+		operation := app.Group(apiPath + "/operation")
+		manages := operation.Group("/manages")
+		mcismng := manages.Group("/mcismng")
+
+		// List all MCISs or MCISs' ID
+		mcismng.GET("/list", McisList)
+		// Get MCIS, Action to MCIS (status, suspend, resume, reboot, terminate, refine), or Get VMs' ID
+		//mcismng.GET("/", McisGet)
+
+		ns := app.Group(apiPath + "/ns")
+		nsid := ns.Group("/{nsid}")
+		mciss := nsid.Group("/mcis")
+		mcisid := mciss.Group("/{mcisid}")
+		mcisid.GET("/", McisGet)
+
+		// List SubGroup IDs in a specified MCIS
+		mcismng.GET("/{mcisid}"+"/subgroup", McisSubGroupList)
+
+		mcis := app.Group(apiPath + "/mcis")
+		mcis.GET("/mcislist", McisList)
+
+		// for the test
+		cluster := app.Group(apiPath + "/cluster")
+		cluster.GET("/ns/{nsId}/cluster", ClusterList)
+		cluster.POST("/ns/{nsId}/cluster", ClusterReg)
+		cluster.DELETE("/ns/{nsId}/cluster/{clusterId}", DelCluster)
+		cluster.GET("/ns/{nsId}/cluster/{clusterId}", ClusterList)
+		cluster.POST("/ns/{nsId}/cluster/{clusterId}/nodegroup", RegNodeGroup)
+		//////////////////////////////////////////////////////////////////////
+		// TOBE PATH
+
+		// ns
+
+		// ns/{nsid}
+
+		// benchmark
+
+		// cluster
+
+		// cmd
+
+		// control
+
+		// mcis
+
+		// mcis/{mcisid}/nlb
+
+		// mcis/{mcisid}/subgroup
+
+		// mcis/{mcisid}/vm
+
+		// monitoring
+
+		// network
+
+		// policy/mcis
+
+		// resources/customImage
+
+		// resources/dataDisk
+
+		// resources/
+
+		// resources/image
+
+		// resources/securityGroup
+
+		// resources/spec
+
+		// resources/sshKey
+
+		// resources/vNET
+
+		// object
+
+		// objects
+
+		//
+		// MC-IAM-MANAGER REQUIRERD
+
+		// DEBUG START //api/debug/tumblebug
 		if ENV == "development" {
 			debug := app.Group(apiPath + "/debug")
 			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
