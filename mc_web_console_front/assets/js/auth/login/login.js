@@ -14,7 +14,7 @@ document.getElementById("loginbtn").addEventListener('click',function () {
         if (response.status != 200){
             alert(response.data)
         }else{
-
+            getUserWsPrj()
             window.location = response.data.redirect
         }
         
@@ -25,3 +25,8 @@ document.getElementById("loginbtn").addEventListener('click',function () {
         document.getElementById("password").value = null
     });
 });
+
+
+function getUserWsPrj() {
+    
+}

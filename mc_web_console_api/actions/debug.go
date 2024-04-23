@@ -19,6 +19,8 @@ func DebugApiCaller(c buffalo.Context) error {
 		fwPath = util.SPIDER
 	case "tumblebug":
 		fwPath = util.TUMBLEBUG
+	case "mciammanager":
+		fwPath = util.MCIAMMANAGER
 	default:
 		// direct todo
 		return c.Render(http.StatusServiceUnavailable, r.JSON(map[string]interface{}{

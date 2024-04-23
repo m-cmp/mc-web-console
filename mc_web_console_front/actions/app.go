@@ -10,7 +10,6 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
-	csrf "github.com/gobuffalo/mw-csrf"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
@@ -49,7 +48,7 @@ func App() *buffalo.App {
 
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
-		app.Use(csrf.New) // 프론트에서 CSRF 설정이 되어 있음! 백에서 처리할 시 아래 주석 할 것.
+		// app.Use(csrf.New) // 프론트에서 CSRF 설정이 되어 있음! 백에서 처리할 시 아래 주석 할 것.
 		app.Use(translations())
 
 		mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))

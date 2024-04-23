@@ -1,9 +1,7 @@
 package actions
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/gobuffalo/buffalo"
 
@@ -40,38 +38,50 @@ func AuthLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) *webcons
 	return webconsole.CommonResponseStatusInternalServerError(nil)
 }
 
-func AuthGetUserInfo(c buffalo.Context) error {
+func AuthGetUserInfo(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
+	commonResponse := &webconsole.CommonResponse{}
+	var err error
 	if util.MCIAM_USE {
-		fmt.Println("MCIAM_USE")
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON("MCIAM_USE"))
-	} else {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": "Auth Service Is Not Available"}))
-	}
-}
-
-func AuthGetUserValidate(c buffalo.Context) error {
-	if util.MCIAM_USE {
-		fmt.Println("MCIAM_USE")
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON("MCIAM_USE"))
-	} else {
-		return c.Render(http.StatusServiceUnavailable,
-			r.JSON(map[string]string{"err": "Auth Service Is Not Available"}))
-	}
-}
-
-func AuthMiddleware(next buffalo.Handler) buffalo.Handler {
-	return func(c buffalo.Context) error {
-		if util.MCIAM_USE {
-			if auth.AuthMcIamMiddleware(c) != nil {
-				res := webconsole.CommonResponseStatusStatusUnauthorized(nil)
-				return c.Render(res.Status.StatusCode, r.JSON(res))
-			}
-			return next(c)
-		} else {
-			return next(c)
+		// commonResponse, err = xxx.XXXXXXXXX(c, commonReq)
+		if err != nil {
+			log.Println(err.Error())
+			return commonResponse
 		}
+		return commonResponse
+	} else {
+		commonResponse.ResponseData = "NO AuthGetUserInfo"
+		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
+	}
+}
+
+func AuthGetUserValidate(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
+	commonResponse := &webconsole.CommonResponse{}
+	var err error
+	if util.MCIAM_USE {
+		// commonResponse, err = xxx.XXXXXXXXX(c, commonReq)
+		if err != nil {
+			log.Println(err.Error())
+			return commonResponse
+		}
+		return commonResponse
+	} else {
+		commonResponse.ResponseData = "NO AuthGetUserValidate"
+		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
+	}
+}
+
+func AuthMiddleware(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
+	commonResponse := &webconsole.CommonResponse{}
+	var err error
+	if util.MCIAM_USE {
+		// commonResponse, err = xxx.XXXXXXXXX(c, commonReq)
+		if err != nil {
+			log.Println(err.Error())
+			return commonResponse
+		}
+		return commonResponse
+	} else {
+		commonResponse.ResponseData = "NO AuthMiddleware"
+		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
 	}
 }

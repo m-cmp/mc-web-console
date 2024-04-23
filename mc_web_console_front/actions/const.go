@@ -7,9 +7,9 @@ import (
 
 var (
 	APIbaseHost               *url.URL
-	APILoginPath              = "/api/authlogin/1234"
+	APILoginPath              = "/api/authlogin"
 	APILoginRefreshPath       = "/api/mciam/auth/login/refresh"
-	APILogoutPath             = "/api/authlogout/1234"
+	APILogoutPath             = "/api/authlogout"
 	APIUserValidatePath       = "/api/mciam/auth/validate"
 	APIUserInfoPath           = "/api/mciam/auth/userinfo"
 	RootPathForRedirect       map[string]interface{}
