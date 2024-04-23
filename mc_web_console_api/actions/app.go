@@ -64,8 +64,8 @@ func App() *buffalo.App {
 		// 등록(Reg), 생성(Create), 수정(Edit), 삭제(Del), 해제(Rel) : XXXProc
 		apiPath := "/api"
 		api := app.Group(apiPath)
-		api.GET("/{path:.+}", GetRouteController)
-		api.POST("/{targetController}/{path:.+}", PostRouteController)
+		api.GET("/{targetController}", GetRouteController)
+		api.POST("/{targetController}", PostRouteController)
 
 		// API TEST
 		setting := app.Group(apiPath + "/setting")

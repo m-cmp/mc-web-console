@@ -2,7 +2,6 @@ package actions
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"reflect"
@@ -29,10 +28,10 @@ func PostRouteController(c buffalo.Context) error {
 	// param 종류( pathParam, queryParam)
 	// target controller 이름.
 
-	log.Println("in RoutePostController")
+	log.Println("-- In PostRouteController -- ")
 
 	targetController := c.Param("targetController")
-	fmt.Printf("targetController :: [ %s ]\n", targetController)
+	log.Printf("== targetController :: [ %s ]\n", targetController)
 
 	commonResponse := &webconsole.CommonResponse{}
 	commonRequest := &webconsole.CommonRequest{}
@@ -40,6 +39,7 @@ func PostRouteController(c buffalo.Context) error {
 	if err := c.Bind(commonRequest); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(err))
 	}
+	log.Printf("== commonRequest :: [ %+v ]\n", commonRequest)
 
 	// 권한 check???
 	// 1차 메뉴 권한
@@ -64,10 +64,12 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = AuthLogin(c, commonRequest)
 	case "authlogout":
 		commonResponse = AuthLogout(c, commonRequest)
-	case "Validate":
-		return AuthGetUserValidate(c)
-	case "UserInfo":
-		return AuthGetUserInfo(c)
+	case "workspacelistbyuser":
+		commonResponse = WorkspaceListByUser(c, commonRequest)
+		// case "Validate":
+		// 	return AuthGetUserValidate(c)
+		// case "UserInfo":
+		// 	return AuthGetUserInfo(c)1
 
 		//defaut :
 		// TODO : a action를 찾아 실행하도록
@@ -78,7 +80,7 @@ func PostRouteController(c buffalo.Context) error {
 	// 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	// }
 
-	return c.Render(http.StatusOK, r.JSON(commonResponse))
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
 // Get으로 전송되는 data 처리를 위하여
