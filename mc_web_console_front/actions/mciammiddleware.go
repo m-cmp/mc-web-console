@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -22,6 +23,10 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 			return c.Redirect(http.StatusSeeOther, "authLoginPath()")
 		}
 		jwtDecode, _ := jwtDecode(accessToken.(string))
+		if reflect.TypeOf(jwtDecode["exp"]) == reflect.TypeOf(nil) {
+			c.Session().Clear()
+			return c.Redirect(http.StatusSeeOther, "authLoginPath()")
+		}
 		t := time.Unix(int64(jwtDecode["exp"].(float64)), 0)
 		if t.Before(time.Now()) {
 			fmt.Println(time.Since(t))

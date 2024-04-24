@@ -8,9 +8,20 @@ import (
 	mcmodels "mc_web_console_common_models"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/gobuffalo/buffalo"
 )
+
+var (
+	apiBaseHost *url.URL
+)
+
+func init() {
+	apiAddr := os.Getenv("API_ADDR")
+	apiPort := os.Getenv("API_PORT")
+	apiBaseHost, _ = url.Parse("http://" + apiAddr + ":" + apiPort)
+}
 
 func CommonAPIPostWithoutAccessToken(path string, s *mcmodels.CommonRequest) (*http.Response, *mcmodels.CommonResponse, error) {
 	jsonData, err := json.Marshal(s)
@@ -19,7 +30,7 @@ func CommonAPIPostWithoutAccessToken(path string, s *mcmodels.CommonRequest) (*h
 		return nil, nil, err
 	}
 
-	resp, err := http.Post(APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(apiBaseHost.ResolveReference(&url.URL{Path: path}).String(), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println("commonPostERR : http.Post : ", err.Error())
 		return resp, nil, err
@@ -53,7 +64,7 @@ func CommonAPIPost(path string, s *mcmodels.CommonRequest, c buffalo.Context) (*
 	accessToken := c.Session().Get("Authorization")
 	accessTokenHeader := "Bearer " + accessToken.(string)
 
-	req, err := http.NewRequest("POST", APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", apiBaseHost.ResolveReference(&url.URL{Path: path}).String(), bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println("CommonAPIPostWithAccesstoken ERR : http.NewRequest : ", err.Error())
 		return nil, nil, err
@@ -89,7 +100,7 @@ func CommonAPIPost(path string, s *mcmodels.CommonRequest, c buffalo.Context) (*
 }
 
 func CommonAPIGetWithoutAccessToken(path string) (*http.Response, *mcmodels.CommonResponse, error) {
-	resp, err := http.Get(APIbaseHost.ResolveReference(&url.URL{Path: path}).String())
+	resp, err := http.Get(apiBaseHost.ResolveReference(&url.URL{Path: path}).String())
 	if err != nil {
 		log.Println("commonPostERR : http.Post : ", err.Error())
 		return resp, nil, err
@@ -116,7 +127,7 @@ func CommonAPIGetWithoutAccessToken(path string) (*http.Response, *mcmodels.Comm
 func CommonAPIGet(path string, c buffalo.Context) (*http.Response, *mcmodels.CommonResponse, error) {
 	accessToken := c.Session().Get("Authorization").(string)
 
-	req, err := http.NewRequest("GET", APIbaseHost.ResolveReference(&url.URL{Path: path}).String(), nil)
+	req, err := http.NewRequest("GET", apiBaseHost.ResolveReference(&url.URL{Path: path}).String(), nil)
 	if err != nil {
 		log.Println("CommonAPIGetWithAccesstoken ERR : http.NewRequest : ", err.Error())
 		return nil, nil, err

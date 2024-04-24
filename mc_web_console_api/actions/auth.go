@@ -74,7 +74,7 @@ func AuthMiddleware(c buffalo.Context, commonReq *webconsole.CommonRequest) *web
 	commonResponse := &webconsole.CommonResponse{}
 	var err error
 	if util.MCIAM_USE {
-		// commonResponse, err = xxx.XXXXXXXXX(c, commonReq)
+		commonResponse, err = auth.AuthMcIamMiddleware(c)
 		if err != nil {
 			log.Println(err.Error())
 			return commonResponse

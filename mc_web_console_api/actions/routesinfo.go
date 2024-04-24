@@ -24,23 +24,27 @@ type actions struct{}
 // Client에서 전송되는 data type은 POST 임 //
 // case문에서 controller이름 추출하여 controller 호출
 func PostRouteController(c buffalo.Context) error {
-
 	// param 종류( pathParam, queryParam)
 	// target controller 이름.
 
-	log.Println("-- In PostRouteController -- ")
+	log.Println("#### In PostRouteController ####")
 
 	targetController := c.Param("targetController")
-	log.Printf("== targetController :: [ %s ]\n", targetController)
+	log.Printf("== targetController : [ %s ] ==\n", targetController)
 
 	commonResponse := &webconsole.CommonResponse{}
 	commonRequest := &webconsole.CommonRequest{}
-
 	if err := c.Bind(commonRequest); err != nil {
 		return c.Render(http.StatusBadRequest, r.JSON(err))
 	}
-	log.Printf("== commonRequest :: [ %+v ]\n", commonRequest)
+	log.Printf("== commonRequest : [ %+v ]\n", commonRequest)
 
+	if !strings.Contains(targetController, "auth") {
+		res := AuthMiddleware(c, commonRequest)
+		if res.Status.StatusCode != 200 {
+			return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+		}
+	}
 	// 권한 check???
 	// 1차 메뉴 권한
 	// 2차 project 권한 체크 -- middle ware
@@ -58,7 +62,6 @@ func PostRouteController(c buffalo.Context) error {
 		// optionParam := c.Params().Get("option")
 		// filterKeyParam := c.Params().Get("filterKey")
 		// filterValParam := c.Params().Get("filterVal")
-
 		// responseData, err := McisReg(dataObj, pathParam, queryParam)
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
