@@ -5,5 +5,11 @@ type WorkspaceMciamListByUserRequest struct {
 }
 
 type WorkspaceMciamListByUserRespose struct {
-	WorkspaceList []interface{} `json:workspaceList`
+	Workspaces []Workspace `json:workspaceList`
+}
+
+type Workspace struct {
+	Id          string "json:id"
+	Name        string "json:name"
+	Description string "json:description"
 }

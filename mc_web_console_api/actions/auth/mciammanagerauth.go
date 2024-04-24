@@ -29,12 +29,12 @@ var (
 	suspendAccesstokenEndPoint = mcIamManagerUrl + "/api/auth/logout"
 )
 
-func AuthMcIamMiddleware(c buffalo.Context) error {
+func AuthMcIamMiddleware(c buffalo.Context) (*webconsole.CommonResponse, error) {
 	_, err := AuthMcIamGetUserValidate(c, &webconsole.CommonRequest{})
 	if err != nil {
-		return err
+		return webconsole.CommonResponseStatusStatusUnauthorized(err.Error()), err
 	}
-	return nil
+	return webconsole.CommonResponseStatusOK(nil), nil
 }
 
 func AuthMcIamLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {

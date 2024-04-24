@@ -3,6 +3,7 @@ module mc_web_console_front
 go 1.21.0
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gobuffalo/buffalo v1.1.0
 	github.com/gobuffalo/envy v1.10.2
 	github.com/gobuffalo/mw-csrf v1.0.2
@@ -11,6 +12,8 @@ require (
 	github.com/gobuffalo/mw-paramlogger v1.0.2
 	github.com/gobuffalo/suite/v4 v4.0.4
 	github.com/gobuffalo/validate v2.0.4+incompatible
+	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/unrolled/secure v1.14.0
 )
 
@@ -18,7 +21,6 @@ require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -42,7 +44,6 @@ require (
 	github.com/gobuffalo/tags/v3 v3.1.4 // indirect
 	github.com/gobuffalo/validate/v3 v3.3.3 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
