@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/golang-jwt/jwt/v4"
 
 	"mc_web_console_api/actions/auth"
 	"mc_web_console_api/fwmodels/webconsole"
@@ -84,4 +85,10 @@ func AuthMiddleware(c buffalo.Context, commonReq *webconsole.CommonRequest) *web
 		commonResponse.ResponseData = "NO AuthMiddleware"
 		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
 	}
+}
+
+func JwtDecode(jwtToken string) jwt.MapClaims {
+	claims := jwt.MapClaims{}
+	jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
+	return claims
 }
