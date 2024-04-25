@@ -11,8 +11,12 @@ export function setSessionCurrentWorkspaceProjcet(workspaceId, projectId) {
     sessionStorage.setItem('currentWorkspacProject',JSON.stringify(currentWorksppacProject))
 }
 
-export function getSessionWorkspaceList() {
+export async function getSessionWorkspaceList() {
     let workspaceList = JSON.parse(sessionStorage.getItem('workspaceList'))
+    if (workspaceList == null){
+        await webconsolejs["common/storage/sessionstorage"].updateSessionWorkspaceList()
+        workspaceList = webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceList()
+    }
     return workspaceList.Workspaces
 }
 

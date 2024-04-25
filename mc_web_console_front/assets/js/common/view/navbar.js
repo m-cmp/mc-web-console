@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded',async function () {
-    let workspaceList = webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceList()
+    let workspaceList = await webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceList()
+    
+    console.log(workspaceList)
     let projectListselectBox = document.getElementById("select-current-project");
     let workspaceListselectBox = document.getElementById("select-current-workspace");
     for (let workspace of workspaceList){
