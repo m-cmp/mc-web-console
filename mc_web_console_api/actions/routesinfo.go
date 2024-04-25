@@ -37,7 +37,7 @@ func PostRouteController(c buffalo.Context) error {
 	c.Bind(commonRequest)
 	log.Printf("== commonRequest : [ %+v ]\n", commonRequest)
 
-	if !strings.Contains(targetController, "auth") {
+	if strings.Contains(targetController, "auth") {
 		res := AuthMiddleware(c, commonRequest)
 		if res.Status.StatusCode != 200 {
 			return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
@@ -74,7 +74,8 @@ func PostRouteController(c buffalo.Context) error {
 
 		//defaut :
 		// TODO : a action를 찾아 실행하도록
-
+	case "projectlistbyworkspaceid":
+		commonResponse = ProjectListByWorkspaceId(c, commonRequest)
 	}
 
 	// if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
