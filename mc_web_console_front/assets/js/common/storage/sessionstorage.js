@@ -1,3 +1,16 @@
+export function getSessionCurrentWorkspaceProjcet() {
+    let currentWorkspacProject = JSON.parse(sessionStorage.getItem('currentWorkspacProject'))
+    return currentWorkspacProject
+}
+
+export function setSessionCurrentWorkspaceProjcet(workspaceId, projectId) {
+    let currentWorksppacProject = {
+        "currentWorkspace":workspaceId,
+        "currentProject":projectId
+    }
+    sessionStorage.setItem('currentWorkspacProject',JSON.stringify(currentWorksppacProject))
+}
+
 export function getSessionWorkspaceList() {
     let workspaceList = JSON.parse(sessionStorage.getItem('workspaceList'))
     return workspaceList.Workspaces
@@ -5,7 +18,7 @@ export function getSessionWorkspaceList() {
 
 export function getSessionProjectList() {
     let projectList = JSON.parse(sessionStorage.getItem('projectList'))
-    return workspaceList.Workspaces
+    return projectList.Projects
 }
 
 export async function updateSessionWorkspaceList() {
@@ -13,17 +26,13 @@ export async function updateSessionWorkspaceList() {
     sessionStorage.setItem('workspaceList', JSON.stringify(response.data.responseData));
 }
 
-export async function updateSessionProjectListByWorkspaceId() {
+export async function updateSessionProjectListByWorkspaceId(workspaceId) {
     let data = {
         "requestData":{
-            "userId":"asdasd",
-            "workspaceId":"testId1"
+            "userId":"mciamuser",
+            "workspaceId": workspaceId
         }
     }
     const response = await webconsolejs["common/http/api"].commonAPIPost('/api/projectlistbyworkspaceid',data)
-    sessionStorage.setItem('projectList', JSON.stringify(response.data.responseData.Projects));
-}
-
-export function setSessionCurrentWorkspace() {
-    
+    sessionStorage.setItem('projectList', JSON.stringify(response.data.responseData));
 }
