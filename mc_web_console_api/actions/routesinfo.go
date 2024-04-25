@@ -37,12 +37,13 @@ func PostRouteController(c buffalo.Context) error {
 	c.Bind(commonRequest)
 	log.Printf("== commonRequest : [ %+v ]\n", commonRequest)
 
-	if strings.Contains(targetController, "auth") {
-		res := AuthMiddleware(c, commonRequest)
-		if res.Status.StatusCode != 200 {
-			return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
-		}
-	}
+	// if strings.Contains(targetController, "auth") {
+	// 	res := AuthMiddleware(c, commonRequest)
+	// 	if res.Status.StatusCode != 200 {
+	// 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	// 	}
+	// }
+
 	// 권한 check???
 	// 1차 메뉴 권한
 	// 2차 project 권한 체크 -- middle ware
