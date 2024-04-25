@@ -20,7 +20,9 @@ require (
 	github.com/gobuffalo/validate/v3 v3.3.3
 	github.com/gobuffalo/x v0.0.0-20190224155809-6bb134105960
 	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/swaggo/swag v1.16.1
 	github.com/unrolled/secure v1.14.0
@@ -54,7 +56,6 @@ require (
 	github.com/gobuffalo/plush/v4 v4.1.18 // indirect
 	github.com/gobuffalo/refresh v1.13.3 // indirect
 	github.com/gobuffalo/tags/v3 v3.1.4 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
@@ -80,7 +81,6 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/microcosm-cc/bluemonday v1.0.24 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/monoculum/formam v3.5.5+incompatible // indirect
 	github.com/nicksnyder/go-i18n v1.10.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
