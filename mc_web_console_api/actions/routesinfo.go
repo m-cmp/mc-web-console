@@ -30,13 +30,11 @@ func PostRouteController(c buffalo.Context) error {
 	log.Println("#### In PostRouteController ####")
 
 	targetController := c.Param("targetController")
-	log.Printf("== targetController : [ %s ] ==\n", targetController)
+	log.Printf("== targetController : [ %s ]\n", targetController)
 
 	commonResponse := &webconsole.CommonResponse{}
 	commonRequest := &webconsole.CommonRequest{}
-	if err := c.Bind(commonRequest); err != nil {
-		return c.Render(http.StatusBadRequest, r.JSON(err))
-	}
+	c.Bind(commonRequest)
 	log.Printf("== commonRequest : [ %+v ]\n", commonRequest)
 
 	if !strings.Contains(targetController, "auth") {

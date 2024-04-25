@@ -56,8 +56,8 @@ func AuthMcIamLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) (*we
 		return webconsole.CommonResponseStatusInternalServerError(nil), err
 	}
 
-	jwtDecode := jwtDecode(accessTokenResponse.AccessToken)
-	targetSubject, _ := uuid.FromString(jwtDecode["sub"].(string))
+	jwtDecodd := McIamJwtDecode(accessTokenResponse.AccessToken)
+	targetSubject, _ := uuid.FromString(jwtDecodd["sub"].(string))
 	usersess := &models.Usersession{
 		ID:               targetSubject,
 		AccessToken:      accessTokenResponse.AccessToken,
@@ -143,8 +143,8 @@ func AuthMcIamRefresh(c buffalo.Context, commonReq *webconsole.CommonRequest) (*
 func AuthMcIamLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
 	headerAccessToken := c.Request().Header.Get("Authorization")
 	accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-	jwtDecode := jwtDecode(accessToken)
-	targetSubject, _ := uuid.FromString(jwtDecode["sub"].(string))
+	jwtDecoded := McIamJwtDecode(accessToken)
+	targetSubject, _ := uuid.FromString(jwtDecoded["sub"].(string))
 
 	usersess := &models.Usersession{}
 	txerr := models.DB.Find(usersess, targetSubject)
@@ -255,7 +255,7 @@ func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, error) {
 	return userinfo, nil
 }
 
-func jwtDecode(jwtToken string) jwt.MapClaims {
+func McIamJwtDecode(jwtToken string) jwt.MapClaims {
 	claims := jwt.MapClaims{}
 	jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
 	return claims

@@ -11,6 +11,16 @@
     <%= partial("partials/layout/flash.html") %>
   </head>
   <%= yield %>
+
+  <!-- common js -->
   <%= javascriptTag("application.js") %>
+  <%= javascriptTag("common/http/api.js") %>
+  <%= javascriptTag("common/storage/sessionstorage.js") %>
+
+  <!-- common view -->
+  <%= javascriptTag("common/tabler/tabler.js") %>
+  <%= javascriptTag("common/tabler/tablerHelper.js") %>
+  <%= javascriptTag("common/view/sideMenu.js") %>
+
 </html>
 
