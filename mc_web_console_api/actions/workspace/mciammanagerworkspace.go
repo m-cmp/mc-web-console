@@ -70,7 +70,11 @@ func ProjectListMciamByWorkspaceId(c buffalo.Context, commonReq *webconsole.Comm
 	}
 
 	// TODO : 사용자가 자신의 Workspace를 사용하는지 여부 확인하는 로직
-	workspaceProject := &mcmodels.WorkspaceProjectForMappingResponse{}
+	workspaceProject := &mcmodels.WorkspaceProjectForMappingResponse{
+		Id:          "testprojectId1",
+		Name:        "testProject1",
+		Description: "testProject1 Description",
+	}
 	// Test Dummy DATA
 
 	switch projectListByWorkspaceRequest.WorkspaceId {
