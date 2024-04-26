@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"
@@ -14,7 +14,7 @@ import (
 )
 
 // SshkeyList default implementation.
-func (a actions) SshKeyList(c buffalo.Context) error {
+func SshKeyList(c buffalo.Context) error {
 	log.Println("GetSshKeyList : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	// TODO : defaultNameSpaceID 가 없으면 설정화면으로 보낼 것
@@ -56,7 +56,7 @@ func (a actions) SshKeyList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) SshKeyListByRegion(c buffalo.Context) error {
+func SshKeyListByRegion(c buffalo.Context) error {
 	log.Println("SshKeyListByRegion : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -150,7 +150,7 @@ func (a actions) SshKeyListByRegion(c buffalo.Context) error {
 		}))
 	}
 }
-func (a actions) SshKeyGet(c buffalo.Context) error {
+func SshKeyGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	paramSshKeyId := c.Param("sshKeyId")
@@ -175,7 +175,7 @@ func (a actions) SshKeyGet(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) SshKeyReg(c buffalo.Context) error {
+func SshKeyReg(c buffalo.Context) error {
 	// 현재 namespace 정보 가져오기
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
@@ -242,7 +242,7 @@ func (a actions) SshKeyReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) SshKeyDel(c buffalo.Context) error {
+func SshKeyDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 

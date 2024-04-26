@@ -46,7 +46,7 @@ while !($APISERVER_HEALTH); do
     printf "\r%s" "${spinner:$count:1}"
     count=$(( (count + 1) % 4 ))
     sleep 1
-    http_status=$(curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:$API_PORT/alive)
+    http_status=$(curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:$API_PORT/api/alive)
     if [ "$http_status" != "000" ]; then
         APISERVER_HEALTH=true
     fi

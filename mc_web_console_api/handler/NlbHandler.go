@@ -10,9 +10,9 @@ import (
 	// "github.com/davecgh/go-spew/spew"
 
 	// "os"
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
-	tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
 	util "mc_web_console_api/util"
 
@@ -22,7 +22,7 @@ import (
 /*
 NLB ID만 목록으로 제공
 */
-func GetNlbIdListByMcisID(nameSpaceID string, mcisID string) ([]string, echomodel.WebStatus) {
+func GetNlbIdListByMcisID(nameSpaceID string, mcisID string) ([]string, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb"
 
 	var paramMapper = make(map[string]string)
@@ -36,7 +36,7 @@ func GetNlbIdListByMcisID(nameSpaceID string, mcisID string) ([]string, echomode
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -46,20 +46,20 @@ func GetNlbIdListByMcisID(nameSpaceID string, mcisID string) ([]string, echomode
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return nil, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return nil, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&mcisList)
 	//spew.Dump(body)
 	fmt.Println(mcisList.IDList)
 
-	return mcisList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	return mcisList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 /*
 NLB 목록을 조회 조건에 따라 검색
 */
-func GetNlbListByOption(nameSpaceID string, mcisID string, optionParam string) ([]tbmcis.TbNLBInfo, echomodel.WebStatus) {
+func GetNlbListByOption(nameSpaceID string, mcisID string, optionParam string) ([]tbmcis.TbNLBInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb"
 
 	var paramMapper = make(map[string]string)
@@ -77,19 +77,19 @@ func GetNlbListByOption(nameSpaceID string, mcisID string, optionParam string) (
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	nlbList := map[string][]tbmcis.TbNLBInfo{}
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return nil, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return nil, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 	json.NewDecoder(respBody).Decode(&nlbList)
 	fmt.Println(nlbList["nlb"])
@@ -145,7 +145,7 @@ func RegNlbByAsync(nameSpaceID string, mcisID string, nlbReq *tbmcis.TbNLBReq, c
 }
 
 // 특정 Namespace의 MCIS 내 모든 NLB 제거
-func DelAllNlb(nameSpaceID string, mcisID string) (io.ReadCloser, echomodel.WebStatus) {
+func DelAllNlb(nameSpaceID string, mcisID string) (io.ReadCloser, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb"
 
 	var paramMapper = make(map[string]string)
@@ -163,14 +163,14 @@ func DelAllNlb(nameSpaceID string, mcisID string) (io.ReadCloser, echomodel.WebS
 	url := util.TUMBLEBUG + urlParam
 
 	if mcisID == "" {
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: "MCIS ID is required"}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: "MCIS ID is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	respBody := resp.Body
 	respStatus := resp.StatusCode
@@ -179,14 +179,14 @@ func DelAllNlb(nameSpaceID string, mcisID string) (io.ReadCloser, echomodel.WebS
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println("DelNLB ", failResultInfo)
-		return nil, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return nil, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
-	return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // DelNlb : nlbId 에 해당하는 nlb 제거
-func DelNlb(nameSpaceID string, mcisID string, nlbID string, optionParam string) (io.ReadCloser, echomodel.WebStatus) {
+func DelNlb(nameSpaceID string, mcisID string, nlbID string, optionParam string) (io.ReadCloser, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb/{nlbId}"
 
 	var paramMapper = make(map[string]string)
@@ -199,17 +199,17 @@ func DelNlb(nameSpaceID string, mcisID string, nlbID string, optionParam string)
 	url := util.TUMBLEBUG + urlParam
 
 	if mcisID == "" {
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: "MCIS ID is required"}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: "MCIS ID is required"}
 	}
 	if nlbID == "" {
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: "NLB ID is required"}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: "NLB ID is required"}
 	}
 
 	// 경로안에 parameter가 있어 추가 param없이 호출 함.
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	respBody := resp.Body
 	respStatus := resp.StatusCode
@@ -218,14 +218,14 @@ func DelNlb(nameSpaceID string, mcisID string, nlbID string, optionParam string)
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println("DelNLB ", failResultInfo)
-		return nil, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return nil, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
-	return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 특정 NLB 조회
-func GetNlbData(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLBInfo, echomodel.WebStatus) {
+func GetNlbData(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLBInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb/{nlbId}"
 
 	var paramMapper = make(map[string]string)
@@ -239,7 +239,7 @@ func GetNlbData(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLBIn
 
 	if err != nil {
 		fmt.Println(err)
-		return tbmcis.TbNLBInfo{}, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return tbmcis.TbNLBInfo{}, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -249,16 +249,16 @@ func GetNlbData(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLBIn
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return tbmcis.TbNLBInfo{}, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return tbmcis.TbNLBInfo{}, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&nlbInfo)
 
-	return nlbInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return nlbInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 특정 NLB의 Health
-func GetNlbHealth(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLBInfo, echomodel.WebStatus) {
+func GetNlbHealth(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLBInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb/{nlbId}/healthz"
 
 	var paramMapper = make(map[string]string)
@@ -272,7 +272,7 @@ func GetNlbHealth(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLB
 
 	if err != nil {
 		fmt.Println(err)
-		return tbmcis.TbNLBInfo{}, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return tbmcis.TbNLBInfo{}, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -282,17 +282,17 @@ func GetNlbHealth(nameSpaceID string, mcisID string, nlbID string) (tbmcis.TbNLB
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return tbmcis.TbNLBInfo{}, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return tbmcis.TbNLBInfo{}, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&nlbInfo)
 	fmt.Println(nlbInfo)
 
-	return nlbInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return nlbInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NLB의 TargetGroup에 VM 추가
-func AddVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, nlbTargetGroupReq *tbmcis.TbNLBAddRemoveVMReq) (*tbmcis.TbNLBInfo, echomodel.WebStatus) {
+func AddVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, nlbTargetGroupReq *tbmcis.TbNLBAddRemoveVMReq) (*tbmcis.TbNLBInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb/{nlbId}/vm"
 
 	var paramMapper = make(map[string]string)
@@ -307,20 +307,20 @@ func AddVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, nlbT
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnNlbInfo := tbmcis.TbNLBInfo{}
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnNlbInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnNlbInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return &returnNlbInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return &returnNlbInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&returnNlbInfo)
@@ -332,7 +332,7 @@ func AddVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, nlbT
 }
 
 // NLB의 TargetGroup에 VM 제거
-func RemoveVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, nlbTargetGroupReq *tbmcis.TbNLBAddRemoveVMReq) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func RemoveVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, nlbTargetGroupReq *tbmcis.TbNLBAddRemoveVMReq) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/mcis/{mcisId}/nlb/{nlbId}/vm"
 
 	var paramMapper = make(map[string]string)
@@ -347,20 +347,20 @@ func RemoveVmToNLBTargetGroup(nameSpaceID string, mcisID string, nlbID string, n
 	resp, err := util.CommonHttp(url, pbytes, http.MethodDelete)
 
 	resultInfo := tbcommon.TbSimpleMsg{}
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)

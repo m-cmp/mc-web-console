@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"strconv"
 )
 
 // 상수 정의
@@ -11,11 +12,18 @@ import (
 // var CloudConnectionUrl = os.Getenv("SPIDER_URL")
 // var NameSpaceUrl = os.Getenv("TUMBLE_URL")
 
+func init() {
+	MCIAM_USE, _ = strconv.ParseBool(os.Getenv("MCIAM_USE"))
+}
+
 var SPIDER = os.Getenv("SPIDER_URL")
 var TUMBLEBUG = os.Getenv("TUMBLE_URL")
 var DRAGONFLY = os.Getenv("DRAGONFLY_URL")
 var LADYBUG = os.Getenv("LADYBUG_URL")
 var MCKS = os.Getenv("MCKS_URL")
+
+var MCIAMMANAGER = os.Getenv("IAMMANAGER_URL")
+var MCIAM_USE = false // MC-IAM-MANAGER 사용여부, init 에서 재정의
 
 var HTTP_CALL_SUCCESS = 200
 var HTTP_POST_SUCCESS = 201

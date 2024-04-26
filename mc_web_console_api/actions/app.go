@@ -2,7 +2,6 @@ package actions
 
 import (
 	"os"
-	"strconv"
 	"sync"
 
 	"github.com/gobuffalo/buffalo"
@@ -11,7 +10,6 @@ import (
 	contenttype "github.com/gobuffalo/mw-contenttype"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	"github.com/gobuffalo/x/sessions"
-	"github.com/rs/cors"
 	"github.com/unrolled/secure"
 
 	// gwa "github.com/gobuffalo/gocraft-work-adapter"
@@ -25,9 +23,6 @@ import (
 	"mc_web_console_api/models"
 
 	_ "mc_web_console_api/docs" //mcone의 경우
-
-	buffaloSwagger "github.com/swaggo/buffalo-swagger"
-	"github.com/swaggo/buffalo-swagger/swaggerFiles"
 )
 
 // ENV is used to help switch settings based on where the
@@ -45,54 +40,159 @@ func App() *buffalo.App {
 		app = buffalo.New(buffalo.Options{
 			Env:          ENV,
 			SessionStore: sessions.Null{},
-			PreWares: []buffalo.PreWare{
-				cors.Default().Handler,
+			PreWares:     []buffalo.PreWare{
+				// cors.Default().Handler,
 			},
-			SessionName: "_mc_web_console_api_session",
+			SessionName: "mc_web_console",
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
-
-		mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
-		app.ANY("/alive", alive)
 
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
-
-		app.GET("/swagger/{*docs}", buffaloSwagger.WrapHandler(swaggerFiles.Handler))
-
-		// app.Use(SkipMiddlewareByRoutePath)
-		// app.Use(SetCloudProviderList)
-
 		// RoutesManager(app)
 
-		//// MANUAL ROUTE ////
+		// middleware START //
+		// app.Use(AuthMiddleware)
+		// middleware END //
+
+		// controller func naming Rule
+		// 데이터 처리 관점으로
+		// 단건, 맵도 한개 :  XXXData
+		// 목록 : XXXList
+		// 등록(Reg), 생성(Create), 수정(Edit), 삭제(Del), 해제(Rel) : XXXProc
 		apiPath := "/api"
+		api := app.Group(apiPath)
+		api.GET("/{targetController}", GetRouteController)
+		api.POST("/{targetController}", PostRouteController)
+
+		// API TEST
+		setting := app.Group(apiPath + "/setting")
+		namespaces := setting.Group("/namespaces")
+		namespace := namespaces.Group("/namespace")
+		namespace.GET("/list", NamespaceAllList)
+		namespace.POST("/reg/proc", NamespaceReg)
+
+		lu := app.Group(apiPath + "/lu")
+		lu.POST("/setting/resources/machineimage/lookupimage", LookupVirtualMachineImageData)
+
+		// List all configs
+		config := app.Group(apiPath + "/config")
+		config.GET("/", TbConfig)
+
+		// Get config
+		// configByid := app.Group(apiPath + "/config")
+		// configByid.GET("/", TBconfigbyId)
+
+		// loadcommonresource
+		loadcommonresource := app.Group(apiPath + "loadcommonresource")
+		loadcommonresource.GET("/", LoadCommonResource)
+
+		// [Admin] Multi-Cloud Environment Configuration
+		health := app.Group(apiPath + "/health")
+		health.GET("/", GetTBHealth)
+
+		// GET CSP Resources Overview
+		resources := setting.Group("/resources")
+		resources.GET("/inspectresourcesoverview", GetInspectResourcesOverview)
+
+		// Get value of an object
+		object := app.Group(apiPath + "/object")
+		object.GET("/", GetObjectThroughTB)
+
+		// List all objects for a given key
+		objects := app.Group(apiPath + "/objects")
+		objects.GET("/", GetObjectListThroughTB)
+
+		// [Infra service] MCIS Provisioning management
+		operation := app.Group(apiPath + "/operation")
+		manages := operation.Group("/manages")
+		mcismng := manages.Group("/mcismng")
+
+		// List all MCISs or MCISs' ID
+		mcismng.GET("/list", McisList)
+		// Get MCIS, Action to MCIS (status, suspend, resume, reboot, terminate, refine), or Get VMs' ID
+		//mcismng.GET("/", McisGet)
+
+		ns := app.Group(apiPath + "/ns")
+		nsid := ns.Group("/{nsid}")
+		mciss := nsid.Group("/mcis")
+		mcisid := mciss.Group("/{mcisid}")
+		mcisid.GET("/", McisGet)
+
+		// List SubGroup IDs in a specified MCIS
+		mcismng.GET("/{mcisid}"+"/subgroup", McisSubGroupList)
 
 		mcis := app.Group(apiPath + "/mcis")
 		mcis.GET("/mcislist", McisList)
 
-		// DEBUG START //
+		// for the test
+		cluster := app.Group(apiPath + "/cluster")
+		cluster.GET("/ns/{nsId}/cluster", ClusterList)
+		cluster.POST("/ns/{nsId}/cluster", ClusterReg)
+		cluster.DELETE("/ns/{nsId}/cluster/{clusterId}", DelCluster)
+		cluster.GET("/ns/{nsId}/cluster/{clusterId}", ClusterList)
+		cluster.POST("/ns/{nsId}/cluster/{clusterId}/nodegroup", RegNodeGroup)
+		//////////////////////////////////////////////////////////////////////
+		// TOBE PATH
 
+		// ns
+
+		// ns/{nsid}
+
+		// benchmark
+
+		// cluster
+
+		// cmd
+
+		// control
+
+		// mcis
+
+		// mcis/{mcisid}/nlb
+
+		// mcis/{mcisid}/subgroup
+
+		// mcis/{mcisid}/vm
+
+		// monitoring
+
+		// network
+
+		// policy/mcis
+
+		// resources/customImage
+
+		// resources/dataDisk
+
+		// resources/
+
+		// resources/image
+
+		// resources/securityGroup
+
+		// resources/spec
+
+		// resources/sshKey
+
+		// resources/vNET
+
+		// object
+
+		// objects
+
+		//
+		// MC-IAM-MANAGER REQUIRERD
+
+		// DEBUG START //api/debug/tumblebug
+		if ENV == "development" {
+			debug := app.Group(apiPath + "/debug")
+			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
+		}
 		//  DEBUG END  //
 
-		mciamauth := app.Group(apiPath + "/mciam/auth")
-		// MC-IAM-MANAGER REQUIRERD
-		if mciamUse {
-			mciamauth.Use(McIamAuthMiddleware)
-			mciamauth.Middleware.Skip(McIamAuthMiddleware, McIamAuthLoginHandler, McIamAuthGetUserInfoHandler)
-		}
-		mciamauth.POST("/login", McIamAuthLoginHandler)
-		mciamauth.POST("/logout", McIamAuthLogoutHandler)
-		mciamauth.GET("/validate", McIamAuthGetUserInfoHandler)
-
-		protectedtest := app.Group(apiPath + "/protected")
-		// MC-IAM-MANAGER REQUIRERD
-		if mciamUse {
-			protectedtest.Use(McIamAuthMiddleware)
-		}
-		protectedtest.ANY("/alive", alive)
 	})
 
 	return app
@@ -125,20 +225,20 @@ func forceSSL() buffalo.MiddlewareFunc {
 	})
 }
 
-// Redirect에 route 정보 전달
-func RedirectTool(c buffalo.Context, p string) error {
-	routes := app.Routes()
-	for _, route := range routes {
-		if route.PathName == p {
-			return c.Redirect(302, route.Path)
-		}
-	}
-	return c.Redirect(302, "/")
-}
+// // Redirect에 route 정보 전달
+// func RedirectTool(c buffalo.Context, p string) error {
+// 	routes := app.Routes()
+// 	for _, route := range routes {
+// 		if route.PathName == p {
+// 			return c.Redirect(http.StatusFound, route.Path)
+// 		}
+// 	}
+// 	return c.Redirect(http.StatusFound, "/")
+// }
 
-func alive(c buffalo.Context) error {
-	return c.Render(200, r.JSON(map[string]interface{}{
-		"status": "OK",
-		"method": c.Request().Method,
-	}))
-}
+// func alive(c buffalo.Context) error {
+// 	return c.Render(200, r.JSON(map[string]interface{}{
+// 		"status": "OK",
+// 		"method": c.Request().Method,
+// 	}))
+// }

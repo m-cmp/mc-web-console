@@ -14,7 +14,17 @@
                     <div class="card-body">
                         <div class="row row-cards">
 
-                            <div class="mb-3 col-sm-4 col-md-2">
+                            <div class="mb-3 col-sm-2 col-md-2">
+                                <label class="form-label required">Target</label>
+                                <select id="targetSelect" class="form-select">
+                                    <option value="self">self</option>
+                                    <option value="spider">spider</option>
+                                    <option value="tumblebug">tumblebug</option>
+                                    <option value="direct">direct</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 col-sm-3 col-md-1">
                                 <label class="form-label required">Method</label>
                                 <select id="methodSelect" class="form-select">
                                     <option value="GET">GET</option>
@@ -32,9 +42,11 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3 col-sm-7 col-md-9">
-                                <label class="form-label required">URL</label>
-                                <input id="url" type="text" class="form-control" placeholder="/api/{version}/........">
+                            
+
+                            <div class="mb-3 col-sm-6 col-md-8">
+                                <label class="form-label required">Path</label>
+                                <input id="path" type="text" class="form-control" placeholder="/api/{version}/........">
                             </div>
 
                         </div>

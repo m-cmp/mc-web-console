@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
 
 	// "io"
 	"log"
@@ -14,7 +14,7 @@ import (
 
 	// "os"
 
-	spider "mc_web_console_api/echomodel/spider"
+	spider "mc_web_console_api/fwmodels/spider"
 
 	util "mc_web_console_api/util"
 
@@ -22,8 +22,8 @@ import (
 )
 
 // 해당 namespace의 모든 pmks 목록 조회
-func GetPmksNamespaceClusterList(clusterReqInfo spider.AllClusterReqInfo) ([]spider.SpClusterInfo, echomodel.WebStatus) {
-	// func GetPmksNamespaceClusterList(clusterReqInfo spider.ClusterReqInfo) ([]spider.SpAllClusterInfoList, echomodel.WebStatus) {
+func GetPmksNamespaceClusterList(clusterReqInfo spider.AllClusterReqInfo) ([]spider.SpClusterInfo, fwmodels.WebStatus) {
+	// func GetPmksNamespaceClusterList(clusterReqInfo spider.ClusterReqInfo) ([]spider.SpAllClusterInfoList, fwmodels.WebStatus) {
 	var originalUrl = "/nscluster"
 
 	url := util.SPIDER + originalUrl
@@ -35,7 +35,7 @@ func GetPmksNamespaceClusterList(clusterReqInfo spider.AllClusterReqInfo) ([]spi
 	//returnClusterList := []spider.SpAllClusterInfoList{}
 	if err != nil {
 		fmt.Println(err)
-		return returnClusterList, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return returnClusterList, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	respBody := resp.Body
 	respStatus := resp.StatusCode
@@ -44,12 +44,12 @@ func GetPmksNamespaceClusterList(clusterReqInfo spider.AllClusterReqInfo) ([]spi
 	fmt.Println(respBody)
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 
 		//spew.Dump(respBody)
-		return returnClusterList, echomodel.WebStatus{StatusCode: respStatus, Message: errorInfo.Message}
+		return returnClusterList, fwmodels.WebStatus{StatusCode: respStatus, Message: errorInfo.Message}
 	} else {
 		totalClusterList := spider.SpTotalClusterInfoList{}
 		json.NewDecoder(respBody).Decode(&totalClusterList)
@@ -71,11 +71,11 @@ func GetPmksNamespaceClusterList(clusterReqInfo spider.AllClusterReqInfo) ([]spi
 		}
 	}
 
-	return returnClusterList, echomodel.WebStatus{StatusCode: respStatus}
+	return returnClusterList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Cluster 목록 조회
-func GetPmksClusterList(clusterReqInfo spider.ClusterReqInfo) ([]spider.SpClusterInfo, echomodel.WebStatus) {
+func GetPmksClusterList(clusterReqInfo spider.ClusterReqInfo) ([]spider.SpClusterInfo, fwmodels.WebStatus) {
 	var originalUrl = "/cluster"
 
 	url := util.SPIDER + originalUrl
@@ -84,7 +84,7 @@ func GetPmksClusterList(clusterReqInfo spider.ClusterReqInfo) ([]spider.SpCluste
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	respBody := resp.Body
 	respStatus := resp.StatusCode
@@ -95,11 +95,11 @@ func GetPmksClusterList(clusterReqInfo spider.ClusterReqInfo) ([]spider.SpCluste
 	fmt.Println(clusterList)
 	//log.Println(respBody)
 
-	return clusterList["cluster"], echomodel.WebStatus{StatusCode: respStatus}
+	return clusterList["cluster"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 특정 Cluster 조회
-func GetPmksClusterData(cluster string, clusterReqInfo spider.ClusterReqInfo) (*spider.SpClusterInfo, echomodel.WebStatus) {
+func GetPmksClusterData(cluster string, clusterReqInfo spider.ClusterReqInfo) (*spider.SpClusterInfo, fwmodels.WebStatus) {
 	var originalUrl = "/cluster/{cluster}"
 
 	var paramMapper = make(map[string]string)
@@ -115,7 +115,7 @@ func GetPmksClusterData(cluster string, clusterReqInfo spider.ClusterReqInfo) (*
 	clusterInfo := spider.RespClusterInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// util.DisplayResponse(resp) // 수신내용 확인
 
@@ -126,11 +126,11 @@ func GetPmksClusterData(cluster string, clusterReqInfo spider.ClusterReqInfo) (*
 	fmt.Println(clusterInfo)
 
 	clusterInfo.ClusterInfo.ConnectionName = clusterReqInfo.ConnectionName
-	return &clusterInfo.ClusterInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &clusterInfo.ClusterInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Cluster 생성
-func RegPmksCluster(nameSpaceID string, clusterReqInfo *spider.ClusterReqInfo) (*spider.SpClusterInfo, echomodel.WebStatus) {
+func RegPmksCluster(nameSpaceID string, clusterReqInfo *spider.ClusterReqInfo) (*spider.SpClusterInfo, fwmodels.WebStatus) {
 
 	var originalUrl = "/cluster"
 
@@ -141,18 +141,18 @@ func RegPmksCluster(nameSpaceID string, clusterReqInfo *spider.ClusterReqInfo) (
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnClusterInfo := spider.SpClusterInfo{}
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnClusterInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnClusterInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -265,7 +265,7 @@ func RegPmksClusterByAsync(clusterReqInfo *spider.ClusterReqInfo, c buffalo.Cont
 }
 
 // PmksClusterUpdateProc : 현재는 버전만 upgrade. 추후 항목 update가 생기면 function 분리할 것
-func UpdatePmksCluster(clusterReqInfo *spider.ClusterReqInfo) (spider.SpClusterInfo, echomodel.WebStatus) {
+func UpdatePmksCluster(clusterReqInfo *spider.ClusterReqInfo) (spider.SpClusterInfo, fwmodels.WebStatus) {
 	var originalUrl = "/cluster/upgrade"
 
 	url := util.SPIDER + originalUrl
@@ -282,16 +282,16 @@ func UpdatePmksCluster(clusterReqInfo *spider.ClusterReqInfo) (spider.SpClusterI
 		fmt.Println(err)
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultClusterInfo, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		return resultClusterInfo, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultClusterInfo)
 
-	return resultClusterInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultClusterInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // PMKS Cluster 삭제
-func DelPmksCluster(cluster string, clusterReqInfo spider.ClusterReqInfo) (*spider.SpClusterInfo, echomodel.WebStatus) {
+func DelPmksCluster(cluster string, clusterReqInfo spider.ClusterReqInfo) (*spider.SpClusterInfo, fwmodels.WebStatus) {
 	var originalUrl = "/cluster/{cluster}"
 
 	var paramMapper = make(map[string]string)
@@ -308,7 +308,7 @@ func DelPmksCluster(cluster string, clusterReqInfo spider.ClusterReqInfo) (*spid
 	resultClusterInfo := spider.SpClusterInfo{}
 	if err != nil {
 		fmt.Println("delCluster ", err)
-		return &resultClusterInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultClusterInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -321,9 +321,9 @@ func DelPmksCluster(cluster string, clusterReqInfo spider.ClusterReqInfo) (*spid
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		fmt.Println(failResultInfo)
-		return &resultClusterInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return &resultClusterInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
-	return &resultClusterInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &resultClusterInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Cluster 삭제 비동기 처리
@@ -367,7 +367,7 @@ func DelPmksClusterByAsync(cluster string, clusterReqInfo *spider.ClusterReqInfo
 }
 
 // NodeGroup 생성
-func RegPmksNodeGroup(clusterID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (*spider.NodeGroupInfo, echomodel.WebStatus) {
+func RegPmksNodeGroup(clusterID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (*spider.NodeGroupInfo, fwmodels.WebStatus) {
 
 	var originalUrl = "/cluster/{cluster}/nodegroup"
 
@@ -381,18 +381,18 @@ func RegPmksNodeGroup(clusterID string, nodeGroupReqInfo *spider.NodeGroupReqInf
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnNodeGroupInfo := spider.NodeGroupInfo{}
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	if err != nil {
 		fmt.Println(err)
-		return &returnNodeGroupInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &returnNodeGroupInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -406,7 +406,7 @@ func RegPmksNodeGroup(clusterID string, nodeGroupReqInfo *spider.NodeGroupReqInf
 }
 
 // NodeGroup 삭제
-func DelPmksNodeGroup(clusterID string, nodeGroupID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (bool, echomodel.WebStatus) {
+func DelPmksNodeGroup(clusterID string, nodeGroupID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (bool, fwmodels.WebStatus) {
 	var originalUrl = "/cluster/{cluster}/nodegroup/{nodegroup}"
 
 	var paramMapper = make(map[string]string)
@@ -416,17 +416,17 @@ func DelPmksNodeGroup(clusterID string, nodeGroupID string, nodeGroupReqInfo *sp
 	url := util.SPIDER + urlParam
 
 	if clusterID == "" {
-		return false, echomodel.WebStatus{StatusCode: 500, Message: "cluster is required"}
+		return false, fwmodels.WebStatus{StatusCode: 500, Message: "cluster is required"}
 	}
 	if nodeGroupID == "" {
-		return false, echomodel.WebStatus{StatusCode: 500, Message: "nodeGroup is required"}
+		return false, fwmodels.WebStatus{StatusCode: 500, Message: "nodeGroup is required"}
 	}
 
 	pbytes, _ := json.Marshal(nodeGroupReqInfo)
 	resp, err := util.CommonHttp(url, pbytes, http.MethodDelete)
 	if err != nil {
 		fmt.Println(err)
-		return false, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return false, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	util.DisplayResponse(resp) // 수신내용 확인
@@ -434,11 +434,11 @@ func DelPmksNodeGroup(clusterID string, nodeGroupID string, nodeGroupReqInfo *sp
 	//respBody := resp.Body
 	respStatus := resp.StatusCode
 
-	return true, echomodel.WebStatus{StatusCode: respStatus}
+	return true, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NodeGroup 수정 : onAutoScaling
-func UpdatePmksNodeGroupAutoScaling(clusterID string, nodeGroupID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (spider.SpClusterInfo, echomodel.WebStatus) {
+func UpdatePmksNodeGroupAutoScaling(clusterID string, nodeGroupID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (spider.SpClusterInfo, fwmodels.WebStatus) {
 	var originalUrl = "/cluster/{cluster}/nodegroup/{nodegroup}/onautoscaling"
 
 	var paramMapper = make(map[string]string)
@@ -459,16 +459,16 @@ func UpdatePmksNodeGroupAutoScaling(clusterID string, nodeGroupID string, nodeGr
 		fmt.Println(err)
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultClusterInfo, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		return resultClusterInfo, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultClusterInfo)
 
-	return resultClusterInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultClusterInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NodeGroup 수정 : node Size
-func UpdatePmksNodeGroupAutoscaleSize(clusterID string, nodeGroupID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (spider.SpClusterInfo, echomodel.WebStatus) {
+func UpdatePmksNodeGroupAutoscaleSize(clusterID string, nodeGroupID string, nodeGroupReqInfo *spider.NodeGroupReqInfo) (spider.SpClusterInfo, fwmodels.WebStatus) {
 	var originalUrl = "/cluster/{cluster}/nodegroup/{nodegroup}/autoscalesize"
 
 	var paramMapper = make(map[string]string)
@@ -489,10 +489,10 @@ func UpdatePmksNodeGroupAutoscaleSize(clusterID string, nodeGroupID string, node
 		fmt.Println(err)
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultClusterInfo, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		return resultClusterInfo, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultClusterInfo)
 
-	return resultClusterInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultClusterInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
