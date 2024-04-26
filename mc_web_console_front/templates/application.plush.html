@@ -1,26 +1,43 @@
-
 <!DOCTYPE html>
+
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="utf-8">
-    <title>Buffalo - Buffalo Sequential Workflow</title>
-    <%= stylesheetTag("application.css") %>
-    <meta id="csrf-param" content="authenticity_token" />
-    <meta id="csrf-token" content="<%= authenticity_token %>" />
-    <%= partial("partials/layout/flash.html") %>
-  </head>
-  <%= yield %>
+  
+<%= partial("partials/layout/header.html") %>
 
-  <!-- common js -->
-  <%= javascriptTag("application.js") %>
-  <%= javascriptTag("common/http/api.js") %>
-  <%= javascriptTag("common/storage/sessionstorage.js") %>
+  <body>
+    <!-- theme js -->
+    <%= javascriptTag("common/tabler/themeMode.js") %>
 
-  <!-- common view -->
-  <%= javascriptTag("common/tabler/tabler.js") %>
-  <%= javascriptTag("common/tabler/tablerHelper.js") %>
-  <%= javascriptTag("common/view/sideMenu.js") %>
+    <div class="page">
+
+      <%= partial("partials/layout/sidebar.html") %>
+      <%= partial("partials/layout/navbar.html") %>
+      
+      <div class="page-wrapper">
+        <!-- Page header :  -->
+
+
+        <!-- Page body -->
+        <%= partial("partials/layout/flash.html") %>
+        <%= yield %>
+
+        <!-- Page footer -->
+        <%= partial("partials/layout/footer.html") %>
+      </div>
+
+    </div>
+    
+    <!-- common js -->
+    <%= javascriptTag("application.js") %>
+    <%= javascriptTag("common/http/api.js") %>
+    <%= javascriptTag("common/storage/sessionstorage.js") %>
+    <%= javascriptTag("common/view/main.js") %>
+
+    <!-- common view -->
+    <%= javascriptTag("common/tabler/tabler.js") %>
+    <%= javascriptTag("common/tabler/tablerHelper.js") %>
+    <%= javascriptTag("common/view/sideMenu.js") %>
+
+  </body>
 
 </html>
-
