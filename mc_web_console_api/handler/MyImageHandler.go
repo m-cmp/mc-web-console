@@ -12,17 +12,17 @@ import (
 
 	//"github.com/davecgh/go-spew/spew"
 
-	// "mc_web_console_api/echomodel/spider"
-	// "mc_web_console_api/echomodel/tumblebug"
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
+	// "mc_web_console_api/fwmodels/spider"
+	// "mc_web_console_api/fwmodels/tumblebug"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
 
 	util "mc_web_console_api/util"
 )
 
 // MyImage 목록 조회
-func GetMyImageList(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbCustomImageInfo, echomodel.WebStatus) {
+func GetMyImageList(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbCustomImageInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/customImage"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -44,7 +44,7 @@ func GetMyImageList(nameSpaceID string, optionParam string, filterKeyParam strin
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -57,10 +57,10 @@ func GetMyImageList(nameSpaceID string, optionParam string, filterKeyParam strin
 	//spew.Dump(body)
 	fmt.Println(myImageInfoList["customImage"])
 
-	return myImageInfoList["customImage"], echomodel.WebStatus{StatusCode: respStatus}
+	return myImageInfoList["customImage"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetMyImageListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, echomodel.WebStatus) {
+func GetMyImageListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, fwmodels.WebStatus) {
 	fmt.Println("GetMyImageListByID ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/customImage"
 	var paramMapper = make(map[string]string)
@@ -77,7 +77,7 @@ func GetMyImageListByID(nameSpaceID string, filterKeyParam string, filterValPara
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -89,11 +89,11 @@ func GetMyImageListByID(nameSpaceID string, filterKeyParam string, filterValPara
 	myImageInfoList := tbcommon.TbIdList{}
 	json.NewDecoder(respBody).Decode(&myImageInfoList)
 
-	return myImageInfoList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	return myImageInfoList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // List 조회시 optionParam 추가
-func GetMyImageListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbCustomImageInfo, echomodel.WebStatus) {
+func GetMyImageListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbCustomImageInfo, fwmodels.WebStatus) {
 	fmt.Println("GetMyImageListByOption ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/customImage"
 	var paramMapper = make(map[string]string)
@@ -115,7 +115,7 @@ func GetMyImageListByOption(nameSpaceID string, optionParam string, filterKeyPar
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -128,11 +128,11 @@ func GetMyImageListByOption(nameSpaceID string, optionParam string, filterKeyPar
 	//spew.Dump(body)
 	fmt.Println(myImageInfoList["customImage"])
 
-	return myImageInfoList["customImage"], echomodel.WebStatus{StatusCode: respStatus}
+	return myImageInfoList["customImage"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // CSP에 등록 된 customImage를 TB의 customImage로 등록
-func RegCspCustomImageToMyImage(nameSpaceID string, myImageReqInfo *tbmcir.TbCustomImageReq) (*tbmcir.TbCustomImageInfo, echomodel.WebStatus) {
+func RegCspCustomImageToMyImage(nameSpaceID string, myImageReqInfo *tbmcir.TbCustomImageReq) (*tbmcir.TbCustomImageInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/myImage"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -148,7 +148,7 @@ func RegCspCustomImageToMyImage(nameSpaceID string, myImageReqInfo *tbmcir.TbCus
 	resultMyImageInfo := tbmcir.TbCustomImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &resultMyImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultMyImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -156,7 +156,7 @@ func RegCspCustomImageToMyImage(nameSpaceID string, myImageReqInfo *tbmcir.TbCus
 	fmt.Println("respStatus ", respStatus)
 
 	if respStatus == 500 {
-		webStatus := echomodel.WebStatus{}
+		webStatus := fwmodels.WebStatus{}
 		json.NewDecoder(respBody).Decode(&webStatus)
 		fmt.Println(webStatus)
 		webStatus.StatusCode = respStatus
@@ -166,12 +166,12 @@ func RegCspCustomImageToMyImage(nameSpaceID string, myImageReqInfo *tbmcir.TbCus
 	json.NewDecoder(respBody).Decode(&resultMyImageInfo)
 	fmt.Println(resultMyImageInfo)
 
-	return &resultMyImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &resultMyImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Namespace내 모든 MyImage 삭제
-func DelAllMyImage(nameSpaceID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelAllMyImage(nameSpaceID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 
 	var originalUrl = "/ns/{nsId}/resources/myImage"
 	var paramMapper = make(map[string]string)
@@ -183,28 +183,28 @@ func DelAllMyImage(nameSpaceID string) (echomodel.WebStatus, echomodel.WebStatus
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // MyImage 삭제
-func DelMyImage(nameSpaceID string, myImageID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelMyImage(nameSpaceID string, myImageID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 
 	var originalUrl = "/ns/{nsId}/resources/customImage/{myImageId}"
 	var paramMapper = make(map[string]string)
@@ -217,27 +217,27 @@ func DelMyImage(nameSpaceID string, myImageID string) (echomodel.WebStatus, echo
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // MyImage 상세 조회
-func MyImageGet(nameSpaceID string, myImageID string) (*tbmcir.TbCustomImageInfo, echomodel.WebStatus) {
+func MyImageGet(nameSpaceID string, myImageID string) (*tbmcir.TbCustomImageInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/customImage/{myImageId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -251,7 +251,7 @@ func MyImageGet(nameSpaceID string, myImageID string) (*tbmcir.TbCustomImageInfo
 	myImageInfo := tbmcir.TbCustomImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &myImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &myImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -260,5 +260,5 @@ func MyImageGet(nameSpaceID string, myImageID string) (*tbmcir.TbCustomImageInfo
 	json.NewDecoder(respBody).Decode(&myImageInfo)
 	fmt.Println(myImageInfo)
 
-	return &myImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &myImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }

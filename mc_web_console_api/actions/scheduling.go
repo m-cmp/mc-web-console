@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel/webtool"
+	"mc_web_console_api/fwmodels/webconsole"
 	"net/http"
 	"time"
 
@@ -15,8 +15,8 @@ type Scheduler struct {
 	Spec          string
 	Title         string
 	StartTime     time.Time
-	McisLifeCycle webtool.McisLifeCycle
-	VmLifeCycle   webtool.VmLifeCycle
+	McisLifeCycle webconsole.McisLifeCycle
+	VmLifeCycle   webconsole.VmLifeCycle
 }
 
 var c *gocron.Scheduler
@@ -62,11 +62,11 @@ func NextScheduleTimeByTag(t string) time.Time {
 	return nextTime
 }
 
-func (a actions) SchedulingReg(c buffalo.Context) error {
+func SchedulingReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
-	// mcisLifeCycle := &webtool.McisLifeCycle{}
-	// vmLifeCycle := &webtool.VmLifeCycle{}
+	// mcisLifeCycle := &webconsole.McisLifeCycle{}
+	// vmLifeCycle := &webconsole.VmLifeCycle{}
 
 	// if err := c.Bind(mcisLifeCycle);err != nil{
 	// 	return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{

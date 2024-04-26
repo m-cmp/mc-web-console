@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel/ladybug"
+	"mc_web_console_api/fwmodels/ladybug"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models/views"
 	"mc_web_console_api/util"
@@ -14,14 +14,14 @@ import (
 
 // McksmngGet default implementation.
 // todo : mcks 가져오는 로직으로 변경할것것
-func (a actions) McksGet(c buffalo.Context) error {
+func McksGet(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"message": "not implement",
 	}))
 }
 
 // McksmngList default implementation.
-func (a actions) McksList(c buffalo.Context) error {
+func McksList(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	optionParam := c.Params().Get("option")
@@ -59,7 +59,7 @@ func (a actions) McksList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) McksReg(c buffalo.Context) error {
+func McksReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	clusterReq := &ladybug.ClusterRegReq{}
@@ -154,7 +154,7 @@ func (a actions) McksReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) McksDel(c buffalo.Context) error {
+func McksDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	//clusterUID := c.Param("clusterUID")
@@ -173,7 +173,7 @@ func (a actions) McksDel(c buffalo.Context) error {
 }
 
 // Node 등록 처리
-func (a actions) McksNodeReg(c buffalo.Context) error {
+func McksNodeReg(c buffalo.Context) error {
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
@@ -242,7 +242,7 @@ func (a actions) McksNodeReg(c buffalo.Context) error {
 }
 
 // Node 삭제 처리
-func (a actions) McksNodeDel(c buffalo.Context) error {
+func McksNodeDel(c buffalo.Context) error {
 
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 

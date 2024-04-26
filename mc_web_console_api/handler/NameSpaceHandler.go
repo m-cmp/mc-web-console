@@ -7,13 +7,13 @@ import (
 	"log"
 	"net/http"
 
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
-	"mc_web_console_api/echomodel/webtool"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	"mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
 
-	// tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	// tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	// tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	// tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
 	util "mc_web_console_api/util"
 
@@ -33,8 +33,8 @@ import (
 // }
 
 // 저장된 namespace가 없을 때 최초 1개 생성하고 해당 namespace 정보를 return  : 검증 필요(TODO : 이미 namespace가 있어서 확인 못함)
-func CreateDefaultNamespace() (*tbcommon.TbNsInfo, echomodel.WebStatus) {
-	// nsInfo := new(echomodel.NSInfo)
+func CreateDefaultNamespace() (*tbcommon.TbNsInfo, fwmodels.WebStatus) {
+	// nsInfo := new(fwmodels.NSInfo)
 	nameSpaceInfo := tbcommon.TbNsInfo{}
 
 	// 사용자의 namespace 목록조회
@@ -68,7 +68,7 @@ func CreateDefaultNamespace() (*tbcommon.TbNsInfo, echomodel.WebStatus) {
 }
 
 // 사용자의 namespace 목록 조회
-func GetNameSpaceList() ([]tbcommon.TbNsInfo, echomodel.WebStatus) {
+func GetNameSpaceList() ([]tbcommon.TbNsInfo, fwmodels.WebStatus) {
 	fmt.Println("GetNameSpaceList start")
 	var originalUrl = "/ns"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -83,7 +83,7 @@ func GetNameSpaceList() ([]tbcommon.TbNsInfo, echomodel.WebStatus) {
 		// 	// Tumblebug 접속 확인하라고
 		// fmt.Println(err)
 		// panic(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -95,11 +95,11 @@ func GetNameSpaceList() ([]tbcommon.TbNsInfo, echomodel.WebStatus) {
 	//spew.Dump(body)
 	fmt.Println(nameSpaceInfoList["ns"])
 
-	return nameSpaceInfoList["ns"], echomodel.WebStatus{StatusCode: respStatus}
+	return nameSpaceInfoList["ns"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Namespace 조회 시 Option에 해당하는 값만 조회. GetNameSpaceList와 TB 호출은 동일하나 option 사용으로 받아오는 param이 다름. controller에서 분기
-func GetNameSpaceListByOption(optionParam string) ([]tbcommon.TbNsInfo, echomodel.WebStatus) {
+func GetNameSpaceListByOption(optionParam string) ([]tbcommon.TbNsInfo, fwmodels.WebStatus) {
 	fmt.Println("GetNameSpaceList start")
 	var originalUrl = "/ns"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -117,7 +117,7 @@ func GetNameSpaceListByOption(optionParam string) ([]tbcommon.TbNsInfo, echomode
 		// 	// Tumblebug 접속 확인하라고
 		// fmt.Println(err)
 		// panic(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -129,11 +129,11 @@ func GetNameSpaceListByOption(optionParam string) ([]tbcommon.TbNsInfo, echomode
 	//spew.Dump(body)
 	fmt.Println(nameSpaceInfoList["ns"])
 
-	return nameSpaceInfoList["ns"], echomodel.WebStatus{StatusCode: respStatus}
+	return nameSpaceInfoList["ns"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Namespace 조회 시 Option에 해당하는 값만 조회. GetNameSpaceList와 TB 호출은 동일하나 option 사용으로 받아오는 param이 다름
-func GetNameSpaceListByOptionID(optionParam string) ([]string, echomodel.WebStatus) {
+func GetNameSpaceListByOptionID(optionParam string) ([]string, fwmodels.WebStatus) {
 	fmt.Println("GetNameSpaceList start")
 	var originalUrl = "/ns"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -142,7 +142,7 @@ func GetNameSpaceListByOptionID(optionParam string) ([]string, echomodel.WebStat
 	if optionParam == "id" {
 		url = url + "?option=" + optionParam
 	} else {
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: "option param is not ID"}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: "option param is not ID"}
 	}
 	// url := util.TUMBLEBUG + "/ns"
 
@@ -153,7 +153,7 @@ func GetNameSpaceListByOptionID(optionParam string) ([]string, echomodel.WebStat
 		// 	// Tumblebug 접속 확인하라고
 		// fmt.Println(err)
 		// panic(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -166,15 +166,15 @@ func GetNameSpaceListByOptionID(optionParam string) ([]string, echomodel.WebStat
 	//spew.Dump(body)
 	//fmt.Println(nameSpaceInfoList["idList"])
 	//
-	//return nameSpaceInfoList["idList"], echomodel.WebStatus{StatusCode: respStatus}
+	//return nameSpaceInfoList["idList"], fwmodels.WebStatus{StatusCode: respStatus}
 	//fmt.Println(nameSpaceInfoList["output"])
-	//return nameSpaceInfoList["output"], echomodel.WebStatus{StatusCode: respStatus}
+	//return nameSpaceInfoList["output"], fwmodels.WebStatus{StatusCode: respStatus}
 	fmt.Println(nameSpaceInfoList.IDList)
-	return nameSpaceInfoList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	return nameSpaceInfoList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Get namespace
-func GetNameSpaceData(nameSpaceID string) (tbcommon.TbNsInfo, echomodel.WebStatus) {
+func GetNameSpaceData(nameSpaceID string) (tbcommon.TbNsInfo, fwmodels.WebStatus) {
 	fmt.Println("GetNameSpaceData start")
 	var originalUrl = "/ns/{nsId}"
 	var paramMapper = make(map[string]string)
@@ -188,7 +188,7 @@ func GetNameSpaceData(nameSpaceID string) (tbcommon.TbNsInfo, echomodel.WebStatu
 
 	nameSpaceInfo := tbcommon.TbNsInfo{}
 	if err != nil {
-		return nameSpaceInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nameSpaceInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -198,11 +198,11 @@ func GetNameSpaceData(nameSpaceID string) (tbcommon.TbNsInfo, echomodel.WebStatu
 	json.NewDecoder(respBody).Decode(&nameSpaceInfo)
 	fmt.Println(nameSpaceInfo)
 
-	return nameSpaceInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return nameSpaceInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NameSpace 등록.  등록 후 생성된 Namespace 정보를 return
-func RegNameSpace(nameSpaceInfo *tbcommon.TbNsInfo) (tbcommon.TbNsInfo, echomodel.WebStatus) {
+func RegNameSpace(nameSpaceInfo *tbcommon.TbNsInfo) (tbcommon.TbNsInfo, fwmodels.WebStatus) {
 	// buff := bytes.NewBuffer(pbytes)
 	var originalUrl = "/ns"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -222,16 +222,16 @@ func RegNameSpace(nameSpaceInfo *tbcommon.TbNsInfo) (tbcommon.TbNsInfo, echomode
 		log.Println(err)
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultNameSpaceInfo, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		return resultNameSpaceInfo, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultNameSpaceInfo)
-	return resultNameSpaceInfo, echomodel.WebStatus{StatusCode: respStatus}
-	//return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return resultNameSpaceInfo, fwmodels.WebStatus{StatusCode: respStatus}
+	//return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NameSpace 수정
-func UpdateNameSpace(nameSpaceID string, nameSpaceInfo *tbcommon.TbNsReq) (tbcommon.TbNsInfo, echomodel.WebStatus) {
+func UpdateNameSpace(nameSpaceID string, nameSpaceInfo *tbcommon.TbNsReq) (tbcommon.TbNsInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -251,16 +251,16 @@ func UpdateNameSpace(nameSpaceID string, nameSpaceInfo *tbcommon.TbNsReq) (tbcom
 		fmt.Println(err)
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
-		return resultNameSpaceInfo, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		return resultNameSpaceInfo, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultNameSpaceInfo)
 
-	return resultNameSpaceInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultNameSpaceInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NameSpace 삭제
-func DelNameSpace(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelNameSpace(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -279,16 +279,16 @@ func DelNameSpace(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	if err != nil {
 		fmt.Println(err)
-		//return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		//return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 		json.NewDecoder(respBody).Decode(&resultInfo)
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // NameSpace 삭제
-func DelAllNameSpace() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelAllNameSpace() (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/ns"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	url := util.TUMBLEBUG + urlParam
@@ -300,7 +300,7 @@ func DelAllNameSpace() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -311,13 +311,13 @@ func DelAllNameSpace() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func UserNameSpaceListFromDB(userId uuid.UUID, tx *pop.Connection) ([]tbcommon.TbNsInfo, echomodel.WebStatus) {
+func UserNameSpaceListFromDB(userId uuid.UUID, tx *pop.Connection) ([]tbcommon.TbNsInfo, fwmodels.WebStatus) {
 	nsList := &models.Namespaces{}
 	//nsList := []models.Namespace{}
 
@@ -327,7 +327,7 @@ func UserNameSpaceListFromDB(userId uuid.UUID, tx *pop.Connection) ([]tbcommon.T
 
 	if err != nil {
 		//return errors.WithStack(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	returnNsList := []tbcommon.TbNsInfo{}
@@ -336,7 +336,7 @@ func UserNameSpaceListFromDB(userId uuid.UUID, tx *pop.Connection) ([]tbcommon.T
 		returnNsList = append(returnNsList, tbcommon.TbNsInfo{ID: ns.ID, Name: ns.NsName})
 	}
 
-	return returnNsList, echomodel.WebStatus{StatusCode: 200}
+	return returnNsList, fwmodels.WebStatus{StatusCode: 200}
 }
 
 func CheckExistsUserNamespace(userId uuid.UUID, nsId string, tx *pop.Connection) (bool, *models.UserNamespace) {
@@ -355,7 +355,7 @@ func CheckExistsUserNamespace(userId uuid.UUID, nsId string, tx *pop.Connection)
 
 	return b, un
 }
-func RegUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
+func RegUserNamespace(un *webconsole.UserNamespaceReq, tx *pop.Connection) error {
 	spew.Dump("=====================")
 	spew.Dump(un)
 	spew.Dump("=====================")
@@ -389,7 +389,7 @@ func RegUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
 	return nil
 }
 
-func DelUserNamespace(un *webtool.UserNamespaceReq, tx *pop.Connection) error {
+func DelUserNamespace(un *webconsole.UserNamespaceReq, tx *pop.Connection) error {
 	spew.Dump("=====================")
 	spew.Dump(un)
 	spew.Dump("=====================")

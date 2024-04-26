@@ -3,14 +3,14 @@ package actions
 import (
 	"log"
 	"math/rand"
-	"mc_web_console_api/echomodel"
+	"mc_web_console_api/fwmodels"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"net/http"
 	"time"
 
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
-	"mc_web_console_api/echomodel/webtool"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	"mc_web_console_api/fwmodels/webconsole"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/buffalo"
@@ -29,7 +29,7 @@ const FCHARSET = "abcdefghijklmnopqrstuvwxyz"
 // Tumble에 등록된 모든 namespace 목록 조회
 // db에서 사용하는 namespace model에는 사용자 정보가 들어가 있어서
 // 가져온 값 그대로 return
-func (a actions) NamespaceAllList(c buffalo.Context) error {
+func NamespaceAllList(c buffalo.Context) error {
 	nsList, nsStatus := handler.GetNameSpaceList()
 	if nsStatus.StatusCode == 500 {
 		return c.Render(http.StatusOK, r.JSON(nsStatus))
@@ -43,7 +43,7 @@ func (a actions) NamespaceAllList(c buffalo.Context) error {
 // NamespaceList
 //
 
-func (a actions) NamespaceList(c buffalo.Context) error {
+func NamespaceList(c buffalo.Context) error {
 	//내가 생성한 NS외에 내가 share받은 NS를 가져와야 함으로
 	// user_namespaces 에서 가져와야 함.
 	// 아니다 내가 생성한것 만 조히하고 싶을 수도 있겠다.
@@ -70,7 +70,7 @@ func (a actions) NamespaceList(c buffalo.Context) error {
 // NamespaceGet
 //
 
-func (a actions) NamespaceGet(c buffalo.Context) error {
+func NamespaceGet(c buffalo.Context) error {
 	ns := &models.Namespace{}
 	c.Set("ns", ns)
 
@@ -96,15 +96,15 @@ func (a actions) NamespaceGet(c buffalo.Context) error {
 // NamespaceUpdate - 미구현
 //
 
-func (a actions) NamespaceUpdate(c buffalo.Context) error {
-	return c.Render(http.StatusBadRequest, r.JSON(echomodel.WebStatus{StatusCode: 500, Message: "not implementated yet"}))
+func NamespaceUpdate(c buffalo.Context) error {
+	return c.Render(http.StatusBadRequest, r.JSON(fwmodels.WebStatus{StatusCode: 500, Message: "not implementated yet"}))
 }
 
 // SetAssignNamespace
 //
 
-func (a actions) SetAssignNamespace(c buffalo.Context) error {
-	obj := &webtool.UserNamespaceReq{}
+func SetAssignNamespace(c buffalo.Context) error {
+	obj := &webconsole.UserNamespaceReq{}
 
 	err := c.Bind(obj)
 
@@ -132,8 +132,8 @@ func (a actions) SetAssignNamespace(c buffalo.Context) error {
 // SetDeAssignNamespace
 //
 
-func (a actions) SetDeAssignNamespace(c buffalo.Context) error {
-	obj := &webtool.UserNamespaceReq{}
+func SetDeAssignNamespace(c buffalo.Context) error {
+	obj := &webconsole.UserNamespaceReq{}
 
 	err := c.Bind(obj)
 
@@ -161,7 +161,7 @@ func (a actions) SetDeAssignNamespace(c buffalo.Context) error {
 // GetSharedNamespace
 //
 
-func (a actions) GetSharedNamespace(c buffalo.Context) error {
+func GetSharedNamespace(c buffalo.Context) error {
 	tx := c.Value("tx").(*pop.Connection)
 
 	// Selected USER ID
@@ -186,12 +186,9 @@ func (a actions) GetSharedNamespace(c buffalo.Context) error {
 // Namespace 생성
 //
 
-func (a actions) NamespaceReg(c buffalo.Context) error {
+func NamespaceReg(c buffalo.Context) error {
 	//form 에서 그냥 네임 값 가져 올때
 	//ts := c.Request().FormValue("input name")
-	log.Println("NamespaceCreate@@@@@@@@@@@= ")
-	log.Println("param= ", c.Param("name"))
-	log.Println("params= ", c.Params())
 	ns := &models.Namespace{}
 	err := c.Bind(ns)
 	if err != nil {
@@ -237,7 +234,7 @@ func (a actions) NamespaceReg(c buffalo.Context) error {
 		c.Flash().Add("warning", "Cannot Find User")
 
 		//return c.Redirect(301, "/")
-		return RedirectTool(c, "homeFormPath")
+		// return RedirectTool(c, "homeFormPath")
 	}
 
 	ns.User = u
@@ -339,7 +336,7 @@ func StringWithCharset() string {
 }
 
 // namespace Name dupe check
-func (a actions) CheckDupeNamespaceName(c buffalo.Context, ns_name string) error {
+func CheckDupeNamespaceName(c buffalo.Context, ns_name string) error {
 	tx := c.Value("tx").(*pop.Connection)
 	ns := &models.Namespace{}
 	ns.NsName = ns_name
@@ -364,7 +361,7 @@ func (a actions) CheckDupeNamespaceName(c buffalo.Context, ns_name string) error
 // TestUpdateNamespace
 //
 
-func (a actions) estUpdateNamespace(c buffalo.Context) error {
+func estUpdateNamespace(c buffalo.Context) error {
 	ns := &models.Namespace{}
 	description := "test update Namespace"
 	nsName := "update-ns-name"
@@ -406,7 +403,7 @@ func (a actions) estUpdateNamespace(c buffalo.Context) error {
 
 }
 
-func (a actions) GetSharedNamespaceList(uid uuid.UUID, tx *pop.Connection) *models.UserNamespaces {
+func GetSharedNamespaceList(uid uuid.UUID, tx *pop.Connection) *models.UserNamespaces {
 	uns := &models.UserNamespaces{}
 	err := tx.Eager().Where("user_id = ?", uid).All(uns)
 	if err != nil {

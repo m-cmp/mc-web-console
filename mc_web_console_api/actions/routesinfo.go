@@ -1,10 +1,14 @@
 package actions
 
 import (
+	"errors"
 	"log"
-	"mc_web_console_api/models"
 	"net/http"
 	"reflect"
+	"strings"
+
+	webconsole "mc_web_console_api/fwmodels/webconsole"
+	"mc_web_console_api/models"
 
 	"github.com/gobuffalo/buffalo"
 )
@@ -13,6 +17,147 @@ import (
 // router에 등록할 function 은 ( a action )을 붙여야 함.
 // type actions struct{ buffalo.Context }
 type actions struct{}
+
+//mciamUse, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+
+// ------------------------//
+// Client에서 전송되는 data type은 POST 임 //
+// case문에서 controller이름 추출하여 controller 호출
+func PostRouteController(c buffalo.Context) error {
+	// param 종류( pathParam, queryParam)
+	// target controller 이름.
+
+	log.Println("#### In PostRouteController ####")
+
+	targetController := c.Param("targetController")
+	log.Printf("== targetController : [ %s ]\n", targetController)
+
+	commonResponse := &webconsole.CommonResponse{}
+	commonRequest := &webconsole.CommonRequest{}
+	c.Bind(commonRequest)
+	log.Printf("== commonRequest : [ %+v ]\n", commonRequest)
+
+	// if strings.Contains(targetController, "auth") {
+	// 	res := AuthMiddleware(c, commonRequest)
+	// 	if res.Status.StatusCode != 200 {
+	// 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	// 	}
+	// }
+
+	// 권한 check???
+	// 1차 메뉴 권한
+	// 2차 project 권한 체크 -- middle ware
+	// 3차 resource 권한 체크 -- middle ware ( 추후. not now)
+	// case
+	switch targetController {
+	case "McisList": // Get Type
+		//
+		// mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
+		// commonResponse.ResponseData = mcisList
+		// commonResponse.Status = respStatus
+		// commonResponse = tumblebug.TbMcisList(c)
+	case "McisReg": // Post Type
+		// namespaceID := c.Params().Get("namespaceid")
+		// optionParam := c.Params().Get("option")
+		// filterKeyParam := c.Params().Get("filterKey")
+		// filterValParam := c.Params().Get("filterVal")
+		// responseData, err := McisReg(dataObj, pathParam, queryParam)
+	case "authlogin":
+		commonResponse = AuthLogin(c, commonRequest)
+	case "authlogout":
+		commonResponse = AuthLogout(c, commonRequest)
+	case "workspacelistbyuser":
+		commonResponse = WorkspaceListByUser(c, commonRequest)
+		// case "Validate":
+		// 	return AuthGetUserValidate(c)
+		// case "UserInfo":
+		// 	return AuthGetUserInfo(c)1
+
+		//defaut :
+		// TODO : a action를 찾아 실행하도록
+	case "projectlistbyworkspaceid":
+		commonResponse = ProjectListByWorkspaceId(c, commonRequest)
+	}
+
+	// if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
+	// 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	// }
+
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+}
+
+// Get으로 전송되는 data 처리를 위하여
+func GetRouteController(c buffalo.Context) error {
+	// param 종류( pathParam, queryParam)
+	// target controller 이름.
+
+	log.Println("in RouteGetController")
+
+	// path param추출
+	path := c.Request().URL.Path
+	parts := strings.Split(path, "/")
+
+	var part1, part2 string
+	if len(parts) > 1 {
+		part1 = parts[1]
+	}
+	if len(parts) > 2 {
+		part2 = parts[2]
+	}
+	// if len(parts) > 3 {
+	//     part3 = parts[3]
+	// }
+
+	if part1 != "api" {
+		return errors.New("Unauthorized access")
+	}
+
+	switch part2 {
+	case "alive":
+		return c.Render(200, r.JSON(map[string]interface{}{
+			"status": "OK",
+			"method": c.Request().Method,
+		}))
+	default:
+		return errors.New("not allowed api call")
+	}
+
+	// query param 추출
+	// switch commonRequest.TargetController {
+	// case "McisList":// Get Type
+	// 	//
+	// 	mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
+	// 	commonResponse.ResponseData = mcisList
+	// 	commonResponse.Status = respStatus
+	// case "McisReg":// Post Type
+	// 	// namespaceID := c.Params().Get("namespaceid")
+	// 	// optionParam := c.Params().Get("option")
+	// 	// filterKeyParam := c.Params().Get("filterKey")
+	// 	// filterValParam := c.Params().Get("filterVal")
+
+	// 	// responseData, err := McisReg(dataObj, pathParam, queryParam)
+
+	// //defaut :
+	// 	// TODO : a action를 찾아 실행하도록
+	// }
+
+	// if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
+	// 	return c.Render(commonResponse.Status.StatusCode, r.JSON(map[string]interface{}{
+	// 		"responseData":  commonResponse.ResponseData,
+	// 		"status": commonResponse.Status,
+	// 	}))
+	// }
+
+	// return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+	// 	"responseData":  commonResponse.ResponseData,
+	// 	"status": commonResponse.Status,
+	// }))
+
+	return c.Render(200, r.JSON(map[string]interface{}{
+		"status": "OK",
+		"method": c.Request().Method,
+	}))
+}
 
 // 관리자 설정
 func RoutesManager(app *buffalo.App) *buffalo.App {
@@ -190,7 +335,7 @@ func getHandlerFuncByName(handlerName string) buffalo.Handler {
 }
 
 // 삭제 예정
-func (a actions) GetHome(c buffalo.Context) error {
+func GetHome(c buffalo.Context) error {
 	log.Println("action GetHome")
 	//return GetHome(c)
 	return c.Render(200, r.String("Hello from GetHome"))
@@ -201,7 +346,7 @@ func (a actions) GetHome(c buffalo.Context) error {
 //	return c.Render(200, r.String("Hello from GetHome"))
 //}
 
-func (a actions) AboutHandler(c buffalo.Context) error {
+func AboutHandler(c buffalo.Context) error {
 	//return c.Render(200, r.String("Hello from AboutHandler"))
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"message":  "success",

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const path = window.location.pathname.split('/')
-    const category = 'sidebar_'+ path[2]
-    const page = 'sidebar_'+path[2]+'_'+path[3]
-    document.getElementsByName(category).forEach(i => i.classList.add('show', 'active'));
-    document.getElementById(page).classList.add('active');
+    const depth2 = 'sidebar_'+ path[3]
+    const depth3 = 'sidebar_'+path[3]+'_'+path[4]
+    document.getElementsByName(depth2).forEach(i => i.classList.add('show', 'active'));
+    document.getElementById(depth3).classList.add('active');
 });

@@ -1,0 +1,8 @@
+create_table("usersessions") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("access_token", "text", {})
+	t.Column("expires_in", "integer", {})
+	t.Column("refresh_token", "text", {})
+	t.Column("refresh_expires_in", "integer", {})
+	t.Timestamps()
+}

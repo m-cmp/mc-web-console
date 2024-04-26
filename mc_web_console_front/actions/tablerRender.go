@@ -7,10 +7,10 @@ import (
 	"github.com/gobuffalo/buffalo/render"
 )
 
-var tr *render.Engine
+var tablerRender *render.Engine
 
 func init() {
-	tr = render.New(render.Options{
+	tablerRender = render.New(render.Options{
 		// HTML layout to be used for all HTML requests:
 		HTMLLayout: "tabler.plush.html",
 
