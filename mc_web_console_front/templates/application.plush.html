@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 
 <html>
-  
 <%= partial("partials/layout/header.html") %>
 
   <body>
     <!-- theme js -->
     <%= javascriptTag("common/tabler/themeMode.js") %>
+    <%= javascriptTag("common/tabler/tabler.js") %>
+    <%= javascriptTag("common/tabler/tablerHelper.js") %>
+
 
     <div class="page">
 
@@ -15,7 +17,7 @@
       
       <div class="page-wrapper">
         <!-- Page header :  -->
-
+        <%= partial("partials/layout/pageheader.html") %>
 
         <!-- Page body -->
         <%= partial("partials/layout/flash.html") %>
@@ -32,10 +34,6 @@
     <%= javascriptTag("common/http/api.js") %>
     <%= javascriptTag("common/storage/sessionstorage.js") %>
     <%= javascriptTag("common/view/main.js") %>
-
-    <!-- common view -->
-    <%= javascriptTag("common/tabler/tabler.js") %>
-    <%= javascriptTag("common/tabler/tablerHelper.js") %>
     <%= javascriptTag("common/view/sideMenu.js") %>
 
   </body>

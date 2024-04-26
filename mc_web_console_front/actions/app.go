@@ -59,9 +59,9 @@ func App() *buffalo.App {
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
-		if mciamUse {
-			pages.Use(McIamAuthMiddleware)
-		}
+		// if mciamUse {
+		// 	pages.Use(McIamAuthMiddleware)
+		// }
 		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		// mciamAuth pages
@@ -134,7 +134,7 @@ func forceSSL() buffalo.MiddlewareFunc {
 }
 
 func alive(c buffalo.Context) error {
-	return c.Render(200, r.JSON(map[string]interface{}{
+	return c.Render(200, defaultRender.JSON(map[string]interface{}{
 		"status": "OK",
 		"method": c.Request().Method,
 	}))
