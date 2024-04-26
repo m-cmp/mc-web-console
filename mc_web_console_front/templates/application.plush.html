@@ -5,9 +5,9 @@
 
   <body>
     <!-- theme js -->
-    <%= javascriptTag("common/tabler/themeMode.js") %>
-    <%= javascriptTag("common/tabler/tabler.js") %>
-    <%= javascriptTag("common/tabler/tablerHelper.js") %>
+    <%= javascriptTag("common/theme/themeMode.js") %>
+    <%= javascriptTag("common/theme/tabler.js") %>
+    <%= javascriptTag("common/theme/tablerHelper.js") %>
 
 
     <div class="page">
@@ -16,14 +16,14 @@
       <%= partial("partials/layout/navbar.html") %>
       
       <div class="page-wrapper">
-        <!-- Page header :  -->
+        <!-- Page header -->
         <%= partial("partials/layout/pageheader.html") %>
 
         <!-- Page body -->
         <%= partial("partials/layout/flash.html") %>
         <%= yield %>
 
-        <!-- Page footer -->
+        <!-- footer -->
         <%= partial("partials/layout/footer.html") %>
       </div>
 
@@ -31,10 +31,6 @@
     
     <!-- common js -->
     <%= javascriptTag("application.js") %>
-    <%= javascriptTag("common/http/api.js") %>
-    <%= javascriptTag("common/storage/sessionstorage.js") %>
-    <%= javascriptTag("common/view/main.js") %>
-    <%= javascriptTag("common/view/sideMenu.js") %>
 
   </body>
 
