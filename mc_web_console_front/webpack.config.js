@@ -14,6 +14,23 @@ const configurator = {
       ],
     }
     // Glob.sync("./assets/*/*.*").forEach((entry) => {
+    Glob.sync("./assets/*/*/*.*").forEach((entry) => {
+      if (entry === './assets/css/application.scss') {
+        return
+      }
+
+      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
+      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
+        return
+      }
+
+      if( entries[key] == null) {
+        entries[key] = [entry]
+        return
+      }
+
+      entries[key].push(entry)
+    })
     Glob.sync("./assets/*/*/*/*.*").forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return

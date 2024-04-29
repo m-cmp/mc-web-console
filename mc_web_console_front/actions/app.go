@@ -59,9 +59,9 @@ func App() *buffalo.App {
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
-		// if mciamUse {
-		// 	pages.Use(McIamAuthMiddleware)
-		// }
+		if mciamUse {
+			pages.Use(McIamAuthMiddleware)
+		}
 		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		// mciamAuth pages

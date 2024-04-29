@@ -74,7 +74,7 @@ func UserLoginHandler(c buffalo.Context) error {
 		)
 	}
 
-	return c.Render(http.StatusOK, webconsoleRender.HTML("auth/login.html"))
+	return c.Render(http.StatusOK, defaultRender.HTML("pages/auth/login.html"))
 }
 
 func UserLogoutHandler(c buffalo.Context) error {
@@ -96,7 +96,7 @@ func UserLogoutHandler(c buffalo.Context) error {
 }
 
 func UserRegisterpageHandler(c buffalo.Context) error {
-	return c.Render(http.StatusOK, webconsoleRender.HTML("auth/login.html"))
+	return c.Render(http.StatusOK, defaultRender.HTML("pages/auth/login.html"))
 }
 
 // func GetUserRefreshTokenHandler(c buffalo.Context) (mcmodels.AccessTokenResponse, string, error) {
