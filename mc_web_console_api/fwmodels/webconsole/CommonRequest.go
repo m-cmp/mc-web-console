@@ -7,14 +7,8 @@ import (
 
 // 모든 요청을 Post로 하고 CommonRequest에 각 내용을 담아 요청한다.
 type CommonRequest struct {
-	RequestData interface{} `json:"requestData"`
-	//RequestData      map[string]interface{} `json:"requestData"`
-	PathParam  map[string]interface{} `json:"pathParam"`
-	QueryParam map[string]interface{} `json:"queryParam"`
-
-	// 추가로 set
-	OriginalUrl     string
-	TargetFramework string // env에서 추출
+	TargetFramework string      // env에서 추출
+	RequestData     interface{} `json:"requestData"`
 }
 
 // 모든 응답을 CommonResponse로 한다.
@@ -27,6 +21,17 @@ func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
 	webStatus := fwmodels.WebStatus{
 		StatusCode: http.StatusOK,
 		Message:    http.StatusText(http.StatusOK),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
+	webStatus := fwmodels.WebStatus{
+		StatusCode: http.StatusNotFound,
+		Message:    http.StatusText(http.StatusNotFound),
 	}
 	return &CommonResponse{
 		ResponseData: responseData,

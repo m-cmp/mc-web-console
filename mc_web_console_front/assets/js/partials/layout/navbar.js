@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded',async function () {
     }
     let currentWorkspace = webconsolejs["common/util"].getCurrentWorkspace()
     let currentProject = webconsolejs["common/util"].getCurrentProject()
-    console.log(currentProject)
     workspaceListselectBox.value = currentWorkspace.Id
     projectListselectBox.value = currentProject.Id
 });

@@ -86,17 +86,17 @@ func App() *buffalo.App {
 			debug.GET("/", DEBUGRouteHandler)
 
 			// flowchart debug
-			debug.GET("/flow", DEBUGWorkflowHandler)
+			// debug.GET("/flow", DEBUGWorkflowHandler)
 
 			// tabler debug
-			debug.GET("/tabler", DEBUGTablerMainHandler)
-			debug.GET("/tabler/{target}", DEBUGTablerHandler)
+			// debug.GET("/tabler", DEBUGTablerMainHandler)
+			// debug.GET("/tabler/{target}", DEBUGTablerHandler)
 
 			// tabulator debug
 			debug.GET("/tabulator", DEBUGTabulatorHandler)
 
 			// page sample
-			debug.GET("/sample", DEBUGSamplePageHandler)
+			// debug.GET("/sample", DEBUGSamplePageHandler)
 
 			// debug call Test
 			debug.GET("/apicall", DEBUGApicallPageController)

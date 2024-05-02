@@ -18,12 +18,16 @@ func WorkspaceListByUser(c buffalo.Context, commonReq *webconsole.CommonRequest)
 		commonResponse, err = workspace.WorkspaceMciamListByUser(c, commonReq)
 		if err != nil {
 			log.Println(err.Error())
-			return commonResponse
+			return webconsole.CommonResponseStatusInternalServerError(commonResponse.ResponseData)
 		}
 		return commonResponse
 	} else {
-		commonResponse.ResponseData = "NO WorkspaceListByUser"
-		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
+		commonResponse, err = workspace.WorkspaceDefaultListByUser(c, commonReq)
+		if err != nil {
+			log.Println(err.Error())
+			return webconsole.CommonResponseStatusInternalServerError(commonResponse.ResponseData)
+		}
+		return commonResponse
 	}
 }
 
@@ -37,11 +41,15 @@ func ProjectListByWorkspaceId(c buffalo.Context, commonReq *webconsole.CommonReq
 		commonResponse, err = workspace.ProjectListMciamByWorkspaceId(c, commonReq)
 		if err != nil {
 			log.Println(err.Error())
-			return commonResponse
+			return webconsole.CommonResponseStatusInternalServerError(commonResponse.ResponseData)
 		}
 		return commonResponse
 	} else {
-		commonResponse.ResponseData = "NO ProjectListByWorkspaceId"
-		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
+		commonResponse, err = workspace.ProjectListDefaultByWorkspaceId(c, commonReq)
+		if err != nil {
+			log.Println(err.Error())
+			return webconsole.CommonResponseStatusInternalServerError(commonResponse.ResponseData)
+		}
+		return commonResponse
 	}
 }
