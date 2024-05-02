@@ -1,35 +1,36 @@
 package util
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
-	"os"
-
-	// "reflect"
-	// "io"
 	"io/ioutil"
 	"log"
+	"math"
+	"mc_web_console_api/fwmodels/webconsole"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
-
-	// "net/url"
-
+	"os"
 	"strconv"
 	"strings"
 
-	// "time"
-	"bytes"
-	"encoding/json"
-	"math"
-
 	"github.com/gobuffalo/buffalo"
-	// "io/ioutil"
-	// echosession "github.com/go-session/echo-session"
-	// "github.com/labstack/echo"
-	// "mcone/fwmodels"
 )
+
+// "reflect"
+// "io"
+
+// "net/url"
+
+// "time"
+
+// "io/ioutil"
+// echosession "github.com/go-session/echo-session"
+// "github.com/labstack/echo"
+// "mcone/fwmodels"
 
 type KeepZero float64
 
@@ -75,14 +76,14 @@ func AuthenticationHandler() string {
 // ex2) path인 경우 :abc
 func MappingUrlParameter(originalUrl string, paramMapper map[string]string) string {
 	returnUrl := originalUrl
-	log.Println("originalUrl= ", originalUrl)
+	log.Println("originalUrl\t= ", originalUrl)
 	if paramMapper != nil {
 		for key, replaceValue := range paramMapper {
 			returnUrl = strings.Replace(returnUrl, key, replaceValue, -1)
 			// fmt.Println("Key:", key, "=>", "Element:", replaceValue+":"+returnUrl)
 		}
 	}
-	log.Println("returnUrl= ", returnUrl)
+	log.Println("returnUrl\t= ", returnUrl)
 	return returnUrl
 }
 
@@ -107,12 +108,81 @@ func CommonHttp(url string, json []byte, httpMethod string) (*http.Response, err
 
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	fmt.Println(string(requestDump))
+	log.Println(string(requestDump))
 	resp, err := client.Do(req) // err 자체는 nil 이고 resp 내에 statusCode가 500임...
 
 	return resp, err
+}
+
+// url과
+func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, isauth bool) (*webconsole.CommonResponse, error) {
+	log.Println("CommonHttp - METHOD:" + httpMethod + " => url:" + url)
+	log.Println("isauth:", isauth)
+
+	jsonData, err := json.Marshal(s)
+	if err != nil {
+		log.Println("commonPostERR : json.Marshal : ", err.Error())
+		return nil, err
+	}
+
+	req, err := http.NewRequest(httpMethod, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Error CommonHttp creating request:", err)
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if isauth {
+		authinfo := AuthenticationHandler()
+		req.Header.Add("Authorization", authinfo)
+	}
+
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		log.Println("Error CommonHttp creating httputil.DumpRequest:", err)
+	}
+	log.Println("\n", string(requestDump))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error CommonHttp request:", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, ioerr := io.ReadAll(resp.Body)
+	if ioerr != nil {
+		log.Println("Error CommonHttp reading response:", ioerr)
+	}
+
+	commonResponse := &webconsole.CommonResponse{}
+	commonResponse.Status.Message = resp.Status
+	commonResponse.Status.StatusCode = resp.StatusCode
+	jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
+	if jsonerr != nil {
+		return commonResponse, jsonerr
+	}
+
+	return commonResponse, nil
+}
+
+type CommonParams struct {
+	Option    string `json:"option" mapstructure:"option"`
+	FilterKey string `json:"filterKey" mapstructure:"filterKey"`
+	FilterVal string `json:"filterVal" mapstructure:"filterVal"`
+}
+
+func ParamParser(commonparams *CommonParams) string {
+	optionParamVal := ""
+	if commonparams.Option != "" {
+		optionParamVal = optionParamVal + "?option=" + commonparams.Option
+	}
+	if commonparams.FilterKey != "" && commonparams.FilterVal != "" {
+		optionParamVal = optionParamVal + "&filterKey=" + commonparams.FilterKey + "&filterVal=" + commonparams.FilterVal
+	}
+	return optionParamVal
 }
 
 // Json 형태의 bytes.Buffer 면 그대로 사용

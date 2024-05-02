@@ -32,7 +32,7 @@ func WorkspaceMciamListByUser(c buffalo.Context, commonReq *webconsole.CommonReq
 	// 	return webconsole.CommonResponseStatusBadRequest(nil), validateErr
 	// }
 
-	workspaceMciamListByUserRespose := &mcmodels.WorkspaceMciamListByUserRespose{}
+	workspaceMciamListByUserRespose := &mcmodels.WorkspaceListByUserRespose{}
 
 	// 여기서 더미 데이터 삭제후 workspaceMciamListByUserRespose 에 워크스페이스 리스트 받아 넘길 것
 
@@ -77,7 +77,7 @@ func ProjectListMciamByWorkspaceId(c buffalo.Context, commonReq *webconsole.Comm
 	}
 
 	// TODO : 사용자가 자신의 Workspace를 사용하는지 여부 확인하는 로직
-	workspaceProject := &mcmodels.WorkspaceProjectForMappingResponse{
+	workspaceProject := &mcmodels.WorkspaceProjectForMapipngResponse{
 		Id:          "testprojectId1",
 		Name:        "testProject1",
 		Description: "testProject1 Description",

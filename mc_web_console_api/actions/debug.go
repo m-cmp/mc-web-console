@@ -3,7 +3,7 @@ package actions
 import (
 	"encoding/json"
 	"io"
-	"mc_web_console_api/util"
+	util "mc_web_console_api/util"
 	"net/http"
 	"strings"
 
