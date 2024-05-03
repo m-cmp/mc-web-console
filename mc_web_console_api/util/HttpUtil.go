@@ -13,7 +13,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -70,23 +72,6 @@ func AuthenticationHandler() string {
 
 }
 
-// originalUrl 은 API의 전체 경로
-// parammapper 의 Key는 replace할 모든 text
-// ex1) path인 경우 {abc}
-// ex2) path인 경우 :abc
-func MappingUrlParameter(originalUrl string, paramMapper map[string]string) string {
-	returnUrl := originalUrl
-	log.Println("originalUrl\t= ", originalUrl)
-	if paramMapper != nil {
-		for key, replaceValue := range paramMapper {
-			returnUrl = strings.Replace(returnUrl, key, replaceValue, -1)
-			// fmt.Println("Key:", key, "=>", "Element:", replaceValue+":"+returnUrl)
-		}
-	}
-	log.Println("returnUrl\t= ", returnUrl)
-	return returnUrl
-}
-
 // http 호출
 func CommonHttp(url string, json []byte, httpMethod string) (*http.Response, error) {
 
@@ -116,7 +101,76 @@ func CommonHttp(url string, json []byte, httpMethod string) (*http.Response, err
 	return resp, err
 }
 
-// url과
+// //////////////////////////////////////////////////////////////////////////////////////////
+type CommonParams struct {
+	Option string `json:"option" mapstructure:"option"`
+
+	Action string `json:"action " mapstructure:"action"` // ex : suspend, resume, reboot, terminate, refine
+	Force  string `json:"force " mapstructure:"force"`   // ex : false, true
+
+	FilterKey string `json:"filterKey" mapstructure:"filterKey"`
+	FilterVal string `json:"filterVal" mapstructure:"filterVal"`
+}
+
+// 매서드, 프레임워크, 엔드포인트, 공통 요청을 받아 CommonHttpToCommonResponse를 호출
+// ex :  commonResponse, err := util.CommonCaller(http.MethodGet, util.TUMBLEBUG, originalUrl, getMCISListRequest, getMCISListRequest.CommonParams)
+func CommonCaller(callMethod string, targetFwUrl string, apiEndPoint string, requestStruct interface{}, commonParams CommonParams) (*webconsole.CommonResponse, error) {
+	urlParam := MappingUrlPathParam(apiEndPoint, requestStruct)
+	targetUrl, err := url.Parse(targetFwUrl + urlParam)
+	if err != nil {
+		return webconsole.CommonResponseStatusInternalServerError(err), err
+	}
+	MappingParamParser(targetUrl, commonParams)
+	commonResponse, err := CommonHttpToCommonResponse(targetUrl.String(), nil, callMethod, true)
+	if err != nil {
+		return commonResponse, err
+	}
+	return commonResponse, err
+}
+
+func MappingUrlPathParam(originalUrl string, s interface{}) string {
+	returnUrl := originalUrl
+	paramMapper := make(map[string]string)
+	val := reflect.ValueOf(s)
+	typ := reflect.TypeOf(s)
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		r := []rune(typ.Field(i).Name)
+		r[0] = rune(typ.Field(i).Name[0] + 32)
+		fieldName := "{" + string(r) + "}"
+		if typ.Field(i).Name != "CommonParams" {
+			paramMapper[fieldName] = fmt.Sprintf("%s", field.Interface())
+		}
+	}
+	if paramMapper != nil {
+		for key, replaceValue := range paramMapper {
+			returnUrl = strings.Replace(returnUrl, key, replaceValue, -1)
+		}
+	}
+	return returnUrl
+}
+
+func MappingParamParser(u *url.URL, data interface{}) {
+	v := reflect.ValueOf(data)
+	if v.Kind() != reflect.Struct {
+		fmt.Println("Error: Input is not a struct")
+	}
+
+	q := u.Query()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Type().Field(i)
+		fieldName := field.Name
+		r := []rune(fieldName)
+		r[0] = rune(fieldName[0] + 32)
+		fieldValue := v.Field(i)
+		if !reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(fieldValue.Type()).Interface()) {
+			q.Set(string(r), fmt.Sprintf("%v", fieldValue.Interface()))
+		}
+	}
+
+	u.RawQuery = q.Encode()
+}
+
 func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, isauth bool) (*webconsole.CommonResponse, error) {
 	log.Println("CommonHttp - METHOD:" + httpMethod + " => url:" + url)
 	log.Println("isauth:", isauth)
@@ -168,21 +222,23 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, is
 	return commonResponse, nil
 }
 
-type CommonParams struct {
-	Option    string `json:"option" mapstructure:"option"`
-	FilterKey string `json:"filterKey" mapstructure:"filterKey"`
-	FilterVal string `json:"filterVal" mapstructure:"filterVal"`
-}
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-func ParamParser(commonparams *CommonParams) string {
-	optionParamVal := ""
-	if commonparams.Option != "" {
-		optionParamVal = optionParamVal + "?option=" + commonparams.Option
+// originalUrl 은 API의 전체 경로
+// parammapper 의 Key는 replace할 모든 text
+// ex1) path인 경우 {abc}
+// ex2) path인 경우 :abc
+func MappingUrlParameter(originalUrl string, paramMapper map[string]string) string {
+	returnUrl := originalUrl
+	log.Println("originalUrl\t= ", originalUrl)
+	if paramMapper != nil {
+		for key, replaceValue := range paramMapper {
+			returnUrl = strings.Replace(returnUrl, key, replaceValue, -1)
+			// fmt.Println("Key:", key, "=>", "Element:", replaceValue+":"+returnUrl)
+		}
 	}
-	if commonparams.FilterKey != "" && commonparams.FilterVal != "" {
-		optionParamVal = optionParamVal + "&filterKey=" + commonparams.FilterKey + "&filterVal=" + commonparams.FilterVal
-	}
-	return optionParamVal
+	log.Println("returnUrl\t= ", returnUrl)
+	return returnUrl
 }
 
 // Json 형태의 bytes.Buffer 면 그대로 사용
@@ -243,56 +299,6 @@ func CommonHttpBytes(url string, jsonBytesBuffer *bytes.Buffer, httpMethod strin
 
 	return resp, err
 }
-
-// func CommonHttpWithoutParam1(url string, httpMethod string) (io.ReadCloser, error) {
-// 	authInfo := AuthenticationHandler()
-// 	fmt.Println("CommonHttp ", url)
-// 	client := &http.Client{}
-// 	req, err := http.NewRequest(httpMethod, url, nil)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	// set the request header Content-Type for json
-// 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-// 	req.Header.Add("Authorization", authInfo)
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	fmt.Println(resp.StatusCode)
-// 	defer resp.Body.Close()
-
-// 	return resp.Body, err
-// }
-
-// parameter 없이 호출하는 경우 사용.받은대로 return하면 호출하는 method에서 가공하여 사용
-// func CommonHttpWithoutParam(url string, httpMethod string) (io.ReadCloser, error) {
-// 	authInfo := AuthenticationHandler()
-
-// 	fmt.Println("CommonHttp ", url)
-// 	client := &http.Client{}
-// 	req, err := http.NewRequest(httpMethod, url, nil)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	// set the request header Content-Type for json
-// 	// req.Header.Set("Content-Type", "application/json; charset=utf-8")	// 사용에 주의할 것.
-// 	req.Header.Add("Authorization", authInfo)
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	// respBody := resp.Body
-// 	// robots, _ := ioutil.ReadAll(resp.Body)
-// 	// defer resp.Body.Close()
-// 	// log.Println(fmt.Print(string(robots)))
-// 	// fmt.Println(resp.StatusCode)
-
-// 	return resp.Body, err
-// }
 
 // parameter 없이 호출하는 경우 사용.받은대로 return하면 호출하는 method에서 가공하여 사용
 func CommonHttpWithoutParam(url string, httpMethod string) (*http.Response, error) {
