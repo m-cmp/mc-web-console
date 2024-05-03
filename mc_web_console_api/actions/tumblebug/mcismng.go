@@ -10,6 +10,7 @@ import (
 )
 
 // func GetMcisList()
+
 // func GetMcisStatusCountMap()
 // func GetMcisData()
 // func GetVmData()
@@ -44,17 +45,10 @@ func GetMCISList(c buffalo.Context, commonReq *webconsole.CommonRequest) *webcon
 	if err := mapstructure.Decode(commonReq.RequestData, getMCISListRequest); err != nil {
 		return webconsole.CommonResponseStatusBadRequest(err)
 	}
-
 	originalUrl := "/ns/{nsId}/mcis"
-	paramMapper := make(map[string]string)
-	paramMapper["{nsId}"] = getMCISListRequest.NsId
-	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
-	optionParamVal := util.ParamParser(&getMCISListRequest.CommonParams)
-	url := util.TUMBLEBUG + urlParam + optionParamVal
-
-	commonResponse, err := util.CommonHttpToCommonResponse(url, nil, http.MethodGet, true)
+	commonResponse, err := util.CommonCaller(http.MethodGet, util.TUMBLEBUG, originalUrl, *getMCISListRequest, getMCISListRequest.CommonParams)
 	if err != nil {
-		return webconsole.CommonResponseStatusInternalServerError(err)
+		return commonResponse
 	}
 
 	return commonResponse
@@ -71,18 +65,30 @@ func DelMCIS(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole
 	if err := mapstructure.Decode(commonReq.RequestData, delMCISRequest); err != nil {
 		return webconsole.CommonResponseStatusBadRequest(err)
 	}
-
-	originalUrl := "​/ns​/{nsId}​/mcis​/{mcisId}"
-	paramMapper := make(map[string]string)
-	paramMapper["{nsId}"] = delMCISRequest.NsId
-	paramMapper["{mcisId}"] = delMCISRequest.NsId
-	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
-	optionParamVal := util.ParamParser(&delMCISRequest.CommonParams)
-	url := util.TUMBLEBUG + urlParam + optionParamVal
-
-	commonResponse, err := util.CommonHttpToCommonResponse(url, nil, http.MethodGet, true)
+	originalUrl := "/ns/{nsId}/mcis/{mcisId}"
+	commonResponse, err := util.CommonCaller(http.MethodDelete, util.TUMBLEBUG, originalUrl, *delMCISRequest, delMCISRequest.CommonParams)
 	if err != nil {
-		return webconsole.CommonResponseStatusInternalServerError(err)
+		return commonResponse
+	}
+
+	return commonResponse
+}
+
+type ControlMCISLifecycleRequest struct {
+	NsId         string            `json:"nsId" mapstructure:"nsId"`
+	McisId       string            `json:"mcisId" mapstructure:"mcisId"`
+	CommonParams util.CommonParams `json:"commonParams" mapstructure:"commonParams"`
+}
+
+func ControlMCISLifecycle(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
+	controlMCISLifecycleRequest := &ControlMCISLifecycleRequest{}
+	if err := mapstructure.Decode(commonReq.RequestData, controlMCISLifecycleRequest); err != nil {
+		return webconsole.CommonResponseStatusBadRequest(err)
+	}
+	originalUrl := "/ns/{nsId}/control/mcis/{mcisId}"
+	commonResponse, err := util.CommonCaller(http.MethodGet, util.TUMBLEBUG, originalUrl, *controlMCISLifecycleRequest, controlMCISLifecycleRequest.CommonParams)
+	if err != nil {
+		return commonResponse
 	}
 
 	return commonResponse

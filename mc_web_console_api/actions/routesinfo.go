@@ -42,6 +42,8 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = tumblebug.GetMCISList(c, commonRequest)
 	case "delmcis":
 		commonResponse = tumblebug.DelMCIS(c, commonRequest)
+	case "controlmcislifecycle":
+		commonResponse = tumblebug.ControlMCISLifecycle(c, commonRequest)
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
 	case "authlogout":
