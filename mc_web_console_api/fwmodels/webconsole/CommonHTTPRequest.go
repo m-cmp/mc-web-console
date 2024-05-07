@@ -2,14 +2,16 @@ package webconsole
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"mc_web_console_api/fwmodels"
-	"mc_web_console_api/util"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -80,11 +82,19 @@ func CommonResponseStatusInternalServerError(responseData interface{}) *CommonRe
 	}
 }
 
-func CommonCaller(callMethod string, targetFwUrl string, endPoint string, commonRequest *CommonRequest) (*CommonResponse, error) {
+func CommonCaller(callMethod string, targetFwUrl string, endPoint string, commonRequest *CommonRequest, auth string) (*CommonResponse, error) {
 	pathParamsUrl := mappingUrlPathParams(endPoint, commonRequest)
 	queryParamsUrl := mappingQueryParams(pathParamsUrl, commonRequest)
 	requestUrl := targetFwUrl + queryParamsUrl
-	commonResponse, err := CommonHttpToCommonResponse(requestUrl, commonRequest.Request, callMethod, true)
+	commonResponse, err := CommonHttpToCommonResponse(requestUrl, commonRequest.Request, callMethod, auth)
+	return commonResponse, err
+}
+
+func CommonCallerWithoutToken(callMethod string, targetFwUrl string, endPoint string, commonRequest *CommonRequest) (*CommonResponse, error) {
+	pathParamsUrl := mappingUrlPathParams(endPoint, commonRequest)
+	queryParamsUrl := mappingQueryParams(pathParamsUrl, commonRequest)
+	requestUrl := targetFwUrl + queryParamsUrl
+	commonResponse, err := CommonHttpToCommonResponse(requestUrl, commonRequest.Request, callMethod, "")
 	return commonResponse, err
 }
 
@@ -109,9 +119,9 @@ func mappingQueryParams(targeturl string, commonRequest *CommonRequest) string {
 	return u.String()
 }
 
-func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, isauth bool) (*CommonResponse, error) {
+func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, auth string) (*CommonResponse, error) {
 	log.Println("CommonHttp - METHOD:" + httpMethod + " => url:" + url)
-	log.Println("isauth:", isauth)
+	log.Println("isauth:", auth)
 
 	jsonData, err := json.Marshal(s)
 	if err != nil {
@@ -124,11 +134,9 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, is
 		log.Println("Error CommonHttp creating request:", err)
 		return nil, err
 	}
-
 	req.Header.Set("Content-Type", "application/json")
-	if isauth {
-		authinfo := util.AuthenticationHandler()
-		req.Header.Add("Authorization", authinfo)
+	if auth != "" {
+		req.Header.Add("Authorization", auth)
 	}
 
 	requestDump, err := httputil.DumpRequest(req, true)
@@ -152,10 +160,21 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, is
 	commonResponse := &CommonResponse{}
 	commonResponse.Status.Message = resp.Status
 	commonResponse.Status.StatusCode = resp.StatusCode
-	jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
-	if jsonerr != nil {
-		return commonResponse, jsonerr
+	if len(respBody) > 0 {
+		jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
+		if jsonerr != nil {
+			log.Println("Error CommonHttp Unmarshal response:", jsonerr.Error())
+			return commonResponse, jsonerr
+		}
 	}
-
 	return commonResponse, nil
+}
+
+func TBAuthentication() string {
+	apiusername := os.Getenv("API_USERNAME")
+	apipassword := os.Getenv("API_PASSWORD")
+	apiUserInfo := apiusername + ":" + apipassword
+	encA := base64.StdEncoding.EncodeToString([]byte(apiUserInfo))
+	fmt.Println("Basic " + encA)
+	return "Basic " + encA
 }

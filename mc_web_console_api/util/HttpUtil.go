@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"math"
@@ -15,8 +14,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/gobuffalo/buffalo"
 )
 
 // "reflect"
@@ -52,21 +49,13 @@ func (mf myFloat64) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v)
 }
 
-// ajax 호출할 때 header key 생성
 func AuthenticationHandler() string {
-
-	// conf 파일에 정의
 	apiusername := os.Getenv("API_USERNAME")
 	apipassword := os.Getenv("API_PASSWORD")
-
-	//The header "KEY: VAL" is "Authorization: Basic {base64 encoded $USERNAME:$PASSWORD}".
 	apiUserInfo := apiusername + ":" + apipassword
-	log.Println("API USER INFO ************ : ", apiUserInfo)
 	encA := base64.StdEncoding.EncodeToString([]byte(apiUserInfo))
-	//req.Header.Add("Authorization", "Basic"+encA)
 	fmt.Println("Basic " + encA)
 	return "Basic " + encA
-
 }
 
 // http 호출
@@ -272,137 +261,4 @@ func DisplayResponse(resp *http.Response) {
 
 		fmt.Println("*****DisplayResponse end****")
 	}
-}
-
-// Response 객체의 내용
-// type Response struct {
-//     Status     string // e.g. "200 OK"
-//     StatusCode int    // e.g. 200
-//     Proto      string // e.g. "HTTP/1.0"
-//     ProtoMajor int    // e.g. 1
-//     ProtoMinor int    // e.g. 0
-
-//     // response headers
-//     Header http.Header
-//     // response body
-//     Body io.ReadCloser
-//     // request that was sent to obtain the response
-//     Request *http.Request
-// }
-
-// Common POST application/json
-// status, data, err := CommonAPIPostWithoutAccessToken(url string, s interface{})
-func CommonPostWithoutAccessToken(url string, s interface{}) (*http.Response, []byte, error) {
-	jsonData, err := json.Marshal(s)
-	if err != nil {
-		log.Println("CommonAPIPostWithoutAccessToken ERR : json.Marshal : ", err.Error())
-		return nil, nil, err
-	}
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Println("CommonAPIPostWithoutAccessToken ERR : http.Post : ", err.Error())
-		return resp, nil, err
-	}
-
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("CommonAPIPostWithoutAccessToken ERR : io.ReadAll : ", err.Error())
-		return resp, nil, err
-	}
-
-	return resp, respBody, nil
-}
-
-// Common POST application/json with Accesstoken
-// status, data, err := CommonAPIPost(url string, s interface{})
-func CommonPost(url string, s interface{}, c buffalo.Context) (*http.Response, []byte, error) {
-	accessToken := c.Request().Header.Get("Authorization")
-
-	jsonData, err := json.Marshal(s)
-	if err != nil {
-		log.Println("CommonAPIPostWithAccesstoken ERR : json.Marshal : ", err.Error())
-		return nil, nil, err
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Println("CommonAPIPostWithAccesstoken ERR : http.NewRequest : ", err.Error())
-		return nil, nil, err
-	}
-
-	req.Header.Set("Authorization", accessToken)
-	req.Header.Set("Content-Type", "application/json") // Content-Type 설정
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("CommonAPIPostWithAccesstoken ERR : client.Do : ", err.Error())
-		return resp, nil, err
-	}
-
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("CommonAPIPostWithAccesstoken ERR : io.ReadAll : ", err.Error())
-		return resp, nil, err
-	}
-
-	return resp, respBody, nil
-}
-
-// Common GET
-// status, data, err := CommonAPIGetWithoutAccessToken(url string)
-func CommonGetWithoutAccessToken(url string) (*http.Response, []byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Println("commonPostERR : http.Post : ", url, err.Error())
-		return resp, nil, err
-	}
-
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("commonPostERR : io.ReadAll : ", url, err.Error())
-		return resp, nil, err
-	}
-
-	return resp, respBody, nil
-}
-
-// Common GET with Accesstoken
-// status, data, err := CommonAPIGet(url string, c buffalo.Context)
-func CommonGet(url string, c buffalo.Context) (*http.Response, []byte, error) {
-	headerAccessToken := c.Request().Header.Get("Authorization")
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Println("CommonAPIGetWithAccesstoken ERR : http.NewRequest : ", url, err.Error())
-		return nil, nil, err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+headerAccessToken)
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("CommonAPIGetWithAccesstoken ERR : client.Do : ", url, err.Error())
-		return resp, nil, err
-	}
-
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("CommonAPIGetWithAccesstoken ERR : io.ReadAll : ", url, err.Error())
-		return resp, nil, err
-	}
-
-	return resp, respBody, nil
 }
