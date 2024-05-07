@@ -1,0 +1,110 @@
+<div class="col-12">
+  <h3 class="text-info">Server Configuration</h3>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group mb-2">
+        <label class="form-label required">Server Name</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="1"
+          placeholder="Input Name"
+        ></textarea>
+      </div>
+      <div class="form-group mb-2">
+        <label class="form-label required">Spec</label>
+        <div class="row g-2">
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Please Use Search"
+            />
+          </div>
+          <div class="col-auto">
+            <a
+              href="#"
+              class="btn"
+              data-bs-toggle="modal"
+              data-bs-target="#spec-search"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                <path d="M21 21l-6 -6"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group mb-2">
+        <label class="form-label required">Root Disk</label>
+        <div class="row g-2">
+          <div class="col-6">
+            <select
+              class="form-select"
+              name="Select Root Disk Type"
+              id="Root Disk"
+            >
+              <option value="disk1">disk1</option>
+              <option value="disk2">disk2</option>
+              <option value="disk3">disk3</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <textarea
+              class="form-control"
+              name="example-textarea-input"
+              rows="1"
+              placeholder="Root Disk Size(GB)"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="form-group mb-2">
+        <label class="form-label">Server Quantity</label>
+        <input
+          type="range"
+          class="form-range mb-2"
+          value="0"
+          min="0"
+          max="100"
+          step="1"
+          oninput="this.nextElementSibling.value = this.value"
+        />
+        <output>0</output>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group mb-2">
+        <label class="form-label">Description</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="3"
+          placeholder="type Description"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+<div align="right">
+     <button type="submit" class="btn btn-info">Done</button>    <button
+    type="submit"
+    class="btn btn-secondary"
+  >
+    Clear
+  </button>
+</div>
