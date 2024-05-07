@@ -19,7 +19,7 @@ func UserLoginHandler(c buffalo.Context) error {
 		user := &mcmodels.UserLogin{}
 		if err := c.Bind(user); err != nil {
 			return c.Render(http.StatusBadRequest,
-				r.JSON(map[string]string{"err": err.Error()}))
+				defaultRender.JSON(map[string]string{"err": err.Error()}))
 		}
 
 		// validateErr ------------------------------ 2
@@ -30,7 +30,7 @@ func UserLoginHandler(c buffalo.Context) error {
 		if validateErr.HasAny() {
 			log.Println(validateErr)
 			return c.Render(http.StatusBadRequest,
-				r.JSON(map[string]string{"err": validateErr.Error()}))
+				defaultRender.JSON(map[string]string{"err": validateErr.Error()}))
 		}
 
 		// commonRequest RequestData 할당 ------------------------------ 3
@@ -41,11 +41,11 @@ func UserLoginHandler(c buffalo.Context) error {
 		status, commonRes, err := CommonAPIPostWithoutAccessToken(APILoginPath, commonRequest)
 		if err != nil {
 			return c.Render(status.StatusCode,
-				r.JSON(map[string]string{"err": err.Error()}))
+				defaultRender.JSON(map[string]string{"err": err.Error()}))
 		}
 		if status.StatusCode != 200 {
 			return c.Render(status.StatusCode,
-				r.JSON(map[string]string{"err": status.Status}),
+				defaultRender.JSON(map[string]string{"err": status.Status}),
 			)
 		}
 
@@ -54,13 +54,13 @@ func UserLoginHandler(c buffalo.Context) error {
 		decodeerr := mapstructure.Decode(commonRes.ResponseData, accessTokenResponse)
 		if decodeerr != nil {
 			return c.Render(status.StatusCode,
-				r.JSON(map[string]string{"err": decodeerr.Error()}))
+				defaultRender.JSON(map[string]string{"err": decodeerr.Error()}))
 		}
 
 		c.Session().Set("Authorization", accessTokenResponse.AccessToken)
 
 		return c.Render(http.StatusOK,
-			r.JSON(map[string]string{
+			defaultRender.JSON(map[string]string{
 				"redirect": RootPathForRedirectString,
 			}))
 	}
@@ -74,7 +74,7 @@ func UserLoginHandler(c buffalo.Context) error {
 		)
 	}
 
-	return c.Render(http.StatusOK, r.HTML("auth/login.html"))
+	return c.Render(http.StatusOK, defaultRender.HTML("pages/auth/login.html"))
 }
 
 func UserLogoutHandler(c buffalo.Context) error {
@@ -82,11 +82,11 @@ func UserLogoutHandler(c buffalo.Context) error {
 	if err != nil {
 		log.Println(err.Error())
 		return c.Render(status.StatusCode,
-			r.JSON(map[string]string{"err": err.Error()}))
+			defaultRender.JSON(map[string]string{"err": err.Error()}))
 	}
 	if status.StatusCode != 200 {
 		return c.Render(status.StatusCode,
-			r.JSON(map[string]string{"err": status.Status}),
+			defaultRender.JSON(map[string]string{"err": status.Status}),
 		)
 	}
 
@@ -96,7 +96,7 @@ func UserLogoutHandler(c buffalo.Context) error {
 }
 
 func UserRegisterpageHandler(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("auth/login.html"))
+	return c.Render(http.StatusOK, defaultRender.HTML("pages/auth/login.html"))
 }
 
 // func GetUserRefreshTokenHandler(c buffalo.Context) (mcmodels.AccessTokenResponse, string, error) {

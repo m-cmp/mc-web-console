@@ -8,7 +8,7 @@ import (
 
 	"mc_web_console_api/actions/auth"
 	"mc_web_console_api/fwmodels/webconsole"
-	util "mc_web_console_api/util"
+	"mc_web_console_api/util"
 )
 
 func AuthLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {

@@ -1,42 +1,27 @@
-export function getSessionCurrentWorkspaceProjcet() {
-    let currentWorkspacProject = JSON.parse(sessionStorage.getItem('currentWorkspacProject'))
-    return currentWorkspacProject
+// workspace
+export function getSessionCurrentWorkspace() {
+    return JSON.parse(sessionStorage.getItem("currentWorkspace"))
+}
+export function setSessionCurrentWorkspace(workspace) {
+    sessionStorage.setItem('currentWorkspace',JSON.stringify(workspace))
+}
+export function getSessionCurrentWorkspaceList() {
+    return JSON.parse(sessionStorage.getItem("currentWorkspaceList"))
+}
+export function setSessionCurrentWorkspaceList(workspaceList) {
+    sessionStorage.setItem('currentWorkspaceList',JSON.stringify(workspaceList))
 }
 
-export function setSessionCurrentWorkspaceProjcet(workspaceId, projectId) {
-    let currentWorksppacProject = {
-        "currentWorkspace":workspaceId,
-        "currentProject":projectId
-    }
-    sessionStorage.setItem('currentWorkspacProject',JSON.stringify(currentWorksppacProject))
+// project
+export function getSessionCurrentProject() {
+    return JSON.parse(sessionStorage.getItem("currentProject"))
 }
-
-export async function getSessionWorkspaceList() {
-    let workspaceList = JSON.parse(sessionStorage.getItem('workspaceList'))
-    if (workspaceList == null){
-        await webconsolejs["common/storage/sessionstorage"].updateSessionWorkspaceList()
-        workspaceList = webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceList()
-    }
-    return workspaceList.Workspaces
+export function setSessionCurrentProject(project) {
+    sessionStorage.setItem('currentProject',JSON.stringify(project))
 }
-
-export function getSessionProjectList() {
-    let projectList = JSON.parse(sessionStorage.getItem('projectList'))
-    return projectList.Projects
+export function getSessionCurrentProjectList() {
+    return JSON.parse(sessionStorage.getItem("currentProjectList"))
 }
-
-export async function updateSessionWorkspaceList() {
-    const response = await webconsolejs["common/http/api"].commonAPIPost('/api/workspacelistbyuser')
-    sessionStorage.setItem('workspaceList', JSON.stringify(response.data.responseData));
-}
-
-export async function updateSessionProjectListByWorkspaceId(workspaceId) {
-    let data = {
-        "requestData":{
-            "userId":"mciamuser",
-            "workspaceId": workspaceId
-        }
-    }
-    const response = await webconsolejs["common/http/api"].commonAPIPost('/api/projectlistbyworkspaceid',data)
-    sessionStorage.setItem('projectList', JSON.stringify(response.data.responseData));
+export function setSessionCurrentProjectList(projectList) {
+    sessionStorage.setItem('currentProjectList',JSON.stringify(projectList))
 }
