@@ -39,7 +39,7 @@ func AuthMcIamMiddleware(c buffalo.Context) (*webconsole.CommonResponse, error) 
 
 func AuthMcIamLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
 	user := &mcmodels.UserLogin{}
-	if err := mapstructure.Decode(commonReq.RequestData, user); err != nil {
+	if err := mapstructure.Decode(commonReq.Request, user); err != nil {
 		return webconsole.CommonResponseStatusBadRequest(nil), err
 	}
 

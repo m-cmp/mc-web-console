@@ -9,13 +9,10 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
-	"mc_web_console_api/fwmodels/webconsole"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -100,129 +97,6 @@ func CommonHttp(url string, json []byte, httpMethod string) (*http.Response, err
 
 	return resp, err
 }
-
-// //////////////////////////////////////////////////////////////////////////////////////////
-type CommonParams struct {
-	Option string `json:"option" mapstructure:"option"`
-
-	Action string `json:"action " mapstructure:"action"` // ex : suspend, resume, reboot, terminate, refine
-	Force  string `json:"force " mapstructure:"force"`   // ex : false, true
-
-	FilterKey string `json:"filterKey" mapstructure:"filterKey"`
-	FilterVal string `json:"filterVal" mapstructure:"filterVal"`
-}
-
-// 매서드, 프레임워크, 엔드포인트, 공통 요청을 받아 CommonHttpToCommonResponse를 호출
-// ex :  commonResponse, err := util.CommonCaller(http.MethodGet, util.TUMBLEBUG, originalUrl, getMCISListRequest, getMCISListRequest.CommonParams)
-func CommonCaller(callMethod string, targetFwUrl string, apiEndPoint string, requestStruct interface{}, commonParams CommonParams) (*webconsole.CommonResponse, error) {
-	urlParam := MappingUrlPathParam(apiEndPoint, requestStruct)
-	targetUrl, err := url.Parse(targetFwUrl + urlParam)
-	if err != nil {
-		return webconsole.CommonResponseStatusInternalServerError(err), err
-	}
-	MappingParamParser(targetUrl, commonParams)
-	commonResponse, err := CommonHttpToCommonResponse(targetUrl.String(), nil, callMethod, true)
-	if err != nil {
-		return commonResponse, err
-	}
-	return commonResponse, err
-}
-
-func MappingUrlPathParam(originalUrl string, s interface{}) string {
-	returnUrl := originalUrl
-	paramMapper := make(map[string]string)
-	val := reflect.ValueOf(s)
-	typ := reflect.TypeOf(s)
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		r := []rune(typ.Field(i).Name)
-		r[0] = rune(typ.Field(i).Name[0] + 32)
-		fieldName := "{" + string(r) + "}"
-		if typ.Field(i).Name != "CommonParams" {
-			paramMapper[fieldName] = fmt.Sprintf("%s", field.Interface())
-		}
-	}
-	if paramMapper != nil {
-		for key, replaceValue := range paramMapper {
-			returnUrl = strings.Replace(returnUrl, key, replaceValue, -1)
-		}
-	}
-	return returnUrl
-}
-
-func MappingParamParser(u *url.URL, data interface{}) {
-	v := reflect.ValueOf(data)
-	if v.Kind() != reflect.Struct {
-		fmt.Println("Error: Input is not a struct")
-	}
-
-	q := u.Query()
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Type().Field(i)
-		fieldName := field.Name
-		r := []rune(fieldName)
-		r[0] = rune(fieldName[0] + 32)
-		fieldValue := v.Field(i)
-		if !reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(fieldValue.Type()).Interface()) {
-			q.Set(string(r), fmt.Sprintf("%v", fieldValue.Interface()))
-		}
-	}
-
-	u.RawQuery = q.Encode()
-}
-
-func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, isauth bool) (*webconsole.CommonResponse, error) {
-	log.Println("CommonHttp - METHOD:" + httpMethod + " => url:" + url)
-	log.Println("isauth:", isauth)
-
-	jsonData, err := json.Marshal(s)
-	if err != nil {
-		log.Println("commonPostERR : json.Marshal : ", err.Error())
-		return nil, err
-	}
-
-	req, err := http.NewRequest(httpMethod, url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Println("Error CommonHttp creating request:", err)
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if isauth {
-		authinfo := AuthenticationHandler()
-		req.Header.Add("Authorization", authinfo)
-	}
-
-	requestDump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		log.Println("Error CommonHttp creating httputil.DumpRequest:", err)
-	}
-	log.Println("\n", string(requestDump))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("Error CommonHttp request:", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, ioerr := io.ReadAll(resp.Body)
-	if ioerr != nil {
-		log.Println("Error CommonHttp reading response:", ioerr)
-	}
-
-	commonResponse := &webconsole.CommonResponse{}
-	commonResponse.Status.Message = resp.Status
-	commonResponse.Status.StatusCode = resp.StatusCode
-	jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
-	if jsonerr != nil {
-		return commonResponse, jsonerr
-	}
-
-	return commonResponse, nil
-}
-
-// //////////////////////////////////////////////////////////////////////////////////////////
 
 // originalUrl 은 API의 전체 경로
 // parammapper 의 Key는 replace할 모든 text

@@ -30,7 +30,7 @@ func ProjectListDefaultByWorkspaceId(c buffalo.Context, commonReq *webconsole.Co
 	// fmt.Println("Request User is", jwtdecoded["name"])
 
 	projectListByWorkspaceRequest := &mcmodels.ProjectListByWorkspaceRequest{}
-	if err := mapstructure.Decode(commonReq.RequestData, projectListByWorkspaceRequest); err != nil {
+	if err := mapstructure.Decode(commonReq.Request, projectListByWorkspaceRequest); err != nil {
 		return webconsole.CommonResponseStatusBadRequest(nil), err
 	}
 
