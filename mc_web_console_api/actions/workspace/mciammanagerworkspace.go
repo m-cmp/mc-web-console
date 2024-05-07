@@ -65,7 +65,7 @@ func ProjectListMciamByWorkspaceId(c buffalo.Context, commonReq *webconsole.Comm
 	// }
 
 	projectListByWorkspaceRequest := &mcmodels.ProjectListByWorkspaceRequest{}
-	if err := mapstructure.Decode(commonReq.RequestData, projectListByWorkspaceRequest); err != nil {
+	if err := mapstructure.Decode(commonReq.Request, projectListByWorkspaceRequest); err != nil {
 		return webconsole.CommonResponseStatusBadRequest(nil), err
 	}
 	validateErr := validate.Validate(
