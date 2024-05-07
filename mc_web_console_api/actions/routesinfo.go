@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	tumblebug "mc_web_console_api/actions/tumblebug"
 	webconsole "mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
 
@@ -24,64 +25,37 @@ type actions struct{}
 // Client에서 전송되는 data type은 POST 임 //
 // case문에서 controller이름 추출하여 controller 호출
 func PostRouteController(c buffalo.Context) error {
-	// param 종류( pathParam, queryParam)
-	// target controller 이름.
-
-	log.Println("#### In PostRouteController ####")
-
-	targetController := c.Param("targetController")
-	log.Printf("== targetController : [ %s ]\n", targetController)
-
-	commonResponse := &webconsole.CommonResponse{}
+	log.Println("#### PostRouteController ")
 	commonRequest := &webconsole.CommonRequest{}
 	c.Bind(commonRequest)
-	log.Printf("== commonRequest : [ %+v ]\n", commonRequest)
-
-	// if strings.Contains(targetController, "auth") {
-	// 	res := AuthMiddleware(c, commonRequest)
-	// 	if res.Status.StatusCode != 200 {
-	// 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
-	// 	}
-	// }
+	targetController := strings.ToLower(c.Param("targetController"))
+	log.Printf("== targetController \t:[ %s ]\n", targetController)
+	log.Printf("== commonRequest :\n%+v\n==\n", commonRequest)
 
 	// 권한 check???
 	// 1차 메뉴 권한
 	// 2차 project 권한 체크 -- middle ware
-	// 3차 resource 권한 체크 -- middle ware ( 추후. not now)
-	// case
+	// 3차 resource 권한 체크 -- middle ware (추후. not now)
+	commonResponse := &webconsole.CommonResponse{}
 	switch targetController {
-	case "McisList": // Get Type
-		//
-		// mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
-		// commonResponse.ResponseData = mcisList
-		// commonResponse.Status = respStatus
-		// commonResponse = tumblebug.TbMcisList(c)
-	case "McisReg": // Post Type
-		// namespaceID := c.Params().Get("namespaceid")
-		// optionParam := c.Params().Get("option")
-		// filterKeyParam := c.Params().Get("filterKey")
-		// filterValParam := c.Params().Get("filterVal")
-		// responseData, err := McisReg(dataObj, pathParam, queryParam)
+	case "getmcislist":
+		commonResponse = tumblebug.GetMCISList(c, commonRequest)
+	case "delmcis":
+		commonResponse = tumblebug.DelMCIS(c, commonRequest)
+	case "controlmcislifecycle":
+		commonResponse = tumblebug.ControlMCISLifecycle(c, commonRequest)
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
 	case "authlogout":
 		commonResponse = AuthLogout(c, commonRequest)
 	case "workspacelistbyuser":
 		commonResponse = WorkspaceListByUser(c, commonRequest)
-		// case "Validate":
-		// 	return AuthGetUserValidate(c)
-		// case "UserInfo":
-		// 	return AuthGetUserInfo(c)1
-
-		//defaut :
-		// TODO : a action를 찾아 실행하도록
 	case "projectlistbyworkspaceid":
 		commonResponse = ProjectListByWorkspaceId(c, commonRequest)
+	default:
+		commonResponse = webconsole.CommonResponseStatusNotFound("NO MATCH targetController")
+		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
-
-	// if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
-	// 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
-	// }
 
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
