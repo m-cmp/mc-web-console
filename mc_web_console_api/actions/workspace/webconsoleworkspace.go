@@ -5,7 +5,6 @@ import (
 	mcmodels "mc_web_console_common_models"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/mitchellh/mapstructure"
 )
 
 func WorkspaceDefaultListByUser(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
@@ -29,10 +28,9 @@ func ProjectListDefaultByWorkspaceId(c buffalo.Context, commonReq *webconsole.Co
 	// jwtdecoded := auth.McIamJwtDecode(accessToken)
 	// fmt.Println("Request User is", jwtdecoded["name"])
 
-	projectListByWorkspaceRequest := &mcmodels.ProjectListByWorkspaceRequest{}
-	if err := mapstructure.Decode(commonReq.Request, projectListByWorkspaceRequest); err != nil {
-		return webconsole.CommonResponseStatusBadRequest(nil), err
-	}
+	// if err := mapstructure.Decode(commonReq.Request, projectListByWorkspaceRequest); err != nil {
+	// 	return webconsole.CommonResponseStatusBadRequest(nil), err
+	// }
 
 	workspaceProject := &mcmodels.WorkspaceProjectForMapipngResponse{
 		Id:          "defaultWorkspace",

@@ -1,10 +1,7 @@
 package workspace
 
 import (
-	"fmt"
-	"mc_web_console_api/actions/auth"
 	"mc_web_console_api/fwmodels/webconsole"
-	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/validate"
@@ -15,10 +12,10 @@ import (
 )
 
 func WorkspaceMciamListByUser(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
-	headerAccessToken := c.Request().Header.Get("Authorization")
-	accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-	jwtdecoded := auth.McIamJwtDecode(accessToken)
-	fmt.Println("Request User is", jwtdecoded["name"])
+	// headerAccessToken := c.Request().Header.Get("Authorization")
+	// accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
+	// jwtdecoded := auth.McIamJwtDecode(accessToken)
+	// fmt.Println("Request User is", jwtdecoded["name"])
 
 	// workspaceMciamListByUserRequest := &mcmodels.WorkspaceMciamListByUserRequest{}
 	// if err := mapstructure.Decode(commonReq.RequestData, workspaceMciamListByUserRequest); err != nil {
