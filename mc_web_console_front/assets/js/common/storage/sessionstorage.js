@@ -5,12 +5,6 @@ export function getSessionCurrentWorkspace() {
 export function setSessionCurrentWorkspace(workspace) {
     sessionStorage.setItem('currentWorkspace',JSON.stringify(workspace))
 }
-export function getSessionCurrentWorkspaceList() {
-    return JSON.parse(sessionStorage.getItem("currentWorkspaceList"))
-}
-export function setSessionCurrentWorkspaceList(workspaceList) {
-    sessionStorage.setItem('currentWorkspaceList',JSON.stringify(workspaceList))
-}
 
 // project
 export function getSessionCurrentProject() {
@@ -19,9 +13,16 @@ export function getSessionCurrentProject() {
 export function setSessionCurrentProject(project) {
     sessionStorage.setItem('currentProject',JSON.stringify(project))
 }
-export function getSessionCurrentProjectList() {
-    return JSON.parse(sessionStorage.getItem("currentProjectList"))
+
+export function getSessionWorkspaceProjectList() {
+    return JSON.parse(sessionStorage.getItem("currentWorkspaceProjcetList"))
 }
-export function setSessionCurrentProjectList(projectList) {
-    sessionStorage.setItem('currentProjectList',JSON.stringify(projectList))
+export function setSessionWorkspaceProjectList(v) {
+    sessionStorage.setItem('currentWorkspaceProjcetList',JSON.stringify(v))
+}
+
+export function clearSessionCurrentWorkspaceProject() {
+    sessionStorage.removeItem("currentWorkspaceProjcetList")
+    sessionStorage.removeItem("currentProject")
+    sessionStorage.removeItem("currentWorkspace")
 }
