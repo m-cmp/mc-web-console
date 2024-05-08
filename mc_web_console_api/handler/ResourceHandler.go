@@ -12,19 +12,19 @@ import (
 
 	//"github.com/davecgh/go-spew/spew"
 
-	// "mc_web_console_api/echomodel/spider"
-	// "mc_web_console_api/echomodel/tumblebug"
-	"mc_web_console_api/echomodel"
-	tbcommon "mc_web_console_api/echomodel/tumblebug/common"
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	// "mc_web_console_api/fwmodels/spider"
+	// "mc_web_console_api/fwmodels/tumblebug"
+	"mc_web_console_api/fwmodels"
+	tbcommon "mc_web_console_api/fwmodels/tumblebug/common"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
 	util "mc_web_console_api/util"
 
 	"github.com/gobuffalo/buffalo"
 )
 
-func RegFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleReq *tbmcir.TbFirewallRulesWrapper) (*tbmcir.TbSecurityGroupInfo, echomodel.WebStatus) {
+func RegFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleReq *tbmcir.TbFirewallRulesWrapper) (*tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/securityGroup/{securityGroupId}/rules"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -38,7 +38,7 @@ func RegFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleRe
 	securityGroupInfo := tbmcir.TbSecurityGroupInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &securityGroupInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &securityGroupInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -46,20 +46,20 @@ func RegFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleRe
 	log.Println("respStatusCode = ", resp.StatusCode)
 	log.Println("respStatus = ", resp.Status)
 	if respStatus != 200 && respStatus != 201 {
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println(errorInfo)
-		return &securityGroupInfo, echomodel.WebStatus{StatusCode: 500, Message: errorInfo.Message}
+		return &securityGroupInfo, fwmodels.WebStatus{StatusCode: 500, Message: errorInfo.Message}
 	}
 
 	// 응답에 생성한 객체값이 옴
 	json.NewDecoder(respBody).Decode(&securityGroupInfo)
 	fmt.Println(securityGroupInfo)
 	// return respBody, respStatusCode
-	return &securityGroupInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &securityGroupInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func DelFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleReq *tbmcir.TbFirewallRulesWrapper) (*tbmcir.TbSecurityGroupInfo, echomodel.WebStatus) {
+func DelFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleReq *tbmcir.TbFirewallRulesWrapper) (*tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/securityGroup/{securityGroupId}/rules"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -74,28 +74,28 @@ func DelFirewallRules(nameSpaceID string, securityGroupID string, firewallRuleRe
 	securityGroupInfo := tbmcir.TbSecurityGroupInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &securityGroupInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &securityGroupInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return &securityGroupInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return &securityGroupInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	json.NewDecoder(respBody).Decode(&securityGroupInfo)
 	fmt.Println(securityGroupInfo)
-	return &securityGroupInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &securityGroupInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 해당 namespace의 vpc 목록 조회
 // func GetVnetList(nameSpaceID string) (io.ReadCloser, error) {
-func GetVnetList(nameSpaceID string) ([]tbmcir.TbVNetInfo, echomodel.WebStatus) {
+func GetVnetList(nameSpaceID string) ([]tbmcir.TbVNetInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVnetList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/vNet"
 	var paramMapper = make(map[string]string)
@@ -111,7 +111,7 @@ func GetVnetList(nameSpaceID string) ([]tbmcir.TbVNetInfo, echomodel.WebStatus) 
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -124,11 +124,11 @@ func GetVnetList(nameSpaceID string) ([]tbmcir.TbVNetInfo, echomodel.WebStatus) 
 	//spew.Dump(body)
 	fmt.Println(vNetInfoList["vNet"])
 
-	return vNetInfoList["vNet"], echomodel.WebStatus{StatusCode: respStatus}
+	return vNetInfoList["vNet"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // ID목록만 조회
-func GetVnetListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, echomodel.WebStatus) {
+func GetVnetListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, fwmodels.WebStatus) {
 	fmt.Println("GetVnetList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/vNet"
 	var paramMapper = make(map[string]string)
@@ -153,7 +153,7 @@ func GetVnetListByID(nameSpaceID string, filterKeyParam string, filterValParam s
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -167,12 +167,12 @@ func GetVnetListByID(nameSpaceID string, filterKeyParam string, filterValParam s
 	//spew.Dump(body)
 	//fmt.Println(vNetInfoList["idList"])
 
-	//return vNetInfoList["idList"], echomodel.WebStatus{StatusCode: respStatus}
-	return vNetInfoList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	//return vNetInfoList["idList"], fwmodels.WebStatus{StatusCode: respStatus}
+	return vNetInfoList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // List 조회시 optionParam 추가
-func GetVnetListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbVNetInfo, echomodel.WebStatus) {
+func GetVnetListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbVNetInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVnetListByOption ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/vNet"
 	var paramMapper = make(map[string]string)
@@ -198,7 +198,7 @@ func GetVnetListByOption(nameSpaceID string, optionParam string, filterKeyParam 
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -211,11 +211,11 @@ func GetVnetListByOption(nameSpaceID string, optionParam string, filterKeyParam 
 	//spew.Dump(body)
 	fmt.Println(vNetInfoList["vNet"])
 
-	return vNetInfoList["vNet"], echomodel.WebStatus{StatusCode: respStatus}
+	return vNetInfoList["vNet"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // vpc 상세 조회-> ResourceHandler로 이동
-func GetVpcData(nameSpaceID string, vNetID string) (*tbmcir.TbVNetInfo, echomodel.WebStatus) {
+func GetVpcData(nameSpaceID string, vNetID string) (*tbmcir.TbVNetInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/vNet/{vNetId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -229,7 +229,7 @@ func GetVpcData(nameSpaceID string, vNetID string) (*tbmcir.TbVNetInfo, echomode
 	vNetInfo := tbmcir.TbVNetInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vNetInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vNetInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -240,12 +240,12 @@ func GetVpcData(nameSpaceID string, vNetID string) (*tbmcir.TbVNetInfo, echomode
 	fmt.Println(vNetInfo)
 
 	// return vNetInfo, err
-	return &vNetInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &vNetInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // vpc 등록
 // option=register 항목은 TB에서 자동으로 넣을 때 사용하는 param으로 webtool에서 사용하지 않음.
-func RegVpc(nameSpaceID string, vnetRegInfo *tbmcir.TbVNetReq) (*tbmcir.TbVNetInfo, echomodel.WebStatus) {
+func RegVpc(nameSpaceID string, vnetRegInfo *tbmcir.TbVNetReq) (*tbmcir.TbVNetInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/vNet"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -262,7 +262,7 @@ func RegVpc(nameSpaceID string, vnetRegInfo *tbmcir.TbVNetReq) (*tbmcir.TbVNetIn
 	vNetInfo := tbmcir.TbVNetInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vNetInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vNetInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -270,7 +270,7 @@ func RegVpc(nameSpaceID string, vnetRegInfo *tbmcir.TbVNetReq) (*tbmcir.TbVNetIn
 	fmt.Println("respStatus ", respStatus)
 
 	if respStatus == 500 {
-		webStatus := echomodel.WebStatus{}
+		webStatus := fwmodels.WebStatus{}
 		json.NewDecoder(respBody).Decode(&webStatus)
 		fmt.Println(webStatus)
 		webStatus.StatusCode = respStatus
@@ -280,16 +280,16 @@ func RegVpc(nameSpaceID string, vnetRegInfo *tbmcir.TbVNetReq) (*tbmcir.TbVNetIn
 	json.NewDecoder(respBody).Decode(&vNetInfo)
 	fmt.Println(vNetInfo)
 
-	return &vNetInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &vNetInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // vpc 삭제
-func DelVpc(nameSpaceID string, vNetID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelVpc(nameSpaceID string, vNetID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 	// if ValidateString(vNetID) != nil {
 	if len(vNetID) == 0 {
 		log.Println("vNetID 가 없으면 해당 namespace의 모든 vpc가 삭제되므로 처리할 수 없습니다.")
-		return webStatus, echomodel.WebStatus{StatusCode: 4040, Message: "vNetID 가 없으면 해당 namespace의 모든 vpc가 삭제되므로 처리할 수 없습니다."}
+		return webStatus, fwmodels.WebStatus{StatusCode: 4040, Message: "vNetID 가 없으면 해당 namespace의 모든 vpc가 삭제되므로 처리할 수 없습니다."}
 	}
 	var originalUrl = "/ns/{nsId}/resources/vNet/{vNetId}"
 	var paramMapper = make(map[string]string)
@@ -306,27 +306,27 @@ func DelVpc(nameSpaceID string, vNetID string) (echomodel.WebStatus, echomodel.W
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 전체 vpc 삭제
-func DelAllVpc(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelAllVpc(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/vNet"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -340,7 +340,7 @@ func DelAllVpc(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -351,15 +351,93 @@ func DelAllVpc(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
+// Create Subnet
+func RegSubnet(nameSpaceID string, vnetId string, subnetReqInfo *tbmcir.TbSubnetReq) (*tbmcir.TbSubnetInfo, fwmodels.WebStatus) {
+	var originalUrl = "/ns/{nsId}/resources/vNet/{vNetId}/subnet"
+	var paramMapper = make(map[string]string)
+	paramMapper["{nsId}"] = nameSpaceID
+	paramMapper["{vNetId}"] = vnetId
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+
+	url := util.TUMBLEBUG + urlParam
+	// url := util.TUMBLEBUG + "/ns/" + nameSpaceID + "/resources/vNet"
+
+	fmt.Println("subnetReqInfo : ", subnetReqInfo)
+
+	pbytes, _ := json.Marshal(subnetReqInfo)
+	fmt.Println(string(pbytes))
+	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
+	subnetInfo := tbmcir.TbSubnetInfo{}
+	if err != nil {
+		fmt.Println(err)
+		return &subnetInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+	fmt.Println("respStatus ", respStatus)
+
+	if respStatus == 500 {
+		webStatus := fwmodels.WebStatus{}
+		json.NewDecoder(respBody).Decode(&webStatus)
+		fmt.Println(webStatus)
+		webStatus.StatusCode = respStatus
+		return &subnetInfo, webStatus
+	}
+	// 응답에 생성한 객체값이 옴
+	json.NewDecoder(respBody).Decode(&subnetInfo)
+	fmt.Println(subnetInfo)
+
+	return &subnetInfo, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
+// Delete Subnet
+func DelSubnet(nameSpaceID string, vNetID string, subnetID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
+	
+	var originalUrl = "/ns/{nsId}/resources/vNet/{vNetId}/subnet/{subnetId}"
+	var paramMapper = make(map[string]string)
+	paramMapper["{nsId}"] = nameSpaceID
+	paramMapper["{vNetId}"] = vNetID
+	paramMapper["{subnetId}"] = subnetID
+	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
+	url := util.TUMBLEBUG + urlParam
+
+	fmt.Println("vNetID : ", vNetID)
+	fmt.Println("subnetID : ", subnetID)
+	
+	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
+
+	if err != nil {
+		fmt.Println(err)
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+	}
+	// return body, err
+	respBody := resp.Body
+	respStatus := resp.StatusCode
+	resultInfo := fwmodels.ResultInfo{}
+
+	json.NewDecoder(respBody).Decode(&resultInfo)
+	log.Println(resultInfo)
+	log.Println("ResultMessage : " + resultInfo.Message)
+
+	if respStatus != 200 && respStatus != 201 {
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+	}
+	webStatus.StatusCode = respStatus
+	webStatus.Message = resultInfo.Message
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
+}
+
 // 해당 namespace의 SecurityGroup 목록 조회
-func GetSecurityGroupList(nameSpaceID string) ([]tbmcir.TbSecurityGroupInfo, echomodel.WebStatus) {
+func GetSecurityGroupList(nameSpaceID string) ([]tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	fmt.Println("GetSecurityGroupList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/securityGroup"
 	var paramMapper = make(map[string]string)
@@ -374,7 +452,7 @@ func GetSecurityGroupList(nameSpaceID string) ([]tbmcir.TbSecurityGroupInfo, ech
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -388,11 +466,11 @@ func GetSecurityGroupList(nameSpaceID string) ([]tbmcir.TbSecurityGroupInfo, ech
 	//spew.Dump(body)
 	fmt.Println(securityGroupList["securityGroup"])
 
-	return securityGroupList["securityGroup"], echomodel.WebStatus{StatusCode: respStatus}
+	return securityGroupList["securityGroup"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // ID만 조회
-func GetSecurityGroupListByOptionID(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]string, echomodel.WebStatus) {
+func GetSecurityGroupListByOptionID(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]string, fwmodels.WebStatus) {
 	fmt.Println("GetSecurityGroupListByOptionID ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/securityGroup"
 	var paramMapper = make(map[string]string)
@@ -418,7 +496,7 @@ func GetSecurityGroupListByOptionID(nameSpaceID string, optionParam string, filt
 		// 	// Tumblebug 접속 확인하라고
 		// fmt.Println(err)
 		// panic(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -432,12 +510,12 @@ func GetSecurityGroupListByOptionID(nameSpaceID string, optionParam string, filt
 	//fmt.Println(securityGroupList["idList"])
 	fmt.Println(securityGroupList.IDList)
 
-	//return securityGroupList["idList"], echomodel.WebStatus{StatusCode: respStatus}
-	return securityGroupList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	//return securityGroupList["idList"], fwmodels.WebStatus{StatusCode: respStatus}
+	return securityGroupList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // SecurityGroupList 조회 시 Option에 해당하는 값만 조회. GetSecurityGroupList와 TB 호출은 동일하나 option 사용으로 받아오는 param이 다름
-func GetSecurityGroupListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbSecurityGroupInfo, echomodel.WebStatus) {
+func GetSecurityGroupListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	fmt.Println("GetSecurityGroupListByOption ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/securityGroup"
 	var paramMapper = make(map[string]string)
@@ -466,7 +544,7 @@ func GetSecurityGroupListByOption(nameSpaceID string, optionParam string, filter
 		// 	// Tumblebug 접속 확인하라고
 		// fmt.Println(err)
 		// panic(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -478,11 +556,11 @@ func GetSecurityGroupListByOption(nameSpaceID string, optionParam string, filter
 	//spew.Dump(body)
 	fmt.Println(securityGroupList["securityGroup"])
 
-	return securityGroupList["securityGroup"], echomodel.WebStatus{StatusCode: respStatus}
+	return securityGroupList["securityGroup"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // SecurityGroup 상세 조회
-func GetSecurityGroupData(nameSpaceID string, securityGroupID string) (*tbmcir.TbSecurityGroupInfo, echomodel.WebStatus) {
+func GetSecurityGroupData(nameSpaceID string, securityGroupID string) (*tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/securityGroup/{securityGroupId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -499,7 +577,7 @@ func GetSecurityGroupData(nameSpaceID string, securityGroupID string) (*tbmcir.T
 	securityGroupInfo := tbmcir.TbSecurityGroupInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &securityGroupInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &securityGroupInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -508,12 +586,12 @@ func GetSecurityGroupData(nameSpaceID string, securityGroupID string) (*tbmcir.T
 	json.NewDecoder(respBody).Decode(&securityGroupInfo)
 	fmt.Println(securityGroupInfo)
 
-	return &securityGroupInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &securityGroupInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // SecurityGroup 등록
 // option=register 항목은 TB에서 자동으로 넣을 때 사용하는 param으로 webtool에서 사용하지 않음.
-func RegSecurityGroup(nameSpaceID string, securityGroupRegInfo *tbmcir.TbSecurityGroupReq) (*tbmcir.TbSecurityGroupInfo, echomodel.WebStatus) {
+func RegSecurityGroup(nameSpaceID string, securityGroupRegInfo *tbmcir.TbSecurityGroupReq) (*tbmcir.TbSecurityGroupInfo, fwmodels.WebStatus) {
 	fmt.Println("RegSecurityGroup : ")
 
 	var originalUrl = "/ns/{nsId}/resources/securityGroup"
@@ -534,7 +612,7 @@ func RegSecurityGroup(nameSpaceID string, securityGroupRegInfo *tbmcir.TbSecurit
 		log.Println("-----1111")
 		fmt.Println(err.Error())
 		log.Println("-----222")
-		return &securityGroupInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &securityGroupInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -542,21 +620,21 @@ func RegSecurityGroup(nameSpaceID string, securityGroupRegInfo *tbmcir.TbSecurit
 	log.Println("respStatusCode = ", resp.StatusCode)
 	log.Println("respStatus = ", resp.Status)
 	if respStatus != 200 && respStatus != 201 {
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println(errorInfo)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: errorInfo.Message}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: errorInfo.Message}
 	}
 
 	// 응답에 생성한 객체값이 옴
 	json.NewDecoder(respBody).Decode(&securityGroupInfo)
 	fmt.Println(securityGroupInfo)
 	// return respBody, respStatusCode
-	return &securityGroupInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &securityGroupInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 해당 Namespace의 모든 SecurityGroup 삭제
-func DelAllSecurityGroup(nameSpaceID string) (echomodel.WebStatus, echomodel.WebStatus) {
+func DelAllSecurityGroup(nameSpaceID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/securityGroup"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -565,37 +643,37 @@ func DelAllSecurityGroup(nameSpaceID string) (echomodel.WebStatus, echomodel.Web
 	// url := util.TUMBLEBUG + "/ns/" + nameSpaceID + "/resources/securityGroup/"
 
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
-	webStatus := echomodel.WebStatus{}
+	webStatus := fwmodels.WebStatus{}
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 
-	//return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	//return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // SecurityGroup 삭제
-func DelSecurityGroup(nameSpaceID string, securityGroupID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelSecurityGroup(nameSpaceID string, securityGroupID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 	// if ValidateString(vNetID) != nil {
 	if len(securityGroupID) == 0 {
 		log.Println("securityGroupID 가 없으면 해당 namespace의 모든 securityGroup이 삭제되므로 처리할 수 없습니다.")
-		return webStatus, echomodel.WebStatus{StatusCode: 4040, Message: "securityGroupID 가 없으면 해당 namespace의 모든 securityGroup이 삭제되므로 처리할 수 없습니다."}
+		return webStatus, fwmodels.WebStatus{StatusCode: 4040, Message: "securityGroupID 가 없으면 해당 namespace의 모든 securityGroup이 삭제되므로 처리할 수 없습니다."}
 	}
 
 	var originalUrl = "/ns/{nsId}/resources/securityGroup/{securityGroupId}"
@@ -613,32 +691,32 @@ func DelSecurityGroup(nameSpaceID string, securityGroupID string) (echomodel.Web
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 	// respStatus := resp.Status
 	// log.Println("respStatusCode = ", respStatusCode)
 	// log.Println("respStatus = ", respStatus)
 
-	// return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	// return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // SSHKey 목록 조회 : /ns/{nsId}/resources/sshKey
-func GetSshKeyInfoList(nameSpaceID string) ([]tbmcir.TbSshKeyInfo, echomodel.WebStatus) {
+func GetSshKeyInfoList(nameSpaceID string) ([]tbmcir.TbSshKeyInfo, fwmodels.WebStatus) {
 	fmt.Println("GetSshKeyInfoList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/sshKey"
 	var paramMapper = make(map[string]string)
@@ -653,7 +731,7 @@ func GetSshKeyInfoList(nameSpaceID string) ([]tbmcir.TbSshKeyInfo, echomodel.Web
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -667,11 +745,11 @@ func GetSshKeyInfoList(nameSpaceID string) ([]tbmcir.TbSshKeyInfo, echomodel.Web
 	//spew.Dump(body)
 	fmt.Println(sshKeyList["sshKey"])
 
-	return sshKeyList["sshKey"], echomodel.WebStatus{StatusCode: respStatus}
+	return sshKeyList["sshKey"], fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
-func GetSshKeyInfoListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, echomodel.WebStatus) {
+func GetSshKeyInfoListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, fwmodels.WebStatus) {
 	log.Println("GetSshKeyInfoListByID ************ : ")
 	log.Println("namespaceID : ", nameSpaceID)
 	var originalUrl = "/ns/{nsId}/resources/sshKey"
@@ -692,7 +770,7 @@ func GetSshKeyInfoListByID(nameSpaceID string, filterKeyParam string, filterValP
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -709,11 +787,11 @@ func GetSshKeyInfoListByID(nameSpaceID string, filterKeyParam string, filterValP
 	//log.Println(sshKeyList["idList"])
 	log.Println(sshKeyList.IDList)
 
-	//return sshKeyList["idList"], echomodel.WebStatus{StatusCode: respStatus}
-	return sshKeyList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	//return sshKeyList["idList"], fwmodels.WebStatus{StatusCode: respStatus}
+	return sshKeyList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetSshKeyInfoListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbSshKeyInfo, echomodel.WebStatus) {
+func GetSshKeyInfoListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbSshKeyInfo, fwmodels.WebStatus) {
 	fmt.Println("GetSshKeyInfoList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/sshKey"
 	var paramMapper = make(map[string]string)
@@ -737,7 +815,7 @@ func GetSshKeyInfoListByOption(nameSpaceID string, optionParam string, filterKey
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -751,11 +829,11 @@ func GetSshKeyInfoListByOption(nameSpaceID string, optionParam string, filterKey
 	//spew.Dump(body)
 	fmt.Println(sshKeyList["sshKey"])
 
-	return sshKeyList["sshKey"], echomodel.WebStatus{StatusCode: respStatus}
+	return sshKeyList["sshKey"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // sshKey 상세 조회
-func GetSshKeyData(nameSpaceID string, sshKeyID string) (*tbmcir.TbSshKeyInfo, echomodel.WebStatus) {
+func GetSshKeyData(nameSpaceID string, sshKeyID string) (*tbmcir.TbSshKeyInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/sshKey/{sshKeyId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -772,7 +850,7 @@ func GetSshKeyData(nameSpaceID string, sshKeyID string) (*tbmcir.TbSshKeyInfo, e
 	sshKeyInfo := tbmcir.TbSshKeyInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &sshKeyInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &sshKeyInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -781,12 +859,12 @@ func GetSshKeyData(nameSpaceID string, sshKeyID string) (*tbmcir.TbSshKeyInfo, e
 	json.NewDecoder(respBody).Decode(&sshKeyInfo)
 	fmt.Println(sshKeyInfo)
 
-	return &sshKeyInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &sshKeyInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // sshKey 등록
 // option=register 항목은 TB에서 자동으로 넣을 때 사용하는 param으로 webtool에서 사용하지 않음.
-func RegSshKey(nameSpaceID string, sshKeyRegInfo *tbmcir.TbSshKeyReq) (*tbmcir.TbSshKeyInfo, echomodel.WebStatus) {
+func RegSshKey(nameSpaceID string, sshKeyRegInfo *tbmcir.TbSshKeyReq) (*tbmcir.TbSshKeyInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/sshKey"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -803,7 +881,7 @@ func RegSshKey(nameSpaceID string, sshKeyRegInfo *tbmcir.TbSshKeyReq) (*tbmcir.T
 	sshKeyInfo := tbmcir.TbSshKeyInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &sshKeyInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &sshKeyInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	log.Println("resp = ", resp)
 	respBody := resp.Body
@@ -818,10 +896,10 @@ func RegSshKey(nameSpaceID string, sshKeyRegInfo *tbmcir.TbSshKeyReq) (*tbmcir.T
 	json.NewDecoder(respBody).Decode(&sshKeyInfo)
 	fmt.Println(sshKeyInfo)
 	// return respBody, respStatusCode
-	return &sshKeyInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &sshKeyInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func UpdateSshKey(nameSpaceID string, sshKeyId string, sshKeyInfo *tbmcir.TbSshKeyInfo) (*tbmcir.TbSshKeyInfo, echomodel.WebStatus) {
+func UpdateSshKey(nameSpaceID string, sshKeyId string, sshKeyInfo *tbmcir.TbSshKeyInfo) (*tbmcir.TbSshKeyInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/sshKey/{sshKeyId}"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -838,7 +916,7 @@ func UpdateSshKey(nameSpaceID string, sshKeyId string, sshKeyInfo *tbmcir.TbSshK
 	sshKeyInfoResponse := tbmcir.TbSshKeyInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &sshKeyInfoResponse, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &sshKeyInfoResponse, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	log.Println("resp = ", resp)
 	respBody := resp.Body
@@ -848,16 +926,16 @@ func UpdateSshKey(nameSpaceID string, sshKeyId string, sshKeyInfo *tbmcir.TbSshK
 	json.NewDecoder(respBody).Decode(&sshKeyInfoResponse)
 	fmt.Println(sshKeyInfoResponse)
 
-	return &sshKeyInfoResponse, echomodel.WebStatus{StatusCode: respStatus}
+	return &sshKeyInfoResponse, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // sshKey 삭제
-func DelSshKey(nameSpaceID string, sshKeyID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelSshKey(nameSpaceID string, sshKeyID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 	// if ValidateString(sshKeyID) != nil {
 	if len(sshKeyID) == 0 {
 		log.Println("sshKeyID 가 없으면 해당 namespace의 모든 sshKeyID 삭제되므로 처리할 수 없습니다.")
-		return webStatus, echomodel.WebStatus{StatusCode: 4040, Message: "sshKeyID 가 없으면 해당 namespace의 모든 sshKeyID 삭제되므로 처리할 수 없습니다."}
+		return webStatus, fwmodels.WebStatus{StatusCode: 4040, Message: "sshKeyID 가 없으면 해당 namespace의 모든 sshKeyID 삭제되므로 처리할 수 없습니다."}
 	}
 
 	var originalUrl = "/ns/{nsId}/resources/sshKey/{sshKeyId}"
@@ -875,30 +953,30 @@ func DelSshKey(nameSpaceID string, sshKeyID string) (echomodel.WebStatus, echomo
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	fmt.Println("resp : ", resp)
 
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
-	// return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
+	// return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 전체 sshKey 삭제
-func DelAllSshKey(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func DelAllSshKey(nameSpaceID string) (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/sshKey"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -912,7 +990,7 @@ func DelAllSshKey(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -923,15 +1001,15 @@ func DelAllSshKey(nameSpaceID string) (tbcommon.TbSimpleMsg, echomodel.WebStatus
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
 // VirtualMachineImage 목록 조회
-func GetVirtualMachineImageInfoList(nameSpaceID string) ([]tbmcir.TbImageInfo, echomodel.WebStatus) {
+func GetVirtualMachineImageInfoList(nameSpaceID string) ([]tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVirtualMachineImageInfoList ************ : ")
 	// var originalUrl = "/ns/{nsId}/resources/image"
 	var originalUrl = "/ns/{nsId}/resources/image"
@@ -946,7 +1024,7 @@ func GetVirtualMachineImageInfoList(nameSpaceID string) ([]tbmcir.TbImageInfo, e
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// TODO : defer를 넣어줘야 할 듯. defer body.Close()
 	respBody := resp.Body
@@ -963,11 +1041,11 @@ func GetVirtualMachineImageInfoList(nameSpaceID string) ([]tbmcir.TbImageInfo, e
 	// }
 	// fmt.Printf("%s", robots)
 
-	return virtualMachineImageList["image"], echomodel.WebStatus{StatusCode: respStatus}
+	return virtualMachineImageList["image"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VirtualMachineImage 목록에서 Option으로 ID 목록만 가져오는 function
-func GetVirtualMachineImageInfoListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, echomodel.WebStatus) {
+func GetVirtualMachineImageInfoListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, fwmodels.WebStatus) {
 	fmt.Println("GetVirtualMachineImageInfoListByID ************ : ")
 	// var originalUrl = "/ns/{nsId}/resources/image"
 	var originalUrl = "/ns/{nsId}/resources/image"
@@ -994,7 +1072,7 @@ func GetVirtualMachineImageInfoListByID(nameSpaceID string, filterKeyParam strin
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// TODO : defer를 넣어줘야 할 듯. defer body.Close()
 	respBody := resp.Body
@@ -1012,10 +1090,10 @@ func GetVirtualMachineImageInfoListByID(nameSpaceID string, filterKeyParam strin
 	// }
 	// fmt.Printf("%s", robots)
 
-	return virtualMachineImageIdList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	return virtualMachineImageIdList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetVirtualMachineImageInfoListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbImageInfo, echomodel.WebStatus) {
+func GetVirtualMachineImageInfoListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVirtualMachineImageInfoListByOption ************ : ")
 	// var originalUrl = "/ns/{nsId}/resources/image"
 	var originalUrl = "/ns/{nsId}/resources/image"
@@ -1043,7 +1121,7 @@ func GetVirtualMachineImageInfoListByOption(nameSpaceID string, optionParam stri
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// TODO : defer를 넣어줘야 할 듯. defer body.Close()
 	respBody := resp.Body
@@ -1060,11 +1138,11 @@ func GetVirtualMachineImageInfoListByOption(nameSpaceID string, optionParam stri
 	// }
 	// fmt.Printf("%s", robots)
 
-	return virtualMachineImageList["image"], echomodel.WebStatus{StatusCode: respStatus}
+	return virtualMachineImageList["image"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VirtualMachineImage 상세 조회
-func GetVirtualMachineImageData(nameSpaceID string, virtualMachineImageID string) (*tbmcir.TbImageInfo, echomodel.WebStatus) {
+func GetVirtualMachineImageData(nameSpaceID string, virtualMachineImageID string) (*tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVirtualMachineImageData ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/image/{imageId}"
 	var paramMapper = make(map[string]string)
@@ -1078,7 +1156,7 @@ func GetVirtualMachineImageData(nameSpaceID string, virtualMachineImageID string
 	virtualMachineImageInfo := tbmcir.TbImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1087,10 +1165,10 @@ func GetVirtualMachineImageData(nameSpaceID string, virtualMachineImageID string
 	json.NewDecoder(respBody).Decode(&virtualMachineImageInfo)
 	fmt.Println(virtualMachineImageInfo)
 
-	return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func UpdateVirtualMachineImage(nameSpaceID string, virtualMachineImageID string, imageInfo *tbmcir.TbImageInfo) (*tbmcir.TbImageInfo, echomodel.WebStatus) {
+func UpdateVirtualMachineImage(nameSpaceID string, virtualMachineImageID string, imageInfo *tbmcir.TbImageInfo) (*tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	fmt.Println("UpdateVirtualMachineImageData ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/image/{imageId}"
 	var paramMapper = make(map[string]string)
@@ -1106,7 +1184,7 @@ func UpdateVirtualMachineImage(nameSpaceID string, virtualMachineImageID string,
 	virtualMachineImageInfo := tbmcir.TbImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1115,11 +1193,11 @@ func UpdateVirtualMachineImage(nameSpaceID string, virtualMachineImageID string,
 	json.NewDecoder(respBody).Decode(&virtualMachineImageInfo)
 	fmt.Println(virtualMachineImageInfo)
 
-	return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VirtualMachineImage 등록 registeringMethod = imageID
-func RegVirtualMachineImage(nameSpaceID string, registType string, virtualMachineImageRegInfo *tbmcir.TbImageReq) (*tbmcir.TbImageInfo, echomodel.WebStatus) {
+func RegVirtualMachineImage(nameSpaceID string, registType string, virtualMachineImageRegInfo *tbmcir.TbImageReq) (*tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	fmt.Println("RegVirtualMachineImage ************ : ")
 	log.Println("*********************** virtualMachineImageRegInfo :")
 	log.Println(virtualMachineImageRegInfo)
@@ -1144,7 +1222,7 @@ func RegVirtualMachineImage(nameSpaceID string, registType string, virtualMachin
 	virtualMachineImageInfo := tbmcir.TbImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	// data, err := ioutil.ReadAll(resp.Body)
@@ -1164,12 +1242,12 @@ func RegVirtualMachineImage(nameSpaceID string, registType string, virtualMachin
 	json.NewDecoder(respBody).Decode(&virtualMachineImageInfo)
 	fmt.Println(virtualMachineImageInfo)
 	// return respBody, respStatusCode
-	return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VirtualMachineImage 등록 registeringMethod = imageID
 // 생성시 action에 regist
-func RegVirtualMachineImageWithInfo(nameSpaceID string, registType string, virtualMachineImageRegInfo *tbmcir.TbImageInfo) (*tbmcir.TbImageInfo, echomodel.WebStatus) {
+func RegVirtualMachineImageWithInfo(nameSpaceID string, registType string, virtualMachineImageRegInfo *tbmcir.TbImageInfo) (*tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	fmt.Println("RegVirtualMachineImage ************ : ")
 	if registType == "" {
 		registType = "registerWithId" // registerWithId 또는 registerWithInfo
@@ -1190,7 +1268,7 @@ func RegVirtualMachineImageWithInfo(nameSpaceID string, registType string, virtu
 	virtualMachineImageInfo := tbmcir.TbImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	// data, err := ioutil.ReadAll(resp.Body)
@@ -1210,11 +1288,11 @@ func RegVirtualMachineImageWithInfo(nameSpaceID string, registType string, virtu
 	json.NewDecoder(respBody).Decode(&virtualMachineImageInfo)
 	fmt.Println(virtualMachineImageInfo)
 	// return respBody, respStatusCode
-	return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 해당 namespace의 모든 VirtualMachineImage 삭제
-func DelAllVirtualMachineImage(nameSpaceID string) (echomodel.WebStatus, echomodel.WebStatus) {
+func DelAllVirtualMachineImage(nameSpaceID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
 	// if ValidateString(VirtualMachineImageID) != nil {
 	var originalUrl = "/ns/{nsId}/resources/image"
 	var paramMapper = make(map[string]string)
@@ -1225,36 +1303,36 @@ func DelAllVirtualMachineImage(nameSpaceID string) (echomodel.WebStatus, echomod
 
 	// resp, err := util.CommonHttp(url, pbytes, http.MethodDelete)
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodDelete)
-	webStatus := echomodel.WebStatus{}
+	webStatus := fwmodels.WebStatus{}
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
-	// return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
+	// return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 해당 namespace의 특정 VirtualMachineImage 삭제
-func DelVirtualMachineImage(nameSpaceID string, virtualMachineImageID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelVirtualMachineImage(nameSpaceID string, virtualMachineImageID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 	// if ValidateString(VirtualMachineImageID) != nil {
 	if len(virtualMachineImageID) == 0 {
 		log.Println("ImageID 가 없으면 해당 namespace의 모든 image가 삭제되므로 처리할 수 없습니다.")
-		return webStatus, echomodel.WebStatus{StatusCode: 4040, Message: "ImageID 가 없으면 해당 namespace의 모든 image가 삭제되므로 처리할 수 없습니다."}
+		return webStatus, fwmodels.WebStatus{StatusCode: 4040, Message: "ImageID 가 없으면 해당 namespace의 모든 image가 삭제되므로 처리할 수 없습니다."}
 	}
 
 	var originalUrl = "/ns/{nsId}/resources/image/{imageId}"
@@ -1270,28 +1348,28 @@ func DelVirtualMachineImage(nameSpaceID string, virtualMachineImageID string) (e
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
-	// return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
+	// return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 자신의 provider에 등록된 resource 조회
-func GetInspectResourceList(inspectResource *tbcommon.RestInspectResourcesRequest) (*tbmcis.InspectResource, echomodel.WebStatus) {
+func GetInspectResourceList(inspectResource *tbcommon.RestInspectResourcesRequest) (*tbmcis.InspectResource, fwmodels.WebStatus) {
 	fmt.Println("GetInspectResourceList ************ : ")
 	//https://www.javaer101.com/ko/article/5704925.html 참조 : 값이 있는 것만 넘기기
 	var originalUrl = "/inspectResources"
@@ -1309,14 +1387,14 @@ func GetInspectResourceList(inspectResource *tbcommon.RestInspectResourcesReques
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println(failResultInfo)
-		//return &inspectResourcesResponse, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
-		return &inspectResourcesResponse, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		//return &inspectResourcesResponse, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &inspectResourcesResponse, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&inspectResourcesResponse)
 	fmt.Println(inspectResourcesResponse)
 
-	return &inspectResourcesResponse, echomodel.WebStatus{StatusCode: respStatus}
+	return &inspectResourcesResponse, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
@@ -1324,7 +1402,7 @@ func GetInspectResourceList(inspectResource *tbcommon.RestInspectResourcesReques
 CSP와 Tumblebug에 등록된 모든 리소스 비교
 전체이므로 별도의 parameter 없음.
 */
-func GetInspectResourcesOverview() (*tbmcis.InspectResourceAllResult, echomodel.WebStatus) {
+func GetInspectResourcesOverview() (*tbmcis.InspectResourceAllResult, fwmodels.WebStatus) {
 	fmt.Println("Inspect Resources Overview (vNet, securityGroup, sshKey, vm) registered in CB-Tumblebug and CSP for all connections")
 	var originalUrl = "/inspectResourcesOverview"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -1342,17 +1420,17 @@ func GetInspectResourcesOverview() (*tbmcis.InspectResourceAllResult, echomodel.
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println(failResultInfo)
-		//return &inspectResourcesResponse, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
-		return &inspectResourceAllResult, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		//return &inspectResourcesResponse, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &inspectResourceAllResult, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&inspectResourceAllResult)
 	fmt.Println(inspectResourceAllResult)
 
-	return &inspectResourceAllResult, echomodel.WebStatus{StatusCode: respStatus}
+	return &inspectResourceAllResult, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func RegCspResources(resourcesRequest *tbcommon.RestRegisterCspNativeResourcesRequest, optionParam string) (*tbmcis.RegisterResourceResult, echomodel.WebStatus) {
+func RegCspResources(resourcesRequest *tbcommon.RestRegisterCspNativeResourcesRequest, optionParam string) (*tbmcis.RegisterResourceResult, fwmodels.WebStatus) {
 	var originalUrl = "/registerCspResources"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	if optionParam != "" {
@@ -1371,18 +1449,18 @@ func RegCspResources(resourcesRequest *tbcommon.RestRegisterCspNativeResourcesRe
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println(failResultInfo)
-		//return &inspectResourcesResponse, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
-		return &registerResourceResult, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		//return &inspectResourcesResponse, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &registerResourceResult, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(registerResourceResult)
 	fmt.Println(registerResourceResult)
 
-	return &registerResourceResult, echomodel.WebStatus{StatusCode: respStatus}
+	return &registerResourceResult, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
-func RegCspResourcesAll(resourcesRequest *tbcommon.RestRegisterCspNativeResourcesRequestAll, optionParam string) (*tbmcis.RegisterResourceAllResult, echomodel.WebStatus) {
+func RegCspResourcesAll(resourcesRequest *tbcommon.RestRegisterCspNativeResourcesRequestAll, optionParam string) (*tbmcis.RegisterResourceAllResult, fwmodels.WebStatus) {
 	var originalUrl = "/registerCspResourcesAll"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 	if optionParam != "" {
@@ -1401,18 +1479,18 @@ func RegCspResourcesAll(resourcesRequest *tbcommon.RestRegisterCspNativeResource
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println(failResultInfo)
-		//return &inspectResourcesResponse, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
-		return &registerResourceResult, echomodel.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
+		//return &inspectResourcesResponse, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &registerResourceResult, fwmodels.WebStatus{StatusCode: 500, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(registerResourceResult)
 	fmt.Println(registerResourceResult)
 
-	return &registerResourceResult, echomodel.WebStatus{StatusCode: respStatus}
+	return &registerResourceResult, fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
-func GetLoadCommonResource() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func GetLoadCommonResource() (tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("Load Common Resources from internal asset files (Spec, Image)")
 	var originalUrl = "/loadCommonResource"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -1425,7 +1503,7 @@ func GetLoadCommonResource() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	resultInfo := tbcommon.TbSimpleMsg{}
 
 	if err != nil {
-		return resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1436,14 +1514,14 @@ func GetLoadCommonResource() (tbcommon.TbSimpleMsg, echomodel.WebStatus) {
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return resultInfo, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return resultInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 
-	return resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VM Image 조회
-func LookupVirtualMachineImageList(connectionName string) (tbmcir.SpiderImageInfos, echomodel.WebStatus) {
+func LookupVirtualMachineImageList(connectionName string) (tbmcir.SpiderImageInfos, fwmodels.WebStatus) {
 	fmt.Println("LookupVirtualMachineImageList ************ : ", connectionName)
 	var originalUrl = "/lookupImages"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -1461,7 +1539,7 @@ func LookupVirtualMachineImageList(connectionName string) (tbmcir.SpiderImageInf
 	log.Println("LookupVirtualMachineImageList called 1 ")
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -1474,11 +1552,11 @@ func LookupVirtualMachineImageList(connectionName string) (tbmcir.SpiderImageInf
 	json.NewDecoder(respBody).Decode(&lookupImageList)
 	log.Println("LookupVirtualMachineImageList called 3 ")
 
-	return lookupImageList["image"], echomodel.WebStatus{StatusCode: respStatus}
+	return lookupImageList["image"], fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // deprecated :  imageId 받는 것에서 connection 받는 것 까지로 변경 됨
-// func LookupVirtualMachineImageData(virtualMachineImageID string) (*tbmcir.TbImageInfo, echomodel.WebStatus) {
+// func LookupVirtualMachineImageData(virtualMachineImageID string) (*tbmcir.TbImageInfo, fwmodels.WebStatus) {
 // 	var originalUrl = "/lookupImage/{imageId}"
 // 	var paramMapper = make(map[string]string)
 // 	paramMapper["{imageId}"] = virtualMachineImageID
@@ -1491,7 +1569,7 @@ func LookupVirtualMachineImageList(connectionName string) (tbmcir.SpiderImageInf
 // 	virtualMachineImageInfo := tbmcir.TbImageInfo{}
 // 	if err != nil {
 // 		fmt.Println(err)
-// 		return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+// 		return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 // 	}
 
 // 	respBody := resp.Body
@@ -1500,11 +1578,11 @@ func LookupVirtualMachineImageList(connectionName string) (tbmcir.SpiderImageInf
 // 	json.NewDecoder(respBody).Decode(virtualMachineImageInfo)
 // 	fmt.Println(virtualMachineImageInfo)
 
-// 	return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+// 	return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 // }
 
 // 특정 provider의 특정 image정보 조회
-func LookupVirtualMachineImageData(restLookupImageRequest *tbmcir.RestLookupImageRequest) (*tbmcir.SpiderImageInfo, echomodel.WebStatus) {
+func LookupVirtualMachineImageData(restLookupImageRequest *tbmcir.RestLookupImageRequest) (*tbmcir.SpiderImageInfo, fwmodels.WebStatus) {
 	var originalUrl = "/lookupImage"
 	var paramMapper = make(map[string]string)
 	urlParam := util.MappingUrlParameter(originalUrl, paramMapper)
@@ -1517,7 +1595,7 @@ func LookupVirtualMachineImageData(restLookupImageRequest *tbmcir.RestLookupImag
 	virtualMachineImageInfo := tbmcir.SpiderImageInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1526,11 +1604,11 @@ func LookupVirtualMachineImageData(restLookupImageRequest *tbmcir.RestLookupImag
 	json.NewDecoder(respBody).Decode(virtualMachineImageInfo)
 	fmt.Println(virtualMachineImageInfo)
 
-	return &virtualMachineImageInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &virtualMachineImageInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // csp에 등록된 정보조회.
-func FetchVirtualMachineImageList(nameSpaceID string) ([]tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func FetchVirtualMachineImageList(nameSpaceID string) ([]tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("FetchVirtualMachineImageList ************ : ", nameSpaceID)
 	var originalUrl = "/ns/{nsId}/resources/fetchImages"
 	var paramMapper = make(map[string]string)
@@ -1543,7 +1621,7 @@ func FetchVirtualMachineImageList(nameSpaceID string) ([]tbcommon.TbSimpleMsg, e
 	// resp, err := util.CommonHttpWithoutParam(url, http.MethodPost)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -1553,12 +1631,12 @@ func FetchVirtualMachineImageList(nameSpaceID string) ([]tbcommon.TbSimpleMsg, e
 	json.NewDecoder(respBody).Decode(&fetchImageList)
 	log.Println("FetchVirtualMachineImageList called ")
 
-	// return fetchImageList["image"], echomodel.WebStatus{StatusCode: respStatus}
-	return nil, echomodel.WebStatus{StatusCode: respStatus} // TODO : simpleMsg return 하도록 변경할 것
+	// return fetchImageList["image"], fwmodels.WebStatus{StatusCode: respStatus}
+	return nil, fwmodels.WebStatus{StatusCode: respStatus} // TODO : simpleMsg return 하도록 변경할 것
 }
 
 // VirtualMachineImage 상세 조회
-func SearchVirtualMachineImageList(nameSpaceID string, restSearchImageRequest *tbmcir.RestSearchImageRequest) ([]tbmcir.TbImageInfo, echomodel.WebStatus) {
+func SearchVirtualMachineImageList(nameSpaceID string, restSearchImageRequest *tbmcir.RestSearchImageRequest) ([]tbmcir.TbImageInfo, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/resources/searchImage"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -1573,7 +1651,7 @@ func SearchVirtualMachineImageList(nameSpaceID string, restSearchImageRequest *t
 	virtualMachineImageInfo := tbmcir.RestGetAllImageResponse{}
 	if err != nil {
 		fmt.Println(err)
-		return virtualMachineImageInfo.Image, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return virtualMachineImageInfo.Image, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1582,11 +1660,11 @@ func SearchVirtualMachineImageList(nameSpaceID string, restSearchImageRequest *t
 	json.NewDecoder(respBody).Decode(&virtualMachineImageInfo)
 	fmt.Println(virtualMachineImageInfo)
 
-	return virtualMachineImageInfo.Image, echomodel.WebStatus{StatusCode: respStatus}
+	return virtualMachineImageInfo.Image, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VMSpec 목록 조회
-func GetVmSpecInfoList(nameSpaceID string) ([]tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func GetVmSpecInfoList(nameSpaceID string) ([]tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVMSpecInfoList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/spec"
 	var paramMapper = make(map[string]string)
@@ -1600,7 +1678,7 @@ func GetVmSpecInfoList(nameSpaceID string) ([]tbmcir.TbSpecInfo, echomodel.WebSt
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// TODO : defer를 넣어줘야 할 듯. defer body.Close()
 	respBody := resp.Body
@@ -1614,10 +1692,10 @@ func GetVmSpecInfoList(nameSpaceID string) ([]tbmcir.TbSpecInfo, echomodel.WebSt
 	//spew.Dump(body)
 	fmt.Println(vmSpecList.Spec)
 
-	return vmSpecList.Spec, echomodel.WebStatus{StatusCode: respStatus}
+	return vmSpecList.Spec, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetVmSpecInfoListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, echomodel.WebStatus) {
+func GetVmSpecInfoListByID(nameSpaceID string, filterKeyParam string, filterValParam string) ([]string, fwmodels.WebStatus) {
 	fmt.Println("GetVMSpecInfoList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/spec"
 	var paramMapper = make(map[string]string)
@@ -1642,7 +1720,7 @@ func GetVmSpecInfoListByID(nameSpaceID string, filterKeyParam string, filterValP
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// TODO : defer를 넣어줘야 할 듯. defer body.Close()
 	respBody := resp.Body
@@ -1656,10 +1734,10 @@ func GetVmSpecInfoListByID(nameSpaceID string, filterKeyParam string, filterValP
 	//spew.Dump(body)
 	fmt.Println(vmSpecList.IDList)
 
-	return vmSpecList.IDList, echomodel.WebStatus{StatusCode: respStatus}
+	return vmSpecList.IDList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func GetVmSpecInfoListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func GetVmSpecInfoListByOption(nameSpaceID string, optionParam string, filterKeyParam string, filterValParam string) ([]tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	log.Println("GetVMSpecInfoList ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/spec"
 	var paramMapper = make(map[string]string)
@@ -1685,7 +1763,7 @@ func GetVmSpecInfoListByOption(nameSpaceID string, optionParam string, filterKey
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// TODO : defer를 넣어줘야 할 듯. defer body.Close()
 	respBody := resp.Body
@@ -1698,11 +1776,11 @@ func GetVmSpecInfoListByOption(nameSpaceID string, optionParam string, filterKey
 	//spew.Dump(body)
 	fmt.Println(vmSpecList.Spec)
 
-	return vmSpecList.Spec, echomodel.WebStatus{StatusCode: respStatus}
+	return vmSpecList.Spec, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VMSpec 상세 조회
-func GetVmSpecInfoData(nameSpaceID string, vmSpecID string) (*tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func GetVmSpecInfoData(nameSpaceID string, vmSpecID string) (*tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	fmt.Println("GetVMSpecInfoData ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/spec/{specId}"
 	var paramMapper = make(map[string]string)
@@ -1717,7 +1795,7 @@ func GetVmSpecInfoData(nameSpaceID string, vmSpecID string) (*tbmcir.TbSpecInfo,
 	vmSpecInfo := tbmcir.TbSpecInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmSpecInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmSpecInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1726,11 +1804,11 @@ func GetVmSpecInfoData(nameSpaceID string, vmSpecID string) (*tbmcir.TbSpecInfo,
 	json.NewDecoder(respBody).Decode(&vmSpecInfo)
 	fmt.Println(vmSpecInfo)
 
-	return &vmSpecInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &vmSpecInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VMSpecInfo 등록
-func RegVmSpec(nameSpaceID string, specregisteringMethod string, vmSpecRegInfo *tbmcir.TbSpecReq) (*tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func RegVmSpec(nameSpaceID string, specregisteringMethod string, vmSpecRegInfo *tbmcir.TbSpecReq) (*tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	fmt.Println("RegVMSpec ************ : ")
 	log.Println("**********namespace ID : ", nameSpaceID)
 	log.Println("**************************************")
@@ -1760,16 +1838,16 @@ func RegVmSpec(nameSpaceID string, specregisteringMethod string, vmSpecRegInfo *
 	vmSpecInfo := tbmcir.TbSpecInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmSpecInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmSpecInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	// 응답에 생성한 객체값이 옴
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -1784,7 +1862,7 @@ func RegVmSpec(nameSpaceID string, specregisteringMethod string, vmSpecRegInfo *
 }
 
 // specRegisteringMethod에 따라 requestMethod가 다르므로 function 분리 함
-func RegVmSpecWithInfo(nameSpaceID string, specregisteringMethod string, vmSpecRegInfo *tbmcir.TbSpecInfo) (*tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func RegVmSpecWithInfo(nameSpaceID string, specregisteringMethod string, vmSpecRegInfo *tbmcir.TbSpecInfo) (*tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	fmt.Println("RegVMSpec ************ : ")
 	if specregisteringMethod == "" {
 		specregisteringMethod = "registerWithInfo" // registerWithInfo or Else 이므로 registerWithInfo 를 넣거나 아니거나.
@@ -1814,16 +1892,16 @@ func RegVmSpecWithInfo(nameSpaceID string, specregisteringMethod string, vmSpecR
 	vmSpecInfo := tbmcir.TbSpecInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmSpecInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmSpecInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
 
 	// 응답에 생성한 객체값이 옴
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 	if respStatus != 200 && respStatus != 201 { // 호출은 정상이나, 가져온 결과값이 200, 201아닌 경우 message에 담겨있는 것을 WebStatus에 set
-		errorInfo := echomodel.ErrorInfo{}
+		errorInfo := fwmodels.ErrorInfo{}
 		json.NewDecoder(respBody).Decode(&errorInfo)
 		fmt.Println("respStatus != 200 reason ", errorInfo)
 		returnStatus.Message = errorInfo.Message
@@ -1837,7 +1915,7 @@ func RegVmSpecWithInfo(nameSpaceID string, specregisteringMethod string, vmSpecR
 	return &vmSpecInfo, returnStatus
 }
 
-func UpdateVMSpec(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) (*tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func UpdateVMSpec(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) (*tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	fmt.Println("UpdateVMSpec ************ : ")
 	vmSpecID := vmSpecRegInfo.ID
 	var originalUrl = "/ns/{nsId}/resources/spec/{specId}"
@@ -1853,7 +1931,7 @@ func UpdateVMSpec(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) (*tbmcir
 	vmSpecInfo := tbmcir.TbSpecInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmSpecInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmSpecInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -1862,11 +1940,11 @@ func UpdateVMSpec(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) (*tbmcir
 	json.NewDecoder(respBody).Decode(&vmSpecInfo)
 	fmt.Println(vmSpecInfo)
 
-	return &vmSpecInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &vmSpecInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 해당 namespace의 모든 VMSpec 삭제 : TODO : 로그인 유저의 동일 namespace일 때만 삭제가능하도록
-func DelAllVMSpec(nameSpaceID string) (echomodel.WebStatus, echomodel.WebStatus) {
+func DelAllVMSpec(nameSpaceID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
 	fmt.Println("DelAllVMSpec ************ : ")
 	var originalUrl = "/ns/{nsId}/resources/spec"
 	var paramMapper = make(map[string]string)
@@ -1876,37 +1954,37 @@ func DelAllVMSpec(nameSpaceID string) (echomodel.WebStatus, echomodel.WebStatus)
 	// url := util.TUMBLEBUG + "/ns/" + nameSpaceID + "/resources/spec"
 
 	resp, err := util.CommonHttp(url, nil, http.MethodDelete)
-	webStatus := echomodel.WebStatus{}
+	webStatus := fwmodels.WebStatus{}
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 
-	// return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	// return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // VMSpec 삭제
-func DelVMSpec(nameSpaceID string, vmSpecID string) (echomodel.WebStatus, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func DelVMSpec(nameSpaceID string, vmSpecID string) (fwmodels.WebStatus, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 	// if ValidateString(VMSpecID) != nil {
 	if len(vmSpecID) == 0 {
 		log.Println("specID 가 없으면 해당 namespace의 모든 image가 삭제되므로 처리할 수 없습니다.")
-		return webStatus, echomodel.WebStatus{StatusCode: 4040, Message: "specID 가 없으면 해당 namespace의 모든 image가 삭제되므로 처리할 수 없습니다."}
+		return webStatus, fwmodels.WebStatus{StatusCode: 4040, Message: "specID 가 없으면 해당 namespace의 모든 image가 삭제되므로 처리할 수 없습니다."}
 	}
 
 	var originalUrl = "/ns/{nsId}/resources/spec/{specId}"
@@ -1922,27 +2000,27 @@ func DelVMSpec(nameSpaceID string, vmSpecID string) (echomodel.WebStatus, echomo
 
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
-	// return respBody, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
+	// return respBody, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func LookupVmSpecInfoList(connectionName *tbcommon.TbConnectionName) (tbmcir.SpiderSpecInfos, echomodel.WebStatus) {
+func LookupVmSpecInfoList(connectionName *tbcommon.TbConnectionName) (tbmcir.SpiderSpecInfos, fwmodels.WebStatus) {
 	fmt.Println("LookupVmSpecInfoList ************ : ")
 	var originalUrl = "/lookupSpecs"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -1955,7 +2033,7 @@ func LookupVmSpecInfoList(connectionName *tbcommon.TbConnectionName) (tbmcir.Spi
 	// resp, err := util.CommonHttpWithoutParam(url, http.MethodGet)
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -1968,12 +2046,12 @@ func LookupVmSpecInfoList(connectionName *tbcommon.TbConnectionName) (tbmcir.Spi
 	json.NewDecoder(respBody).Decode(&vmSpecList)
 	// fmt.Println(vmSpecList["vmspec"])
 
-	return vmSpecList["vmspec"], echomodel.WebStatus{StatusCode: respStatus}
+	return vmSpecList["vmspec"], fwmodels.WebStatus{StatusCode: respStatus}
 
 }
 
 // deprecated 호출경로 변경
-// func LookupVmSpecInfoData(vmSpecName string) (*tbmcir.RestGetAllSpecResponse, echomodel.WebStatus) {
+// func LookupVmSpecInfoData(vmSpecName string) (*tbmcir.RestGetAllSpecResponse, fwmodels.WebStatus) {
 // 	var originalUrl = "/lookupSpec/{specName}"
 // 	var paramMapper = make(map[string]string)
 // 	paramMapper["{specName}"] = vmSpecName
@@ -1985,7 +2063,7 @@ func LookupVmSpecInfoList(connectionName *tbcommon.TbConnectionName) (tbmcir.Spi
 // 	vmSpecInfo := tbmcir.RestGetAllSpecResponse{}
 // 	if err != nil {
 // 		fmt.Println(err)
-// 		return &vmSpecInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+// 		return &vmSpecInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 // 	}
 
 // 	respBody := resp.Body
@@ -1994,10 +2072,10 @@ func LookupVmSpecInfoList(connectionName *tbcommon.TbConnectionName) (tbmcir.Spi
 // 	json.NewDecoder(respBody).Decode(&vmSpecInfo)
 // 	fmt.Println(vmSpecInfo)
 
-// 	return &vmSpecInfo, echomodel.WebStatus{StatusCode: respStatus}
+// 	return &vmSpecInfo, fwmodels.WebStatus{StatusCode: respStatus}
 // }
 
-func LookupVmSpecInfoData(restLookupSpecRequest *tbmcir.RestLookupSpecRequest) (*tbmcir.SpiderSpecInfo, echomodel.WebStatus) {
+func LookupVmSpecInfoData(restLookupSpecRequest *tbmcir.RestLookupSpecRequest) (*tbmcir.SpiderSpecInfo, fwmodels.WebStatus) {
 	var originalUrl = "/lookupSpec"
 
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
@@ -2009,7 +2087,7 @@ func LookupVmSpecInfoData(restLookupSpecRequest *tbmcir.RestLookupSpecRequest) (
 	vmSpecInfo := tbmcir.SpiderSpecInfo{}
 	if err != nil {
 		fmt.Println(err)
-		return &vmSpecInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &vmSpecInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -2018,11 +2096,11 @@ func LookupVmSpecInfoData(restLookupSpecRequest *tbmcir.RestLookupSpecRequest) (
 	json.NewDecoder(respBody).Decode(&vmSpecInfo)
 	fmt.Println(vmSpecInfo)
 
-	return &vmSpecInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &vmSpecInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Fetch는 결과만 return
-func FetchVmSpecInfoList(nameSpaceID string) (*tbcommon.TbSimpleMsg, echomodel.WebStatus) {
+func FetchVmSpecInfoList(nameSpaceID string) (*tbcommon.TbSimpleMsg, fwmodels.WebStatus) {
 	fmt.Println("FetchVmSpecInfoList ************ : ", nameSpaceID)
 	var originalUrl = "/ns/{nsId}/resources/fetchSpecs"
 	var paramMapper = make(map[string]string)
@@ -2036,7 +2114,7 @@ func FetchVmSpecInfoList(nameSpaceID string) (*tbcommon.TbSimpleMsg, echomodel.W
 	resp, err := util.CommonHttpWithoutParam(url, http.MethodPost)
 	if err != nil {
 		fmt.Println(err)
-		return &resultInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &resultInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -2046,7 +2124,7 @@ func FetchVmSpecInfoList(nameSpaceID string) (*tbcommon.TbSimpleMsg, echomodel.W
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println("FetchVmSpecList called ")
 
-	return &resultInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return &resultInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // 오래걸리므로 비동기로 처리
@@ -2085,7 +2163,7 @@ func FetchVmSpecInfoListByAsync(nameSpaceID string, c buffalo.Context) {
 // resourcesGroup.POST("/vmspec/filterspecs", controller.FilterVmSpecList)
 
 // spec들을 filterling
-func FilterVmSpecInfoList(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) ([]tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func FilterVmSpecInfoList(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) ([]tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	fmt.Println("FilterVmSpecInfoList ************ : ", nameSpaceID)
 	var originalUrl = "/ns/{nsId}/resources/filterSpecs"
 	var paramMapper = make(map[string]string)
@@ -2102,7 +2180,7 @@ func FilterVmSpecInfoList(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) 
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -2112,15 +2190,15 @@ func FilterVmSpecInfoList(nameSpaceID string, vmSpecRegInfo *tbmcir.TbSpecInfo) 
 	json.NewDecoder(respBody).Decode(&filterSpecList)
 	log.Println("FilterVmSpecInfoList called ")
 
-	return filterSpecList.SpaceInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return filterSpecList.SpaceInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // resourcesGroup.POST("/vmspec/filterspecsbyrange", controller.FilterVmSpecListByRange)
 // namespace의 spec 조회
 // 기본값은 system-purpose-common-ns 이며 spec load를 해야 사용가능
 // 특정 namespace를 주면 해당 ns에 있는 spec을 filter
-func FilterVmSpecInfoListByRange(nameSpaceID string, vmSpecRangeMinMax *tbmcir.FilterSpecsByRangeRequest) ([]tbmcir.TbSpecInfo, echomodel.WebStatus) {
-	webStatus := echomodel.WebStatus{}
+func FilterVmSpecInfoListByRange(nameSpaceID string, vmSpecRangeMinMax *tbmcir.FilterSpecsByRangeRequest) ([]tbmcir.TbSpecInfo, fwmodels.WebStatus) {
+	webStatus := fwmodels.WebStatus{}
 	resultInfo := tbmcir.RestFilterSpecsResponse{}
 
 	fmt.Println("FilterVmSpecInfoListByRange ************ : ", nameSpaceID)
@@ -2137,7 +2215,7 @@ func FilterVmSpecInfoListByRange(nameSpaceID string, vmSpecRangeMinMax *tbmcir.F
 
 	if err != nil {
 		fmt.Println(err)
-		return resultInfo.SpaceInfo, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return resultInfo.SpaceInfo, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// defer body.Close()
 	respBody := resp.Body
@@ -2148,17 +2226,17 @@ func FilterVmSpecInfoListByRange(nameSpaceID string, vmSpecRangeMinMax *tbmcir.F
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println(resultInfo)
 		log.Println("ResultMessage : " + failResultInfo.Message)
-		return resultInfo.SpaceInfo, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return resultInfo.SpaceInfo, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	webStatus.StatusCode = respStatus
 
-	return resultInfo.SpaceInfo, echomodel.WebStatus{StatusCode: respStatus}
+	return resultInfo.SpaceInfo, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func DelDefaultResources(nameSpaceID string) (*tbcommon.TbIdList, echomodel.WebStatus) {
+func DelDefaultResources(nameSpaceID string) (*tbcommon.TbIdList, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/defaultResources"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -2170,7 +2248,7 @@ func DelDefaultResources(nameSpaceID string) (*tbcommon.TbIdList, echomodel.WebS
 
 	if err != nil {
 		fmt.Println(err)
-		return &idList, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return &idList, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 	// return body, err
 	respBody := resp.Body
@@ -2180,16 +2258,16 @@ func DelDefaultResources(nameSpaceID string) (*tbcommon.TbIdList, echomodel.WebS
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println("ResultMessage : " + failResultInfo.Message)
-		return &idList, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return &idList, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&idList)
 	fmt.Println(idList)
 
-	return &idList, echomodel.WebStatus{StatusCode: respStatus}
+	return &idList, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
-func LoadDefaultResources(nameSpaceID string, optionParam string, connectionName string) (echomodel.WebStatus, echomodel.WebStatus) {
+func LoadDefaultResources(nameSpaceID string, optionParam string, connectionName string) (fwmodels.WebStatus, fwmodels.WebStatus) {
 	var originalUrl = "/ns/{nsId}/loadDefaultResource"
 	var paramMapper = make(map[string]string)
 	paramMapper["{nsId}"] = nameSpaceID
@@ -2201,31 +2279,31 @@ func LoadDefaultResources(nameSpaceID string, optionParam string, connectionName
 	url := util.TUMBLEBUG + urlParam
 
 	resp, err := util.CommonHttp(url, nil, http.MethodGet)
-	webStatus := echomodel.WebStatus{}
+	webStatus := fwmodels.WebStatus{}
 	if err != nil {
 		fmt.Println(err)
-		return webStatus, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return webStatus, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
 	respStatus := resp.StatusCode
-	resultInfo := echomodel.ResultInfo{}
+	resultInfo := fwmodels.ResultInfo{}
 
 	json.NewDecoder(respBody).Decode(&resultInfo)
 	log.Println(resultInfo)
 	log.Println("ResultMessage : " + resultInfo.Message)
 
 	if respStatus != 200 && respStatus != 201 {
-		return echomodel.WebStatus{}, echomodel.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
+		return fwmodels.WebStatus{}, fwmodels.WebStatus{StatusCode: respStatus, Message: resultInfo.Message}
 	}
 	webStatus.StatusCode = respStatus
 	webStatus.Message = resultInfo.Message
-	return webStatus, echomodel.WebStatus{StatusCode: respStatus}
+	return webStatus, fwmodels.WebStatus{StatusCode: respStatus}
 }
 
 // Recommend MCIS plan (filter and priority)
 // 실제로는 추천 vmspec 목록
-func GetRecommendVmSpecList(mcisDeploymentPlan *tbmcis.DeploymentPlan) ([]tbmcir.TbSpecInfo, echomodel.WebStatus) {
+func GetRecommendVmSpecList(mcisDeploymentPlan *tbmcis.DeploymentPlan) ([]tbmcir.TbSpecInfo, fwmodels.WebStatus) {
 	var originalUrl = "/mcisRecommendVm"
 	urlParam := util.MappingUrlParameter(originalUrl, nil)
 
@@ -2235,11 +2313,11 @@ func GetRecommendVmSpecList(mcisDeploymentPlan *tbmcis.DeploymentPlan) ([]tbmcir
 	resp, err := util.CommonHttp(url, pbytes, http.MethodPost)
 
 	returnVmSpecs := []tbmcir.TbSpecInfo{}
-	returnStatus := echomodel.WebStatus{}
+	returnStatus := fwmodels.WebStatus{}
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, echomodel.WebStatus{StatusCode: 500, Message: err.Error()}
+		return nil, fwmodels.WebStatus{StatusCode: 500, Message: err.Error()}
 	}
 
 	respBody := resp.Body
@@ -2250,7 +2328,7 @@ func GetRecommendVmSpecList(mcisDeploymentPlan *tbmcis.DeploymentPlan) ([]tbmcir
 		failResultInfo := tbcommon.TbSimpleMsg{}
 		json.NewDecoder(respBody).Decode(&failResultInfo)
 		log.Println("RegMcisDynamic ", failResultInfo)
-		return returnVmSpecs, echomodel.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
+		return returnVmSpecs, fwmodels.WebStatus{StatusCode: respStatus, Message: failResultInfo.Message}
 	}
 
 	json.NewDecoder(respBody).Decode(&returnVmSpecs)

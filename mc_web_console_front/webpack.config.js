@@ -113,12 +113,15 @@ const configurator = {
         filename: "[name].[contenthash].js",
         path: `${__dirname}/public/assets`,
         clean: true,
+        library:[
+          'webconsolejs', "[name]"
+        ]
       },
       plugins: configurator.plugins(),
       module: configurator.moduleOptions(),
       resolve: {
         extensions: ['.ts', '.js', '.json']
-      }
+      },
     }
 
     if( env === "development" ){

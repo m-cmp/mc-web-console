@@ -7,14 +7,14 @@ import (
 	"mc_web_console_api/models/views"
 	"net/http"
 
-	tbmcir "mc_web_console_api/echomodel/tumblebug/mcir"
-	tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	tbmcir "mc_web_console_api/fwmodels/tumblebug/mcir"
+	tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gofrs/uuid"
 )
 
-func (a actions) MyImageReg(c buffalo.Context) error {
+func MyImageReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -79,7 +79,7 @@ func (a actions) MyImageReg(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) MyImageList(c buffalo.Context) error {
+func MyImageList(c buffalo.Context) error {
 	log.Println("MyImageList : ")
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	// TODO : defaultNameSpaceID 가 없으면 설정화면으로 보낼 것
@@ -121,7 +121,7 @@ func (a actions) MyImageList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) MyImageGet(c buffalo.Context) error {
+func MyImageGet(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	myImageID := c.Param("myImageId")
@@ -145,7 +145,7 @@ func (a actions) MyImageGet(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) MyImageDel(c buffalo.Context) error {
+func MyImageDel(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 	namespaceName := c.Session().Get("current_namespace").(string)
 
@@ -193,7 +193,7 @@ func (a actions) MyImageDel(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) VmSnapshotReg(c buffalo.Context) error {
+func VmSnapshotReg(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	vmSnapshotReq := new(tbmcis.TbVmSnapshotReq)

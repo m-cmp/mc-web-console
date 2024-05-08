@@ -12,9 +12,9 @@ import (
 	"github.com/gobuffalo/pop/v6"
 	"github.com/pkg/errors"
 
-	"mc_web_console_api/echomodel"
-	"mc_web_console_api/echomodel/spider"
-	"mc_web_console_api/echomodel/tumblebug/mcis"
+	"mc_web_console_api/fwmodels"
+	"mc_web_console_api/fwmodels/spider"
+	"mc_web_console_api/fwmodels/tumblebug/mcis"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"
@@ -29,7 +29,7 @@ import (
 //	@Produce		json
 //	@Success		200	{object}	models.CloudConnections
 //	@Router			/api/test/connection/list/ [GET]
-func (a actions) CloudConnectionAllList(c buffalo.Context) error {
+func CloudConnectionAllList(c buffalo.Context) error {
 	cloudConnections := models.CloudConnections{}
 	err := models.DB.All(&cloudConnections)
 
@@ -63,7 +63,7 @@ func (a actions) CloudConnectionAllList(c buffalo.Context) error {
 //	@Param			zoneName	query		string	true	"zoneName"
 //	@Success		200			{object}	models.CloudConnections
 //	@Router			/api/settings/connection/ [GET]
-func (a actions) CloudConnectionList(c buffalo.Context) error {
+func CloudConnectionList(c buffalo.Context) error {
 	paramProviderId := c.Params().Get("providerId")
 	paramRegionName := c.Params().Get("regionName")
 	paramZoneName := c.Params().Get("zoneName")
@@ -92,7 +92,7 @@ func (a actions) CloudConnectionList(c buffalo.Context) error {
 //	@Param			connectionId	path		string	true	"connectionId"
 //	@Success		200				{object}	models.CloudConnections
 //	@Router			/api/settings/connection/id/{connectionId}/ [GET]
-func (a actions) CloudConnectionGet(c buffalo.Context) error {
+func CloudConnectionGet(c buffalo.Context) error {
 	paramConnectionName := c.Param("connectionId")
 
 	paramViewConnection := views.ViewCloudConnection{}
@@ -113,7 +113,7 @@ func (a actions) CloudConnectionGet(c buffalo.Context) error {
 //	@Produce		json
 //	@Success		200	{array}	models.Driver
 //	@Router			/api/settings/connection/driver/ [get]
-func (a actions) DriverList(c buffalo.Context) error {
+func DriverList(c buffalo.Context) error {
 	drivers := []models.Driver{}
 
 	paramDriver := &models.Driver{}
@@ -140,7 +140,7 @@ func (a actions) DriverList(c buffalo.Context) error {
 //	@Param			paramDriver	body		models.Driver	true	"models.Driver"
 //	@Success		200			{object}	models.Driver
 //	@Router			/api/settings/connection/driver/ [delete]
-func (a actions) DriverDelete(c buffalo.Context) error {
+func DriverDelete(c buffalo.Context) error {
 	paramDriver := &models.Driver{}
 	if err := c.Bind(paramDriver); err != nil {
 		return errors.WithStack(err)
@@ -165,7 +165,7 @@ func (a actions) DriverDelete(c buffalo.Context) error {
 //	@Produce		json
 //	@Success		200	{array}	models.Region
 //	@Router			/api/settings/connection/region/all [get]
-func (a actions) RegionAllList(c buffalo.Context) error {
+func RegionAllList(c buffalo.Context) error {
 	regions := []models.Region{}
 	paramRegion := &models.Region{}
 	if err := c.Bind(paramRegion); err != nil {
@@ -190,7 +190,7 @@ func (a actions) RegionAllList(c buffalo.Context) error {
 //	@Param			paramRegion	body		models.Region	true	"models.Region"
 //	@Success		200			{object}	models.Driver
 //	@Router			/api/settings/connection/region/ [delete]
-func (a actions) RegionDelete(c buffalo.Context) error {
+func RegionDelete(c buffalo.Context) error {
 	paramRegion := &models.Region{}
 	if err := c.Bind(paramRegion); err != nil {
 		return errors.WithStack(err)
@@ -216,7 +216,7 @@ func (a actions) RegionDelete(c buffalo.Context) error {
 //	@Param			paramCredential	body		models.Credential	true	"models.Credential"
 //	@Success		200				{string}	string				"success"
 //	@Router			/api/settings/connection/credential/ [delete]
-func (a actions) CredentialDelete(c buffalo.Context) error {
+func CredentialDelete(c buffalo.Context) error {
 	paramCredential := &models.Credential{}
 	if err := c.Bind(paramCredential); err != nil {
 		return errors.WithStack(err)
@@ -242,7 +242,7 @@ func (a actions) CredentialDelete(c buffalo.Context) error {
 //	@Produce		json
 //	@Success		200	{string}	string	{'message':'success','status':'respStatus','ConnectionConfig': 'cloudConnectionConfigList',}
 //	@Router			/api/settings/connection/spider/ [GET]
-func (a actions) SpiderConnectionList(c buffalo.Context) error {
+func SpiderConnectionList(c buffalo.Context) error {
 	cloudConnectionConfigList, respStatus := handler.GetCloudConnectionConfigList()
 	if respStatus.StatusCode == 500 {
 		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
@@ -268,7 +268,7 @@ func (a actions) SpiderConnectionList(c buffalo.Context) error {
 //	@Param			connectionId	path		string	true	"connectionId"
 //	@Success		200				{string}	string	{'message':'success','status':'respStatus','ConnectionConfig': 'connectionInfo',}
 //	@Router			/api/settings/connection/spider/id/{connectionId}/ [GET]
-func (a actions) SpiderConnectionGet(c buffalo.Context) error {
+func SpiderConnectionGet(c buffalo.Context) error {
 	paramConfigName := c.Param("connectionId")
 
 	connectionInfo, respStatus := handler.GetCloudConnectionConfigData(paramConfigName)
@@ -304,7 +304,7 @@ func (a actions) SpiderConnectionGet(c buffalo.Context) error {
 //	@Param			is_cb	query		string	true	"is_cb"
 //	@Success		200		{string}	string	{'message':'success','status':'respStatus','ConnectionConfig': 'connectionInfo',}
 //	@Router			/api/settings/connection/ [post]
-func (a actions) CloudConnectionCreate(c buffalo.Context) error {
+func CloudConnectionCreate(c buffalo.Context) error {
 
 	is_cb := c.Params().Get("is_cb")
 
@@ -378,7 +378,7 @@ func (a actions) CloudConnectionCreate(c buffalo.Context) error {
 //	@Param			is_cb			query		string	true	"is_cb"
 //	@Success		200				{string}	string	"success"
 //	@Router			/api/settings/connection/id/{configName}/ [delete]
-func (a actions) CloudConnectionDelete(c buffalo.Context) error {
+func CloudConnectionDelete(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 	paramConfigName := c.Param("configName")
 
@@ -410,7 +410,7 @@ func (a actions) CloudConnectionDelete(c buffalo.Context) error {
 //	@Produce		json
 //	@Success		200	{string}	string	"{'message': 'success','status':  'not implementated yet',}"
 //	@Router			/api/settings/connection/ [PUT]
-func (a actions) CloudConnectionUpdate(c buffalo.Context) error {
+func CloudConnectionUpdate(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"message": "success",
 		"status":  "not implementated yet",
@@ -426,7 +426,7 @@ func (a actions) CloudConnectionUpdate(c buffalo.Context) error {
 //	@Produce		json
 //	@Success		200	{string}	string	"{'message': 'success','status': 'respStatus','Driver': 'driverList',}"
 //	@Router			/api/settings/connection/driver/spider/ [get]
-func (a actions) SpiderDriverList(c buffalo.Context) error {
+func SpiderDriverList(c buffalo.Context) error {
 	driverList, respStatus := handler.GetDriverList()
 	if respStatus.StatusCode == 500 {
 		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
@@ -451,7 +451,7 @@ func (a actions) SpiderDriverList(c buffalo.Context) error {
 // @Param			is_cb	query		string	true	"is_cb"
 // @Success		200		{string}	string	"{'message': 'success','status': 'respStatus','Driver': 'driverInfo',}"
 // @Router			/api/settings/connection/driver/id/{driverId}/ [get]
-func (a actions) DriverGet(c buffalo.Context) error {
+func DriverGet(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 	paramDriver := c.Param("driver")
 
@@ -507,7 +507,7 @@ func (a actions) DriverGet(c buffalo.Context) error {
 //	@Failure		201						{json}	{"error":  respStatus.Message,"status": respStatus.StatusCode,}
 //	@Failure		500						{json}	{"error":  err.Error(),"status": 500,}"
 //	@Router			/api/settings/connection/driver/ [post]
-func (a actions) DriverCreate(c buffalo.Context) error {
+func DriverCreate(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 
 	driverInfo := new(spider.DriverInfo)
@@ -562,7 +562,7 @@ func (a actions) DriverCreate(c buffalo.Context) error {
 //	@Param			driver	path		string	true	"driver"
 //	@Success		200		{string}	string	"{'message': 'success','status': 'respStatus'}"
 //	@Router			/api/settings/connection/driver/spider/id/{driver}/ [delete]
-func (a actions) SpiderDriverDelete(c buffalo.Context) error {
+func SpiderDriverDelete(c buffalo.Context) error {
 	paramDriver := c.Param("driver")
 
 	respBody, respStatus := handler.DelDriver(paramDriver)
@@ -590,7 +590,7 @@ func (a actions) SpiderDriverDelete(c buffalo.Context) error {
 // @Success		200		{json}	{"message":"success","status":"200","Credential": credentialList,}
 // @Failure		500		{json}	{"error":  err.Error(),"status": "500",}
 // @Router			/api/settings/connection/credential/ [get]
-func (a actions) CredentialList(c buffalo.Context) error {
+func CredentialList(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 
 	if is_cb == "N" {
@@ -641,7 +641,7 @@ func (a actions) CredentialList(c buffalo.Context) error {
 //	@Success		200			{string}	string	"{'message':'success','status':'200','Credential': 'credentialInfo',}"
 //	@Failure		500			{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/credential/id/{credential}/ [get]
-func (a actions) CredentialGet(c buffalo.Context) error {
+func CredentialGet(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 	paramCredential := c.Param("credential")
 
@@ -691,7 +691,7 @@ func (a actions) CredentialGet(c buffalo.Context) error {
 //	@Success		200				{string}	string					"{'message':'success','status':'200',}"
 //	@Failure		500				{string}	string					"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/credential/ [post]
-func (a actions) CredentialCreate(c buffalo.Context) error {
+func CredentialCreate(c buffalo.Context) error {
 	credentialInfo := new(spider.CredentialInfo)
 	err := c.Bind(credentialInfo)
 	if err != nil {
@@ -745,7 +745,7 @@ func (a actions) CredentialCreate(c buffalo.Context) error {
 //	@Success		200				{string}	string	"{'message':'success','status':'200','Region':'regionList'}"
 //	@Failure		500				{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/region/ [get]
-func (a actions) RegionList(c buffalo.Context) error {
+func RegionList(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 	filterKeyParam := c.Params().Get("filterKey")
 	filterValParam := c.Params().Get("filterVal")
@@ -833,7 +833,7 @@ func (a actions) RegionList(c buffalo.Context) error {
 //	@Success		200			{string}	string	"{'message':'success','status':'respStatus','Region':'resionInfo'}"
 //	@Failure		500			{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/region/id/{paramRegion}/ [get]
-func (a actions) RegionGet(c buffalo.Context) error {
+func RegionGet(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 	paramRegion := c.Param("region")
 
@@ -887,7 +887,7 @@ func (a actions) RegionGet(c buffalo.Context) error {
 // @Success		200			{string}	string				"{'message':'success','status':'200',}"
 // @Failure		500			{string}	string				"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/region/ [post]
-func (a actions) RegionCreate(c buffalo.Context) error {
+func RegionCreate(c buffalo.Context) error {
 	is_cb := c.Params().Get("is_cb")
 	regionInfo := new(spider.RegionInfo)
 	err := c.Bind(regionInfo)
@@ -941,7 +941,7 @@ func (a actions) RegionCreate(c buffalo.Context) error {
 //	@Success		200	{string}	string	"{'message':'success','status':'respStatus','Region':'resionInfo'}"
 //	@Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/providers/ [get]
-func (a actions) CloudProviderList(c buffalo.Context) error {
+func CloudProviderList(c buffalo.Context) error {
 	cloudOsList, respStatus := handler.GetCloudOSList()
 	if respStatus.StatusCode == 500 {
 		return c.Render(http.StatusOK, r.JSON(respStatus))
@@ -961,7 +961,7 @@ func (a actions) CloudProviderList(c buffalo.Context) error {
 //	@Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 //	@Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/available/ [get]
-func (a actions) AvailableCloudConnectionList(c buffalo.Context) error {
+func AvailableCloudConnectionList(c buffalo.Context) error {
 	mcisReq := new(mcis.McisConnectionConfigCandidatesReq)
 	checkMcisDynamicReqInfo, respStatus := handler.GetMcisDynamicCheckList(mcisReq)
 	if respStatus.StatusCode == 500 {
@@ -984,7 +984,7 @@ func (a actions) AvailableCloudConnectionList(c buffalo.Context) error {
 // @Success		200			{string}	string				"{'message':'success','status':'respStatus'}"
 // @Failure		500			{string}	string				"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/test/connection/list/bycred [post]
-func (a actions) TestCloudConnection(c buffalo.Context) error {
+func TestCloudConnection(c buffalo.Context) error {
 	tx := c.Value("tx").(*pop.Connection)
 	credential := &models.Credentials{}
 	err := tx.Eager().All(credential)
@@ -1011,7 +1011,7 @@ func (a actions) TestCloudConnection(c buffalo.Context) error {
 //	@Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 //	@Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/provider/sync/ [get]
-func (a actions) SyncCloudProvider(c buffalo.Context) error {
+func SyncCloudProvider(c buffalo.Context) error {
 	err := handler.SyncCloudProvider(c)
 	if err != nil {
 		return err
@@ -1030,7 +1030,7 @@ func (a actions) SyncCloudProvider(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/driver/sync/ [get]
-func (a actions) SyncDriver(c buffalo.Context) error {
+func SyncDriver(c buffalo.Context) error {
 	err := handler.SyncDriver(c)
 	if err != nil {
 		return err
@@ -1049,7 +1049,7 @@ func (a actions) SyncDriver(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/region/sync/ [get]
-func (a actions) SyncRegion(c buffalo.Context) error {
+func SyncRegion(c buffalo.Context) error {
 	err := handler.SyncRegion(c)
 	if err != nil {
 		return err
@@ -1068,7 +1068,7 @@ func (a actions) SyncRegion(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/credential/sync/ [get]
-func (a actions) SyncCredential(c buffalo.Context) error {
+func SyncCredential(c buffalo.Context) error {
 	err := handler.SyncCredential(c)
 	if err != nil {
 		return err
@@ -1087,7 +1087,7 @@ func (a actions) SyncCredential(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/sync/ [get]
-func (a actions) SyncConnection(c buffalo.Context) error {
+func SyncConnection(c buffalo.Context) error {
 	err := handler.SyncConnection(c)
 	if err != nil {
 		return err
@@ -1108,7 +1108,7 @@ func (a actions) SyncConnection(c buffalo.Context) error {
 // @Success		200				{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500				{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/generate/bycredential [get]
-func (a actions) GenerateConnectionsByCredential(c buffalo.Context) error {
+func GenerateConnectionsByCredential(c buffalo.Context) error {
 	paramProviderID := c.Params().Get("providerId")
 	paramCredentialName := c.Params().Get("credentialName")
 
@@ -1136,7 +1136,7 @@ func (a actions) GenerateConnectionsByCredential(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/generate/all/bycredential [get]
-func (a actions) GenerateConnectionsByAllCredential(c buffalo.Context) error {
+func GenerateConnectionsByAllCredential(c buffalo.Context) error {
 
 	credentialList, respStatus := handler.GetCredentialList()
 	if respStatus.StatusCode == 500 {
@@ -1172,10 +1172,10 @@ func (a actions) GenerateConnectionsByAllCredential(c buffalo.Context) error {
 // @Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 // @Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 // @Router			/api/settings/connection/healthcheck/framework/ [get]
-func (a actions) FrameworkHealthCheck(c buffalo.Context) error {
+func FrameworkHealthCheck(c buffalo.Context) error {
 	framework := c.Params().Get("framework")
 
-	respStatus := echomodel.WebStatus{}
+	respStatus := fwmodels.WebStatus{}
 
 	if strings.EqualFold(framework, "SPIDER") {
 		respStatus = handler.GetSpiderHealthCheck()
@@ -1210,7 +1210,7 @@ func (a actions) FrameworkHealthCheck(c buffalo.Context) error {
 //	@Success		200	{string}	string	"{'message':'success','status':'respStatus'}"
 //	@Failure		500	{string}	string	"{'error':  err.Error(),'status': '500',}"
 //	@Router			/api/settings/connection/healthcheck/agent/ [get]
-func (a actions) AgentHealthCheck(c buffalo.Context) error {
+func AgentHealthCheck(c buffalo.Context) error {
 	// MCIS / MCKS
 
 	//namespaceID := c.Session().Get("current_namespace_id").(string)
