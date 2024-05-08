@@ -12,9 +12,16 @@
 
       <%= partial("partials/layout/sidebar.html") %>
       <%= partial("partials/layout/navbar.html") %>
-
+      
       <div class="page-wrapper">
-        <%= yield %> <!--페이지 표현할 것들 -->
+        <!-- Page header :  -->
+
+
+        <!-- Page body -->
+        <%= partial("partials/layout/flash.html") %>
+        <%= yield %>
+
+        <!-- Page footer -->
         <%= partial("partials/layout/footer.html") %>
       </div>
 
@@ -22,9 +29,14 @@
     
     <!-- common js -->
     <%= javascriptTag("application.js") %>
-    <%= javascriptTag("common/view/sideMenu.js") %>
+    <%= javascriptTag("common/http/api.js") %>
+    <%= javascriptTag("common/storage/sessionstorage.js") %>
+    <%= javascriptTag("common/view/main.js") %>
+
+    <!-- common view -->
     <%= javascriptTag("common/tabler/tabler.js") %>
     <%= javascriptTag("common/tabler/tablerHelper.js") %>
+    <%= javascriptTag("common/view/sideMenu.js") %>
 
   </body>
 

@@ -2,7 +2,7 @@ package actions
 
 import (
 	"log"
-	"mc_web_console_api/echomodel/spider"
+	"mc_web_console_api/fwmodels/spider"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/models"
 	"mc_web_console_api/models/views"
@@ -13,7 +13,7 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func (a actions) PmksRegProc(c buffalo.Context) error {
+func PmksRegProc(c buffalo.Context) error {
 
 	clusterReqInfo := &spider.ClusterReqInfo{}
 	if err := c.Bind(clusterReqInfo); err != nil {
@@ -82,7 +82,7 @@ func (a actions) PmksRegProc(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) PmksNodeGroupRegProc(c buffalo.Context) error {
+func PmksNodeGroupRegProc(c buffalo.Context) error {
 	log.Println("PmksNodeGroupRegProc : ")
 
 	nodeGroupReqInfo := new(spider.NodeGroupReqInfo)
@@ -155,7 +155,7 @@ func (a actions) PmksNodeGroupRegProc(c buffalo.Context) error {
 	}))
 }
 
-func (a actions) PmksListOfNamespace(c buffalo.Context) error {
+func PmksListOfNamespace(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	clusterReqInfo := spider.AllClusterReqInfo{}
@@ -190,7 +190,7 @@ func (a actions) PmksListOfNamespace(c buffalo.Context) error {
 }
 
 // PmksmngList default implementation.
-func (a actions) PmksMngList(c buffalo.Context) error {
+func PmksMngList(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	optionParam := c.Params().Get("option")
@@ -228,7 +228,7 @@ func (a actions) PmksMngList(c buffalo.Context) error {
 	}
 }
 
-func (a actions) GetPmksInfoData(c buffalo.Context) error {
+func GetPmksInfoData(c buffalo.Context) error {
 	namespaceID := c.Session().Get("current_namespace_id").(string)
 
 	paramClusterID := c.Param("clusterId")

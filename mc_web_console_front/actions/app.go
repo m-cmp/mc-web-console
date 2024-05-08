@@ -43,7 +43,7 @@ func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
-			SessionName: "_mc_web_console_front_session",
+			SessionName: "mc_web_console",
 			Addr:        os.Getenv("FRONT_ADDR") + ":" + os.Getenv("FRONT_PORT"),
 		})
 
@@ -56,31 +56,31 @@ func App() *buffalo.App {
 		app.ANY("/alive", alive)
 
 		// pages
-		pageController := app.Group("/")
+		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
+
+		pages := app.Group("/webconsole")
 		if mciamUse {
-			pageController.Use(McIamAuthMiddleware)
+			pages.Use(McIamAuthMiddleware)
 		}
-		pageController.Redirect(302, "/", "/operation/dashboard/ns") //home redirect to dash
-		pageController.GET("/operation/{category}/{page}", OperationPageController)
-		pageController.GET("/setting/{category}/{page}", SettingPageController)
+		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		// mciamAuth pages
 		if mciamUse {
 			auth := app.Group("/auth")
-			auth.Use(McIamAuthMiddleware)
-			auth.Middleware.Skip(McIamAuthMiddleware, UserLoginpageHandler, UserRegisterHandler)
-			auth.GET("/login", UserLoginpageHandler)
-			auth.POST("/login", UserLoginpageHandler)
-			auth.GET("/register", UserRegisterHandler)
+			auth.GET("/login", UserLoginHandler)
+			auth.POST("/login", UserLoginHandler)
+			auth.GET("/logout", UserLogoutHandler)
+			auth.GET("/register", UserRegisterpageHandler)
 		}
 
 		// API 호출 Proxy to backend API buffalo
-		app.ANY("/api/{path:.+}", ApiCaller)
+		apiPath := "/api"
+		api := app.Group(apiPath)
+		api.ANY("/{path:.+}", ApiCaller)
 
 		//////////////// debug section start ////////////////
 		// debug 이므로 별도 라우팅 처리... build에 포함되지 않도록 처리 할 것..
 		if ENV == "development" {
-
 			debug := app.Group("/debug")
 			// common debug
 			debug.GET("/", DEBUGRouteHandler)

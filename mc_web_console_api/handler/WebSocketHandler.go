@@ -1,15 +1,15 @@
 package handler
 
 import (
-	//"mc_web_console_api/echomodel"
-	//tbmcis "mc_web_console_api/echomodel/tumblebug/mcis"
+	//"mc_web_console_api/fwmodels"
+	//tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
 	"encoding/gob"
 	"log"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
 
-	modelsocket "mc_web_console_api/echomodel/websocket"
+	modelsocket "mc_web_console_api/fwmodels/websocket"
 )
 
 func init() {

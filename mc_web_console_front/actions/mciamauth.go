@@ -1,94 +1,104 @@
 package actions
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"mc_web_console_api/iammodels"
+	"log"
 	"net/http"
-	"net/url"
-	"os"
-	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
+	"github.com/mitchellh/mapstructure"
+
+	mcmodels "mc_web_console_common_models"
 )
 
-var apiHost url.URL
-
-func init() {
-	APIADDR := os.Getenv("API_ADDR")
-	APIPORT := os.Getenv("API_PORT")
-
-	apiHost.Scheme = "http"
-	apiHost.Host = APIADDR + ":" + APIPORT
-}
-
-func UserLoginpageHandler(c buffalo.Context) error {
+func UserLoginHandler(c buffalo.Context) error {
 	if c.Request().Method == "POST" {
-		user := &iammodels.UserLogin{}
-		user.Id = c.Request().FormValue("id")
 
-		user.Password = c.Request().FormValue("password")
+		// user bind ------------------------------ 1
+		user := &mcmodels.UserLogin{}
+		if err := c.Bind(user); err != nil {
+			return c.Render(http.StatusBadRequest,
+				r.JSON(map[string]string{"err": err.Error()}))
+		}
 
+		// validateErr ------------------------------ 2
 		validateErr := validate.Validate(
 			&validators.StringIsPresent{Field: user.Id, Name: "id"},
 			&validators.StringIsPresent{Field: user.Password, Name: "password"},
 		)
 		if validateErr.HasAny() {
-			fmt.Println(validateErr)
-			return c.Render(http.StatusServiceUnavailable,
+			log.Println(validateErr)
+			return c.Render(http.StatusBadRequest,
 				r.JSON(map[string]string{"err": validateErr.Error()}))
 		}
 
-		formData := url.Values{
-			"id":       {user.Id},
-			"password": {user.Password},
-		}
+		// commonRequest RequestData 할당 ------------------------------ 3
+		commonRequest := &mcmodels.CommonRequest{}
+		commonRequest.RequestData = user
 
-		tokenPath := "/api/mciam/auth/login"
-		tokenEndpoint := apiHost.ResolveReference(&url.URL{Path: tokenPath})
-
-		req, _ := http.NewRequest("POST", tokenEndpoint.String(), strings.NewReader(formData.Encode()))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
+		// API 호출 ------------------------------ 4
+		status, commonRes, err := CommonAPIPostWithoutAccessToken(APILoginPath, commonRequest)
 		if err != nil {
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"error": err.Error()}))
-		}
-		defer resp.Body.Close()
-
-		if resp.Status != "200 OK" {
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"code": resp.Status}))
-		}
-
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println("Failed to read response body:", err)
-			return c.Render(http.StatusServiceUnavailable,
+			return c.Render(status.StatusCode,
 				r.JSON(map[string]string{"err": err.Error()}))
 		}
+		if status.StatusCode != 200 {
+			return c.Render(status.StatusCode,
+				r.JSON(map[string]string{"err": status.Status}),
+			)
+		}
 
-		var accessTokenResponse iammodels.KeycloakAccessTokenResponse
-		jsonerr := json.Unmarshal(respBody, &accessTokenResponse)
-		if jsonerr != nil {
-			fmt.Println("Failed to parse response:", err)
-			return c.Render(http.StatusServiceUnavailable,
-				r.JSON(map[string]string{"err": jsonerr.Error()}))
+		// commonRes to return 할당 ------------------------------ 5
+		accessTokenResponse := &mcmodels.AccessTokenResponse{}
+		decodeerr := mapstructure.Decode(commonRes.ResponseData, accessTokenResponse)
+		if decodeerr != nil {
+			return c.Render(status.StatusCode,
+				r.JSON(map[string]string{"err": decodeerr.Error()}))
 		}
 
 		c.Session().Set("Authorization", accessTokenResponse.AccessToken)
 
 		return c.Render(http.StatusOK,
-			r.JSON(map[string]string{"status": "200 ok"}))
+			r.JSON(map[string]string{
+				"redirect": RootPathForRedirectString,
+			}))
+	}
+
+	accessToken := c.Session().Get("Authorization")
+	if accessToken != nil {
+		c.Flash().Add("success", "You are already logged in.")
+		return c.Redirect(http.StatusSeeOther,
+			"webconsoleDepth1Depth2Depth3Path()",
+			RootPathForRedirect,
+		)
 	}
 
 	return c.Render(http.StatusOK, r.HTML("auth/login.html"))
 }
-func UserRegisterHandler(c buffalo.Context) error {
+
+func UserLogoutHandler(c buffalo.Context) error {
+	status, _, err := CommonAPIPost(APILogoutPath, &mcmodels.CommonRequest{}, c)
+	if err != nil {
+		log.Println(err.Error())
+		return c.Render(status.StatusCode,
+			r.JSON(map[string]string{"err": err.Error()}))
+	}
+	if status.StatusCode != 200 {
+		return c.Render(status.StatusCode,
+			r.JSON(map[string]string{"err": status.Status}),
+		)
+	}
+
+	c.Session().Clear()
+	c.Flash().Add("success", "Logout")
+	return c.Redirect(http.StatusSeeOther, "authLoginPath()")
+}
+
+func UserRegisterpageHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("auth/login.html"))
 }
+
+// func GetUserRefreshTokenHandler(c buffalo.Context) (mcmodels.AccessTokenResponse, string, error) {
+// 	status, respBody, err := CommonAPIPost(APILoginRefreshPath, accessTokenRequest, c)
+// }
