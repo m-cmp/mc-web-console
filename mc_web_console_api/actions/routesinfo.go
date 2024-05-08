@@ -29,29 +29,31 @@ func PostRouteController(c buffalo.Context) error {
 	commonRequest := &webconsole.CommonRequest{}
 	c.Bind(commonRequest)
 	targetController := strings.ToLower(c.Param("targetController"))
-	log.Printf("== targetController \t:[ %s ]\n", targetController)
-	log.Printf("== commonRequest :\n%+v\n==\n", commonRequest)
+	log.Printf("== targetController\t:[ %s ]\n", targetController)
+	log.Printf("== commonRequest\t:\n%+v\n\n", commonRequest)
 
-	// 권한 check???
-	// 1차 메뉴 권한
-	// 2차 project 권한 체크 -- middle ware
-	// 3차 resource 권한 체크 -- middle ware (추후. not now)
 	commonResponse := &webconsole.CommonResponse{}
 	switch targetController {
 	case "getmcislist":
 		commonResponse = tumblebug.GetMCISList(c, commonRequest)
+	case "getmcis":
+		commonResponse = tumblebug.GetMCIS(c, commonRequest)
 	case "delmcis":
 		commonResponse = tumblebug.DelMCIS(c, commonRequest)
-	case "controlmcislifecycle":
-		commonResponse = tumblebug.ControlMCISLifecycle(c, commonRequest)
+	case "createmcis":
+		commonResponse = tumblebug.CreateMCIS(c, commonRequest)
+
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
 	case "authlogout":
 		commonResponse = AuthLogout(c, commonRequest)
-	case "workspacelistbyuser":
-		commonResponse = WorkspaceListByUser(c, commonRequest)
-	case "projectlistbyworkspaceid":
-		commonResponse = ProjectListByWorkspaceId(c, commonRequest)
+	case "authgetuserinfo":
+		commonResponse = AuthGetUserInfo(c, commonRequest)
+	case "authgetuservalidate":
+		commonResponse = AuthGetUserValidate(c, commonRequest)
+
+	case "getworkspacebyuserid":
+		commonResponse = GetWorkspaceByUserId(c, commonRequest)
 	default:
 		commonResponse = webconsole.CommonResponseStatusNotFound("NO MATCH targetController")
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
