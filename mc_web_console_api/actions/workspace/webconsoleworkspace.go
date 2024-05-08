@@ -1,47 +1,29 @@
 package workspace
 
 import (
+	"mc_web_console_api/actions/auth"
 	"mc_web_console_api/fwmodels/webconsole"
-	mcmodels "mc_web_console_common_models"
+	"strings"
 
 	"github.com/gobuffalo/buffalo"
 )
 
-func WorkspaceDefaultListByUser(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
-	// headerAccessToken := c.Request().Header.Get("Authorization")
-	// accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-	// jwtdecoded := auth.McIamJwtDecode(accessToken)
-	// fmt.Println("Request User is", jwtdecoded["name"])
-	workspaceDefaultListByUserRespose := &mcmodels.WorkspaceListByUserRespose{}
-	workspaceDefaultListByUserRespose.Workspaces = append(workspaceDefaultListByUserRespose.Workspaces, mcmodels.Workspace{
-		Id:          "defaultWorkspace",
-		Name:        "defaultWorkspace",
-		Description: "defaultWorkspace",
-	})
+func WebconsoleGetWorkspaceByUserId(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
+	headerAccessToken := c.Request().Header.Get("Authorization")
+	accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
+	jwtDecoded := auth.McIamJwtDecode(accessToken)
+	userId, _ := jwtDecoded["preferred_username"].(string)
 
-	return webconsole.CommonResponseStatusOK(workspaceDefaultListByUserRespose), nil
-}
+	pathParams := make(map[string]string)
+	pathParams["userid"] = userId
 
-func ProjectListDefaultByWorkspaceId(c buffalo.Context, commonReq *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
-	// headerAccessToken := c.Request().Header.Get("Authorization")
-	// accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-	// jwtdecoded := auth.McIamJwtDecode(accessToken)
-	// fmt.Println("Request User is", jwtdecoded["name"])
-
-	// if err := mapstructure.Decode(commonReq.Request, projectListByWorkspaceRequest); err != nil {
-	// 	return webconsole.CommonResponseStatusBadRequest(nil), err
-	// }
-
-	workspaceProject := &mcmodels.WorkspaceProjectForMapipngResponse{
-		Id:          "defaultWorkspace",
-		Name:        "defaultWorkspace",
-		Description: "defaultWorkspace",
+	defualtWorkspace := map[string]string{
+		"workspaceId":   "00000000-0000-0000-0000-000000000000",
+		"workspaceName": "DefaultWorkspace",
+		"description":   "DefaultWorkspace",
+		"projectList":   "",
 	}
-	workspaceProject.Projects = append(workspaceProject.Projects, mcmodels.Project{
-		Id:          "defaultProject",
-		Name:        "defaultProject",
-		Description: "defaultProject",
-	})
+	commonResponse := webconsole.CommonResponseStatusOK(defualtWorkspace)
 
-	return webconsole.CommonResponseStatusOK(workspaceProject), nil
+	return commonResponse
 }

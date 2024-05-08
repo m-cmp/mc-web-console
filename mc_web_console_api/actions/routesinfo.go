@@ -52,10 +52,8 @@ func PostRouteController(c buffalo.Context) error {
 	case "authgetuservalidate":
 		commonResponse = AuthGetUserValidate(c, commonRequest)
 
-	case "workspacelistbyuser":
-		commonResponse = WorkspaceListByUser(c, commonRequest)
-	case "projectlistbyworkspaceid":
-		commonResponse = ProjectListByWorkspaceId(c, commonRequest)
+	case "getworkspacebyuserid":
+		commonResponse = GetWorkspaceByUserId(c, commonRequest)
 	default:
 		commonResponse = webconsole.CommonResponseStatusNotFound("NO MATCH targetController")
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))

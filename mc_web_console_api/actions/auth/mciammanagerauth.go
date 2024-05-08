@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
 	"mc_web_console_api/util"
@@ -22,21 +23,25 @@ var (
 	suspendAccesstokenEndPoint = "/api/auth/logout"
 )
 
-func mcIamJwtDecode(jwtToken string) jwt.MapClaims {
+func McIamJwtDecode(jwtToken string) jwt.MapClaims {
 	claims := jwt.MapClaims{}
-	jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
+	jwt.NewParser().ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
 	return claims
 }
 
 func AuthMcIamLogin(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
-	commonResponse, _ := webconsole.CommonCallerWithoutToken(http.MethodPost, util.MCIAMMANAGER, getAccesstokenEndPoint, commonRequest)
+	commonResponse, err := webconsole.CommonCallerWithoutToken(http.MethodPost, util.MCIAMMANAGER, getAccesstokenEndPoint, commonRequest)
+	if err != nil {
+		log.Println(err)
+		return commonResponse
+	}
 
 	accessTokenResponse := &mcmodels.AccessTokenResponse{}
 	if err := mapstructure.Decode(commonResponse.ResponseData, accessTokenResponse); err != nil {
 		return webconsole.CommonResponseStatusInternalServerError(err.Error())
 	}
 
-	jwtDecodd := mcIamJwtDecode(accessTokenResponse.AccessToken)
+	jwtDecodd := McIamJwtDecode(accessTokenResponse.AccessToken)
 	targetSubject, _ := uuid.FromString(jwtDecodd["sub"].(string))
 	usersess := &models.Usersession{
 		ID:               targetSubject,
@@ -64,7 +69,7 @@ func AuthMcIamLogin(c buffalo.Context, commonRequest *webconsole.CommonRequest) 
 func AuthMcIamLogout(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
 	headerAccessToken := c.Request().Header.Get("Authorization")
 	accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-	jwtDecoded := mcIamJwtDecode(accessToken)
+	jwtDecoded := McIamJwtDecode(accessToken)
 	targetSubject, _ := uuid.FromString(jwtDecoded["sub"].(string))
 
 	usersess := &models.Usersession{}
