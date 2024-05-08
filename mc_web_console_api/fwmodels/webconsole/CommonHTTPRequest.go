@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mc_web_console_api/fwmodels"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -23,12 +22,17 @@ type CommonRequest struct {
 
 // 모든 응답을 CommonResponse로 한다.
 type CommonResponse struct {
-	ResponseData interface{}        `json:"responseData"`
-	Status       fwmodels.WebStatus `json:"status"`
+	ResponseData interface{} `json:"responseData"`
+	Status       WebStatus   `json:"status"`
+}
+
+type WebStatus struct {
+	StatusCode int    `json:"code"`
+	Message    string `json:"message"`
 }
 
 func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
-	webStatus := fwmodels.WebStatus{
+	webStatus := WebStatus{
 		StatusCode: http.StatusOK,
 		Message:    http.StatusText(http.StatusOK),
 	}
@@ -39,7 +43,7 @@ func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
 }
 
 func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
-	webStatus := fwmodels.WebStatus{
+	webStatus := WebStatus{
 		StatusCode: http.StatusNotFound,
 		Message:    http.StatusText(http.StatusNotFound),
 	}
@@ -50,7 +54,7 @@ func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
 }
 
 func CommonResponseStatusStatusUnauthorized(responseData interface{}) *CommonResponse {
-	webStatus := fwmodels.WebStatus{
+	webStatus := WebStatus{
 		StatusCode: http.StatusUnauthorized,
 		Message:    http.StatusText(http.StatusUnauthorized),
 	}
@@ -61,7 +65,7 @@ func CommonResponseStatusStatusUnauthorized(responseData interface{}) *CommonRes
 }
 
 func CommonResponseStatusBadRequest(responseData interface{}) *CommonResponse {
-	webStatus := fwmodels.WebStatus{
+	webStatus := WebStatus{
 		StatusCode: http.StatusBadRequest,
 		Message:    http.StatusText(http.StatusBadRequest),
 	}
@@ -72,7 +76,7 @@ func CommonResponseStatusBadRequest(responseData interface{}) *CommonResponse {
 }
 
 func CommonResponseStatusInternalServerError(responseData interface{}) *CommonResponse {
-	webStatus := fwmodels.WebStatus{
+	webStatus := WebStatus{
 		StatusCode: http.StatusInternalServerError,
 		Message:    http.StatusText(http.StatusInternalServerError),
 	}
@@ -149,6 +153,7 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error CommonHttp request:", err)
+		return CommonResponseStatusInternalServerError(err), err
 	}
 	defer resp.Body.Close()
 
