@@ -3,28 +3,25 @@
 export function getCurrentWorkspace() {
     return webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspace()
 }
-export function setCurrentWorkspace(workspace) {
-    webconsolejs["common/storage/sessionstorage"].setSessionCurrentWorkspace(workspace)
-}
-export function getCurrentWorkspaceList() {
-    return JSON.parse(sessionStorage.getItem("currentWorkspaceList"))
-}
-export function setCurrentWorkspaceList(workspaceList) {
-    sessionStorage.setItem('currentWorkspaceList',JSON.stringify(workspaceList))
+export function setCurrentWorkspace(v) {
+    webconsolejs["common/storage/sessionstorage"].setSessionCurrentWorkspace(v)
 }
 
-
-
-// project
 export function getCurrentProject() {
     return webconsolejs["common/storage/sessionstorage"].getSessionCurrentProject()
 }
-export function setCurrentProject(project) {
-    webconsolejs["common/storage/sessionstorage"].setSessionCurrentProject(project)
+export function setCurrentProject(v) {
+    webconsolejs["common/storage/sessionstorage"].setSessionCurrentProject(v)
 }
-export function getCurrentProjectList() {
-    return JSON.parse(sessionStorage.getItem("currentProjectList"))
+
+// workspace project List
+export function getCurrentWorkspaceProjectList() {
+    return webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceProjectList()
 }
-export function setCurrentProjectList(projectList) {
-    webconsolejs["common/storage/sessionstorage"].setSessionCurrentProjectList(projectList)
+export function setCurrentWorkspaceProjectList(v) {
+    webconsolejs["common/storage/sessionstorage"].setSessionWorkspaceProjectList(v)
+}
+
+export function clearCurrentWorkspaceProject() {
+    webconsolejs["common/storage/sessionstorage"].clearSessionCurrentWorkspaceProject()
 }
