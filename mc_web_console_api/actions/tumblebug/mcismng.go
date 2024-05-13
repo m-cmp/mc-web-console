@@ -1,19 +1,33 @@
 package tumblebug
 
-//tbmcis "mc_web_console_api/fwmodels/tumblebug/mcis"
-//fwmodels "mc_web_console_api/fwmodels"
+import (
+	"mc_web_console_api/fwmodels/webconsole"
+	"mc_web_console_api/util"
+	"net/http"
 
-// controller
+	"github.com/gobuffalo/buffalo"
+)
 
-// mcis 목록 조회
-// func TbMcisList(c buffalo.Context, request *webconsole.CommonRequest) *webconsole.CommonResponse {
-// 	//func TbMcisList(request *webtool.CommonRequest) ([]tbmcis.TbMcisInfo, fwmodels.WebStatus) {
-// 	request.TargetFramework = util.TUMBLEBUG // handler에게 자유를 주기 위해 controller에서 설정함.
-// 	mcisList, respStatus := tbhandler.McisList(request)
+func GetMCISList(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
+	endPoint := "/ns/{nsId}/mcis"
+	commonResponse, _ := webconsole.CommonCaller(http.MethodGet, util.TUMBLEBUG, endPoint, commonRequest, webconsole.TBAuthentication())
+	return commonResponse
+}
 
-// 	commonResponse := &webconsole.CommonResponse{}
-// 	commonResponse.ResponseData = mcisList
-// 	commonResponse.Status = respStatus
-// 	//return mcisList, respStatus
-// 	return commonResponse
-// }
+func GetMCIS(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
+	endPoint := "/ns/{nsId}/mcis/{mcisId}"
+	commonResponse, _ := webconsole.CommonCaller(http.MethodGet, util.TUMBLEBUG, endPoint, commonRequest, webconsole.TBAuthentication())
+	return commonResponse
+}
+
+func DelMCIS(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
+	endPoint := "/ns/{nsId}/mcis/{mcisId}"
+	commonResponse, _ := webconsole.CommonCaller(http.MethodDelete, util.TUMBLEBUG, endPoint, commonRequest, webconsole.TBAuthentication())
+	return commonResponse
+}
+
+func CreateMCIS(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
+	endPoint := "/ns/{nsId}/mcis"
+	commonResponse, _ := webconsole.CommonCaller(http.MethodPost, util.TUMBLEBUG, endPoint, commonRequest, webconsole.TBAuthentication())
+	return commonResponse
+}

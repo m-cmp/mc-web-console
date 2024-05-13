@@ -1,94 +1,41 @@
 package actions
 
 import (
-	"log"
+	"mc_web_console_api/actions/auth"
+	webconsole "mc_web_console_api/fwmodels/webconsole"
+	util "mc_web_console_api/util"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/golang-jwt/jwt/v4"
-
-	"mc_web_console_api/actions/auth"
-	"mc_web_console_api/fwmodels/webconsole"
-	util "mc_web_console_api/util"
 )
 
-func AuthLogin(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
-	commonResponse := &webconsole.CommonResponse{}
-	var err error
+func AuthLogin(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
 	if util.MCIAM_USE {
-		commonResponse, err = auth.AuthMcIamLogin(c, commonReq)
-		if err != nil {
-			log.Println(err.Error())
-			return commonResponse
-		}
+		commonResponse := auth.AuthMcIamLogin(c, commonRequest)
 		return commonResponse
 	}
 	return webconsole.CommonResponseStatusInternalServerError(nil)
 }
 
-func AuthLogout(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
-	commonResponse := &webconsole.CommonResponse{}
-	var err error
+func AuthLogout(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
 	if util.MCIAM_USE {
-		commonResponse, err = auth.AuthMcIamLogout(c, commonReq)
-		if err != nil {
-			log.Println(err.Error())
-			return commonResponse
-		}
+		commonResponse := auth.AuthMcIamLogout(c, commonRequest)
 		return commonResponse
 	}
 	return webconsole.CommonResponseStatusInternalServerError(nil)
 }
 
-func AuthGetUserInfo(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
-	commonResponse := &webconsole.CommonResponse{}
-	var err error
+func AuthGetUserInfo(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
 	if util.MCIAM_USE {
-		// commonResponse, err = xxx.XXXXXXXXX(c, commonReq)
-		if err != nil {
-			log.Println(err.Error())
-			return commonResponse
-		}
+		commonResponse := auth.AuthMcIamGetUserInfo(c, commonRequest)
 		return commonResponse
-	} else {
-		commonResponse.ResponseData = "NO AuthGetUserInfo"
-		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
 	}
+	return webconsole.CommonResponseStatusInternalServerError(nil)
 }
 
-func AuthGetUserValidate(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
-	commonResponse := &webconsole.CommonResponse{}
-	var err error
+func AuthGetUserValidate(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
 	if util.MCIAM_USE {
-		// commonResponse, err = xxx.XXXXXXXXX(c, commonReq)
-		if err != nil {
-			log.Println(err.Error())
-			return commonResponse
-		}
+		commonResponse := auth.AuthMcIamGetUserValidate(c, commonRequest)
 		return commonResponse
-	} else {
-		commonResponse.ResponseData = "NO AuthGetUserValidate"
-		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
 	}
-}
-
-func AuthMiddleware(c buffalo.Context, commonReq *webconsole.CommonRequest) *webconsole.CommonResponse {
-	commonResponse := &webconsole.CommonResponse{}
-	var err error
-	if util.MCIAM_USE {
-		commonResponse, err = auth.AuthMcIamMiddleware(c)
-		if err != nil {
-			log.Println(err.Error())
-			return commonResponse
-		}
-		return commonResponse
-	} else {
-		commonResponse.ResponseData = "NO AuthMiddleware"
-		return webconsole.CommonResponseStatusInternalServerError(commonResponse)
-	}
-}
-
-func JwtDecode(jwtToken string) jwt.MapClaims {
-	claims := jwt.MapClaims{}
-	jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) { return "", nil })
-	return claims
+	return webconsole.CommonResponseStatusInternalServerError(nil)
 }

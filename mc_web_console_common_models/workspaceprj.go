@@ -1,10 +1,10 @@
 package mc_web_console_common_models
 
-type WorkspaceMciamListByUserRequest struct {
+type WorkspaceListByUserRequest struct {
 	UserId string `json:userId`
 }
 
-type WorkspaceMciamListByUserRespose struct {
+type WorkspaceListByUserRespose struct {
 	Workspaces []Workspace `json:workspaceList`
 }
 type ProjectListByWorkspaceRequest struct {
@@ -18,7 +18,7 @@ type Workspace struct {
 	Description string "json:description"
 }
 
-type WorkspaceProjectForMappingResponse struct {
+type WorkspaceProjectForMapipngResponse struct {
 	Id          string    "json:id"
 	Name        string    "json:name"
 	Description string    "json:description"

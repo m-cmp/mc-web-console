@@ -37,7 +37,7 @@ FRONTSERVER_HEALTH=false
 
 echo -en "\n## Deploy API server Development Mode\n";
 cd $rootDir/mc_web_console_api/
-buffalo dev > $rootDir/devlog/mc_web_console_api.log 2>&1 &
+buffalo dev | tee $rootDir/devlog/mc_web_console_api.log &
 
 spinner="/|\\-"
 count=0
@@ -55,7 +55,7 @@ echo $http_status
 
 echo -en "\n## Deploy Front server Development Mode\n";
 cd $rootDir/mc_web_console_front/
-buffalo dev > $rootDir/devlog/mc_web_console_front.log 2>&1 &
+buffalo dev | tee $rootDir/devlog/mc_web_console_front.log &
 
 while !($FRONTSERVER_HEALTH); do
     printf "\r%s" "${spinner:$count:1}"

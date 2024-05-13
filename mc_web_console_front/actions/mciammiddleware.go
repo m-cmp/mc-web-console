@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -9,9 +8,6 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/mitchellh/mapstructure"
-
-	mcmodels "mc_web_console_common_models"
 )
 
 func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
@@ -41,26 +37,26 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 	}
 }
 
-func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, string, error) {
-	userinfo := &mcmodels.UserInfo{}
+// func getUserInfo(c buffalo.Context) (mcmodels.UserInfo, string, error) {
+// 	userinfo := &mcmodels.UserInfo{}
 
-	status, commonRes, err := CommonAPIGet(APIUserInfoPath, c)
-	if err != nil {
-		msg := status.Status + " Error Get Userinfo from MC-IAM-MANAGER"
-		return *userinfo, msg, err
-	}
-	if status.StatusCode != 200 {
-		msg := status.Status + " Error Get Userinfo from MC-IAM-MANAGER"
-		return *userinfo, msg, errors.New(msg)
-	}
+// 	status, commonRes, err := CommonAPIGet(APIUserInfoPath, c)
+// 	if err != nil {
+// 		msg := status.Status + " Error Get Userinfo from MC-IAM-MANAGER"
+// 		return *userinfo, msg, err
+// 	}
+// 	if status.StatusCode != 200 {
+// 		msg := status.Status + " Error Get Userinfo from MC-IAM-MANAGER"
+// 		return *userinfo, msg, errors.New(msg)
+// 	}
 
-	if decodeerr := mapstructure.Decode(commonRes.ResponseData, userinfo); decodeerr != nil {
-		msg := "Authentication Info Error"
-		return *userinfo, msg, decodeerr
-	}
+// 	if decodeerr := mapstructure.Decode(commonRes.ResponseData, userinfo); decodeerr != nil {
+// 		msg := "Authentication Info Error"
+// 		return *userinfo, msg, decodeerr
+// 	}
 
-	return *userinfo, "", nil
-}
+// 	return *userinfo, "", nil
+// }
 
 func jwtDecode(jwtToken string) (jwt.MapClaims, error) {
 	claims := jwt.MapClaims{}
