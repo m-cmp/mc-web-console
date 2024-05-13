@@ -1,0 +1,24 @@
+<!-- Page header -->
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <!-- Page pre-title -->
+        <div class="page-pretitle">
+          <%= if (depth) { %>
+              <%= depth[1] %>
+          <% } else { %>
+              NO depth2
+          <% } %>
+          </div>
+          <h2 class="page-title">
+          <%= if (depth) { %>
+              <%= depth[2] %>
+          <% } else { %>
+              NO depth3
+          <% } %>
+          </h2>
+      </div>
+    </div>
+  </div>
+</div>
