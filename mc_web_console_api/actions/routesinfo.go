@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	demo "mc_web_console_api/actions/demo"
 	tumblebug "mc_web_console_api/actions/tumblebug"
 	webconsole "mc_web_console_api/fwmodels/webconsole"
 	"mc_web_console_api/models"
@@ -54,6 +55,12 @@ func PostRouteController(c buffalo.Context) error {
 
 	case "getworkspacebyuserid":
 		commonResponse = GetWorkspaceByUserId(c, commonRequest)
+
+	case "demogetuserinfo":
+		commonResponse = demo.DemoGetuserinfo(c, commonRequest)
+	case "demogetusercred":
+		commonResponse = demo.DemoGetuserCred(c, commonRequest)
+
 	default:
 		commonResponse = webconsole.CommonResponseStatusNotFound("NO MATCH targetController")
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
