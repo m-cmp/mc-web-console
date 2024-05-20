@@ -9,3 +9,11 @@
 
 // tabulator Custom CSS
 @import  "./tabulator_for_tabler.scss";
+
+
+.section {
+    display: none;
+}
+.section.active {
+    display: block;
+}

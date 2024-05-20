@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	"log"
 	"mc_web_console_front/templates"
 	"net/http"
 	"strings"
@@ -16,9 +16,9 @@ func PageController(c buffalo.Context) error {
 	var renderHtmlPath string
 	if depth1 != "" && depth2 != "" && depth3 != "" {
 		c.Set("depth", [...]string{depth1, depth2, depth3})
-		renderHtmlPath = "/pages" + strings.TrimPrefix(c.Request().URL.RequestURI(), "/webconsole")
+		renderHtmlPath = "/pages" + strings.TrimPrefix(c.Request().URL.Path, "/webconsole")
 		renderHtmlPath = strings.TrimSuffix(renderHtmlPath, "/") + ".html"
-		fmt.Println(renderHtmlPath)
+		log.Println("renderHtmlPath : ", renderHtmlPath)
 		_, err := templates.FS().Open(strings.TrimPrefix(renderHtmlPath, "/"))
 		if err != nil {
 			return c.Render(http.StatusNotFound, defaultRender.HTML("error-404.html"))
