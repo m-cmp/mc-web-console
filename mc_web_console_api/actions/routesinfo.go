@@ -43,6 +43,20 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = tumblebug.DelMCIS(c, commonRequest)
 	case "createmcis":
 		commonResponse = tumblebug.CreateMCIS(c, commonRequest)
+	case "createdynamicmcis":
+		commonResponse = tumblebug.CreateDynamicMCIS(c, commonRequest)
+	case "getloaddefaultresource":
+		commonResponse = tumblebug.GetLoadDefaultResouce(c, commonRequest)
+	case "deldefaultresources":
+		commonResponse = tumblebug.DelDefaultResouce(c, commonRequest)
+	case "mcisrecommendvm":
+		commonResponse = tumblebug.MCISRecommendVm(c, commonRequest)
+	case "mcisdynamiccheckrequest":
+		commonResponse = tumblebug.MCISDynamicCheckRequest(c, commonRequest)
+	case "sendcommandtomcis":
+		commonResponse = tumblebug.SendCommandtoMCIS(c, commonRequest)
+	case "controllifecycle":
+		commonResponse = tumblebug.ControlLifecycle(c, commonRequest)
 
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
