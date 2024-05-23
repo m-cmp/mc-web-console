@@ -1,16 +1,45 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const path = window.location.pathname.split('/')
-    const depth2 = 'sidebar_'+ path[3]
-    const depth3 = 'sidebar_'+path[3]+'_'+path[4]
-    document.getElementsByName(depth2).forEach(i => i.classList.add('show', 'active'));
-    document.getElementById(depth3).classList.add('active');
-});
+console.log("mcisserverprint.js");
 
-// Modal
-//////////////////////////////////////////////////////////////////////////////////////////
+
+function mcisLifeCycle(){
+
+}
+
+
+// message를 표현할 alert 창
+function commonAlert(alertMessage) {
+    console.log(alertMessage);
+    // $('#alertText').text(alertMessage);
+    $('#alertText').html(alertMessage);
+    $("#alertArea").modal();
+}
+// alert창 닫기
+function commonAlertClose() {
+    $("#alertArea").modal("hide");
+}
+
+
+// message를 표현할 alert 창 : 생성 결과를 표시하는 Alert로 commonAlert와 동일하나 닫힐 때 event처리를 할 수 있게
+// 사용할 화면에서 $('#alertResultArea').on('hidden.bs.modal', function () {  // 수행할 일 또는 함수 호출  // })
+function commonResultAlert(alertMessage) {
+    console.log(alertMessage);
+    // $('#alertText').text(alertMessage);
+    $('#alertResultText').html(alertMessage);
+    $("#alertResultArea").modal();
+}
+// alert창 닫기
+function commonResultAlertClose() {
+    $("#alertResultArea").modal("hide");
+}
+
+// 에러 메세지 alert 통일 용
+function commonErrorAlert(statusCode, message) {
+    commonAlert("Error(" + statusCode + ") : " + message);
+    
+}
 
 // confirm modal창 보이기 modal창이 열릴 때 해당 창의 text 지정, close될 때 action 지정
-function commonConfirmOpen(targetAction, caller) {
+export function commonConfirmOpen(targetAction, caller) {
     console.log("commonConfirmOpen : " + targetAction)
 
     //  [ id , 문구]
@@ -133,6 +162,22 @@ function commonConfirmOpen(targetAction, caller) {
             // data-target="#Add_Region_Register"
             // TODO : confirm 으로 물어본 뒤 OK버튼 클릭 시 targetDIV 지정하도록
         }
+        $('#confirmArea').modal();
+    } catch (e) {
+        console.log(e);
+        alert(e);
+    }
+}
+
+// confirm modal창 보이기 modal창이 열릴 때 해당 창의 text 지정, close될 때 action 지정, text 내용 전송. caller : 구분자
+function commonConfirmMsgOpen(targetAction, message, caller) {
+    console.log("commonConfirmMsgOpen : " + targetAction)
+
+    try {
+        $('#confirmText').html(message);
+        $('#confirmOkAction').val(targetAction);
+        $('#confirmCaller').val(caller);
+
         $('#confirmArea').modal();
     } catch (e) {
         console.log(e);
@@ -367,190 +412,4 @@ function commonConfirmClose() {
     $('#confirmOkAction').val('');
     // $('#modalArea').hide(); 
     $("#confirmArea").modal("hide");
-}
-
-function commonPromptEnter(keyEvent) {
-    if (keyEvent.keyCode == 13) {
-        commonPromptOk();
-    }
-}
-
-function commonPromptOk() {
-    var targetAction = $('#promptOkAction').val();
-    var targetObjId = $('#promptTargetObjId').val();
-    var targetValue = $('#promptText').val();
-
-    console.log("promptOkAction : " + targetAction)
-    if (targetAction == 'FilterName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'FilterCloudProvider') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Cloud Provider", targetValue)
-        }
-    } else if (targetAction == 'FilterDriver') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Driver", targetValue)
-        }
-    } else if (targetAction == 'FilterCredential') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Credential", targetValue)
-        }
-    } else if (targetAction == 'RsFltVPCName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonSecurityGroupList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltCIDRBlock') {// Name이라는 Column을 Filtering
-        var filterKey = "cidrBlock"
-        if (targetValue) {
-            getCommonSecurityGroupList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSecurityGroupName') {// Name이라는 Column을 Filtering
-        var filterKey = "cspSecurityGroupName"
-        if (targetValue) {
-            getCommonSecurityGroupList("securitygroupmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltConnectionName') {// Name이라는 Column을 Filtering
-        var filterKey = "connectionName"
-        if (targetValue) {
-            getCommonSecurityGroupList("securitygroupmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSshName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'RsFltSshConnName') {// Name이라는 Column을 Filtering
-        var filterKey = "connectionName"
-        if (targetValue) {
-            getCommonSshKeyList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSshKeyName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonSshKeyList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvImgId') {// Name이라는 Column을 Filtering
-        var filterKey = "cspImageId"
-        if (targetValue) {
-            getCommonVirtualMachineImageList("virtualmachineimagemng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvImgName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonVirtualMachineImageList("virtualmachineimagemng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvSpecName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonVirtualMachineSpecList("virtualmachinespecmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvSpecConnName') {// Name이라는 Column을 Filtering
-        var filterKey = "connectionName"
-        if (targetValue) {
-            getCommonVirtualMachineSpecList("virtualmachinespecmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvCspSpecName') {// Name이라는 Column을 Filtering
-        var filterKey = "cspSpecName"
-        if (targetValue) {
-            getCommonVirtualMachineSpecList("virtualmachinespecmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'NSFltName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'NSFltId') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "ID", targetValue)
-        }
-    } else if (targetAction == 'NSFltDescription') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "description", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyMeasurement') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Measurement", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyTargetType') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Target Type", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyEventType') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Alert Event Type", targetValue)
-        }
-    } else if (targetAction == 'FilterMcisName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            // keyword표시
-            searchKeyword(targetValue, 'mcislistfilter')
-        }
-    } else if (targetAction == 'FilterMcisStatus') {// Status이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Status", targetValue)
-        }
-    } else if (targetAction == 'FilterMcisDesc') {// Description이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Description", targetValue)
-        }
-    } else if (targetAction == 'OprMngMcksStatus') {// Description이라는 Column을 Filtering
-        console.log("OprMngMcksStatus");
-        if (targetValue) {
-            filterTable(targetObjId, "Status", targetValue)
-        }
-    } else if (targetAction == 'OprMngMcksName') {// Description이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'OprMngMcksNetworkCni') {// Description이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "NetworkCni", targetValue)
-        }
-    } else if (targetAction == 'RemoteCommandMcis') {
-        if (targetValue) {
-            remoteCommandMcis(targetValue);
-            //postRemoteCommandMcis(targetValue);
-        }
-    } else if (targetAction == 'RemoteCommandVmOfMcis') {
-        if (targetValue) {
-            remoteCommandVmMcis(targetValue);
-        }
-    } else if (targetAction == 'RegisterRecommendSpec') {
-        createRecommendSpec(targetValue);
-    } else if (targetAction == 'AddNewMcisDynamic') {
-        $("#mcis_name").val(targetValue)
-        createMcisDynamic()
-    } else if (targetAction == 'CreateSnapshot') {
-        createSnapshot(targetValue);
-    }
-
-
-    commonPromptClose();
-}
-
-function commonPromptClose() {
-    $('#promptQuestion').text('');
-    $('#promptText').text('');
-    $('#promptOkAction').val('');
-    $("#promptArea").modal("hide");
-}
-
-// alert창 닫기
-function commonAlertClose() {
-    $("#alertArea").modal("hide");
-}
-
-// alert창 닫기
-function commonResultAlertClose() {
-    $("#alertResultArea").modal("hide");
-}
-
-function guideAreaHide() {
-    console.log("hide brfore")
-    $("#guideArea").modal("hide");
-    console.log("hide after")
 }
