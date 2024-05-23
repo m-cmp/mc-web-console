@@ -1,12 +1,110 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const path = window.location.pathname.split('/')
-    const depth2 = 'sidebar_'+ path[3]
-    const depth3 = 'sidebar_'+path[3]+'_'+path[4]
-    document.getElementsByName(depth2).forEach(i => i.classList.add('show', 'active'));
-    document.getElementById(depth3).classList.add('active');
-});
+<!-- TODO :  다른 탭의 Partial을 참조해야함-->
 
-// Modal
+<div class="card">
+  <div class="card-header">
+    <div class="col-auto col-md-8">
+      <h3 class="card-title">MCIS / server</h3>
+    </div>
+    <div class="col-auto col-md-6 dropdown-area">
+      <div class="dropdown">
+        <a
+          href="javascript:void(0);"
+          class="btn dropdown-toggle"
+          data-bs-toggle="dropdown"
+          >Filter</a
+        >
+        <div class="dropdown-menu bg-dark text-white">
+          <a class="dropdown-item" href="javascript:void(0);">Name</a>
+          <a class="dropdown-item" href="javascript:void(0);">Status</a>
+          <a class="dropdown-item" href="javascript:void(0);">Description</a>
+          <a class="dropdown-item" href="javascript:void(0);">Server name</a>
+        </div>
+        <a
+          href="javascript:void(0);"
+          class="btn dropdown-toggle"
+          data-bs-toggle="dropdown"
+          >Sort</a
+        >
+        <div class="dropdown-menu bg-dark text-white">
+          <a class="dropdown-item" href="javascript:void(0);">Name</a>
+          <a class="dropdown-item" href="javascript:void(0);">Status</a>
+        </div>
+        <a
+          href="javascript:void(0);"
+          class="btn dropdown-toggle"
+          data-bs-toggle="dropdown"
+          >Action</a
+        >
+        <div class="dropdown-menu bg-dark text-white">
+          <span class="dropdown-header text-info">LifeCycle</span>
+          <a
+            class="dropdown-item"
+            href="javascript:void(0);"
+            data-bs-toggle="modal"
+            data-bs-target="#Life_Reboot"
+            onClick="commonConfirmOpen('McisLifeCycleReboot')"
+          >
+            Reboot
+          </a>
+          <a
+            class="dropdown-item"
+            href="javascript:void(0);"
+            data-bs-toggle="modal"
+            data-bs-target="#Life_Suspend"
+            onClick="commonConfirmOpen('McisLifeCycleSuspend')"
+          >
+            Suspend
+          </a>
+          <a
+            class="dropdown-item"
+            href="javascript:void(0);"
+            data-bs-toggle="modal"
+            data-bs-target="#Life_Resume"
+            onClick="commonConfirmOpen('McisLifeCycleResume')"
+          >
+            Resume
+          </a>
+          <a
+            class="dropdown-item"
+            href="javascript:void(0);"
+            data-bs-toggle="modal"
+            data-bs-target="#Life_Terminate"
+            onClick="commonConfirmOpen('McisLifeCycleTerminate')"
+          >
+            Terminate
+          </a>
+          <div class="dropdown-divider bg-secondary"></div>
+          <span class="dropdown-header text-info">Manage</span>
+          <a
+            class="dropdown-item"
+            href="javascript:void(0);"
+            data-bs-toggle="modal"
+            data-bs-target="#n_Manage"
+            onClick="commonConfirmOpen('MoveToMcisManagementFromDashboard')"
+          >
+            Manage
+          </a>
+          <a
+            class="dropdown-item"
+            href="javascript:void(0);"
+            data-bs-toggle="modal"
+            data-bs-target="#n_New"
+            onClick="commonConfirmOpen('AddNewMcis')"
+          >
+            New
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= partial("partials/operation/dashboard/mcisrunning.html") %>
+  </div>
+</div>
+
+
+<script>
+
 //////////////////////////////////////////////////////////////////////////////////////////
 
 // confirm modal창 보이기 modal창이 열릴 때 해당 창의 text 지정, close될 때 action 지정
@@ -123,17 +221,18 @@ function commonConfirmOpen(targetAction, caller) {
     try {
         // $('#modalText').text(targetText);// text아니면 html로 해볼까? 태그있는 문구가 있어서
         //$('#modalText').text(confirmModalTextMap.get(targetAction));
-        $('#confirmText').html(confirmModalTextMap.get(targetAction));
-        $('#confirmOkAction').val(targetAction);
-        console.log("caller : ", caller);
-        $('#confirmCaller').val(caller);
+        //document.getElementById('confirmText').html(confirmModalTextMap.get(targetAction));
+        //$('#confirmText').html(confirmModalTextMap.get(targetAction));
+        // $('#confirmOkAction').val(targetAction);
+        // console.log("caller : ", caller);
+        // $('#confirmCaller').val(caller);
 
-        if (targetAction == "Region") {
-            // button에 target 지정
-            // data-target="#Add_Region_Register"
-            // TODO : confirm 으로 물어본 뒤 OK버튼 클릭 시 targetDIV 지정하도록
-        }
-        $('#confirmArea').modal();
+        // if (targetAction == "Region") {
+        //     // button에 target 지정
+        //     // data-target="#Add_Region_Register"
+        //     // TODO : confirm 으로 물어본 뒤 OK버튼 클릭 시 targetDIV 지정하도록
+        // }
+        // $('#confirmArea').modal();
     } catch (e) {
         console.log(e);
         alert(e);
@@ -533,6 +632,7 @@ function commonPromptOk() {
 }
 
 function commonPromptClose() {
+  document.getElementById('promptQuestion').text('');
     $('#promptQuestion').text('');
     $('#promptText').text('');
     $('#promptOkAction').val('');
@@ -554,3 +654,4 @@ function guideAreaHide() {
     $("#guideArea").modal("hide");
     console.log("hide after")
 }
+</script>
