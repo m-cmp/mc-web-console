@@ -173,7 +173,7 @@ function statusFormatter(cell) {
     cell.getData().status +
     '" src="/assets/images/common/icon_' +
     mcisDispStatus +
-    '.png" class="icon" alt="">';
+    '.svg" class="icon" alt="">';
 
   return mcisStatusCell;
 }
