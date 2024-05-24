@@ -114,17 +114,16 @@ export function calculateConnectionCount(vmList) {
 
 // console.log("calculateConnectionCount")
 // console.log(vmList)
-console.log("asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd", vmList)
 var vmCloudConnectionCountMap = new Map();
 
 for (var vmIndex in vmList) {
 	var aVm = vmList[vmIndex];
-    console.log("qwe", aVm)
-	var location = aVm.location;
-    console.log("qwer", location)
-	if (!isEmpty(location)) {
-	var cloudType = location.cloudType;
+    var location = aVm.connectionConfig;
+    if (!isEmpty(location)) {
+		
+        var cloudType = location.providerName;
 	if (vmCloudConnectionCountMap.has(cloudType)) {
+        
 		vmCloudConnectionCountMap.set(
 		cloudType,
 		vmCloudConnectionCountMap.get(cloudType) + 1
@@ -134,7 +133,7 @@ for (var vmIndex in vmList) {
 	}
 	}
 }
-console.log("vmCloudConnectionCountMapvmCloudConnectionCountMapvmCloudConnectionCountMap",vmCloudConnectionCountMap)
+
 return vmCloudConnectionCountMap;
 }
 
