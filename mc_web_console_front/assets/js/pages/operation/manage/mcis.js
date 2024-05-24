@@ -1,4 +1,5 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import { getSessionCurrentProject } from "../../../common/storage/sessionstorage";
 
 var table;
 var checked_array = [];
@@ -99,6 +100,7 @@ function initTable() {
 		field: "provider",
 		formatter: providerFormatter,
 		vertAlign: "middle",
+		hozAlign: "center",
 		headerSort: false,
 	  },
 	  {
@@ -178,7 +180,6 @@ function statusFormatter(cell) {
 
 // provider를 table에서 표시하기 위해 감싸기
 function providerFormatter(cell) {
-	console.log("providerFormatterproviderFormatterproviderFormatterproviderFormatter")
 	console.log("cell.getData().vm", cell.getData().vm)
 	var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
 	  cell.getData().vm
@@ -186,7 +187,7 @@ function providerFormatter(cell) {
 	var mcisProviderCell = "";
 	vmCloudConnectionMap.forEach((value, key) => {
 	  mcisProviderCell +=
-		'<img class="provider_icon" src="/assets/images/common/img_logo_' +
+		'<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
 		key +
 		'.png" alt="' +
 		key +
@@ -292,6 +293,7 @@ document.addEventListener("DOMContentLoaded", life_cycle);
 //}
 
 async function life_cycle() {
+	console.log("mmmmmmmmmm",getSessionCurrentProject.namespace)
   const data = {
     pathParams: {
       nsId: "testns01",
