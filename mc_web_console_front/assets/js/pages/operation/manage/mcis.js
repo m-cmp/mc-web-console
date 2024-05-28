@@ -1,6 +1,13 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import jQuery from "jquery"
 
+
+////
+// 모달 콜백 예제
+export function commoncallbac(val) {
+  alert(val);
+}
+
+////
 
 var table;
 var checked_array = [];

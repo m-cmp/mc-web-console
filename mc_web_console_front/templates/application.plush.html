@@ -23,7 +23,7 @@
         <!-- Page body -->
         <%= partial("partials/layout/flash.html") %>
         <%= yield %>
-
+        <%= partial("partials/layout/modal.html") %>
         <div id="loader" class="section active">
           <div class="page page-center">
             <div class="container container-slim py-4">
@@ -52,6 +52,7 @@
   <%= javascriptTag("common/api/http.js") %>
   <%= javascriptTag("common/storage/sessionstorage.js") %>
   <%= javascriptTag("partials/layout/navigatePages.js") %>
+  <%= javascriptTag("partials/layout/modal.js") %>
   
   </body>
 
