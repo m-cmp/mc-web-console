@@ -20,7 +20,7 @@
                 </div>
 
                 <div class="col-md">
-                  <div class="card bg-blue-lt text-primary-fg">
+                  <div class="card bg-blue text-primary-fg">
                     <div class="card-header text-center">
                       <h1 class="card-title mx-auto" id="mcis_status_running">
                         0
@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="col-md">
-                  <div class="card bg-red-lt text-primary-fg">
+                  <div class="card bg-red text-primary-fg">
                     <div class="card-header">
                       <h1 class="card-title mx-auto" id="mcis_status_stopped">
                         0
@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="col-md">
-                  <div class="card bg-muted-lt text-primary-fg">
+                  <div class="card bg-muted text-primary-fg">
                     <div class="card-header">
                       <h1
                         class="card-title mx-auto"
@@ -75,7 +75,9 @@
                 <div class="col-md">
                   <div class="card bg-blue text-primary-fg">
                     <div class="card-header">
-                      <h1 class="card-title mx-auto" id="vm_status_running">0</h1>
+                      <h1 class="card-title mx-auto" id="vm_status_running">
+                        0
+                      </h1>
                     </div>
                   </div>
                 </div>
@@ -83,7 +85,9 @@
                 <div class="col-md">
                   <div class="card bg-red text-primary-fg">
                     <div class="card-header">
-                      <h1 class="card-title mx-auto" id="vm_status_stopped">0</h1>
+                      <h1 class="card-title mx-auto" id="vm_status_stopped">
+                        0
+                      </h1>
                     </div>
                   </div>
                 </div>
@@ -91,7 +95,9 @@
                 <div class="col-md">
                   <div class="card bg-muted text-primary-fg">
                     <div class="card-header">
-                      <h1 class="card-title mx-auto" id="vm_status_terminated">0</h1>
+                      <h1 class="card-title mx-auto" id="vm_status_terminated">
+                        0
+                      </h1>
                     </div>
                   </div>
                 </div>
@@ -103,7 +109,7 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">List of MCIS</h3>              
+              <h3 class="card-title">List of MCIS</h3>
               <div class="card-actions btn-actions">
                 <a href="#manage" class="btn btn-primary">
                   <svg
@@ -327,7 +333,13 @@
                   <div
                     class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
                   >
-                    <a class="dropdown-item" href="#">
+                    <a
+                      class="dropdown-item"
+                      href="javascript:void(0)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#MCIS_Life_Reboot"
+                      onclick="commonconfirmOpen('McisLifeCycleReboot')"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
@@ -531,6 +543,7 @@
             </div>
 
             <div class="card-table table-responsive">
+              <!-- Tabulator TABLE SET -->
               <div id="mcislist-table"></div>
             </div>
           </div>
@@ -769,8 +782,7 @@
       <div class="modal-footer">
         <div align="right">
           <button type="submit" class="btn btn-secondary">Clear</button>
-             <button type="submit" class="btn btn-info">Done</button>    
-          
+          <button type="submit" class="btn btn-info">Done</button>
         </div>
       </div>
     </div>
