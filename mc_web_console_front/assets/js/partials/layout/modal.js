@@ -7,6 +7,16 @@ export function commonSimpleModal(funcpath, func, argument) {
     // 그 외의 내용 추가등..
 }
 
+export function commonSmallModal(funcpath, func, argument) {
+    // OK 버튼 콜백 설정
+    document.getElementById('commonSmallModal-confirm-btn').onclick = function() {
+        const executefunction = `webconsolejs["${funcpath}"].${func}('${argument}')`;
+        eval(executefunction);
+    };
+    // 그 외의 내용 추가등..
+}
+
+// 이전에는 모달창 오픈(아이디) 
 
 
 // Modal OLD

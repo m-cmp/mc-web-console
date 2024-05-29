@@ -3,7 +3,6 @@
     <!-- MCIS DASHBOARD -->
     <div id="index" class="section">
       <div class="row row-cards">
-
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
@@ -12,8 +11,12 @@
 
             <div class="card-body">
               <div class="btn-list">
-                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonSimpleModal" 
-                  onclick="webconsolejs['partials/layout/modal'].commonSimpleModal('pages/operation/manage/mcis','commoncallbac')">
+                <a
+                  class="btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonSimpleModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonSimpleModal('pages/operation/manage/mcis','commoncallbac')"
+                >
                   Simple modal
                 </a>
               </div>
@@ -22,7 +25,7 @@
         </div>
 
         <div class="col-md-7">
-          <div class="card">  
+          <div class="card">
             <div class="card-header">
               <h3 class="card-title">MCIS Status</h3>
             </div>
@@ -353,10 +356,9 @@
                   >
                     <a
                       class="dropdown-item"
-                      href="javascript:void(0)"
                       data-bs-toggle="modal"
-                      data-bs-target="#MCIS_Life_Reboot"
-                      onclick="commonconfirmOpen('McisLifeCycleReboot')"
+                      data-bs-target="#commonSmallModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonSmallModal('pages/operation/manage/mcis','mcisLifeCycle','reboot')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -382,7 +384,12 @@
                       </svg>
                       Reboot
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonSmallModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonSmallModal('pages/operation/manage/mcis','mcisLifeCycle','suspend')"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
@@ -407,7 +414,12 @@
                       </svg>
                       Suspend
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonSmallModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonSmallModal('pages/operation/manage/mcis','mcisLifeCycle','resume')"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
@@ -432,7 +444,12 @@
                       </svg>
                       Resume
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonSmallModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonSmallModal('pages/operation/manage/mcis','mcisLifeCycle','terminate')"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
