@@ -149,9 +149,9 @@ function initTable() {
   
 	table = setTabulator("mcislist-table", tableObjParams, columns);
   
-	table.on("rowClick", function (e, row) {
-	  clickListOfMcis(row.getCell("id").getValue());
-	});
+	// table.on("rowClick", function (e, row) {
+	//   clickListOfMcis(row.getCell("id").getValue());
+	// });
   
 	table.on("rowSelectionChanged", function (data, rows) {
 	  checked_array = data;
@@ -159,7 +159,7 @@ function initTable() {
   
 	displayColumn(table);
 	//webconsolejs["util/pathfinder"].getCommonMcisList("mcismngready", "status", webconsolejs['mcismng/mcismng'].getMcisListCallbackSuccess)
-  }
+}
   function displayColumn(table) {
 	$(".display-column").on("click", function () {
 	  if ($(this).children("input:checkbox").is(":checked")) {
@@ -203,42 +203,42 @@ function providerFormatter(cell) {
 	});
   
 	return mcisProviderCell;
-  }
+}
 
 
 
 // List Of MCIS 클릭 시
 // mcis 테이블의 선택한 row 강조( on )
 // 해당 MCIS의 VM 상태목록 보여주는 함수 호출
-function clickListOfMcis(mcisID) {
-	console.log("click view mcis id :", mcisID);
-	if (mcisID != "") {
-	  // MCIS Info 에 mcis id 표시
-	  $("#mcis_id").val(mcisID);
-	  $("#selected_mcis_id").val(mcisID);
-	  // $("#selected_mcis_index").val(mcisIndex);
+// function clickListOfMcis(mcisID) {
+// 	console.log("click view mcis id :", mcisID);
+// 	if (mcisID != "") {
+// 	  // MCIS Info 에 mcis id 표시
+// 	  $("#mcis_id").val(mcisID);
+// 	  $("#selected_mcis_id").val(mcisID);
+// 	  // $("#selected_mcis_index").val(mcisIndex);
   
-	  //클릭 시 mcisinfo로 포커스 이동
+// 	  //클릭 시 mcisinfo로 포커스 이동
   
-	  // webconsolejs["util/pathfinder"].getCommonMcisData(
-	  //   "refreshmcisdata",
-	  //   mcisID,
-	  //   webconsolejs["mcismng/mcismng"].getCommonMcisDataCallbackSuccess
-	  // );
+// 	  // webconsolejs["util/pathfinder"].getCommonMcisData(
+// 	  //   "refreshmcisdata",
+// 	  //   mcisID,
+// 	  //   webconsolejs["mcismng/mcismng"].getCommonMcisDataCallbackSuccess
+// 	  // );
   
-	  var caller = "mcismng";
-	  var actionName = "McisGet";
-	  var optionParamMap = new Map();
-	  optionParamMap.set("mcisId", mcisID)
-	  webconsolejs['common/util'].getCommonData(caller, actionName, optionParamMap, getCommonMcisDataCallbackSuccess)
+// 	  var caller = "mcismng";
+// 	  var actionName = "McisGet";
+// 	  var optionParamMap = new Map();
+// 	  optionParamMap.set("mcisId", mcisID)
+// 	  webconsolejs['common/util'].getCommonData(caller, actionName, optionParamMap, getCommonMcisDataCallbackSuccess)
   
-	  // MCIS Info area set
-	  //showServerListAndStatusArea(mcisID,mcisIndex);
-	  //displayMcisInfoArea(totalMcisListObj[mcisIndex]);
+// 	  // MCIS Info area set
+// 	  //showServerListAndStatusArea(mcisID,mcisIndex);
+// 	  //displayMcisInfoArea(totalMcisListObj[mcisIndex]);
   
-	  //makeMcisScript(index);// export를 위한 script 준비 -> Export 실행할 때 가져오는 것으로 변경( MCIS정보는 option=simple로 가져오므로)
-	}
-}
+// 	  //makeMcisScript(index);// export를 위한 script 준비 -> Export 실행할 때 가져오는 것으로 변경( MCIS정보는 option=simple로 가져오므로)
+// 	}
+// }
 
 function getCommonMcisDataCallbackSuccess(caller, data, mcisID) {
     if (caller == "mcisexport") {
@@ -1195,64 +1195,73 @@ export function commonConfirmOpen(targetAction, caller) {
 // MCIS 제어 : 선택한 MCIS내 vm들의 상태 변경 
 // Dashboard 와 MCIS Manage 에서 같이 쓰므로
 // callAAA -> mcisLifeCycle 호출 -> callBackAAA로 결과값전달
-function mcisLifeCycle(mcisID, type) {
-  const data = {
-    pathParams: {
-      nsId: "testns01",
-      mcisId: mcisID,
-    },
-    queryParams: {
-      "action":type
+export function mcisLifeCycle(type) {
+/*
+{
+  "mcisID":mcis01,
+  "type":reboot
+}
+*/
+  for (const mcis of checked_array) {
+    console.log(mcis.id)
+    let data = {
+      pathParams: {
+        nsId: "testns01",
+        mcisId: mcis.id,
+      },
+      queryParams: {
+        "action":type
+      }
+    };
+    let controller = "/api/" + "controllifecycle"; 
+    let response = webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+    console.log(response)
   }
-  };
-  //var controller = "targetController=getmcislist"
-  var controller = "/api/" + "controllifecycle";  const response = webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  );
+  // var message = response.responseData.message;
+  // var status = response.status
+  // var namespaceID = $('#topboxDefaultNameSpaceID').val();
+  // callbackMcisLifeCycle(status, data, type)
+  // axios.post(url, {
+  //     headers: {},
+  //     namespaceID: namespaceID,
+  //     mcisID: mcisID,
+  //     queryParams: ["action=" + type, "force=false"]
+  // }).then(result => {
+  //     console.log("mcisLifeCycle result : ", result);
+  //     var status = result.status
+  //     var data = result.data
+  //     callbackMcisLifeCycle(status, data, type)
+  //     // console.log("life cycle result : ",result)
+  //     // console.log("result Message : ",data.message)
+  //     // if(status == 200 || status == 201){
 
-  var message = response.responseData.message;
-  var status = response.status
-  var namespaceID = $('#topboxDefaultNameSpaceID').val();
-  callbackMcisLifeCycle(status, data, type)
-  axios.post(url, {
-      headers: {},
-      namespaceID: namespaceID,
-      mcisID: mcisID,
-      queryParams: ["action=" + type, "force=false"]
-  }).then(result => {
-      console.log("mcisLifeCycle result : ", result);
-      var status = result.status
-      var data = result.data
-      callbackMcisLifeCycle(status, data, type)
-      // console.log("life cycle result : ",result)
-      // console.log("result Message : ",data.message)
-      // if(status == 200 || status == 201){
+  //     //     alert(message);
+  //     //     location.reload();
+  //     //     //show_mcis(mcis_url,"");
+  //     // }else{
+  //     //     alert(status)
+  //     //     return;
+  //     // }
+  //     // }).catch(function(error){
+  //     //     // console.log(" display error : ",error);
+  //     //     console.log(error.response.data);
+  //     //     console.log(error.response.status);
+  //     //     // console.log(error.response.headers); 
+  //     //     var status = error.response.status;
+  //     //     var data =  error.response.data
 
-      //     alert(message);
-      //     location.reload();
-      //     //show_mcis(mcis_url,"");
-      // }else{
-      //     alert(status)
-      //     return;
-      // }
-      // }).catch(function(error){
-      //     // console.log(" display error : ",error);
-      //     console.log(error.response.data);
-      //     console.log(error.response.status);
-      //     // console.log(error.response.headers); 
-      //     var status = error.response.status;
-      //     var data =  error.response.data
-
-      //     callbackMcisLifeCycle(status, data, type)
-      // });
-  }).catch((error) => {
-      console.warn(error);
-      console.log(error.response)
-      // var errorMessage = error.response.data.error;
-      // commonErrorAlert(statusCode, errorMessage) 
-      var errorMessage = error.response.data.error;
-      var statusCode = error.response.status;
-      commonErrorAlert(statusCode, errorMessage);
-  });
+  //     //     callbackMcisLifeCycle(status, data, type)
+  //     // });
+  // }).catch((error) => {
+  //     console.warn(error);
+  //     console.log(error.response)
+  //     // var errorMessage = error.response.data.error;
+  //     // commonErrorAlert(statusCode, errorMessage) 
+  //     var errorMessage = error.response.data.error;
+  //     var statusCode = error.response.status;
+  //     commonErrorAlert(statusCode, errorMessage);
+  // });
 }
