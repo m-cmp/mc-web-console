@@ -1,22 +1,19 @@
-export function commonSimpleModal(funcpath, func, argument) {
-    // OK 버튼 콜백 설정
-    document.getElementById('commonSimpleModal-confirm-btn').onclick = function() {
-        const executefunction = `webconsolejs["${funcpath}"].${func}('${argument}')`;
+/*
+    <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
+        commonSimpleModal
+    </a>
+*/
+export function commonModal(elm, title, content, func, argument) {
+    const form = elm.getAttribute('data-bs-target').replace(/^#/, '');
+    const funcArr = func.split(".");
+    document.getElementById(`${form}-title`).innerText = title
+    document.getElementById(`${form}-content`).innerText = content
+    document.getElementById(`${form}-confirm-btn`).onclick = function() {
+        const executefunction = `webconsolejs["${funcArr[0]}"].${funcArr[1]}('${argument}')`;
         eval(executefunction);
     };
-    // 그 외의 내용 추가등..
 }
-
-export function commonSmallModal(funcpath, func, argument) {
-    // OK 버튼 콜백 설정
-    document.getElementById('commonSmallModal-confirm-btn').onclick = function() {
-        const executefunction = `webconsolejs["${funcpath}"].${func}('${argument}')`;
-        eval(executefunction);
-    };
-    // 그 외의 내용 추가등..
-}
-
-// 이전에는 모달창 오픈(아이디) 
 
 
 // Modal OLD

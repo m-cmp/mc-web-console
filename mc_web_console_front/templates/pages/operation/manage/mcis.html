@@ -11,13 +11,17 @@
 
             <div class="card-body">
               <div class="btn-list">
-                <a
-                  class="btn"
-                  data-bs-toggle="modal"
-                  data-bs-target="#commonSimpleModal"
-                  onclick="webconsolejs['partials/layout/modal'].commonSimpleModal('pages/operation/manage/mcis','commoncallbac')"
-                >
-                  Simple modal
+                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+                    onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
+                    commonDefaultModal
+                </a>
+                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonLargeModal"
+                    onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
+                    commonLargeModal
+                </a>
+                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonfullwidthModal"
+                    onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
+                    commonfullwidthModal
                 </a>
               </div>
             </div>
