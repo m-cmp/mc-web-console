@@ -11,7 +11,7 @@
 
             <div class="card-body">
               <div class="btn-list">
-                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+              <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
                     onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
                     commonDefaultModal
                 </a>
@@ -497,7 +497,11 @@
                   <div class="col-4 col-form-label required d-flex justify-content-end">Field</div>
                   <select class="col form-select" id="filter-field">
                     <option value="name">Name</option>
-                    <option value="progress">Progress</option>
+                    <option value="provider">Provider</option>
+                    <option value="statusCount.countTotal">Total Servers</option>
+                    <option value="statusCount.countRunning">Running</option>
+                    <option value="statusCount.countSuspended">Suspended</option>
+                    <option value="statusCount.countTerminated">Terminated</option>
                   </select>
                 </div>
 
