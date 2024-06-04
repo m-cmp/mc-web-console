@@ -12,6 +12,16 @@ function hideLoader() {
     document.getElementById("loader").classList.remove('active')
 }
 
+export function toggleElement(elem){
+    if (elem.classList.contains("active")){
+        elem.classList.remove('active')
+    }else{
+        elem.classList.add('active')
+    }
+}
+
+
+
 window.addEventListener('hashchange', showSection);
 window.addEventListener('load', showSection);
 window.addEventListener('load', hideLoader);
