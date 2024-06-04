@@ -168,8 +168,15 @@ function initTable() {
 
   table = setTabulator("mcislist-table", tableObjParams, columns);
 
+  // 행 클릭 시
   table.on("rowClick", function (e, row) {
-    clickListOfMcis(row.getCell("id").getValue());
+
+    var mcisID = row.getCell("id").getValue();
+    console.log("mcisID", mcisID)
+    //clickListOfMcis(row.getCell("id").getValue());
+
+    getSelectedMcisDate(mcisID)
+
   });
 
   //  선택된 여러개 row에 대해 처리
@@ -181,21 +188,118 @@ function initTable() {
   //   // console.log(providerFormatterString());
   // });
 
-  displayColumn(table);
- 
+  // displayColumn(table);
+
 }
 
-function displayColumn(table) {
-  $(".display-column").on("click", function () {
-    if ($(this).children("input:checkbox").is(":checked")) {
-      $(this).children(".material-icons").text("visibility");
-      table.showColumn($(this).data("column"));
-    } else {
-      $(this).children(".material-icons").text("visibility_off");
-      table.hideColumn($(this).data("column"));
+// 클릭한 mcis info 가져오기
+async function getSelectedMcisDate(mcisID) {
+
+  var namespace = webconsolejs["common/util"].getCurrentProject()
+  var nsid = namespace.Name
+
+  const data = {
+    pathParams: {
+      nsId: nsid,
+      mcisId: mcisID
     }
-  });
+  }
+
+  var controller = "/api/" + "getmcis";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  console.log("response", response)
+  var mcisData = response.data.responseData;
+  console.log("mcisdata", mcisData)
+
+  // SET MCIS Info 
+  setMcisInfoData(mcisData)
+
+  // Toggle MCIS Info
+  var div = document.getElementById("mcis_info");
+  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
 }
+
+// 클릭한 mcis info 세팅
+function setMcisInfoData(mcisData) {
+
+  try {
+
+    var mcisID = mcisData.id;
+    var mcisName = mcisData.name;
+    var mcisDescription = mcisData.description;
+    var mcisStatus = mcisData.status;
+    var mcisDispStatus = getMcisStatusDisp(mcisStatus);
+    var mcisStatusIcon = getMcisStatusIcon(mcisDispStatus);
+    var mcisProviderNames = getMCISInfoProviderNames(mcisData);//MCIS에 사용 된 provider
+
+    $("#mcis_server_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
+    $("#mcis_info_name").text(mcisName + " / " + mcisID)
+    $("#mcis_info_description").text(mcisDescription)
+    $("#mcis_info_status").text(mcisStatus)
+    $("#mcis_info_cloud_connection").empty()
+    $("#mcis_info_cloud_connection").append(mcisProviderNames)
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// 상태별 이미지 추가
+function getMcisStatusIcon(mcisDispStatus) {
+  var mcisStatusIcon = "";
+  if (mcisDispStatus == "running") {
+    mcisStatusIcon = "icon_running.svg"
+  } else if (mcisDispStatus == "include") {
+    mcisStatusIcon = "icon_stop.svg"
+  } else if (mcisDispStatus == "suspended") {
+    mcisStatusIcon = "icon_stop.svg"
+  } else if (mcisDispStatus == "terminate") {
+    mcisStatusIcon = "icon_terminate.svg"
+  } else {
+    mcisStatusIcon = "icon_stop.svg"
+  }
+  return mcisStatusIcon
+}
+
+// MCIS Info Set providerName
+function getMCISInfoProviderNames(mcisData) {
+
+  var mcisProviderNames = "";
+  var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
+    mcisData.vm
+  );
+  console.log("vmCloudConnectionMap", vmCloudConnectionMap)
+  if (vmCloudConnectionMap) {
+    vmCloudConnectionMap.forEach((value, key) => {
+      mcisProviderNames +=
+        '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
+        key +
+        '.png" alt="' +
+        key +
+        '"/>';
+    });
+  }
+  return mcisProviderNames
+}
+
+// function displayColumn(table) {
+//   console.log("displayColumndisplayColumndisplayColumn")
+//   $(".display-column").on("click", function () {
+//     if ($(this).children("input:checkbox").is(":checked")) {
+//       $(this).children(".material-icons").text("visibility");
+//       table.showColumn($(this).data("column"));
+//     } else {
+//       $(this).children(".material-icons").text("visibility_off");
+//       table.hideColumn($(this).data("column"));
+//     }
+//   });
+// }
+
 // 상태값을 table에서 표시하기 위해 감싸기
 function statusFormatter(cell) {
   var mcisDispStatus = getMcisStatusDisp(
@@ -232,11 +336,11 @@ function providerFormatter(data) {
 }
 
 function providerFormatterString(data) {
-  
+
   var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
     data.getData().vm
   );
-  
+
   var mcisProviderCell = "";
   vmCloudConnectionMap.forEach((value, key) => {
     mcisProviderCell += key + ", "
@@ -256,12 +360,11 @@ var fieldEl = document.getElementById("filter-field");
 var typeEl = document.getElementById("filter-type");
 var valueEl = document.getElementById("filter-value");
 
-// provider filtering
-// provider는 equal일 때만
+// provider filtering / equel 고정
 function providerFilter(data) {
 
   // case type like, equal, not eual
-  // like only
+  // equal only
   if (typeEl.value == "=") {
     var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
       data.vm
@@ -286,16 +389,14 @@ function providerFilter(data) {
 function updateFilter() {
   var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
   var typeVal = typeEl.options[typeEl.selectedIndex].value;
-  // filter-field =="provider"
-  // provider string
-
+  
   var filter = filterVal == "provider" ? providerFilter : filterVal;
 
   if (filterVal == "provider") {
     typeEl.value = "=";
     typeEl.disabled = true;
-  }else{
-    typeEl.disabled = false; 
+  } else {
+    typeEl.disabled = false;
   }
 
   if (filterVal) {
@@ -319,40 +420,6 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 });
 // filter end
 
-// List Of MCIS 클릭 시
-// mcis 테이블의 선택한 row 강조( on )
-// 해당 MCIS의 VM 상태목록 보여주는 함수 호출
-function clickListOfMcis(mcisID) {
-  console.log("click view mcis id :", mcisID);
-  if (mcisID != "") {
-    // MCIS Info 에 mcis id 표시
-    $("#mcis_id").val(mcisID);
-    $("#selected_mcis_id").val(mcisID);
-    // $("#selected_mcis_index").val(mcisIndex);
-
-    //클릭 시 mcisinfo로 포커스 이동
-
-    // webconsolejs["util/pathfinder"].getCommonMcisData(
-    //   "refreshmcisdata",
-    //   mcisID,
-    //   webconsolejs["mcismng/mcismng"].getCommonMcisDataCallbackSuccess
-    // );
-
-    var caller = "mcismng";
-    var actionName = "McisGet";
-    var optionParamMap = new Map();
-    optionParamMap.set("mcisId", mcisID)
-
-    // MCIS Info 
-    //webconsolejs['common/util'].getCommonData(caller, actionName, optionParamMap, getCommonMcisDataCallbackSuccess)
-
-    // MCIS Info area set
-    //showServerListAndStatusArea(mcisID,mcisIndex);
-    //displayMcisInfoArea(totalMcisListObj[mcisIndex]);
-
-    //makeMcisScript(index);// export를 위한 script 준비 -> Export 실행할 때 가져오는 것으로 변경( MCIS정보는 option=simple로 가져오므로)
-  }
-}
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
 
 // function getCommonMcisDataCallbackSuccess(caller, data, mcisID) {
@@ -393,14 +460,18 @@ function clickListOfMcis(mcisID) {
 var totalMcisListObj = new Object();
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
+var totalCloudConnectionMap = new Map();
 
 document.addEventListener("DOMContentLoaded", life_cycle);
 
 async function life_cycle() {
 
+  var namespace = webconsolejs["common/util"].getCurrentProject()
+  var nsid = namespace.Name
+
   const data = {
     pathParams: {
-      nsId: "testns01",
+      nsId: nsid,
     },
   };
   //var controller = "targetController=getmcislist"
@@ -412,7 +483,7 @@ async function life_cycle() {
 
   var mcisList = response.data.responseData;
   console.log("mcisList : ", mcisList);
-  getMcisListCallbackSuccess("testns01", mcisList);
+  getMcisListCallbackSuccess(nsid, mcisList);
 }
 
 // MCIS 목록 조회 후 화면에 Set
@@ -427,7 +498,7 @@ function getMcisListCallbackSuccess(caller, mcisList) {
   setTotalVmStatus(); // mcis 의 vm들 상태표시 를 위해 필요
   //     setTotalConnection();// Mcis의 provider별 connection 표시를 위해 필요
 
-  displayMcisDashboard();
+  // displayMcisDashboard();
 
   //     // setMap();// MCIS를 가져와서 화면에 뿌려지면 vm정보가 있으므로 Map그리기
 
@@ -662,7 +733,7 @@ export function mcisLifeCycle(type) {
     console.log(mcis.id)
     let data = {
       pathParams: {
-        nsId: "testns01",
+        nsId: nsid,
         mcisId: mcis.id,
       },
       queryParams: {
@@ -921,3 +992,28 @@ export function mcisLifeCycle(type) {
 // MCIS 제어 : 선택한 MCIS내 vm들의 상태 변경 
 // Dashboard 와 MCIS Manage 에서 같이 쓰므로
 // callAAA -> mcisLifeCycle 호출 -> callBackAAA로 결과값전달
+
+
+/////////////// MCIS Handling /////////////////
+export function deleteMcis(type) {
+
+  for (const mcis of checked_array) {
+    console.log(mcis.id)
+    let data = {
+      pathParams: {
+        nsId: nsid,
+        mcisId: mcis.id,
+      }
+    };
+    let controller = "/api/" + "delmcis";
+    let response = webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+    console.log(response)
+  }
+}
+
+export function createMcis(type) {
+
+}
