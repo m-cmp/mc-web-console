@@ -15,9 +15,13 @@ document.addEventListener("DOMContentLoaded", life_cycle);
 //}
 
 async function life_cycle() {
+
+  var namespace = webconsolejs["common/util"].getCurrentProject()
+  var nsid = namespace.Name
+
   const data = {
     pathParams: {
-      nsId: "testns01",
+      nsId: nsid,
     },
   };
   //var controller = "targetController=getmcislist"
@@ -29,7 +33,7 @@ async function life_cycle() {
 
   var mcisList = response.data.responseData;
   console.log("mcisList : ", mcisList);
-  getMcisListCallbackSuccess("testns01", mcisList);
+  getMcisListCallbackSuccess(nsid, mcisList);
 }
 
 // MCIS 목록 조회 후 화면에 Set
