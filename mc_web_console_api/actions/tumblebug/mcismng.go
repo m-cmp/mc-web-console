@@ -73,3 +73,12 @@ func ControlLifecycle(c buffalo.Context, commonRequest *webconsole.CommonRequest
 	commonResponse, _ := webconsole.CommonCaller(http.MethodGet, util.TUMBLEBUG, endPoint, commonRequest, webconsole.TBAuthentication())
 	return commonResponse
 }
+
+func GetImageId(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
+	// endPoint := "/ns/{nsId}/resources/image/{imageId}"
+	// common에 있는 이미지 사용
+	// TODO: custom 일 때 처리
+	endPoint := "/ns/system-purpose-common-ns/resources/image/{imageId}"
+	commonResponse, _ := webconsole.CommonCaller(http.MethodGet, util.TUMBLEBUG, endPoint, commonRequest, webconsole.TBAuthentication())
+	return commonResponse
+}
