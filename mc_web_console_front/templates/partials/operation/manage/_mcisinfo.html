@@ -7,10 +7,10 @@
     </h3>
   </div>
   <div class="card-body">
-    <div class="row">
+    <div class="row p-4">
       <div class="col-md-2">
         <div class="form-group mb-2">
-          <img class="img-fluid" class="rounded" width="50" id="mcis_server_info_status_img"/>
+          <img class="img-fluid" class="rounded" width="65" id="mcis_info_status_img"/>
           
         </div>
       </div>
@@ -18,25 +18,23 @@
         <div class="form-group mb-2">
           <div class="datagrid">
             <div class="datagrid-item">
-              <div class="datagrid-title">Name</div>
-              <div class="datagrid-content" id="mcis_info_name">
+              <div class="form-label">Name</div>
+              <div class="form-description" id="mcis_info_name">
               </div>
             </div>
             <div class="datagrid-item">
-              <div class="datagrid-title">Status</div>
-              <div class="datagrid-content" id="mcis_info_status"></div>
+              <div class="form-label">Status</div>
+              <div class="form-description" id="mcis_info_status"></div>
             </div>
             <div class="datagrid-item">
-            <div class="datagrid-title">Provider</div>
+            <div class="form-label">Provider</div>
               <div class="datagrid-item">
               <span id="mcis_info_cloud_connection"></span>
               </div>
-              
             </div>
-            
             <div class="datagrid-item">
-            <div class="datagrid-title">Description</div>
-              <div class="datagrid-content" id="mcis_info_description"></div>
+            <div class="form-label">Description</div>
+              <div class="form-description" id="mcis_info_description"></div>
             </div>
             
           </div>
@@ -46,9 +44,16 @@
             <%= partial("partials/operation/manage/serverlist_status.html") %>
             </div>
           </div>
+       
           
         </div>
       </div>
     </div>
+
+    <div class="row">
+            <div class="col-12">
+            <%= partial("partials/operation/manage/serverinfo.html") %>
+            </div>
+          </div>
   </div>
 </div>
