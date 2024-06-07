@@ -11,17 +11,29 @@
 
             <div class="card-body">
               <div class="btn-list">
-              <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
-                    onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
-                    commonDefaultModal
+                <a
+                  class="btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonDefaultModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')"
+                >
+                  commonDefaultModal
                 </a>
-                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonLargeModal"
-                    onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
-                    commonLargeModal
+                <a
+                  class="btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonLargeModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')"
+                >
+                  commonLargeModal
                 </a>
-                <a class="btn" data-bs-toggle="modal" data-bs-target="#commonfullwidthModal"
-                    onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
-                    commonfullwidthModal
+                <a
+                  class="btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonfullwidthModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')"
+                >
+                  commonfullwidthModal
                 </a>
               </div>
             </div>
@@ -136,7 +148,6 @@
             <div class="card-header">
               <h3 class="card-title">List of MCIS</h3>
               <div class="card-actions btn-actions">
-
                 <a href="#manage" class="btn btn-primary">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -158,10 +169,29 @@
                 </a>
 
                 <!-- filter -->
-                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
-                  <svg xmlns="http://www.w3.org/2000/svg"width="24"height="24"viewBox="0 0 24 24"fill="none"stroke="currentColor"stroke-width="2"stroke-linecap="round"stroke-linejoin="round"class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                <a
+                  class="btn-action"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#filterbody"
+                  aria-expanded="false"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-filter"
+                  >
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" />
+                    <path
+                      d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"
+                    />
                   </svg>
                 </a>
 
@@ -489,24 +519,34 @@
               </div>
             </div>
 
-
             <div id="filterbody" class="accordion-collapse collapse">
               <div class="accordion-body p-3 row">
-
                 <div class="col-sm-12 col-md-2 row mb-1">
-                  <div class="col-4 col-form-label required d-flex justify-content-end">Field</div>
+                  <div
+                    class="col-4 col-form-label required d-flex justify-content-end"
+                  >
+                    Field
+                  </div>
                   <select class="col form-select" id="filter-field">
                     <option value="name">Name</option>
                     <option value="provider">Provider</option>
-                    <option value="statusCount.countTotal">Total Servers</option>
+                    <option value="statusCount.countTotal">
+                      Total Servers
+                    </option>
                     <option value="statusCount.countRunning">Running</option>
-                    <option value="statusCount.countSuspended">Suspended</option>
-                    <option value="statusCount.countTerminated">Terminated</option>
+                    <option value="statusCount.countSuspended">
+                      Suspended
+                    </option>
+                    <option value="statusCount.countTerminated">
+                      Terminated
+                    </option>
                   </select>
                 </div>
 
                 <div class="col-sm-12 col-md-2 row mb-1">
-                  <div class="col-4 col-form-label d-flex justify-content-end">Type</div>
+                  <div class="col-4 col-form-label d-flex justify-content-end">
+                    Type
+                  </div>
                   <select class="col form-select" id="filter-type">
                     <option value="like">like</option>
                     <option value="=">=</option>
@@ -519,18 +559,45 @@
                 </div>
 
                 <div class="col-sm-12 col-md-8 row mb-1">
-                  <div class="col-sm-4 col-md-1 col-form-label required d-flex justify-content-end">Filter</div>
-                  <input class="col form-control" id="filter-value" type="text" placeholder="value to filter" >
+                  <div
+                    class="col-sm-4 col-md-1 col-form-label required d-flex justify-content-end"
+                  >
+                    Filter
+                  </div>
+                  <input
+                    class="col form-control"
+                    id="filter-value"
+                    type="text"
+                    placeholder="value to filter"
+                  />
                   <div class="col-auto">
-                    <a id="filter-clear" class="btn btn-icon"type="button" aria-label="Button">
-                      <svg xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
+                    <a
+                      id="filter-clear"
+                      class="btn btn-icon"
+                      type="button"
+                      aria-label="Button"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-x"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M18 6l-12 12" />
+                        <path d="M6 6l12 12" />
+                      </svg>
                     </a>
                   </div>
                 </div>
-
               </div>
             </div>
-
 
             <div class="card-table table-responsive">
               <!-- Tabulator TABLE SET -->
@@ -539,154 +606,302 @@
           </div>
         </div>
         <div class="col-md-12">
-        <%= partial("partials/operation/manage/mcisinfo.html") %>
-
+          <%= partial("partials/operation/manage/mcisinfo.html") %>
+        </div>
       </div>
+
+      
     </div>
 
     <!-- MCIS CREATE -->
+
+    <!-- TODO : divide to express, simple, expert form  -->
     <div id="manage" class="section">
-      <div class="row row-cards">
-        <div class="col-md-8">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Create MCIS</h3>
-            </div>
 
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="example-text-input"
-                  placeholder="Input Name"
-                />
+      <form id="express_form">
+        <input type="hidden" name="provider" id="p_provider" />
+        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
+        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
+        <input type="hidden" name="subGroupSize" value="" id="p_subGroupSize" /><!-- vm_cnt에서 subGroupSize로 변경 -->
+        <input type="hidden" name="name" value="" id="p_name" />
+        <input type="hidden" name="description" id="p_description" />
+        <input type="hidden" name="provider" id="p_provider" />
+        <input type="hidden" name="connectionName" value="" id="p_connectionName" />
+        <input type="hidden" name="specId" id="p_spec" />
+      </form>
+
+        <div class="row row-cards">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Create MCIS</h3>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea
-                  class="form-control"
-                  rows="2"
-                  placeholder="type Description"
-                ></textarea>
-              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="mcis_name"
+                    id="mcis_name"
+                    placeholder="Input Name"
+                  />
+                </div>
 
-              <div class="mb-3">
-                <label class="form-label">Deployment Algorithm</label>
-                <select class="form-select" id="deployalgorithm">
-                  <option value="express">Express</option>
-                  <option value="simple">Simple</option>
-                  <option value="expert">Expert</option>
-                </select>
-              </div>
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <textarea
+                    class="form-control"
+                    rows="2"
+                    name="mcis_desc"
+                    id="mcis_desc"
+                    placeholder="type Description">
+                  </textarea>
+                </div>
 
-              <div class="card">
-                <div class="card-body">
-                  <div class="row row-cards">
-                    <div class="col-md-2">
-                      <div class="card">
-                        <div class="card-body">SERVERS</div>
+                <div class="mb-3">
+                  <label class="form-label">Deployment Algorithm</label>
+                  <select class="form-select" name="deploy_algorithm" id="deploy_algorithm">
+                    <option value="express">Express</option>
+                    <option value="simple">Simple</option>
+                    <option value="expert">Expert</option>
+                  </select>
+                </div>
+
+                <div class="card">
+                  <div class="card-body">
+                    <div class="row row-cards">
+                      <div class="col-md-2">
+                        <div class="card">
+                          <div class="card-body">SERVERS</div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div class="col-md-2">
-                      <div class="card">
-                        <div class="card-body">+</div>
+                      <div class="col-md-2">
+                        <div class="card">
+                          
+                          <div class="card-body">
+                          <button class="btn btn-primary" onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()">+</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="card-footer text-end">
-              <button type="" class="btn btn-primary">Modaltest</button>
-              <button type="" class="btn btn-primary">Deploy</button>
-              <a
-                href="#"
-                class="btn"
-                data-bs-toggle="modal"
-                data-bs-target="#modal-report"
-              >
-                Modal with form
-              </a>
+              <div class="card-footer text-end">
+                
+                <button type="" class="btn btn-primary">Deploy</button>
+              
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-body">
-              <h3 class="card-title">Steps</h3>
-              <ul class="steps steps-vertical">
-                <li class="step-item active">
-                  <div class="h4 m-0">MCIS Name</div>
-                  <div class="text-secondary">MCIS Name input ex) mcis01</div>
-                </li>
-                <li class="step-item">
-                  <div class="h4 m-0">Order received</div>
-                  <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
-                </li>
-              </ul>
-            </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title">Steps</h3>
+                <ul class="steps steps-vertical">
+                  <li class="step-item active">
+                    <div class="h4 m-0">MCIS Name</div>
+                    <div class="text-secondary">MCIS Name input ex) mcis01</div>
+                  </li>
+                  <li class="step-item">
+                    <div class="h4 m-0">Order received</div>
+                    <div class="text-secondary">
+                      Lorem ipsum dolor sit amet.
+                    </div>
+                  </li>
+                </ul>
+              </div>
 
-            <div class="card-body">
-              <ul class="steps steps-counter steps-vertical">
-                <li class="step-item active">Step one</li>
-                <li class="step-item">Step two</li>
-                <li class="step-item">Step three</li>
-                <li class="step-item">Step four</li>
-                <li class="step-item">Step five</li>
-              </ul>
+              <div class="card-body">
+                <ul class="steps steps-counter steps-vertical">
+                  <li class="step-item active">Step one</li>
+                  <li class="step-item">Step two</li>
+                  <li class="step-item">Step three</li>
+                  <li class="step-item">Step four</li>
+                  <li class="step-item">Step five</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- server configuration -->
+  <div class="container-xl">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card section" id="server_configuration">
+              <div class="card-header">
+                <h3 class="text-info">Server Configuration</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Server Name</label>
+                      <input
+                        class="form-control"
+                        name="server_name"
+                        rows="1"
+                        placeholder="Input Name"
+                        id="ep_name"
+                      />
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Spec</label>
+                      <div class="row g-2">
+                        <div class="col">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Please Use Search"
+                            name="specId"
+                            id="ep_spec"
+                          />
 
+                          <input type="hidden" name="provider" id="ep_provider" value=""/>
+                          <input type="hidden" name="connectionName" id="ep_connectionName" value=""/>
+                          <input type="hidden" name="imageId" id="ep_imageId" value=""/>
 
+                        </div>
+                        <div class="col-auto">
+                          <a
+                            href="#"
+                            class="btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#spec-search"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="icon"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              fill="none"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              ></path>
+                              <path
+                                d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                              ></path>
+                              <path d="M21 21l-6 -6"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
 
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Root Disk</label>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <select
+                            class="form-select"
+                            name="rootDiskType"
+                            id="ep_root_disk_type"
+                            onchange="webconsolejs['pages/operation/manage/createmcis'].changeDiskSize(this.value)"
+                          >
+                            <option value="disk1">disk1</option>
+                            <option value="disk2">disk2</option>
+                            <option value="disk3">disk3</option>
+                          </select>
+                        </div>
+                        <div class="col-6">
+                          <textarea
+                            class="form-control"
+                            name="rootDiskSize"
+                            rows="1"
+                            placeholder="Root Disk Size(GB)"
+                            id="ep_root_disk_size"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label">Server Quantity</label>
+                      <input
+                        type="range"
+                        class="form-range mb-2"
+                        value="0"
+                        min="0"
+                        max="100"
+                        step="1"
+                        oninput="this.nextElementSibling.value = this.value"
+                      />
+                      <output id="ep_vm_add_cnt">0</output>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-2">
+                      <label class="form-label">Description</label>
+                      <textarea
+                        class="form-control"
+                        name="server_description"
+                        id="ep_description"
+                        rows="3"
+                        placeholder="type Description"
 
-<!-- MODAL -->
-<div
-  class="modal modal-blur fade"
-  id="modal-report"
-  tabindex="-1"
-  aria-modal="true"
-  role="dialog"
->
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="text-info">Server Configuration</h3>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div align="right">
+                  <button type="submit" class="btn btn-secondary">Clear</button>
+                  <button type="submit" class="btn btn-info" onclick="webconsolejs['pages/operation/manage/createmcis'].expressDone_btn()">Done</button>
+                </div>
+              </div>
+        </div>
       </div>
+    </div>
+  </div>
+  <!-- spec-search -->
+  <div
+    class="modal modal-blur fade"
+    id="spec-search"
+    tabindex="-1"
+    style="display: none"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-info">Server Configuration</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
 
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-6">
+        <div class="modal-body">
+          <div class="row">
             <div class="form-group mb-2">
-              <label class="form-label required">Server Name</label>
-              <textarea
-                class="form-control"
-                name="example-textarea-input"
-                rows="1"
-                placeholder="Input Name"
-              ></textarea>
-            </div>
-            <div class="form-group mb-2">
-              <label class="form-label required">Spec</label>
+              <label class="form-label">Priority Option / Limit</label>
               <div class="row g-2">
+                <div class="col-6">
+                  <select name="user[day]" class="form-select">
+                    <option value="">Select Priority</option>
+                    <option value="location">Location</option>
+                    <option value="cost">Cost</option>
+                  </select>
+                </div>
                 <div class="col">
                   <input
                     type="text"
@@ -695,12 +910,8 @@
                   />
                 </div>
                 <div class="col-auto">
-                  <a
-                    href="#"
-                    class="btn"
-                    data-bs-toggle="modal"
-                    data-bs-target="#spec-search"
-                  >
+                  <a href="#" class="btn btn-icon" aria-label="Button">
+                    <!-- Download SVG icon from http://tabler-icons.io/i/search -->
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       class="icon"
@@ -723,33 +934,36 @@
                 </div>
               </div>
             </div>
+            <div class="col-md-4">
+              <label class="form-label">Memory</label>
+              <input
+                type="range"
+                class="form-range mb-2"
+                value="0"
+                min="1"
+                max="100"
+                step="1"
+                oninput="this.nextElementSibling.value = this.value"
+              />
 
-            <div class="form-group mb-2">
-              <label class="form-label required">Root Disk</label>
-              <div class="row g-2">
-                <div class="col-6">
-                  <select
-                    class="form-select"
-                    name="Select Root Disk Type"
-                    id="Root Disk"
-                  >
-                    <option value="disk1">disk1</option>
-                    <option value="disk2">disk2</option>
-                    <option value="disk3">disk3</option>
-                  </select>
-                </div>
-                <div class="col-6">
-                  <textarea
-                    class="form-control"
-                    name="example-textarea-input"
-                    rows="1"
-                    placeholder="Root Disk Size(GB)"
-                  ></textarea>
-                </div>
-              </div>
+              <output>1</output>
             </div>
-            <div class="form-group mb-2">
-              <label class="form-label">Server Quantity</label>
+            <div class="col-md-4">
+              <label class="form-label">CPU</label>
+              <input
+                type="range"
+                class="form-range mb-2"
+                value="0"
+                min="1"
+                max="100"
+                step="1"
+                oninput="this.nextElementSibling.value = this.value"
+              />
+
+              <output>1</output>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">COST</label>
               <input
                 type="range"
                 class="form-range mb-2"
@@ -759,205 +973,78 @@
                 step="1"
                 oninput="this.nextElementSibling.value = this.value"
               />
+
               <output>0</output>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="form-group mb-2">
-              <label class="form-label">Description</label>
-              <textarea
-                class="form-control"
-                name="example-textarea-input"
-                rows="3"
-                placeholder="type Description"
-              ></textarea>
-            </div>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Provider</th>
+                  <th>Region</th>
+                  <th>Spec</th>
+                  <th>Price</th>
+                  <th>Memory</th>
+                  <th>CPU</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
-
-      <div class="modal-footer">
-        <div align="right">
-          <button type="submit" class="btn btn-secondary">Clear</button>
-          <button type="submit" class="btn btn-info">Done</button>
+        <div class="modal-footer">
+          <div align="right">
+            <button type="submit" class="btn btn-info">Apply</button>
+            <button type="submit" class="btn btn-secondary">Cancel</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <%= javascriptTag("pages/operation/manage/createmcis.js") %>
 </div>
-
-<!-- spec-search -->
-<div
-  class="modal modal-blur fade"
-  id="spec-search"
-  tabindex="-1"
-  style="display: none"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title text-info">Server Configuration</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-
-      <div class="modal-body">
-        <div class="row">
-          <div class="form-group mb-2">
-            <label class="form-label">Priority Option / Limit</label>
-            <div class="row g-2">
-              <div class="col-6">
-                <select name="user[day]" class="form-select">
-                  <option value="">Select Priority</option>
-                  <option value="location">Location</option>
-                  <option value="cost">Cost</option>
-                </select>
-              </div>
-              <div class="col">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Please Use Search"
-                />
-              </div>
-              <div class="col-auto">
-                <a href="#" class="btn btn-icon" aria-label="Button">
-                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                    <path d="M21 21l-6 -6"></path>
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Memory</label>
-            <input
-              type="range"
-              class="form-range mb-2"
-              value="0"
-              min="1"
-              max="100"
-              step="1"
-              oninput="this.nextElementSibling.value = this.value"
-            />
-
-            <output>1</output>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">CPU</label>
-            <input
-              type="range"
-              class="form-range mb-2"
-              value="0"
-              min="1"
-              max="100"
-              step="1"
-              oninput="this.nextElementSibling.value = this.value"
-            />
-
-            <output>1</output>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">COST</label>
-            <input
-              type="range"
-              class="form-range mb-2"
-              value="0"
-              min="0"
-              max="100"
-              step="1"
-              oninput="this.nextElementSibling.value = this.value"
-            />
-
-            <output>0</output>
-          </div>
-        </div>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table mb-0">
-            <thead>
-              <tr>
-                <th>Provider</th>
-                <th>Region</th>
-                <th>Spec</th>
-                <th>Price</th>
-                <th>Memory</th>
-                <th>CPU</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <div align="right">
-          <button type="submit" class="btn btn-info">Apply</button>
-          <button type="submit" class="btn btn-secondary">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<%= javascriptTag("pages/operation/manage/mcis.js") %>

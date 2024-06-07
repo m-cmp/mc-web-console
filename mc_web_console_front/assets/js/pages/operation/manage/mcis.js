@@ -235,16 +235,17 @@ function setMcisInfoData(mcisData) {
     var mcisDispStatus = getMcisStatusDisp(mcisStatus);
     var mcisStatusIcon = getMcisStatusIcon(mcisDispStatus);
     var mcisProviderNames = getMCISInfoProviderNames(mcisData);//MCIS에 사용 된 provider
-    var totalvmCount = mcisData.vm.length;//mcis의 vm갯수
+    var totalvmCount = mcisData.vm.length;//mcis의 vm개수
 
     console.log("totalvmCount", totalvmCount)
+    console.log("asdasdasd", mcisData)
     $("#mcis_info_text").text(" [ " + mcisName + " ]")
     $("#mcis_server_info_status").empty();
     $("#mcis_server_info_status").text(" [ " + mcisName + " ]")
     $("#mcis_server_info_count").text(" Server(" + totalvmCount + ")")
 
 
-    $("#mcis_server_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
+    $("#mcis_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
     $("#mcis_info_name").text(mcisName + " / " + mcisID)
     $("#mcis_info_description").text(mcisDescription)
     $("#mcis_info_status").text(mcisStatus)
@@ -333,28 +334,39 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   var vmStatus = data.status;
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
+  console.log("vmPublicIp", vmPublicIp)
   var vmSshKeyID = data.sshKeyId;
   var imageId = data.imageId
   var operatingSystem = await getCommonVmImageInfo(imageId)
   var startTime = data.cspViewVmDetail.StartTime
   var privateIp = data.privateIP
-  console.log("privateIp", privateIp)
+  var securityGroupID = data.securityGroupIds[0];
+  var providerName = data.connectionConfig.providerName
+  var vmProviderIcon = ""
+  vmProviderIcon +=
+    '<img class="img-fluid" class="rounded" width="80" src="/assets/images/common/img_logo_' +
+    providerName +
+    '.png" alt="' +
+    providerName +
+    '"/>';
 
+  var vmDispStatus = getMcisStatusDisp(vmStatus);
+  var mcisStatusIcon = getMcisStatusIcon(vmDispStatus);
+  // var mcisProviderNames = getMCISInfoProviderNames(data);//MCIS에 사용 된 provider
 
   //vm info
+  $("#mcis_server_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
+  $("#mcis_server_info_connection").empty()
+  $("#mcis_server_info_connection").append(vmProviderIcon)
 
-  $("#server_info_text").text(' [' + vmName + ' / ' + mcisName + ']')
+
+  $("#server_info_text").text(' [ ' + vmName + ' / ' + mcisName + ' ]')
   $("#server_info_name").text(vmName + "/" + vmID)
   $("#server_info_desc").text(vmDescription)
   $("#server_info_os").text(operatingSystem)
   $("#server_info_start_time").text(startTime)
   $("#server_info_private_ip").text(privateIp)
   $("#server_info_cspVMID").text(data.cspViewVmDetail.IId.NameId)
-
-  var vmStatusIcon = getVmStatusIcon(vmStatus)
-
-  $("#server_detail_view_server_status").val(vmStatus);
-  $("#server_info_status_icon_img\n").attr("src", vmStatusIcon);
 
   // ip information
   $("#server_info_public_ip").text(vmPublicIp)
@@ -368,21 +380,54 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   $("#server_detail_view_private_ip").text(data.privateIP)
   $("#server_detail_view_private_dns").text(data.privateDNS)
 
+  // detail tab
+  $("#server_detail_info_text").text(' [' + vmName + '/' + mcisName + ']')
+  $("#server_detail_view_server_id").text(vmId)
+  $("#server_detail_view_server_status").text(vmStatus);
+  $("#server_detail_view_public_dns").text(data.publicDNS)
+  $("#server_detail_view_public_ip").text(vmPublicIp)
+  $("#server_detail_view_private_ip").text(data.privateIP)
+  $("#server_detail_view_security_group_text").text(securityGroupID)
+  $("#server_detail_view_private_dns").text(data.privateDNS)
+  $("#server_detail_view_private_ip").text(data.privateIP)
+  $("#server_detail_view_image_id").text(imageId)
+  $("#server_detail_view_os").text(operatingSystem);
+  $("#server_detail_view_user_id_pass").text(data.vmUserAccount + "/ *** ")
+
+
+
+
+  var region = data.region.Region
+
+  var zone = data.region.Zone
   // $("#manage_mcis_popup_public_ip").val(vmPublicIp)
 
   // connection tab
+  var connectionName = data.connectionName
+  var credentialName = data.connectionConfig.credentialName
+  var driverName = data.connectionConfig.driverName
   var locationInfo = data.location;
   var cloudType = locationInfo.cloudType;
+
+  $("#server_connection_view_connection_name").text(connectionName)
+  $("#server_connection_view_credential_name").text(credentialName)
+  $("#server_connection_view_csp").text(providerName)
+  $("#server_connection_view_driver_name").text(driverName)
+  $("#server_connection_view_region").text(providerName + " : " + region)
+  $("#server_connection_view_zone").text(zone)
+
+
+
   // $("#server_info_csp_icon").empty()
   // $("#server_info_csp_icon").append('<img src="/assets/img/contents/img_logo_' + cloudType + '.png" alt=""/>')
   // $("#server_connection_view_csp").val(cloudType)
   // $("#manage_mcis_popup_csp").val(cloudType)
 
 
-  var latitude = locationInfo.latitude;
-  var longitude = locationInfo.longitude;
-  var briefAddr = locationInfo.briefAddr;
-  var nativeRegion = locationInfo.nativeRegion;
+  // var latitude = locationInfo.latitude;
+  // var longitude = locationInfo.longitude;
+  // var briefAddr = locationInfo.briefAddr;
+  // var nativeRegion = locationInfo.nativeRegion;
 
   // if (locationInfo) {
   //     $("#server_location_latitude").val(latitude)
@@ -390,20 +435,12 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
 
   // }
   // region zone locate
-
-  var region = data.region.region
-
-  var zone = data.region.Zone
-
-  $("#server_info_region").text(briefAddr + ":" + region)
+  $("#server_info_region").text(providerName + ":" + region)
   $("#server_info_zone").text(zone)
 
 
-  $("#server_detail_view_region").text(briefAddr + " : " + region)
+  $("#server_detail_view_region").text(providerName + " : " + region)
   $("#server_detail_view_zone").text(zone)
-
-  $("#server_connection_view_region").text(briefAddr + "(" + region + ")")
-  $("#server_connection_view_zone").text(zone)
 
   // connection name
   var connectionName = data.connectionName;
@@ -412,19 +449,40 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   var vmDetail = data.cspViewVmDetail;
   var vmDetailKeyValueList = vmDetail.KeyValueList
   var architecture = "";
-  for (var i = 0; i < vmDetailKeyValueList.length; i++) {
-    if (vmDetailKeyValueList[i].key === "Architecture") {
-      architecture = vmDetailKeyValueList[i].value;
-      break; // 찾았으므로 반복문을 종료
+
+  if (vmDetailKeyValueList) {
+    for (var i = 0; i < vmDetailKeyValueList.length; i++) {
+      if (vmDetailKeyValueList[i].key === "Architecture") {
+        architecture = vmDetailKeyValueList[i].value;
+        break; // 찾았으므로 반복문을 종료
+      }
     }
   }
-  console.log("Architecture:", architecture);
+  var vmSpecName = vmDetail.VMSpecName
+  var vpcId = vmDetail.VpcIID.NameId
+  var vpcSystemId = vmDetail.VpcIID.SystemId
+  var subnetId = vmDetail.SubnetIID.NameId
+  var subnetSystemId = vmDetail.SubnetIID.SystemId
+  var eth = vmDetail.NetworkInterface
+
+
+
   $("#server_info_archi").text(architecture)
-  
+  // detail tab
+  $("#server_detail_view_archi").text(architecture)
+  $("#server_detail_view_vpc_id").text(vpcId + "(" + vpcSystemId + ")")
+  $("#server_detail_view_subnet_id").text(subnetId + "(" + subnetSystemId + ")")
+  $("#server_detail_view_eth").text(eth)
+  $("#server_detail_view_root_device_type").text(vmDetail.RootDiskType);
+  $("#server_detail_view_root_device").text(vmDetail.RootDeviceName);
+  $("#server_detail_view_keypair_name").text(vmDetail.KeyPairIId.NameId)
+  $("#server_detail_view_access_id_pass").text(vmDetail.VMUserId + "/ *** ")
+
+
   // server spec
   // var vmSecName = data.VmSpecName
-  var vmSpecName = vmDetail.VMSpecName;
   $("#server_info_vmspec_name").text(vmSpecName)
+  $("#server_detail_view_server_spec").text(vmSpecName) // detail tab
 
 
 }
@@ -506,7 +564,7 @@ function getMCISInfoProviderNames(mcisData) {
         key +
         '.png" alt="' +
         key +
-        '"/>';
+        '"/>' ;
     });
   }
   return mcisProviderNames
@@ -686,14 +744,14 @@ var totalMcisListObj = new Object();
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 var totalCloudConnectionMap = new Map();
-var nsid = "";
+var nsid = "testns01";
 
 document.addEventListener("DOMContentLoaded", life_cycle);
 
 async function life_cycle() {
 
-  var namespace = webconsolejs["common/util"].getCurrentProject()
-  nsid = namespace.Name
+  // var namespace = webconsolejs["common/util"].getCurrentProject()
+  // nsid = namespace.Name
 
   const data = {
     pathParams: {
