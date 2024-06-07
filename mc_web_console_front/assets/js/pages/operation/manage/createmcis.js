@@ -136,3 +136,112 @@ export function changeDiskSize(type) {
 	$("#e_rootDiskType").val(type);
 
 }
+
+export function getRecommendVmInfo() {
+    console.log("hihi")
+	// var max_cpu = $("#num_vCPU_max").val()
+	// var min_cpu = $("#num_vCPU_min").val()
+	// var max_mem = $("#num_memory_max").val()
+	// var min_mem = $("#num_memory_min").val()
+	// var max_cost = $("#num_cost_max").val()
+	// var min_cost = $("#num_cost_min").val()
+	// var limit = $("#recommendVmLimit").val()
+	// var lon = $("#longitude").val()
+	// var lat = $("#latitude").val()
+
+	// console.log(" lon " + lon + ", lat " + lat)
+	// if (lon == "" || lat == "") {
+	// 	commonAlert(" 지도에서 위치를 선택하세요 ")
+	// 	return;
+	// }
+	// var url = "/operation/manages/mcismng/mcisrecommendvm/list"
+	// var obj = {
+	// 	"filter": {
+	// 		"policy": [
+	// 			{
+	// 				"condition": [
+	// 					{
+	// 						"operand": max_cpu,
+	// 						"operator": "<="
+	// 					},
+	// 					{
+	// 						"operand": min_cpu,
+	// 						"operator": ">="
+	// 					}
+	// 				],
+	// 				"metric": "cpu"
+	// 			},
+	// 			{
+	// 				"condition": [
+	// 					{
+	// 						"operand": max_mem,
+	// 						"operator": "<="
+	// 					},
+	// 					{
+	// 						"operand": min_mem,
+	// 						"operator": ">="
+	// 					}
+	// 				],
+	// 				"metric": "memory"
+	// 			},
+	// 			{
+	// 				"condition": [
+	// 					{
+	// 						"operand": max_cost,
+	// 						"operator": "<="
+	// 					},
+	// 					{
+	// 						"operand": min_cost,
+	// 						"operator": ">="
+	// 					}
+	// 				],
+	// 				"metric": "cost"
+	// 			}
+	// 		]
+	// 	},
+	// 	"limit": limit,
+	// 	"priority": {
+	// 		"policy": [
+	// 			{
+	// 				"metric": "location",
+	// 				"parameter": [
+	// 					{
+	// 						"key": "coordinateClose",
+	// 						"val": [
+	// 							lon + "/" + lat
+	// 						]
+	// 					}
+	// 				],
+	// 				"weight": "0.3"
+	// 			}
+	// 		]
+	// 	}
+	// }
+	// axios.post(url, obj, {
+
+	// 	headers: {
+	// 		//'Content-type': 'application/json',
+	// 	}
+
+	// }).then(result => {
+	// 	console.log("result spec : ", result);
+	// 	var statusCode = result.data.status;
+	// 	if (statusCode == 200 || statusCode == 201) {
+
+	// 		console.log("recommend vm result: ", result.data);
+	// 		recommendVmSpecListCallbackSuccess(result.data.VmSpecList)
+
+	// 	} else {
+	// 		var message = result.data.message;
+	// 		commonAlert("Fail Create Spec : " + message + "(" + statusCode + ")");
+
+	// 	}
+
+	// }).catch((error) => {
+	// 	console.warn(error);
+	// 	console.log(error.response)
+	// 	var errorMessage = error.response.data.error;
+	// 	var statusCode = error.response.status;
+	// 	commonErrorAlert(statusCode, errorMessage);
+	// });
+}
