@@ -15,6 +15,8 @@ import (
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 
+	mcimw "mc_web_console_api/middleware/mcimw"
+
 	"mc_web_console_api/models"
 )
 
@@ -41,12 +43,11 @@ func App() *buffalo.App {
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
 
-		// middleware START //
-		// app.Use(AuthMiddleware)
-		// middleware END //
-
 		apiPath := "/api"
 		api := app.Group(apiPath)
+		mcimw.AuthMethod = mcimw.EnvKeycloak
+		mcimw.GrantedRoleList = []string{}
+		api.Use(mcimw.BuffaloMcimw)
 		api.GET("/{targetController}", GetRouteController)
 		api.POST("/{targetController}", PostRouteController)
 
