@@ -91,6 +91,7 @@ func GetRouteController(c buffalo.Context) error {
 	// target controller 이름.
 
 	log.Println("in RouteGetController")
+	log.Println("User Role is : ", c.Data()["roles"])
 
 	// path param추출
 	path := c.Request().URL.Path
