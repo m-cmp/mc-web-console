@@ -27,6 +27,8 @@ type actions struct{}
 // case문에서 controller이름 추출하여 controller 호출
 func PostRouteController(c buffalo.Context) error {
 	log.Println("#### PostRouteController ")
+	log.Println("User Role is : ", c.Data()["roles"])
+
 	commonRequest := &webconsole.CommonRequest{}
 	c.Bind(commonRequest)
 	targetController := strings.ToLower(c.Param("targetController"))
