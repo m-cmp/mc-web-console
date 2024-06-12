@@ -14,8 +14,10 @@ function hideLoader() {
 
 export function toggleElement(elem){
     if (elem.classList.contains("active")){
+        console.log("here")
         elem.classList.remove('active')
     }else{
+        console.log("zzz")
         elem.classList.add('active')
     }
 }

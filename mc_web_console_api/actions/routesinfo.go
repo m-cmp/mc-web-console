@@ -10,6 +10,7 @@ import (
 	demo "mc_web_console_api/actions/demo"
 	tumblebug "mc_web_console_api/actions/tumblebug"
 	webconsole "mc_web_console_api/fwmodels/webconsole"
+	hanlder "mc_web_console_api/handler"
 	"mc_web_console_api/models"
 
 	"github.com/gobuffalo/buffalo"
@@ -61,6 +62,8 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = tumblebug.ControlLifecycle(c, commonRequest)
 	case "getimageid":
 		commonResponse = tumblebug.GetImageId(c, commonRequest)
+	case "disklookup":
+		commonResponse, _ = hanlder.DiskLookup(c, commonRequest)
 
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
