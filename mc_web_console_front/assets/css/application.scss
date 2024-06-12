@@ -1,64 +1,76 @@
 // sequential-workflow-designer import
-@import '~sequential-workflow-designer/css/designer.css';
-@import '~sequential-workflow-designer/css/designer-light.css';
-@import '~sequential-workflow-designer/css/designer-dark.css';
+@import "~sequential-workflow-designer/css/designer.css";
+@import "~sequential-workflow-designer/css/designer-light.css";
+@import "~sequential-workflow-designer/css/designer-dark.css";
 
 //tabler
-@import './inter/inter.css'; // font
-@import './tabler_custom.scss';
+@import "./inter/inter.css"; // font
+@import "./tabler_custom.scss";
 
 // tabulator Custom CSS
-@import  "./tabulator_for_tabler.scss";
-
+@import "./tabulator_for_tabler.scss";
 
 .section {
-    display: none;
+  display: none;
 }
 .section.active {
-    display: block;
+  display: block;
 }
 
 .vmStatus-list {
-    max-height: 150px;
-    overflow-y: auto;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
+  max-height: 150px;
+  overflow-y: auto;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .vmStatus-list li {
-    padding: 10px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    width: calc(100% / 2); /* 기본적으로 한 줄에 2개의 아이템을 배치 */
+  padding: 10px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  width: calc(100% / 2); /* 기본적으로 한 줄에 2개의 아이템을 배치 */
 }
+
+.removebullet {
+  list-style: none;
+  padding-left:0px;
+}
+
+// .dashboard .create_box .new_servers_config.active {
+// 	display: block;
+// }
+
+// .dashboard .create_box .express_servers_config.active {
+// 	display: block;
+// }
 
 /* 화면 폭이 1px 이상 400px 미만일 때 */
 @media (max-width: 399px) {
-    .vmStatus-list li {
-        width: calc(100% / 2); /* 한 줄에 3개의 아이템을 배치 */
-    }
+  .vmStatus-list li {
+    width: calc(100% / 2); /* 한 줄에 3개의 아이템을 배치 */
+  }
 }
 
 /* 화면 폭이 400px 이상 600px 미만일 때 */
 @media (min-width: 400px) and (max-width: 599px) {
-    .vmStatus-list li {
-        width: calc(100% / 3); /* 한 줄에 3개의 아이템을 배치 */
-    }
+  .vmStatus-list li {
+    width: calc(100% / 3); /* 한 줄에 3개의 아이템을 배치 */
+  }
 }
 
 /* 화면 폭이 600px 이상 900px 미만일 때 */
 @media (min-width: 600px) and (max-width: 899px) {
-    .vmStatus-list li {
-        width: calc(100% / 4); /* 한 줄에 4개의 아이템을 배치 */
-    }
+  .vmStatus-list li {
+    width: calc(100% / 4); /* 한 줄에 4개의 아이템을 배치 */
+  }
 }
 
 /* 화면 폭이 900px 이상일 때 */
 @media (min-width: 900px) {
-    .vmStatus-list li {
-        width: calc(100% / 5); /* 한 줄에 5개의 아이템을 배치 */
-    }
+  .vmStatus-list li {
+    width: calc(100% / 5); /* 한 줄에 5개의 아이템을 배치 */
+  }
 }

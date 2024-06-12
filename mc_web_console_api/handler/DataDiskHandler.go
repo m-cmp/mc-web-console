@@ -349,8 +349,12 @@ func DataDiskPut(nameSpaceID string, dataDiskID string, dataDiskUpsizeReq *tbmci
 // Disk 정보 조회
 // Provider, connection 에서 사용가능한 DiskType 조회
 // 현재 : spider의 cloudos_meta.yaml 값 사용
-func DiskLookup(providerId string, connectionName string) ([]webconsole.LookupDiskInfo, error) {
+// func DiskLookup(providerId string, connectionName string) ([]webconsole.LookupDiskInfo, error) {
+func DiskLookup(c buffalo.Context, commonRequest *webconsole.CommonRequest) (*webconsole.CommonResponse, error) {
 
+	providerId := strings.ToUpper(commonRequest.QueryParams ["provider"])
+	connectionName := commonRequest.QueryParams ["connectionName"]
+		
 	//defaultNameSpaceID := loginInfo.DefaultNameSpaceID
 	diskInfoMap := map[string]webconsole.LookupDiskInfo{}
 
@@ -413,8 +417,12 @@ func DiskLookup(providerId string, connectionName string) ([]webconsole.LookupDi
 		// getConnection 에서 Provider 가져옴
 
 	}
-
-	return dataDiskInfoList, nil
+	
+	commonResponse := &webconsole.CommonResponse{}
+	commonResponse.Status.Message = "success"
+	commonResponse.Status.StatusCode = 200
+	commonResponse.ResponseData = dataDiskInfoList
+	return commonResponse, nil
 }
 
 // Provider, Region 에서 사용가능한 DiskType 조회
