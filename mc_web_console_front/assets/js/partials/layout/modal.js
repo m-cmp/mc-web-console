@@ -5,9 +5,9 @@
     </a>
 */
 export function commonModal(elm, title, content, func, argument) {
-    const form = elm.getAttribute('data-bs-target').replace(/^#/, '');
+    const form = elm.getAttribute('data-bs-target').replace(/^#/, '');  // 불러올 modal Id
     const funcArr = func.split(".");
-    document.getElementById(`${form}-title`).innerText = title
+    document.getElementById(`${form}-title`).innerText = title          
     document.getElementById(`${form}-content`).innerText = content
     document.getElementById(`${form}-confirm-btn`).onclick = function() {
         const executefunction = `webconsolejs["${funcArr[0]}"].${funcArr[1]}('${argument}')`;

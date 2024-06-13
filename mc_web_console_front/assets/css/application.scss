@@ -32,11 +32,23 @@
   border: 1px solid #ccc;
   box-sizing: border-box;
   width: calc(100% / 2); /* 기본적으로 한 줄에 2개의 아이템을 배치 */
+  height: 100px;
+  display: inline-block;
+  margin: 10px 0;
+  text-align: center;
+  line-height: 100px;
+  font-size: 16px;
+  border-radius: 15px;
+  // transition: background-color 0.3s; /* 배경색 변화 애니메이션 */
+  cursor: pointer; /* 클릭 가능 커서 */
 }
-
+.vmStatus-list li.clicked {
+  background-color: #17a2b8; /* 클릭 시 배경색 변경 */
+}
 .removebullet {
-  list-style: none;
-  padding-left:0px;
+  list-style-type: none;
+  padding-left: 0px;
+  flex-wrap: wrap;
 }
 
 // .dashboard .create_box .new_servers_config.active {

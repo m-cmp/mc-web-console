@@ -5,653 +5,322 @@
     <div class="col-auto col-md-8">
       <h3 class="card-title">MCIS / server</h3>
     </div>
-    <div class="col-auto col-md-6 dropdown-area">
+    <div class="card-actions btn-actions">
+      <!-- filter -->
+      <a
+        class="btn-action"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#filterbody"
+        aria-expanded="false"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-filter"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"
+          />
+        </svg>
+      </a>
+
+      <!-- sort -->
       <div class="dropdown">
-        <a
-          href="javascript:void(0);"
-          class="btn dropdown-toggle"
-          data-bs-toggle="dropdown"
-          >Filter</a
+        <a href="#" class="btn-action" data-bs-toggle="dropdown">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-arrows-sort"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 9l4 -4l4 4m-4 -4v14" />
+            <path d="M21 15l-4 4l-4 -4m4 4v-14" />
+          </svg>
+        </a>
+        <div
+          class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
         >
-        <div class="dropdown-menu bg-dark text-white">
-          <a class="dropdown-item" href="javascript:void(0);">Name</a>
-          <a class="dropdown-item" href="javascript:void(0);">Status</a>
-          <a class="dropdown-item" href="javascript:void(0);">Description</a>
-          <a class="dropdown-item" href="javascript:void(0);">Server name</a>
+          <a class="dropdown-item" href="#">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
+            Action
+          </a>
+          <a class="dropdown-item" href="#">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
+              ></path>
+              <path
+                d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"
+              ></path>
+              <path d="M16 5l3 3"></path>
+            </svg>
+            Another action
+          </a>
         </div>
-        <a
-          href="javascript:void(0);"
-          class="btn dropdown-toggle"
-          data-bs-toggle="dropdown"
-          >Sort</a
+      </div>
+
+      <!-- Action -->
+      <div class="dropdown">
+        <a href="#" class="btn-action" data-bs-toggle="dropdown">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M6 9l6 6l6 -6" />
+          </svg>
+        </a>
+        <div
+          class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
         >
-        <div class="dropdown-menu bg-dark text-white">
-          <a class="dropdown-item" href="javascript:void(0);">Name</a>
-          <a class="dropdown-item" href="javascript:void(0);">Status</a>
-        </div>
-        <a
-          href="javascript:void(0);"
-          class="btn dropdown-toggle"
-          data-bs-toggle="dropdown"
-          >Action</a
-        >
-        <div class="dropdown-menu bg-dark text-white">
-          <span class="dropdown-header text-info">LifeCycle</span>
           <a
             class="dropdown-item"
-            href="javascript:void(0);"
             data-bs-toggle="modal"
-            data-bs-target="#Life_Reboot"
-            onClick="commonConfirmOpen('McisLifeCycleReboot')"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonlModal(this,'McisReboot', 'Would you like to reboot MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'reboot')"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
             Reboot
           </a>
           <a
             class="dropdown-item"
-            href="javascript:void(0);"
             data-bs-toggle="modal"
-            data-bs-target="#Life_Suspend"
-            onClick="commonConfirmOpen('McisLifeCycleSuspend')"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'suspend')"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
             Suspend
           </a>
           <a
             class="dropdown-item"
-            href="javascript:void(0);"
             data-bs-toggle="modal"
-            data-bs-target="#Life_Resume"
-            onClick="commonConfirmOpen('McisLifeCycleResume')"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisResume', 'Would you like to resume MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'resume')"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
             Resume
           </a>
           <a
             class="dropdown-item"
-            href="javascript:void(0);"
             data-bs-toggle="modal"
-            data-bs-target="#Life_Terminate"
-            onClick="commonConfirmOpen('McisLifeCycleTerminate')"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisTerminate', 'Would you like to terminate MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'terminate')"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
             Terminate
           </a>
-          <div class="dropdown-divider bg-secondary"></div>
-          <span class="dropdown-header text-info">Manage</span>
-          <a
-            class="dropdown-item"
-            href="javascript:void(0);"
-            data-bs-toggle="modal"
-            data-bs-target="#n_Manage"
-            onClick="commonConfirmOpen('MoveToMcisManagementFromDashboard')"
-          >
-            Manage
-          </a>
-          <a
-            class="dropdown-item"
-            href="javascript:void(0);"
-            data-bs-toggle="modal"
-            data-bs-target="#n_New"
-            onClick="commonConfirmOpen('AddNewMcis')"
-          >
+
+          <div class="dropdown-divider"></div>
+
+          <a class="dropdown-item" href="#manage">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
             New
+          </a>
+          <a class="dropdown-item" href="#">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
+            Delete
+          </a>
+          <a class="dropdown-item" href="#">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+              ></path>
+              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            </svg>
+            Export
           </a>
         </div>
       </div>
+
+      <!-- refresh -->
+      <a class="btn-action">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-refresh"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+        </svg>
+      </a>
     </div>
   </div>
   <div class="card-body">
     <%= partial("partials/operation/dashboard/mcisrunning.html") %>
   </div>
 </div>
-
-
-<script>
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-// confirm modal창 보이기 modal창이 열릴 때 해당 창의 text 지정, close될 때 action 지정
-function commonConfirmOpen(targetAction, caller) {
-    console.log("commonConfirmOpen : " + targetAction)
-
-    //  [ id , 문구]
-    let confirmModalTextMap = new Map(
-        [
-            ["CreateSnapshot", "Would you like to Create Snapshot?"],
-            ["DeleteDataDisk", "Would you like to Delete Disk?"],
-            ["DeleteMyImage", "Would you like to Delete MyImage?"],
-            ["Logout", "Would you like to logout?"],
-            ["Config", "Would you like to set Cloud config ?"],
-            ["SDK", "Would you like to set Cloud Driver SDK ?"],
-            ["Credential", "Would you like to set Credential ?"],
-            ["Region", "Would you like to set Region ?"],
-            ["Provider", "Would you like to set Cloud Provider ?"],
-
-            ["MoveToConnection", "Would you like to set Cloud config ?"],
-            ["ChangeConnection", "Would you like to change Cloud connection ?"],
-            ["DeleteCloudConnection", "Would you like to delete <br /> the Cloud connection? "],
-
-            ["DeleteCredential", "Would you like to delete <br /> the Credential? "],
-            ["DeleteDriver", "Would you like to delete <br /> the Driver? "],
-            ["DeleteRegion", "Would you like to delete <br /> the Region? "],
-
-
-            // ["IdPassRequired", "ID/Password required !"],    --. 이거는 confirm이 아니잖아
-            ["idpwLost", "Illegal account / password 다시 입력 하시겠습니까?"],
-            ["ManageNS", "Would you like to manage <br />Name Space?"],
-            ["NewNS", "Would you like to add a new Name Space?"],
-            ["AddNewNameSpace", "Would you like to register NameSpace <br />Resource ?"],
-            ["NameSpace", "Would you like to move <br />selected NameSpace?"],
-            ["ChangeNameSpace", "Would you like to move <br />selected NameSpace?"],
-            ["DeleteNameSpace", "Would you like to delete <br />selected NameSpace?"],
-
-            ["AddNewVpc", "Would you like to create a new Network <br />Resource ?"],
-            ["DeleteVpc", "Are you sure to delete this Network <br />Resource ?"],
-
-            ["AddNewSecurityGroup", "Would you like to create a new Security <br />Resource ?"],
-            ["DeleteSecurityGroup", "Would you like to delete Security <br />Resource ?"],
-
-            ["AddNewSshKey", "Would you like to create a new SSH key <br />Resource ?"],
-            ["DeleteSshKey", "Would you like to delete SSH key <br />Resource ?"],
-
-            ["AddNewVirtualMachineImage", "Would you like to register Image <br />Resource ?"],
-            ["DeleteVirtualMachineImage", "Would you like to un-register Image <br />Resource ?"],
-            ["FetchImages", "Would you like to fetch images <br /> to this NameSpace ?"],
-
-            ["AddNewVmSpec", "Would you like to register Spec <br />Resource ?"],
-            ["DeleteVmSpec", "Would you like to un-register Spec <br />Resource ?"],
-            ["FetchSpecs", "Would you like to fetch Spec <br /> to this NameSpace ?"],
-
-            ["GotoMonitoringPerformance", "Would you like to view performance <br />for MCIS ?"],
-            ["GotoMonitoringFault", "Would you like to view fault <br />for MCIS ?"],
-            ["GotoMonitoringCost", "Would you like to view cost <br />for MCIS ?"],
-            ["GotoMonitoringUtilize", "Would you like to view utilize <br />for MCIS ?"],
-
-            ["McisLifeCycleReboot", "Would you like to reboot MCIS ?"],// mcis_life_cycle('reboot')
-            ["McisLifeCycleSuspend", "Would you like to suspend MCIS ?"],//onclick="mcis_life_cycle('suspend')
-            ["McisLifeCycleResume", "Would you like to resume MCIS ?"],//onclick="mcis_life_cycle('resume')"
-            ["McisLifeCycleTerminate", "Would you like to terminate MCIS ?"],//onclick="mcis_life_cycle('terminate')
-            ["McisManagement", "Would you like to manage MCIS ?"],// 해당 function 없음...
-            ["MoveToMcisManagement", "Would you like to manage MCIS ?"],
-            ["MoveToMcisManagementFromDashboard", "Would you like to manage MCIS ?"],
-
-            ["AddNewMcis", "Would you like to create MCIS ?"],
-            ["AddNewMcisDynamic", "Would you like to create MCIS ?"],
-            ["DeleteMcis", "Are you sure to delete this MCIS? "],
-            ["ImportScriptOfMcis", "Would you like to import MCIS script? "],
-            ["ExportScriptOfMcis", "Would you like to export MCIS script? "],
-            ["ShowMonitoring", "Would you like to go to the Monitoring page?"],
-
-            ["AddNewVmOfMcis", "Would you like to add a new VM to this MCIS ?"],
-            ["DeployServer", "Would you like to deploy?"],
-
-            ["VmLifeCycle", "Would you like to view Server ?"],
-            ["VmLifeCycleReboot", "Would you like to reboot VM ?"], //onclick="vm_life_cycle('reboot')"
-            ["VmLifeCycleSuspend", "Would you like to suspend VM ?"], // onclick="vm_life_cycle('suspend')"
-            ["VmLifeCycleResume", "Would you like to resume VM ?"], // onclick="vm_life_cycle('resume')"
-            ["VmLifeCycleTerminate", "Would you like to terminate VM ?"], // onclick="vm_life_cycle('terminate')"
-            ["VmManagement", "Would you like to manage VM ?"], // 해당 function 없음
-            ["AddNewVm", "Would you like to add VM ?"], //onclick="vm_add()"
-            ["ExportVmScriptOfMcis", "Would you like to export VM script ?"], //onclick="vm_add()"
-
-
-            ["DifferentConnection", "Do you want to set different connectionName?"],
-            ["DifferentConnectionAtSecurityGroup", "Do you want to set different connectionName?"],
-            ["DifferentConnectionAtAssistPopup", "Do you want to set different connectionName?"],
-
-            ["AddMonitoringAlertPolicy", "Would you like to register Threshold ?"],
-            ["DeleteMonitoringAlertPolicy", "Are you sure to delete this Threshold ?"],
-            ["AddNewMcks", "Would you like to create MCKS ?"],
-            ["DeleteMcks", "Are you sure to delete this MCKS? "],
-            ["AddNewNodeOfMcks", "Would you like to add a new Node to this MCKS ?"],
-            ["DeleteNodeOfMcks", "Would you like to delete a Node of this MCKS ?"],
-
-
-            ["AddMonitoringAlertEventHandler", "Would you like to add<br />Monitoring Alert Event-Handler ?"],
-            ["deleteMonitoringAlertEventHandler", "Are you sure to delete<br />this Monitoring Alert Event-Handler?"],
-
-            ["RegisterRecommendSpec", "현재 해당 connection에서 사용가능한 spec 이 없습니다. 등록 하시겠습니까?"],
-
-            ["DeleteNlb", "Would you like to delete NLB ?"],
-
-            ["AddNewPmks", "Would you like to create PMKS ?"],
-            ["DeletePmks", "Are you sure to delete this PMKS? "],
-            ["AddNewNodeGroupOfPmks", "Would you like to add a new NodeGroup to this PMKS ?"],
-            ["DeleteNodeGroupOfPmks", "Would you like to delete a NodeGroup of this PMKS ?"],
-        ]
-    );
-    console.log(confirmModalTextMap.get(targetAction));
-    try {
-        // $('#modalText').text(targetText);// text아니면 html로 해볼까? 태그있는 문구가 있어서
-        //$('#modalText').text(confirmModalTextMap.get(targetAction));
-        //document.getElementById('confirmText').html(confirmModalTextMap.get(targetAction));
-        //$('#confirmText').html(confirmModalTextMap.get(targetAction));
-        // $('#confirmOkAction').val(targetAction);
-        // console.log("caller : ", caller);
-        // $('#confirmCaller').val(caller);
-
-        // if (targetAction == "Region") {
-        //     // button에 target 지정
-        //     // data-target="#Add_Region_Register"
-        //     // TODO : confirm 으로 물어본 뒤 OK버튼 클릭 시 targetDIV 지정하도록
-        // }
-        // $('#confirmArea').modal();
-    } catch (e) {
-        console.log(e);
-        alert(e);
-    }
-}
-
-// confirm modal창에서 ok버튼 클릭시 수행할 method 지정
-function commonConfirmOk() {
-    //modalArea
-    var targetAction = $('#confirmOkAction').val();
-    var caller = $('#confirmCaller').val();
-    if (targetAction == "Logout") {
-        // Logout처리하고 index화면으로 간다. Logout ==> cookie expire
-        // location.href="/logout"
-        var targetUrl = "/logout"
-        changePage(targetUrl)
-
-    } else if (targetAction == "MoveToConnection") {
-        var targetUrl = "/setting/connections/cloudconnectionconfig/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "ChangeConnection") { // recommendvm에서 다른 connection 선택 시
-        changeCloudConnection()
-    } else if (targetAction == "DeleteCloudConnection") {
-        deleteCloudConnection();
-    } else if (targetAction == "Config") {
-        //id="Config"
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "SDK") {
-        //id="SDK"
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "DeleteCredential") {
-        deleteCredential();
-    } else if (targetAction == "DeleteDriver") {
-        deleteDriver();
-    } else if (targetAction == "DeleteRegion") {
-        deleteRegion();
-
-    } else if (targetAction == "Credential") {
-        //id="Credential"
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "Region") {
-        //id="Region"
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "Provider") {
-        //id="Provider"
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "required") {//-- IdPassRequired
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "idpwLost") {//-- 
-        console.log("commonConfirmOk " + targetAction);
-    } else if (targetAction == "ManageNS") {//-- ManageNS
-        var targetUrl = "/setting/namespaces/namespace/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "NewNS") {//-- NewNS
-        var targetUrl = "/setting/namespaces/namespace/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "ChangeNameSpace") {//-- ChangeNameSpace
-        var changeNameSpaceID = $("#tempSelectedNameSpaceID").val();
-        setDefaultNameSpace(changeNameSpaceID)
-    } else if (targetAction == "AddNewNameSpace") {//-- AddNewNameSpace
-        displayNameSpaceInfo("REG")
-        goFocus('ns_reg');// 해당 영역으로 scroll
-    } else if (targetAction == "DeleteNameSpace") {
-        deleteNameSpace()
-    } else if (targetAction == "AddNewVpc") {
-        displayVNetInfo("REG")
-        goFocus('vnetCreateBox');
-    } else if (targetAction == "DeleteVpc") {
-        deleteVPC()
-    } else if (targetAction == "AddNewSecurityGroup") {
-        displaySecurityGroupInfo("REG")
-        goFocus('securityGroupCreateBox');
-    } else if (targetAction == "DeleteSecurityGroup") {
-        deleteSecurityGroup()
-    } else if (targetAction == "AddNewSshKey") {
-        displaySshKeyInfo("REG")
-        goFocus('sshKeyCreateBox');
-    } else if (targetAction == "DeleteSshKey") {
-        deleteSshKey()
-    } else if (targetAction == "AddNewVirtualMachineImage") {
-        displayVirtualMachineImageInfo("REG")
-        goFocus('virtualMachineImageCreateBox');
-    } else if (targetAction == "DeleteVirtualMachineImage") {
-        deleteVirtualMachineImage()
-    } else if (targetAction == "FetchImages") {
-        getCommonFetchImages();
-    } else if (targetAction == "AddNewVmSpec") {
-        displayVmSpecInfo("REG")
-        goFocus('vmSpecCreateBox');
-    } else if (targetAction == "ExportVmScriptOfMcis") {
-        vmScriptExport();
-    } else if (targetAction == "DeleteVmSpec") {
-        deleteVmSpec();
-    } else if (targetAction == "FetchSpecs") {
-        var connectionName = $("#regConnectionName").val();
-        putFetchSpecs(connectionName);
-    } else if (targetAction == "GotoMonitoringPerformance") {
-        // alert("모니터링으로 이동 GotoMonitoringPerformance")
-        // location.href ="";//../operation/Monitoring_Mcis.html
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "GotoMonitoringFault") {
-        // alert("모니터링으로 이동 GotoMonitoringFault")
-        // location.href ="";//../operation/Monitoring_Mcis.html
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "GotoMonitoringCost") {
-        // alert("모니터링으로 이동 GotoMonitoringCost")
-        // location.href ="";//../operation/Monitoring_Mcis.html
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "GotoMonitoringUtilize") {
-        // alert("모니터링으로 이동 GotoMonitoringUtilize")
-        // location.href ="";//../operation/Monitoring_Mcis.html    
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
-        changePage(targetUrl)
-    } else if (targetAction == "McisLifeCycleReboot") {
-        callMcisLifeCycle('reboot')
-    } else if (targetAction == "McisLifeCycleSuspend") {
-        callMcisLifeCycle('suspend')
-    } else if (targetAction == "McisLifeCycleResume") {
-        callMcisLifeCycle('resume')
-    } else if (targetAction == "McisLifeCycleTerminate") {
-        callMcisLifeCycle('terminate')
-    } else if (targetAction == "McisManagement") {
-        alert("수행할 function 정의되지 않음");
-    } else if (targetAction == "MoveToMcisManagementFromDashboard") {
-        var mcisID = $("#mcis_id").val();
-        var targetUrl = "/operation/manages/mcismng/mngform?mcisid=" + mcisID;
-        changePage(targetUrl)
-    } else if (targetAction == "MoveToMcisManagement") {
-        var targetUrl = "/operation/manages/mcismng/mngform";
-        changePage(targetUrl)
-    } else if (targetAction == "AddNewMcis") {
-        // $('#loadingContainer').show();
-        // location.href ="/operation/manages/mcis/regform/";
-        var targetUrl = "/operation/manages/mcismng/regform";
-        changePage(targetUrl)
-    } else if (targetAction == "DeleteMcis") {
-        deleteMCIS();
-    } else if (targetAction == "DeployServer") {
-        btn_deploy();
-    } else if (targetAction == "ImportScriptOfMcis") {
-        mcisScriptImport();
-    } else if (targetAction == "ExportScriptOfMcis") {
-        mcisScriptExport();
-    } else if (targetAction == "ShowMonitoring") {
-        var mcisID = $("#mcis_id").val();
-        var targetUrl = "/operation/monitorings/mcismonitoring/mngform?mcisId=" + mcisID;
-        changePage(targetUrl)
-    } else if (targetAction == "VmLifeCycle") {
-        alert("수행할 function 정의되지 않음");
-    } else if (targetAction == "VmLifeCycleReboot") {
-        vmLifeCycle('reboot')
-    } else if (targetAction == "VmLifeCycleSuspend") {
-        vmLifeCycle('suspend')
-    } else if (targetAction == "VmLifeCycleResume") {
-        vmLifeCycle('resume')
-    } else if (targetAction == "VmLifeCycleTerminate") {
-        vmLifeCycle('terminate')
-    } else if (targetAction == "VmManagement") {
-        alert("수행할 function 정의되지 않음");
-    } else if (targetAction == "AddNewVm") {
-        addNewVirtualMachine()
-    } else if (targetAction == "AddNewVmOfMcis") {
-        addNewVirtualMachine()
-    } else if (targetAction == "ExportVmScriptOfMcis") {
-        vmScriptExport();
-    } else if (targetAction == "--") {
-        addNewVirtualMachine()
-    } else if (targetAction == "monitoringConfigPolicyConfig") {
-        regMonitoringConfigPolicy()
-    } else if (targetAction == "DifferentConnection") {
-        setAndClearByDifferentConnectionName(caller);
-    } else if (targetAction == "DifferentConnectionAtSecurityGroup") {
-        uncheckDifferentConnectionAtSecurityGroup();
-    } else if (targetAction == "DifferentConnectionAtAssistPopup") {
-        // connection이 다른데도 set 한다고 하면 이전에 설정한 값들을 초기화 한 후 set한다.
-        applyAssistValues(caller);
-    } else if (targetAction == "AddMonitoringAlertPolicy") {
-        addMonitoringAlertPolicy();
-    } else if (targetAction == "DeleteMonitoringAlertPolicy") {
-        deleteMonitoringAlertPolicy();
-    } else if (targetAction == "AddNewMcks") {
-        var targetUrl = "/operation/manages/mcksmng/regform";
-        changePage(targetUrl)
-    } else if (targetAction == "AddNewNodeOfMcks") {
-        addNewNode();
-    } else if (targetAction == "DeleteNodeOfMcks") {
-        deleteNodeOfMcks();
-    } else if (targetAction == "AddMonitoringAlertEventHandler") {
-        addMonitoringAlertEventHandler();
-    } else if (targetAction == "deleteMonitoringAlertEventHandler") {
-        deleteMonitoringAlertEventHandler();
-    } else if (targetAction == "DeleteMcks") {
-        deleteMCKS();
-    } else if (targetAction == "RegisterRecommendSpec") {
-        commonPromptOpen("RegisterRecommendSpec")
-    } else if (targetAction == "AddNewMcisDynamic") {
-        createMcisDynamic()
-    } else if (targetAction == "DeleteDataDisk") {
-        deleteDataDisk();
-
-    } else if (targetAction == "DeleteMyImage") {
-        deleteMyImageDisk();
-
-    } else if (targetAction == "CreateSnapshot") {
-        commonPromptOk
-        createSnapshot();
-
-    } else if (targetAction == "DeleteNlb") {
-        deleteNlb();
-    } else if (targetAction == "AddNewPmks") {
-        changePage("PmksClusterRegForm");
-    } else if (targetAction == "DeletePmks") {
-        deleteCluster();
-    } else if (targetAction == "AddNewNodeGroupOfPmks") {
-        changePage("PmksNodeGroupRegForm");
-    } else if (targetAction == "DeleteNodeGroupOfPmks") {
-        deleteNodeGroupOfPmks();
-    } else {
-        alert("수행할 function 정의되지 않음 " + targetAction);
-    }
-    console.log("commonConfirmOk " + targetAction);
-    commonConfirmClose();
-}
-
-// confirm modal창 닫기. setting값 초기화
-function commonConfirmClose() {
-    $('#confirmText').text('');
-    $('#confirmOkAction').val('');
-    // $('#modalArea').hide(); 
-    $("#confirmArea").modal("hide");
-}
-
-function commonPromptEnter(keyEvent) {
-    if (keyEvent.keyCode == 13) {
-        commonPromptOk();
-    }
-}
-
-function commonPromptOk() {
-    var targetAction = $('#promptOkAction').val();
-    var targetObjId = $('#promptTargetObjId').val();
-    var targetValue = $('#promptText').val();
-
-    console.log("promptOkAction : " + targetAction)
-    if (targetAction == 'FilterName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'FilterCloudProvider') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Cloud Provider", targetValue)
-        }
-    } else if (targetAction == 'FilterDriver') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Driver", targetValue)
-        }
-    } else if (targetAction == 'FilterCredential') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Credential", targetValue)
-        }
-    } else if (targetAction == 'RsFltVPCName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonSecurityGroupList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltCIDRBlock') {// Name이라는 Column을 Filtering
-        var filterKey = "cidrBlock"
-        if (targetValue) {
-            getCommonSecurityGroupList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSecurityGroupName') {// Name이라는 Column을 Filtering
-        var filterKey = "cspSecurityGroupName"
-        if (targetValue) {
-            getCommonSecurityGroupList("securitygroupmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltConnectionName') {// Name이라는 Column을 Filtering
-        var filterKey = "connectionName"
-        if (targetValue) {
-            getCommonSecurityGroupList("securitygroupmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSshName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'RsFltSshConnName') {// Name이라는 Column을 Filtering
-        var filterKey = "connectionName"
-        if (targetValue) {
-            getCommonSshKeyList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSshKeyName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonSshKeyList("", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvImgId') {// Name이라는 Column을 Filtering
-        var filterKey = "cspImageId"
-        if (targetValue) {
-            getCommonVirtualMachineImageList("virtualmachineimagemng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvImgName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonVirtualMachineImageList("virtualmachineimagemng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvSpecName') {// Name이라는 Column을 Filtering
-        var filterKey = "name"
-        if (targetValue) {
-            getCommonVirtualMachineSpecList("virtualmachinespecmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvSpecConnName') {// Name이라는 Column을 Filtering
-        var filterKey = "connectionName"
-        if (targetValue) {
-            getCommonVirtualMachineSpecList("virtualmachinespecmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'RsFltSrvCspSpecName') {// Name이라는 Column을 Filtering
-        var filterKey = "cspSpecName"
-        if (targetValue) {
-            getCommonVirtualMachineSpecList("virtualmachinespecmng", "name", "", filterKey, targetValue)
-        }
-    } else if (targetAction == 'NSFltName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'NSFltId') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "ID", targetValue)
-        }
-    } else if (targetAction == 'NSFltDescription') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "description", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyMeasurement') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Measurement", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyTargetType') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Target Type", targetValue)
-        }
-    } else if (targetAction == 'AlertPolicyEventType') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Alert Event Type", targetValue)
-        }
-    } else if (targetAction == 'FilterMcisName') {// Name이라는 Column을 Filtering
-        if (targetValue) {
-            // keyword표시
-            searchKeyword(targetValue, 'mcislistfilter')
-        }
-    } else if (targetAction == 'FilterMcisStatus') {// Status이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Status", targetValue)
-        }
-    } else if (targetAction == 'FilterMcisDesc') {// Description이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Description", targetValue)
-        }
-    } else if (targetAction == 'OprMngMcksStatus') {// Description이라는 Column을 Filtering
-        console.log("OprMngMcksStatus");
-        if (targetValue) {
-            filterTable(targetObjId, "Status", targetValue)
-        }
-    } else if (targetAction == 'OprMngMcksName') {// Description이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "Name", targetValue)
-        }
-    } else if (targetAction == 'OprMngMcksNetworkCni') {// Description이라는 Column을 Filtering
-        if (targetValue) {
-            filterTable(targetObjId, "NetworkCni", targetValue)
-        }
-    } else if (targetAction == 'RemoteCommandMcis') {
-        if (targetValue) {
-            remoteCommandMcis(targetValue);
-            //postRemoteCommandMcis(targetValue);
-        }
-    } else if (targetAction == 'RemoteCommandVmOfMcis') {
-        if (targetValue) {
-            remoteCommandVmMcis(targetValue);
-        }
-    } else if (targetAction == 'RegisterRecommendSpec') {
-        createRecommendSpec(targetValue);
-    } else if (targetAction == 'AddNewMcisDynamic') {
-        $("#mcis_name").val(targetValue)
-        createMcisDynamic()
-    } else if (targetAction == 'CreateSnapshot') {
-        createSnapshot(targetValue);
-    }
-
-
-    commonPromptClose();
-}
-
-function commonPromptClose() {
-  document.getElementById('promptQuestion').text('');
-    $('#promptQuestion').text('');
-    $('#promptText').text('');
-    $('#promptOkAction').val('');
-    $("#promptArea").modal("hide");
-}
-
-// alert창 닫기
-function commonAlertClose() {
-    $("#alertArea").modal("hide");
-}
-
-// alert창 닫기
-function commonResultAlertClose() {
-    $("#alertResultArea").modal("hide");
-}
-
-function guideAreaHide() {
-    console.log("hide brfore")
-    $("#guideArea").modal("hide");
-    console.log("hide after")
-}
-</script>

@@ -3,43 +3,6 @@
     <!-- MCIS DASHBOARD -->
     <div id="index" class="section">
       <div class="row row-cards">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">modalTest</h3>
-            </div>
-
-            <div class="card-body">
-              <div class="btn-list">
-                <a
-                  class="btn"
-                  data-bs-toggle="modal"
-                  data-bs-target="#commonDefaultModal"
-                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')"
-                >
-                  commonDefaultModal
-                </a>
-                <a
-                  class="btn"
-                  data-bs-toggle="modal"
-                  data-bs-target="#commonLargeModal"
-                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')"
-                >
-                  commonLargeModal
-                </a>
-                <a
-                  class="btn"
-                  data-bs-toggle="modal"
-                  data-bs-target="#commonfullwidthModal"
-                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')"
-                >
-                  commonfullwidthModal
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="col-md-7">
           <div class="card">
             <div class="card-header">
@@ -148,7 +111,11 @@
             <div class="card-header">
               <h3 class="card-title">List of MCIS</h3>
               <div class="card-actions btn-actions">
-                <a href="#manage" class="btn btn-primary">
+                <a href="#manage" class="btn btn-primary" 
+                onclick="webconsolejs['pages/operation/manage/createmcis'].addNewMcis()"
+                              
+                
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="icon"
@@ -614,7 +581,7 @@
     <!-- MCIS CREATE -->
 
     <!-- TODO : divide to express, simple, expert form  -->
-    <div id="manage" class="section ">
+    <div id="manage" class="section">
       <form id="express_form">
         <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
         <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
@@ -631,6 +598,8 @@
         <input type="hidden" name="spec" id="p_specId" />
         <input type="hidden" name="commonSpec" id="p_commonSpecId" />
         <input type="hidden" name="commonImage" id="p_commonImageId" />
+        <input type="hidden" name="rootDiskType" id="p_root_disk_type" />
+        <input type="hidden" name="rootDiskSize" id="p_root_disk_size" />
         <input
           type="hidden"
           name="connectionName"
@@ -686,153 +655,16 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <div class="list">
-                      <ul class="removebullet" id="mcis_server_list">
-                        <li class="removebullet" id="plusVmIcon">
-                          <div
-                            class="server server_add btn btn-primary"
-                            onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()"
-                          >
-                            +
-                            <!-- <a href="#">+</a> -->
-                          </div>
+                      <ul class="removebullet vmStatus-list" id="mcis_server_list">
+                        <li class="removebullet btn btn-secondary-lt" id="mcis_plusVmIcon" onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()">
+                          +
                         </li>
                       </ul>
-                      <!-- <button class="btn btn-primary" onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()">+</button> -->
-                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="card-footer text-end">
-              <button type="" class="btn btn-primary" onclick="webconsolejs['pages/operation/manage/createmcis'].deployMcis()">Deploy</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-3">
-          <div class="card">
-            <div class="card-body">
-              <h3 class="card-title">Steps</h3>
-              <ul class="steps steps-vertical">
-                <li class="step-item active">
-                  <div class="h4 m-0">MCIS Name</div>
-                  <div class="text-secondary">MCIS Name input ex) mcis01</div>
-                </li>
-                <li class="step-item">
-                  <div class="h4 m-0">Order received</div>
-                  <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
-                </li>
-              </ul>
-            </div>
-
-            <div class="card-body">
-              <ul class="steps steps-counter steps-vertical">
-                <li class="step-item active">Step one</li>
-                <li class="step-item">Step two</li>
-                <li class="step-item">Step three</li>
-                <li class="step-item">Step four</li>
-                <li class="step-item">Step five</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- addserver -->
-
-    <div id="addserver" class="section">
-    
-      <form id="express_form">
-        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
-        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
-        <input
-          type="hidden"
-          name="subGroupSize"
-          value=""
-          id="p_subGroupSize"
-        /><!-- vm_cnt에서 subGroupSize로 변경 -->
-        <input type="hidden" name="name" value="" id="p_name" />
-        <input type="hidden" name="description" id="p_description" />
-        <input type="hidden" name="provider" id="p_provider" />
-        <input type="hidden" name="image" id="p_imageId" />
-        <input type="hidden" name="spec" id="p_specId" />
-        <input type="hidden" name="commonSpec" id="p_commonSpecId" />
-        <input type="hidden" name="commonImage" id="p_commonImageId" />
-        <input
-          type="hidden"
-          name="connectionName"
-          value=""
-          id="p_connectionName"
-        />
-      </form>
-
-      <div class="row row-cards">
-        <div class="col-md-9">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Extend VM</h3>
-            </div>
-
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="mcis_name"
-                  id="extend_mcis_name"
-                  value=""
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea
-                  class="form-control"
-                  rows="2"
-                  name="mcis_desc"
-                  id="extend_mcis_desc"
-                  placeholder="type Description"
-                >
-                </textarea>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Deployment Algorithm</label>
-                <select
-                  class="form-select"
-                  name="deploy_algorithm"
-                  id="deploy_algorithm"
-                >
-                  <option value="express">Express</option>
-                  <option value="simple">Simple</option>
-                  <option value="expert">Expert</option>
-                </select>
-              </div>
-
-              <div class="card">
-                <div class="card-body">
-                  <div class="row row-cards">
-                    <div class="list">
-                      <ul class="removebullet" id="mcis_server_list">
-                        <li class="removebullet" id="plusVmIcon">
-                          <div
-                            class="server server_add btn btn-primary"
-                            onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()"
-                          >
-                            +
-                            <!-- <a href="#">+</a> -->
-                          </div>
-                        </li>
-                      </ul>
-                      <!-- <button class="btn btn-primary" onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()">+</button> -->
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
             </div>
 
             <div class="card-footer text-end">
@@ -875,12 +707,133 @@
           </div>
         </div>
       </div>
-
     </div>
 
+    <!-- addserver -->
 
+    <div id="addserver" class="section">
+      <form id="express_form">
+        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
+        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
+        <input
+          type="hidden"
+          name="subGroupSize"
+          value=""
+          id="p_subGroupSize"
+        /><!-- vm_cnt에서 subGroupSize로 변경 -->
+        <input type="hidden" name="name" value="" id="p_name" />
+        <input type="hidden" name="description" id="p_description" />
+        <input type="hidden" name="provider" id="p_provider" />
+        <input type="hidden" name="image" id="p_imageId" />
+        <input type="hidden" name="spec" id="p_specId" />
+        <input type="hidden" name="commonSpec" id="p_commonSpecId" />
+        <input type="hidden" name="commonImage" id="p_commonImageId" />
+        <input
+          type="hidden"
+          name="connectionName"
+          value=""
+          id="p_connectionName"
+        />
+      </form>
 
+      <div class="row row-cards">
+        <div class="col-md-9">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Extend VM</h3>
+            </div>
 
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="extend_mcis_name"
+                  id="extend_mcis_name"
+                  value=""
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  name="mcis_desc"
+                  id="extend_mcis_desc"
+                  placeholder="type Description"
+                >
+                </textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Deployment Algorithm</label>
+                <select
+                  class="form-select"
+                  name="deploy_algorithm"
+                  id="deploy_algorithm"
+                >
+                  <option value="express">Express</option>
+                  <option value="simple">Simple</option>
+                  <option value="expert">Expert</option>
+                </select>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="row row-cards">
+                      <ul class="vmStatus-list removebullet" id="vm_server_list">
+                        <li class="removebullet btn btn-secondary-lt" id="vm_plusVmIcon" onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()">
+                          +
+                        </li>
+                      </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer text-end">
+              <button
+                type=""
+                class="btn btn-primary"
+                onclick="webconsolejs['pages/operation/manage/createmcis'].btn_deploy()"
+              >
+                Deploy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="card-title">Steps</h3>
+              <ul class="steps steps-vertical">
+                <li class="step-item active">
+                  <div class="h4 m-0">MCIS Name</div>
+                  <div class="text-secondary">MCIS Name input ex) mcis01</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">Order received</div>
+                  <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card-body">
+              <ul class="steps steps-counter steps-vertical">
+                <li class="step-item active">Step one</li>
+                <li class="step-item">Step two</li>
+                <li class="step-item">Step three</li>
+                <li class="step-item">Step four</li>
+                <li class="step-item">Step five</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
