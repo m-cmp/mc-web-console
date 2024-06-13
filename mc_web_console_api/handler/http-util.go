@@ -1,4 +1,4 @@
-package actions
+package handler
 
 import (
 	"bytes"
@@ -8,21 +8,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"strings"
-
-	"github.com/gobuffalo/buffalo"
 )
-
-var (
-	apiBaseHost *url.URL
-)
-
-func init() {
-	apiAddr := os.Getenv("API_ADDR")
-	apiPort := os.Getenv("API_PORT")
-	apiBaseHost, _ = url.Parse("http://" + apiAddr + ":" + apiPort)
-}
 
 type CommonRequest struct {
 	PathParams  map[string]string `json:"pathParams"`
@@ -30,6 +17,7 @@ type CommonRequest struct {
 	Request     interface{}       `json:"request"`
 }
 
+// 모든 응답을 CommonResponse로 한다.
 type CommonResponse struct {
 	ResponseData interface{} `json:"responseData"`
 	Status       WebStatus   `json:"status"`
@@ -40,10 +28,10 @@ type WebStatus struct {
 	Message    string `json:"message"`
 }
 
-func CommonResponseProvider(status int, responseData interface{}) *CommonResponse {
+func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
 	webStatus := WebStatus{
-		StatusCode: status,
-		Message:    http.StatusText(status),
+		StatusCode: http.StatusOK,
+		Message:    http.StatusText(http.StatusOK),
 	}
 	return &CommonResponse{
 		ResponseData: responseData,
@@ -51,17 +39,63 @@ func CommonResponseProvider(status int, responseData interface{}) *CommonRespons
 	}
 }
 
-func CommonCaller(callMethod string, endPoint string, commonRequest *CommonRequest, c buffalo.Context) (*CommonResponse, error) {
+func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusNotFound,
+		Message:    http.StatusText(http.StatusNotFound),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusStatusUnauthorized(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusUnauthorized,
+		Message:    http.StatusText(http.StatusUnauthorized),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusBadRequest(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusBadRequest,
+		Message:    http.StatusText(http.StatusBadRequest),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusInternalServerError(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusInternalServerError,
+		Message:    http.StatusText(http.StatusInternalServerError),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonCaller(callMethod string, targetFwUrl string, endPoint string, commonRequest *CommonRequest, auth string) (*CommonResponse, error) {
 	pathParamsUrl := mappingUrlPathParams(endPoint, commonRequest)
 	queryParamsUrl := mappingQueryParams(pathParamsUrl, commonRequest)
-	commonResponse, err := CommonHttpToCommonResponse(apiBaseHost.ResolveReference(&url.URL{Path: queryParamsUrl}).String(), commonRequest, callMethod, c.Session().Get("Authorization").(string))
+	requestUrl := targetFwUrl + queryParamsUrl
+	commonResponse, err := CommonHttpToCommonResponse(requestUrl, commonRequest.Request, callMethod, auth)
 	return commonResponse, err
 }
 
-func CommonCallerWithoutToken(callMethod string, endPoint string, commonRequest *CommonRequest) (*CommonResponse, error) {
+func CommonCallerWithoutToken(callMethod string, targetFwUrl string, endPoint string, commonRequest *CommonRequest) (*CommonResponse, error) {
 	pathParamsUrl := mappingUrlPathParams(endPoint, commonRequest)
 	queryParamsUrl := mappingQueryParams(pathParamsUrl, commonRequest)
-	commonResponse, err := CommonHttpToCommonResponse(apiBaseHost.ResolveReference(&url.URL{Path: queryParamsUrl}).String(), commonRequest, callMethod, "")
+	requestUrl := targetFwUrl + queryParamsUrl
+	commonResponse, err := CommonHttpToCommonResponse(requestUrl, commonRequest.Request, callMethod, "")
 	return commonResponse, err
 }
 
@@ -116,6 +150,7 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error CommonHttp request:", err)
+		return CommonResponseStatusInternalServerError(err), err
 	}
 	defer resp.Body.Close()
 
@@ -128,7 +163,7 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	commonResponse.Status.Message = resp.Status
 	commonResponse.Status.StatusCode = resp.StatusCode
 	if len(respBody) > 0 {
-		jsonerr := json.Unmarshal(respBody, &commonResponse)
+		jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
 		if jsonerr != nil {
 			log.Println("Error CommonHttp Unmarshal response:", jsonerr.Error())
 			return commonResponse, jsonerr

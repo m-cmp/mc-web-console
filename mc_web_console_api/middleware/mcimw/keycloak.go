@@ -11,7 +11,6 @@ import (
 	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/validate/v3"
 	"github.com/gobuffalo/validate/v3/validators"
-	"github.com/golang-jwt/jwt"
 )
 
 type keycloak struct {
@@ -35,37 +34,6 @@ type UserLoginRefresh struct {
 type UserLogout struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-}
-
-type CustomClaims struct {
-	*jwt.StandardClaims
-	Exp int `json:"exp"`
-	// Iat            int      `json:"iat"`
-	// Jti            string   `json:"jti"`
-	// Iss            string   `json:"iss"`
-	// Aud            string   `json:"aud"`
-	// Sub            string   `json:"sub"`
-	// Typ            string   `json:"typ"`
-	// Azp            string   `json:"azp"`
-	// SessionState   string   `json:"session_state"`
-	// Acr            string   `json:"acr"`
-	// AllowedOrigins []string `json:"allowed-origins"`
-	//
-	//	RealmAccess    struct {
-	//		Roles []string `json:"roles"`
-	//	} `json:"realm_access"`
-	//
-	// Scope             string   `json:"scope"`
-	// Sid               string   `json:"sid"`
-	// Upn               string   `json:"upn"`
-	// EmailVerified     bool     `json:"email_verified"`
-	// Name              string   `json:"name"`
-	// Groups            []string `json:"groups"`
-	// PreferredUsername string   `json:"preferred_username"`
-	RealmRole []string `json:"realmRole"`
-	// GivenName         string   `json:"given_name"`
-	// FamilyName        string   `json:"family_name"`
-	// Email             string   `json:"email"`
 }
 
 var (

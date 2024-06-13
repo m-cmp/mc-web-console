@@ -50,10 +50,10 @@ func App() *buffalo.App {
 		api.POST("/{targetController}", PostRouteController)
 
 		// DEBUG START //
-		if ENV == "development" {
-			debug := app.Group(apiPath + "/debug")
-			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
-		}
+		// if ENV == "development" {
+		// 	debug := app.Group(apiPath + "/debug")
+		// 	debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
+		// }
 		//  DEBUG END  //
 
 	})

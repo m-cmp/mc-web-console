@@ -23,6 +23,38 @@ type mcimw struct {
 	grantRoles []string
 }
 
+// ** key 값이 token 에 존재하는지 꼭!! 확인하고 사용할 것. 모든 키값의 유무를 확인하기에, nil pointer 에러 발생 가능 **
+type CustomClaims struct {
+	*jwt.StandardClaims
+	Exp int `json:"exp"`
+	// Iat            int      `json:"iat"`
+	// Jti            string   `json:"jti"`
+	// Iss            string   `json:"iss"`
+	// Aud            string   `json:"aud"`
+	Sub string `json:"sub"`
+	// Typ            string   `json:"typ"`
+	// Azp            string   `json:"azp"`
+	// SessionState   string   `json:"session_state"`
+	// Acr            string   `json:"acr"`
+	// AllowedOrigins []string `json:"allowed-origins"`
+	//
+	//	RealmAccess    struct {
+	//		Roles []string `json:"roles"`
+	//	} `json:"realm_access"`
+	//
+	// Scope             string   `json:"scope"`
+	// Sid               string   `json:"sid"`
+	// Upn               string   `json:"upn"`
+	// EmailVerified     bool     `json:"email_verified"`
+	// Name              string   `json:"name"`
+	// Groups            []string `json:"groups"`
+	PreferredUsername string   `json:"preferred_username"`
+	RealmRole         []string `json:"realmRole"`
+	// GivenName         string   `json:"given_name"`
+	// FamilyName        string   `json:"family_name"`
+	// Email             string   `json:"email"`
+}
+
 var (
 	jwkSet          jwk.Set
 	GrantedRoleList = []string{}
@@ -96,12 +128,31 @@ func (mr mcimw) istokenValid(c buffalo.Context, tokenString string) error {
 				return fmt.Errorf("role is invalid")
 			}
 		} else {
-			c.Set("roles", claims.RealmRole)
+			c.Set("Exp", claims.Exp)
+			c.Set("Sub", claims.Sub)
+			c.Set("PreferredUsername", claims.PreferredUsername)
+			c.Set("RealmRole", claims.RealmRole)
 		}
 		return nil
 	} else {
 		return fmt.Errorf("token is invalid")
 	}
+}
+
+func UserInfoSet(c buffalo.Context, tokenString string) error {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, keyfunction)
+	if err != nil {
+		return fmt.Errorf("failed to parse token: %s", err.Error())
+	}
+
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		c.Set("Exp", claims.Exp)
+		c.Set("Sub", claims.Sub)
+		c.Set("PreferredUsername", claims.PreferredUsername)
+		c.Set("RealmRole", claims.RealmRole)
+		return nil
+	}
+	return fmt.Errorf("token KEY invalid")
 }
 
 func keyfunction(token *jwt.Token) (interface{}, error) {
