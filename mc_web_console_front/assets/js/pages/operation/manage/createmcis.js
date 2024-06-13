@@ -1,7 +1,14 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import { selectedMcisObj } from "./mcis";
 document.addEventListener("DOMContentLoaded", initSpecTable)
-var totalMcisListObj = new Object();
+
+
 var table;
+var totalMcisListObj = new Object();
+var isVm = false // mcis 생성(false) / vm 추가(true)
+var Express_Server_Config_Arr = new Array();
+var express_data_cnt = 0
+
 
 // 서버 더하기버튼 클릭시 서버정보 입력area 보이기/숨기기
 // isExpert의 체크 여부에 따라 바뀜.
@@ -46,8 +53,6 @@ export function displayNewServerForm() {
 	// }
 }
 
-const Express_Server_Config_Arr = new Array();
-var express_data_cnt = 0
 
 // express모드 -> Done버튼 클릭 시
 export function expressDone_btn() {
@@ -64,12 +69,13 @@ export function expressDone_btn() {
 	$("#p_commonImageId").val($("#ep_commonImageId").val())
 
 	$("#p_commonSpecId").val($("#ep_commonSpecId").val())
+	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
+	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
 
 	$("#p_specId").val($("#ep_specId").val())
 
 	$("#p_subGroupSize").val($("#ep_vm_add_cnt").val() + "")
 	$("#p_vm_cnt").val($("#ep_vm_add_cnt").val() + "")
-
 
 	//var express_form = $("#express_form").serializeObject()
 	// commonSpec 으로 set 해야하므로 재설정
@@ -80,6 +86,8 @@ export function expressDone_btn() {
 	express_form["subGroupSize"] = $("#p_subGroupSize").val();
 	express_form["image"] = $("#p_imageId").val();
 	express_form["spec"] = $("#p_specId").val();
+	express_form["rootDiskSize"] = $("#p_root_disk_size").val();
+	express_form["rootDiskType"] = $("#p_root_disk_type").val();
 
 	// dynamic에서 commonImage를 param으로 받기 때문에 해당 값 설정
 	express_form["commonImage"] = $("#p_commonImageId").val();
@@ -99,11 +107,10 @@ export function expressDone_btn() {
 
 	var displayServerCnt = '(' + server_cnt + ')'
 
-	add_server_html += '<li class="removebullet" onclick="webconsolejs[\'pages/operation/manage/createmcis\'].view_express(\'' + express_data_cnt + '\')">'
-		+ '<div class="server server_add btn btn-primary">'
-		+ '<div class="icon"></div>'
-		+ '<div class="txt">' + server_name + displayServerCnt + '</div>'
-		+ '</div>'
+	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'pages/operation/manage/createmcis\'].view_express(\'' + express_data_cnt + '\')">'
+	
+		+ server_name + displayServerCnt
+	
 		+ '</li>';
 
 	// }
@@ -112,12 +119,22 @@ export function expressDone_btn() {
 	var div = document.getElementById("server_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
+	// $("#mcis_server_list").prepend(add_server_html)
+	// $("#plusVmIcon").remove();
+	// $("#mcis_server_list").prepend(getPlusVm());
+
 
 	console.log("add server html");
-	$("#mcis_server_list").prepend(add_server_html)
 
-	$("#plusVmIcon").remove();
-	$("#mcis_server_list").prepend(getPlusVm());
+	var vmEleId = "vm"
+	if (!isVm) {
+		vmEleId = "mcis"
+	}		
+	console.log("add vm")
+	$("#" + vmEleId + "_plusVmIcon").remove();
+	$("#" + vmEleId + "_server_list").append(add_server_html)
+	$("#" + vmEleId + "_server_list").prepend(getPlusVm(vmEleId));
+
 
 	console.log("express btn click and express form data : ", express_form)
 	console.log("express data array : ", Express_Server_Config_Arr);
@@ -129,16 +146,20 @@ export function expressDone_btn() {
 
 }
 
-// export function view_express(cnt) {
-// 	console.log('view simple cnt : ', cnt);
-// 	// var select_form_data = Simple_Server_Config_Arr[cnt]
-// 	// console.log('select_form_data : ', select_form_data);
-// 	$(".express_servers_config").addClass("active")
-// 	$(".simple_servers_config").removeClass("active")
-// 	$(".expert_servers_config").removeClass("active")
-// 	$(".import_servers_config").removeClass("active")
+export function view_express(cnt) {
+	console.log('view simple cnt : ', cnt);
+	// var select_form_data = Simple_Server_Config_Arr[cnt]
+	// console.log('select_form_data : ', select_form_data);
+	// $(".express_servers_config").addClass("active")
+	// $(".simple_servers_config").removeClass("active")
+	// $(".expert_servers_config").removeClass("active")
+	// $(".import_servers_config").removeClass("active")
 
-//}
+	var div = document.getElementById("server_configuration");
+	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+
+}
 
 
 // Assist spec 클릭 시
@@ -488,7 +509,7 @@ async function availableVMImageBySpec(id) {
 	// image ID 추출
 	response.data.responseData.reqCheck.forEach(function (req) {
 		req.image.forEach(function (img) {
-			console.log("reqCheckreqCheckreqCheck",img)
+			console.log("reqCheckreqCheckreqCheck", img)
 			imageIds.push(img.guestOS);
 			commonimageId.push(img.id);
 		});
@@ -583,11 +604,11 @@ export function showRecommendSpecSetting(value) {
 }
 
 // plus 버튼을 추가
-function getPlusVm() {
+function getPlusVm(vmElementId) {
+
 	var append = "";
-	append = append + '<li class="removebullet" id="plusVmIcon" >';
-	append = append + '<div class="server server_add" onClick="webconsolejs[\'pages/operation/manage/createmcis\'].displayNewServerForm()">';
-	append = append + '</div>';
+	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'pages/operation/manage/createmcis\'].displayNewServerForm()">';
+	append = append + "+"
 	append = append + '</li>';
 	return append;
 }
@@ -725,11 +746,11 @@ export async function createMcisDynamic() {
 			"nsId": "testns01"
 		},
 		Request: {
-			"name":obj['name'],
-			"vm":obj['vm'],
+			"name": obj['name'],
+			"vm": obj['vm'],
 		}
 	}
-	
+
 	var controller = "/api/" + "createdynamicmcis";
 	const response = await webconsolejs["common/api/http"].commonAPIPost(
 		controller,
@@ -737,4 +758,225 @@ export async function createMcisDynamic() {
 	);
 
 	console.log("create dynamicMCIS : ", response)
+}
+
+export function addNewMcis() {
+	isVm = false
+	Express_Server_Config_Arr = new Array();
+}
+
+// ////////////// VM Handling ///////////
+export function addNewVirtualMachine() {
+	console.log("addNewVirtualMachine")
+	Express_Server_Config_Arr = new Array();
+
+	var selectedMcis = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj
+	console.log("selectedMcis", selectedMcis)
+
+	var mcis_name = selectedMcis[0].name
+	$("#extend_mcis_name").val(mcis_name)
+	console.log("extend_mcis_name", mcis_name)
+
+	isVm = true
+}
+
+
+var totalDeployServerCount = 0;
+var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
+
+export async function btn_deploy() {
+	// var deploymentAlgo = $("#placement_algo").val()
+	// if (deploymentAlgo == "express") {
+	await createVmDynamic()
+	// }else{
+
+	//     var mcis_name = $("#mcis_name").val();
+	//     var mcis_id = $("#mcis_id").val();
+	//     if (!mcis_id) {
+	//         commonAlert("Please Select MCIS !!!!!")
+	//         return;
+	//     }
+	//     totalDeployServerCount = 0;// deploy vm 개수 초기화
+	//     var new_obj = {}// vm이 담길 변수
+
+	//     // Express 는 별도처리임.
+
+	//     if (Simple_Server_Config_Arr) {
+	//         vm_len = Simple_Server_Config_Arr.length;
+	//         for (var i in Simple_Server_Config_Arr) {
+	//             TotalServerConfigArr.push(Simple_Server_Config_Arr[i]);
+	//         }
+	//     }
+
+	//     if (Expert_Server_Config_Arr) {
+	//         vm_len = Expert_Server_Config_Arr.length;
+	//         for (var i in Expert_Server_Config_Arr) {
+	//             TotalServerConfigArr.push(Expert_Server_Config_Arr[i]);
+	//         }
+	//     }
+
+	//     //Import_Server_Config_Arr : import도 같이 추가
+	//     if (Import_Server_Config_Arr) {
+	//         vm_len = Import_Server_Config_Arr.length;
+	//         for (var i in Import_Server_Config_Arr) {
+	//             TotalServerConfigArr.push(Import_Server_Config_Arr[i]);
+	//         }
+	//     }
+
+	//     if (TotalServerConfigArr) {
+	//         vm_len = TotalServerConfigArr.length;
+	//         console.log("Server_Config_Arr length: ", vm_len);
+	//         new_obj['vm'] = TotalServerConfigArr;
+	//         console.log("new obj is : ", new_obj);
+	//     } else {
+	//         commonAlert("Please Input Servers");
+	//         $(".simple_servers_config").addClass("active");
+	//         $("#s_name").focus();
+	//     }
+
+	//     //var url = "/operation/manages/mcismng/" + mcis_id + "/vm/reg/proc"
+	//     var urlParamMap = new Map();
+	//     urlParamMap.set(":mcisID", mcis_id)
+	//     var url = setUrlByParam("McisVmListRegProc", urlParamMap)
+	//     //var url = getWebToolUrl("McisVmRegProc")
+	//     try {
+	//         axios.post(url, new_obj, {
+	//             // headers: {
+	//             //     'Content-type': "application/json",
+	//             // },
+	//         }).then(result => {
+	//             console.log("VM Register data : ", result);
+	//             console.log("Result Status : ", result.status);
+	//             if (result.status == 201 || result.status == 200) {
+	//                 commonResultAlert("Register Requested")
+	//             } else {
+	//                 commonAlert("Register Fail")
+	//             }
+	//         }).catch((error) => {
+	//             // console.warn(error);
+	//             console.log(error.response)
+	//             var errorMessage = error.response.data.error;
+	//             var statusCode = error.response.status;
+	//             commonErrorAlert(statusCode, errorMessage)
+
+	//         })
+	//     } catch (error) {
+	//         commonAlert(error);
+	//         console.log(error);
+	//     }
+	// }
+}
+
+var nsid = ""
+export async function createVmDynamic() {
+	console.log("createVmDynamic")
+	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
+
+
+	nsid = webconsolejs["pages/operation/manage/mcis"].nsid
+	console.log("selected projectId : ", nsid)
+
+	var mcisid = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj[0].id
+	console.log("selected mcisId : ", mcisid)
+
+	// var commonImage = selectedMcisObj[0].vm[0].
+	// var mcis_name = selectedMcis[0].name
+
+	// var mcis_name = $("#mcis_name").val();
+	// var mcis_id = $("#mcis_id").val();
+	// if (!mcis_id) {
+	// 	commonAlert("Please Select MCIS !!!!!")
+	// 	return;
+	// }
+
+	///
+	var obj = {}
+	obj = Express_Server_Config_Arr[0]
+	const data = {
+		pathParams: {
+			nsId: nsid,
+			mcisId: mcisid,
+		},
+		request: {
+			"commonImage": obj.commonImage,
+			"commonSpec": obj.commonSpec,
+			"connectionName": obj.connectionName,
+			"description": obj.description,
+			"label": "",
+			"name": obj.name,
+			"subGroupSize": obj.subGroupSize,
+			"rootDiskSize": obj.rootDiskSize,
+			"rootDiskType": obj.rootDiskType,
+		}
+	}
+
+
+	var controller = "/api/" + "createvmdynamic";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	)
+	console.log("create VMdynamic : ", response)
+}
+
+// {
+// 	"commonImage": "ubuntu18.04",
+// 	"commonSpec": "aws+ap-northeast-2+t2.small",
+// 	"connectionName": "string",
+// 	"description": "Description",
+// 	"label": "DynamicVM",
+// 	"name": "g1-1",
+// 	"rootDiskSize": "default, 30, 42, ...",
+// 	"rootDiskType": "default, TYPE1, ...",
+// 	"subGroupSize": "3",
+// 	"vmUserPassword": "string"
+//   }
+
+
+
+///
+
+
+
+// vm 생성 결과 표시
+// 여러개의 vm이 생성될 수 있으므로 각각 결과를 표시
+var resultVmCreateMap = new Map();
+
+function vmCreateCallback(resultVmKey, resultStatus) {
+	resultVmCreateMap.set(resultVmKey, resultStatus)
+	var resultText = "";
+	var createdServer = 0;
+	for (let key of resultVmCreateMap.keys()) {
+		console.log("vmCreateresult " + key + " : " + resultVmCreateMap.get(resultVmKey));
+		resultText += key + " = " + resultVmCreateMap.get(resultVmKey) + ","
+		//totalDeployServerCount--
+		createdServer++;
+	}
+
+	// $("#serverRegistResult").text(resultText);
+
+	if (resultStatus != "Success") {
+		// add된 항목 제거 해야 함.
+
+		// array는 초기화
+		Simple_Server_Config_Arr.length = 0;
+		simple_data_cnt = 0
+		// TODO : expert 추가하면 주석 제거할 것
+		Expert_Server_Config_Arr.length = 0;
+		expert_data_cnt = 0
+		Import_Server_Config_Arr.length = 0;
+		import_data_cnt = 0
+	}
+
+	if (createdServer === totalDeployServerCount) { //모두 성공
+		//getVmList();
+		//commonResultAlert($("#serverRegistResult").text());
+
+	} else if (createdServer < totalDeployServerCount) { //일부 성공
+		// commonResultAlert($("#serverRegistResult").text());
+
+	} else if (createdServer = 0) { //모두 실패
+		//commonResultAlert($("#serverRegistResult").text());
+	}
+	commonResultAlert("VM creation request completed");
 }

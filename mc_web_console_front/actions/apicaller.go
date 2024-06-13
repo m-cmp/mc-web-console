@@ -5,13 +5,16 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/gobuffalo/buffalo"
 )
 
 var proxy *httputil.ReverseProxy
+var mciamUse bool
 
 func init() {
+	mciamUse, _ = strconv.ParseBool(os.Getenv("MCIAM_USE"))
 	apiAddr := os.Getenv("API_ADDR")
 	apiPort := os.Getenv("API_PORT")
 	apiBaseHost, err := url.Parse("http://" + apiAddr + ":" + apiPort)
@@ -26,7 +29,9 @@ func ApiCaller(c buffalo.Context) error {
 	log.Println("#### IN ApiCaller")
 	log.Println("Method", c.Request().Method)
 	log.Println("RequestURI", c.Request().RequestURI)
-	c.Request().Header.Add("Authorization", c.Session().Get("Authorization").(string))
+	if mciamUse {
+		c.Request().Header.Add("Authorization", c.Session().Get("Authorization").(string))
+	}
 	proxy.ServeHTTP(c.Response(), c.Request())
 	log.Println("#### ServeHTTP Success")
 	return nil

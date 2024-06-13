@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
@@ -29,9 +30,8 @@ func UserLoginHandler(c buffalo.Context) error {
 			return c.Render(http.StatusInternalServerError,
 				defaultRender.JSON(CommonResponseProvider(http.StatusInternalServerError, err.Error())))
 		}
-
 		c.Session().Set("Authorization", accessTokenResponse.AccessToken)
-
+		fmt.Print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", accessTokenResponse.AccessToken)
 		return c.Render(http.StatusOK,
 			defaultRender.JSON(CommonResponseProvider(http.StatusOK, map[string]string{
 				"redirect": RootPathForRedirectString,
@@ -51,16 +51,17 @@ func UserLoginHandler(c buffalo.Context) error {
 }
 
 func UserLogoutHandler(c buffalo.Context) error {
+
 	commonResponse, err := CommonCaller(http.MethodPost, APILogoutPath, &CommonRequest{}, c)
 	if err != nil {
 		return c.Render(commonResponse.Status.StatusCode,
 			defaultRender.JSON(CommonResponseProvider(commonResponse.Status.StatusCode, err.Error())))
 	}
+	c.Session().Clear()
 	if commonResponse.Status.StatusCode != 200 {
 		return c.Render(commonResponse.Status.StatusCode,
 			defaultRender.JSON(CommonResponseProvider(commonResponse.Status.StatusCode, commonResponse.ResponseData)))
 	}
-	c.Session().Clear()
 	c.Flash().Add("success", "Logout")
 	return c.Redirect(http.StatusSeeOther, "authLoginPath()")
 }

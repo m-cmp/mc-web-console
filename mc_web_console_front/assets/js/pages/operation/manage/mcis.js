@@ -184,6 +184,7 @@ function initTable() {
     checked_array = data
     console.log("checked_array", checked_array)
     console.log("rowsrows", data)
+    selectedMcisObj = data
     // console.log(providerFormatterString());
   });
 
@@ -193,9 +194,6 @@ function initTable() {
 
 // 클릭한 mcis info 가져오기
 async function getSelectedMcisDate(mcisID) {
-
-
-
 
   const data = {
     pathParams: {
@@ -275,7 +273,7 @@ function displayServerStatusList(mcisID, vmList) {
     var vmDispStatus = getVmStatusDisp(vmStatus);
     var vmStatusClass = getVmStatusClass(vmDispStatus)
 
-    vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '"><a onclick="webconsolejs[\'pages/operation/manage/mcis\'].vmDetailInfo(\'' + mcisID + '\',\'' + mcisName + '\',\'' + vmID + '\')"><span class="text-dark-fg">' + vmName + '</span></a></li>';
+    vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/mcis\'].vmDetailInfo(\'' + mcisID + '\',\'' + mcisName + '\',\'' + vmID + '\')"><span class="text-dark-fg">' + vmName + '</span></li>';
 
   }// end of mcis loop
   // totalvmCount = vmCount
@@ -834,18 +832,20 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 // }
 
 var totalMcisListObj = new Object();
+export var selectedMcisObj = new Object();
+export var nsid = "";
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 var totalCloudConnectionMap = new Map();
-var nsid = "testns01";
+
 // var nsid = ""
 
 document.addEventListener("DOMContentLoaded", life_cycle);
 
 async function life_cycle() {
   console.log("life_cycle")
-  // var namespace = webconsolejs["common/util"].getCurrentProject()
-  // nsid = namespace.Name
+  var namespace = webconsolejs["common/util"].getCurrentProject()
+  nsid = namespace.Name
 
   const data = {
     pathParams: {
@@ -1201,12 +1201,17 @@ export function deleteMcis(type) {
 }
 
 
-////////////// VM Handling ///////////
-export function addNewVirtualMachine() {
-  console.log("addNewVirtualMachine")
-  var mcis_id = $("#mcis_id").val()
-  var mcis_name = $("#mcis_name").val()
-  $("#extend_mcis_name").val(mcis_name)
-  // location.href = "/Manage/MCIS/reg/"+mcis_id+"/"+mcis_name
-  // location.href = "/operation/manages/mcismng/regform/" + mcis_id + "/" + mcis_name;
-}
+// ////////////// VM Handling ///////////
+// export function addNewVirtualMachine() {
+//   console.log("addNewVirtualMachine")
+//   var mcis_id = $("#mcis_id").val()
+//   var value = document.getElementById("#mcis_name").val();
+
+
+
+//   var mcis_name = $("#mcis_name").val()
+//   console.log("mcis_name",value)
+//   $("#extend_mcis_name").val(value)
+//   // location.href = "/Manage/MCIS/reg/"+mcis_id+"/"+mcis_name
+//   // location.href = "/operation/manages/mcismng/regform/" + mcis_id + "/" + mcis_name;
+// }

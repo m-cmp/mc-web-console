@@ -72,6 +72,15 @@ func GetImageId(c buffalo.Context, commonRequest *handler.CommonRequest) *handle
 	return commonResponse
 }
 
+func CreateVMDynamic(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	// endPoint := "/ns/{nsId}/resources/image/{imageId}"
+	// common에 있는 이미지 사용
+	// TODO: custom 일 때 처리
+	// endPoint := "/ns/{nsId}/mcis/{mcisId}/vmDynamic"
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, createVMDynamic, commonRequest, mcinframanagerAuthentication())
+	return commonResponse
+}
+
 // auth fot mcinframanager
 func mcinframanagerAuthentication() string {
 	apiusername := os.Getenv("API_USERNAME")

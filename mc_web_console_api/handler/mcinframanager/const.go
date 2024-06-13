@@ -13,4 +13,5 @@ var (
 	sendCommandToMcis       = "/ns/{nsId}/cmd/mcis/{mcisId}"
 	controlLifecycle        = "/ns/{nsId}/control/mcis/{mcisId}"
 	getImageId              = "/ns/system-purpose-common-ns/resources/image/{imageId}"
+	createVMDynamic 		= "/ns/{nsId}/mcis/{mcisId}/vmDynamic"
 )

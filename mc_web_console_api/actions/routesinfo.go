@@ -62,6 +62,8 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = mcinframanager.GetImageId(c, commonRequest)
 	case "disklookup":
 		commonResponse, _ = self.DiskLookup(c, commonRequest)
+	case "createvmdynamic":
+		commonResponse = mcinframanager.CreateVMDynamic(c, commonRequest)
 
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
