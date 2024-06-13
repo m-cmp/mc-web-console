@@ -42,7 +42,7 @@ func McIamLogin(c buffalo.Context, commonRequest *handler.CommonRequest) *handle
 
 	targetSubject, _ := uuid.FromString(c.Data()["Sub"].(string))
 
-	usersess := &models.Usersession{
+	usersess := &usersession{
 		ID:               targetSubject,
 		AccessToken:      accessTokenResponse.AccessToken,
 		ExpiresIn:        accessTokenResponse.ExpiresIn,
@@ -82,17 +82,18 @@ func McIamLogout(c buffalo.Context, commonRequest *handler.CommonRequest) *handl
 	}
 
 	targetSubject, _ := uuid.FromString(c.Data()["Sub"].(string))
-	usersess := &models.Usersession{}
+	usersess := &usersession{}
 	txerr := models.DB.Find(usersess, targetSubject)
 	if txerr != nil {
 		return handler.CommonResponseStatusBadRequest(txerr.Error())
 	}
 
 	req := &handler.CommonRequest{
-		Request: &mciammanagerAccessTokenResponse{
+		Request: &mciammanagerAccessTokenRefeshRequset{
 			RefreshToken: usersess.RefreshToken,
 		},
 	}
+
 	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, logout, req, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
