@@ -9,6 +9,7 @@ import (
 
 	demo "mc_web_console_api/actions/demo"
 	tumblebug "mc_web_console_api/actions/tumblebug"
+	workspace "mc_web_console_api/actions/workspace"
 	webconsole "mc_web_console_api/fwmodels/webconsole"
 	hanlder "mc_web_console_api/handler"
 	"mc_web_console_api/models"
@@ -74,9 +75,13 @@ func PostRouteController(c buffalo.Context) error {
 	case "authgetuservalidate":
 		commonResponse = AuthGetUserValidate(c, commonRequest)
 
+	// workspace mng area
 	case "getworkspacebyuserid":
 		commonResponse = GetWorkspaceByUserId(c, commonRequest)
 
+	case "getworkspacelist":
+		commonResponse = workspace.McIamGetWorkspaceList(c, commonRequest)
+	// workspace mng area
 	case "demogetuserinfo":
 		commonResponse = demo.DemoGetuserinfo(c, commonRequest)
 	case "demogetusercred":
