@@ -3,16 +3,13 @@ package actions
 import (
 	"errors"
 	"log"
+	"mc_web_console_api/handler"
+	"mc_web_console_api/handler/mcinframanager"
+	"mc_web_console_api/handler/self"
+	"mc_web_console_api/models"
 	"net/http"
 	"reflect"
 	"strings"
-
-	demo "mc_web_console_api/actions/demo"
-	tumblebug "mc_web_console_api/actions/tumblebug"
-	workspace "mc_web_console_api/actions/workspace"
-	webconsole "mc_web_console_api/fwmodels/webconsole"
-	hanlder "mc_web_console_api/handler"
-	"mc_web_console_api/models"
 
 	"github.com/gobuffalo/buffalo"
 )
@@ -31,40 +28,40 @@ func PostRouteController(c buffalo.Context) error {
 	log.Println("#### PostRouteController ")
 	log.Println("User Role is : ", c.Data()["roles"])
 
-	commonRequest := &webconsole.CommonRequest{}
+	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
 	targetController := strings.ToLower(c.Param("targetController"))
 	log.Printf("== targetController\t:[ %s ]\n", targetController)
 	log.Printf("== commonRequest\t:\n%+v\n\n", commonRequest)
 
-	commonResponse := &webconsole.CommonResponse{}
+	commonResponse := &handler.CommonResponse{}
 	switch targetController {
 	case "getmcislist":
-		commonResponse = tumblebug.GetMCISList(c, commonRequest)
+		commonResponse = mcinframanager.GetMCISList(c, commonRequest)
 	case "getmcis":
-		commonResponse = tumblebug.GetMCIS(c, commonRequest)
+		commonResponse = mcinframanager.GetMCIS(c, commonRequest)
 	case "delmcis":
-		commonResponse = tumblebug.DelMCIS(c, commonRequest)
+		commonResponse = mcinframanager.DelMCIS(c, commonRequest)
 	case "createmcis":
-		commonResponse = tumblebug.CreateMCIS(c, commonRequest)
+		commonResponse = mcinframanager.CreateMCIS(c, commonRequest)
 	case "createdynamicmcis":
-		commonResponse = tumblebug.CreateDynamicMCIS(c, commonRequest)
+		commonResponse = mcinframanager.CreateDynamicMCIS(c, commonRequest)
 	case "getloaddefaultresource":
-		commonResponse = tumblebug.GetLoadDefaultResouce(c, commonRequest)
+		commonResponse = mcinframanager.GetLoadDefaultResouce(c, commonRequest)
 	case "deldefaultresources":
-		commonResponse = tumblebug.DelDefaultResouce(c, commonRequest)
+		commonResponse = mcinframanager.DelDefaultResouce(c, commonRequest)
 	case "mcisrecommendvm":
-		commonResponse = tumblebug.MCISRecommendVm(c, commonRequest)
+		commonResponse = mcinframanager.MCISRecommendVm(c, commonRequest)
 	case "mcisdynamiccheckrequest":
-		commonResponse = tumblebug.MCISDynamicCheckRequest(c, commonRequest)
+		commonResponse = mcinframanager.MCISDynamicCheckRequest(c, commonRequest)
 	case "sendcommandtomcis":
-		commonResponse = tumblebug.SendCommandtoMCIS(c, commonRequest)
+		commonResponse = mcinframanager.SendCommandtoMCIS(c, commonRequest)
 	case "controllifecycle":
-		commonResponse = tumblebug.ControlLifecycle(c, commonRequest)
+		commonResponse = mcinframanager.ControlLifecycle(c, commonRequest)
 	case "getimageid":
-		commonResponse = tumblebug.GetImageId(c, commonRequest)
+		commonResponse = mcinframanager.GetImageId(c, commonRequest)
 	case "disklookup":
-		commonResponse, _ = hanlder.DiskLookup(c, commonRequest)
+		commonResponse, _ = self.DiskLookup(c, commonRequest)
 
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
@@ -76,19 +73,19 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = AuthGetUserValidate(c, commonRequest)
 
 	// workspace mng area
-	case "getworkspacebyuserid":
-		commonResponse = GetWorkspaceByUserId(c, commonRequest)
+	// case "getworkspacebyuserid":
+	// 	commonResponse = GetWorkspaceByUserId(c, commonRequest)
+	// case "getworkspacelist":
+	// 	commonResponse = workspace.McIamGetWorkspaceList(c, commonRequest)
 
-	case "getworkspacelist":
-		commonResponse = workspace.McIamGetWorkspaceList(c, commonRequest)
-	// workspace mng area
-	case "demogetuserinfo":
-		commonResponse = demo.DemoGetuserinfo(c, commonRequest)
-	case "demogetusercred":
-		commonResponse = demo.DemoGetuserCred(c, commonRequest)
+	// // workspace mng area
+	// case "demogetuserinfo":
+	// 	commonResponse = demo.DemoGetuserinfo(c, commonRequest)
+	// case "demogetusercred":
+	// 	commonResponse = demo.DemoGetuserCred(c, commonRequest)
 
 	default:
-		commonResponse = webconsole.CommonResponseStatusNotFound("NO MATCH targetController")
+		commonResponse = handler.CommonResponseStatusNotFound("NO MATCH targetController")
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
 
@@ -136,7 +133,7 @@ func GetRouteController(c buffalo.Context) error {
 	// switch commonRequest.TargetController {
 	// case "McisList":// Get Type
 	// 	//
-	// 	mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
+	// 	mcisList, respStatus := mcinframanager.TbMcisList(commonRequest)
 	// 	commonResponse.ResponseData = mcisList
 	// 	commonResponse.Status = respStatus
 	// case "McisReg":// Post Type
