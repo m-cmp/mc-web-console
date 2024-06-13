@@ -6,7 +6,6 @@ import (
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/mcinframanager"
 	"mc_web_console_api/handler/self"
-	"mc_web_console_api/models"
 	"net/http"
 	"reflect"
 	"strings"
@@ -169,89 +168,89 @@ func GetRouteController(c buffalo.Context) error {
 }
 
 // 관리자 설정
-func RoutesManager(app *buffalo.App) *buffalo.App {
+// func RoutesManager(app *buffalo.App) *buffalo.App {
 
-	// TODO : DB에서 path와 handler를 가져오도록
-	// 1. handler 구현한 뒤에 화면을 통해 db에 등록하는 process를 가져가도록
-	// 2. 화면이 있으면 xxxform, json의 경우에는 /api/xxx 로 경로명 지정
-	// ex ) "/api/<카테고리대분류>/<리소스>/<정의>" / "/<카테고리대분류>/<리소스>/mngform/"
+// 	// TODO : DB에서 path와 handler를 가져오도록
+// 	// 1. handler 구현한 뒤에 화면을 통해 db에 등록하는 process를 가져가도록
+// 	// 2. 화면이 있으면 xxxform, json의 경우에는 /api/xxx 로 경로명 지정
+// 	// ex ) "/api/<카테고리대분류>/<리소스>/<정의>" / "/<카테고리대분류>/<리소스>/mngform/"
 
-	// ID           uuid.UUID `json:"id" db:"id"`
-	// Method       string    `json:"method" db:"method"`
-	// Path         string    `json:"path" db:"path"`
-	// HandlerName  string    `json:"handler_name" db:"handler_name"`
-	// ResourceName string    `json:"resource_name" db:"resource_name"`
-	// PathName     string    `json:"path_name" db:"path_name"`
-	// Aliases      string    `json:"aliases" db:"aliases"`
-	// CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	// UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+// 	// ID           uuid.UUID `json:"id" db:"id"`
+// 	// Method       string    `json:"method" db:"method"`
+// 	// Path         string    `json:"path" db:"path"`
+// 	// HandlerName  string    `json:"handler_name" db:"handler_name"`
+// 	// ResourceName string    `json:"resource_name" db:"resource_name"`
+// 	// PathName     string    `json:"path_name" db:"path_name"`
+// 	// Aliases      string    `json:"aliases" db:"aliases"`
+// 	// CreatedAt    time.Time `json:"created_at" db:"created_at"`
+// 	// UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 
-	// routerList := []models.RouteInfo{
-	// 	{Path: "/home1", HandlerName: "GetHome", Method: "GET"},
-	// 	{Path: "/about1", HandlerName: "AboutHandler", Method: "GET"},
-	// 	{Path: "/settings/resources/vpc/mngform", HandlerName: "VpcMngForm", Method: "GET"},
+// 	// routerList := []models.RouteInfo{
+// 	// 	{Path: "/home1", HandlerName: "GetHome", Method: "GET"},
+// 	// 	{Path: "/about1", HandlerName: "AboutHandler", Method: "GET"},
+// 	// 	{Path: "/settings/resources/vpc/mngform", HandlerName: "VpcMngForm", Method: "GET"},
 
-	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcList", Method: "GET"},
-	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcReg", Method: "POST"},
-	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcGet", Method: "GET"},
-	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcDel", Method: "DELETE"},
-	// 	{Path: "/settings/resources/vpc/region", HandlerName: "vpcListByRegion", Method: "DELETE"},
-	// }
+// 	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcList", Method: "GET"},
+// 	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcReg", Method: "POST"},
+// 	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcGet", Method: "GET"},
+// 	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcDel", Method: "DELETE"},
+// 	// 	{Path: "/settings/resources/vpc/region", HandlerName: "vpcListByRegion", Method: "DELETE"},
+// 	// }
 
-	routerList := models.RouteInfoes{}
+// 	routerList := models.RouteInfoes{}
 
-	//err := models.DB.Find(&resultCredential, credential.ID)
-	//if err != nil {
-	//	return resultCredential, errors.WithStack(err)
-	//}
+// 	//err := models.DB.Find(&resultCredential, credential.ID)
+// 	//if err != nil {
+// 	//	return resultCredential, errors.WithStack(err)
+// 	//}
 
-	query := models.DB.Q()
-	err := query.All(&routerList)
-	if err != nil {
-		log.Println("query err ", err)
-		return app
-	}
+// 	query := models.DB.Q()
+// 	err := query.All(&routerList)
+// 	if err != nil {
+// 		log.Println("query err ", err)
+// 		return app
+// 	}
 
-	for _, router := range routerList {
-		//log.Println(router)
-		// handlerFunction은 (a actions) function명 으로 정의 해야 함.
-		handlerFunc := getHandlerFuncByName(router.HandlerName)
-		if handlerFunc == nil {
-			log.Println(router.HandlerName + " Handler not found")
-			log.Println(router)
-			continue
-		}
-		//log.Println(router)
-		log.Println(router.Path + "   :   " + router.PathName + " : " + router.Method)
-		//log.Println(handlerFunc)
-		// 라우터 등록
+// 	for _, router := range routerList {
+// 		//log.Println(router)
+// 		// handlerFunction은 (a actions) function명 으로 정의 해야 함.
+// 		handlerFunc := getHandlerFuncByName(router.HandlerName)
+// 		if handlerFunc == nil {
+// 			log.Println(router.HandlerName + " Handler not found")
+// 			log.Println(router)
+// 			continue
+// 		}
+// 		//log.Println(router)
+// 		log.Println(router.Path + "   :   " + router.PathName + " : " + router.Method)
+// 		//log.Println(handlerFunc)
+// 		// 라우터 등록
 
-		switch router.Method {
-		case "GET":
-			app.GET(router.Path, handlerFunc).Name(router.PathName)
-		case "POST":
-			app.POST(router.Path, handlerFunc).Name(router.PathName)
-		case "PUT":
-			app.PUT(router.Path, handlerFunc).Name(router.PathName)
-		case "PATCH":
-			app.PATCH(router.Path, handlerFunc).Name(router.PathName)
-		case "HEAD":
-			app.HEAD(router.Path, handlerFunc).Name(router.PathName)
-		case "OPTIONS":
-			app.OPTIONS(router.Path, handlerFunc).Name(router.PathName)
-		case "DELETE":
-			app.DELETE(router.Path, handlerFunc).Name(router.PathName)
-		default:
-			log.Println(" any begin~~~~~~~~~~~~~~~~~~~~~~~")
-			log.Println(router)
-			log.Println(" any end ~~~~~~~~~~~~~~~~~~~~~~~")
-			app.ANY(router.Path, handlerFunc)
-		}
+// 		switch router.Method {
+// 		case "GET":
+// 			app.GET(router.Path, handlerFunc).Name(router.PathName)
+// 		case "POST":
+// 			app.POST(router.Path, handlerFunc).Name(router.PathName)
+// 		case "PUT":
+// 			app.PUT(router.Path, handlerFunc).Name(router.PathName)
+// 		case "PATCH":
+// 			app.PATCH(router.Path, handlerFunc).Name(router.PathName)
+// 		case "HEAD":
+// 			app.HEAD(router.Path, handlerFunc).Name(router.PathName)
+// 		case "OPTIONS":
+// 			app.OPTIONS(router.Path, handlerFunc).Name(router.PathName)
+// 		case "DELETE":
+// 			app.DELETE(router.Path, handlerFunc).Name(router.PathName)
+// 		default:
+// 			log.Println(" any begin~~~~~~~~~~~~~~~~~~~~~~~")
+// 			log.Println(router)
+// 			log.Println(" any end ~~~~~~~~~~~~~~~~~~~~~~~")
+// 			app.ANY(router.Path, handlerFunc)
+// 		}
 
-	}
+// 	}
 
-	return app
-}
+// 	return app
+// }
 
 // Get the handler function by its name
 func getHandlerFuncByName(handlerName string) buffalo.Handler {
