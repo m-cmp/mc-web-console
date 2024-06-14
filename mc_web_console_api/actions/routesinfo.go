@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"mc_web_console_api/handler"
+	"mc_web_console_api/handler/mciammanager"
+
 	"mc_web_console_api/handler/mcinframanager"
 	"mc_web_console_api/handler/self"
 	"net/http"
@@ -84,6 +86,13 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = CreateWorkspace(c, commonRequest)
 	case "deleteworkspace":
 		commonResponse = DeleteWorkspace(c, commonRequest)
+	
+	// workspace, project mapping
+	case "getworkspaceuserrolemappingbyworkspaceuser":
+		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyworkspaceuser(c, commonRequest)
+	case "getworkspaceuserrolemappingbyuser":
+		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyuser(c, commonRequest)
+	
 
 	// // workspace mng area
 	// case "demogetuserinfo":

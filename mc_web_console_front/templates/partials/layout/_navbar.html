@@ -118,7 +118,9 @@
                 <span class="avatar avatar-sm" style="background-image: url(/#)"></span>
                 <div class="d-none d-xl-block ps-2">
                     
-                    <div><%= if (name) { %>
+                    <div>
+                        <%= if (name) { %>
+                            <input id="userid" value="<%= upn %>" hidden/>
                             <%= name %>
                         <% } %>
                     </div>
@@ -148,8 +150,9 @@
                             <span class="input-group-text">
                             Workspace
                             </span>
-                            <select type="text" class="form-select" id="select-current-workspace" >
-                            </select>
+                            <select type="text" class="form-select" id="select-current-workspace">
+                            <option value="">Select WorkSpace</option>
+                        </select>
                         </div>
                     </div>
                     <div class="col-3">
@@ -158,6 +161,7 @@
                             Project
                             </span>
                             <select type="text" class="form-select" id="select-current-project">
+                            <option value="">Select Project</option>
                             </select>
                         </div>
                     </div>
@@ -171,3 +175,4 @@
 </header>
 
 <%= javascriptTag("partials/layout/navbar.js") %>
+<%= javascriptTag("pages/operation/manage/mcis.js") %>

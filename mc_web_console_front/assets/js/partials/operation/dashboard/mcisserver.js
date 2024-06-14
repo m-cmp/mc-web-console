@@ -16,8 +16,9 @@ document.addEventListener("DOMContentLoaded", life_cycle);
 
 async function life_cycle() {
 
-  var namespace = webconsolejs["common/util"].getCurrentProject()
-  var nsid = namespace.Name
+  // var namespace = webconsolejs["common/util"].getCurrentProject()
+  // var nsid = namespace.Name
+  var nsid = "testns01"
 
   const data = {
     pathParams: {

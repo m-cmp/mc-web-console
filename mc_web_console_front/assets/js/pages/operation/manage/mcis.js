@@ -197,7 +197,8 @@ async function getSelectedMcisDate(mcisID) {
 
   const data = {
     pathParams: {
-      nsId: nsid,
+      // nsId: nsid,
+      nsId: "testns01",
       mcisId: mcisID
     }
   }
@@ -837,17 +838,116 @@ export var nsid = "";
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 var totalCloudConnectionMap = new Map();
+var nsid = ""
 
-// var nsid = ""
 
-document.addEventListener("DOMContentLoaded", life_cycle);
+export function selectWorkspaceProject(userId) {
+  var workspaceName = $("select-current-workspace").val()
+  console.log("workspaceName", workspaceName)
 
-async function life_cycle() {
+}
+
+
+document.addEventListener("DOMContentLoaded", renderMcisManage);
+
+async function renderMcisManage() {
   console.log("life_cycle")
-  var namespace = webconsolejs["common/util"].getCurrentProject()
-  nsid = namespace.Name
+  
+  ////// workspace SET //////
+  var userId = $("#userid").val()
+  console.log("userId === ", userId)
+  var data = {
+    pathParams: {
+      userId: userId,
+    },
+  }
 
-  const data = {
+  var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
+  const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("wsresponse", wsresponse)
+  var workspaceList = [];
+  var workspacesRespData = wsresponse.data.responseData.responseData // data
+
+  workspacesRespData.forEach(item => {
+    workspaceList.push(item.workspace.name);
+  });
+  console.log("workspacelist", workspaceList)
+
+  var html = '<option value="">Select WorkSpace</option>'
+
+  workspaceList.forEach(item => {
+    html += '<option value="' + item + '">' + item + '</option>'
+  })
+
+  $("#select-current-workspace").empty()//
+  $("#select-current-workspace").append(html)
+
+  $("#select-current-workspace").on('change', async function () {
+    console.log(" change ")
+    var selectedValue = this.value;
+
+    var data = {
+      pathParams: {
+        "workspace": selectedValue,
+        "user": userId,
+      },
+    }
+    var controller = "/api/" + "getworkspaceuserrolemappingbyuser";
+    const prjresponse = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    )
+    console.log("prjresponse", prjresponse)
+
+
+    // workspace 안에서 project목록 추출
+    var projectList = [];
+    var projects = prjresponse.data.responseData.responseData.projects // data
+
+    projects.forEach(project => {
+      projectList.push(project.name);
+    });
+    console.log("projectList", projectList)
+
+    var html = '<option value="">Select Project</option>'
+    html += '<option value="testns01">testns01</option>'
+
+    projectList.forEach(item => {
+
+      html += '<option value="' + item + '">' + item + '</option>'
+    })
+    $("#select-current-project").empty()
+    $("#select-current-project").append(html)
+
+    ////// project SET END//////
+  })
+
+  ////// workspace SET END //////
+
+
+  ////// project SET //////
+  $("#select-current-project").on('change', async function () {
+    console.log(" change ")
+
+    getMcisList();
+
+    ////// project SET END//////
+  })
+
+  // var namespace = webconsolejs["common/util"].getCurrentProject()
+}
+
+async function getMcisList() {
+  console.log("getMcisList")
+  var projectId = $("#select-current-project").val()
+  console.log("projectId", projectId)
+  nsid = projectId
+
+  var data = {
     pathParams: {
       nsId: nsid,
     },
@@ -857,13 +957,16 @@ async function life_cycle() {
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
-  );
-
-  var mcisList = response.data.responseData;
-  console.log("mcisList : ", mcisList);
-  getMcisListCallbackSuccess(nsid, mcisList);
+  )
+  
+  // if (response.response.data.status.code != 200 && response.response.data.status.code != 201) {
+  //   alert(response.response.data.responseData.message)
+  // } else {
+    var mcisList = response.data.responseData;
+    console.log("mcisList : ", mcisList);
+    getMcisListCallbackSuccess(nsid, mcisList);
+  // }
 }
-
 // MCIS 목록 조회 후 화면에 Set
 
 function getMcisListCallbackSuccess(caller, mcisList) {

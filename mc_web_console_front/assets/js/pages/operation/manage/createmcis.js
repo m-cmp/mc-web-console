@@ -368,7 +368,7 @@ function setSpecTabulator(
 var recommendSpecs = [];
 // Table 초기값 설정
 function initSpecTable() {
-
+console.log("initSpecTableinitSpecTable")
 	var tableObjParams = {};
 
 	var columns = [
@@ -743,7 +743,7 @@ export async function createMcisDynamic() {
 	obj['vm'] = Express_Server_Config_Arr
 	const data = {
 		pathParams: {
-			"nsId": "testns01"
+			"nsId": nsid
 		},
 		Request: {
 			"name": obj['name'],
