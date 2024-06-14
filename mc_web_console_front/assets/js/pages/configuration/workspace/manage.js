@@ -98,15 +98,22 @@ function initTable() {
       title: "Name",
       field: "name",
       vertAlign: "middle"
-    }    
+    },
+    {
+      title: "WorkspaceId",
+      field: "workspace_id",
+      visible: false
+    },    
   ];
 
   table = setTabulator("workspacelist-table", tableObjParams, columns);
 
   // 행 클릭 시
   table.on("rowClick", function (e, row) {
-
-    var workspaceID = row.getCell("id").getValue();
+    console.log(row)
+    //var workspaceID = row.getCell("id").getValue();
+    //var workspaceID = row.getCell("workspaceId").getValue();
+    var workspaceID = row.getCell("workspace_id").getValue();
     console.log("workspaceID", workspaceID)
     // console.log("eeeee",e)
     //clickListOfMcis(row.getCell("id").getValue());
@@ -127,10 +134,11 @@ function initTable() {
 async function getSelectedWorkspaceData(workspaceID) {
   const data = {
     pathParams: {
-      workspace: workspaceID
+      workspaceId: workspaceID
     }
   }
 
+  ///api/ws/workspace/{workspaceId}
   var controller = "/api/" + "getworkspace";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -138,15 +146,17 @@ async function getSelectedWorkspaceData(workspaceID) {
   );
 
   console.log("response", response)
-  var workspaceData = response.data.responseData;
-  console.log("mcisdata", mcisData)
+  var workspaceData = response.data.responseData.responseData;
+  console.log("workspaceData", workspaceData)
 
   // SET MCIS Info 
-  setWorkspaceInfoData(mcisData)
+  setWorkspaceInfoData(workspaceData)
 
   // Toggle MCIS Info
-  var div = document.getElementById("mcis_info");
-  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  // var div = document.getElementById("info_workspace");
+  // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  window.location.hash = "info_workspace"
+  //window.location.hash = ""
 
 }
 
@@ -154,24 +164,24 @@ async function getSelectedWorkspaceData(workspaceID) {
 function setWorkspaceInfoData(workspaceData) {
   console.log("setWorkspaceInfoData", workspaceData)
   try {
-    // var mcisID = mcisData.id;
-    // var mcisName = mcisData.name;
-    // var mcisDescription = mcisData.description;
-    
-    // console.log("totalvmCount", totalvmCount)
+    var workspaceId = workspaceData.workspace_id;
+    console.log("workspaceId ", workspaceId)
+    var id = workspaceData.id;
+    console.log("id ", id)
+    var name = workspaceData.name;
+    console.log("name ", name)
+    var description = workspaceData.description;
+    console.log("description ", description)
 
-    // $("#mcis_info_text").text(" [ " + mcisName + " ]")
-    // $("#mcis_server_info_status").empty();
-    // $("#mcis_server_info_status").text(" [ " + mcisName + " ]")
-    // $("#mcis_server_info_count").text(" Server(" + totalvmCount + ")")
+    $("#info_id").val("");
+    $("#info_name").val("");
+    $("#info_workspace_desc").val("");
+    $("#info_workspace_id").val("");
 
-
-    // $("#mcis_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
-    // $("#mcis_info_name").text(mcisName + " / " + mcisID)
-    // $("#mcis_info_description").text(mcisDescription)
-    // $("#mcis_info_status").text(mcisStatus)
-    // $("#mcis_info_cloud_connection").empty()
-    // $("#mcis_info_cloud_connection").append(mcisProviderNames)
+    $("#info_id").val(id);
+    $("#info_name").val(name);
+    $("#info_workspace_desc").val(description);
+    $("#info_workspace_id").val(workspaceId);
 
   } catch (e) {
     console.error(e);
@@ -293,6 +303,7 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 
 document.addEventListener("DOMContentLoaded", getWorkspaceList);
 
+// workspace 목록조회
 async function getWorkspaceList() {
   console.log("getWorkspaceList")
   // var namespace = webconsolejs["common/util"].getCurrentProject()
@@ -309,16 +320,19 @@ async function getWorkspaceList() {
     controller,
     data
   );
+  console.log("response ", response)
+  //var workspaceList = response.data.responseData;//response 자체가 array임.  
+  var workspaceList = response.data.responseData.responseData;//response 자체가 array임.  
 
-  // var mcisList = response.data.responseData;
-  // console.log("mcisList : ", mcisList);
-  // getWorkspaceListCallbackSuccess(nsid, mcisList);
+  getWorkspaceListCallbackSuccess(workspaceList);
 }
 
 // MCIS 목록 조회 후 화면에 Set
 
-function getWorkspaceListCallbackSuccess(caller, mcisList) {
+function getWorkspaceListCallbackSuccess(workspaceList) {
   console.log("getWorkspaceListCallbackSuccess");
+  console.log("workspaceList : ", workspaceList);
+  table.setData(workspaceList);
 }
 
 // 해당 mcis에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
@@ -347,6 +361,50 @@ export function deleteWorkspace() {
   // }
 }
 
-export function addNewWorkspace() {
+function validWorkspace(){
+  var name = $("#create_name").val();
+  var desc = $("#create_description").val();
+  
+  return true
+}
+// workspace 저장 및 Create form 닫기
+export async function saveWorkspace() {
   console.log("add workspace")
+  
+  if( validWorkspace() ){
+
+    var name = $("#create_name").val();
+    var desc = $("#create_description").val();
+    
+    const data = {
+      request: {
+        "name": name,
+        "description": desc,
+      }
+    }
+
+    var controller = "/api/" + "createworkspace";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+    console.log(response)
+    // save success 시 
+    // 
+    
+
+    var div = document.getElementById("create_workspace");
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+    // 저장 후 workspace 목록 조회
+    getWorkspaceList()
+  }
+}
+
+// Info Form 닫기
+export function closeInfoForm(){
+  console.log(" close form ")
+
+  var div = document.getElementById("info_workspace");
+	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 }

@@ -13,12 +13,15 @@ function hideLoader() {
 }
 
 export function toggleElement(elem){
+    // 자기 자신에 대한 Toggle
     if (elem.classList.contains("active")){
         console.log("here")
         elem.classList.remove('active')
+        window.location.hash = ""
     }else{
         console.log("zzz")
         elem.classList.add('active')
+        console.log(elem)
     }
 }
 
