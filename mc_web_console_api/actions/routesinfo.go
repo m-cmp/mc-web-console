@@ -75,13 +75,15 @@ func PostRouteController(c buffalo.Context) error {
 
 	// workspace mng area
 	case "getworkspacebyuserid":
-		commonResponse = GetworkspaceByuserId(c, commonRequest)
+		commonResponse = GetWorkspaceByuserId(c, commonRequest)
 	case "getworkspacelist":
-		commonResponse = Getworkspacelist(c, commonRequest)
+		commonResponse = GetWorkspacelist(c, commonRequest)
 	case "getworkspace":
-		commonResponse = Getworkspace(c, commonRequest)
+		commonResponse = GetWorkspace(c, commonRequest)
 	case "createworkspace":
-		commonResponse = Createworkspace(c, commonRequest)
+		commonResponse = CreateWorkspace(c, commonRequest)
+	case "deleteworkspace":
+		commonResponse = DeleteWorkspace(c, commonRequest)
 
 	// // workspace mng area
 	// case "demogetuserinfo":
