@@ -41,6 +41,7 @@ var (
 	getworkspaceuserrolemappingbyworkspace     = "/api/wsuserrole/workspace/{workspaceId}"
 	createworkspaceuserrolemapping             = "/api/wsuserrole/workspace/{workspaceId}"
 	deleteworkspaceuserrolemapping             = "/api/wsuserrole/workspace/{workspaceId}/user/{userId}"
-	getworkspaceuserrolemappingbyuser          = "/api/wsuserrole/workspace/{workspaceId}/user/{userId}"
+	// getworkspaceuserrolemappingbyuser          = "/api/wsuserrole/workspace/{workspaceId}/user/{userId}"
+	getworkspaceuserrolemappingbyuser          = "/api/wsuserrole/workspace/{workspace}/user/{user}"
 	updateworkspaceuserrolemappingbyuser       = "/api/wsuserrole/workspace/{workspaceId}/user/{userId}"
 )

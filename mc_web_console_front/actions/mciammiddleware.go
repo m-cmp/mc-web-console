@@ -32,6 +32,7 @@ func McIamAuthMiddleware(next buffalo.Handler) buffalo.Handler {
 		}
 
 		c.Set("name", jwtDecode["name"])
+		c.Set("upn", jwtDecode["upn"])
 
 		return next(c)
 	}

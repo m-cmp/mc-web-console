@@ -3,15 +3,15 @@ console.log("mcisrunning.js");
 var totalMcisListObj = new Object();
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
-
+var nsid = ""
 // for the test
 document.addEventListener("DOMContentLoaded", life_cycle);
 
 async function life_cycle() {
 
-  var namespace = webconsolejs["common/util"].getCurrentProject()
-  var nsid = namespace.Name
-
+  // var namespace = webconsolejs["common/util"].getCurrentProject()
+  // nsid = namespace.Name
+  nsid = "testns01"
   const data = {
     pathParams: {
       nsId: nsid,
@@ -23,8 +23,9 @@ async function life_cycle() {
     controller,
     data
   );
-
+  console.log("life_cyclelife_cycle",response)
   var mcisList = response.data.responseData;
+  
   console.log("mcisList : ", mcisList);
   getMcisListCallbackSuccess(nsid, mcisList);
 }
@@ -276,11 +277,12 @@ function setMcisListTableRow(aMcisData, mcisIndex) {
         // mcis
        
         mcisTableRow = "";
-        mcisTableRow += '<div id=" '+mcisIndex+' "onclick="selectMcis(\'' + aMcisData.id + '\',\'' + aMcisData.name + '\',\'mcis_areabox_' + mcisIndex + '\', this)">'
-        mcisTableRow += '   <div class="titlebox">'
+        mcisTableRow += '<div class="card bg-secondary-lt" id=" '+mcisIndex+' "onclick="selectMcis(\'' + aMcisData.id + '\',\'' + aMcisData.name + '\',\'mcis_areabox_' + mcisIndex + '\', this)">'
+        mcisTableRow += '   <div class="card-header">'
         mcisTableRow += '       <div class="title">' + aMcisData.name + '</div>'
         mcisTableRow += '       <div class="txt"><span class="bgbox_b"></span>' + vmDispStatus + '</div>' 
         mcisTableRow += '   </div>'
+        mcisTableRow += '   <div class="card-body"></div>'
         mcisTableRow += '  infra'
         mcisTableRow += '   <span class="badge bg-info-lt"><strong>' + totalVmCountOfMcis + '</strong></span>'
         mcisTableRow += '   <span class="line">(</span>'
