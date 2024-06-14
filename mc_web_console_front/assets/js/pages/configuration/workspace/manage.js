@@ -342,23 +342,34 @@ function getWorkspaceListCallbackSuccess(workspaceList) {
 
 
 /////////////// Workspace Handling /////////////////
-export function deleteWorkspace() {
+export async function deleteWorkspace() {
+  console.log("deleteWorkspace ", checked_array);
 
-  // for (const mcis of checked_array) {
-  //   console.log(mcis.id)
-  //   let data = {
-  //     pathParams: {
-  //       nsId: nsid,
-  //       mcisId: mcis.id,
-  //     }
-  //   };
-  //   let controller = "/api/" + "delmcis";
-  //   let response = webconsolejs["common/api/http"].commonAPIPost(
-  //     controller,
-  //     data
-  //   );
-  //   console.log(response)
-  // }
+  if( checked_array.length == 0 || checked_array.length > 1){
+    alert(" 1개만 선택 하세요 ")
+    return;
+  }
+
+  for (const workspace of checked_array) {
+    console.log(workspace.id)
+    let data = {
+      pathParams: {        
+        "workspaceId": workspace.workspace_id,
+      }
+    };
+    let controller = "/api/" + "deleteworkspace";
+    let response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+    console.log(response)
+    if( response.data.status.code == "200" || response.data.status.code == "201" ){
+      console.log("successfully deleted")
+      // 저장 후 workspace 목록 조회
+      getWorkspaceList()
+    }
+    
+  }
 }
 
 function validWorkspace(){
@@ -390,14 +401,14 @@ export async function saveWorkspace() {
     );
     console.log(response)
     // save success 시 
-    // 
-    
+    if( response.data.status.code == "200" || response.data.status.code == "201" ){
+      var div = document.getElementById("create_workspace");
+      webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
-    var div = document.getElementById("create_workspace");
-    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+      // 저장 후 workspace 목록 조회
+      getWorkspaceList()
+    }
 
-    // 저장 후 workspace 목록 조회
-    getWorkspaceList()
   }
 }
 

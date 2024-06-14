@@ -127,6 +127,10 @@ function commonConfirmOpen(targetAction, caller) {
             ["DeletePmks", "Are you sure to delete this PMKS? "],
             ["AddNewNodeGroupOfPmks", "Would you like to add a new NodeGroup to this PMKS ?"],
             ["DeleteNodeGroupOfPmks", "Would you like to delete a NodeGroup of this PMKS ?"],
+
+
+            ["WorkspaceDelete", "Are you sure  you want to delete the Workspace ?"],
+            
         ]
     );
     console.log(confirmModalTextMap.get(targetAction));
