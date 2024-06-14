@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/mciammanager"
 
@@ -27,9 +28,31 @@ func GetworkspaceByuserId(c buffalo.Context, commonRequest *handler.CommonReques
 	return handler.CommonResponseStatusInternalServerError(nil)
 }
 
+// Workspace 목록 조회
 func Getworkspacelist(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
 	if handler.MCIAM_USE {
 		commonResponse := mciammanager.McIamGetworkspacelist(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// Workspace 단건 조회
+func Getworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if handler.MCIAM_USE {
+		commonResponse := mciammanager.McIamGetworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// workspace 생성
+func Createworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if handler.MCIAM_USE {
+		commonResponse := mciammanager.McIamCreateworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
 		return commonResponse
 	}
 	return handler.CommonResponseStatusInternalServerError(nil)
