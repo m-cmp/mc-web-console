@@ -10,57 +10,57 @@ import (
 )
 
 func GetMCISList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, getMcisList, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetMcisList, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func GetMCIS(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, getMcis, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetMcis, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func DelMCIS(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, delMcis, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, DeleteMcis, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func CreateMCIS(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, createMcis, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, CreateMcis, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func CreateDynamicMCIS(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, createDynamicMcis, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, CreateDynamicMcis, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func GetLoadDefaultResouce(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, getLoadDefaultResource, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetLoadDefaultResource, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func DelDefaultResouce(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, delDefaultResource, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, DelDefaultResource, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func MCISRecommendVm(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, mcisRecommendVm, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, McisRecommendVm, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func MCISDynamicCheckRequest(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, mcisDynamicCheckRequest, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, PostMcisDynamicCheckRequest, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func SendCommandtoMCIS(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, sendCommandToMcis, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, PostCmdMcis, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func ControlLifecycle(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, controlLifecycle, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetControlMcis, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
@@ -68,7 +68,7 @@ func GetImageId(c buffalo.Context, commonRequest *handler.CommonRequest) *handle
 	// endPoint := "/ns/{nsId}/resources/image/{imageId}"
 	// common에 있는 이미지 사용
 	// TODO: custom 일 때 처리
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, getImageId, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, getPublicImageId, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
@@ -77,7 +77,7 @@ func CreateVMDynamic(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 	// common에 있는 이미지 사용
 	// TODO: custom 일 때 처리
 	// endPoint := "/ns/{nsId}/mcis/{mcisId}/vmDynamic"
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, createVMDynamic, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, PostMcisVmDynamic, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
