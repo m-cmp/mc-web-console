@@ -37,6 +37,9 @@ func PostRouteController(c buffalo.Context) error {
 
 	commonResponse := &handler.CommonResponse{}
 	switch targetController {
+
+	// MCIS Mng Area
+
 	case "getmcislist":
 		commonResponse = GetMcisList(c, commonRequest)
 	case "getmcis":
@@ -65,6 +68,7 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse, _ = self.DiskLookup(c, commonRequest)
 	case "createvmdynamic":
 		commonResponse = CreateMcisVmDynamic(c, commonRequest)
+	// MCIS Mng Area end
 
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
@@ -93,16 +97,57 @@ func PostRouteController(c buffalo.Context) error {
 	case "getworkspaceuserrolemappingbyuser":
 		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyuser(c, commonRequest)
 
-	// MCIS Mng Area
-
-	// MCIS Mng Area
-
 	// // workspace mng area
 	// case "demogetuserinfo":
 	// 	commonResponse = demo.DemoGetuserinfo(c, commonRequest)
 	// case "demogetusercred":
 	// 	commonResponse = demo.DemoGetuserCred(c, commonRequest)
 
+	// settings resources
+	case "getvpclist":
+		commonResponse = GetVPCList(c, commonRequest)
+	case "getvpc":
+		commonResponse = GetVPC(c, commonRequest)
+	case "createvpc":
+		commonResponse = CreateVPC(c, commonRequest)
+	case "deletevpc":
+		commonResponse = DeleteVPC(c, commonRequest)
+	case "deleteallvpc":
+		commonResponse = DeleteAllVPC(c, commonRequest)
+	case "getsecuritygrouplist":
+		commonResponse = GetSecurityGroupList(c, commonRequest)
+	case "getsecuritygroup":
+		commonResponse = GetSecurityGroup(c, commonRequest)
+	case "createsecuritygroup":
+		commonResponse = CreateSecurityGroup(c, commonRequest)
+	case "deletesecuritygroup":
+		commonResponse = DeleteSecurityGroup(c, commonRequest)
+	case "deleteallsecuritygroup":
+		commonResponse = DeleteAllSecurityGroup(c, commonRequest)
+	case "getvmspeclist":
+		commonResponse = GetVmSpecList(c, commonRequest)
+	case "getvmspec":
+		commonResponse = GetVmSpec(c, commonRequest)
+	case "createvmspec":
+		commonResponse = CreateVmSpec(c, commonRequest)
+	case "deletevmspec":
+		commonResponse = DeleteVmSpec(c, commonRequest)
+	case "deleteallvmspec":
+		commonResponse = DeleteAllVmSpec(c, commonRequest)
+
+	case "getcommonvmspeclist":
+		commonResponse = GetCommonVmSpecList(c, commonRequest)
+	case "getcommonvmspec":
+		commonResponse = GetCommonVmSpec(c, commonRequest)
+	case "getresourcecommonspec":
+		commonResponse = GetResourceCommonSpec(c, commonRequest)
+	case "getconnconfiglistbytype":
+		commonResponse = GetConnConfigListByType(c, commonRequest)
+
+	case "getresourcelist":
+		commonResponse = GetResourceList(c, commonRequest)
+	case "getresource":
+		commonResponse = GetResource(c, commonRequest)
 	default:
 		commonResponse = handler.CommonResponseStatusNotFound("NO MATCH targetController")
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
