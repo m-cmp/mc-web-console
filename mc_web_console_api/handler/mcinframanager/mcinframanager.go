@@ -140,43 +140,43 @@ func InfraDeleteAllSecurityGroup(c buffalo.Context, commonRequest *handler.Commo
 
 // //
 func InfraGetVmSpecList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetSGList, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetSpecList, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func InfraGetVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetSG, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetSpec, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func InfraCreateVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, CreateVPC, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodPost, handler.MCINFRAMANAGER, CreateSpec, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func InfraDeleteVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, DeleteSG, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, DeleteSpec, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 // Admin only : Delete all vm spec
 func InfraDeleteAllVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, DeleteAllSG, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodDelete, handler.MCINFRAMANAGER, DeleteAllSpec, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 // //
 func InfraGetCommonVmSpecList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetSGList, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetCommonSpecList, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
 func InfraGetCommonVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetSG, commonRequest, mcinframanagerAuthentication())
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetCommonSpec, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 
-func InfraGetResourceCommonVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+func InfraGetResourceCommonSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
 	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCINFRAMANAGER, GetResourceCommonSpec, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
