@@ -38,33 +38,33 @@ func PostRouteController(c buffalo.Context) error {
 	commonResponse := &handler.CommonResponse{}
 	switch targetController {
 	case "getmcislist":
-		commonResponse = mcinframanager.GetMCISList(c, commonRequest)
+		commonResponse = GetMcisList(c, commonRequest)
 	case "getmcis":
-		commonResponse = mcinframanager.GetMCIS(c, commonRequest)
+		commonResponse = GetMcis(c, commonRequest)
 	case "delmcis":
-		commonResponse = mcinframanager.DelMCIS(c, commonRequest)
+		commonResponse = DeleteMcis(c, commonRequest)
 	case "createmcis":
-		commonResponse = mcinframanager.CreateMCIS(c, commonRequest)
+		commonResponse = CreateMcis(c, commonRequest)
 	case "createdynamicmcis":
-		commonResponse = mcinframanager.CreateDynamicMCIS(c, commonRequest)
+		commonResponse = CreateDynamicMcis(c, commonRequest)
 	case "getloaddefaultresource":
-		commonResponse = mcinframanager.GetLoadDefaultResouce(c, commonRequest)
+		commonResponse = GetLoadDefaultResource(c, commonRequest)
 	case "deldefaultresources":
-		commonResponse = mcinframanager.DelDefaultResouce(c, commonRequest)
+		commonResponse = DelDefaultResource(c, commonRequest)
 	case "mcisrecommendvm":
-		commonResponse = mcinframanager.MCISRecommendVm(c, commonRequest)
+		commonResponse = McisRecommendVm(c, commonRequest)
 	case "mcisdynamiccheckrequest":
-		commonResponse = mcinframanager.MCISDynamicCheckRequest(c, commonRequest)
+		commonResponse = McisDynamicCheckRequest(c, commonRequest)
 	case "sendcommandtomcis":
-		commonResponse = mcinframanager.SendCommandtoMCIS(c, commonRequest)
+		commonResponse = CmdMCIS(c, commonRequest)
 	case "controllifecycle":
-		commonResponse = mcinframanager.ControlLifecycle(c, commonRequest)
+		commonResponse = ControlMcis(c, commonRequest)
 	case "getimageid":
-		commonResponse = mcinframanager.GetImageId(c, commonRequest)
+		commonResponse = mcinframanager.InfraGetPublicImage(c, commonRequest)
 	case "disklookup":
 		commonResponse, _ = self.DiskLookup(c, commonRequest)
 	case "createvmdynamic":
-		commonResponse = mcinframanager.CreateVMDynamic(c, commonRequest)
+		commonResponse = CreateMcisVmDynamic(c, commonRequest)
 
 	case "authlogin":
 		commonResponse = AuthLogin(c, commonRequest)
@@ -86,13 +86,16 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = CreateWorkspace(c, commonRequest)
 	case "deleteworkspace":
 		commonResponse = DeleteWorkspace(c, commonRequest)
-	
+
 	// workspace, project mapping
 	case "getworkspaceuserrolemappingbyworkspaceuser":
 		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyworkspaceuser(c, commonRequest)
 	case "getworkspaceuserrolemappingbyuser":
 		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyuser(c, commonRequest)
-	
+
+	// MCIS Mng Area
+
+	// MCIS Mng Area
 
 	// // workspace mng area
 	// case "demogetuserinfo":
