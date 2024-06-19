@@ -14,20 +14,26 @@ document.addEventListener('DOMContentLoaded',async function () {
 });
 
 
+// navbar에서는 변경시 session에만 set. 필요화면에서 사용
 workspaceListselectBox.addEventListener('change', function () {
-    if (this.value == "") return;
+    // if (this.value == "") return;
     
     let workspace = {"Id":this.value, "Name":this.options[this.selectedIndex].text}
-    webconsolejs["common/util"].setCurrentWorkspace(workspace)
-    
-    // workspace 변경 시 currProject 다시 set
-    setPrjSelectBox(workspace.Id)
+    webconsolejs["common/util"].setCurrentWorkspace(workspace);//세션에 저장
+
+    // // workspace 변경 시 currProject 다시 set
+    // setPrjSelectBox(workspace.Id)
     
 });
 
+// navbar에서는 변경시 session에만 set. 필요화면에서 사용
 projectListselectBox.addEventListener('change',function () {
     let project = {"Id":this.value, "Name":this.options[this.selectedIndex].text}
-    webconsolejs["common/util"].setCurrentProject(project)
+    webconsolejs["common/util"].setCurrentProject(project)// 세션에 저장
+
+    // 현재 화면의 iniPage() 호출
+    //webconsolejs["pages/manage/mcis"].inptPage(project)
+    //webconsolejs["pages/configuration/workspace/manage"].inptPage(project)
 });
 
 // refresh 버튼 클릭시 user의 workspace, project 목록 조회
@@ -137,4 +143,6 @@ async function workspaceProjectInit(){
         // project 목록에서 project 선택
         //projectListselectBox.value = webconsolejs["common/util"].getProject()?.Id;
     }
+
+    webconsolejs["pages/operation/manage/mcis"].initPage()
 }

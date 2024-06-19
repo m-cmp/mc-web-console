@@ -23,9 +23,28 @@ document.addEventListener("DOMContentLoaded", initPage);
 // 페이지 로드 시 prj 값 받아와 getMcisList 호출
 async function initPage() {
   console.log("initPage")
+  alert("initPage")
+
+  // workspace, project 가 먼저 설정되어 있어야 한다.
+  console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
+  let curWorkspaceId = await webconsolejs["common/util"].getCurrentWorkspace()?.Id
+  console.log("curWorkspaceId", curWorkspaceId)
+  if( curWorkspaceId == ""){
+    alert("workspace 먼저 선택하시오");
+    return;
+  }
+  let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
+  console.log("curProjectId", curProjectId)
+  if( curProjectId == ""){
+    alert("project 먼저 선택하시오")
+    return;
+  }
+
+  
+  // 받은 mcisId가 있으면 set하고 조회한다.
+
 
   // 외부(dashboard)에서 받아온 mcisID가 있으면 MCIS INFO 이동
-
   // 현재 브라우저의 URL
   const url = window.location.href;
   const urlObj = new URL(url);
@@ -56,7 +75,7 @@ async function initPage() {
   )
 
   console.log("wsresponse", wsresponse)
-  var workspaceList = ["default"];
+  //var workspaceList = ["default"];
   // var workspacesRespData = wsresponse.data.responseData.responseData // data
   // var workspaceSelected = "";
   // workspacesRespData.forEach(item => {
@@ -64,8 +83,8 @@ async function initPage() {
   // });
   // console.log("workspacelist", workspaceList)
 
-  var html = '<option value="">Select WorkSpace</option>'
-  html += '<option value="default">default</option>'
+  //var html = '<option value="">Select WorkSpace</option>'
+  //html += '<option value="default">default</option>'
   // workspaceList.forEach(item => {
 
   //   var currentWorkspace = webconsolejs["common/util"].getCurrentWorkspace()
@@ -80,82 +99,83 @@ async function initPage() {
   //   html += '<option value="' + item + '" ' + workspaceSelected + '>' + item + '</option>'
   // })
 
-  $("#select-current-workspace").empty()//
-  $("#select-current-workspace").append(html)
+  //$("#select-current-workspace").empty()//
+  //$("#select-current-workspace").append(html)
 
-  $("#select-current-workspace").on('change', async function () {
-    console.log(" change ")
-    var selectedValue = this.value;
-
-    var data = {
-      pathParams: {
-        "workspace": selectedValue,
-        "user": userId,
-      },
-    }
-    // var controller = "/api/" + "getworkspaceuserrolemappingbyuser";
-    // const prjresponse = await webconsolejs["common/api/http"].commonAPIPost(
-    //   controller,
-    //   data
-    // )
-    // console.log("prjresponse", prjresponse)
-
-
-    // workspace 안에서 project목록 추출
-    var projectList = ["testns01"];
-    // var projects = prjresponse.data.responseData.responseData.projects // data
-    // var projectSelected = ""
-    // projects.forEach(project => {
-    //   projectList.push(project.name);
-    // });
-    // console.log("projectList", projectList)
-
-    var html = '<option value="">Select Project</option>'
-    html += '<option value="testns01">testns01</option>'
-
-    // projectList.forEach(item => {
-    //   var currentNamespace = webconsolejs["common/util"].getCurrentProject()
-    //   console.log("currentWorkspace", currentNamespace)
-
-    //   if (currentNamespace != null && currentNamespace.Id == item) {
-    //     projectSelected = "selected"
-    //   } else {
-    //     projectSelected = ""
-    //   }
-
-    //   html += '<option value="' + item + '" ' + projectSelected + '>' + item + '</option>'
-    // })
-    $("#select-current-project").empty()
-    $("#select-current-project").append(html)
-
-    ////// project SET END//////
-  })
+  
 
   ////// workspace SET END //////
 
 
   ////// project SET //////
-  $("#select-current-project").on('change', async function () {
-    console.log(" change ")
 
-    getMcisList();
-
-    ////// project SET END//////
-  })
 
   // var namespace = webconsolejs["common/util"].getCurrentProject()
 }
+
+$("#select-current-workspace").on('change', async function () {
+  console.log(" change ")
+  var selectedWorkspaceValue = this.value;
+
+  let projectListselectBox = document.getElementById("select-current-project");
+
+  //setPrjSelectBox(workspace.Id)
+
+  let projectList = await webconsolejs["common/util"].getProjectListByWorkspaceId(selectedWorkspaceValue)
+
+  
+  while (projectListselectBox.options.length > 0) {
+      projectListselectBox.remove(0);        
+  }
+
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = ""
+  defaultOpt.textContent = "Please select a project";
+  projectListselectBox.appendChild(defaultOpt);
+
+  let curProjectId = webconsolejs["common/util"].getCurrentProject()?.Id
+  for (const p in projectList) {
+      console.log("p ", p)
+      const opt = document.createElement("option");
+      opt.value = projectList[p].id;
+      opt.textContent = projectList[p].name;
+      projectListselectBox.appendChild(opt);
+
+      if (curProjectId != "" && projectList[p].id == curProjectId) {
+          opt.setAttribute("selected", "selected");
+      }
+  }
+
+  ////// project SET END//////
+})
+
+$("#select-current-project").on('change', async function () {
+  console.log(" change ")
+
+  getMcisList();
+
+  ////// project SET END//////
+})
 
 // 받아온 project(namespace)로 McisList GET
 async function getMcisList() {
   console.log("getMcisList")
   var projectId = $("#select-current-project").val()
+  var projectName = $('#select-current-project').find('option:selected').text();
+  // var projectName = $("#select-current-project").text()
+  // $('#select-current-project').find('option:selected').each(function() {
+  //   projectName = $(this).text();
+  // });
   console.log("projectId", projectId)
-  nsid = projectId
+  console.log("projectName", projectName)
+  nsid = projectName
+
+  // nsid = "project1";
 
   var data = {
     pathParams: {
       nsId: nsid,
+      // nsId: "testns01",
     },
   };
   //var controller = "targetController=getmcislist"
@@ -200,9 +220,8 @@ async function getSelectedMcisData(mcisID) {
 
   const data = {
     pathParams: {
-      // for the test
-      // nsId: nsid,
-      nsId: "testns01",
+      nsId: nsid,
+      // nsId: "testns01",
       mcisId: mcisID
     }
   }

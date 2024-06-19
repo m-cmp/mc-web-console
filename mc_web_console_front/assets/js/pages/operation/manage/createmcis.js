@@ -116,8 +116,11 @@ export function expressDone_btn() {
 	// }
 	// $(".section").removeClass("active");
 
+	// var div = document.getElementById("server_configuration");
+	// webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
 	var div = document.getElementById("server_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
 	// $("#mcis_server_list").prepend(add_server_html)
 	// $("#plusVmIcon").remove();
