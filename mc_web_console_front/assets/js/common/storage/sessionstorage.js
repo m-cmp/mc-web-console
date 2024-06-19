@@ -1,4 +1,19 @@
-// workspace
+// user token mng START
+//////////////////////////////////////////////////////////
+
+export function setSessionCurrentUserToken(token) {
+    sessionStorage.setItem('currentUserToken',token)
+}
+
+export function getSessionCurrentUserToken() {
+    let currentUserToken = sessionStorage.getItem('currentUserToken')
+    return currentUserToken
+}
+
+// user token mng END
+//////////////////////////////////////////////////////////
+
+// workspaceS
 // export function getSessionCurrentWorkspace() {
 //     return JSON.parse(sessionStorage.getItem("currentWorkspace"))
 // }

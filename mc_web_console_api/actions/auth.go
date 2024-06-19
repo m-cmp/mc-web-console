@@ -23,11 +23,11 @@ func AuthLogin(c buffalo.Context) error {
 		}
 
 		tx := c.Value("tx").(*pop.Connection)
-		sess, err := self.CreateUserSessFromResponseData(tx, commonResponse, commonRequest.Request.(map[string]interface{})["id"].(string))
+		_, err := self.CreateUserSessFromResponseData(tx, commonResponse, commonRequest.Request.(map[string]interface{})["id"].(string))
 		if err != nil {
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
 		}
-		c.Session().Set("Authorization", sess.AccessToken)
+		// c.Session().Set("Authorization", sess.AccessToken)
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	} else {
 		commonResponse = handler.CommonResponseStatusInternalServerError("NOT IMPL")
@@ -70,7 +70,7 @@ func AuthLogout(c buffalo.Context) error {
 		if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
 			return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 		}
-		c.Session().Clear()
+		// c.Session().Clear()
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	} else {
 		commonResponse = handler.CommonResponseStatusInternalServerError("NOT IMPL")
