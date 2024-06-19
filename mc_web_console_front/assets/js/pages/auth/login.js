@@ -12,7 +12,7 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         document.getElementById("id").value = null
         document.getElementById("password").value = null
     }else{
-        webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserToken(response.data.responseData.access_token)
+        // webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserToken(response.data.responseData.access_token)
         window.location = "/"
     }
 });

@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"log"
 	"net/http"
 	"os"
 
+	"mc_web_console_front/middleware"
 	"mc_web_console_front/public"
 
 	"github.com/gobuffalo/buffalo"
@@ -52,14 +54,19 @@ func App() *buffalo.App {
 		app.ANY("/alive", alive)
 		auth := app.Group("/auth")
 		auth.GET("/login", UserLoginHandler)
+		auth.GET("/logout", UserLogoutHandler)
+		auth.GET("/unauthorized", UserUnauthorizedHandler)
 
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
+		pages.Use(session(""))
+		pages.ANY("/alive", alive)
 		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		apiPath := "/api"
 		api := app.Group(apiPath)
+
 		api.ANY("/{path:.+}", ApiCaller)
 
 		app.ServeFiles("/", http.FS(public.FS()))
@@ -85,4 +92,17 @@ func alive(c buffalo.Context) error {
 		"status": "OK",
 		"method": c.Request().Method,
 	}))
+}
+
+func session(role string) buffalo.MiddlewareFunc {
+	if MCIAM_USE {
+		return middleware.Middleware(role)
+	} else {
+		return func(next buffalo.Handler) buffalo.Handler {
+			return func(c buffalo.Context) error {
+				log.Println("NO SESSION MIDDLEWARE")
+				return next(c)
+			}
+		}
+	}
 }

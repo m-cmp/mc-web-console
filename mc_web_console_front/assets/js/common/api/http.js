@@ -8,8 +8,7 @@ export async function commonAPIPost(url, data) {
 
     const csrfToken = document.getElementById("csrf-token").getAttribute('content');
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-    const token = await webconsolejs["common/storage/sessionstorage"].getSessionCurrentUserToken()
-    axios.defaults.headers.common['Authorization'] = token;
+
     console.log("-----------------------")
 
     const response = await axios.post(url, data)
