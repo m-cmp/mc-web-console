@@ -322,7 +322,7 @@ async function getWorkspaceList() {
   );
   console.log("response ", response)
   //var workspaceList = response.data.responseData;//response 자체가 array임.  
-  var workspaceList = response.data.responseData.responseData;//response 자체가 array임.  
+  var workspaceList = response.data.responseData;//response 자체가 array임.  
 
   getWorkspaceListCallbackSuccess(workspaceList);
 }
