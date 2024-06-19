@@ -55,57 +55,72 @@ function setWorkspaceSelectBox(workspaceList) {
     }
     var workspaceExists = false
     let curWorkspaceId = webconsolejs["common/util"].getCurrentWorkspace()?.Id
+
+    console.log("setWorkspaceSelectbox --------------------")
+    console.log(workspaceList)
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = ""
+    defaultOpt.textContent = "Please select a workspace";
+    workspaceListselectBox.appendChild(defaultOpt);
     for (const w in workspaceList) {                
         const opt = document.createElement("option");
-        opt.value = workspaceList[w].workspace_id;
-        opt.textContent = workspaceList[w].workspace_name;
+        opt.value = workspaceList[w].id;
+        opt.textContent = workspaceList[w].name;
 
-        if (curWorkspaceId != "" && workspaceList[w].workspace_id == curWorkspaceId) {
+        if (curWorkspaceId != "" && workspaceList[w].id == curWorkspaceId) {
             opt.setAttribute("selected", "selected");
             workspaceExists = true
         }
         workspaceListselectBox.appendChild(opt);
-    }
-    
+    }    
 }
 
 // project는 조회한다.
-function setPrjSelectBox(workspaceId) {
+async function setPrjSelectBox(workspaceId) {
 // function updatePrjSelectBox(workspaceId) {
-    let projectList = webconsolejs["common/util"].getProjectListByWorkspaceId(workspaceId)
-    
+    let projectList = await webconsolejs["common/util"].getProjectListByWorkspaceId(workspaceId)
+    console.log("projectList ", projectList)
     while (projectListselectBox.options.length > 0) {
         projectListselectBox.remove(0);        
     }
 
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = ""
+    defaultOpt.textContent = "Please select a project";
+    projectListselectBox.appendChild(defaultOpt);
+
     let curProjectId = webconsolejs["common/util"].getCurrentProject()?.Id
     for (const p in projectList) {
+        console.log("p ", p)
         const opt = document.createElement("option");
-        opt.value = projectList[p].project_id;
-        opt.textContent = projectList[p].project_name;
+        opt.value = projectList[p].id;
+        opt.textContent = projectList[p].name;
         projectListselectBox.appendChild(opt);
 
-        if (curProjectId != "" && projectList[p].project_id == curProjectId) {
+        if (curProjectId != "" && projectList[p].id == curProjectId) {
             opt.setAttribute("selected", "selected");
         }
     }
 
-    initPage("PROJECT_CHANGED");// project가 변경되면 InitPage 호출
+    //initPage("PROJECT_CHANGED");// project가 변경되면 InitPage 호출
 }
 
 // 기본은 local storage에 저장된 값 사용 -> 없으면 조회
 async function workspaceProjectInit(){
     //let userWorkspaceProjectList = webconsolejs["common/util"].getCurrentWorkspaceProjectList()
-    let userWorkspaceProjectList = webconsolejs["common/util"].getWorkspaceListByUser();
-    if (userWorkspaceProjectList == null ){
+    //
+    let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser();
+    if (userWorkspaceList == null ){
+        console.log("not saved. get ")
         userWorkspaceProjectList = await getWorkspaceProjectListByUser()// workspace 목록, project 목록 조회
-        webconsolejs["common/util"].setWorkspaceProjectList(userWorkspaceProjectList)
+        //webconsolejs["common/util"].setWorkspaceProjectList(userWorkspaceProjectList)
 
         // 새로 조회한 경우 저장된 curworkspace, curproject 는 초기화
     }
-
+    console.log("In workspaceProjectInit")
+    console.log("userWorkspaceProjectList", userWorkspaceList)
     // workspace목록을 select박스에 set
-    setWorkspaceSelectBox(userWorkspaceProjectList.workspaceList)
+    setWorkspaceSelectBox(userWorkspaceList)
 
     let curWorkspaceId = webconsolejs["common/util"].getCurrentWorkspace()
     if (curWorkspaceId != "") {
