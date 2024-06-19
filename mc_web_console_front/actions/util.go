@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/buffalo"
 )
 
@@ -119,6 +120,10 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	}
 	defer resp.Body.Close()
 
+	log.Println("resp.Body:", resp.Body)
+	log.Println("resp.Status:", resp.Status)
+	spew.Dump(resp)
+
 	respBody, ioerr := io.ReadAll(resp.Body)
 	if ioerr != nil {
 		log.Println("Error CommonHttp reading response:", ioerr)
@@ -134,5 +139,6 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 			return commonResponse, jsonerr
 		}
 	}
+
 	return commonResponse, nil
 }

@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"log"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/mciammanager"
 
@@ -10,13 +11,15 @@ import (
 
 func GetWorkspaceByuserId(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
 	if handler.MCIAM_USE {
-		// headerAccessToken := c.Request().Header.Get("Authorization")
-		// accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-		// jwtDecoded := auth.McIamJwtDecode(accessToken)
-		// userId, _ := jwtDecoded["preferred_username"].(string)
-
+		// token에서 userId 추출
+		userId := c.Value("PreferredUsername").(string)
+		//userId, _ := jwtDecoded["preferred_username"].(string)
+		log.Println("UserId ", userId)
 		pathParams := make(map[string]string)
-		// pathParams["userid"] = userId
+		// pathParams := map[string]string{
+		// 	"userId": userId,
+		// }
+		pathParams["userId"] = userId
 
 		req := &handler.CommonRequest{
 			PathParams: pathParams,
