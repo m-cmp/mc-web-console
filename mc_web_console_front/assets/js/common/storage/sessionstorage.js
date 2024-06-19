@@ -65,10 +65,19 @@ export async function getSessionWorkspaceList() {
     return workspaceList.Workspaces
 }
 
+export async function setSessionWorkspaceList(v) {
+    sessionStorage.setItem('workspaceList',v)
+}
+
 export function getSessionProjectList() {
     let projectList = JSON.parse(sessionStorage.getItem('projectList'))
     return projectList.Projects
 }
+
+export async function setSessionProjectList(v) {
+    sessionStorage.setItem('projectList',v)
+}
+
 
 // sessionStorage의 workspaceList 갱신
 export async function updateSessionWorkspaceList(workspaceList) {

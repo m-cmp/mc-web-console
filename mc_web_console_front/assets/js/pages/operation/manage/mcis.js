@@ -906,7 +906,7 @@ async function renderMcisManage() {
 
     // workspace 안에서 project목록 추출
     var projectList = [];
-    var projects = prjresponse.data.responseData.responseData.projects // data
+    var projects = prjresponse.data.responseData.projects // data
 
     projects.forEach(project => {
       projectList.push(project.name);
