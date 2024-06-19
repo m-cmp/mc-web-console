@@ -46,6 +46,7 @@ github.com/gobuffalo/uuid v2.0.5+incompatible h1:c5uWRuEnYggYCrT9AJm0U2v1QTG7OVD
 github.com/gobuffalo/validate v2.0.3+incompatible h1:6f4JCEz11Zi6iIlexMv7Jz10RBPvgI795AOaubtCwTE=
 github.com/gobuffalo/validate/v3 v3.3.2/go.mod h1:jiEEw+N7KbAP2aInFxGnfitI0g7HjXqcp5hDD6TaQDU=
 github.com/gofrs/uuid v4.1.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
+github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
