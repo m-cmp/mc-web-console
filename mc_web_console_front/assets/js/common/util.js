@@ -1,7 +1,14 @@
 // default workspace에서 sessionstorage를 사용하지 않을때, 아래에서 리턴값 재정의
 // workspace
 export function getCurrentWorkspace() {
-    return webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspace()
+  const currWs = "";
+  const savedWsPrj = webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspaceProjcet()
+  if( savedWsPrj){
+  console.log("savedWsPrj ", savedWsPrj)
+    currWs = savedWsPrj.currentWorkspace
+  }  
+  console.log("currWs ", currWs)
+  return currWs
 }
 export function setCurrentWorkspace(v) {
     webconsolejs["common/storage/sessionstorage"].setSessionCurrentWorkspace(v)
@@ -12,6 +19,31 @@ export function getCurrentProject() {
 }
 export function setCurrentProject(v) {
     webconsolejs["common/storage/sessionstorage"].setSessionCurrentProject(v)
+}
+
+// 로그인 유저의 workspace 목록 조회
+export async function getWorkspaceListByUser() {
+  //webconsolejs["common/api/http"].
+  //const response = await webconsolejs["common/http/api"].commonAPIPost('/api/workspacelistbyuser')
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspacebyuserid')
+  // TODO : response 정상여부 check
+
+  console.log(response)
+  return response;
+}
+
+
+// workspace에 매핑된 project목록 조회
+export async function getProjectListByWorkspaceId(workspaceId) {
+  let requestObject = {
+      "requestData":{
+          "userId":"mciamuser", // TODO : 실제 로그인 user의 id 설정하도록 변경할 것.
+          "workspaceId": workspaceId
+      }
+  }
+  const response = await webconsolejs["common/http/api"].commonAPIPost('/api/projectlistbyworkspaceid',requestObject)
+  console.log(response)
+  return response;
 }
 
 // workspace project List

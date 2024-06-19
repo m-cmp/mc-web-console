@@ -25,13 +25,19 @@ func UserLoginHandler(c buffalo.Context) error {
 				defaultRender.JSON(CommonResponseProvider(commonResponse.Status.StatusCode, err.Error())))
 		}
 
+		if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
+			return c.Render(commonResponse.Status.StatusCode,
+				defaultRender.JSON(CommonResponseProvider(commonResponse.Status.StatusCode, commonResponse.Status.Message)))
+		}
+
+		fmt.Println("response ", commonResponse)
 		accessTokenResponse := &mcmodels.AccessTokenResponse{}
 		if err := mapstructure.Decode(commonResponse.ResponseData, accessTokenResponse); err != nil {
 			return c.Render(http.StatusInternalServerError,
 				defaultRender.JSON(CommonResponseProvider(http.StatusInternalServerError, err.Error())))
 		}
 		c.Session().Set("Authorization", accessTokenResponse.AccessToken)
-		fmt.Print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", accessTokenResponse.AccessToken)
+		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", accessTokenResponse.AccessToken)
 		return c.Render(http.StatusOK,
 			defaultRender.JSON(CommonResponseProvider(http.StatusOK, map[string]string{
 				"redirect": RootPathForRedirectString,

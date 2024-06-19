@@ -57,7 +57,7 @@ type CustomClaims struct {
 
 var (
 	jwkSet          jwk.Set
-	GrantedRoleList = []string{}
+	GrantedRoleList = []string{} // 비어있으면 전체허용.
 	AuthMethod      mcimwAuth
 )
 
@@ -119,7 +119,7 @@ func (mr mcimw) BuffaloMiddleware(next buffalo.Handler) buffalo.Handler {
 func (mr mcimw) istokenValid(c buffalo.Context, tokenString string) error {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, keyfunction)
 	if err != nil {
-		return fmt.Errorf("failed to parse token: %s", err.Error())
+		return fmt.Errorf("istokenValid failed to parse token: %s", err.Error())
 	}
 
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
@@ -142,7 +142,7 @@ func (mr mcimw) istokenValid(c buffalo.Context, tokenString string) error {
 func UserInfoSet(c buffalo.Context, tokenString string) error {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, keyfunction)
 	if err != nil {
-		return fmt.Errorf("failed to parse token: %s", err.Error())
+		return fmt.Errorf("ParseWithClaims failed to parse token: %s", err.Error())
 	}
 
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
