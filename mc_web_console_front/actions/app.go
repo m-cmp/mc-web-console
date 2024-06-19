@@ -50,6 +50,8 @@ func App() *buffalo.App {
 		app.Use(csrf.New)
 
 		app.ANY("/alive", alive)
+		auth := app.Group("/auth")
+		auth.GET("/login", UserLoginHandler)
 
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
