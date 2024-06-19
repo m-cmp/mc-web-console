@@ -7,196 +7,200 @@ export function commoncallbac(val) {
 }
 ////
 
-////////// TABULATOR //////////
+var totalMcisListObj = new Object();
+export var selectedMcisObj = new Object();
+export var nsid = "";
+var totalMcisStatusMap = new Map();
+var totalVmStatusMap = new Map();
+// var totalCloudConnectionMap = new Map();
+
 var table;
 var checked_array = [];
-initTable();
-function setTabulator(
-  tableObjId,
-  tableObjParamMap,
-  columnsParams,
-  isMultiSelect
-) {
-  var placeholder = "No Data";
-  var pagination = "local";
-  var paginationSize = 5;
-  var paginationSizeSelector = [5, 10, 15, 20];
-  var movableColumns = true;
-  var columnHeaderVertAlign = "middle";
-  var paginationCounter = "rows";
-  var layout = "fitColumns";
+initTable(); // init tabulator
 
-  if (tableObjParamMap.hasOwnProperty("placeholder")) {
-    placeholder = tableObjParamMap.placeholder;
+document.addEventListener("DOMContentLoaded", initPage);
+
+// 페이지 로드 시 prj 값 받아와 getMcisList 호출
+async function initPage() {
+  console.log("initPage")
+
+  // 외부(dashboard)에서 받아온 mcisID가 있으면 MCIS INFO 이동
+
+  // 현재 브라우저의 URL
+  const url = window.location.href;
+  const urlObj = new URL(url);
+  // URLSearchParams 객체 생성
+  const params = new URLSearchParams(urlObj.search);
+  // mcisID 파라미터 값 추출
+  const selectedMcisID = params.get('mcisID');
+
+  console.log('selectedMcisID:', selectedMcisID);  // 출력: mcisID의 값 (예: com)
+  if (selectedMcisID != undefined) {
+    getSelectedMcisData(selectedMcisID)
+  }
+  /////////////////////////////////////////////
+
+  ////// workspace SET //////
+  var userId = $("#userid").val()
+  console.log("userId === ", userId)
+  var data = {
+    pathParams: {
+      userId: userId,
+    },
   }
 
-  if (tableObjParamMap.hasOwnProperty("pagination")) {
-    pagination = tableObjParamMap.pagination;
-  }
+  var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
+  const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
 
-  if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-    paginationSize = tableObjParamMap.paginationSize;
-  }
+  console.log("wsresponse", wsresponse)
+  var workspaceList = ["default"];
+  // var workspacesRespData = wsresponse.data.responseData.responseData // data
+  // var workspaceSelected = "";
+  // workspacesRespData.forEach(item => {
+  //   workspaceList.push(item.workspace.name);
+  // });
+  // console.log("workspacelist", workspaceList)
 
-  if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-    paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-  }
+  var html = '<option value="">Select WorkSpace</option>'
+  html += '<option value="default">default</option>'
+  // workspaceList.forEach(item => {
 
-  if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-    movableColumns = tableObjParamMap.movableColumns;
-  }
+  //   var currentWorkspace = webconsolejs["common/util"].getCurrentWorkspace()
+  //   console.log("currentWorkspace", currentWorkspace)
+  //   if (currentWorkspace != null && currentWorkspace.Id == item) {
+  //     workspaceSelected = "selected"
+  //   } else {
+  //     workspaceSelected = ""
+  //   }
 
-  if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-    columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-  }
 
-  if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-    paginationCounter = tableObjParamMap.paginationCounter;
-  }
+  //   html += '<option value="' + item + '" ' + workspaceSelected + '>' + item + '</option>'
+  // })
 
-  if (tableObjParamMap.hasOwnProperty("layout")) {
-    layout = tableObjParamMap.layout;
-  }
+  $("#select-current-workspace").empty()//
+  $("#select-current-workspace").append(html)
 
-  var tabulatorTable = new Tabulator("#" + tableObjId, {
-    //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
-    placeholder,
-    pagination,
-    paginationSize,
-    paginationSizeSelector,
-    movableColumns,
-    columnHeaderVertAlign,
-    paginationCounter,
-    layout,
-    columns: columnsParams,
-    selectableRows: isMultiSelect == false ? 1 : true,
-  });
+  $("#select-current-workspace").on('change', async function () {
+    console.log(" change ")
+    var selectedValue = this.value;
 
-  return tabulatorTable;
+    var data = {
+      pathParams: {
+        "workspace": selectedValue,
+        "user": userId,
+      },
+    }
+    // var controller = "/api/" + "getworkspaceuserrolemappingbyuser";
+    // const prjresponse = await webconsolejs["common/api/http"].commonAPIPost(
+    //   controller,
+    //   data
+    // )
+    // console.log("prjresponse", prjresponse)
+
+
+    // workspace 안에서 project목록 추출
+    var projectList = ["testns01"];
+    // var projects = prjresponse.data.responseData.responseData.projects // data
+    // var projectSelected = ""
+    // projects.forEach(project => {
+    //   projectList.push(project.name);
+    // });
+    // console.log("projectList", projectList)
+
+    var html = '<option value="">Select Project</option>'
+    html += '<option value="testns01">testns01</option>'
+
+    // projectList.forEach(item => {
+    //   var currentNamespace = webconsolejs["common/util"].getCurrentProject()
+    //   console.log("currentWorkspace", currentNamespace)
+
+    //   if (currentNamespace != null && currentNamespace.Id == item) {
+    //     projectSelected = "selected"
+    //   } else {
+    //     projectSelected = ""
+    //   }
+
+    //   html += '<option value="' + item + '" ' + projectSelected + '>' + item + '</option>'
+    // })
+    $("#select-current-project").empty()
+    $("#select-current-project").append(html)
+
+    ////// project SET END//////
+  })
+
+  ////// workspace SET END //////
+
+
+  ////// project SET //////
+  $("#select-current-project").on('change', async function () {
+    console.log(" change ")
+
+    getMcisList();
+
+    ////// project SET END//////
+  })
+
+  // var namespace = webconsolejs["common/util"].getCurrentProject()
 }
 
-// Table 초기값 설정
-function initTable() {
+// 받아온 project(namespace)로 McisList GET
+async function getMcisList() {
+  console.log("getMcisList")
+  var projectId = $("#select-current-project").val()
+  console.log("projectId", projectId)
+  nsid = projectId
 
-  var tableObjParams = {};
+  var data = {
+    pathParams: {
+      nsId: nsid,
+    },
+  };
+  //var controller = "targetController=getmcislist"
+  var controller = "/api/" + "getmcislist";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
 
-  var columns = [
-    {
-      formatter: "rowSelection",
-      titleFormatter: "rowSelection",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      headerSort: false,
-      width: 60,
-    },
-    {
-      title: "Status",
-      field: "status",
-      formatter: statusFormatter,
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      headerSort: false,
-      maxWidth: 100,
-    },
-    {
-      title: "Id",
-      field: "id",
-      visible: false
-    },
-    {
-      title: "System Label",
-      field: "systemLabel",
-      visible: false
-    },
-    {
-      title: "Name",
-      field: "name",
-      vertAlign: "middle"
-    },
-    {
-      title: "ProviderImg",
-      field: "providerImg",
-      formatter: providerFormatter,
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerSort: false,
-    },
-    {
-      title: "Provider",
-      field: "provider",
-      formatter: providerFormatterString,
-      visible: false
-    },
-    {
-      title: "Total Servers",
-      field: "statusCount.countTotal",
-      vertAlign: "middle",
-      hozAlign: "center",
-      maxWidth: 150,
-    },
-    {
-      title: "Running",
-      field: "statusCount.countRunning",
-      formatterParams: { status: "running" },
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      maxWidth: 135,
-    },
-    {
-      title: "Suspended",
-      field: "statusCount.countSuspended",
-      formatterParams: { status: "stop" },
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      maxWidth: 135,
-    },
-    {
-      title: "Terminated",
-      field: "statusCount.countTerminated",
-      formatterParams: { status: "terminate" },
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      maxWidth: 135,
-    },
-  ];
+  // if (response.response.data.status.code != 200 && response.response.data.status.code != 201) {
+  //   alert(response.response.data.responseData.message)
+  // } else {
+  var mcisList = response.data.responseData;
+  console.log("mcisList : ", mcisList);
 
-  table = setTabulator("mcislist-table", tableObjParams, columns);
+  // 호출 성공 시
+  getMcisListCallbackSuccess(nsid, mcisList);
+  // }
+}
 
-  // 행 클릭 시
-  table.on("rowClick", function (e, row) {
+// getMcisList 호출 성공 시
+function getMcisListCallbackSuccess(caller, mcisList) {
+  console.log("getMcisListCallbackSuccess");
 
-    var mcisID = row.getCell("id").getValue();
-    console.log("mcisID", mcisID)
-    // console.log("eeeee",e)
-    //clickListOfMcis(row.getCell("id").getValue());
+  totalMcisListObj = mcisList.mcis;
+  console.log("total mcis : ", totalMcisListObj);
+  table.setData(totalMcisListObj);
+  setToTalMcisStatus(); // mcis상태 표시
+  setTotalVmStatus(); // mcis 의 vm들 상태표시
+  //     setTotalConnection();// Mcis의 provider별 connection 표시
 
-    getSelectedMcisDate(mcisID)
+  // displayMcisDashboard();
 
-  });
+  //     // setMap();// MCIS를 가져와서 화면에 뿌려지면 vm정보가 있으므로 Map그리기
 
-  //  선택된 여러개 row에 대해 처리
-  table.on("rowSelectionChanged", function (data, rows) {
-    checked_array = data
-    console.log("checked_array", checked_array)
-    console.log("rowsrows", data)
-    selectedMcisObj = data
-    // console.log(providerFormatterString());
-  });
-
-  // displayColumn(table);
-
+  //     AjaxLoadingShow(false);
 }
 
 // 클릭한 mcis info 가져오기
-async function getSelectedMcisDate(mcisID) {
+// 표에서 선택된 McisId 받아옴
+async function getSelectedMcisData(mcisID) {
 
   const data = {
     pathParams: {
+      // for the test
       // nsId: nsid,
       nsId: "testns01",
       mcisId: mcisID
@@ -213,7 +217,7 @@ async function getSelectedMcisDate(mcisID) {
   var mcisData = response.data.responseData;
   console.log("mcisdata", mcisData)
 
-  // SET MCIS Info 
+  // SET MCIS Info page
   setMcisInfoData(mcisData)
 
   // Toggle MCIS Info
@@ -222,7 +226,7 @@ async function getSelectedMcisDate(mcisID) {
 
 }
 
-// 클릭한 mcis info 세팅
+// 클릭한 mcis의 info값 세팅
 function setMcisInfoData(mcisData) {
   // console.log("setMcisInfoData", mcisIndex)
   try {
@@ -232,8 +236,8 @@ function setMcisInfoData(mcisData) {
     var mcisStatus = mcisData.status;
     var mcisDispStatus = getMcisStatusDisp(mcisStatus);
     var mcisStatusIcon = getMcisStatusIcon(mcisDispStatus);
-    var mcisProviderNames = getMCISInfoProviderNames(mcisData);//MCIS에 사용 된 provider
-    var totalvmCount = mcisData.vm.length;//mcis의 vm개수
+    var mcisProviderNames = getMCISInfoProviderNames(mcisData); //MCIS에 사용 된 provider
+    var totalvmCount = mcisData.vm.length; //mcis의 vm개수
 
     console.log("totalvmCount", totalvmCount)
 
@@ -254,11 +258,13 @@ function setMcisInfoData(mcisData) {
     console.error(e);
   }
 
+  // vm상태별로 icon 표시한다
   displayServerStatusList(mcisID, mcisData.vm)
 
 }
 
 // vm 상태별 icon으로 표시
+// Server List / Status VM리스트
 function displayServerStatusList(mcisID, vmList) {
   console.log("displayServerStatusList")
 
@@ -271,8 +277,8 @@ function displayServerStatusList(mcisID, vmList) {
     var vmID = aVm.id;
     var vmName = aVm.name;
     var vmStatus = aVm.status;
-    var vmDispStatus = getVmStatusDisp(vmStatus);
-    var vmStatusClass = getVmStatusClass(vmDispStatus)
+    var vmDispStatus = getVmStatusDisp(vmStatus); // vmStatus set
+    var vmStatusClass = getVmStatusClass(vmDispStatus) // vmStatus 별로 상태 색상 set
 
     vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/mcis\'].vmDetailInfo(\'' + mcisID + '\',\'' + mcisName + '\',\'' + vmID + '\')"><span class="text-dark-fg">' + vmName + '</span></li>';
 
@@ -286,6 +292,8 @@ function displayServerStatusList(mcisID, vmList) {
 
 }
 
+// Server List / Status VM 리스트에서
+// VM 한 개 클릭시 vm의 세부 정보
 export async function vmDetailInfo(mcisID, mcisName, vmID) {
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
@@ -296,8 +304,7 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   console.log("mcisName : ", mcisName)
   console.log("vmID : ", vmID)
 
-  // 기존 값들 초기화
-  //clearServerInfo();
+  clearServerInfo();
 
   var aMcis = new Object();
   for (var mcisIndex in totalMcisListObj) {
@@ -485,11 +492,13 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
 
 }
 
+// VM의 OS를 가져온다
+// common에 있는 이미지 사용 (system-purpose-common-ns)
+// TODO: custom 일 때 처리
 async function getCommonVmImageInfo(imageId) {
 
   // endPoint := "/ns/{nsId}/resources/image/{imageId}"
-  // common에 있는 이미지 사용
-  // TODO: custom 일 때 처리
+
   // "/ns/system-purpose-common-ns/resources/image/{imageId}"
 
   const data = {
@@ -510,7 +519,7 @@ async function getCommonVmImageInfo(imageId) {
   return operatingSystem
 }
 
-
+// vm 세부 정보 초기화
 function clearServerInfo() {
   console.log("clearServerInfo")
   // $("#vm_id").val("");
@@ -608,7 +617,8 @@ function clearServerInfo() {
   // $("#exportFileName").val("");
   // $("#exportScript").val("");
 }
-// 상태별 이미지 추가
+
+// MCIS 상태별 이미지 추가
 function getMcisStatusIcon(mcisDispStatus) {
   var mcisStatusIcon = "";
   if (mcisDispStatus == "running") {
@@ -625,23 +635,23 @@ function getMcisStatusIcon(mcisDispStatus) {
   return mcisStatusIcon
 }
 
-function getVmStatusIcon(vmDispStatus) {
-  var vmStatusIcon = "";
-  if (vmDispStatus == "running") {
-    vmStatusIcon = "icon_running.svg"
-  } else if (vmDispStatus == "stop") {
-    vmStatusIcon = "icon_stop.svg"
-  } else if (vmDispStatus == "suspended") {
-    vmStatusIcon = "icon_stop.svg"
-  } else if (vmDispStatus == "terminate") {
-    vmStatusIcon = "icon_terminate.svg"
-  } else {
-    vmStatusIcon = "icon_stop.svg"
-  }
-  return vmStatusIcon;
-}
+// function getVmStatusIcon(vmDispStatus) {
+//   var vmStatusIcon = "";
+//   if (vmDispStatus == "running") {
+//     vmStatusIcon = "icon_running.svg"
+//   } else if (vmDispStatus == "stop") {
+//     vmStatusIcon = "icon_stop.svg"
+//   } else if (vmDispStatus == "suspended") {
+//     vmStatusIcon = "icon_stop.svg"
+//   } else if (vmDispStatus == "terminate") {
+//     vmStatusIcon = "icon_terminate.svg"
+//   } else {
+//     vmStatusIcon = "icon_stop.svg"
+//   }
+//   return vmStatusIcon;
+// }
 
-// MCIS Info Set providerName
+// MCIS Info에 Set providerName
 function getMCISInfoProviderNames(mcisData) {
 
   var mcisProviderNames = "";
@@ -674,128 +684,6 @@ function getMCISInfoProviderNames(mcisData) {
 //     }
 //   });
 // }
-
-// 상태값을 table에서 표시하기 위해 감싸기
-function statusFormatter(cell) {
-  var mcisDispStatus = getMcisStatusDisp(
-    cell.getData().status
-  ); // 화면 표시용 status
-  var mcisStatusCell =
-    '<img title="' +
-    cell.getData().status +
-    '" src="/assets/images/common/icon_' +
-    mcisDispStatus +
-    '.svg" class="icon" alt="">';
-
-  return mcisStatusCell;
-}
-
-// provider를 table에서 표시하기 위해 감싸기
-function providerFormatter(data) {
-  console.log("datadata", data)
-  console.log("cell.getData().vm", data.getData().vm)
-  var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
-    data.getData().vm
-  );
-  var mcisProviderCell = "";
-  vmCloudConnectionMap.forEach((value, key) => {
-    mcisProviderCell +=
-      '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-      key +
-      '.png" alt="' +
-      key +
-      '"/>';
-  });
-
-  return mcisProviderCell;
-}
-
-function providerFormatterString(data) {
-
-  var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
-    data.getData().vm
-  );
-
-  var mcisProviderCell = "";
-  vmCloudConnectionMap.forEach((value, key) => {
-    mcisProviderCell += key + ", "
-  });
-
-  // Remove the trailing comma and space
-  if (mcisProviderCell.length > 0) {
-    mcisProviderCell = mcisProviderCell.slice(0, -2);
-  }
-
-  return mcisProviderCell;
-}
-
-//Tabulator Filter
-//Define variables for input elements
-var fieldEl = document.getElementById("filter-field");
-var typeEl = document.getElementById("filter-type");
-var valueEl = document.getElementById("filter-value");
-
-// provider filtering / equel 고정
-function providerFilter(data) {
-
-  // case type like, equal, not eual
-  // equal only
-  if (typeEl.value == "=") {
-    var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
-      data.vm
-    );
-    var valueElValue = valueEl.value;
-    if (valueElValue != "") {
-      if (vmCloudConnectionMap.has(valueElValue)) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-  } else {
-    return true;
-  }
-
-  return true
-}
-
-//Trigger setFilter function with correct parameters
-function updateFilter() {
-  var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
-  var typeVal = typeEl.options[typeEl.selectedIndex].value;
-
-  var filter = filterVal == "provider" ? providerFilter : filterVal;
-
-  if (filterVal == "provider") {
-    typeEl.value = "=";
-    typeEl.disabled = true;
-  } else {
-    typeEl.disabled = false;
-  }
-
-  if (filterVal) {
-    table.setFilter(filter, typeVal, valueEl.value);
-  }
-}
-
-//Update filters on value change
-document.getElementById("filter-field").addEventListener("change", updateFilter);
-document.getElementById("filter-type").addEventListener("change", updateFilter);
-document.getElementById("filter-value").addEventListener("keyup", updateFilter);
-
-//Clear filters on "Clear Filters" button click
-document.getElementById("filter-clear").addEventListener("click", function () {
-  fieldEl.value = "";
-  typeEl.value = "=";
-  valueEl.value = "";
-
-  table.clearFilter();
-
-});
-// filter end
-
-////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
 
 // function getCommonMcisDataCallbackSuccess(caller, data, mcisID) {
 //   if (caller == "mcisexport") {
@@ -832,160 +720,7 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 //   }
 // }
 
-var totalMcisListObj = new Object();
-export var selectedMcisObj = new Object();
-export var nsid = "";
-var totalMcisStatusMap = new Map();
-var totalVmStatusMap = new Map();
-var totalCloudConnectionMap = new Map();
-var nsid = ""
-
-
-export function selectWorkspaceProject(userId) {
-  var workspaceName = $("select-current-workspace").val()
-  console.log("workspaceName", workspaceName)
-
-}
-
-
-document.addEventListener("DOMContentLoaded", renderMcisManage);
-
-async function renderMcisManage() {
-  console.log("life_cycle")
-  
-  ////// workspace SET //////
-  var userId = $("#userid").val()
-  console.log("userId === ", userId)
-  var data = {
-    pathParams: {
-      userId: userId,
-    },
-  }
-
-  var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
-  const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
-
-  console.log("wsresponse", wsresponse)
-  var workspaceList = [];
-  var workspacesRespData = wsresponse.data.responseData.responseData // data
-
-  workspacesRespData.forEach(item => {
-    workspaceList.push(item.workspace.name);
-  });
-  console.log("workspacelist", workspaceList)
-
-  var html = '<option value="">Select WorkSpace</option>'
-
-  workspaceList.forEach(item => {
-    html += '<option value="' + item + '">' + item + '</option>'
-  })
-
-  $("#select-current-workspace").empty()//
-  $("#select-current-workspace").append(html)
-
-  $("#select-current-workspace").on('change', async function () {
-    console.log(" change ")
-    var selectedValue = this.value;
-
-    var data = {
-      pathParams: {
-        "workspace": selectedValue,
-        "user": userId,
-      },
-    }
-    var controller = "/api/" + "getworkspaceuserrolemappingbyuser";
-    const prjresponse = await webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-      data
-    )
-    console.log("prjresponse", prjresponse)
-
-
-    // workspace 안에서 project목록 추출
-    var projectList = [];
-    var projects = prjresponse.data.responseData.projects // data
-
-    projects.forEach(project => {
-      projectList.push(project.name);
-    });
-    console.log("projectList", projectList)
-
-    var html = '<option value="">Select Project</option>'
-    html += '<option value="testns01">testns01</option>'
-
-    projectList.forEach(item => {
-
-      html += '<option value="' + item + '">' + item + '</option>'
-    })
-    $("#select-current-project").empty()
-    $("#select-current-project").append(html)
-
-    ////// project SET END//////
-  })
-
-  ////// workspace SET END //////
-
-
-  ////// project SET //////
-  $("#select-current-project").on('change', async function () {
-    console.log(" change ")
-
-    getMcisList();
-
-    ////// project SET END//////
-  })
-
-  // var namespace = webconsolejs["common/util"].getCurrentProject()
-}
-
-async function getMcisList() {
-  console.log("getMcisList")
-  var projectId = $("#select-current-project").val()
-  console.log("projectId", projectId)
-  nsid = projectId
-
-  var data = {
-    pathParams: {
-      nsId: nsid,
-    },
-  };
-  //var controller = "targetController=getmcislist"
-  var controller = "/api/" + "getmcislist";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
-  
-  // if (response.response.data.status.code != 200 && response.response.data.status.code != 201) {
-  //   alert(response.response.data.responseData.message)
-  // } else {
-    var mcisList = response.data.responseData;
-    console.log("mcisList : ", mcisList);
-    getMcisListCallbackSuccess(nsid, mcisList);
-  // }
-}
-// MCIS 목록 조회 후 화면에 Set
-
-function getMcisListCallbackSuccess(caller, mcisList) {
-  console.log("getMcisListCallbackSuccess");
-
-  totalMcisListObj = mcisList.mcis;
-  console.log("total mcis : ", totalMcisListObj);
-  table.setData(totalMcisListObj);
-  setToTalMcisStatus(); // mcis상태 표시 를 위해 필요
-  setTotalVmStatus(); // mcis 의 vm들 상태표시 를 위해 필요
-  //     setTotalConnection();// Mcis의 provider별 connection 표시를 위해 필요
-
-  // displayMcisDashboard();
-
-  //     // setMap();// MCIS를 가져와서 화면에 뿌려지면 vm정보가 있으므로 Map그리기
-
-  //     AjaxLoadingShow(false);
-}
-
+// mcis 상태 표시
 function setToTalMcisStatus() {
   console.log("setToTalMcisStatus");
   try {
@@ -1006,8 +741,8 @@ function setToTalMcisStatus() {
 // 해당 mcis에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mcis 에서 사용
 function calculateMcisStatusCount(mcisData) {
-
   console.log("calculateMcisStatusCount");
+  
   console.log("mcisData : ", mcisData);
   var mcisStatusCountMap = new Map();
   mcisStatusCountMap.set("running", 0);
@@ -1034,6 +769,7 @@ function calculateMcisStatusCount(mcisData) {
 }
 
 // Mcis 목록에서 vmStatus만 처리 : 화면표시는 display function에서
+// vm 상태 표시
 function setTotalVmStatus() {
   console.log("setTotalVmstatus")
   try {
@@ -1049,6 +785,7 @@ function setTotalVmStatus() {
   displayVmStatusArea();
 }
 
+// mcis status display
 function displayMcisStatusArea() {
   console.log("displayMcisStatusArea");
   var sumMcisCnt = 0;
@@ -1074,6 +811,7 @@ function displayMcisStatusArea() {
   console.log("running status count ", $("#mcis_status_running").text());
 }
 
+// 해당 vm에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 function calculateVmStatusCount(aMcis) {
   console.log("calculateVmStatusCount")
   // console.log("calculateVmStatusCount")
@@ -1162,6 +900,7 @@ function calculateVmStatusCount(aMcis) {
 //   }
 // }
 
+// 화면 표시용 status
 function getMcisStatusDisp(mcisFullStatus) {
   console.log("getMcisStatus " + mcisFullStatus);
   var statusArr = mcisFullStatus.split("-");
@@ -1182,7 +921,7 @@ function getMcisStatusDisp(mcisFullStatus) {
 }
 
 
-// // 화면 표시
+// vm status display
 function displayVmStatusArea() {
   var sumVmCnt = 0;
   var sumVmRunningCnt = 0;
@@ -1203,15 +942,11 @@ function displayVmStatusArea() {
   $("#vm_status_terminated").text(sumVmTerminateCnt);
 }
 
+// mcisLifeCycle 제어 option : reboot / suspend / resume / terminate
 export function mcisLifeCycle(type) {
-  console.log("hello~", type)
-  console.log("hello~", checked_array)
-  /*
-  {
-    "mcisID":mcis01,
-    "type":reboot
-  }
-  */
+  console.log("mcisLifeCycle option : ", type)
+  console.log("selected mcis : ", checked_array)
+  
   for (const mcis of checked_array) {
     console.log(mcis.id)
     let data = {
@@ -1257,6 +992,7 @@ function getVmStatusDisp(vmFullStatus) {
   return returnVmStatus
 }
 
+// VM 상태 별로 색 설정
 function getVmStatusClass(vmDispStatus) {
   var vmStatusClass = "bg-info";
   if (vmDispStatus == "running") {
@@ -1273,48 +1009,311 @@ function getVmStatusClass(vmDispStatus) {
   return vmStatusClass;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// changeLifeCycle -> callMcisLifeCycle -> util.callMcisLifeCycle -> callbackMcisLifeCycle 순으로 호출 됨
-// LifeCycle
+////////////////////////////////////////////////////// TABULATOR //////////////////////////////////////////////////////
 
+// tabulator 행, 열, 기본값 설정
+function setTabulator(
+  tableObjId,
+  tableObjParamMap,
+  columnsParams,
+  isMultiSelect
+) {
+  var placeholder = "No Data";
+  var pagination = "local";
+  var paginationSize = 5;
+  var paginationSizeSelector = [5, 10, 15, 20];
+  var movableColumns = true;
+  var columnHeaderVertAlign = "middle";
+  var paginationCounter = "rows";
+  var layout = "fitColumns";
 
-// MCIS 제어 : 선택한 MCIS내 vm들의 상태 변경 
-// Dashboard 와 MCIS Manage 에서 같이 쓰므로
-// callAAA -> mcisLifeCycle 호출 -> callBackAAA로 결과값전달
+  if (tableObjParamMap.hasOwnProperty("placeholder")) {
+    placeholder = tableObjParamMap.placeholder;
+  }
 
+  if (tableObjParamMap.hasOwnProperty("pagination")) {
+    pagination = tableObjParamMap.pagination;
+  }
 
-/////////////// MCIS Handling /////////////////
-export function deleteMcis(type) {
+  if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+    paginationSize = tableObjParamMap.paginationSize;
+  }
 
-  for (const mcis of checked_array) {
-    console.log(mcis.id)
-    let data = {
-      pathParams: {
-        nsId: nsid,
-        mcisId: mcis.id,
-      }
-    };
-    let controller = "/api/" + "delmcis";
-    let response = webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-      data
+  if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+    paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+    movableColumns = tableObjParamMap.movableColumns;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+    columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+    paginationCounter = tableObjParamMap.paginationCounter;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("layout")) {
+    layout = tableObjParamMap.layout;
+  }
+
+  var tabulatorTable = new Tabulator("#" + tableObjId, {
+    //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+    placeholder,
+    pagination,
+    paginationSize,
+    paginationSizeSelector,
+    movableColumns,
+    columnHeaderVertAlign,
+    paginationCounter,
+    layout,
+    columns: columnsParams,
+    selectableRows: isMultiSelect == false ? 1 : true,
+  });
+
+  return tabulatorTable;
+}
+
+// tabulator Table 초기값 설정
+function initTable() {
+
+  var tableObjParams = {};
+
+  var columns = [
+    {
+      formatter: "rowSelection",
+      titleFormatter: "rowSelection",
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center",
+      headerSort: false,
+      width: 60,
+    },
+    {
+      title: "Status",
+      field: "status",
+      formatter: statusFormatter,
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center",
+      headerSort: false,
+      maxWidth: 100,
+    },
+    {
+      title: "Id",
+      field: "id",
+      visible: false
+    },
+    {
+      title: "System Label",
+      field: "systemLabel",
+      visible: false
+    },
+    {
+      title: "Name",
+      field: "name",
+      vertAlign: "middle"
+    },
+    {
+      title: "ProviderImg",
+      field: "providerImg",
+      formatter: providerFormatter,
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerSort: false,
+    },
+    {
+      title: "Provider",
+      field: "provider",
+      formatter: providerFormatterString,
+      visible: false
+    },
+    {
+      title: "Total Servers",
+      field: "statusCount.countTotal",
+      vertAlign: "middle",
+      hozAlign: "center",
+      maxWidth: 150,
+    },
+    {
+      title: "Running",
+      field: "statusCount.countRunning",
+      formatterParams: { status: "running" },
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center",
+      maxWidth: 135,
+    },
+    {
+      title: "Suspended",
+      field: "statusCount.countSuspended",
+      formatterParams: { status: "stop" },
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center",
+      maxWidth: 135,
+    },
+    {
+      title: "Terminated",
+      field: "statusCount.countTerminated",
+      formatterParams: { status: "terminate" },
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center",
+      maxWidth: 135,
+    },
+  ];
+
+  table = setTabulator("mcislist-table", tableObjParams, columns);
+
+  // 행 클릭 시
+  table.on("rowClick", function (e, row) {
+
+    var mcisID = row.getCell("id").getValue();
+    console.log("mcisID", mcisID)
+    // console.log("eeeee",e)
+    //clickListOfMcis(row.getCell("id").getValue());
+
+    // 표에서 선택된 MCISInfo 
+    getSelectedMcisData(mcisID)
+
+  });
+
+  //  선택된 여러개 row에 대해 처리
+  table.on("rowSelectionChanged", function (data, rows) {
+    checked_array = data
+    console.log("checked_array", checked_array)
+    console.log("rowsrows", data)
+    selectedMcisObj = data
+    // console.log(providerFormatterString());
+  });
+
+  // displayColumn(table);
+
+}
+
+// 상태값을 table에서 표시하기 위해 감싸기
+function statusFormatter(cell) {
+  var mcisDispStatus = getMcisStatusDisp(
+    cell.getData().status
+  ); // 화면 표시용 status
+  var mcisStatusCell =
+    '<img title="' +
+    cell.getData().status +
+    '" src="/assets/images/common/icon_' +
+    mcisDispStatus +
+    '.svg" class="icon" alt="">';
+
+  return mcisStatusCell;
+}
+
+// provider를 table에서 표시하기 위해 감싸기
+function providerFormatter(data) {
+  console.log("datadata", data)
+  console.log("cell.getData().vm", data.getData().vm)
+  var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
+    data.getData().vm
+  );
+  var mcisProviderCell = "";
+  vmCloudConnectionMap.forEach((value, key) => {
+    mcisProviderCell +=
+      '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
+      key +
+      '.png" alt="' +
+      key +
+      '"/>';
+  });
+
+  return mcisProviderCell;
+}
+
+// provider를 string으로 추출
+// table에서 provider 이름으로 필터링 하기 위해
+function providerFormatterString(data) {
+
+  var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
+    data.getData().vm
+  );
+
+  var mcisProviderCell = "";
+  vmCloudConnectionMap.forEach((value, key) => {
+    mcisProviderCell += key + ", "
+  });
+
+  // Remove the trailing comma and space
+  if (mcisProviderCell.length > 0) {
+    mcisProviderCell = mcisProviderCell.slice(0, -2);
+  }
+
+  return mcisProviderCell;
+}
+
+/////////////////////////Tabulator Filter start/////////////////////////
+//Define variables for input elements
+var fieldEl = document.getElementById("filter-field");
+var typeEl = document.getElementById("filter-type");
+var valueEl = document.getElementById("filter-value");
+
+// table rovider filtering / equel 고정
+function providerFilter(data) {
+
+  // case type like, equal, not eual
+  // equal only
+  if (typeEl.value == "=") {
+    var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
+      data.vm
     );
-    console.log(response)
+    var valueElValue = valueEl.value;
+    if (valueElValue != "") {
+      if (vmCloudConnectionMap.has(valueElValue)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+  } else {
+    return true;
+  }
+
+  return true
+}
+
+// Trigger setFilter function with correct parameters
+function updateFilter() {
+  var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+  var typeVal = typeEl.options[typeEl.selectedIndex].value;
+
+  var filter = filterVal == "provider" ? providerFilter : filterVal;
+
+  if (filterVal == "provider") {
+    typeEl.value = "=";
+    typeEl.disabled = true;
+  } else {
+    typeEl.disabled = false;
+  }
+
+  if (filterVal) {
+    table.setFilter(filter, typeVal, valueEl.value);
   }
 }
 
+// Update filters on value change
+document.getElementById("filter-field").addEventListener("change", updateFilter);
+document.getElementById("filter-type").addEventListener("change", updateFilter);
+document.getElementById("filter-value").addEventListener("keyup", updateFilter);
 
-// ////////////// VM Handling ///////////
-// export function addNewVirtualMachine() {
-//   console.log("addNewVirtualMachine")
-//   var mcis_id = $("#mcis_id").val()
-//   var value = document.getElementById("#mcis_name").val();
+// Clear filters on "Clear Filters" button click
+document.getElementById("filter-clear").addEventListener("click", function () {
+  fieldEl.value = "";
+  typeEl.value = "=";
+  valueEl.value = "";
 
+  table.clearFilter();
 
+});
+/////////////////////////Tabulator Filter END/////////////////////////
 
-//   var mcis_name = $("#mcis_name").val()
-//   console.log("mcis_name",value)
-//   $("#extend_mcis_name").val(value)
-//   // location.href = "/Manage/MCIS/reg/"+mcis_id+"/"+mcis_name
-//   // location.href = "/operation/manages/mcismng/regform/" + mcis_id + "/" + mcis_name;
-// }
+////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////

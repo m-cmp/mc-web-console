@@ -127,10 +127,9 @@
           class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
         >
           <a
-            class="dropdown-item"
-            data-bs-toggle="modal"
+            
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonlModal(this,'McisReboot', 'Would you like to reboot MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'reboot')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'reboot')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -321,6 +320,10 @@
     </div>
   </div>
   <div class="card-body">
-    <%= partial("partials/operation/dashboard/mcisrunning.html") %>
+    <div class="container-xl">
+      <div class="row row-deck row-cards">
+        <%= partial("partials/operation/dashboard/mcisrunning.html") %>
+      </div>
+    </div>
   </div>
 </div>
