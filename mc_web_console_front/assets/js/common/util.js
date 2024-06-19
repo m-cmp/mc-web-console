@@ -1,24 +1,20 @@
 // default workspace에서 sessionstorage를 사용하지 않을때, 아래에서 리턴값 재정의
 // workspace
 export function getCurrentWorkspace() {
-  const currWs = "";
-  const savedWsPrj = webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspaceProjcet()
-  if( savedWsPrj){
-  console.log("savedWsPrj ", savedWsPrj)
-    currWs = savedWsPrj.currentWorkspace
-  }  
+  const currWs = webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspace()
+  
   console.log("currWs ", currWs)
   return currWs
 }
-export function setCurrentWorkspace(v) {
-    webconsolejs["common/storage/sessionstorage"].setSessionCurrentWorkspace(v)
+export function setCurrentWorkspace(workspace) {
+    webconsolejs["common/storage/sessionstorage"].setSessionCurrentWorkspace(workspace)
 }
 
 export function getCurrentProject() {
     return webconsolejs["common/storage/sessionstorage"].getSessionCurrentProject()
 }
-export function setCurrentProject(v) {
-    webconsolejs["common/storage/sessionstorage"].setSessionCurrentProject(v)
+export function setCurrentProject(project) {
+    webconsolejs["common/storage/sessionstorage"].setSessionCurrentProject(project)
 }
 
 // 로그인 유저의 workspace 목록 조회
