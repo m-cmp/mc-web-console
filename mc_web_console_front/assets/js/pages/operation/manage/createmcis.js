@@ -366,9 +366,10 @@ function setSpecTabulator(
 }
 
 var recommendSpecs = [];
-// Table 초기값 설정
+
+// spec-search의 Table 초기값 설정
 function initSpecTable() {
-console.log("initSpecTableinitSpecTable")
+
 	var tableObjParams = {};
 
 	var columns = [
