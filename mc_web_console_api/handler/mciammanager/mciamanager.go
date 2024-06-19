@@ -3,19 +3,17 @@ package mciammanager
 import (
 	"log"
 	"mc_web_console_api/handler"
-	"mc_web_console_api/middleware/mcimw"
-	"mc_web_console_api/models"
 	"net/http"
-	"strings"
+	"os"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gofrs/uuid"
-	"github.com/mitchellh/mapstructure"
 )
+
+var MCIAMMANAGER = os.Getenv("MCIAMMANAGER")
 
 // alive
 func McIamAlive(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCallerWithoutToken(http.MethodGet, handler.MCIAMMANAGER, Alive, commonRequest)
+	commonResponse, err := handler.CommonCallerWithoutToken(http.MethodGet, MCIAMMANAGER, Alive, commonRequest)
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -24,53 +22,16 @@ func McIamAlive(c buffalo.Context, commonRequest *handler.CommonRequest) *handle
 
 // auth
 func McIamLogin(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCallerWithoutToken(http.MethodPost, handler.MCIAMMANAGER, Login, commonRequest)
+	commonResponse, err := handler.CommonCallerWithoutToken(http.MethodPost, MCIAMMANAGER, Login, commonRequest)
 	if err != nil {
 		log.Println("CommonCallerWithoutToken", err)
 		return commonResponse
 	}
-
-	accessTokenResponse := &mciammanagerAccessTokenResponse{}
-	if err := mapstructure.Decode(commonResponse.ResponseData, accessTokenResponse); err != nil {
-		log.Println("token Decode ", err)
-		return handler.CommonResponseStatusInternalServerError(err.Error())
-	}
-
-	err = mcimw.UserInfoSet(c, accessTokenResponse.AccessToken)
-	if err != nil {
-		log.Println("UserInfoSet", err)
-		return handler.CommonResponseStatusInternalServerError(err)
-	}
-
-	targetSubject, _ := uuid.FromString(c.Data()["Sub"].(string))
-
-	usersess := &usersession{
-		ID:               targetSubject,
-		AccessToken:      accessTokenResponse.AccessToken,
-		ExpiresIn:        accessTokenResponse.ExpiresIn,
-		RefreshToken:     accessTokenResponse.RefreshToken,
-		RefreshExpiresIn: accessTokenResponse.RefreshExpiresIn,
-	}
-
-	txerr := models.DB.Create(usersess)
-	if txerr != nil {
-		log.Println("txErr", err)
-		if strings.Contains(txerr.Error(), "SQLSTATE 23505") { // unique constraint violation catch
-			txerr = models.DB.Update(usersess)
-			if txerr != nil {
-
-				return handler.CommonResponseStatusInternalServerError(txerr)
-			}
-		} else {
-			return handler.CommonResponseStatusInternalServerError(txerr)
-		}
-	}
-	log.Println("McIamLogin return ", commonResponse)
 	return commonResponse
 }
 
 func McIamLoginRefresh(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Loginrefresh, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Loginrefresh, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -78,50 +39,26 @@ func McIamLoginRefresh(c buffalo.Context, commonRequest *handler.CommonRequest) 
 }
 
 func McIamLogout(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	headerAccessToken := c.Request().Header.Get("Authorization")
-	accessToken := strings.TrimPrefix(headerAccessToken, "Bearer ")
-	err := mcimw.UserInfoSet(c, accessToken)
-	if err != nil {
-		return handler.CommonResponseStatusInternalServerError(err)
-	}
-
-	targetSubject, _ := uuid.FromString(c.Data()["Sub"].(string))
-	usersess := &usersession{}
-	txerr := models.DB.Find(usersess, targetSubject)
-	if txerr != nil {
-		return handler.CommonResponseStatusBadRequest(txerr.Error())
-	}
-
-	req := &handler.CommonRequest{
-		Request: &mciammanagerAccessTokenRefeshRequset{
-			RefreshToken: usersess.RefreshToken,
-		},
-	}
-
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Logout, req, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Logout, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
-	}
-	txerr = models.DB.Destroy(usersess)
-	if txerr != nil {
-		return handler.CommonResponseStatusInternalServerError(txerr.Error())
 	}
 	return commonResponse
 }
 
 func McIamGetUserInfo(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getuserinfo, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getuserinfo, commonRequest, c.Request().Header.Get("Authorization"))
 	return commonResponse
 }
 
 func McIamGetUserValidate(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, _ := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getusevalidate, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getusevalidate, commonRequest, c.Request().Header.Get("Authorization"))
 	return commonResponse
 }
 
 // project
 func McIamGetprojectlist(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getprojectlist, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getprojectlist, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -129,7 +66,7 @@ func McIamGetprojectlist(c buffalo.Context, commonRequest *handler.CommonRequest
 }
 
 func McIamCreateproject(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Createproject, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Createproject, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -137,7 +74,7 @@ func McIamCreateproject(c buffalo.Context, commonRequest *handler.CommonRequest)
 }
 
 func McIamDeleteproject(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodDelete, handler.MCIAMMANAGER, Deleteprojectbyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodDelete, MCIAMMANAGER, Deleteprojectbyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -145,7 +82,7 @@ func McIamDeleteproject(c buffalo.Context, commonRequest *handler.CommonRequest)
 }
 
 func McIamGetproject(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getprojectbyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getprojectbyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -153,7 +90,7 @@ func McIamGetproject(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 }
 
 func McIamUpdateproject(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPut, handler.MCIAMMANAGER, Updateprojectbyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPut, MCIAMMANAGER, Updateprojectbyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -162,7 +99,7 @@ func McIamUpdateproject(c buffalo.Context, commonRequest *handler.CommonRequest)
 
 // workspace
 func McIamGetworkspacelist(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getworkspacelist, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getworkspacelist, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -170,7 +107,7 @@ func McIamGetworkspacelist(c buffalo.Context, commonRequest *handler.CommonReque
 }
 
 func McIamGetworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getworkspacebyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getworkspacebyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -178,7 +115,7 @@ func McIamGetworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) 
 }
 
 func McIamCreateworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Createworkspace, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Createworkspace, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -186,7 +123,7 @@ func McIamCreateworkspace(c buffalo.Context, commonRequest *handler.CommonReques
 }
 
 func McIamDeleteworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodDelete, handler.MCIAMMANAGER, Deleteworkspacebyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodDelete, MCIAMMANAGER, Deleteworkspacebyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -194,7 +131,7 @@ func McIamDeleteworkspace(c buffalo.Context, commonRequest *handler.CommonReques
 }
 
 func McIamUpdateworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPut, handler.MCIAMMANAGER, Updateworkspacebyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPut, MCIAMMANAGER, Updateworkspacebyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -203,7 +140,7 @@ func McIamUpdateworkspace(c buffalo.Context, commonRequest *handler.CommonReques
 
 // role
 func McIamGetrolelist(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getrolelist, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getrolelist, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -211,7 +148,7 @@ func McIamGetrolelist(c buffalo.Context, commonRequest *handler.CommonRequest) *
 }
 
 func McIamGetrole(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getrolebyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getrolebyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -219,7 +156,7 @@ func McIamGetrole(c buffalo.Context, commonRequest *handler.CommonRequest) *hand
 }
 
 func McIamCreaterole(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Createrole, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Createrole, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -227,7 +164,7 @@ func McIamCreaterole(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 }
 
 func McIamDeleterole(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodDelete, handler.MCIAMMANAGER, Deleterolebyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodDelete, MCIAMMANAGER, Deleterolebyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -236,7 +173,7 @@ func McIamDeleterole(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 
 // workspace - project Mapping
 func McIamGetworkspaceprojectmapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getwpmappinglistorderbyworkspace, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getwpmappinglistorderbyworkspace, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -244,7 +181,7 @@ func McIamGetworkspaceprojectmapping(c buffalo.Context, commonRequest *handler.C
 }
 
 func McIamGetworkspaceprojectmappingbyworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getwpmappinglistbyworkspaceid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getwpmappinglistbyworkspaceid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -252,7 +189,7 @@ func McIamGetworkspaceprojectmappingbyworkspace(c buffalo.Context, commonRequest
 }
 
 func McIamCreateworkspaceprojectmapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Createwpmapping, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Createwpmapping, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -260,7 +197,7 @@ func McIamCreateworkspaceprojectmapping(c buffalo.Context, commonRequest *handle
 }
 
 func McIamUpdateworkspaceprojectmapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPut, handler.MCIAMMANAGER, Updatewpmappings, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPut, MCIAMMANAGER, Updatewpmappings, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -268,7 +205,7 @@ func McIamUpdateworkspaceprojectmapping(c buffalo.Context, commonRequest *handle
 }
 
 func McIamDeleteworkspaceprojectmapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodDelete, handler.MCIAMMANAGER, Deleteworkspaceprojectmappingbyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodDelete, MCIAMMANAGER, Deleteworkspaceprojectmappingbyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -277,7 +214,7 @@ func McIamDeleteworkspaceprojectmapping(c buffalo.Context, commonRequest *handle
 
 // workspace - user - role Mapping
 func McIamGetworkspaceuserrolemapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getworkspaceuserrolemappinglistorderbyworkspace, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getworkspaceuserrolemappinglistorderbyworkspace, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -285,7 +222,7 @@ func McIamGetworkspaceuserrolemapping(c buffalo.Context, commonRequest *handler.
 }
 
 func McIamGetworkspaceuserrolemappingbyworkspaceuser(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getworkspaceuserrolemappinglistbyuserid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getworkspaceuserrolemappinglistbyuserid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		log.Print(" err ", err)
 		return handler.CommonResponseStatusInternalServerError(err.Error())
@@ -295,7 +232,7 @@ func McIamGetworkspaceuserrolemappingbyworkspaceuser(c buffalo.Context, commonRe
 }
 
 func McIamGetworkspaceuserrolemappingbyworkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getworkspaceuserrolemappinglistbyworkspaceid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getworkspaceuserrolemappinglistbyworkspaceid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -303,7 +240,7 @@ func McIamGetworkspaceuserrolemappingbyworkspace(c buffalo.Context, commonReques
 }
 
 func McIamCreateworkspaceuserrolemapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodPost, handler.MCIAMMANAGER, Createworkspaceuserrolemappingbyname, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodPost, MCIAMMANAGER, Createworkspaceuserrolemappingbyname, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -311,7 +248,7 @@ func McIamCreateworkspaceuserrolemapping(c buffalo.Context, commonRequest *handl
 }
 
 func McIamDeleteworkspaceuserrolemapping(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodDelete, handler.MCIAMMANAGER, Deleteworkspaceuserrolemapping, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodDelete, MCIAMMANAGER, Deleteworkspaceuserrolemapping, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}
@@ -319,7 +256,7 @@ func McIamDeleteworkspaceuserrolemapping(c buffalo.Context, commonRequest *handl
 }
 
 func McIamGetworkspaceuserrolemappingbyuser(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	commonResponse, err := handler.CommonCaller(http.MethodGet, handler.MCIAMMANAGER, Getworkspaceuserrolemappingbyid, commonRequest, c.Request().Header.Get("Authorization"))
+	commonResponse, err := handler.CommonCaller(http.MethodGet, MCIAMMANAGER, Getworkspaceuserrolemappingbyid, commonRequest, c.Request().Header.Get("Authorization"))
 	if err != nil {
 		return handler.CommonResponseStatusInternalServerError(err.Error())
 	}

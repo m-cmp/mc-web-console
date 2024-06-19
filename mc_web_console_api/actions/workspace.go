@@ -10,7 +10,7 @@ import (
 )
 
 func GetWorkspaceByuserId(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		// token에서 userId 추출
 		userId := c.Value("PreferredUsername").(string)
 		//userId, _ := jwtDecoded["preferred_username"].(string)
@@ -33,7 +33,7 @@ func GetWorkspaceByuserId(c buffalo.Context, commonRequest *handler.CommonReques
 
 // Workspace 목록 조회
 func GetWorkspacelist(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mciammanager.McIamGetworkspacelist(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -43,7 +43,7 @@ func GetWorkspacelist(c buffalo.Context, commonRequest *handler.CommonRequest) *
 
 // Workspace 단건 조회
 func GetWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mciammanager.McIamGetworkspace(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -53,7 +53,7 @@ func GetWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *hand
 
 // workspace 생성
 func CreateWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mciammanager.McIamCreateworkspace(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -63,7 +63,7 @@ func CreateWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 
 // workspace 삭제
 func DeleteWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mciammanager.McIamDeleteworkspace(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
