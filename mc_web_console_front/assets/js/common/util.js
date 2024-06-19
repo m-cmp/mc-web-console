@@ -1,3 +1,30 @@
+// 화면이동 
+export function chagePage(target, urlParamMap){
+  var url = "";
+  // target에 따라 url을 달리한다.
+  if( target == "McisMng"){
+    url = "/webconsole/operation/manage/mcis"
+  }
+  
+  // pathParam을 뒤에 붙인다.
+  var keyIndex = 0;
+  for (let key of urlParamMap.keys()) {
+    console.log("urlParamMap " + key + " : " + urlParamMap.get(key));
+    
+    var urlParamValue = urlParamMap.get(key)
+
+    if( keyIndex == 0 ) {
+      url += "?" + key + "="  + urlParamValue;
+    }else{
+      url += "&" + key + "="  + urlParamValue;
+    }
+    
+  }
+
+  // 해당 화면으로 이동한다.
+  location.href = url;
+}
+
 // default workspace에서 sessionstorage를 사용하지 않을때, 아래에서 리턴값 재정의
 // workspace
 export function getCurrentWorkspace() {
