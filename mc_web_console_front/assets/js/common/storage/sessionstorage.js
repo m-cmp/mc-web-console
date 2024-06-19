@@ -42,7 +42,7 @@ export function clearSessionCurrentWorkspaceProject() {
     sessionStorage.removeItem("currentWorkspace")
 }
 
-//////////
+////////// 선택한 workspace, project 저장
 export function getSessionCurrentWorkspaceProjcet() {
     let currentWorkspacProject = JSON.parse(sessionStorage.getItem('currentWorkspacProject'))
     return currentWorkspacProject

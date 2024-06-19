@@ -14,13 +14,15 @@ document.addEventListener('DOMContentLoaded',async function () {
 });
 
 
-workspaceListselectBox.addEventListener('change',function () {
+workspaceListselectBox.addEventListener('change', function () {
+    if (this.value == "") return;
+    
     let workspace = {"Id":this.value, "Name":this.options[this.selectedIndex].text}
     webconsolejs["common/util"].setCurrentWorkspace(workspace)
-
-    // workspace 변경 시 currProject 초기화
-
+    
+    // workspace 변경 시 currProject 다시 set
     setPrjSelectBox(workspace.Id)
+    
 });
 
 projectListselectBox.addEventListener('change',function () {
@@ -49,24 +51,27 @@ async function getWorkspaceProjectListByUser() {
 
 // workspaceList select에 set.
 //function updateWsSelectBox(workspaceList) {
-function setWorkspaceSelectBox(workspaceList) {
+async function setWorkspaceSelectBox(workspaceList) {
     while (workspaceListselectBox.options.length > 0) {
         workspaceListselectBox.remove(0);
     }
     var workspaceExists = false
-    let curWorkspaceId = webconsolejs["common/util"].getCurrentWorkspace()?.Id
+    console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
+    let curWorkspaceId = await webconsolejs["common/util"].getCurrentWorkspace()?.Id
 
     console.log("setWorkspaceSelectbox --------------------")
-    console.log(workspaceList)
+    //console.log(workspaceList)
     const defaultOpt = document.createElement("option");
     defaultOpt.value = ""
     defaultOpt.textContent = "Please select a workspace";
     workspaceListselectBox.appendChild(defaultOpt);
+    
     for (const w in workspaceList) {                
         const opt = document.createElement("option");
         opt.value = workspaceList[w].id;
         opt.textContent = workspaceList[w].name;
-
+        console.log("curWorkspaceId", curWorkspaceId)
+        console.log("workspaceList[w]", workspaceList[w])
         if (curWorkspaceId != "" && workspaceList[w].id == curWorkspaceId) {
             opt.setAttribute("selected", "selected");
             workspaceExists = true
