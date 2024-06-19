@@ -70,15 +70,6 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = CreateMcisVmDynamic(c, commonRequest)
 	// MCIS Mng Area end
 
-	case "authlogin":
-		commonResponse = AuthLogin(c, commonRequest)
-	case "authlogout":
-		commonResponse = AuthLogout(c, commonRequest)
-	case "authgetuserinfo":
-		commonResponse = AuthGetUserInfo(c, commonRequest)
-	case "authgetuservalidate":
-		commonResponse = AuthGetUserValidate(c, commonRequest)
-
 	// workspace mng area
 	case "getworkspacebyuserid":
 		commonResponse = GetWorkspaceByuserId(c, commonRequest)

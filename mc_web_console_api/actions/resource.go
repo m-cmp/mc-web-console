@@ -10,7 +10,7 @@ import (
 
 // VPC 목록 조회
 func GetVPCList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetVPCList(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -20,7 +20,7 @@ func GetVPCList(c buffalo.Context, commonRequest *handler.CommonRequest) *handle
 
 // VPC 단건 조회
 func GetVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetVPC(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -30,7 +30,7 @@ func GetVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.Co
 
 // VPC 생성
 func CreateVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraCreateVPC(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -40,7 +40,7 @@ func CreateVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler
 
 // VPC 삭제
 func DeleteVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraDeleteVPC(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -49,7 +49,7 @@ func DeleteVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler
 }
 
 func DeleteAllVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraDeleteAllVPC(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -59,7 +59,7 @@ func DeleteAllVPC(c buffalo.Context, commonRequest *handler.CommonRequest) *hand
 
 // VPC 목록 조회
 func GetSecurityGroupList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetSecurityGroupList(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -69,7 +69,7 @@ func GetSecurityGroupList(c buffalo.Context, commonRequest *handler.CommonReques
 
 // SG 단건 조회
 func GetSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetSecurityGroup(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -79,7 +79,7 @@ func GetSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest) *
 
 // SG 생성
 func CreateSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraCreateSecurityGroup(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -88,7 +88,7 @@ func CreateSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest
 }
 
 func DeleteSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraDeleteSecurityGroup(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -97,7 +97,7 @@ func DeleteSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest
 }
 
 func DeleteAllSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraDeleteAllSecurityGroup(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -106,7 +106,7 @@ func DeleteAllSecurityGroup(c buffalo.Context, commonRequest *handler.CommonRequ
 }
 
 func GetVmSpecList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetVmSpecList(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -116,7 +116,7 @@ func GetVmSpecList(c buffalo.Context, commonRequest *handler.CommonRequest) *han
 
 // Virtual machine Spec
 func GetVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetVmSpec(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -125,7 +125,7 @@ func GetVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler
 }
 
 func CreateVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraCreateVmSpec(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -134,7 +134,7 @@ func CreateVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *hand
 }
 
 func DeleteVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraDeleteVmSpec(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -143,7 +143,7 @@ func DeleteVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *hand
 }
 
 func DeleteAllVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraDeleteAllVmSpec(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -152,7 +152,7 @@ func DeleteAllVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 }
 
 func GetCommonVmSpecList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetCommonVmSpecList(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -161,7 +161,7 @@ func GetCommonVmSpecList(c buffalo.Context, commonRequest *handler.CommonRequest
 }
 
 func GetCommonVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetCommonVmSpec(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -170,7 +170,7 @@ func GetCommonVmSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 }
 
 func GetResourceCommonSpec(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetResourceCommonSpec(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -179,7 +179,7 @@ func GetResourceCommonSpec(c buffalo.Context, commonRequest *handler.CommonReque
 }
 
 func GetConnConfigListByType(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetConnConfigListByType(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -188,7 +188,7 @@ func GetConnConfigListByType(c buffalo.Context, commonRequest *handler.CommonReq
 }
 
 func GetResourceList(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetResourceList(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse
@@ -197,7 +197,7 @@ func GetResourceList(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 }
 
 func GetResource(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
-	if handler.MCIAM_USE {
+	if MCIAM_USE {
 		commonResponse := mcinframanager.InfraGetResource(c, commonRequest)
 		fmt.Println(commonResponse)
 		return commonResponse

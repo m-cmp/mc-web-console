@@ -26,12 +26,9 @@ func init() {
 }
 
 func ApiCaller(c buffalo.Context) error {
-	log.Println("#### IN ApiCaller")
+	log.Println("#### IN Api Proxy")
 	log.Println("Method", c.Request().Method)
 	log.Println("RequestURI", c.Request().RequestURI)
-	if mciamUse {
-		c.Request().Header.Add("Authorization", c.Session().Get("Authorization").(string))
-	}
 	proxy.ServeHTTP(c.Response(), c.Request())
 	log.Println("#### ServeHTTP Success")
 	return nil
