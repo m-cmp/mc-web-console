@@ -17,6 +17,13 @@
   display: block;
 }
 
+.sub_section {
+  display: none;
+}
+.sub_section.active {
+  display: block;
+}
+
 .vmStatus-list {
   max-height: 150px;
   overflow-y: auto;
