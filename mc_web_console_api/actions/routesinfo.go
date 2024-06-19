@@ -88,6 +88,9 @@ func PostRouteController(c buffalo.Context) error {
 	case "getworkspaceuserrolemappingbyuser":
 		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyuser(c, commonRequest)
 
+	case "projectlistbyworkspaceid":
+		commonResponse = GetProject(c, commonRequest)
+
 	// // workspace mng area
 	// case "demogetuserinfo":
 	// 	commonResponse = demo.DemoGetuserinfo(c, commonRequest)

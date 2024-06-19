@@ -70,3 +70,13 @@ func DeleteWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *h
 	}
 	return handler.CommonResponseStatusInternalServerError(nil)
 }
+
+// Project 단건 조회
+func GetProject(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mciammanager.McIamGetworkspaceprojectmappingbyworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}

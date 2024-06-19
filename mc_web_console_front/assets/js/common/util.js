@@ -29,21 +29,46 @@ export async function getWorkspaceListByUser() {
   // TODO : response 정상여부 check
 
   console.log(response)
-  return response;
+
+  var workspaceList = [];
+  var workspacesRespData = response.data.responseData // data
+  console.log(workspacesRespData)
+  const jsonData = JSON.parse(workspacesRespData);
+  
+  console.log(jsonData)
+  jsonData.forEach(item => {
+    console.log(item)
+    workspaceList.push(item.workspaceProject.workspace);
+  });
+
+  return workspaceList;
 }
 
 
 // workspace에 매핑된 project목록 조회
 export async function getProjectListByWorkspaceId(workspaceId) {
+  
+  console.log("getProjectListByWorkspaceId", workspaceId)
   let requestObject = {
+      "pathParams": {
+        "workspaceId": workspaceId
+      },
       "requestData":{
-          "userId":"mciamuser", // TODO : 실제 로그인 user의 id 설정하도록 변경할 것.
-          "workspaceId": workspaceId
+          "userId":"mciamuser", // TODO : 실제 로그인 user의 id 설정하도록 변경할 것.          
       }
   }
-  const response = await webconsolejs["common/http/api"].commonAPIPost('/api/projectlistbyworkspaceid',requestObject)
+
+  var projectList = [];
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/projectlistbyworkspaceid',requestObject)
   console.log(response)
-  return response;
+  var data = response.data.responseData.projects
+  data.forEach(item => {
+    console.log(item)
+    projectList.push(item);
+  });
+
+  // project List
+  return projectList;
 }
 
 // workspace project List
