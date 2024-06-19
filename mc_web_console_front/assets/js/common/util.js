@@ -1,5 +1,5 @@
 // 화면이동 
-export function chagePage(target, urlParamMap){
+export function changePage(target, urlParamMap){
   var url = "";
   // target에 따라 url을 달리한다.
   if( target == "McisMng"){
