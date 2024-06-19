@@ -723,6 +723,12 @@ export async function createMcisDynamic() {
 	console.log("createMcisDynamic")
 	// var namespace = webconsolejs["common/util"].getCurrentProject()
 	// nsid = namespace.Name
+
+	var projectId = $("#select-current-project").text()	
+	var projectName = $('#select-current-project').find('option:selected').text();
+	var nsId = projectName;
+	console.log("create ssss nsId ", projectName)
+	
 	var mcisName = $("#mcis_name").val()
 	var mcisDesc = $("#mcis_desc").val()
 
@@ -747,7 +753,7 @@ export async function createMcisDynamic() {
 	obj['vm'] = Express_Server_Config_Arr
 	const data = {
 		pathParams: {
-			"nsId": nsid
+			"nsId": nsId
 		},
 		Request: {
 			"name": obj['name'],
@@ -756,12 +762,16 @@ export async function createMcisDynamic() {
 	}
 
 	var controller = "/api/" + "createdynamicmcis";
-	const response = await webconsolejs["common/api/http"].commonAPIPost(
+	const response = webconsolejs["common/api/http"].commonAPIPost(
 		controller,
 		data
 	);
 
-	console.log("create dynamicMCIS : ", response)
+	//console.log("create dynamicMCIS : ", response)
+
+	alert("생성요청 완료");
+	// 생성요청했으므로 결과를 기다리지 않고 mcisList로 보냄
+	webconsolejs["common/util"].changePage("McisMng", urlParamMap)
 }
 
 export function addNewMcis() {

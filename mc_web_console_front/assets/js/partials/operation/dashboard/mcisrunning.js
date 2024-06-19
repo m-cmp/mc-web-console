@@ -439,7 +439,7 @@ export function selectMcis(id, name, target, obj) {
   // active 면 이동한다.
   var urlParamMap = new Map();
   urlParamMap.set("mcisID", mcisId)
-  webconsolejs["common/util"].chagePage("McisMng", urlParamMap)
+  webconsolejs["common/util"].changePage("McisMng", urlParamMap)
 
   // 클릭 횟수 변수 선언
   var clickCount = 0;
