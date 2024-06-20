@@ -18,32 +18,57 @@ var table;
 var checked_array = [];
 initTable(); // init tabulator
 
-document.addEventListener("DOMContentLoaded", initPage);
+document.addEventListener("DOMContentLoaded", initMcisMngPage);
 
 // 페이지 로드 시 prj 값 받아와 getMcisList 호출
-async function initPage() {
-  console.log("initPage")
-  alert("initPage")
+async function initMcisMngPage() {
+  console.log("initMcisMngPage")
+  
+  // user의 workspace목록, project 목록 조회
+  // workspace list 표시
+  // let userWorkspaceProjectList = await webconsolejs["common/util"].getUserWorkspaceProjectList()
+  // console.log("user workspaceList ", userWorkspaceProjectList)
+
+  let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser()
+  console.log("user wslist ", userWorkspaceList)
+
+  let curWorkspace = await webconsolejs["common/util"].getCurrentWorkspace()
+  let curWorkspaceId = "";
+  //let curWorkspaceName = "";
+  if( curWorkspace ){
+    curWorkspaceId = curWorkspace.Id;
+    //curWorkspaceName = curWorkspace.Name;
+  }
+  
+  webconsolejs["common/util"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
+  
 
   // workspace, project 가 먼저 설정되어 있어야 한다.
-  console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
-  let curWorkspaceId = await webconsolejs["common/util"].getCurrentWorkspace()?.Id
+  //console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
   console.log("curWorkspaceId", curWorkspaceId)
-  if( curWorkspaceId == ""){
-    alert("workspace 먼저 선택하시오");
-    return;
+  if( curWorkspaceId == "" || curWorkspaceId == undefined){
+    console.log(" curWorkspaceId is not set ")
+    //alert("workspace 먼저 선택하시오");
+    //return;
+  }else{
+    // workspace가 선택되어 있으면 project 목록도 표시
+    let userProjectList = await webconsolejs["common/util"].getUserProjectList(curWorkspaceId)
+    console.log("userProjectList ", userProjectList)
+    
+    // project 목록이 있으면 cur project set
+    let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
+    console.log("curProjectId", curProjectId)    
+
+    webconsolejs["common/util"].setPrjSelectBox(userProjectList, curProjectId)
+
+    // curWorkspace cur project가 모두 선택되어 있으면 mcisList 조회
+    if (curProjectId != undefined && curProjectId != "") {
+      getMcisList();
+    }
   }
-  let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
-  console.log("curProjectId", curProjectId)
-  if( curProjectId == ""){
-    alert("project 먼저 선택하시오")
-    return;
-  }
-
-  
-  // 받은 mcisId가 있으면 set하고 조회한다.
 
 
+  ////////////////// 받은 mcisId가 있으면 해당 mcisId를 set하고 조회한다. ////////////////
   // 외부(dashboard)에서 받아온 mcisID가 있으면 MCIS INFO 이동
   // 현재 브라우저의 URL
   const url = window.location.href;
@@ -60,21 +85,23 @@ async function initPage() {
   /////////////////////////////////////////////
 
   ////// workspace SET //////
-  var userId = $("#userid").val()
-  console.log("userId === ", userId)
-  var data = {
-    pathParams: {
-      userId: userId,
-    },
-  }
+  // var userId = $("#userid").val()
+  // console.log("userId === ", userId)
+  // var data = {
+  //   pathParams: {
+  //     userId: userId,
+  //   },
+  // }
 
-  var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
-  const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+  // var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
+  // const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
+  //   controller,
+  //   data
+  // )
 
-  console.log("wsresponse", wsresponse)
+  // console.log("wsresponse", wsresponse)
+
+
   //var workspaceList = ["default"];
   // var workspacesRespData = wsresponse.data.responseData.responseData // data
   // var workspaceSelected = "";

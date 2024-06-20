@@ -32,8 +32,29 @@ export function setSessionCurrentProject(project) {
 export function getSessionWorkspaceProjectList() {
     return JSON.parse(sessionStorage.getItem("currentWorkspaceProjcetList"))
 }
-export function setSessionWorkspaceProjectList(v) {
-    sessionStorage.setItem('currentWorkspaceProjcetList',JSON.stringify(v))
+export function setSessionWorkspaceProjectList(userWorkspaceProjectList) {
+    var workspaceProjectList = JSON.stringify(userWorkspaceProjectList)
+    sessionStorage.setItem('currentWorkspaceProjcetList', workspaceProjectList)
+
+    var workspaceList = []
+    
+    const jsonData = JSON.parse(userWorkspaceProjectList);      
+      //console.log(jsonData)
+      jsonData.forEach(item => {
+        console.log(item)
+        var wsItem = item.workspaceProject.workspace;
+        workspaceList.push(wsItem);
+
+        var proItems = item.workspaceProject.projects;
+        var projectList = []
+        proItems.forEach(subitem => {
+            projectList.push(subitem);
+          });
+        setSessionProjectList(wsItem.id, JSON.stringify(projectList))
+        //setSessionProjectList(wsItem.name, JSON.stringify(projectList))// 공백같은 것은 없겠지?
+      });
+    setSessionWorkspaceList(JSON.stringify(workspaceList))
+    
 }
 
 export function clearSessionCurrentWorkspaceProject() {
@@ -57,7 +78,7 @@ export function setSessionCurrentWorkspaceProjcet(workspaceId, projectId) {
 }
 
 export async function getSessionWorkspaceList() {
-    let workspaceList = JSON.parse(sessionStorage.getItem('workspaceList'))
+    let workspaceList = JSON.parse(await sessionStorage.getItem('workspaceList'))
     if (workspaceList == null){
         await webconsolejs["common/storage/sessionstorage"].updateSessionWorkspaceList()
         workspaceList = webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceList()
@@ -69,13 +90,16 @@ export async function setSessionWorkspaceList(v) {
     sessionStorage.setItem('workspaceList',v)
 }
 
-export function getSessionProjectList() {
-    let projectList = JSON.parse(sessionStorage.getItem('projectList'))
-    return projectList.Projects
+export async function getSessionProjectList(workspaceId) {
+    console.log("getSessionProjectList ", workspaceId)
+    let projectList = JSON.parse( await sessionStorage.getItem("projectList_"+workspaceId))
+    console.log(projectList);
+    return projectList
 }
 
-export async function setSessionProjectList(v) {
-    sessionStorage.setItem('projectList',v)
+export async function setSessionProjectList(workspaceId, projectList) {
+
+    sessionStorage.setItem("projectList_"+workspaceId,projectList)
 }
 
 
