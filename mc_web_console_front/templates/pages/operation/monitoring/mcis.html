@@ -1,7 +1,9 @@
-<div class="page-body">
-    <div class="container-xl">
-        <div class="row row-cards">
-
-        </div>
-    </div>
+<div class="card">
+  <div class="card-body">
+    <div id="cpu-chart" class="chart-lg"></div>
+    <div id="memory-chart" class="chart-lg"></div>
+    <div id="disk-chart" class="chart-lg"></div>
+    <div id="network-chart" class="chart-lg"></div>
+  </div>
 </div>
+<%= javascriptTag("common/server_info_monitoringcard.js") %>

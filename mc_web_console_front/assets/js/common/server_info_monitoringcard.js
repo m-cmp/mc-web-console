@@ -1,5 +1,45 @@
 import Apexcharts from "apexcharts"
 
+// function drawGraph(data, label, ...){
+
+// }
+const coffeeData = {
+  cpuAmericano: {
+    name: "americano",
+    data: [75, 78, 76, 52, 82, 102, 90]
+  },
+  cpuLatte: {
+    name: "latte",
+    data: [72, 43, 81, 54, 77, 63, 79]
+  },
+
+  memoryAmericano: {
+    name: "americano",
+    data: [63, 61, 65, 64, 62, 60, 76]
+  },
+  memoryLatte: {
+    name: "latte",
+    data: [52, 50, 58, 49, 42, 50, 69]
+  },
+
+  diskAmericano: {
+    name: "americano",
+    data: [40, 42, 41, 43, 44, 39, 42]
+  },
+  diskLatte: {
+    name: "latte",
+    data: [32, 30, 38, 39, 32, 30, 39]
+  },
+
+  networkAmericano: {
+    name: "americano",
+    data: [1520, 1410, 1583, 1495, 1623, 1389, 1501]
+  },
+  networkLatte: {
+    name: "latte",
+    data: [1120, 1250, 1293, 1225, 1183, 1199, 1161]
+  }
+};
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("=====", window)
@@ -10,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
       height: 240,
       parentHeightOffset: 0,
       toolbar: {
-        show: false,
+        show: true,
       },
       animations: {
         enabled: false
@@ -42,13 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
       lineCap: "round",
       curve: "smooth",
     },
-    series: [{
-      name: "series1",
-      data: [56, 40, 39, 47, 34, 48, 44]
-    }, {
-      name: "series2",
-      data: [45, 43, 30, 23, 38, 39, 54]
-    }],
+    series: [
+      coffeeData.cpuAmericano,
+      coffeeData.cpuLatte
+    ],
     tooltip: {
       theme: 'dark'
     },
@@ -99,7 +136,6 @@ document.addEventListener("DOMContentLoaded", function () {
   })).render();
 });
 
-
 document.addEventListener("DOMContentLoaded", function () {
   console.log("=====", window)
   window && (new Apexcharts(document.getElementById('memory-chart'), {
@@ -109,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
       height: 240,
       parentHeightOffset: 0,
       toolbar: {
-        show: false,
+        show: true,
       },
       animations: {
         enabled: false
@@ -141,13 +177,10 @@ document.addEventListener("DOMContentLoaded", function () {
       lineCap: "round",
       curve: "smooth",
     },
-    series: [{
-      name: "series1",
-      data: [56, 40, 39, 47, 34, 48, 44]
-    }, {
-      name: "series2",
-      data: [45, 43, 30, 23, 38, 39, 54]
-    }],
+    series: [
+      coffeeData.memoryAmericano,
+      coffeeData.memoryLatte
+    ],
     tooltip: {
       theme: 'dark'
     },
@@ -207,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
       height: 240,
       parentHeightOffset: 0,
       toolbar: {
-        show: false,
+        show: true,
       },
       animations: {
         enabled: false
@@ -241,13 +274,10 @@ document.addEventListener("DOMContentLoaded", function () {
       lineCap: "round",
       curve: "smooth",
     },
-    series: [{
-      name: "series1",
-      data: [56, 40, 39, 47, 34, 48, 44]
-    }, {
-      name: "series2",
-      data: [45, 43, 30, 23, 38, 39, 54]
-    }],
+    series: [
+      coffeeData.diskAmericano,
+      coffeeData.diskLatte
+      ],
     tooltip: {
       theme: 'dark'
     },
@@ -307,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
       height: 240,
       parentHeightOffset: 0,
       toolbar: {
-        show: false,
+        show: true,
       },
       animations: {
         enabled: false
@@ -341,13 +371,10 @@ document.addEventListener("DOMContentLoaded", function () {
       lineCap: "round",
       curve: "smooth",
     },
-    series: [{
-      name: "series1",
-      data: [56, 40, 39, 47, 34, 48, 44]
-    }, {
-      name: "series2",
-      data: [45, 43, 30, 23, 38, 39, 54]
-    }],
+    series: [
+      coffeeData.networkAmericano,
+      coffeeData.networkLatte
+    ],
     tooltip: {
       theme: 'dark'
     },

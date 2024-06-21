@@ -5,109 +5,67 @@ var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 var nsid = ""
 
-document.addEventListener("DOMContentLoaded", initPage);
+document.addEventListener("DOMContentLoaded", initMcisMngPage);
 
 // 모든 Page(화면)에서 1개의 initPage()를 만든다.
 // 이유는 project변경 시 화면 재구성이 필요한 경우가 있기 때문
-async function initPage() {
-  console.log("initPage")
+async function initMcisMngPage() {
+  console.log("initMcisMngPage")
 
-  ////// workspace SET //////
-  var userId = $("#userid").val()
-  console.log("userId === ", userId)
-  var data = {
-    pathParams: {
-      userId: userId,
-    },
+  // user의 workspace목록, project 목록 조회
+  // workspace list 표시
+  // let userWorkspaceProjectList = await webconsolejs["common/util"].getUserWorkspaceProjectList()
+  // console.log("user workspaceList ", userWorkspaceProjectList)
+
+  let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser()
+  console.log("user wslist ", userWorkspaceList)
+
+  let curWorkspace = await webconsolejs["common/util"].getCurrentWorkspace()
+  let curWorkspaceId = "";
+  //let curWorkspaceName = "";
+  if (curWorkspace) {
+    curWorkspaceId = curWorkspace.Id;
+    //curWorkspaceName = curWorkspace.Name;
   }
 
-  var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
-  const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+  webconsolejs["common/util"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
 
-  console.log("wsresponse", wsresponse)
-  var workspaceList = ["default"];
-  // var workspacesRespData = wsresponse.data.responseData.responseData // data
-  // var workspacesRespData = JSON.parse(wsresponse.data.responseData)
 
-  // workspacesRespData.forEach(item => {
-  //   workspaceList.push(item.workspace.name);
-  // });
-  // console.log("workspacelist", workspaceList)
+  // workspace, project 가 먼저 설정되어 있어야 한다.
+  //console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
+  console.log("curWorkspaceId", curWorkspaceId)
+  if (curWorkspaceId == "" || curWorkspaceId == undefined) {
+    console.log(" curWorkspaceId is not set ")
+    //alert("workspace 먼저 선택하시오");
+    //return;
+  } else {
+    // workspace가 선택되어 있으면 project 목록도 표시
+    let userProjectList = await webconsolejs["common/util"].getUserProjectList(curWorkspaceId)
+    console.log("userProjectList ", userProjectList)
 
-  var html = '<option value="">Select WorkSpace</option>'
+    // project 목록이 있으면 cur project set
+    let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
+    console.log("curProjectId", curProjectId)
 
-  workspaceList.forEach(item => {
-    html += '<option value="' + item + '">' + item + '</option>'
-  })
+    webconsolejs["common/util"].setPrjSelectBox(userProjectList, curProjectId)
 
-  $("#select-current-workspace").empty()//
-  $("#select-current-workspace").append(html)
-
-  $("#select-current-workspace").on('change', async function () {
-    console.log(" change ")
-    var selectedValue = this.value;
-
-    var data = {
-      pathParams: {
-        "workspace": selectedValue,
-        "user": userId,
-      },
+    // curWorkspace cur project가 모두 선택되어 있으면 mcisList 조회
+    if (curProjectId != undefined && curProjectId != "") {
+      getMcisList();
     }
-    var controller = "/api/" + "getworkspaceuserrolemappingbyuser";
-    const prjresponse = await webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-      data
-    )
-    console.log("prjresponse", prjresponse)
-
-
-    // workspace 안에서 project목록 추출
-    var projectList = [];
-    var projects = prjresponse.data.responseData.responseData.projects // data
-
-    projects.forEach(project => {
-      projectList.push(project.name);
-    });
-    console.log("projectList", projectList)
-
-    var html = '<option value="">Select Project</option>'
-    html += '<option value="testns01">testns01</option>'
-
-    projectList.forEach(item => {
-
-      html += '<option value="' + item + '">' + item + '</option>'
-    })
-    $("#select-current-project").empty()
-    $("#select-current-project").append(html)
-
-    ////// project SET END//////
-  })
-
-  // TODO: navbar.js에서 select-current-project를 제어하는데
-  // mcis리스트를 받아올 방법 고민 필요
-
-  $("#select-current-project").on('change', async function () {
-    console.log(" change ")
-  // TODO: navbar.js에서 select-current-project를 제어하는데
-  // mcis리스트를 받아올 방법 고민 필요 
-  // 안1. 모든 page에 initPage() 구현하고 변경사항있을 때 호출 initPage() : 임시.
-    // initPage();
-    getMcisList()
-    ////// project SET END//////
-  })
-
-  // var namespace = webconsolejs["common/util"].getCurrentProject()
+    // var namespace = webconsolejs["common/util"].getCurrentProject()
+  }
 }
 
 // project(namespace)를 받아와 McisList 호출
 async function getMcisList() {
   console.log("getMcisList")
   var projectId = $("#select-current-project").val()
+  var projectName = $('#select-current-project').find('option:selected').text();
+
   console.log("projectId", projectId)
-  nsid = projectId
+  console.log("projectName", projectName)
+  nsid = projectName
 
   var data = {
     pathParams: {
@@ -213,7 +171,7 @@ function displayMcisStatusArea() {
 // 해당 mcis에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mcis 에서 사용
 function calculateMcisStatusCount(mcisData) {
-  
+
   console.log("calculateMcisStatusCount");
   console.log("mcisData : ", mcisData);
   var mcisStatusCountMap = new Map();
@@ -236,7 +194,7 @@ function calculateMcisStatusCount(mcisData) {
   } catch (e) {
     console.log("mcis status error", e);
   }
-  
+
   return mcisStatusCountMap;
 }
 
