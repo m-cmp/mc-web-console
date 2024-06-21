@@ -118,33 +118,76 @@ workspaceRefreshBtn.addEventListener('click',function () {
 // }
 
 // 기본은 local storage에 저장된 값 사용 -> 없으면 조회
-async function workspaceProjectInit(){
-    console.log("workspaceProjectInit")
-    //let userWorkspaceProjectList = webconsolejs["common/util"].getCurrentWorkspaceProjectList()
-    //
-    let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser();
-    if (userWorkspaceList == null ){
-        console.log("not saved. get ")
-        userWorkspaceProjectList = await getWorkspaceProjectListByUser()// workspace 목록, project 목록 조회
-        //webconsolejs["common/util"].setWorkspaceProjectList(userWorkspaceProjectList)
+// navbar에 workspace 목록 selectbox와 project 목록 select box set
+export async function workspaceProjectInit(){
 
-        // 새로 조회한 경우 저장된 curworkspace, curproject 는 초기화
+    let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser()
+    console.log("user wslist ", userWorkspaceList)
+
+    let curWorkspace = await webconsolejs["common/util"].getCurrentWorkspace()
+    let curWorkspaceId = "";
+    //let curWorkspaceName = "";
+    if( curWorkspace ){
+        curWorkspaceId = curWorkspace.Id;
+        //curWorkspaceName = curWorkspace.Name;
     }
-    console.log("In workspaceProjectInit")
-    console.log("userWorkspaceProjectList", userWorkspaceList)
-    // workspace목록을 select박스에 set
-    setWorkspaceSelectBox(userWorkspaceList)
-
-    let curWorkspaceId = webconsolejs["common/util"].getCurrentWorkspace()
-    if (curWorkspaceId != "") {
-        workspaceListselectBox.value = curWorkspaceId;
-        
-        // on change event가 자동으로 먹지 않을까?
-        //updatePrjSelectBox(workspaceId)
-
-        // project 목록에서 project 선택
-        //projectListselectBox.value = webconsolejs["common/util"].getProject()?.Id;
-    }
-
     
+    webconsolejs["common/util"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
+    
+
+    // workspace, project 가 먼저 설정되어 있어야 한다.
+    console.log("curWorkspaceId", curWorkspaceId)
+    let curProjectId = "";
+    if( curWorkspaceId == "" || curWorkspaceId == undefined){
+        console.log(" curWorkspaceId is not set ")
+    }else{
+        // workspace가 선택되어 있으면 project 목록도 표시
+        let userProjectList = await webconsolejs["common/util"].getUserProjectList(curWorkspaceId)
+        console.log("userProjectList ", userProjectList)
+        
+        // project 목록이 있으면 cur project set
+        curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
+        console.log("curProjectId", curProjectId)    
+
+        webconsolejs["common/util"].setPrjSelectBox(userProjectList, curProjectId)
+    }
+
+    return {workspaceId:curWorkspaceId, projectId:curProjectId};    
+}
+
+
+// workspaceObj
+export async function setWorkspaceChanged(selectedWorkspaceValue){
+    console.log(" setWorkspaceChanged ")
+
+    if( selectedWorkspaceValue == ""){
+        console.log("selectedWorkspace Value empty")
+        return;
+    }
+
+    let projectListselectBox = document.getElementById("select-current-project");
+
+    let projectList = await webconsolejs["common/util"].getProjectListByWorkspaceId(selectedWorkspaceValue);
+    console.log("set project select box")
+    while (projectListselectBox.options.length > 0) {
+        projectListselectBox.remove(0);        
+    }
+
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = ""
+    defaultOpt.textContent = "Please select a project";
+    projectListselectBox.appendChild(defaultOpt);
+
+    let curProjectId = webconsolejs["common/util"].getCurrentProject()?.Id
+    for (const p in projectList) {
+        console.log("p ", p)
+        const opt = document.createElement("option");
+        opt.value = projectList[p].id;
+        opt.textContent = projectList[p].name;
+        projectListselectBox.appendChild(opt);
+
+        if (curProjectId != "" && projectList[p].id == curProjectId) {
+            opt.setAttribute("selected", "selected");
+        }
+    }
 }

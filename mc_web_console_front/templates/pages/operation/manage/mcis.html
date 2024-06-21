@@ -114,7 +114,7 @@
                 <a
                   href="#manage"
                   class="btn btn-primary"
-                  onclick="webconsolejs['pages/operation/manage/createmcis'].addNewMcis()"
+                  onclick="webconsolejs['partials/operation/manage/mciscreate'].addNewMcis()"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -662,7 +662,7 @@
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="mcis_plusVmIcon"
-                        onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()"
+                        onclick="webconsolejs['partials/operation/manage/mciscreate'].displayNewServerForm()"
                       >
                         +
                       </li>
@@ -676,7 +676,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['pages/operation/manage/createmcis'].deployMcis()"
+                onclick="webconsolejs['partials/operation/manage/mciscreate'].deployMcis()"
               >
                 Deploy
               </button>
@@ -792,7 +792,7 @@
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="vm_plusVmIcon"
-                        onclick="webconsolejs['pages/operation/manage/createmcis'].displayNewServerForm()"
+                        onclick="webconsolejs['partials/operation/manage/mciscreate'].displayNewServerForm()"
                       >
                         +
                       </li>
@@ -806,7 +806,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['pages/operation/manage/createmcis'].btn_deploy()"
+                onclick="webconsolejs['partials/operation/manage/mciscreate'].btn_deploy()"
               >
                 Deploy
               </button>
@@ -847,317 +847,12 @@
 </div>
 
 <!-- add server : server configuration -->
-<div class="container-xl">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="card sub_section" id="server_configuration">
-        <div class="card-header">
-          <h3 class="text-info">Server Configuration</h3>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group mb-2">
-                <label class="form-label required">Server Name</label>
-                <input
-                  class="form-control"
-                  name="server_name"
-                  rows="1"
-                  placeholder="Input Name"
-                  id="ep_name"
-                />
-              </div>
-              <div class="form-group mb-2">
-                <label class="form-label required">Spec</label>
-                <div class="row g-2">
-                  <div class="col">
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Please Use Search"
-                      name="spec"
-                      id="ep_specId"
-                    />
+  <%= partial("partials/operation/manage/mciscreate.html") %>
 
-                    <input
-                      type="hidden"
-                      name="provider"
-                      id="ep_provider"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="connectionName"
-                      id="ep_connectionName"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="imageId"
-                      id="ep_imageId"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="commonImageId"
-                      id="ep_commonImageId"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="commonSpecId"
-                      id="ep_commonSpecId"
-                      value=""
-                    />
-                  </div>
-                  <div class="col-auto">
-                    <a
-                      href="#"
-                      class="btn"
-                      data-bs-toggle="modal"
-                      data-bs-target="#spec-search"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          stroke="none"
-                          d="M0 0h24v24H0z"
-                          fill="none"
-                        ></path>
-                        <path
-                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
-                        ></path>
-                        <path d="M21 21l-6 -6"></path>
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-              </div>
 
-              <div class="form-group mb-2">
-                <label class="form-label">Root Disk</label>
-                <div class="row g-2">
-                  <div class="col-6">
-                    <select
-                      class="form-select"
-                      name="rootDiskType"
-                      onchange="webconsolejs['pages/operation/manage/createmcis'].changeDiskSize(this.value)"
-                      id="ep_root_disk_type"
-                    >
-                      <option value="">Select Root Disk Type</option>
-                    </select>
-                  </div>
-                  <div class="col-6">
-                    <textarea
-                      class="form-control"
-                      name="rootDiskSize"
-                      rows="1"
-                      placeholder="Root Disk Size(GB)"
-                      id="ep_root_disk_size"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group mb-2">
-                <label class="form-label">Server Quantity</label>
-                <input
-                  type="range"
-                  class="form-range mb-2"
-                  value="1"
-                  min="0"
-                  max="100"
-                  step="1"
-                  oninput="this.nextElementSibling.value = this.value"
-                />
-                <output id="ep_vm_add_cnt">1</output>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group mb-2">
-                <label class="form-label">Description</label>
-                <textarea
-                  class="form-control"
-                  name="server_description"
-                  id="ep_description"
-                  rows="3"
-                  placeholder="type Description"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <div align="right">
-            <button type="submit" class="btn btn-secondary">Clear</button>
-            <button
-              type="submit"
-              class="btn btn-info"
-              onclick="webconsolejs['pages/operation/manage/createmcis'].expressDone_btn()"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- add server : spec-search -->
-<div
-  class="modal modal-blur fade"
-  id="spec-search"
-  tabindex="-1"
-  style="display: none"
-  aria-hidden="true"
->
-  <!-- add server : spec-search : server recommandation -->
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title text-info">Server Recommandation</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
+  <!-- add server : spec-search -->
+  <%= partial("partials/operation/manage/serverrecommandation.html") %>
 
-      <div class="modal-body">
-        <div class="row">
-          <div class="form-group mb-2">
-            <label class="form-label">Priority Option / Limit (location)</label>
-            <div class="row g-2">
-              <div class="col-6">
-                <input type="hidden" id="latitude" />
-                <input type="hidden" id="longitude" />
-                <select
-                  class="form-select"
-                  id="assistRecommendSpecConnectionName"
-                  name="assistRecommendSpecConnectionName"
-                  onchange="webconsolejs['pages/operation/manage/createmcis'].showRecommendSpecSetting(this.value)"
-                >
-                  <option value="">Select Region</option>
-                  <option value="seoul">Seoul</option>
-                  <option value="london">London</option>
-                  <option value="newyork">NewYork</option>
-                </select>
-                <!-- <select name="user[day]" class="form-select">
-                    <option value="">Select Priority</option>
-                    <option value="location">Location</option>
-                    <option value="cost">Cost</option>
-                  </select> -->
-              </div>
-              <!-- <div class="col">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Please Use Search"
-                />
-              </div> -->
-              <div class="col-auto">
-                <a
-                  class="btn btn-icon"
-                  aria-label="Button"
-                  onclick="webconsolejs['pages/operation/manage/createmcis'].getRecommendVmInfo()"
-                >
-                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                    <path d="M21 21l-6 -6"></path>
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Memory (GB)</label>
-            <input
-              type="range"
-              class="form-range mb-2"
-              id="assist_num_memory"
-              value="1"
-              min="1"
-              max="100"
-              step="1"
-              oninput="this.nextElementSibling.value = this.value"
-            />
 
-            <output>1</output>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">vCPU</label>
-            <input
-              type="range"
-              class="form-range mb-2"
-              id="assist_num_cpu"
-              value="1"
-              min="1"
-              max="100"
-              step="1"
-              oninput="this.nextElementSibling.value = this.value"
-            />
 
-            <output>1</output>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">COST (Hour)</label>
-            <input
-              type="range"
-              class="form-range mb-2"
-              id="assist_num_cost"
-              value="1"
-              min="0"
-              max="100"
-              step="1"
-              oninput="this.nextElementSibling.value = this.value"
-            />
-
-            <output>1</output>
-          </div>
-        </div>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive" id="spec-table"></div>
-      </div>
-      <div class="modal-footer">
-        <div align="right">
-          <button
-            type="submit"
-            class="btn btn-info"
-            onclick="webconsolejs['pages/operation/manage/createmcis'].applySpecInfo()"
-          >
-            Apply
-          </button>
-          <button type="submit" class="btn btn-secondary">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- add server : spec-search end -->
-
-<%= javascriptTag("pages/operation/manage/createmcis.js") %> <%=
-javascriptTag("pages/operation/manage/mcis.js") %>
+<%= javascriptTag("pages/operation/manage/mcis.js") %>

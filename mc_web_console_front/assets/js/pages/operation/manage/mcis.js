@@ -14,58 +14,65 @@ var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 // var totalCloudConnectionMap = new Map();
 
-var table;
+var mcisListTable;
 var checked_array = [];
-initTable(); // init tabulator
+initMcisTable(); // init tabulator
 
-document.addEventListener("DOMContentLoaded", initMcisMngPage);
+//DOMContentLoaded 는 Page에서 1개만.
+// init + 파일명 () : ex) initMcis() 를 호출하도록 한다.
+document.addEventListener("DOMContentLoaded", initMcis);
 
-// 페이지 로드 시 prj 값 받아와 getMcisList 호출
-async function initMcisMngPage() {
-  console.log("initMcisMngPage")
+// 해당 화면에서 최초 설정하는 function
+//로드 시 prj 값 받아와 getMcisList 호출
+async function initMcis() {
+  console.log("initMcis")
   
-  // user의 workspace목록, project 목록 조회
-  // workspace list 표시
-  // let userWorkspaceProjectList = await webconsolejs["common/util"].getUserWorkspaceProjectList()
-  // console.log("user workspaceList ", userWorkspaceProjectList)
+  var workspaceIdProjectId = webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  webconsolejs["partials/operation/manage/mciscreate"].initMcisCreate();
+  // let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser()
+  // console.log("user wslist ", userWorkspaceList)
 
-  let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser()
-  console.log("user wslist ", userWorkspaceList)
-
-  let curWorkspace = await webconsolejs["common/util"].getCurrentWorkspace()
-  let curWorkspaceId = "";
-  //let curWorkspaceName = "";
-  if( curWorkspace ){
-    curWorkspaceId = curWorkspace.Id;
-    //curWorkspaceName = curWorkspace.Name;
-  }
+  // let curWorkspace = await webconsolejs["common/util"].getCurrentWorkspace()
+  // let curWorkspaceId = "";
+  // //let curWorkspaceName = "";
+  // if( curWorkspace ){
+  //   curWorkspaceId = curWorkspace.Id;
+  //   //curWorkspaceName = curWorkspace.Name;
+  // }
   
-  webconsolejs["common/util"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
+  // webconsolejs["common/util"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
   
 
-  // workspace, project 가 먼저 설정되어 있어야 한다.
-  //console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
-  console.log("curWorkspaceId", curWorkspaceId)
-  if( curWorkspaceId == "" || curWorkspaceId == undefined){
-    console.log(" curWorkspaceId is not set ")
-    //alert("workspace 먼저 선택하시오");
-    //return;
-  }else{
-    // workspace가 선택되어 있으면 project 목록도 표시
-    let userProjectList = await webconsolejs["common/util"].getUserProjectList(curWorkspaceId)
-    console.log("userProjectList ", userProjectList)
+  // // workspace, project 가 먼저 설정되어 있어야 한다.
+  // //console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
+  // console.log("curWorkspaceId", curWorkspaceId)
+  // if( curWorkspaceId == "" || curWorkspaceId == undefined){
+  //   console.log(" curWorkspaceId is not set ")
+  //   //alert("workspace 먼저 선택하시오");
+  //   //return;
+  // }else{
+  //   // workspace가 선택되어 있으면 project 목록도 표시
+  //   let userProjectList = await webconsolejs["common/util"].getUserProjectList(curWorkspaceId)
+  //   console.log("userProjectList ", userProjectList)
     
-    // project 목록이 있으면 cur project set
-    let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
-    console.log("curProjectId", curProjectId)    
+  //   // project 목록이 있으면 cur project set
+  //   let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
+  //   console.log("curProjectId", curProjectId)    
 
-    webconsolejs["common/util"].setPrjSelectBox(userProjectList, curProjectId)
+  //   webconsolejs["common/util"].setPrjSelectBox(userProjectList, curProjectId)
 
-    // curWorkspace cur project가 모두 선택되어 있으면 mcisList 조회
-    if (curProjectId != undefined && curProjectId != "") {
-      getMcisList();
+  //   // curWorkspace cur project가 모두 선택되어 있으면 mcisList 조회
+  //   if (curProjectId != undefined && curProjectId != "") {
+  //     getMcisList();
+  //   }
+  // }
+
+
+    console.log("workspaceIdProjectId=", workspaceIdProjectId)
+    if (workspaceIdProjectId.projectId != "") {
+      getMcisList();// project가 선택되어 있으면 mcis목록을 조회한다.
     }
-  }
+
 
 
   ////////////////// 받은 mcisId가 있으면 해당 mcisId를 set하고 조회한다. ////////////////
@@ -138,50 +145,23 @@ async function initMcisMngPage() {
 
 
   // var namespace = webconsolejs["common/util"].getCurrentProject()
+
+  ////////////////////// partials init functions///////////////////////////////////////
+  // try{
+  //   webconsolejs["partials/operation/manage/mciscreate"].initMcisCreate();// recommand popup에서 사용하는 table 정의.
+  // }catch(e){
+  //   console.log(e);
+  // }
 }
 
-$("#select-current-workspace").on('change', async function () {
-  console.log(" change ")
-  var selectedWorkspaceValue = this.value;
-
-  let projectListselectBox = document.getElementById("select-current-project");
-
-  //setPrjSelectBox(workspace.Id)
-
-  let projectList = await webconsolejs["common/util"].getProjectListByWorkspaceId(selectedWorkspaceValue)
-
-  
-  while (projectListselectBox.options.length > 0) {
-      projectListselectBox.remove(0);        
-  }
-
-  const defaultOpt = document.createElement("option");
-  defaultOpt.value = ""
-  defaultOpt.textContent = "Please select a project";
-  projectListselectBox.appendChild(defaultOpt);
-
-  let curProjectId = webconsolejs["common/util"].getCurrentProject()?.Id
-  for (const p in projectList) {
-      console.log("p ", p)
-      const opt = document.createElement("option");
-      opt.value = projectList[p].id;
-      opt.textContent = projectList[p].name;
-      projectListselectBox.appendChild(opt);
-
-      if (curProjectId != "" && projectList[p].id == curProjectId) {
-          opt.setAttribute("selected", "selected");
-      }
-  }
-
-  ////// project SET END//////
+// navBar에 있는 object인데 직접 handling
+$("#select-current-workspace").on('change', async function () {  
+  webconsolejs["partials/layout/navbar"].setWorkspaceChanged(this.value);  
 })
 
+// navbar에 있는 object인데 직접 handling
 $("#select-current-project").on('change', async function () {
-  console.log(" change ")
-
   getMcisList();
-
-  ////// project SET END//////
 })
 
 // 받아온 project(namespace)로 McisList GET
@@ -195,6 +175,11 @@ async function getMcisList() {
   // });
   console.log("projectId", projectId)
   console.log("projectName", projectName)
+
+  if( projectId == ""){
+    console.log("Project has not set")
+    return;
+  }
   nsid = projectName
 
   // nsid = "project1";
@@ -229,7 +214,7 @@ function getMcisListCallbackSuccess(caller, mcisList) {
 
   totalMcisListObj = mcisList.mcis;
   console.log("total mcis : ", totalMcisListObj);
-  table.setData(totalMcisListObj);
+  mcisListTable.setData(totalMcisListObj);
   setToTalMcisStatus(); // mcis상태 표시
   setTotalVmStatus(); // mcis 의 vm들 상태표시
   //     setTotalConnection();// Mcis의 provider별 connection 표시
@@ -1123,7 +1108,7 @@ function setTabulator(
 }
 
 // tabulator Table 초기값 설정
-function initTable() {
+function initMcisTable() {
 
   var tableObjParams = {};
 
@@ -1212,10 +1197,11 @@ function initTable() {
     },
   ];
 
-  table = setTabulator("mcislist-table", tableObjParams, columns);
+  //mcisListTable = webconsolejs["common/util"].setTabulator("mcislist-table", tableObjParams, columns);
+  mcisListTable = setTabulator("mcislist-table", tableObjParams, columns);
 
   // 행 클릭 시
-  table.on("rowClick", function (e, row) {
+  mcisListTable.on("rowClick", function (e, row) {
 
     var mcisID = row.getCell("id").getValue();
     console.log("mcisID", mcisID)
@@ -1228,7 +1214,7 @@ function initTable() {
   });
 
   //  선택된 여러개 row에 대해 처리
-  table.on("rowSelectionChanged", function (data, rows) {
+  mcisListTable.on("rowSelectionChanged", function (data, rows) {
     checked_array = data
     console.log("checked_array", checked_array)
     console.log("rowsrows", data)
