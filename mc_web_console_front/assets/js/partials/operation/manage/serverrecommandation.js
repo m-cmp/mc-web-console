@@ -7,9 +7,18 @@ var recommandVmSpecListObj = new Object();
 
 
 export function initServerRecommandation(callbackfunction){
-    console.log("initServerRecommandation ")
+    console.log("initServerRecommandation ")	
 
-    var tableObjParams = {};
+    initRecommandSpecTable();
+
+	// return function 정의
+	if( callbackfunction != undefined){
+        returnFunction = callbackfunction;
+    }
+}
+
+function initRecommandSpecTable(){
+	var tableObjParams = {};
 
 	var columns = [
 		{
@@ -70,86 +79,82 @@ export function initServerRecommandation(callbackfunction){
 		}
 	];
 
-	recommandTable = setSpecTabulator("spec-table", tableObjParams, columns);
-    //recommandTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
-
+	//recommandTable = setSpecTabulator("spec-table", tableObjParams, columns);
+    recommandTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
+	
 	recommandTable.on("rowSelectionChanged", function (data, rows) {
 		console.log("data", data)
 
 		updateSelectedRows(data)
 	});
 
-
-    // return function 정의
-    if( callbackfunction != undefined){
-        returnFunction = callbackfunction;
-    }
+   
 }
 
-function setSpecTabulator(
-	tableObjId,
-	tableObjParamMap,
-	columnsParams,
-	isMultiSelect
-) {
-	var placeholder = "No Data";
-	var pagination = "local";
-	var paginationSize = 5;
-	var paginationSizeSelector = [5, 10, 15, 20];
-	var movableColumns = true;
-	var columnHeaderVertAlign = "middle";
-	var paginationCounter = "rows";
-	var layout = "fitColumns";
+// function setSpecTabulator(
+// 	tableObjId,
+// 	tableObjParamMap,
+// 	columnsParams,
+// 	isMultiSelect
+// ) {
+// 	var placeholder = "No Data";
+// 	var pagination = "local";
+// 	var paginationSize = 5;
+// 	var paginationSizeSelector = [5, 10, 15, 20];
+// 	var movableColumns = true;
+// 	var columnHeaderVertAlign = "middle";
+// 	var paginationCounter = "rows";
+// 	var layout = "fitColumns";
 
-	if (tableObjParamMap.hasOwnProperty("placeholder")) {
-		placeholder = tableObjParamMap.placeholder;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("placeholder")) {
+// 		placeholder = tableObjParamMap.placeholder;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("pagination")) {
-		pagination = tableObjParamMap.pagination;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("pagination")) {
+// 		pagination = tableObjParamMap.pagination;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-		paginationSize = tableObjParamMap.paginationSize;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+// 		paginationSize = tableObjParamMap.paginationSize;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-		paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+// 		paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-		movableColumns = tableObjParamMap.movableColumns;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+// 		movableColumns = tableObjParamMap.movableColumns;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-		columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+// 		columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-		paginationCounter = tableObjParamMap.paginationCounter;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+// 		paginationCounter = tableObjParamMap.paginationCounter;
+// 	}
 
-	if (tableObjParamMap.hasOwnProperty("layout")) {
-		layout = tableObjParamMap.layout;
-	}
+// 	if (tableObjParamMap.hasOwnProperty("layout")) {
+// 		layout = tableObjParamMap.layout;
+// 	}
 
-	var tabulatorTable = new Tabulator("#" + tableObjId, {
-		//ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
-		placeholder,
-		pagination,
-		paginationSize,
-		paginationSizeSelector,
-		movableColumns,
-		columnHeaderVertAlign,
-		paginationCounter,
-		layout,
-		columns: columnsParams,
-		selectableRows: isMultiSelect == false ? 1 : true,
-		selectable: true,
-	});
-    console.log("tabulator Table ", tabulatorTable)
-	return tabulatorTable;
-}
+// 	var tabulatorTable = new Tabulator("#" + tableObjId, {
+// 		//ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+// 		placeholder,
+// 		pagination,
+// 		paginationSize,
+// 		paginationSizeSelector,
+// 		movableColumns,
+// 		columnHeaderVertAlign,
+// 		paginationCounter,
+// 		layout,
+// 		columns: columnsParams,
+// 		selectableRows: isMultiSelect == false ? 1 : true,
+// 		selectable: true,
+// 	});
+//     console.log("tabulator Table ", tabulatorTable)
+// 	return tabulatorTable;
+// }
 
 var recommendSpecs = [];
 
