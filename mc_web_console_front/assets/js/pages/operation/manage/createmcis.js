@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", initMcisCreatePage)
 // create page 가 load 될 때 실행해야 할 것들 정의
 function initMcisCreatePage(){
 
-	//initSpecTable();// recommand popup에서 사용하는 table 정의.
+	initSpecTable();// recommand popup에서 사용하는 table 정의.
 }
 
 
@@ -776,8 +776,11 @@ export async function createMcisDynamic() {
 	//console.log("create dynamicMCIS : ", response)
 
 	alert("생성요청 완료");
+	var urlParamMap = new Map();
+
 	// 생성요청했으므로 결과를 기다리지 않고 mcisList로 보냄
 	webconsolejs["common/util"].changePage("McisMng", urlParamMap)
+	// webconsolejs["common/util"].changePage("McisMng")
 }
 
 export function addNewMcis() {
