@@ -172,7 +172,7 @@ export function setWorkspaceSelectBox(workspaceList, curWorkspaceId) {
         workspaceListselectBox.remove(0);
     }
     var workspaceExists = false
-    console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
+    //console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
     //let curWorkspaceId = await webconsolejs["common/util"].getCurrentWorkspace()?.Id
 
     console.log("setWorkspaceSelectbox --------------------")
@@ -302,6 +302,7 @@ export function setTabulator(
   
     return tabulatorTable;
 }
+
 // column show & hide
 export function displayColumn(table) {
 	$(".display-column").on("click", function () {
