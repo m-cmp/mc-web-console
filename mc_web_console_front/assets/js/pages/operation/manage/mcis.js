@@ -26,56 +26,27 @@ document.addEventListener("DOMContentLoaded", initMcis);
 //로드 시 prj 값 받아와 getMcisList 호출
 async function initMcis() {
   console.log("initMcis")
-  
-  var workspaceIdProjectId = webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  webconsolejs["partials/operation/manage/mciscreate"].initMcisCreate();
-  // let userWorkspaceList = await webconsolejs["common/util"].getWorkspaceListByUser()
-  // console.log("user wslist ", userWorkspaceList)
 
-  // let curWorkspace = await webconsolejs["common/util"].getCurrentWorkspace()
-  // let curWorkspaceId = "";
-  // //let curWorkspaceName = "";
-  // if( curWorkspace ){
-  //   curWorkspaceId = curWorkspace.Id;
-  //   //curWorkspaceName = curWorkspace.Name;
-  // }
-  
-  // webconsolejs["common/util"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
+  ////////////////////// partials init functions///////////////////////////////////////
+  try{
+    webconsolejs["partials/operation/manage/mciscreate"].initMcisCreate();//McisCreate을 Partial로 가지고 있음. 
+  }catch(e){
+    console.log(e);
+  }
+  ////////////////////// partials init functions end ///////////////////////////////////////
   
 
-  // // workspace, project 가 먼저 설정되어 있어야 한다.
-  // //console.log("get workspace from session " , webconsolejs["common/util"].getCurrentWorkspace())
-  // console.log("curWorkspaceId", curWorkspaceId)
-  // if( curWorkspaceId == "" || curWorkspaceId == undefined){
-  //   console.log(" curWorkspaceId is not set ")
-  //   //alert("workspace 먼저 선택하시오");
-  //   //return;
-  // }else{
-  //   // workspace가 선택되어 있으면 project 목록도 표시
-  //   let userProjectList = await webconsolejs["common/util"].getUserProjectList(curWorkspaceId)
-  //   console.log("userProjectList ", userProjectList)
-    
-  //   // project 목록이 있으면 cur project set
-  //   let curProjectId = await webconsolejs["common/util"].getCurrentProject()?.Id
-  //   console.log("curProjectId", curProjectId)    
+  ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
+  var workspaceIdProjectId = webconsolejs["partials/layout/navbar"].workspaceProjectInit();  
 
-  //   webconsolejs["common/util"].setPrjSelectBox(userProjectList, curProjectId)
+  ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
-  //   // curWorkspace cur project가 모두 선택되어 있으면 mcisList 조회
-  //   if (curProjectId != undefined && curProjectId != "") {
-  //     getMcisList();
-  //   }
-  // }
+  //console.log("workspaceIdProjectId=", workspaceIdProjectId)
+  if (workspaceIdProjectId.projectId != "") {
+    getMcisList();// project가 선택되어 있으면 mcis목록을 조회한다.
+  }
 
-
-    console.log("workspaceIdProjectId=", workspaceIdProjectId)
-    if (workspaceIdProjectId.projectId != "") {
-      getMcisList();// project가 선택되어 있으면 mcis목록을 조회한다.
-    }
-
-
-
-  ////////////////// 받은 mcisId가 있으면 해당 mcisId를 set하고 조회한다. ////////////////
+  ////////////////////// 받은 mcisId가 있으면 해당 mcisId를 set하고 조회한다. ////////////////
   // 외부(dashboard)에서 받아온 mcisID가 있으면 MCIS INFO 이동
   // 현재 브라우저의 URL
   const url = window.location.href;
@@ -89,77 +60,16 @@ async function initMcis() {
   if (selectedMcisID != undefined) {
     getSelectedMcisData(selectedMcisID)
   }
-  /////////////////////////////////////////////
+  ////////////////////  mcisId를 set하고 조회 완료. ////////////////
 
-  ////// workspace SET //////
-  // var userId = $("#userid").val()
-  // console.log("userId === ", userId)
-  // var data = {
-  //   pathParams: {
-  //     userId: userId,
-  //   },
-  // }
-
-  // var controller = "/api/" + "getworkspaceuserrolemappingbyworkspaceuser";
-  // const wsresponse = await webconsolejs["common/api/http"].commonAPIPost(
-  //   controller,
-  //   data
-  // )
-
-  // console.log("wsresponse", wsresponse)
-
-
-  //var workspaceList = ["default"];
-  // var workspacesRespData = wsresponse.data.responseData.responseData // data
-  // var workspaceSelected = "";
-  // workspacesRespData.forEach(item => {
-  //   workspaceList.push(item.workspace.name);
-  // });
-  // console.log("workspacelist", workspaceList)
-
-  //var html = '<option value="">Select WorkSpace</option>'
-  //html += '<option value="default">default</option>'
-  // workspaceList.forEach(item => {
-
-  //   var currentWorkspace = webconsolejs["common/util"].getCurrentWorkspace()
-  //   console.log("currentWorkspace", currentWorkspace)
-  //   if (currentWorkspace != null && currentWorkspace.Id == item) {
-  //     workspaceSelected = "selected"
-  //   } else {
-  //     workspaceSelected = ""
-  //   }
-
-
-  //   html += '<option value="' + item + '" ' + workspaceSelected + '>' + item + '</option>'
-  // })
-
-  //$("#select-current-workspace").empty()//
-  //$("#select-current-workspace").append(html)
-
-  
-
-  ////// workspace SET END //////
-
-
-  ////// project SET //////
-
-
-  // var namespace = webconsolejs["common/util"].getCurrentProject()
-
-  ////////////////////// partials init functions///////////////////////////////////////
-  // try{
-  //   webconsolejs["partials/operation/manage/mciscreate"].initMcisCreate();// recommand popup에서 사용하는 table 정의.
-  // }catch(e){
-  //   console.log(e);
-  // }
 }
 
-// navBar에 있는 object인데 직접 handling
+// navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-workspace").on('change', async function () {  
   webconsolejs["partials/layout/navbar"].setWorkspaceChanged(this.value);  
 })
 
-// navbar에 있는 object인데 직접 handling
+// navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
   getMcisList();
 })
@@ -289,6 +199,7 @@ function setMcisInfoData(mcisData) {
     console.error(e);
   }
 
+  // TODO : mcis info로 cursor 이동
   // vm상태별로 icon 표시한다
   displayServerStatusList(mcisID, mcisData.vm)
 
@@ -666,22 +577,6 @@ function getMcisStatusIcon(mcisDispStatus) {
   return mcisStatusIcon
 }
 
-// function getVmStatusIcon(vmDispStatus) {
-//   var vmStatusIcon = "";
-//   if (vmDispStatus == "running") {
-//     vmStatusIcon = "icon_running.svg"
-//   } else if (vmDispStatus == "stop") {
-//     vmStatusIcon = "icon_stop.svg"
-//   } else if (vmDispStatus == "suspended") {
-//     vmStatusIcon = "icon_stop.svg"
-//   } else if (vmDispStatus == "terminate") {
-//     vmStatusIcon = "icon_terminate.svg"
-//   } else {
-//     vmStatusIcon = "icon_stop.svg"
-//   }
-//   return vmStatusIcon;
-// }
-
 // MCIS Info에 Set providerName
 function getMCISInfoProviderNames(mcisData) {
 
@@ -908,29 +803,6 @@ function calculateVmStatusCount(aMcis) {
   return vmStatusCountMap;
 }
 
-// function displayMcisDashboard() {
-//   console.log("displayMcisDashboard");
-//   if (!isEmpty(totalMcisListObj) && totalMcisListObj.length > 0) {
-//     //totalMcisCnt = mcisList.length;
-//     var addMcis = "";
-//     for (var mcisIndex in totalMcisListObj) {
-//       var aMcis = totalMcisListObj[mcisIndex];
-//       if (aMcis.id != "") {
-//         addMcis += setMcisListTableRow(aMcis, mcisIndex);
-//       }
-//     } // end of mcis loop
-//     $("#mcisList").empty();
-//     $("#mcisList").append(addMcis);
-//   } else {
-//     var addMcis = "";
-//     addMcis += "<tr>";
-//     addMcis += '<td class="overlay hidden" data-th="" colspan="8">No Data</td>';
-//     addMcis += "</tr>";
-//     $("#mcisList").empty();
-//     $("#mcisList").append(addMcis);
-//   }
-// }
-
 // 화면 표시용 status
 function getMcisStatusDisp(mcisFullStatus) {
   console.log("getMcisStatus " + mcisFullStatus);
@@ -950,7 +822,6 @@ function getMcisStatusDisp(mcisFullStatus) {
   console.log("after status " + returnStatus);
   return returnStatus;
 }
-
 
 // vm status display
 function displayVmStatusArea() {
@@ -1040,10 +911,10 @@ function getVmStatusClass(vmDispStatus) {
   return vmStatusClass;
 }
 
-////////////////////////////////////////////////////// TABULATOR //////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////// TABULATOR Start //////////////////////////////////////////////////////
 // tabulator 행, 열, 기본값 설정
-function setTabulator(
+// table이 n개 가능하므로 개별 tabulator 정의 : 원리 util 안에 setTabulator있음.
+function setMcisTabulator(
   tableObjId,
   tableObjParamMap,
   columnsParams,
@@ -1197,8 +1068,8 @@ function initMcisTable() {
     },
   ];
 
-  //mcisListTable = webconsolejs["common/util"].setTabulator("mcislist-table", tableObjParams, columns);
-  mcisListTable = setTabulator("mcislist-table", tableObjParams, columns);
+  //mcisListTable = webconsolejs["common/util"].setTabulator("mcislist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
+  mcisListTable = setMcisTabulator("mcislist-table", tableObjParams, columns);
 
   // 행 클릭 시
   mcisListTable.on("rowClick", function (e, row) {

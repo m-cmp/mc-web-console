@@ -10,72 +10,72 @@ export function commoncallbac(val) {
 ////////// TABULATOR //////////
 var table;
 var checked_array = [];
-initTable();
-function setTabulator(
-  tableObjId,
-  tableObjParamMap,
-  columnsParams,
-  isMultiSelect
-) {
-  var placeholder = "No Data";
-  var pagination = "local";
-  var paginationSize = 5;
-  var paginationSizeSelector = [5, 10, 15, 20];
-  var movableColumns = true;
-  var columnHeaderVertAlign = "middle";
-  var paginationCounter = "rows";
-  var layout = "fitColumns";
+initWorkspaceTable();
+// function setTabulator(
+//   tableObjId,
+//   tableObjParamMap,
+//   columnsParams,
+//   isMultiSelect
+// ) {
+//   var placeholder = "No Data";
+//   var pagination = "local";
+//   var paginationSize = 5;
+//   var paginationSizeSelector = [5, 10, 15, 20];
+//   var movableColumns = true;
+//   var columnHeaderVertAlign = "middle";
+//   var paginationCounter = "rows";
+//   var layout = "fitColumns";
 
-  if (tableObjParamMap.hasOwnProperty("placeholder")) {
-    placeholder = tableObjParamMap.placeholder;
-  }
+//   if (tableObjParamMap.hasOwnProperty("placeholder")) {
+//     placeholder = tableObjParamMap.placeholder;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("pagination")) {
-    pagination = tableObjParamMap.pagination;
-  }
+//   if (tableObjParamMap.hasOwnProperty("pagination")) {
+//     pagination = tableObjParamMap.pagination;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-    paginationSize = tableObjParamMap.paginationSize;
-  }
+//   if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+//     paginationSize = tableObjParamMap.paginationSize;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-    paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-  }
+//   if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+//     paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-    movableColumns = tableObjParamMap.movableColumns;
-  }
+//   if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+//     movableColumns = tableObjParamMap.movableColumns;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-    columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-  }
+//   if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+//     columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-    paginationCounter = tableObjParamMap.paginationCounter;
-  }
+//   if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+//     paginationCounter = tableObjParamMap.paginationCounter;
+//   }
 
-  if (tableObjParamMap.hasOwnProperty("layout")) {
-    layout = tableObjParamMap.layout;
-  }
+//   if (tableObjParamMap.hasOwnProperty("layout")) {
+//     layout = tableObjParamMap.layout;
+//   }
 
-  var tabulatorTable = new Tabulator("#" + tableObjId, {
-    placeholder,
-    pagination,
-    paginationSize,
-    paginationSizeSelector,
-    movableColumns,
-    columnHeaderVertAlign,
-    paginationCounter,
-    layout,
-    columns: columnsParams,
-    selectableRows: isMultiSelect == false ? 1 : true,
-  });
+//   var tabulatorTable = new Tabulator("#" + tableObjId, {
+//     placeholder,
+//     pagination,
+//     paginationSize,
+//     paginationSizeSelector,
+//     movableColumns,
+//     columnHeaderVertAlign,
+//     paginationCounter,
+//     layout,
+//     columns: columnsParams,
+//     selectableRows: isMultiSelect == false ? 1 : true,
+//   });
 
-  return tabulatorTable;
-}
+//   return tabulatorTable;
+// }
 
 // Table 초기값 설정
-function initTable() {
+function initWorkspaceTable() {
 
   var tableObjParams = {};
 
@@ -106,7 +106,8 @@ function initTable() {
     },    
   ];
 
-  table = setTabulator("workspacelist-table", tableObjParams, columns);
+  //table = setTabulator("workspacelist-table", tableObjParams, columns);
+  table = webconsolejs["common/util"].setTabulator("workspacelist-table", tableObjParams, columns);
 
   // 행 클릭 시
   table.on("rowClick", function (e, row) {

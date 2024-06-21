@@ -1,3 +1,70 @@
+import { TabulatorFull as Tabulator } from "tabulator-tables";
+
+export function setTabulator(
+  tableObjId,
+  tableObjParamMap,
+  columnsParams,
+  isMultiSelect
+) {
+  var placeholder = "No Data";
+  var pagination = "local";
+  var paginationSize = 5;
+  var paginationSizeSelector = [5, 10, 15, 20];
+  var movableColumns = true;
+  var columnHeaderVertAlign = "middle";
+  var paginationCounter = "rows";
+  var layout = "fitColumns";
+
+  if (tableObjParamMap.hasOwnProperty("placeholder")) {
+    placeholder = tableObjParamMap.placeholder;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("pagination")) {
+    pagination = tableObjParamMap.pagination;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+    paginationSize = tableObjParamMap.paginationSize;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+    paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+    movableColumns = tableObjParamMap.movableColumns;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+    columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+    paginationCounter = tableObjParamMap.paginationCounter;
+  }
+
+  if (tableObjParamMap.hasOwnProperty("layout")) {
+    layout = tableObjParamMap.layout;
+  }
+
+  var tabulatorTable = new Tabulator("#" + tableObjId, {
+    //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+    placeholder,
+    pagination,
+    paginationSize,
+    paginationSizeSelector,
+    movableColumns,
+    columnHeaderVertAlign,
+    paginationCounter,
+    layout,
+    columns: columnsParams,
+    selectable: isMultiSelect == false ? 1 : true,
+  });
+
+  return tabulatorTable;
+}
+
+
 // 화면이동 
 export function changePage(target, urlParamMap){
   var url = "";
@@ -239,69 +306,69 @@ function isEmpty(str) {
         return false;
 }
 
-export function setTabulator(
-    tableObjId,
-    tableObjParamMap,
-    columnsParams,
-    isMultiSelect
-  ) {
-    var placeholder = "No Data";
-    var pagination = "local";
-    var paginationSize = 5;
-    var paginationSizeSelector = [5, 10, 15, 20];
-    var movableColumns = true;
-    var columnHeaderVertAlign = "middle";
-    var paginationCounter = "rows";
-    var layout = "fitColumns";
+// export function setTabulator(
+//     tableObjId,
+//     tableObjParamMap,
+//     columnsParams,
+//     isMultiSelect
+//   ) {
+//     var placeholder = "No Data";
+//     var pagination = "local";
+//     var paginationSize = 5;
+//     var paginationSizeSelector = [5, 10, 15, 20];
+//     var movableColumns = true;
+//     var columnHeaderVertAlign = "middle";
+//     var paginationCounter = "rows";
+//     var layout = "fitColumns";
   
-    if (tableObjParamMap.hasOwnProperty("placeholder")) {
-      placeholder = tableObjParamMap.placeholder;
-    }
+//     if (tableObjParamMap.hasOwnProperty("placeholder")) {
+//       placeholder = tableObjParamMap.placeholder;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("pagination")) {
-      pagination = tableObjParamMap.pagination;
-    }
+//     if (tableObjParamMap.hasOwnProperty("pagination")) {
+//       pagination = tableObjParamMap.pagination;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-      paginationSize = tableObjParamMap.paginationSize;
-    }
+//     if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+//       paginationSize = tableObjParamMap.paginationSize;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-      paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-    }
+//     if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+//       paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-      movableColumns = tableObjParamMap.movableColumns;
-    }
+//     if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+//       movableColumns = tableObjParamMap.movableColumns;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-      columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-    }
+//     if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+//       columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-      paginationCounter = tableObjParamMap.paginationCounter;
-    }
+//     if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+//       paginationCounter = tableObjParamMap.paginationCounter;
+//     }
   
-    if (tableObjParamMap.hasOwnProperty("layout")) {
-      layout = tableObjParamMap.layout;
-    }
+//     if (tableObjParamMap.hasOwnProperty("layout")) {
+//       layout = tableObjParamMap.layout;
+//     }
   
-    var tabulatorTable = new Tabulator("#" + tableObjId, {
-      //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
-      placeholder,
-      pagination,
-      paginationSize,
-      paginationSizeSelector,
-      movableColumns,
-      columnHeaderVertAlign,
-      paginationCounter,
-      layout,
-      columns: columnsParams,
-      selectable: isMultiSelect == false ? 1 : true,
-    });
+//     var tabulatorTable = new Tabulator("#" + tableObjId, {
+//       //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+//       placeholder,
+//       pagination,
+//       paginationSize,
+//       paginationSizeSelector,
+//       movableColumns,
+//       columnHeaderVertAlign,
+//       paginationCounter,
+//       layout,
+//       columns: columnsParams,
+//       selectable: isMultiSelect == false ? 1 : true,
+//     });
   
-    return tabulatorTable;
-}
+//     return tabulatorTable;
+// }
 
 // column show & hide
 export function displayColumn(table) {
