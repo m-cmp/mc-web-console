@@ -27,8 +27,10 @@ $rowBorderColor:transparent; //table border color
 $rowTextColor:inherit; //table text color
 $rowHoverBackground:rgba(0, 0, 0, 0.1); //row background color on hover
 
-$rowSelectedBackground: $primary; //row background color when selected
-$rowSelectedBackgroundHover: $primary-darker;//row background color when selected and hovered
+// $rowSelectedBackground: $primary; //row background color when selected
+// $rowSelectedBackgroundHover: $primary-darker;//row background color when selected and hovered
+$rowSelectedBackground: rgba(lighten($primary, 40%), 0.5); //row background color when selected
+$rowSelectedBackgroundHover: rgba(0, 0, 0, 0.2);
 
 $editBoxColor:#1D68CD; //border color for edit boxes
 $errorColor:#dd0000; //error indication
@@ -62,6 +64,7 @@ $rangeHeaderTextHighlightBackground: #000000; //header text color when highlight
     white-space: nowrap;
     overflow: hidden;
     outline: none;
+    border-top: 1px solid $border-color;
 }
 
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title{

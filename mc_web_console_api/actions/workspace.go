@@ -1,21 +1,82 @@
 package actions
 
 import (
-	"mc_web_console_api/actions/workspace"
-	"mc_web_console_api/fwmodels/webconsole"
-	util "mc_web_console_api/util"
+	"fmt"
+	"log"
+	"mc_web_console_api/handler"
+	"mc_web_console_api/handler/mciammanager"
 
 	"github.com/gobuffalo/buffalo"
 )
 
-// 사용자의 workspace 목록 조회
-// mciammamager를 사용하지 않으면 default 를 return
-func GetWorkspaceByUserId(c buffalo.Context, commonRequest *webconsole.CommonRequest) *webconsole.CommonResponse {
-	if util.MCIAM_USE {
-		commonResponse := workspace.McIamGetWorkspaceByUserId(c, commonRequest)
-		return commonResponse
-	} else {
-		commonResponse := workspace.WebconsoleGetWorkspaceByUserId(c, commonRequest)
+func GetWorkspaceByuserId(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		// token에서 userId 추출
+		userId := c.Value("PreferredUsername").(string)
+		//userId, _ := jwtDecoded["preferred_username"].(string)
+		log.Println("UserId ", userId)
+		pathParams := make(map[string]string)
+		// pathParams := map[string]string{
+		// 	"userId": userId,
+		// }
+		pathParams["userId"] = userId
+
+		req := &handler.CommonRequest{
+			PathParams: pathParams,
+		}
+
+		commonResponse := mciammanager.McIamGetworkspaceuserrolemappingbyworkspaceuser(c, req)
 		return commonResponse
 	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// Workspace 목록 조회
+func GetWorkspacelist(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mciammanager.McIamGetworkspacelist(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// Workspace 단건 조회
+func GetWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mciammanager.McIamGetworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// workspace 생성
+func CreateWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mciammanager.McIamCreateworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// workspace 삭제
+func DeleteWorkspace(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mciammanager.McIamDeleteworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
+
+// Project 단건 조회
+func GetProject(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mciammanager.McIamGetworkspaceprojectmappingbyworkspace(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
 }
