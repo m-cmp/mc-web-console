@@ -3,14 +3,14 @@ package actions
 import (
 	"errors"
 	"log"
+	"mc_web_console_api/handler"
+	"mc_web_console_api/handler/mciammanager"
+
+	"mc_web_console_api/handler/mcinframanager"
+	"mc_web_console_api/handler/self"
 	"net/http"
 	"reflect"
 	"strings"
-
-	demo "mc_web_console_api/actions/demo"
-	tumblebug "mc_web_console_api/actions/tumblebug"
-	webconsole "mc_web_console_api/fwmodels/webconsole"
-	"mc_web_console_api/models"
 
 	"github.com/gobuffalo/buffalo"
 )
@@ -27,42 +27,123 @@ type actions struct{}
 // case문에서 controller이름 추출하여 controller 호출
 func PostRouteController(c buffalo.Context) error {
 	log.Println("#### PostRouteController ")
-	commonRequest := &webconsole.CommonRequest{}
+	log.Println("User Role is : ", c.Data()["roles"])
+
+	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
 	targetController := strings.ToLower(c.Param("targetController"))
 	log.Printf("== targetController\t:[ %s ]\n", targetController)
 	log.Printf("== commonRequest\t:\n%+v\n\n", commonRequest)
 
-	commonResponse := &webconsole.CommonResponse{}
+	commonResponse := &handler.CommonResponse{}
 	switch targetController {
+
+	// MCIS Mng Area
+
 	case "getmcislist":
-		commonResponse = tumblebug.GetMCISList(c, commonRequest)
+		commonResponse = GetMcisList(c, commonRequest)
 	case "getmcis":
-		commonResponse = tumblebug.GetMCIS(c, commonRequest)
+		commonResponse = GetMcis(c, commonRequest)
 	case "delmcis":
-		commonResponse = tumblebug.DelMCIS(c, commonRequest)
+		commonResponse = DeleteMcis(c, commonRequest)
 	case "createmcis":
-		commonResponse = tumblebug.CreateMCIS(c, commonRequest)
+		commonResponse = CreateMcis(c, commonRequest)
+	case "createdynamicmcis":
+		commonResponse = CreateDynamicMcis(c, commonRequest)
+	case "getloaddefaultresource":
+		commonResponse = GetLoadDefaultResource(c, commonRequest)
+	case "deldefaultresources":
+		commonResponse = DelDefaultResource(c, commonRequest)
+	case "mcisrecommendvm":
+		commonResponse = McisRecommendVm(c, commonRequest)
+	case "mcisdynamiccheckrequest":
+		commonResponse = McisDynamicCheckRequest(c, commonRequest)
+	case "sendcommandtomcis":
+		commonResponse = CmdMCIS(c, commonRequest)
+	case "controllifecycle":
+		commonResponse = ControlMcis(c, commonRequest)
+	case "getimageid":
+		commonResponse = mcinframanager.InfraGetPublicImage(c, commonRequest)
+	case "disklookup":
+		commonResponse, _ = self.DiskLookup(c, commonRequest)
+	case "createvmdynamic":
+		commonResponse = CreateMcisVmDynamic(c, commonRequest)
+	// MCIS Mng Area end
 
-	case "authlogin":
-		commonResponse = AuthLogin(c, commonRequest)
-	case "authlogout":
-		commonResponse = AuthLogout(c, commonRequest)
-	case "authgetuserinfo":
-		commonResponse = AuthGetUserInfo(c, commonRequest)
-	case "authgetuservalidate":
-		commonResponse = AuthGetUserValidate(c, commonRequest)
-
+	// workspace mng area
 	case "getworkspacebyuserid":
-		commonResponse = GetWorkspaceByUserId(c, commonRequest)
+		commonResponse = GetWorkspaceByuserId(c, commonRequest)
+	case "getworkspacelist":
+		commonResponse = GetWorkspacelist(c, commonRequest)
+	case "getworkspace":
+		commonResponse = GetWorkspace(c, commonRequest)
+	case "createworkspace":
+		commonResponse = CreateWorkspace(c, commonRequest)
+	case "deleteworkspace":
+		commonResponse = DeleteWorkspace(c, commonRequest)
 
-	case "demogetuserinfo":
-		commonResponse = demo.DemoGetuserinfo(c, commonRequest)
-	case "demogetusercred":
-		commonResponse = demo.DemoGetuserCred(c, commonRequest)
+	// workspace, project mapping
+	case "getworkspaceuserrolemappingbyworkspaceuser":
+		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyworkspaceuser(c, commonRequest)
+	case "getworkspaceuserrolemappingbyuser":
+		commonResponse = mciammanager.McIamGetworkspaceuserrolemappingbyuser(c, commonRequest)
 
+	case "projectlistbyworkspaceid":
+		commonResponse = GetProject(c, commonRequest)
+
+	// // workspace mng area
+	// case "demogetuserinfo":
+	// 	commonResponse = demo.DemoGetuserinfo(c, commonRequest)
+	// case "demogetusercred":
+	// 	commonResponse = demo.DemoGetuserCred(c, commonRequest)
+
+	// settings resources
+	case "getvpclist":
+		commonResponse = GetVPCList(c, commonRequest)
+	case "getvpc":
+		commonResponse = GetVPC(c, commonRequest)
+	case "createvpc":
+		commonResponse = CreateVPC(c, commonRequest)
+	case "deletevpc":
+		commonResponse = DeleteVPC(c, commonRequest)
+	case "deleteallvpc":
+		commonResponse = DeleteAllVPC(c, commonRequest)
+	case "getsecuritygrouplist":
+		commonResponse = GetSecurityGroupList(c, commonRequest)
+	case "getsecuritygroup":
+		commonResponse = GetSecurityGroup(c, commonRequest)
+	case "createsecuritygroup":
+		commonResponse = CreateSecurityGroup(c, commonRequest)
+	case "deletesecuritygroup":
+		commonResponse = DeleteSecurityGroup(c, commonRequest)
+	case "deleteallsecuritygroup":
+		commonResponse = DeleteAllSecurityGroup(c, commonRequest)
+	case "getvmspeclist":
+		commonResponse = GetVmSpecList(c, commonRequest)
+	case "getvmspec":
+		commonResponse = GetVmSpec(c, commonRequest)
+	case "createvmspec":
+		commonResponse = CreateVmSpec(c, commonRequest)
+	case "deletevmspec":
+		commonResponse = DeleteVmSpec(c, commonRequest)
+	case "deleteallvmspec":
+		commonResponse = DeleteAllVmSpec(c, commonRequest)
+
+	case "getcommonvmspeclist":
+		commonResponse = GetCommonVmSpecList(c, commonRequest)
+	case "getcommonvmspec":
+		commonResponse = GetCommonVmSpec(c, commonRequest)
+	case "getresourcecommonspec":
+		commonResponse = GetResourceCommonSpec(c, commonRequest)
+	case "getconnconfiglistbytype":
+		commonResponse = GetConnConfigListByType(c, commonRequest)
+
+	case "getresourcelist":
+		commonResponse = GetResourceList(c, commonRequest)
+	case "getresource":
+		commonResponse = GetResource(c, commonRequest)
 	default:
-		commonResponse = webconsole.CommonResponseStatusNotFound("NO MATCH targetController")
+		commonResponse = handler.CommonResponseStatusNotFound("NO MATCH targetController")
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
 
@@ -75,6 +156,7 @@ func GetRouteController(c buffalo.Context) error {
 	// target controller 이름.
 
 	log.Println("in RouteGetController")
+	log.Println("User Role is : ", c.Data()["roles"])
 
 	// path param추출
 	path := c.Request().URL.Path
@@ -109,7 +191,7 @@ func GetRouteController(c buffalo.Context) error {
 	// switch commonRequest.TargetController {
 	// case "McisList":// Get Type
 	// 	//
-	// 	mcisList, respStatus := tumblebug.TbMcisList(commonRequest)
+	// 	mcisList, respStatus := mcinframanager.TbMcisList(commonRequest)
 	// 	commonResponse.ResponseData = mcisList
 	// 	commonResponse.Status = respStatus
 	// case "McisReg":// Post Type
@@ -143,89 +225,89 @@ func GetRouteController(c buffalo.Context) error {
 }
 
 // 관리자 설정
-func RoutesManager(app *buffalo.App) *buffalo.App {
+// func RoutesManager(app *buffalo.App) *buffalo.App {
 
-	// TODO : DB에서 path와 handler를 가져오도록
-	// 1. handler 구현한 뒤에 화면을 통해 db에 등록하는 process를 가져가도록
-	// 2. 화면이 있으면 xxxform, json의 경우에는 /api/xxx 로 경로명 지정
-	// ex ) "/api/<카테고리대분류>/<리소스>/<정의>" / "/<카테고리대분류>/<리소스>/mngform/"
+// 	// TODO : DB에서 path와 handler를 가져오도록
+// 	// 1. handler 구현한 뒤에 화면을 통해 db에 등록하는 process를 가져가도록
+// 	// 2. 화면이 있으면 xxxform, json의 경우에는 /api/xxx 로 경로명 지정
+// 	// ex ) "/api/<카테고리대분류>/<리소스>/<정의>" / "/<카테고리대분류>/<리소스>/mngform/"
 
-	// ID           uuid.UUID `json:"id" db:"id"`
-	// Method       string    `json:"method" db:"method"`
-	// Path         string    `json:"path" db:"path"`
-	// HandlerName  string    `json:"handler_name" db:"handler_name"`
-	// ResourceName string    `json:"resource_name" db:"resource_name"`
-	// PathName     string    `json:"path_name" db:"path_name"`
-	// Aliases      string    `json:"aliases" db:"aliases"`
-	// CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	// UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+// 	// ID           uuid.UUID `json:"id" db:"id"`
+// 	// Method       string    `json:"method" db:"method"`
+// 	// Path         string    `json:"path" db:"path"`
+// 	// HandlerName  string    `json:"handler_name" db:"handler_name"`
+// 	// ResourceName string    `json:"resource_name" db:"resource_name"`
+// 	// PathName     string    `json:"path_name" db:"path_name"`
+// 	// Aliases      string    `json:"aliases" db:"aliases"`
+// 	// CreatedAt    time.Time `json:"created_at" db:"created_at"`
+// 	// UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 
-	// routerList := []models.RouteInfo{
-	// 	{Path: "/home1", HandlerName: "GetHome", Method: "GET"},
-	// 	{Path: "/about1", HandlerName: "AboutHandler", Method: "GET"},
-	// 	{Path: "/settings/resources/vpc/mngform", HandlerName: "VpcMngForm", Method: "GET"},
+// 	// routerList := []models.RouteInfo{
+// 	// 	{Path: "/home1", HandlerName: "GetHome", Method: "GET"},
+// 	// 	{Path: "/about1", HandlerName: "AboutHandler", Method: "GET"},
+// 	// 	{Path: "/settings/resources/vpc/mngform", HandlerName: "VpcMngForm", Method: "GET"},
 
-	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcList", Method: "GET"},
-	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcReg", Method: "POST"},
-	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcGet", Method: "GET"},
-	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcDel", Method: "DELETE"},
-	// 	{Path: "/settings/resources/vpc/region", HandlerName: "vpcListByRegion", Method: "DELETE"},
-	// }
+// 	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcList", Method: "GET"},
+// 	// 	{Path: "/settings/resources/vpc/", HandlerName: "vpcReg", Method: "POST"},
+// 	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcGet", Method: "GET"},
+// 	// 	{Path: "/settings/resources/vpc/id/{vNetId}", HandlerName: "vpcDel", Method: "DELETE"},
+// 	// 	{Path: "/settings/resources/vpc/region", HandlerName: "vpcListByRegion", Method: "DELETE"},
+// 	// }
 
-	routerList := models.RouteInfoes{}
+// 	routerList := models.RouteInfoes{}
 
-	//err := models.DB.Find(&resultCredential, credential.ID)
-	//if err != nil {
-	//	return resultCredential, errors.WithStack(err)
-	//}
+// 	//err := models.DB.Find(&resultCredential, credential.ID)
+// 	//if err != nil {
+// 	//	return resultCredential, errors.WithStack(err)
+// 	//}
 
-	query := models.DB.Q()
-	err := query.All(&routerList)
-	if err != nil {
-		log.Println("query err ", err)
-		return app
-	}
+// 	query := models.DB.Q()
+// 	err := query.All(&routerList)
+// 	if err != nil {
+// 		log.Println("query err ", err)
+// 		return app
+// 	}
 
-	for _, router := range routerList {
-		//log.Println(router)
-		// handlerFunction은 (a actions) function명 으로 정의 해야 함.
-		handlerFunc := getHandlerFuncByName(router.HandlerName)
-		if handlerFunc == nil {
-			log.Println(router.HandlerName + " Handler not found")
-			log.Println(router)
-			continue
-		}
-		//log.Println(router)
-		log.Println(router.Path + "   :   " + router.PathName + " : " + router.Method)
-		//log.Println(handlerFunc)
-		// 라우터 등록
+// 	for _, router := range routerList {
+// 		//log.Println(router)
+// 		// handlerFunction은 (a actions) function명 으로 정의 해야 함.
+// 		handlerFunc := getHandlerFuncByName(router.HandlerName)
+// 		if handlerFunc == nil {
+// 			log.Println(router.HandlerName + " Handler not found")
+// 			log.Println(router)
+// 			continue
+// 		}
+// 		//log.Println(router)
+// 		log.Println(router.Path + "   :   " + router.PathName + " : " + router.Method)
+// 		//log.Println(handlerFunc)
+// 		// 라우터 등록
 
-		switch router.Method {
-		case "GET":
-			app.GET(router.Path, handlerFunc).Name(router.PathName)
-		case "POST":
-			app.POST(router.Path, handlerFunc).Name(router.PathName)
-		case "PUT":
-			app.PUT(router.Path, handlerFunc).Name(router.PathName)
-		case "PATCH":
-			app.PATCH(router.Path, handlerFunc).Name(router.PathName)
-		case "HEAD":
-			app.HEAD(router.Path, handlerFunc).Name(router.PathName)
-		case "OPTIONS":
-			app.OPTIONS(router.Path, handlerFunc).Name(router.PathName)
-		case "DELETE":
-			app.DELETE(router.Path, handlerFunc).Name(router.PathName)
-		default:
-			log.Println(" any begin~~~~~~~~~~~~~~~~~~~~~~~")
-			log.Println(router)
-			log.Println(" any end ~~~~~~~~~~~~~~~~~~~~~~~")
-			app.ANY(router.Path, handlerFunc)
-		}
+// 		switch router.Method {
+// 		case "GET":
+// 			app.GET(router.Path, handlerFunc).Name(router.PathName)
+// 		case "POST":
+// 			app.POST(router.Path, handlerFunc).Name(router.PathName)
+// 		case "PUT":
+// 			app.PUT(router.Path, handlerFunc).Name(router.PathName)
+// 		case "PATCH":
+// 			app.PATCH(router.Path, handlerFunc).Name(router.PathName)
+// 		case "HEAD":
+// 			app.HEAD(router.Path, handlerFunc).Name(router.PathName)
+// 		case "OPTIONS":
+// 			app.OPTIONS(router.Path, handlerFunc).Name(router.PathName)
+// 		case "DELETE":
+// 			app.DELETE(router.Path, handlerFunc).Name(router.PathName)
+// 		default:
+// 			log.Println(" any begin~~~~~~~~~~~~~~~~~~~~~~~")
+// 			log.Println(router)
+// 			log.Println(" any end ~~~~~~~~~~~~~~~~~~~~~~~")
+// 			app.ANY(router.Path, handlerFunc)
+// 		}
 
-	}
+// 	}
 
-	return app
-}
+// 	return app
+// }
 
 // Get the handler function by its name
 func getHandlerFuncByName(handlerName string) buffalo.Handler {
