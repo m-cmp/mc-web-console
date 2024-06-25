@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"log"
 	"os"
 	"sync"
 
@@ -15,6 +16,7 @@ import (
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 
+	"mc_web_console_api/handler/mciammanager"
 	"mc_web_console_api/models"
 )
 
@@ -41,25 +43,67 @@ func App() *buffalo.App {
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
 
-		// middleware START //
-		// app.Use(AuthMiddleware)
-		// middleware END //
+		app.ANY("/alive", alive)
 
 		apiPath := "/api"
+
+		auth := app.Group(apiPath + "/auth")
+		auth.POST("/login", AuthLogin)
+		// auth.POST("/login/refresh", AuthLoginRefresh)
+		auth.POST("/logout", AuthLogout)
+		// auth.GET("/userinfo", AuthGetUserInfo)
+
 		api := app.Group(apiPath)
+		api.Use(session(""))
 		api.GET("/{targetController}", GetRouteController)
 		api.POST("/{targetController}", PostRouteController)
 
-		// DEBUG START //
-		if ENV == "development" {
-			debug := app.Group(apiPath + "/debug")
-			debug.ANY("/{targetfw}/{path:.+}", DebugApiCaller)
-		}
-		//  DEBUG END  //
+		role := app.Group("/test/role")
+		role.Use(session(""))
+		role.ANY("/alive", alive)
 
+		admin := app.Group("/test/admin")
+		admin.Use(session("admin"))
+		admin.ANY("/alive", alive)
+
+		viewer := app.Group("/test/viewer")
+		viewer.Use(session("admin"))
+		viewer.ANY("/alive", alive)
+
+		operator := app.Group("/test/operator")
+		operator.Use(session("admin"))
+		operator.ANY("/alive", alive)
 	})
 
 	return app
+}
+
+func alive(c buffalo.Context) error {
+	name := ""
+	roles := []string{}
+	sub := ""
+	upn := ""
+	if userName, ok := c.Value("PreferredUsername").(string); ok {
+		name = userName
+	}
+	if userRoles, ok := c.Value("RealmAccessRoles").([]string); ok {
+		roles = userRoles
+	}
+	if userSub, ok := c.Value("Sub").(string); ok {
+		sub = userSub
+	}
+	if userUpn, ok := c.Value("Upn").(string); ok {
+		upn = userUpn
+	}
+
+	return c.Render(200, r.JSON(map[string]interface{}{
+		"status":            "OK",
+		"method":            c.Request().Method,
+		"preferredUsername": name,
+		"realmAccessRoles":  roles,
+		"Sub":               sub,
+		"Upn":               upn,
+	}))
 }
 
 func forceSSL() buffalo.MiddlewareFunc {
@@ -67,4 +111,17 @@ func forceSSL() buffalo.MiddlewareFunc {
 		SSLRedirect:     ENV == "production",
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
+}
+
+func session(role string) buffalo.MiddlewareFunc {
+	if MCIAM_USE {
+		return mciammanager.Middleware(role)
+	} else {
+		return func(next buffalo.Handler) buffalo.Handler {
+			return func(c buffalo.Context) error {
+				log.Println("NO SESSION MIDDLEWARE")
+				return next(c)
+			}
+		}
+	}
 }
