@@ -15,8 +15,8 @@ export async function commonAPIPost(url, data) {
         .then(function (response) {
             console.log("#### commonAPIPost Response")
             console.log("Response status : ", (response.status))
-            console.log("Response Data :")
-            console.log(JSON.stringify(response.data))
+            //console.log("Response Data :")
+            //console.log(JSON.stringify(response.data))
             console.log("----------------------------")
             return response
         })
@@ -38,8 +38,8 @@ export async function commonAPIGet(url) {
         .then(function (response) {
             console.log("#### commonAPIPost Response")
             console.log("Response status : ", (response.status))
-            console.log("Response Data :")
-            console.log(JSON.stringify(response.data))
+            //console.log("Response Data :")
+            //console.log(JSON.stringify(response.data))
             console.log("----------------------------")
             return response
         })

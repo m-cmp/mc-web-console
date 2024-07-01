@@ -4,106 +4,11 @@
     <div id="index" class="section">
       <div class="row row-cards">
         <div class="col-md-7">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">MCIS Status</h3>
-            </div>
-
-            <div class="card-body">
-              <div class="row row-cards">
-                <div class="col-md-6">
-                  <div class="card card-borderless">
-                    <div class="card-header">
-                      <h1 class="card-title" id="total_mcis">0</h1>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md">
-                  <div class="card bg-blue text-primary-fg">
-                    <div class="card-header text-center">
-                      <h1 class="card-title mx-auto" id="mcis_status_running">
-                        0
-                      </h1>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md">
-                  <div class="card bg-red text-primary-fg">
-                    <div class="card-header">
-                      <h1 class="card-title mx-auto" id="mcis_status_stopped">
-                        0
-                      </h1>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md">
-                  <div class="card bg-muted text-primary-fg">
-                    <div class="card-header">
-                      <h1
-                        class="card-title mx-auto"
-                        id="mcis_status_terminated"
-                      >
-                        0
-                      </h1>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <%= partial("partials/operation/manage/mcis_status_summary.html") %>
         </div>
 
         <div class="col-md-5">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Server Status</h3>
-            </div>
-
-            <div class="card-body">
-              <div class="row row-cards">
-                <div class="col-md-6">
-                  <div class="card card-borderless">
-                    <div class="card-header">
-                      <h1 class="card-title" id="total_vm">0</h1>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md">
-                  <div class="card bg-blue text-primary-fg">
-                    <div class="card-header">
-                      <h1 class="card-title mx-auto" id="vm_status_running">
-                        0
-                      </h1>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md">
-                  <div class="card bg-red text-primary-fg">
-                    <div class="card-header">
-                      <h1 class="card-title mx-auto" id="vm_status_stopped">
-                        0
-                      </h1>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md">
-                  <div class="card bg-muted text-primary-fg">
-                    <div class="card-header">
-                      <h1 class="card-title mx-auto" id="vm_status_terminated">
-                        0
-                      </h1>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <%= partial("partials/operation/manage/server_status_summary.html") %>
         </div>
 
         <div class="col-md-12">
@@ -267,7 +172,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonlModal(this,'McisReboot', 'Would you like to reboot MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'reboot')"
+                      onclick="webconsolejs['partials/layout/modal'].commonlModal(this,'McisReboot', 'Would you like to reboot MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'reboot')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +202,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'suspend')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'suspend')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -327,7 +232,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisResume', 'Would you like to resume MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'resume')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisResume', 'Would you like to resume MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'resume')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -357,7 +262,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisTerminate', 'Would you like to terminate MCIS ?', 'pages/operation/manage/mcis.mcisLifeCycle', 'terminate')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisTerminate', 'Would you like to terminate MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'terminate')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -806,7 +711,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['partials/operation/manage/mciscreate'].btn_deploy()"
+                onclick="webconsolejs['partials/operation/manage/mciscreate'].deployVm()"
               >
                 Deploy
               </button>
@@ -846,7 +751,7 @@
   </div>
 </div>
 
-<!-- add server : server configuration -->
+  <!-- add server : server configuration -->
   <%= partial("partials/operation/manage/mciscreate.html") %>
 
 
@@ -854,5 +759,8 @@
   <%= partial("partials/operation/manage/serverrecommandation.html") %>
 
 
-
 <%= javascriptTag("pages/operation/manage/mcis.js") %>
+<%= javascriptTag("common/api/services/mcis_api.js") %>
+<%= javascriptTag("common/api/services/vmimage_api.js") %>
+
+
