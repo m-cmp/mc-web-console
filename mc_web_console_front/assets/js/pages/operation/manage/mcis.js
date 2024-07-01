@@ -396,6 +396,7 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   $("#server_detail_view_server_spec").text(vmSpecName) // detail tab
 
 
+  webconsolejs["partials/operation/manage/server_monitoring"].monitoringDataInit()
 }
 
 // vm 세부 정보 초기화
