@@ -1,7 +1,0 @@
-go 1.21.0
-
-use (
-	./mc_web_console_api
-	./mc_web_console_front
-	./mc_web_console_common_models
-)
