@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io"
 	"log"
@@ -146,7 +147,11 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	}
 	log.Println("\n", string(requestDump))
 
-	client := &http.Client{}
+	// TODO : TLSClientConfig InsecureSkipVerify 해제 v0.2.0 이후 작업예정
+	customTransport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: customTransport}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error CommonHttp request:", err)
