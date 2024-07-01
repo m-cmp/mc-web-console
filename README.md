@@ -1,3 +1,127 @@
+# M-CMP WEB Console
+
+This repository provides a Multi-Cloud WEB Console.
+
+A sub-system of [M-CMP platform](https://github.com/m-cmp/docs/tree/main) to deploy and manage Multi-Cloud Infrastructures.
+
+## Overview
+
+The MC-WEB-CONSOLE multi-cloud management portal and open interfaces include several features. Firstly, the multi-cloud management platform provides open APIs, facilitating integration with various cloud services. Secondly, a user portal for the multi-cloud management platform is provided, allowing general users to efficiently manage their cloud resources. Lastly, an administrator portal for the multi-cloud management platform enables administrators to monitor and control the entire cloud environment. These portals and interfaces are designed to maximize management efficiency in a multi-cloud environment and enhance convenience for both users and administrators.
+
+- 멀티 클라우드 관리 포털 및 개방형 인터페이스
+    - 멀티 클라우드 관리 플랫폼 일반 사용자 포털
+    - 멀티 클라우드 관리 플랫폼 관리자 포털
+    
+
+---
+
+## Quick Start with docker
+
+Use this guide to start MC-WEB-CONOLE  using the docker. This guide explains on the premise that all prerequisites have been met.
+
+### Prequisites
+
+- Ubuntu (22.04 is tested) with external access (https-443, http-80, ssh-ANY)
+- pre-installed [MC-IAM-MANAGER](https://github.com/m-cmp/mc-iam-manager) and [MC-INFRA-MANAGER](https://github.com/m-cmp/mc-infra-manager)
+    - Both should be completed setting (users, pre-Runscript, credential ….)
+- Stop or Disable Services using 3001 port for web interface
+
+### Step one : Clone this repo
+
+```bash
+git clone https://github.com/m-cmp/mc-web-console <YourFolderName>
+```
+
+### Step two : Go to Scripts Folder
+
+```bash
+cd <YourFolderName>/scripts
+```
+
+### Step three: **Modifying an Environment variable in docker-compose file**
+
+Those marked with OPTIONAL do not have to be changed. Those marked with REQUIRED are fixed values that must be changed or used after setting.
+
+```jsx
+version: '3.8'
+
+services:
+  mcwebconsole:
+    build: ../
+    container_name: mcwebconsole
+    depends_on:
+      - postgresdb
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
+      GODEBUG: netdns=go
+      MCIAMMANAGER: https://sample.mc-iam-manager.com:5000 # Please CHANGE ME (REQUIRE)
+      MCINFRAMANAGER: http://sample.m-cmp.com:1323/tumblebug # Please CHANGE ME (REQUIRE)
+      API_USERNAME: API_USERNAME # Please CHANGE ME (REQUIRE)
+      API_PASSWORD: API_PASSWORD # Please CHANGE ME (REQUIRE)
+      DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
+      PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
+    restart: always
+    networks:
+      - mcwebconsole
+
+  mcwebconsole-postgresdb:
+    image: postgres:14-alpine
+    container_name: mcwebconsole-postgresdb
+    volumes:
+      - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: mcwebconsoledbdev # [mcwebconsoledbdev / mcwebconsoledbprod] # Please CHANGE ME (OPTIONAL)
+      POSTGRES_USER: mcwebadmin # Please CHANGE ME (OPTIONAL)
+      POSTGRES_PASSWORD: mcwebadminpassword # Please CHANGE ME (OPTIONAL)
+    networks:
+      - mcwebconsole
+
+networks:
+  mcwebconsole:
+
+```
+
+### Step four: Excute docker-compose
+
+```bash
+docker-compose up --build -d
+```
+
+If you check the log as below, it seems that you have successfully built and deployed the mc-web-console without any problems.
+
+```bash
+$ docker-compose up --build -d
+## This warning sign is a natural occurrence when running an existing MCIAMMANAGER with docker components.
+WARNING: Found orphan containers (mciammanager, mciammanager-keycloak, mciammanager-nginx, mciammanager-certbot) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up.
+Building mcwebconsole
+Step 1/32 : FROM golang:1.22.3-alpine AS builder
+ ---> 0594d7786b7c
+Step 2/32 : RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
+ ---> Using cache
+ ---> ed49efe7089b
+Step 3/32 : RUN npm install --global yarn
+.....
+Creating mcwebconsole-postgresdb ... done
+Creating mcwebconsole            ... done
+```
+
+### WELCOME: **Visit Web pages**
+
+```jsx
+http://<YOUR_ADDRESS>:3001/auth/login
+```
+
+MC-WEB-CONSOLE has been successfully deployed if the screen below is visible during the access to the web of the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/38bddbad-e21c-41a3-9165-b6793bf3bc79/98502b5a-16b6-459e-8330-8d752b9613ff/Untitled.png)
+
+
+
+---
+
 **[설치 환경]**
 
 
