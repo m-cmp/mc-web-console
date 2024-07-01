@@ -428,119 +428,119 @@ const coffeeData = {
 //
 
 
-// monitoring init
-export function monitoringDataInit() {
-  var label = [
-           '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
-         ];
-  var cpuDataList = new Array();
-  cpuDataList[0] = coffeeData.cpuAmericano;
-  cpuDataList[1] = coffeeData.cpuLatte;
-  drawMonitoringChart('cpu-chart', "CPU", cpuDataList, label);
+// // monitoring init
+// export function monitoringDataInit() {
+//   var label = [
+//            '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
+//          ];
+//   var cpuDataList = new Array();
+//   cpuDataList[0] = coffeeData.cpuAmericano;
+//   cpuDataList[1] = coffeeData.cpuLatte;
+//   drawMonitoringChart('cpu-chart', "CPU", cpuDataList, label);
 
-  var memoryDataList = new Array();
-  memoryDataList[0] = coffeeData.memoryAmericano;
-  memoryDataList[1] = coffeeData.memoryLatte;
-  drawMonitoringChart('memory-chart', "CPU", memoryDataList, label);
+//   var memoryDataList = new Array();
+//   memoryDataList[0] = coffeeData.memoryAmericano;
+//   memoryDataList[1] = coffeeData.memoryLatte;
+//   drawMonitoringChart('memory-chart', "CPU", memoryDataList, label);
 
-  var diskDataList = new Array();
-  diskDataList[0] = coffeeData.diskAmericano;
-  diskDataList[1] = coffeeData.diskLatte;
-  drawMonitoringChart('disk-chart', "Disk", diskDataList, label);
+//   var diskDataList = new Array();
+//   diskDataList[0] = coffeeData.diskAmericano;
+//   diskDataList[1] = coffeeData.diskLatte;
+//   drawMonitoringChart('disk-chart', "Disk", diskDataList, label);
 
-  var networkDataList = new Array();
-  networkDataList[0] = coffeeData.networkAmericano;
-  networkDataList[1] = coffeeData.networkLatte;
-  drawMonitoringChart('network-chart', "Network", cpuDataList, label);
-};
+//   var networkDataList = new Array();
+//   networkDataList[0] = coffeeData.networkAmericano;
+//   networkDataList[1] = coffeeData.networkLatte;
+//   drawMonitoringChart('network-chart', "Network", cpuDataList, label);
+// };
 
-// data를 받아서 chart 그리기
-function drawMonitoringChart(eleId, chartTitle, chartDataList, chartLabels){
-  console.log("=====", window)
-  window && (new Apexcharts(document.getElementById(eleId), {
-    chart: {
-      type: "area",
-      fontFamily: 'inherit',
-      height: 240,
-      parentHeightOffset: 0,
-      toolbar: {
-        show: true,
-      },
-      animations: {
-        enabled: false
-      },
-    },
-    title: {
-      text: chartTitle,
-      align: 'center',
-      margin: 10,
-      offsetX: 0,
-      offsetY: 0,
-      floating: false,
-      style: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        fontFamily: undefined,
-        color: '#263238'
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    fill: {
-      opacity: .16,
-      type: 'solid'
-    },
-    stroke: {
-      width: 2,
-      lineCap: "round",
-      curve: "smooth",
-    },
-    series: chartDataList,
-    tooltip: {
-      theme: 'dark'
-    },
-    grid: {
-      padding: {
-        top: -20,
-        right: 0,
-        left: -4,
-        bottom: -4
-      },
-      strokeDashArray: 4,
-    },
-    xaxis: {
-      labels: {
-        padding: 0,
-      },
-      tooltip: {
-        enabled: false
-      },
-      axisBorder: {
-        show: false,
-      },
-      type: 'datetime',
-    },
-    yaxis: {
-      labels: {
-        padding: 4
-      },
-    },
-    labels: chartLabels,
-    colors: [tabler.getColor("primary"), tabler.getColor("purple")],
-    legend: {
-      show: true,
-      position: 'bottom',
-      offsetY: 12,
-      markers: {
-        width: 10,
-        height: 10,
-        radius: 100,
-      },
-      itemMargin: {
-        horizontal: 8,
-        vertical: 8
-      },
-    },
-  })).render();
-}
+// // data를 받아서 chart 그리기
+// function drawMonitoringChart(eleId, chartTitle, chartDataList, chartLabels){
+//   console.log("=====", window)
+//   window && (new Apexcharts(document.getElementById(eleId), {
+//     chart: {
+//       type: "area",
+//       fontFamily: 'inherit',
+//       height: 240,
+//       parentHeightOffset: 0,
+//       toolbar: {
+//         show: true,
+//       },
+//       animations: {
+//         enabled: false
+//       },
+//     },
+//     title: {
+//       text: chartTitle,
+//       align: 'center',
+//       margin: 10,
+//       offsetX: 0,
+//       offsetY: 0,
+//       floating: false,
+//       style: {
+//         fontSize: '14px',
+//         fontWeight: 'bold',
+//         fontFamily: undefined,
+//         color: '#263238'
+//       },
+//     },
+//     dataLabels: {
+//       enabled: false,
+//     },
+//     fill: {
+//       opacity: .16,
+//       type: 'solid'
+//     },
+//     stroke: {
+//       width: 2,
+//       lineCap: "round",
+//       curve: "smooth",
+//     },
+//     series: chartDataList,
+//     tooltip: {
+//       theme: 'dark'
+//     },
+//     grid: {
+//       padding: {
+//         top: -20,
+//         right: 0,
+//         left: -4,
+//         bottom: -4
+//       },
+//       strokeDashArray: 4,
+//     },
+//     xaxis: {
+//       labels: {
+//         padding: 0,
+//       },
+//       tooltip: {
+//         enabled: false
+//       },
+//       axisBorder: {
+//         show: false,
+//       },
+//       type: 'datetime',
+//     },
+//     yaxis: {
+//       labels: {
+//         padding: 4
+//       },
+//     },
+//     labels: chartLabels,
+//     colors: [tabler.getColor("primary"), tabler.getColor("purple")],
+//     legend: {
+//       show: true,
+//       position: 'bottom',
+//       offsetY: 12,
+//       markers: {
+//         width: 10,
+//         height: 10,
+//         radius: 100,
+//       },
+//       itemMargin: {
+//         horizontal: 8,
+//         vertical: 8
+//       },
+//     },
+//   })).render();
+// }
