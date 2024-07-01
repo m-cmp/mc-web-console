@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 		let wsprj = document.getElementById("wsprj")
 		let role = document.getElementById("role")
 
-		let currentWorkspace = webconsolejs["common/util"].getCurrentWorkspace().Name
-		let currentProject = webconsolejs["common/util"].getCurrentProject().Name
+		let currentWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace().Name
+		let currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject().Name
 
 		preferred_username.textContent = response.data.responseData.preferred_username;
 		exp.textContent = convertUnixTimestamp(response.data.responseData.exp);

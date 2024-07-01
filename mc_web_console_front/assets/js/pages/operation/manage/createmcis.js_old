@@ -1,30 +1,16 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-//import { selectedMcisObj } from "./mcis";
-//document.addEventListener("DOMContentLoaded", initMcisCreate) // page가 아닌 partials에서는 제거
+import { selectedMcisObj } from "./mcis";
+document.addEventListener("DOMContentLoaded", initMcisCreatePage)
 
 // create page 가 load 될 때 실행해야 할 것들 정의
-export function initMcisCreate(){
-    console.log("initMcisCreate")
+function initMcisCreatePage(){
 
-    // partial init functions
-
-	webconsolejs["partials/operation/manage/serverrecommandation"].initServerRecommandation(webconsolejs["partials/operation/manage/mciscreate"].callbackServerRecommandation);// recommand popup에서 사용하는 table 정의.
+	initSpecTable();// recommand popup에서 사용하는 table 정의.
 }
 
-// callback PopupData
-export function callbackServerRecommandation(vmSpec){
-    console.log("callbackServerRecommandation")
-    
-    $("#ep_provider").val(vmSpec.provider)
-	$("#ep_connectionName").val(vmSpec.connectionName)
-	$("#ep_specId").val(vmSpec.specName)
-	$("#ep_imageId").val(vmSpec.imageName)
-	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
 
-    getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
-}
-
-var createMcisListObj = new Object();
+var table;
+var totalMcisListObj = new Object();
 var isVm = false // mcis 생성(false) / vm 추가(true)
 var Express_Server_Config_Arr = new Array();
 var express_data_cnt = 0
@@ -127,7 +113,7 @@ export function expressDone_btn() {
 
 	var displayServerCnt = '(' + server_cnt + ')'
 
-	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mciscreate\'].view_express(\'' + express_data_cnt + '\')">'
+	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'pages/operation/manage/createmcis\'].view_express(\'' + express_data_cnt + '\')">'
 	
 		+ server_name + displayServerCnt
 	
@@ -212,7 +198,340 @@ export function changeDiskSize(type) {
 
 }
 
+export async function getRecommendVmInfo() {
+	console.log("hihi")
 
+	// var max_cpu = $("#num_vCPU_max").val()
+	// var min_cpu = $("#num_vCPU_min").val()
+	// var max_mem = $("#num_memory_max").val()
+	// var min_mem = $("#num_memory_min").val()
+	// var max_cost = $("#num_cost_max").val()
+	// var min_cost = $("#num_cost_min").val()
+	// var limit = $("#recommendVmLimit").val()
+	// var lon = $("#longitude").val()
+	// var lat = $("#latitude").val()
+
+	var memoryVal = $("#assist_num_memory").val()
+	var cpuVal = $("#assist_num_cpu").val()
+	var costVal = $("#assist_num_cost").val()
+	var lon = $("#longitude").val()
+	var lat = $("#latitude").val()
+
+	const data = {
+		request: {
+			"filter": {
+				"policy": [
+					{
+						"condition": [
+							{
+								"operand": cpuVal,
+								"operator": "<="
+							}
+						],
+						"metric": "vCPU"
+					},
+					{
+						"condition": [
+							{
+								"operand": memoryVal,
+								"operator": "<="
+							}
+						],
+						"metric": "memoryGiB"
+					},
+					{
+						"condition": [
+							{
+								"operand": costVal,
+								"operator": "<="
+							}
+						],
+						"metric": "costPerHour"
+					}
+				]
+			},
+			"limit": "50",
+			"priority": {
+				"policy": [
+					{
+						"metric": "location",
+						"parameter": [
+							{
+								"key": "coordinateClose",
+								"val": [
+									lon + "/" + lat
+								]
+							}
+						],
+						"weight": "0.3"
+					}
+				]
+			}
+		}
+	}
+
+	var controller = "/api/" + "mcisrecommendvm";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	);
+
+	console.log("responseaaa", response.data.responseData)
+	var specList = response.data.responseData
+
+	totalMcisListObj = specList
+	table.setData(totalMcisListObj)
+
+	// getSpecListCallBackSuccess(specList);
+
+
+	// var max_cpu = $("#num_vCPU_max").val()
+	// var min_cpu = $("#num_vCPU_min").val()
+	// var max_mem = $("#num_memory_max").val()
+	// var min_mem = $("#num_memory_min").val()
+	// var max_cost = $("#num_cost_max").val()
+	// var min_cost = $("#num_cost_min").val()
+	// var limit = $("#recommendVmLimit").val()
+	// var lon = $("#longitude").val()
+	// var lat = $("#latitude").val()
+
+	// console.log(" lon " + lon + ", lat " + lat)
+	// if (lon == "" || lat == "") {
+	// 	commonAlert(" 지도에서 위치를 선택하세요 ")
+	// 	return;
+	// }
+
+	// 	} else {
+	// 		var message = result.data.message;
+	// 		commonAlert("Fail Create Spec : " + message + "(" + statusCode + ")");
+
+	// 	}
+
+}
+
+function setSpecTabulator(
+	tableObjId,
+	tableObjParamMap,
+	columnsParams,
+	isMultiSelect
+) {
+	var placeholder = "No Data";
+	var pagination = "local";
+	var paginationSize = 5;
+	var paginationSizeSelector = [5, 10, 15, 20];
+	var movableColumns = true;
+	var columnHeaderVertAlign = "middle";
+	var paginationCounter = "rows";
+	var layout = "fitColumns";
+
+	if (tableObjParamMap.hasOwnProperty("placeholder")) {
+		placeholder = tableObjParamMap.placeholder;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("pagination")) {
+		pagination = tableObjParamMap.pagination;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+		paginationSize = tableObjParamMap.paginationSize;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+		paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+		movableColumns = tableObjParamMap.movableColumns;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+		columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+		paginationCounter = tableObjParamMap.paginationCounter;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("layout")) {
+		layout = tableObjParamMap.layout;
+	}
+
+	var tabulatorTable = new Tabulator("#" + tableObjId, {
+		//ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+		placeholder,
+		pagination,
+		paginationSize,
+		paginationSizeSelector,
+		movableColumns,
+		columnHeaderVertAlign,
+		paginationCounter,
+		layout,
+		columns: columnsParams,
+		selectableRows: isMultiSelect == false ? 1 : true,
+		selectable: true,
+	});
+
+	return tabulatorTable;
+}
+
+var recommendSpecs = [];
+
+// spec-search의 Table 초기값 설정
+function initSpecTable() {
+	console.log("initSpecTable");
+	var tableObjParams = {};
+
+	var columns = [
+		{
+			formatter: "rowSelection",
+			titleFormatter: "rowSelection",
+			vertAlign: "middle",
+			hozAlign: "center",
+			headerHozAlign: "center",
+			headerSort: false,
+			width: 60,
+		},
+		{
+			title: "connectionName",
+			field: "connectionName",
+			headerSort: false,
+			visible: false
+		},
+		{
+			title: "EVALUATIONSCORE",
+			field: "evaluationScore10",
+			headerSort: false,
+			visible: false
+		},
+		{
+			title: "PROVIDER",
+			field: "providerName",
+			vertAlign: "middle",
+			hozAlign: "center",
+			headerHozAlign: "center",
+			headerSort: false,
+			maxWidth: 100,
+		},
+		{
+			title: "REGION",
+			field: "regionName",
+			vertAlign: "middle"
+		},
+		{
+			title: "PRICE",
+			field: "costPerHour",
+			vertAlign: "middle",
+			hozAlign: "center",
+		},
+		{
+			title: "MEMORY",
+			field: "memoryGiB",
+			vertAlign: "middle",
+			hozAlign: "center",
+			maxWidth: 150,
+		},
+		{
+			title: "VCPU",
+			field: "vCPU",
+			vertAlign: "middle",
+			hozAlign: "center",
+			headerHozAlign: "center",
+			maxWidth: 135,
+		}
+	];
+
+	table = setSpecTabulator("spec-table", tableObjParams, columns);
+
+
+	table.on("rowSelectionChanged", function (data, rows) {
+		console.log("data", data)
+
+		updateSelectedRows(data)
+	});
+}
+
+function updateSelectedRows(data) {
+	recommendSpecs = []; // 선택된 행의 데이터를 초기화
+
+	data.forEach(function (rowData) {
+		recommendSpecs.push(rowData);
+	});
+
+	console.log("선택된 행 데이터:", recommendSpecs);
+}
+
+// apply 클릭시 데이터 SET
+// returnSpecInfo()
+export async function applySpecInfo() {
+	console.log("array", recommendSpecs)
+	var selectedSpecs = recommendSpecs[0]
+
+	// pre-release -> mode = express 고정
+	//caller == "express"
+
+
+	var provider = selectedSpecs.providerName
+	var connectionName = selectedSpecs.connectionName
+	var specName = selectedSpecs.cspSpecName
+	var imageName = await availableVMImageBySpec(selectedSpecs.id)
+	var commonSpecId = selectedSpecs.id // common specid for create dynamic mcis
+
+	console.log("commonSpecId", commonSpecId)
+	console.log("connectionName", selectedSpecs.connectionName)
+	console.log("providerName", selectedSpecs.providerName)
+	console.log("cspSpecName", selectedSpecs.cspSpecName)
+	console.log("123123123", imageName)
+
+	$("#ep_provider").val(provider)
+	$("#ep_connectionName").val(connectionName)
+	$("#ep_specId").val(specName)
+	$("#ep_imageId").val(imageName)
+	$("#ep_commonSpecId").val(commonSpecId)
+	// commonImage는 availableVMImageBySpec에서 조회 후 설정한다 (두 개 이상일 수 있음)
+
+	getCommonLookupDiskInfo(provider, connectionName)
+
+
+}
+
+// TODO: 스펙 선택 시 사용가능한 이미지의 개수가 두개 이상일 때 선택하는 UI 추가 구현 필요
+async function availableVMImageBySpec(id) {
+
+	var imageIds = []
+	var commonimageId = [] // params for create dynamic mcis 
+
+	const data = {
+		request: {
+			"CommonSpec": [
+				id
+			]
+
+		}
+	}
+
+	var controller = "/api/" + "mcisdynamiccheckrequest";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	);
+
+	// TODO: 스펙 선택 시 사용가능한 이미지의 개수가 두개 이상일 때 선택하는 UI 추가 구현 필요
+	// image ID 추출
+	response.data.responseData.reqCheck.forEach(function (req) {
+		req.image.forEach(function (img) {
+			console.log("reqCheckreqCheckreqCheck", img)
+			imageIds.push(img.guestOS);
+			commonimageId.push(img.id);
+		});
+	});
+	$("#ep_commonImageId").val(commonimageId[0])
+
+	console.log("Image IDs:", imageIds);
+	console.log("firstImageId", imageIds[0])
+	console.log("commonImageid : ", commonimageId[0])
+
+	return imageIds[0]
+}
 
 // 해당 provider, connection 으로 사용가능한 Disk의 Type 정보(type, min, max ) 조회
 // ex) AWS -> standard|1|1024, gp2|1|16384
@@ -280,20 +599,32 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 
 }
 
+export function showRecommendSpecSetting(value) {
+	console.log("Selected coordinate : ", value)
+	if (value === "seoul") {
+		$("#latitude").val("37.532600")
+		$("#longitude").val("127.024612")
+	} else if (value === "london") {
+		$("#latitude").val("51.509865")
+		$("#longitude").val("-0.118092")
+	} else if (value === "newyork") {
+		$("#latitude").val("40.730610")
+		$("#longitude").val("-73.935242")
+	}
+}
 
 // plus 버튼을 추가
 function getPlusVm(vmElementId) {
 
 	var append = "";
-	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mciscreate\'].displayNewServerForm()">';
+	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'pages/operation/manage/createmcis\'].displayNewServerForm()">';
 	append = append + "+"
 	append = append + '</li>';
 	return append;
 }
 // 서버정보 입력 area에서 'DONE'버튼 클릭시 array에 담고 form을 초기화
 
-var totalDeployServerCount = 0;
-var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
+var TotalServerConfigArr = new Array();
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
 export function deployMcis() {
@@ -472,7 +803,11 @@ export function addNewVirtualMachine() {
 	isVm = true
 }
 
-export async function deployVm() {
+
+var totalDeployServerCount = 0;
+var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
+
+export async function btn_deploy() {
 	// var deploymentAlgo = $("#placement_algo").val()
 	// if (deploymentAlgo == "express") {
 	await createVmDynamic()

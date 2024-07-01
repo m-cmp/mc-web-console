@@ -170,7 +170,7 @@ function updateSelectedRows(data) {
 
 // recommane Vm 조회
 export async function getRecommendVmInfo() {
-	console.log("hihi")
+	console.log("in getRecommendVmInfo")
 
 	// var max_cpu = $("#num_vCPU_max").val()
 	// var min_cpu = $("#num_vCPU_min").val()
@@ -188,69 +188,137 @@ export async function getRecommendVmInfo() {
 	var lon = $("#longitude").val()
 	var lat = $("#latitude").val()
 
+	var policyArr = new Array();
+
+	if( cpuVal != ""){
+		var filterPolicy = {
+			"metric": "vCPU",
+			"condition" : [
+				{
+					"operand": cpuVal,
+					"operator": "<="
+				}
+			],
+		}
+		policyArr.push(filterPolicy)
+	}
+
+	if( memoryVal != ""){
+		var filterPolicy = {
+			"metric": "memoryGiB",
+			"condition" : [
+				{
+					"operand": memoryVal,
+					"operator": "<="
+				}
+			],
+		}
+		policyArr.push(filterPolicy)
+	}
+	
+	if( costVal != ""){
+		var filterPolicy = {
+			"metric": "costPerHour",
+			"condition" : [
+				{
+					"operand": costVal,
+					"operator": "<="
+				}
+			],
+		}
+		policyArr.push(filterPolicy)
+	}
+
+	//
+	var priorityArr = new Array();
+
+	// location
+	var priorityPolicy = {
+		"metric": "location",
+		"parameter": [
+			{
+				"key": "coordinateClose",
+				"val": [
+					lon + "/" + lat
+				]
+			}
+		],
+		"weight": "0.3"
+	}
+	priorityArr.push(priorityPolicy)
+
 	const data = {
 		request: {
 			"filter": {
-				"policy": [
-					{
-						"condition": [
-							{
-								"operand": cpuVal,
-								"operator": "<="
-							}
-						],
-						"metric": "vCPU"
-					},
-					{
-						"condition": [
-							{
-								"operand": memoryVal,
-								"operator": "<="
-							}
-						],
-						"metric": "memoryGiB"
-					},
-					{
-						"condition": [
-							{
-								"operand": costVal,
-								"operator": "<="
-							}
-						],
-						"metric": "costPerHour"
-					}
-				]
+				"policy" : policyArr
+				// "policy": [
+				// 	{
+				// 		"condition": [
+				// 			{
+				// 				"operand": cpuVal,
+				// 				"operator": "<="
+				// 			}
+				// 		],
+				// 		"metric": "vCPU"
+				// 	},
+				// 	{
+				// 		"condition": [
+				// 			{
+				// 				"operand": memoryVal,
+				// 				"operator": "<="
+				// 			}
+				// 		],
+				// 		"metric": "memoryGiB"
+				// 	},
+				// 	{
+				// 		"condition": [
+				// 			{
+				// 				"operand": costVal,
+				// 				"operator": "<="
+				// 			}
+				// 		],
+				// 		"metric": "costPerHour"
+				// 	}
+				// ]
 			},
 			"limit": "50",
 			"priority": {
-				"policy": [
-					{
-						"metric": "location",
-						"parameter": [
-							{
-								"key": "coordinateClose",
-								"val": [
-									lon + "/" + lat
-								]
-							}
-						],
-						"weight": "0.3"
-					}
-				]
+				"policy" : priorityArr,
+				// "policy": [
+				// 	{
+				// 		"metric": "location",
+				// 		"parameter": [
+				// 			{
+				// 				"key": "coordinateClose",
+				// 				"val": [
+				// 					lon + "/" + lat
+				// 				]
+				// 			}
+				// 		],
+				// 		"weight": "0.3"
+				// 	}
+				// ]
 			}
 		}
 	}
 
-	var controller = "/api/" + "mcisrecommendvm";
-	const response = await webconsolejs["common/api/http"].commonAPIPost(
-		controller,
-		data
-	);
+	// var controller = "/api/" + "mcisrecommendvm";
+	// const response = await webconsolejs["common/api/http"].commonAPIPost(
+	// 	controller,
+	// 	data
+	// );
 
-	console.log("responseaaa", response.data.responseData)
-	var specList = response.data.responseData
+	// console.log("mcisrecommendvm response ", response.data.responseData)
 
-	recommandVmSpecListObj = specList
+	var respData = await webconsolejs["common/api/services/mcis_api"].mcisRecommendVm(data);
+	console.log("respData ", respData)
+	//var specList = response.data.responseData
+	if( respData.status.code != 200){
+		console.log(" e ", respData.status)
+		// TODO : Error 표시
+		return
+	}
+	recommandVmSpecListObj = respData.responseData
 
 	recommandTable.setData(recommandVmSpecListObj)
 
