@@ -2,8 +2,10 @@ package middleware
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gobuffalo/buffalo"
@@ -49,8 +51,13 @@ type CustomClaims struct {
 }
 
 func init() {
+	// TODO : TLSClientConfig InsecureSkipVerify 해제 v0.2.0 이후 작업예정
+	customTransport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: customTransport}
 	var err error
-	jwkSet, err = jwk.Fetch(context.Background(), MCIAMMANAGER+"/api/auth/certs")
+	jwkSet, err = jwk.Fetch(context.Background(), MCIAMMANAGER+"/api/auth/certs", jwk.WithHTTPClient(client))
 	if err != nil {
 		panic("failed to fetch JWK: " + err.Error())
 	}
