@@ -113,6 +113,14 @@ func ControlMcis(c buffalo.Context, commonRequest *handler.CommonRequest) *handl
 	}
 	return handler.CommonResponseStatusInternalServerError(nil)
 }
+func ControlVm(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	if MCIAM_USE {
+		commonResponse := mcinframanager.InfraControlVm(c, commonRequest)
+		fmt.Println(commonResponse)
+		return commonResponse
+	}
+	return handler.CommonResponseStatusInternalServerError(nil)
+}
 
 func CreateMcisVmDynamic(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
 	if MCIAM_USE {
