@@ -1,74 +1,16 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-//import { selectedMcisObj } from "./mcis";
-//document.addEventListener("DOMContentLoaded", initMcisCreate) // page가 아닌 partials에서는 제거
+import { selectedMcisObj } from "./mcis";
+document.addEventListener("DOMContentLoaded", initMcisCreatePage)
 
 // create page 가 load 될 때 실행해야 할 것들 정의
-export function initMcisCreate(){
-    console.log("initMcisCreate")
+function initMcisCreatePage(){
 
-    // partial init functions
-
-	webconsolejs["partials/operation/manage/serverrecommandation"].initServerRecommandation(webconsolejs["partials/operation/manage/mciscreate"].callbackServerRecommandation);// recommand popup에서 사용하는 table 정의.
+	initSpecTable();// recommand popup에서 사용하는 table 정의.
 }
 
-// callback PopupData
-export async function callbackServerRecommandation(vmSpec){
-    console.log("callbackServerRecommandation")
-    
-    $("#ep_provider").val(vmSpec.provider)
-	$("#ep_connectionName").val(vmSpec.connectionName)
-	$("#ep_specId").val(vmSpec.specName)
-	$("#ep_imageId").val(vmSpec.imageName)
-	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
 
-	var diskResp = await webconsolejs["common/api/services/disk_api"].getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
-	getCommonLookupDiskInfoSuccess(vmSpec.provider, diskResp)
-}
-
-var DISK_SIZE = [];
-function getCommonLookupDiskInfoSuccess(provider, data) {
-
-	console.log("getCommonLookupDiskInfoSuccess", data);
-	var providerId = provider.toUpperCase()
-	var root_disk_type = [];
-	var res_item = data;
-	res_item.forEach(item => {
-		console.log("item provider: ", item.providerId);
-		var temp_provider = item.providerId
-		if (temp_provider == providerId) {
-			root_disk_type = item.rootdisktype
-			DISK_SIZE = item.disksize
-		}
-	})
-	// var temp_provider = res_item.providerId
-	// if(temp_provider == provider){
-	// 	root_disk_type = res_item.rootdisktype
-	// 	DISK_SIZE = res_item.disksize
-	// }
-
-	console.log("DISK_SIZE", DISK_SIZE)
-	var html = '<option value="">Select Root Disk Type</option>'
-	console.log("root_disk_type : ", root_disk_type);
-	root_disk_type.forEach(item => {
-		html += '<option value="' + item + '">' + item + '</option>'
-	})
-	//if(caller == "vmexpress"){
-	$("#ep_root_disk_type").empty();
-	$("#ep_root_disk_type").append(html);
-	//}else if(caller == "vmsimple"){
-	// $("#ss_root_disk_type").empty();
-	// $("#ss_root_disk_type").append(html);
-	//}else if(caller == "vmexpert"){
-	// $("#tab_others_root_disk_type").empty()
-	// $("#tab_others_root_disk_type").append(html)
-	//}
-	console.log("const valie DISK_SIZE : ", DISK_SIZE)
-
-	var myModalEl = document.getElementById('spec-search');
-	var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
-	modal.hide();
-}
-var createMcisListObj = new Object();
+var table;
+var totalMcisListObj = new Object();
 var isVm = false // mcis 생성(false) / vm 추가(true)
 var Express_Server_Config_Arr = new Array();
 var express_data_cnt = 0
@@ -171,7 +113,7 @@ export function expressDone_btn() {
 
 	var displayServerCnt = '(' + server_cnt + ')'
 
-	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mciscreate\'].view_express(\'' + express_data_cnt + '\')">'
+	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'pages/operation/manage/createmcis\'].view_express(\'' + express_data_cnt + '\')">'
 	
 		+ server_name + displayServerCnt
 	
@@ -256,22 +198,433 @@ export function changeDiskSize(type) {
 
 }
 
+export async function getRecommendVmInfo() {
+	console.log("hihi")
+
+	// var max_cpu = $("#num_vCPU_max").val()
+	// var min_cpu = $("#num_vCPU_min").val()
+	// var max_mem = $("#num_memory_max").val()
+	// var min_mem = $("#num_memory_min").val()
+	// var max_cost = $("#num_cost_max").val()
+	// var min_cost = $("#num_cost_min").val()
+	// var limit = $("#recommendVmLimit").val()
+	// var lon = $("#longitude").val()
+	// var lat = $("#latitude").val()
+
+	var memoryVal = $("#assist_num_memory").val()
+	var cpuVal = $("#assist_num_cpu").val()
+	var costVal = $("#assist_num_cost").val()
+	var lon = $("#longitude").val()
+	var lat = $("#latitude").val()
+
+	const data = {
+		request: {
+			"filter": {
+				"policy": [
+					{
+						"condition": [
+							{
+								"operand": cpuVal,
+								"operator": "<="
+							}
+						],
+						"metric": "vCPU"
+					},
+					{
+						"condition": [
+							{
+								"operand": memoryVal,
+								"operator": "<="
+							}
+						],
+						"metric": "memoryGiB"
+					},
+					{
+						"condition": [
+							{
+								"operand": costVal,
+								"operator": "<="
+							}
+						],
+						"metric": "costPerHour"
+					}
+				]
+			},
+			"limit": "50",
+			"priority": {
+				"policy": [
+					{
+						"metric": "location",
+						"parameter": [
+							{
+								"key": "coordinateClose",
+								"val": [
+									lon + "/" + lat
+								]
+							}
+						],
+						"weight": "0.3"
+					}
+				]
+			}
+		}
+	}
+
+	var controller = "/api/" + "mcisrecommendvm";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	);
+
+	console.log("responseaaa", response.data.responseData)
+	var specList = response.data.responseData
+
+	totalMcisListObj = specList
+	table.setData(totalMcisListObj)
+
+	// getSpecListCallBackSuccess(specList);
 
 
+	// var max_cpu = $("#num_vCPU_max").val()
+	// var min_cpu = $("#num_vCPU_min").val()
+	// var max_mem = $("#num_memory_max").val()
+	// var min_mem = $("#num_memory_min").val()
+	// var max_cost = $("#num_cost_max").val()
+	// var min_cost = $("#num_cost_min").val()
+	// var limit = $("#recommendVmLimit").val()
+	// var lon = $("#longitude").val()
+	// var lat = $("#latitude").val()
+
+	// console.log(" lon " + lon + ", lat " + lat)
+	// if (lon == "" || lat == "") {
+	// 	commonAlert(" 지도에서 위치를 선택하세요 ")
+	// 	return;
+	// }
+
+	// 	} else {
+	// 		var message = result.data.message;
+	// 		commonAlert("Fail Create Spec : " + message + "(" + statusCode + ")");
+
+	// 	}
+
+}
+
+function setSpecTabulator(
+	tableObjId,
+	tableObjParamMap,
+	columnsParams,
+	isMultiSelect
+) {
+	var placeholder = "No Data";
+	var pagination = "local";
+	var paginationSize = 5;
+	var paginationSizeSelector = [5, 10, 15, 20];
+	var movableColumns = true;
+	var columnHeaderVertAlign = "middle";
+	var paginationCounter = "rows";
+	var layout = "fitColumns";
+
+	if (tableObjParamMap.hasOwnProperty("placeholder")) {
+		placeholder = tableObjParamMap.placeholder;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("pagination")) {
+		pagination = tableObjParamMap.pagination;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+		paginationSize = tableObjParamMap.paginationSize;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+		paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+		movableColumns = tableObjParamMap.movableColumns;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+		columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+		paginationCounter = tableObjParamMap.paginationCounter;
+	}
+
+	if (tableObjParamMap.hasOwnProperty("layout")) {
+		layout = tableObjParamMap.layout;
+	}
+
+	var tabulatorTable = new Tabulator("#" + tableObjId, {
+		//ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+		placeholder,
+		pagination,
+		paginationSize,
+		paginationSizeSelector,
+		movableColumns,
+		columnHeaderVertAlign,
+		paginationCounter,
+		layout,
+		columns: columnsParams,
+		selectableRows: isMultiSelect == false ? 1 : true,
+		selectable: true,
+	});
+
+	return tabulatorTable;
+}
+
+var recommendSpecs = [];
+
+// spec-search의 Table 초기값 설정
+function initSpecTable() {
+	console.log("initSpecTable");
+	var tableObjParams = {};
+
+	var columns = [
+		{
+			formatter: "rowSelection",
+			titleFormatter: "rowSelection",
+			vertAlign: "middle",
+			hozAlign: "center",
+			headerHozAlign: "center",
+			headerSort: false,
+			width: 60,
+		},
+		{
+			title: "connectionName",
+			field: "connectionName",
+			headerSort: false,
+			visible: false
+		},
+		{
+			title: "EVALUATIONSCORE",
+			field: "evaluationScore10",
+			headerSort: false,
+			visible: false
+		},
+		{
+			title: "PROVIDER",
+			field: "providerName",
+			vertAlign: "middle",
+			hozAlign: "center",
+			headerHozAlign: "center",
+			headerSort: false,
+			maxWidth: 100,
+		},
+		{
+			title: "REGION",
+			field: "regionName",
+			vertAlign: "middle"
+		},
+		{
+			title: "PRICE",
+			field: "costPerHour",
+			vertAlign: "middle",
+			hozAlign: "center",
+		},
+		{
+			title: "MEMORY",
+			field: "memoryGiB",
+			vertAlign: "middle",
+			hozAlign: "center",
+			maxWidth: 150,
+		},
+		{
+			title: "VCPU",
+			field: "vCPU",
+			vertAlign: "middle",
+			hozAlign: "center",
+			headerHozAlign: "center",
+			maxWidth: 135,
+		}
+	];
+
+	table = setSpecTabulator("spec-table", tableObjParams, columns);
+
+
+	table.on("rowSelectionChanged", function (data, rows) {
+		console.log("data", data)
+
+		updateSelectedRows(data)
+	});
+}
+
+function updateSelectedRows(data) {
+	recommendSpecs = []; // 선택된 행의 데이터를 초기화
+
+	data.forEach(function (rowData) {
+		recommendSpecs.push(rowData);
+	});
+
+	console.log("선택된 행 데이터:", recommendSpecs);
+}
+
+// apply 클릭시 데이터 SET
+// returnSpecInfo()
+export async function applySpecInfo() {
+	console.log("array", recommendSpecs)
+	var selectedSpecs = recommendSpecs[0]
+
+	// pre-release -> mode = express 고정
+	//caller == "express"
+
+
+	var provider = selectedSpecs.providerName
+	var connectionName = selectedSpecs.connectionName
+	var specName = selectedSpecs.cspSpecName
+	var imageName = await availableVMImageBySpec(selectedSpecs.id)
+	var commonSpecId = selectedSpecs.id // common specid for create dynamic mcis
+
+	console.log("commonSpecId", commonSpecId)
+	console.log("connectionName", selectedSpecs.connectionName)
+	console.log("providerName", selectedSpecs.providerName)
+	console.log("cspSpecName", selectedSpecs.cspSpecName)
+	console.log("123123123", imageName)
+
+	$("#ep_provider").val(provider)
+	$("#ep_connectionName").val(connectionName)
+	$("#ep_specId").val(specName)
+	$("#ep_imageId").val(imageName)
+	$("#ep_commonSpecId").val(commonSpecId)
+	// commonImage는 availableVMImageBySpec에서 조회 후 설정한다 (두 개 이상일 수 있음)
+
+	getCommonLookupDiskInfo(provider, connectionName)
+
+
+}
+
+// TODO: 스펙 선택 시 사용가능한 이미지의 개수가 두개 이상일 때 선택하는 UI 추가 구현 필요
+async function availableVMImageBySpec(id) {
+
+	var imageIds = []
+	var commonimageId = [] // params for create dynamic mcis 
+
+	const data = {
+		request: {
+			"CommonSpec": [
+				id
+			]
+
+		}
+	}
+
+	var controller = "/api/" + "mcisdynamiccheckrequest";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	);
+
+	// TODO: 스펙 선택 시 사용가능한 이미지의 개수가 두개 이상일 때 선택하는 UI 추가 구현 필요
+	// image ID 추출
+	response.data.responseData.reqCheck.forEach(function (req) {
+		req.image.forEach(function (img) {
+			console.log("reqCheckreqCheckreqCheck", img)
+			imageIds.push(img.guestOS);
+			commonimageId.push(img.id);
+		});
+	});
+	$("#ep_commonImageId").val(commonimageId[0])
+
+	console.log("Image IDs:", imageIds);
+	console.log("firstImageId", imageIds[0])
+	console.log("commonImageid : ", commonimageId[0])
+
+	return imageIds[0]
+}
+
+// 해당 provider, connection 으로 사용가능한 Disk의 Type 정보(type, min, max ) 조회
+// ex) AWS -> standard|1|1024, gp2|1|16384
+async function getCommonLookupDiskInfo(provider, connectionName) {
+
+	const data = {
+		queryParams: {
+			"provider": provider,
+			"connectionName": connectionName
+		}
+	}
+
+	var controller = "/api/" + "disklookup";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	);
+	console.log("lookup disk info", response)
+	var responseData = response.data.responseData
+	getCommonLookupDiskInfoSuccess(provider, responseData)
+}
+
+var DISK_SIZE = [];
+function getCommonLookupDiskInfoSuccess(provider, data) {
+
+	console.log("getCommonLookupDiskInfoSuccess", data);
+	var providerId = provider.toUpperCase()
+	var root_disk_type = [];
+	var res_item = data;
+	res_item.forEach(item => {
+		console.log("item provider: ", item.providerId);
+		var temp_provider = item.providerId
+		if (temp_provider == providerId) {
+			root_disk_type = item.rootdisktype
+			DISK_SIZE = item.disksize
+		}
+	})
+	// var temp_provider = res_item.providerId
+	// if(temp_provider == provider){
+	// 	root_disk_type = res_item.rootdisktype
+	// 	DISK_SIZE = res_item.disksize
+	// }
+
+	console.log("DISK_SIZE", DISK_SIZE)
+	var html = '<option value="">Select Root Disk Type</option>'
+	console.log("root_disk_type : ", root_disk_type);
+	root_disk_type.forEach(item => {
+		html += '<option value="' + item + '">' + item + '</option>'
+	})
+	//if(caller == "vmexpress"){
+	$("#ep_root_disk_type").empty();
+	$("#ep_root_disk_type").append(html);
+	//}else if(caller == "vmsimple"){
+	// $("#ss_root_disk_type").empty();
+	// $("#ss_root_disk_type").append(html);
+	//}else if(caller == "vmexpert"){
+	// $("#tab_others_root_disk_type").empty()
+	// $("#tab_others_root_disk_type").append(html)
+	//}
+	console.log("const valie DISK_SIZE : ", DISK_SIZE)
+
+	var myModalEl = document.getElementById('spec-search');
+	var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
+	modal.hide();
+
+}
+
+export function showRecommendSpecSetting(value) {
+	console.log("Selected coordinate : ", value)
+	if (value === "seoul") {
+		$("#latitude").val("37.532600")
+		$("#longitude").val("127.024612")
+	} else if (value === "london") {
+		$("#latitude").val("51.509865")
+		$("#longitude").val("-0.118092")
+	} else if (value === "newyork") {
+		$("#latitude").val("40.730610")
+		$("#longitude").val("-73.935242")
+	}
+}
 
 // plus 버튼을 추가
 function getPlusVm(vmElementId) {
 
 	var append = "";
-	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mciscreate\'].displayNewServerForm()">';
+	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'pages/operation/manage/createmcis\'].displayNewServerForm()">';
 	append = append + "+"
 	append = append + '</li>';
 	return append;
 }
 // 서버정보 입력 area에서 'DONE'버튼 클릭시 array에 담고 form을 초기화
 
-var totalDeployServerCount = 0;
-var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
+var TotalServerConfigArr = new Array();
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
 export function deployMcis() {
@@ -371,13 +724,12 @@ export function deployMcis() {
 	//     }
 	// }    
 }
-export async function createMcisDynamic(){
+
+export async function createMcisDynamic() {
 	console.log("createMcisDynamic")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
-	var selectedNsId = selectedWorkspaceProject.nsId;
 	var projectId = $("#select-current-project").text()	
 	var projectName = $('#select-current-project').find('option:selected').text();
 	var nsId = projectName;
@@ -401,34 +753,34 @@ export async function createMcisDynamic(){
 	if (!mcisDesc) {
 		mcisDesc = "Made in CB-TB"
 	}
+	var obj = {}
+	obj['name'] = mcisName
+	obj['description'] = mcisDesc
+	obj['vm'] = Express_Server_Config_Arr
+	const data = {
+		pathParams: {
+			"nsId": nsId
+		},
+		Request: {
+			"name": obj['name'],
+			"vm": obj['vm'],
+		}
+	}
 
-	webconsolejs["common/api/services/mcis_api"].mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr, selectedNsId)
-}
+	var controller = "/api/" + "createdynamicmcis";
+	const response = webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	);
 
-export async function createVmDynamic() {
-	console.log("createVmDynamic")
-	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
+	//console.log("create dynamicMCIS : ", response)
 
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+	alert("생성요청 완료");
+	var urlParamMap = new Map();
 
-	var selectedNsId = selectedWorkspaceProject.nsId;
-	console.log("selected projectId : ", selectedNsId)
-
-	var mcisid = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj[0].id
-	console.log("selected mcisId : ", mcisid)
-
-	// var commonImage = selectedMcisObj[0].vm[0].
-	// var mcis_name = selectedMcis[0].name
-
-	// var mcis_name = $("#mcis_name").val();
-	// var mcis_id = $("#mcis_id").val();
-	// if (!mcis_id) {
-	// 	commonAlert("Please Select MCIS !!!!!")
-	// 	return;
-	// }
-
-	///
-	webconsolejs["common/api/services/mcis_api"].vmDynamic(mcisid, selectedNsId, Express_Server_Config_Arr)
+	// 생성요청했으므로 결과를 기다리지 않고 mcisList로 보냄
+	webconsolejs["common/util"].changePage("McisMng", urlParamMap)
+	// webconsolejs["common/util"].changePage("McisMng")
 }
 
 export function addNewMcis() {
@@ -451,7 +803,11 @@ export function addNewVirtualMachine() {
 	isVm = true
 }
 
-export async function deployVm() {
+
+var totalDeployServerCount = 0;
+var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
+
+export async function btn_deploy() {
 	// var deploymentAlgo = $("#placement_algo").val()
 	// if (deploymentAlgo == "express") {
 	await createVmDynamic()
@@ -532,6 +888,58 @@ export async function deployVm() {
 	//         console.log(error);
 	//     }
 	// }
+}
+
+var nsid = ""
+export async function createVmDynamic() {
+	console.log("createVmDynamic")
+	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
+
+
+	nsid = webconsolejs["pages/operation/manage/mcis"].nsid
+	console.log("selected projectId : ", nsid)
+
+	var mcisid = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj[0].id
+	console.log("selected mcisId : ", mcisid)
+
+	// var commonImage = selectedMcisObj[0].vm[0].
+	// var mcis_name = selectedMcis[0].name
+
+	// var mcis_name = $("#mcis_name").val();
+	// var mcis_id = $("#mcis_id").val();
+	// if (!mcis_id) {
+	// 	commonAlert("Please Select MCIS !!!!!")
+	// 	return;
+	// }
+
+	///
+	var obj = {}
+	obj = Express_Server_Config_Arr[0]
+	const data = {
+		pathParams: {
+			nsId: nsid,
+			mcisId: mcisid,
+		},
+		request: {
+			"commonImage": obj.commonImage,
+			"commonSpec": obj.commonSpec,
+			"connectionName": obj.connectionName,
+			"description": obj.description,
+			"label": "",
+			"name": obj.name,
+			"subGroupSize": obj.subGroupSize,
+			"rootDiskSize": obj.rootDiskSize,
+			"rootDiskType": obj.rootDiskType,
+		}
+	}
+
+
+	var controller = "/api/" + "createvmdynamic";
+	const response = await webconsolejs["common/api/http"].commonAPIPost(
+		controller,
+		data
+	)
+	console.log("create VMdynamic : ", response)
 }
 
 // {

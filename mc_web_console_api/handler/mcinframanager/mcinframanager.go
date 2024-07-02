@@ -61,9 +61,15 @@ func InfraCmdMCIS(c buffalo.Context, commonRequest *handler.CommonRequest) *hand
 	return commonResponse
 }
 
-// MCIS의 lifecycle 제어(suspend, resume, terminate)
+// MCIS의 lifecycle 제어(reboot, suspend, resume, terminate)
 func InfraControlMcis(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
 	commonResponse, _ := handler.CommonCaller(http.MethodGet, MCINFRAMANAGER, GetControlMcis, commonRequest, mcinframanagerAuthentication())
+	return commonResponse
+}
+
+// VM의 lifecycle 제어(reboot, suspend, resume, terminate)
+func InfraControlVm(c buffalo.Context, commonRequest *handler.CommonRequest) *handler.CommonResponse {
+	commonResponse, _ := handler.CommonCaller(http.MethodGet, MCINFRAMANAGER, GetControlVm, commonRequest, mcinframanagerAuthentication())
 	return commonResponse
 }
 

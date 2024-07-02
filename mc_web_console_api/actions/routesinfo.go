@@ -62,6 +62,8 @@ func PostRouteController(c buffalo.Context) error {
 		commonResponse = CmdMCIS(c, commonRequest)
 	case "controllifecycle":
 		commonResponse = ControlMcis(c, commonRequest)
+	case "controlvmlifecycle":
+		commonResponse = ControlVm(c, commonRequest)
 	case "getimageid":
 		commonResponse = mcinframanager.InfraGetPublicImage(c, commonRequest)
 	case "disklookup":
