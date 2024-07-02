@@ -389,8 +389,6 @@ export async function applySpecInfo() {
     console.log(returnFunction)
     eval(returnFunction)(returnObject);
 	
-
-
 }
 
 export function showRecommendSpecSetting(value) {

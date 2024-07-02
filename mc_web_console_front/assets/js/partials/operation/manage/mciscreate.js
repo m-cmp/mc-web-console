@@ -12,7 +12,7 @@ export function initMcisCreate(){
 }
 
 // callback PopupData
-export function callbackServerRecommandation(vmSpec){
+export async function callbackServerRecommandation(vmSpec){
     console.log("callbackServerRecommandation")
     
     $("#ep_provider").val(vmSpec.provider)
@@ -21,9 +21,53 @@ export function callbackServerRecommandation(vmSpec){
 	$("#ep_imageId").val(vmSpec.imageName)
 	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
 
-    getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
+	var diskResp = await webconsolejs["common/api/services/disk_api"].getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
+	getCommonLookupDiskInfoSuccess(vmSpec.provider, diskResp)
 }
 
+var DISK_SIZE = [];
+function getCommonLookupDiskInfoSuccess(provider, data) {
+
+	console.log("getCommonLookupDiskInfoSuccess", data);
+	var providerId = provider.toUpperCase()
+	var root_disk_type = [];
+	var res_item = data;
+	res_item.forEach(item => {
+		console.log("item provider: ", item.providerId);
+		var temp_provider = item.providerId
+		if (temp_provider == providerId) {
+			root_disk_type = item.rootdisktype
+			DISK_SIZE = item.disksize
+		}
+	})
+	// var temp_provider = res_item.providerId
+	// if(temp_provider == provider){
+	// 	root_disk_type = res_item.rootdisktype
+	// 	DISK_SIZE = res_item.disksize
+	// }
+
+	console.log("DISK_SIZE", DISK_SIZE)
+	var html = '<option value="">Select Root Disk Type</option>'
+	console.log("root_disk_type : ", root_disk_type);
+	root_disk_type.forEach(item => {
+		html += '<option value="' + item + '">' + item + '</option>'
+	})
+	//if(caller == "vmexpress"){
+	$("#ep_root_disk_type").empty();
+	$("#ep_root_disk_type").append(html);
+	//}else if(caller == "vmsimple"){
+	// $("#ss_root_disk_type").empty();
+	// $("#ss_root_disk_type").append(html);
+	//}else if(caller == "vmexpert"){
+	// $("#tab_others_root_disk_type").empty()
+	// $("#tab_others_root_disk_type").append(html)
+	//}
+	console.log("const valie DISK_SIZE : ", DISK_SIZE)
+
+	var myModalEl = document.getElementById('spec-search');
+	var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
+	modal.hide();
+}
 var createMcisListObj = new Object();
 var isVm = false // mcis 생성(false) / vm 추가(true)
 var Express_Server_Config_Arr = new Array();
@@ -214,72 +258,6 @@ export function changeDiskSize(type) {
 
 
 
-// 해당 provider, connection 으로 사용가능한 Disk의 Type 정보(type, min, max ) 조회
-// ex) AWS -> standard|1|1024, gp2|1|16384
-async function getCommonLookupDiskInfo(provider, connectionName) {
-
-	const data = {
-		queryParams: {
-			"provider": provider,
-			"connectionName": connectionName
-		}
-	}
-
-	var controller = "/api/" + "disklookup";
-	const response = await webconsolejs["common/api/http"].commonAPIPost(
-		controller,
-		data
-	);
-	console.log("lookup disk info", response)
-	var responseData = response.data.responseData
-	getCommonLookupDiskInfoSuccess(provider, responseData)
-}
-
-var DISK_SIZE = [];
-function getCommonLookupDiskInfoSuccess(provider, data) {
-
-	console.log("getCommonLookupDiskInfoSuccess", data);
-	var providerId = provider.toUpperCase()
-	var root_disk_type = [];
-	var res_item = data;
-	res_item.forEach(item => {
-		console.log("item provider: ", item.providerId);
-		var temp_provider = item.providerId
-		if (temp_provider == providerId) {
-			root_disk_type = item.rootdisktype
-			DISK_SIZE = item.disksize
-		}
-	})
-	// var temp_provider = res_item.providerId
-	// if(temp_provider == provider){
-	// 	root_disk_type = res_item.rootdisktype
-	// 	DISK_SIZE = res_item.disksize
-	// }
-
-	console.log("DISK_SIZE", DISK_SIZE)
-	var html = '<option value="">Select Root Disk Type</option>'
-	console.log("root_disk_type : ", root_disk_type);
-	root_disk_type.forEach(item => {
-		html += '<option value="' + item + '">' + item + '</option>'
-	})
-	//if(caller == "vmexpress"){
-	$("#ep_root_disk_type").empty();
-	$("#ep_root_disk_type").append(html);
-	//}else if(caller == "vmsimple"){
-	// $("#ss_root_disk_type").empty();
-	// $("#ss_root_disk_type").append(html);
-	//}else if(caller == "vmexpert"){
-	// $("#tab_others_root_disk_type").empty()
-	// $("#tab_others_root_disk_type").append(html)
-	//}
-	console.log("const valie DISK_SIZE : ", DISK_SIZE)
-
-	var myModalEl = document.getElementById('spec-search');
-	var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
-	modal.hide();
-
-}
-
 
 // plus 버튼을 추가
 function getPlusVm(vmElementId) {
@@ -393,12 +371,13 @@ export function deployMcis() {
 	//     }
 	// }    
 }
-
-export async function createMcisDynamic() {
+export async function createMcisDynamic(){
 	console.log("createMcisDynamic")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
+	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
+	var selectedNsId = selectedWorkspaceProject.nsId;
 	var projectId = $("#select-current-project").text()	
 	var projectName = $('#select-current-project').find('option:selected').text();
 	var nsId = projectName;
@@ -422,34 +401,34 @@ export async function createMcisDynamic() {
 	if (!mcisDesc) {
 		mcisDesc = "Made in CB-TB"
 	}
-	var obj = {}
-	obj['name'] = mcisName
-	obj['description'] = mcisDesc
-	obj['vm'] = Express_Server_Config_Arr
-	const data = {
-		pathParams: {
-			"nsId": nsId
-		},
-		Request: {
-			"name": obj['name'],
-			"vm": obj['vm'],
-		}
-	}
 
-	var controller = "/api/" + "createdynamicmcis";
-	const response = webconsolejs["common/api/http"].commonAPIPost(
-		controller,
-		data
-	);
+	webconsolejs["common/api/services/mcis_api"].mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr, selectedNsId)
+}
 
-	//console.log("create dynamicMCIS : ", response)
+export async function createVmDynamic() {
+	console.log("createVmDynamic")
+	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
 
-	alert("생성요청 완료");
-	var urlParamMap = new Map();
+	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
-	// 생성요청했으므로 결과를 기다리지 않고 mcisList로 보냄
-	webconsolejs["common/util"].changePage("McisMng", urlParamMap)
-	// webconsolejs["common/util"].changePage("McisMng")
+	var selectedNsId = selectedWorkspaceProject.nsId;
+	console.log("selected projectId : ", selectedNsId)
+
+	var mcisid = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj[0].id
+	console.log("selected mcisId : ", mcisid)
+
+	// var commonImage = selectedMcisObj[0].vm[0].
+	// var mcis_name = selectedMcis[0].name
+
+	// var mcis_name = $("#mcis_name").val();
+	// var mcis_id = $("#mcis_id").val();
+	// if (!mcis_id) {
+	// 	commonAlert("Please Select MCIS !!!!!")
+	// 	return;
+	// }
+
+	///
+	webconsolejs["common/api/services/mcis_api"].vmDynamic(mcisid, selectedNsId, Express_Server_Config_Arr)
 }
 
 export function addNewMcis() {
@@ -553,58 +532,6 @@ export async function deployVm() {
 	//         console.log(error);
 	//     }
 	// }
-}
-
-var nsid = ""
-export async function createVmDynamic() {
-	console.log("createVmDynamic")
-	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
-
-
-	nsid = webconsolejs["pages/operation/manage/mcis"].nsid
-	console.log("selected projectId : ", nsid)
-
-	var mcisid = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj[0].id
-	console.log("selected mcisId : ", mcisid)
-
-	// var commonImage = selectedMcisObj[0].vm[0].
-	// var mcis_name = selectedMcis[0].name
-
-	// var mcis_name = $("#mcis_name").val();
-	// var mcis_id = $("#mcis_id").val();
-	// if (!mcis_id) {
-	// 	commonAlert("Please Select MCIS !!!!!")
-	// 	return;
-	// }
-
-	///
-	var obj = {}
-	obj = Express_Server_Config_Arr[0]
-	const data = {
-		pathParams: {
-			nsId: nsid,
-			mcisId: mcisid,
-		},
-		request: {
-			"commonImage": obj.commonImage,
-			"commonSpec": obj.commonSpec,
-			"connectionName": obj.connectionName,
-			"description": obj.description,
-			"label": "",
-			"name": obj.name,
-			"subGroupSize": obj.subGroupSize,
-			"rootDiskSize": obj.rootDiskSize,
-			"rootDiskType": obj.rootDiskType,
-		}
-	}
-
-
-	var controller = "/api/" + "createvmdynamic";
-	const response = await webconsolejs["common/api/http"].commonAPIPost(
-		controller,
-		data
-	)
-	console.log("create VMdynamic : ", response)
 }
 
 // {
