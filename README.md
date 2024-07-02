@@ -116,7 +116,7 @@ http://<YOUR_ADDRESS>:3001/auth/login
 
 MC-WEB-CONSOLE has been successfully deployed if the screen below is visible during the access to the web of the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/38bddbad-e21c-41a3-9165-b6793bf3bc79/98502b5a-16b6-459e-8330-8d752b9613ff/Untitled.png)
+![Untitled]([https://prod-files-secure.s3.us-west-2.amazonaws.com/38bddbad-e21c-41a3-9165-b6793bf3bc79/98502b5a-16b6-459e-8330-8d752b9613ff/Untitled.png](https://raw.githubusercontent.com/MZC-CSC/mc-web-console/docs/assets/img/login.png))
 
 
 
