@@ -1,6 +1,6 @@
 /*
     <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
-        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','pages/operation/manage/mcis.commoncallbac','Arg')">
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/mcis_api.commoncallbac','Arg')">
         commonSimpleModal
     </a>
 */
@@ -289,7 +289,7 @@ function commonConfirmOk() {
     } else if (targetAction == "DeleteMcis") {
         deleteMCIS();
     } else if (targetAction == "DeployServer") {
-        btn_deploy();
+        deployVm();
     } else if (targetAction == "ImportScriptOfMcis") {
         mcisScriptImport();
     } else if (targetAction == "ExportScriptOfMcis") {

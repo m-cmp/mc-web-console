@@ -226,7 +226,7 @@ function providerFilter(data) {
   // case type like, equal, not eual
   // equal only
 //   if (typeEl.value == "=") {
-//     var vmCloudConnectionMap = webconsolejs["common/util"].calculateConnectionCount(
+//     var vmCloudConnectionMap = webconsolejs["common/api/services/mcis_api"].calculateConnectionCount(
 //       data.vm
 //     );
 //     var valueElValue = valueEl.value;

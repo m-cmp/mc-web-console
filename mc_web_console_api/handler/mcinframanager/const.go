@@ -40,6 +40,7 @@ var (
 	McisRecommendVm             = "/mcisRecommendVm"
 	PostCmdMcis                 = "/ns/{nsId}/cmd/mcis/{mcisId}"
 	GetControlMcis              = "/ns/{nsId}/control/mcis/{mcisId}"
+	GetControlVm              	= "/ns/{nsId}/control/mcis/{mcisId}/vm/{vmId}"
 	PostMcisDynamicCheckRequest = "/mcisDynamicCheckRequest"
 	InspectResourcesOverview    = "/inspectResourcesOverview"
 	GetCloudOSList              = "/cloudOS"
