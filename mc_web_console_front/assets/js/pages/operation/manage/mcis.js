@@ -25,6 +25,8 @@ export var nsid = "";
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 // var totalCloudConnectionMap = new Map();
+var selectedVmId = "";
+var currentMcisId = "";
 
 var mcisListTable;
 var checked_array = [];
@@ -107,6 +109,7 @@ async function getSelectedMcisData(mcisID) {
     console.log('selectedMcisID:', mcisID);  // 출력: mcisID의 값 (예: com)
     if (mcisID != undefined && mcisID != "") {
       var selectedNsId = selectedWorkspaceProject.nsId;
+      currentMcisId = mcisID
       var mcisResp = await webconsolejs["common/api/services/mcis_api"].getMcis(selectedNsId, mcisID)
       console.log("mcisResp ", mcisResp)
       if( mcisResp.status.code != 200 ){
@@ -161,6 +164,21 @@ function setMcisInfoData(mcisData) {
   // vm상태별로 icon 표시한다
   displayServerStatusList(mcisID, mcisData.vm)
 
+}
+
+// mcis life cycle 변경
+export function changeMcisLifeCycle(type){
+  
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  webconsolejs["common/api/services/mcis_api"].mcisLifeCycle(type, checked_array, selectedNsId)
+}
+
+// vm life cycle 변경
+export function changeVmLifeCycle(type){
+  
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  
+  webconsolejs["common/api/services/mcis_api"].vmLifeCycle(type, currentMcisId, selectedNsId, selectedVmId)
 }
 
 // vm 상태별 icon으로 표시
@@ -235,6 +253,7 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   console.log("selected Vm");
   console.log("selected vm data : ", data);
   var vmId = data.id;
+  selectedVmId = vmId
   var vmName = data.name;
   var vmStatus = data.status;
   var vmDescription = data.description;
@@ -794,7 +813,8 @@ function initMcisTable() {
 
   // 행 클릭 시
   mcisListTable.on("rowClick", function (e, row) {
-
+    // vmid 초기화 for vmlifecycle
+    selectedVmId = ""
     var mcisID = row.getCell("id").getValue();
     console.log("mcisID", mcisID)
     // console.log("eeeee",e)
