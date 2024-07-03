@@ -121,6 +121,7 @@ export async function mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr,
 		},
 		Request: {
 			"name": obj['name'],
+      "description" : obj['description'],
 			"vm": obj['vm'],
 		}
 	}
