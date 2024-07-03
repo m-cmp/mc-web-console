@@ -8,12 +8,12 @@ export function initMcisCreate(){
 
     // partial init functions
 
-	webconsolejs["partials/operation/manage/serverrecommandation"].initServerRecommandation(webconsolejs["partials/operation/manage/mciscreate"].callbackServerRecommandation);// recommand popup에서 사용하는 table 정의.
+	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mciscreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
 }
 
 // callback PopupData
-export async function callbackServerRecommandation(vmSpec){
-    console.log("callbackServerRecommandation")
+export async function callbackServerRecommendation(vmSpec){
+    console.log("callbackServerRecommendation")
     
     $("#ep_provider").val(vmSpec.provider)
 	$("#ep_connectionName").val(vmSpec.connectionName)
@@ -393,7 +393,7 @@ export async function createMcisDynamic(){
 
 
 
-	if (!mcis_name) {
+	if (!mcisName) {
 		commonAlert("Please Input MCIS Name!!!!!")
 		return;
 	}
@@ -445,8 +445,12 @@ export function addNewVirtualMachine() {
 	console.log("selectedMcis", selectedMcis)
 
 	var mcis_name = selectedMcis[0].name
+	var mcis_desc = selectedMcis[0].description
+	
 	$("#extend_mcis_name").val(mcis_name)
-	console.log("extend_mcis_name", mcis_name)
+	
+	$("#extend_mcis_desc").val(mcis_desc)
+	console.log("extend_mcis_desc", mcis_desc)
 
 	isVm = true
 }

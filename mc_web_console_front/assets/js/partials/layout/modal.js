@@ -347,7 +347,7 @@ function commonConfirmOk() {
     } else if (targetAction == "RegisterRecommendSpec") {
         commonPromptOpen("RegisterRecommendSpec")
     } else if (targetAction == "AddNewMcisDynamic") {
-        createMcisDynamic()
+        dynamicMcis()
     } else if (targetAction == "DeleteDataDisk") {
         deleteDataDisk();
 
@@ -537,7 +537,7 @@ function commonPromptOk() {
         createRecommendSpec(targetValue);
     } else if (targetAction == 'AddNewMcisDynamic') {
         $("#mcis_name").val(targetValue)
-        createMcisDynamic()
+        dynamicMcis()
     } else if (targetAction == 'CreateSnapshot') {
         createSnapshot(targetValue);
     }
