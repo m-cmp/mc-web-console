@@ -3,6 +3,7 @@ version: '3.8'
 services:
   mcwebconsole:
     build: ../
+    container_name: mcwebconsole
     depends_on:
       - postgresdb
     ports:
@@ -15,14 +16,15 @@ services:
       MCINFRAMANAGER: http://sample.m-cmp.com:1323/tumblebug # Please CHANGE ME (REQUIRE)
       API_USERNAME: API_USERNAME # Please CHANGE ME (REQUIRE)
       API_PASSWORD: API_PASSWORD # Please CHANGE ME (REQUIRE)
-      DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
-      PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@postgresdb:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
+      DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
+      PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
     restart: always
     networks:
       - mcwebconsole
 
-  postgresdb:
+  mcwebconsole-postgresdb:
     image: postgres:14-alpine
+    container_name: mcwebconsole-postgresdb
     volumes:
       - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
     environment:

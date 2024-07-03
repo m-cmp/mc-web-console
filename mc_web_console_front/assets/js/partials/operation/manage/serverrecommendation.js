@@ -1,23 +1,23 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 var returnFunction;// popup인 경우에는 callback function으로 param을 전달해야 한다.
-var recommandTable;
+var recommendTable;
 
-var recommandVmSpecListObj = new Object();
+var recommendVmSpecListObj = new Object();
 
 
-export function initServerRecommandation(callbackfunction){
-    console.log("initServerRecommandation ")	
+export function initServerRecommendation(callbackfunction) {
+	console.log("initServerRecommendation ")
 
-    initRecommandSpecTable();
+	initRecommendSpecTable();
 
 	// return function 정의
-	if( callbackfunction != undefined){
-        returnFunction = callbackfunction;
-    }
+	if (callbackfunction != undefined) {
+		returnFunction = callbackfunction;
+	}
 }
 
-function initRecommandSpecTable(){
+function initRecommendSpecTable() {
 	var tableObjParams = {};
 
 	var columns = [
@@ -79,16 +79,15 @@ function initRecommandSpecTable(){
 		}
 	];
 
-	//recommandTable = setSpecTabulator("spec-table", tableObjParams, columns);
-    recommandTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
-	
-	recommandTable.on("rowSelectionChanged", function (data, rows) {
+	//recommendTable = setSpecTabulator("spec-table", tableObjParams, columns);
+	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
+
+	recommendTable.on("rowSelectionChanged", function (data, rows) {
 		console.log("data", data)
 
 		updateSelectedRows(data)
 	});
 
-   
 }
 
 // function setSpecTabulator(
@@ -168,7 +167,7 @@ function updateSelectedRows(data) {
 	console.log("선택된 행 데이터:", recommendSpecs);
 }
 
-// recommane Vm 조회
+// recommened Vm 조회
 export async function getRecommendVmInfo() {
 	console.log("in getRecommendVmInfo")
 
@@ -182,49 +181,203 @@ export async function getRecommendVmInfo() {
 	// var lon = $("#longitude").val()
 	// var lat = $("#latitude").val()
 
-	var memoryVal = $("#assist_num_memory").val()
-	var cpuVal = $("#assist_num_cpu").val()
-	var costVal = $("#assist_num_cost").val()
+	var memoryMinVal = $("#assist_min_memory").val()
+	var memoryMaxVal = $("#assist_max_memory").val()
+
+	var cpuMinVal = $("#assist_min_cpu").val()
+	var cpuMaxVal = $("#assist_max_cpu").val()
+
+	var costMinVal = $("#assist_min_cost").val()
+	var costMaxVal = $("#assist_max_cost").val()
+
 	var lon = $("#longitude").val()
 	var lat = $("#latitude").val()
 
+	var acceleratorType = $("#assist_accelerator_type").val()
+	var acceleratorModel = $("#assist_gpu_model").val()
+	var acceleratorCountMin = $("#assist_gpu_count_min").val()
+	var acceleratorCountMax = $("#assist_gpu_count_max").val()
+	var acceleratorMemoryMin = $("#assist_gpu_memory_min").val()
+	var acceleratorMemoryMax = $("#assist_gpu_memory_max").val()
+	console.log("acceleratorType", acceleratorType)
+	console.log("acceleratorType", lon)
+
 	var policyArr = new Array();
-
-	if( cpuVal != ""){
+	//TODO type이 추가 정의되면 type별 분기 추가
+	if (acceleratorType != "") {
 		var filterPolicy = {
+
+			"condition": [
+				{
+					"operand": acceleratorType
+				}
+			],
+			"metric": "acceleratorType"
+		}
+		policyArr.push(filterPolicy)
+
+		if (acceleratorCountMin != "" || acceleratorCountMax != "") {
+
+			if (acceleratorCountMax != "" && acceleratorCountMax < acceleratorCountMin) {
+				alert("최대값이 최소값보다 작습니다.")
+			}
+
+			if (acceleratorCountMin === "") {
+				acceleratorCountMin = "0";
+			}
+
+			if (acceleratorCountMax === "") {
+				acceleratorCountMax = "0";
+			}
+
+			var filterPolicy = {
+
+				"condition": [
+					{
+						"operand": acceleratorCountMax,
+						"operator": "<="
+					},
+					{
+						"operand": acceleratorCountMin,
+						"operator": ">="
+					}
+				],
+				"metric": "acceleratorCount",
+			}
+			policyArr.push(filterPolicy)
+		}
+
+		if (acceleratorMemoryMin != "" || acceleratorMemoryMax != "") {
+
+			if (acceleratorMemoryMax != "" && acceleratorMemoryMax < acceleratorMemoryMin) {
+				alert("최대값이 최소값보다 작습니다.")
+			}
+
+			if (acceleratorMemoryMin === "") {
+				acceleratorMemoryMin = "0";
+			}
+
+			if (acceleratorMemoryMax === "") {
+				acceleratorMemoryMax = "0";
+			}
+			var filterPolicy = {
+
+				"condition": [
+					{
+						"operand": acceleratorMemoryMax,
+						"operator": "<=",
+					},
+					{
+						"operand": acceleratorMemoryMin,
+						"operator": ">=",
+					}
+				],
+				"metric": "acceleratorMemoryGB",
+			}
+			policyArr.push(filterPolicy)
+		}
+	}
+
+	if (acceleratorModel != "") {
+		var filterPolicy = {
+
+			"condition": [
+				{
+					"operand": acceleratorModel
+				}
+			],
+			"metric": "acceleratorModel"
+		}
+		policyArr.push(filterPolicy)
+	}
+
+	if (cpuMinVal != "" || cpuMaxVal != "") {
+
+		if (cpuMaxVal != "" && cpuMaxVal < cpuMinVal) {
+			console.log("cpuMaxVal",cpuMaxVal)
+			alert("최대값이 최소값보다 작습니다.")
+		}
+
+		if (cpuMinVal === "") {
+			cpuMinVal = "0";
+		}
+
+		if (cpuMaxVal === "") {
+			cpuMaxVal = "0";
+		}
+		var filterPolicy = {
+
+			"condition": [
+				{
+					"operand": cpuMaxVal,
+					"operator": "<="
+				},
+				{
+					"operand": cpuMinVal,
+					"operator": ">="
+				}
+			],
 			"metric": "vCPU",
-			"condition" : [
-				{
-					"operand": cpuVal,
-					"operator": "<="
-				}
-			],
 		}
 		policyArr.push(filterPolicy)
 	}
 
-	if( memoryVal != ""){
+	if (memoryMinVal != "" || memoryMaxVal != "") {
+
+		if (memoryMaxVal != "" && memoryMaxVal < memoryMinVal) {
+			alert("최대값이 최소값보다 작습니다.")
+		}
+
+		if (memoryMinVal === "") {
+			memoryMinVal = "0";
+		}
+
+		if (memoryMaxVal === "") {
+			memoryMaxVal = "0";
+		}
 		var filterPolicy = {
-			"metric": "memoryGiB",
-			"condition" : [
+
+			"condition": [
 				{
-					"operand": memoryVal,
+					"operand": memoryMaxVal,
 					"operator": "<="
+				},
+				{
+					"operand": memoryMinVal,
+					"operator": ">="
 				}
 			],
+			"metric": "memoryGiB",
 		}
 		policyArr.push(filterPolicy)
 	}
-	
-	if( costVal != ""){
+
+	if (costMinVal != "" || costMaxVal != "") {
+
+		if (costMaxVal != "" && costMaxVal < costMinVal) {
+			alert("최대값이 최소값보다 작습니다.")
+		}
+
+		if (costMinVal === "") {
+			costMinVal = "0";
+		}
+
+		if (costMaxVal === "") {
+			costMaxVal = "0";
+		}
 		var filterPolicy = {
-			"metric": "costPerHour",
-			"condition" : [
+
+			"condition": [
 				{
-					"operand": costVal,
+					"operand": costMaxVal,
 					"operator": "<="
+				},
+				{
+					"operand": costMinVal,
+					"operator": ">="
 				}
 			],
+			"metric": "costPerHour",
 		}
 		policyArr.push(filterPolicy)
 	}
@@ -246,11 +399,11 @@ export async function getRecommendVmInfo() {
 		"weight": "0.3"
 	}
 	priorityArr.push(priorityPolicy)
-
+	console.log("policyArr", priorityArr)
 	const data = {
 		request: {
 			"filter": {
-				"policy" : policyArr
+				"policy": policyArr
 				// "policy": [
 				// 	{
 				// 		"condition": [
@@ -281,9 +434,9 @@ export async function getRecommendVmInfo() {
 				// 	}
 				// ]
 			},
-			"limit": "50",
+			// "limit": "50",
 			"priority": {
-				"policy" : priorityArr,
+				"policy": priorityArr,
 				// "policy": [
 				// 	{
 				// 		"metric": "location",
@@ -313,14 +466,14 @@ export async function getRecommendVmInfo() {
 	var respData = await webconsolejs["common/api/services/mcis_api"].mcisRecommendVm(data);
 	console.log("respData ", respData)
 	//var specList = response.data.responseData
-	if( respData.status.code != 200){
+	if (respData.status.code != 200) {
 		console.log(" e ", respData.status)
 		// TODO : Error 표시
 		return
 	}
-	recommandVmSpecListObj = respData.responseData
+	recommendVmSpecListObj = respData.responseData
 
-	recommandTable.setData(recommandVmSpecListObj)
+	recommendTable.setData(recommendVmSpecListObj)
 
 	// getSpecListCallBackSuccess(specList);
 
@@ -378,17 +531,17 @@ export async function applySpecInfo() {
 	// $("#ep_commonSpecId").val(commonSpecId)
 	// commonImage는 availableVMImageBySpec에서 조회 후 설정한다 (두 개 이상일 수 있음)
 
-    var returnObject = {}
-    returnObject.provider = provider
-    returnObject.connectionName = connectionName
-    returnObject.specName = specName
-    returnObject.imageName = imageName
-    returnObject.commonSpecId = commonSpecId
+	var returnObject = {}
+	returnObject.provider = provider
+	returnObject.connectionName = connectionName
+	returnObject.specName = specName
+	returnObject.imageName = imageName
+	returnObject.commonSpecId = commonSpecId
 
-    console.log("return to parent");
-    console.log(returnFunction)
-    eval(returnFunction)(returnObject);
-	
+	console.log("return to parent");
+	console.log(returnFunction)
+	eval(returnFunction)(returnObject);
+
 }
 
 export function showRecommendSpecSetting(value) {
