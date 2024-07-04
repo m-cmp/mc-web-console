@@ -11,68 +11,6 @@ export function commoncallbac(val) {
 var table;
 var checked_array = [];
 initTable();
-// function setTabulator(
-//   tableObjId,
-//   tableObjParamMap,
-//   columnsParams,
-//   isMultiSelect
-// ) {
-//   var placeholder = "No Data";
-//   var pagination = "local";
-//   var paginationSize = 5;
-//   var paginationSizeSelector = [5, 10, 15, 20];
-//   var movableColumns = true;
-//   var columnHeaderVertAlign = "middle";
-//   var paginationCounter = "rows";
-//   var layout = "fitColumns";
-
-//   if (tableObjParamMap.hasOwnProperty("placeholder")) {
-//     placeholder = tableObjParamMap.placeholder;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("pagination")) {
-//     pagination = tableObjParamMap.pagination;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-//     paginationSize = tableObjParamMap.paginationSize;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-//     paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-//     movableColumns = tableObjParamMap.movableColumns;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-//     columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-//     paginationCounter = tableObjParamMap.paginationCounter;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("layout")) {
-//     layout = tableObjParamMap.layout;
-//   }
-
-//   var tabulatorTable = new Tabulator("#" + tableObjId, {
-//     placeholder,
-//     pagination,
-//     paginationSize,
-//     paginationSizeSelector,
-//     movableColumns,
-//     columnHeaderVertAlign,
-//     paginationCounter,
-//     layout,
-//     columns: columnsParams,
-//     selectableRows: isMultiSelect == false ? 1 : true,
-//   });
-
-//   return tabulatorTable;
-// }
 
 // Table 초기값 설정
 function initTable() {
@@ -88,7 +26,7 @@ function initTable() {
       headerHozAlign: "center",
       headerSort: false,
       width: 60,
-    },   
+    },
     {
       title: "Id",
       field: "id",
@@ -108,11 +46,8 @@ function initTable() {
     console.log(row)
     var roleID = row.getCell("id").getValue();
     console.log("roleID", roleID)
-    // console.log("eeeee",e)
-    //clickListOfMcis(row.getCell("id").getValue());
 
     getSelectedRoleData(roleID)
-
   });
 
   //  선택된 여러개 row에 대해 처리
@@ -131,7 +66,6 @@ async function getSelectedRoleData(roleID) {
     }
   }
 
-  
   var controller = "/api/" + "getrolebyid";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -154,7 +88,7 @@ function setRoleInfoData(roleData) {
   try {
     var roleId = roleData.id;
     console.log("roleId ", roleId)
-    
+
     var name = roleData.name;
     console.log("name ", name)
     var description = roleData.description;
@@ -177,29 +111,13 @@ export async function roleDetailInfo(roleID) {
   // Toggle Info
   var div = document.getElementById("server_info");
   webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-  
+
   // 기존 값들 초기화
   //clearServerInfo();
 
   var data = new Object();
-  
-  //
-  //vm info
-  // $("#mcis_server_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
-  // $("#mcis_server_info_connection").empty()
-  // $("#mcis_server_info_connection").append(vmProviderIcon)
-
-
-  // $("#server_info_text").text(' [ ' + vmName + ' / ' + mcisName + ' ]')
-  // $("#server_info_name").text(vmName + "/" + vmID)
-  // $("#server_info_desc").text(vmDescription)
-  // $("#server_info_os").text(operatingSystem)
-  // $("#server_info_start_time").text(startTime)
-  // $("#server_info_private_ip").text(privateIp)
-  // $("#server_info_cspVMID").text(data.cspViewVmDetail.IId.NameId)
 
 }
-
 
 function clearRoleInfo() {
   console.log("clearRoleInfo")
@@ -221,29 +139,11 @@ var typeEl = document.getElementById("filter-type");
 var valueEl = document.getElementById("filter-value");
 
 // provider filtering / equel 고정
-function providerFilter(data) {
+// function providerFilter(data) {
 
-  // case type like, equal, not eual
-  // equal only
-//   if (typeEl.value == "=") {
-//     var vmCloudConnectionMap = webconsolejs["common/api/services/mcis_api"].calculateConnectionCount(
-//       data.vm
-//     );
-//     var valueElValue = valueEl.value;
-//     if (valueElValue != "") {
-//       if (vmCloudConnectionMap.has(valueElValue)) {
-//         return true;
-//       } else {
-//         return false;
-//       }
-//     }
 
-//   } else {
-//     return true;
-//   }
-
-  return true
-}
+//   return true
+// }
 
 //Trigger setFilter function with correct parameters
 function updateFilter() {
@@ -287,24 +187,23 @@ document.addEventListener("DOMContentLoaded", getRoleList);
 // workspace 목록조회
 async function getRoleList() {
   console.log("getRoleList")
-  
+
   const data = {
     pathParams: {},
   };
-  //var controller = "targetController=getmcislist"
+
   var controller = "/api/" + "getrolelist";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-  console.log("response ", response)  
+  console.log("response ", response)
   var roleList = response.data.responseData;//response 자체가 array임.  
 
   getRoleListCallbackSuccess(roleList);
 }
 
 // MCIS 목록 조회 후 화면에 Set
-
 function getRoleListCallbackSuccess(roleList) {
   console.log("getRoleListCallbackSuccess");
   console.log("roleList : ", roleList);
@@ -314,14 +213,11 @@ function getRoleListCallbackSuccess(roleList) {
 // 해당 mcis에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mcis 에서 사용
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 /////////////// Role Handling /////////////////
 export async function deleteRole() {
   console.log("deleteRole ", checked_array);
 
-  if( checked_array.length == 0 || checked_array.length > 1){
+  if (checked_array.length == 0 || checked_array.length > 1) {
     alert(" 1개만 선택 하세요 ")
     return;
   }
@@ -329,7 +225,7 @@ export async function deleteRole() {
   for (const role of checked_array) {
     console.log(role.id)
     let data = {
-      pathParams: {        
+      pathParams: {
         "roleId": role.id,
       }
     };
@@ -339,30 +235,30 @@ export async function deleteRole() {
       data
     );
     console.log(response)
-    if( response.data.status.code == "200" || response.data.status.code == "201" ){
+    if (response.data.status.code == "200" || response.data.status.code == "201") {
       console.log("successfully deleted")
       // 저장 후 role 목록 조회
       getRoleList()
     }
-    
+
   }
 }
 
-function validRole(){
+function validRole() {
   var name = $("#create_name").val();
   var desc = $("#create_description").val();
-  
+
   return true
 }
 // role 저장 및 Create form 닫기
 export async function saveRole() {
   console.log("add workspace")
-  
-  if( validRole() ){
+
+  if (validRole()) {
 
     var name = $("#create_name").val();
     var desc = $("#create_description").val();
-    
+
     const data = {
       request: {
         "name": name,
@@ -377,7 +273,7 @@ export async function saveRole() {
     );
     console.log(response)
     // save success 시 
-    if( response.data.status.code == "200" || response.data.status.code == "201" ){
+    if (response.data.status.code == "200" || response.data.status.code == "201") {
       var div = document.getElementById("create_workspace");
       webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
@@ -389,9 +285,9 @@ export async function saveRole() {
 }
 
 // Info Form 닫기
-export function closeInfoForm(){
+export function closeInfoForm() {
   console.log(" close form ")
 
   var div = document.getElementById("info_role");
-	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 }
