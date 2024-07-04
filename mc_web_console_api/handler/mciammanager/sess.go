@@ -12,6 +12,7 @@ import (
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/golang-jwt/jwt"
 	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -55,11 +56,25 @@ func init() {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: customTransport}
+	certEndPoint := getCertsEndpoint()
 	var err error
-	jwkSet, err = jwk.Fetch(context.Background(), MCIAMMANAGER+"/api/auth/certs", jwk.WithHTTPClient(client))
+	jwkSet, err = jwk.Fetch(context.Background(), certEndPoint, jwk.WithHTTPClient(client))
 	if err != nil {
 		panic("failed to fetch JWK: " + err.Error())
 	}
+}
+
+func getCertsEndpoint() string {
+	viper.SetConfigName("api")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("./conf")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file, %s", err)
+	}
+	baseUrl := viper.Get("services.mc-iam-manager.baseurl").(string)
+	certUri := viper.Get("serviceActions.mc-iam-manager.Getcerts.resourcePath").(string)
+	fmt.Println("Cert Endpoint is : ", baseUrl+certUri)
+	return baseUrl + certUri
 }
 
 func Middleware(role string) buffalo.MiddlewareFunc {
@@ -77,6 +92,7 @@ func Middleware(role string) buffalo.MiddlewareFunc {
 			if !IsTokenHasRole(c, role) {
 				return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "role is invalid"}))
 			}
+			c.Set("Authorization", c.Request().Header.Get("Authorization"))
 			return next(c)
 		}
 	}
@@ -93,6 +109,7 @@ func IsTokenValid(c buffalo.Context, tokenString string) (bool, error) {
 		c.Set("PreferredUsername", claims.PreferredUsername)
 		c.Set("RealmAccessRoles", claims.RealmAccess.Roles)
 		c.Set("Upn", claims.Upn)
+		c.Set("Authorization", tokenString)
 		return true, nil
 	} else {
 		return false, nil
