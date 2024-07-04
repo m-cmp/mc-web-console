@@ -17,6 +17,7 @@ import (
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 
 	"mc_web_console_api/handler/mciammanager"
+	"mc_web_console_api/handler/self"
 	"mc_web_console_api/models"
 )
 
@@ -53,6 +54,8 @@ func App() *buffalo.App {
 
 		api := app.Group(apiPath)
 		api.Use(session(""))
+		api.POST("/disklookup", self.DiskLookup)
+		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 		api.POST("/{operationId}", AnyController)
 	})
 
