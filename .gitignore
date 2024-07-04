@@ -84,3 +84,4 @@ bin/.env
 
 mc_web_console_api/database.yml
 .env
+mc_web_console_api/conf/api.yaml
