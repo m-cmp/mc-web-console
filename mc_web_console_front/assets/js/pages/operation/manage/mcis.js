@@ -1,12 +1,11 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
   console.log("select-current-project changed ")
-  let project = {"Id":this.value, "Name":this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text}
+  let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project )
+  console.log("select-current-project on change ", project)
   var respMcisList = await webconsolejs["common/api/services/mcis_api"].getMcisList(project.NsId);
   getMcisListCallbackSuccess(project.NsId, respMcisList);
 })
@@ -30,6 +29,7 @@ var currentMcisId = "";
 
 var mcisListTable;
 var checked_array = [];
+var selectedMcisID = ""
 initMcisTable(); // init tabulator
 
 //DOMContentLoaded 는 Page에서 1개만.
@@ -40,22 +40,24 @@ document.addEventListener("DOMContentLoaded", initMcis);
 //로드 시 prj 값 받아와 getMcisList 호출
 async function initMcis() {
   console.log("initMcis")
-
   ////////////////////// partials init functions///////////////////////////////////////
-  try{
+  try {
     webconsolejs["partials/operation/manage/mciscreate"].initMcisCreate();//McisCreate을 Partial로 가지고 있음. 
-  }catch(e){
+  } catch (e) {
     console.log(e);
   }
   ////////////////////// partials init functions end ///////////////////////////////////////
-  
+
 
   ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
+  // workspace selection check
+  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject)
   ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
-  //console.log("workspaceIdProjectId=", workspaceIdProjectId)
+
+
   if (selectedWorkspaceProject.projectId != "") {
     console.log("workspaceProject ", selectedWorkspaceProject)
     var selectedProjectId = selectedWorkspaceProject.projectId;
@@ -65,7 +67,7 @@ async function initMcis() {
     //getMcisList();// project가 선택되어 있으면 mcis목록을 조회한다.
     var respMcisList = await webconsolejs["common/api/services/mcis_api"].getMcisList(selectedNsId);
     getMcisListCallbackSuccess(selectedProjectId, respMcisList);
-    
+
 
     ////////////////////// 받은 mcisId가 있으면 해당 mcisId를 set하고 조회한다. ////////////////
     // 외부(dashboard)에서 받아온 mcisID가 있으면 MCIS INFO 이동
@@ -75,17 +77,16 @@ async function initMcis() {
     // URLSearchParams 객체 생성
     const params = new URLSearchParams(urlObj.search);
     // mcisID 파라미터 값 추출
-    const selectedMcisID = params.get('mcisID');
+    selectedMcisID = params.get('mcisID');
 
     console.log('selectedMcisID:', selectedMcisID);  // 출력: mcisID의 값 (예: com)
     if (selectedMcisID != undefined) {
+      toggleRowSelection(selectedMcisID)
       getSelectedMcisData(selectedMcisID)
-      //webconsolejs["common/api/services/mcis_api"].getMcis(selectedNsId, selectedMcisID)
     }
     ////////////////////  mcisId를 set하고 조회 완료. ////////////////
   }
 }
-
 
 // getMcisList 호출 성공 시
 function getMcisListCallbackSuccess(caller, mcisList) {
@@ -105,26 +106,26 @@ function getMcisListCallbackSuccess(caller, mcisList) {
 // 클릭한 mcis info 가져오기
 // 표에서 선택된 McisId 받아옴
 async function getSelectedMcisData(mcisID) {
-  
-    console.log('selectedMcisID:', mcisID);  // 출력: mcisID의 값 (예: com)
-    if (mcisID != undefined && mcisID != "") {
-      var selectedNsId = selectedWorkspaceProject.nsId;
-      currentMcisId = mcisID
-      var mcisResp = await webconsolejs["common/api/services/mcis_api"].getMcis(selectedNsId, mcisID)
-      console.log("mcisResp ", mcisResp)
-      if( mcisResp.status.code != 200 ){
-        console.log("resp status ", mcisResp.status)
-        // failed.  // TODO : Error Popup 처리
-        return;
-      }
-      // SET MCIS Info page
-      setMcisInfoData(mcisResp.responseData)
 
-      // Toggle MCIS Info
-      var div = document.getElementById("mcis_info");
-      console.log("mcisInfo ", div)
-      webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  console.log('selectedMcisID:', mcisID);  // 출력: mcisID의 값 (예: com)
+  if (mcisID != undefined && mcisID != "") {
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    currentMcisId = mcisID
+    var mcisResp = await webconsolejs["common/api/services/mcis_api"].getMcis(selectedNsId, mcisID)
+    console.log("mcisResp ", mcisResp)
+    if (mcisResp.status.code != 200) {
+      console.log("resp status ", mcisResp.status)
+      // failed.  // TODO : Error Popup 처리
+      return;
     }
+    // SET MCIS Info page
+    setMcisInfoData(mcisResp.responseData)
+
+    // Toggle MCIS Info
+    var div = document.getElementById("mcis_info");
+    console.log("mcisInfo ", div)
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  }
 }
 
 // 클릭한 mcis의 info값 세팅
@@ -167,17 +168,16 @@ function setMcisInfoData(mcisData) {
 }
 
 // mcis life cycle 변경
-export function changeMcisLifeCycle(type){
-  
+export function changeMcisLifeCycle(type) {
+
   var selectedNsId = selectedWorkspaceProject.nsId;
   webconsolejs["common/api/services/mcis_api"].mcisLifeCycle(type, checked_array, selectedNsId)
 }
 
 // vm life cycle 변경
-export function changeVmLifeCycle(type){
-  
+export function changeVmLifeCycle(type) {
   var selectedNsId = selectedWorkspaceProject.nsId;
-  
+
   webconsolejs["common/api/services/mcis_api"].vmLifeCycle(type, currentMcisId, selectedNsId, selectedVmId)
 }
 
@@ -201,13 +201,9 @@ function displayServerStatusList(mcisID, vmList) {
     vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/mcis\'].vmDetailInfo(\'' + mcisID + '\',\'' + mcisName + '\',\'' + vmID + '\')"><span class="text-dark-fg">' + vmName + '</span></li>';
 
   }// end of mcis loop
-  // totalvmCount = vmCount
 
-  // console.log(vmLi)
   $("#mcis_server_info_box").empty();
   $("#mcis_server_info_box").append(vmLi);
-  //Manage MCIS Server List on/off
-
 }
 
 // Server List / Status VM 리스트에서
@@ -261,11 +257,11 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   console.log("vmPublicIp", vmPublicIp)
   var vmSshKeyID = data.sshKeyId;
 
-  try{
+  try {
     var imageId = data.imageId
     var operatingSystem = await webconsolejs["common/api/services/vmimage_api"].getCommonVmImageInfo(imageId)
     $("#server_info_os").text(operatingSystem)
-  }catch(e){
+  } catch (e) {
     console.log("e", e)
   }
   var startTime = data.cspViewVmDetail.StartTime
@@ -282,7 +278,6 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
 
   var vmDispStatus = webconsolejs["common/api/services/mcis_api"].getMcisStatusFormatter(vmStatus);
   var mcisStatusIcon = webconsolejs["common/api/services/mcis_api"].getMcisStatusIconFormatter(vmDispStatus);
-  // var mcisProviderNames = getMCISInfoProviderNames(data);//MCIS에 사용 된 provider
 
   //vm info
   $("#mcis_server_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
@@ -293,7 +288,7 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   $("#server_info_text").text(' [ ' + vmName + ' / ' + mcisName + ' ]')
   $("#server_info_name").text(vmName + "/" + vmID)
   $("#server_info_desc").text(vmDescription)
-  
+
   $("#server_info_start_time").text(startTime)
   $("#server_info_private_ip").text(privateIp)
   $("#server_info_cspVMID").text(data.cspViewVmDetail.IId.NameId)
@@ -324,13 +319,9 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   $("#server_detail_view_os").text(operatingSystem);
   $("#server_detail_view_user_id_pass").text(data.vmUserAccount + "/ *** ")
 
-
-
-
   var region = data.region.Region
 
   var zone = data.region.Zone
-  // $("#manage_mcis_popup_public_ip").val(vmPublicIp)
 
   // connection tab
   var connectionName = data.connectionName
@@ -346,24 +337,6 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   $("#server_connection_view_region").text(providerName + " : " + region)
   $("#server_connection_view_zone").text(zone)
 
-
-
-  // $("#server_info_csp_icon").empty()
-  // $("#server_info_csp_icon").append('<img src="/assets/img/contents/img_logo_' + cloudType + '.png" alt=""/>')
-  // $("#server_connection_view_csp").val(cloudType)
-  // $("#manage_mcis_popup_csp").val(cloudType)
-
-
-  // var latitude = locationInfo.latitude;
-  // var longitude = locationInfo.longitude;
-  // var briefAddr = locationInfo.briefAddr;
-  // var nativeRegion = locationInfo.nativeRegion;
-
-  // if (locationInfo) {
-  //     $("#server_location_latitude").val(latitude)
-  //     $("#server_location_longitude").val(longitude)
-
-  // }
   // region zone locate
   $("#server_info_region").text(providerName + ":" + region)
   $("#server_info_zone").text(zone)
@@ -395,8 +368,6 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   var subnetSystemId = vmDetail.SubnetIID.SystemId
   var eth = vmDetail.NetworkInterface
 
-
-
   $("#server_info_archi").text(architecture)
   // detail tab
   $("#server_detail_view_archi").text(architecture)
@@ -414,27 +385,16 @@ export async function vmDetailInfo(mcisID, mcisName, vmID) {
   $("#server_info_vmspec_name").text(vmSpecName)
   $("#server_detail_view_server_spec").text(vmSpecName) // detail tab
 
-
   webconsolejs["partials/operation/manage/server_monitoring"].monitoringDataInit()
 }
 
 // vm 세부 정보 초기화
 function clearServerInfo() {
   console.log("clearServerInfo")
-  // $("#vm_id").val("");
-  // $("#vm_name").val("");
-
-  // $("#manage_mcis_popup_vm_id").val("")
-  // $("#manage_mcis_popup_mcis_id").val("")
-  // $("#manage_mcis_popup_sshkey_name").val("")
 
   $("#server_info_text").text("")
   $("#server_detail_info_text").text("")
-
   $("#server_detail_view_server_status").val("");
-
-  // $("#server_info_status_icon_img").attr("src", "");
-
   $("#server_info_name").val("")
   $("#server_info_desc").val("")
 
@@ -516,55 +476,6 @@ function clearServerInfo() {
   // $("#exportFileName").val("");
   // $("#exportScript").val("");
 }
-
-
-// function displayColumn(table) {
-//   console.log("displayColumndisplayColumndisplayColumn")
-//   $(".display-column").on("click", function () {
-//     if ($(this).children("input:checkbox").is(":checked")) {
-//       $(this).children(".material-icons").text("visibility");
-//       table.showColumn($(this).data("column"));
-//     } else {
-//       $(this).children(".material-icons").text("visibility_off");
-//       table.hideColumn($(this).data("column"));
-//     }
-//   });
-// }
-
-// function getCommonMcisDataCallbackSuccess(caller, data, mcisID) {
-//   if (caller == "mcisexport") {
-
-//     var mcisIndex = 0;
-//     // console.log("mcisScriptExport start " + mcisID)
-//     // console.log(data);
-//     $("[id^='mcisID']").each(function () {
-//       if (mcisID == $(this).val()) {
-//         mcisIndex = $(this).attr("id").replace("mcisID", "")
-//         return false;
-//       }
-//     });
-//     //
-//     // var mcisNameVal = $("#m_mcisName_" + mcisIndex).val();
-//     var mcisCreateScript = JSON.stringify(data)
-//     console.log(mcisCreateScript)
-//     // $("#m_exportFileName_" + mcisIndex).val(mcisNameVal);
-//     // $("#m_mcisExportScript_" + mcisIndex).val(mcisCreateScript);
-//     $("#exportFileName").val(data.id);
-//     $("#exportScript").val(mcisCreateScript);
-
-//     saveToMcisAsJsonFile(mcisIndex);
-//   } else if (caller == "refreshmcisdata") {
-//     console.log(" gogo ")
-//     // var mcisID = $("#selected_mcis_id").val();
-//     // var mcisIndex = $("#selected_mcis_index").val();
-//     // console.log("setMcisData " + mcisIndex)
-//     // setMcisData(data, mcisIndex);
-//     // console.log("clock List of Mcis ")
-//     // clickListOfMcis(mcisID,mcisIndex);
-
-//     updateMcisData(data, mcisID);
-//   }
-// }
 
 // mcis 상태 표시
 function setToTalMcisStatus() {
@@ -649,8 +560,6 @@ function displayVmStatusArea() {
 }
 
 
-
-
 ////////////////////////////////////////////////////// TABULATOR Start //////////////////////////////////////////////////////
 // tabulator 행, 열, 기본값 설정
 // table이 n개 가능하므로 개별 tabulator 정의 : 원리 util 안에 setTabulator있음.
@@ -702,7 +611,6 @@ function setMcisTabulator(
   }
 
   var tabulatorTable = new Tabulator("#" + tableObjId, {
-    //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
     placeholder,
     pagination,
     paginationSize,
@@ -746,7 +654,7 @@ function initMcisTable() {
     {
       title: "Id",
       field: "id",
-      visible: false
+      visible: true
     },
     {
       title: "System Label",
@@ -809,7 +717,7 @@ function initMcisTable() {
   ];
 
   //mcisListTable = webconsolejs["common/util"].setTabulator("mcislist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
-  mcisListTable = setMcisTabulator("mcislist-table", tableObjParams, columns);
+  mcisListTable = setMcisTabulator("mcislist-table", tableObjParams, columns, true);
 
   // 행 클릭 시
   mcisListTable.on("rowClick", function (e, row) {
@@ -817,8 +725,6 @@ function initMcisTable() {
     selectedVmId = ""
     var mcisID = row.getCell("id").getValue();
     console.log("mcisID", mcisID)
-    // console.log("eeeee",e)
-    //clickListOfMcis(row.getCell("id").getValue());
 
     // 표에서 선택된 MCISInfo 
     getSelectedMcisData(mcisID)
@@ -831,11 +737,22 @@ function initMcisTable() {
     console.log("checked_array", checked_array)
     console.log("rowsrows", data)
     selectedMcisObj = data
-    // console.log(providerFormatterString());
   });
-
   // displayColumn(table);
+}
 
+// toggleSelectBox of table row
+function toggleRowSelection(id) {
+  // mcisListTable에서 데이터 찾기
+  console.log("idid : ", id)
+  var row = mcisListTable.getRow(id);
+  console.log("rowrow", row)
+  if (row) {
+    row.select();
+    console.log("Row with ID " + id + " is selected.");
+  } else {
+    console.log("Row with ID " + id + " not found.");
+  }
 }
 
 // 상태값을 table에서 표시하기 위해 감싸기

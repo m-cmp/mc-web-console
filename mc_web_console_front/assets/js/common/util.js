@@ -66,26 +66,26 @@ export function setTabulator(
 
 
 // 화면이동 
-export function changePage(target, urlParamMap){
+export function changePage(target, urlParamMap) {
   var url = "";
   // target에 따라 url을 달리한다.
-  if( target == "McisMng"){
+  if (target == "McisMng") {
     url = "/webconsole/operation/manage/mcis"
   }
-  
+
   // pathParam을 뒤에 붙인다.
   var keyIndex = 0;
   for (let key of urlParamMap.keys()) {
     console.log("urlParamMap " + key + " : " + urlParamMap.get(key));
-    
+
     var urlParamValue = urlParamMap.get(key)
 
-    if( keyIndex == 0 ) {
-      url += "?" + key + "="  + urlParamValue;
-    }else{
-      url += "&" + key + "="  + urlParamValue;
+    if (keyIndex == 0) {
+      url += "?" + key + "=" + urlParamValue;
+    } else {
+      url += "&" + key + "=" + urlParamValue;
     }
-    
+
   }
 
   // 해당 화면으로 이동한다.
@@ -98,23 +98,23 @@ export function changePage(target, urlParamMap){
 ///////////////////////
 
 export function isEmpty(str) {
-    if (typeof str == "undefined" || str == null || str == "")
-        return true;
-    else
-        return false;
+  if (typeof str == "undefined" || str == null || str == "")
+    return true;
+  else
+    return false;
 }
 
 // column show & hide
 export function displayColumn(table) {
-	$(".display-column").on("click", function () {
-	  if ($(this).children("input:checkbox").is(":checked")) {
-		$(this).children(".material-icons").text("visibility");
-		table.showColumn($(this).data("column"));
-	  } else {
-		$(this).children(".material-icons").text("visibility_off");
-		table.hideColumn($(this).data("column"));
-	  }
-	});
+  $(".display-column").on("click", function () {
+    if ($(this).children("input:checkbox").is(":checked")) {
+      $(this).children(".material-icons").text("visibility");
+      table.showColumn($(this).data("column"));
+    } else {
+      $(this).children(".material-icons").text("visibility_off");
+      table.hideColumn($(this).data("column"));
+    }
+  });
 }
 
 
@@ -125,41 +125,41 @@ export function displayColumn(table) {
 // buffalo의 helperName으로 router를 찾도록 변경함.
 //export function getCommonData(caller, controllerKeyName, optionParamMap, callbackSuccessFunction, callbackFailFunction){
 export function getCommonData(
-        caller,
-        helperName,
-        optionParamMap,
-        callbackSuccessFunction,
-        callbackFailFunction
+  caller,
+  helperName,
+  optionParamMap,
+  callbackSuccessFunction,
+  callbackFailFunction
+) {
+  //var url = getURL(controllerKeyName, optionParamMap);
+  var url = getURL(helperName, optionParamMap);
+
+  axios
+    .get(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    .then((result) => {
+      console.log(result);
+      if (
+        callbackSuccessFunction == undefined ||
+        callbackSuccessFunction == ""
       ) {
-        //var url = getURL(controllerKeyName, optionParamMap);
-        var url = getURL(helperName, optionParamMap);
-      
-        axios
-          .get(url, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-          .then((result) => {
-            console.log(result);
-            if (
-              callbackSuccessFunction == undefined ||
-              callbackSuccessFunction == ""
-            ) {
-              var data = result.data;
-              console.log("callbackSuccessFunction undefined get data : ", data);
-            } else {
-              callbackSuccessFunction(caller, result);
-            }
-          })
-          .catch((error) => {
-            console.warn(error);
-            if (callbackFailFunction == undefined || callbackFailFunction == "") {
-              mcpjs["util/util"].commonAlert(error);
-            } else {
-              callbackFailFunction(caller, error);
-            }
-          });
+        var data = result.data;
+        console.log("callbackSuccessFunction undefined get data : ", data);
+      } else {
+        callbackSuccessFunction(caller, result);
+      }
+    })
+    .catch((error) => {
+      console.warn(error);
+      if (callbackFailFunction == undefined || callbackFailFunction == "") {
+        mcpjs["util/util"].commonAlert(error);
+      } else {
+        callbackFailFunction(caller, error);
+      }
+    });
 }
 
 

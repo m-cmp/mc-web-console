@@ -3,8 +3,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const path = window.location.pathname.split('/');
     console.log("path ", path)
-    const depth2 = 'sidebar_'+ path[3]
-    const depth3 = 'sidebar_'+path[3]+'_'+path[4]    
+    const depth2 = 'sidebar_' + path[3]
+    const depth3 = 'sidebar_' + path[3] + '_' + path[4]
 
     console.log("depth2 ", depth2)
     document.getElementsByName(depth2).forEach(i => i.classList.add('show', 'active'));

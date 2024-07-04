@@ -4,44 +4,41 @@ var totalMcisListObj = new Object();
 var totalMcisStatusMap = new Map();
 var totalVmStatusMap = new Map();
 
-async function initDashboardNs(){
+async function initDashboardNs() {
 
-    ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
-    var curWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-    console.log("workspaceIdProjectId = ", curWorkspaceProject)
+  ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
+  var curWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  console.log("workspaceIdProjectId = ", curWorkspaceProject)
 
-    ////////////////////// partials init functions///////////////////////////////////////
-    try{
-        //webconsolejs["partials/operation/dashboard/mcis_dashboard"].initMcisDashboard(workspaceIdProjectId);        
-        webconsolejs["partials/operation/dashboard/mcis_dashboard"].initMcisDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
-    }catch(e){
-        console.log(e);
-    }
-    
+  // workspace selection check
+  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(curWorkspaceProject)
+
+  ////////////////////// partials init functions///////////////////////////////////////
+  try {
+    webconsolejs["partials/operation/dashboard/mcis_dashboard"].initMcisDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
+  } catch (e) {
+    console.log(e);
+  }
+
 }
 
 // partial에서 변경내용을 page로 알려줄 때,
-export function callbackStatusChanged(caller, respData){
-    console.log("=== callback from ", caller);
-    console.log("=== respData ", respData);
-    //
-    if( caller == "mcischanged"){// mcis 목록 조회 뒤 status 표시를 위해 호출함
-      
-      totalMcisListObj.totalMcisStatusMap = respData.totalMcisStatusMap;
-      totalMcisListObj.totalVmStatusMap = respData.totalVmStatusMap;
+export function callbackStatusChanged(caller, respData) {
+  console.log("=== callback from ", caller);
+  console.log("=== respData ", respData);
+  
+  if (caller == "mcischanged") {// mcis 목록 조회 뒤 status 표시를 위해 호출함
 
-      webconsolejs["partials/operation/manage/mcisserver_summary"].initMcisServerSummary(null, totalMcisListObj);        
-    }
+    totalMcisListObj.totalMcisStatusMap = respData.totalMcisStatusMap;
+    totalMcisListObj.totalVmStatusMap = respData.totalVmStatusMap;
 
-    //< %= partial("partials/operation/manage/mcisserver_summary.html") % >
-    //< %= partial("partials/operation/dashboard/mcis_dashboard.html") % >
+    webconsolejs["partials/operation/manage/mcisserver_summary"].initMcisServerSummary(null, totalMcisListObj);
+  }
 }
-
-
 
 function calculateMcisStatusCount(mcisData) {
   console.log("calculateMcisStatusCount");
-  
+
   console.log("mcisData : ", mcisData);
   var mcisStatusCountMap = new Map();
   mcisStatusCountMap.set("running", 0);
@@ -63,7 +60,6 @@ function calculateMcisStatusCount(mcisData) {
   } catch (e) {
     console.log("mcis status error", e);
   }
-  // console.log(mcisStatusCountMap);
+
   return mcisStatusCountMap;
 }
-

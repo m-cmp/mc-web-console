@@ -3,19 +3,19 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 //document.addEventListener("DOMContentLoaded", initMcisCreate) // page가 아닌 partials에서는 제거
 
 // create page 가 load 될 때 실행해야 할 것들 정의
-export function initMcisCreate(){
-    console.log("initMcisCreate")
+export function initMcisCreate() {
+	console.log("initMcisCreate")
 
-    // partial init functions
+	// partial init functions
 
 	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mciscreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
 }
 
 // callback PopupData
-export async function callbackServerRecommendation(vmSpec){
-    console.log("callbackServerRecommendation")
-    
-    $("#ep_provider").val(vmSpec.provider)
+export async function callbackServerRecommendation(vmSpec) {
+	console.log("callbackServerRecommendation")
+
+	$("#ep_provider").val(vmSpec.provider)
 	$("#ep_connectionName").val(vmSpec.connectionName)
 	$("#ep_specId").val(vmSpec.specName)
 	$("#ep_imageId").val(vmSpec.imageName)
@@ -64,9 +64,8 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	//}
 	console.log("const valie DISK_SIZE : ", DISK_SIZE)
 
-	var myModalEl = document.getElementById('spec-search');
-	var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
-	modal.hide();
+	webconsolejs["partials/layout/modal"].modalHide('spec-search')
+
 }
 var createMcisListObj = new Object();
 var isVm = false // mcis 생성(false) / vm 추가(true)
@@ -172,9 +171,9 @@ export function expressDone_btn() {
 	var displayServerCnt = '(' + server_cnt + ')'
 
 	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mciscreate\'].view_express(\'' + express_data_cnt + '\')">'
-	
+
 		+ server_name + displayServerCnt
-	
+
 		+ '</li>';
 
 	// }
@@ -196,7 +195,7 @@ export function expressDone_btn() {
 	var vmEleId = "vm"
 	if (!isVm) {
 		vmEleId = "mcis"
-	}		
+	}
 	console.log("add vm")
 	$("#" + vmEleId + "_plusVmIcon").remove();
 	$("#" + vmEleId + "_server_list").append(add_server_html)
@@ -371,18 +370,18 @@ export function deployMcis() {
 	//     }
 	// }    
 }
-export async function createMcisDynamic(){
+export async function createMcisDynamic() {
 	console.log("createMcisDynamic")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
 	var selectedNsId = selectedWorkspaceProject.nsId;
-	var projectId = $("#select-current-project").text()	
+	var projectId = $("#select-current-project").text()
 	var projectName = $('#select-current-project').find('option:selected').text();
 	var nsId = projectName;
 	console.log("create ssss nsId ", projectName)
-	
+
 	var mcisName = $("#mcis_name").val()
 	var mcisDesc = $("#mcis_desc").val()
 
@@ -446,9 +445,9 @@ export function addNewVirtualMachine() {
 
 	var mcis_name = selectedMcis[0].name
 	var mcis_desc = selectedMcis[0].description
-	
+
 	$("#extend_mcis_name").val(mcis_name)
-	
+
 	$("#extend_mcis_desc").val(mcis_desc)
 	console.log("extend_mcis_desc", mcis_desc)
 
