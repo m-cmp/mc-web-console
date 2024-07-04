@@ -3,7 +3,6 @@
 // 해당 provider, connection 으로 사용가능한 Disk의 Type 정보(type, min, max ) 조회
 // ex) AWS -> standard|1|1024, gp2|1|16384
 export async function getCommonLookupDiskInfo(provider, connectionName) {
-    console.log("getCommonLookupDiskInfo", provider, connectionName)
 	const data = {
 		queryParams: {
 			"provider": provider,
@@ -16,7 +15,7 @@ export async function getCommonLookupDiskInfo(provider, connectionName) {
 		controller,
 		data
 	);
-	console.log("lookup disk info", response)
+	console.log("lookup disk info response : ", response)
 	var responseData = response.data.responseData
     
     return responseData
