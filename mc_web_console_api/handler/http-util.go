@@ -29,60 +29,7 @@ type WebStatus struct {
 	Message    string `json:"message"`
 }
 
-func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
-	webStatus := WebStatus{
-		StatusCode: http.StatusOK,
-		Message:    http.StatusText(http.StatusOK),
-	}
-	return &CommonResponse{
-		ResponseData: responseData,
-		Status:       webStatus,
-	}
-}
-
-func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
-	webStatus := WebStatus{
-		StatusCode: http.StatusNotFound,
-		Message:    http.StatusText(http.StatusNotFound),
-	}
-	return &CommonResponse{
-		ResponseData: responseData,
-		Status:       webStatus,
-	}
-}
-
-func CommonResponseStatusStatusUnauthorized(responseData interface{}) *CommonResponse {
-	webStatus := WebStatus{
-		StatusCode: http.StatusUnauthorized,
-		Message:    http.StatusText(http.StatusUnauthorized),
-	}
-	return &CommonResponse{
-		ResponseData: responseData,
-		Status:       webStatus,
-	}
-}
-
-func CommonResponseStatusBadRequest(responseData interface{}) *CommonResponse {
-	webStatus := WebStatus{
-		StatusCode: http.StatusBadRequest,
-		Message:    http.StatusText(http.StatusBadRequest),
-	}
-	return &CommonResponse{
-		ResponseData: responseData,
-		Status:       webStatus,
-	}
-}
-
-func CommonResponseStatusInternalServerError(responseData interface{}) *CommonResponse {
-	webStatus := WebStatus{
-		StatusCode: http.StatusInternalServerError,
-		Message:    http.StatusText(http.StatusInternalServerError),
-	}
-	return &CommonResponse{
-		ResponseData: responseData,
-		Status:       webStatus,
-	}
-}
+////////////////////////////////////////////////////////////////
 
 func CommonCaller(callMethod string, targetFwUrl string, endPoint string, commonRequest *CommonRequest, auth string) (*CommonResponse, error) {
 	pathParamsUrl := mappingUrlPathParams(endPoint, commonRequest)
@@ -99,6 +46,8 @@ func CommonCallerWithoutToken(callMethod string, targetFwUrl string, endPoint st
 	commonResponse, err := CommonHttpToCommonResponse(requestUrl, commonRequest.Request, callMethod, "")
 	return commonResponse, err
 }
+
+////////////////////////////////////////////////////////////////
 
 func mappingUrlPathParams(endPoint string, commonRequest *CommonRequest) string {
 	u := endPoint
@@ -185,4 +134,61 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 func isJSONResponse(body []byte) bool {
 	var js map[string]interface{}
 	return json.Unmarshal(body, &js) == nil
+}
+
+////////////////////////////////////////////////////////////////
+
+func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusOK,
+		Message:    http.StatusText(http.StatusOK),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusNotFound,
+		Message:    http.StatusText(http.StatusNotFound),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusStatusUnauthorized(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusUnauthorized,
+		Message:    http.StatusText(http.StatusUnauthorized),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusBadRequest(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusBadRequest,
+		Message:    http.StatusText(http.StatusBadRequest),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusInternalServerError(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusInternalServerError,
+		Message:    http.StatusText(http.StatusInternalServerError),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
 }
