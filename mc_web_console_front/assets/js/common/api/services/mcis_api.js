@@ -15,7 +15,7 @@ export async function getMcisList(nsId) {
     },
   };
 
-  var controller = "/api/" + "getmcislist";
+  var controller = "/api/" + "GetAllMcis";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -38,7 +38,7 @@ export async function getMcis(nsId, mcisId) {
     }
   }
 
-  var controller = "/api/" + "getmcis";
+  var controller = "/api/" + "GetMcis";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -64,7 +64,7 @@ export function mcisLifeCycle(type, checked_array, nsId) {
         "action": type
       }
     };
-    let controller = "/api/" + "controllifecycle";
+    let controller = "/api/" + "GetControlMcis";
     let response = webconsolejs["common/api/http"].commonAPIPost(
       controller,
       data
@@ -86,7 +86,7 @@ export function vmLifeCycle(type, mcisId, nsId, vmid) {
       "action": type
     }
   };
-  let controller = "/api/" + "controlvmlifecycle";
+  let controller = "/api/" + "GetControlMcisVm";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -112,7 +112,7 @@ export async function mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr,
     }
   }
 
-  var controller = "/api/" + "createdynamicmcis";
+  var controller = "/api/" + "PostMcisDynamic";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -149,7 +149,7 @@ export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "createvmdynamic";
+  var controller = "/api/" + "PostMcisVmDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -158,7 +158,7 @@ export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
 }
 
 export async function mcisRecommendVm(data) {
-  var controller = "/api/" + "mcisrecommendvm";
+  var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -324,7 +324,7 @@ export function calculateMcisStatusCount(mcisData) {
       }
     }
   } catch (e) {
-    console.log("mcis status error", e);
+    console.error("mcis status error", e);
   }
   // console.log(mcisStatusCountMap);
   return mcisStatusCountMap;
@@ -391,7 +391,7 @@ export function calculateVmStatusCount(aMcis) {
       }
     }
   } catch (e) {
-    console.log("mcis status error");
+    console.error("mcis status error", e); // 에러 로그 처리 예시
   }
   return vmStatusCountMap;
 }
