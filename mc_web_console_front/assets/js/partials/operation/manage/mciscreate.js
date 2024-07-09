@@ -77,9 +77,23 @@ var express_data_cnt = 0
 // isExpert의 체크 여부에 따라 바뀜.
 // newServers 와 simpleServers가 있음.
 export function displayNewServerForm() {
+	var deploymentAlgo = $("#mcis_deploy_algorithm").val();
 
-	var div = document.getElementById("server_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+	if (deploymentAlgo == "express") {
+		var div = document.getElementById("server_configuration");
+		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+	} else if (deploymentAlgo == "simple") {
+		// var div = document.getElementById("server_configuration");
+		// webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+	} else if (deploymentAlgo == "expert") {
+		var div = document.getElementById("expert_server_configuration");
+		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+	} else {
+		console.error(e)
+	}
 
 
 	// var expressServerConfig = $("#expressServerConfig");
@@ -598,3 +612,24 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 	}
 	commonResultAlert("VM creation request completed");
 }
+
+
+$(document).ready(function () {
+    $(".input-number-increment").click(function () {
+        var $input = $(this).siblings(".input-number");
+        var val = parseInt($input.val(), 10);
+        var max = parseInt($input.attr('max'), 10);
+        if (val < max) {
+            $input.val(val + 1);
+        }
+    });
+
+    $(".input-number-decrement").click(function () {
+        var $input = $(this).siblings(".input-number");
+        var val = parseInt($input.val(), 10);
+        var min = parseInt($input.attr('min'), 10);
+        if (val > min) {
+            $input.val(val - 1);
+        }
+    });
+});

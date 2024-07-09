@@ -45,7 +45,14 @@ export async function getUserProjectList(workspaceId) {
 
 // 유저의 workspace 목록 조회
 async function getWorkspaceProjectListByUser() {
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspacebyuserid', null)
+  var currentUserId = document.getElementById("userid").value
+  console.log("currentUserId",currentUserId)
+  var data = {
+    pathParams: {
+      userId: currentUserId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/Getworkspaceuserrolemappinglistbyuserid', data)
   return response.data.responseData
 }
 
@@ -97,7 +104,7 @@ export async function getProjectListByWorkspaceId(workspaceId) {
   }
 
   var projectList = [];
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/projectlistbyworkspaceid', requestObject)
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/Getwpmappinglistorderbyworkspace', requestObject)
   console.log(response)
   var data = response.data.responseData.projects
   data.forEach(item => {

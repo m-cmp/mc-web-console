@@ -15,26 +15,20 @@ function hideLoader() {
 export function toggleElement(elem) {
     // 자기 자신에 대한 Toggle
     if (elem.classList.contains("active")) {
-        console.log("here")
         elem.classList.remove('active')
         window.location.hash = ""
     } else {
-        console.log("active")
         elem.classList.add('active')
-        console.log(elem)
     }
 }
 
 export function toggleSubElement(elem) {
     // 자기 자신에 대한 Toggle
     if (elem.classList.contains("active")) {
-        console.log("subhere")
         elem.classList.remove('active')
         // window.location.hash = ""
     } else {
-        console.log("active")
         elem.classList.add('active')
-        console.log(elem)
     }
 }
 
