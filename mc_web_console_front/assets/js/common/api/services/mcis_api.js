@@ -184,13 +184,39 @@ export async function getProviderList() {
 
 export async function getRegionList() {
 
+// let data = {
+		// pathParams: {
+		//   providerName: "AWS",
+		//   regionName: "aws-ca-west-1",
+		// }
+	//   };
+	
   let controller = "/api/" + "GetRegionList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
+    
   );
   console.log("getRegionList response : ", response)
 
   return response.data.responseData.region
+}
+
+export async function getCloudConnection() {
+
+
+	// test
+  let data = {
+    queryParams: {
+      "filterVerified": true
+    }
+  };
+	let controller = "/api/" + "GetConnConfigList";
+	let response = await webconsolejs["common/api/http"].commonAPIPost(
+	  controller,
+	  data
+	);
+	
+  return response.data.responseData.connectionconfig
 }
 
 // mcis내 vm들의 provider별 connection count
