@@ -168,6 +168,30 @@ export async function mcisRecommendVm(data) {
 
   return response.data
 }
+// get all provider
+
+// get all registered region list
+export async function getProviderList() {
+  
+  let controller = "/api/" + "GetProviderList";
+  let response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+  );
+  console.log("getProviderList response : ", response)
+
+  return response.data.responseData.output
+}
+
+export async function getRegionList() {
+
+  let controller = "/api/" + "GetRegionList";
+  let response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+  );
+  console.log("getRegionList response : ", response)
+
+  return response.data.responseData.region
+}
 
 // mcis내 vm들의 provider별 connection count
 export function calculateConnectionCount(vmList) {

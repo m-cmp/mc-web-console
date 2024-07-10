@@ -209,40 +209,22 @@
                 <label class="form-label">Cloud Provider / Region</label>
                 <div class="row g-2">
                   <div class="col-6">
-                    <select name="select-provider" class="form-select">
+                    <select name="select-provider" class="form-select" id="expert_provider" onchange="webconsolejs['partials/operation/manage/mciscreate'].filterRegion(this.value)"
+                    >
                       <option value="">Select Provider</option>
-                      <option value="aws">AWS</option>
-                      <option value="AZURE">AZURE</option>
-                      <option value="GCP">GCP</option>
-                      <option value="ALIBABA">ALIBABA</option>
-                      <option value="TENCENT">TENCENT</option>
-                      <option value="IBM">IBM</option>
-                      <option value="OPENSTACK">OPENSTACK</option>
-                      <option value="CLOUDIT">CLOUDIT</option>
-                      <option value="NCP">NCP</option>
-                      <option value="NCPVPC">NCPVPC</option>
-                      <option value="NHNCLOUD">NHNCLOUD</option>
-                      <option value="KTCLOUD">KTCLOUD</option>
-                      <option value="KTCLOUDVPC">KTCLOUDVPC</option>
-                      <option value="DOCKER">DOCKER</option>
-                      <option value="MOCK">MOCK</option>
-                      <option value="CLOUDTWIN">CLOUDTWIN</option>
+                      
                     </select>
                   </div>
                   <div class="col-6">
-                    <select name="region-select" class="form-select">
+                    <select name="select-region" class="form-select" id="expert_region">
                       <option value="">Select Region</option>
-                      <option value="region1" selected="">
-                        [AWS] aws-sao-rg
-                      </option>
-                      <option value="region2">[GCP] gcp-tokyo-rg</option>
-                      <option value="region3">[ALIBABA] ap-southeast-1</option>
+                      
                     </select>
                   </div>
                 </div>
               </div>
               <div class="form-group mb-2">
-                <label class="form-label required">Connection Connection</label>
+                <label class="form-label required">Cloud Connection</label>
                 <div class="row g-2">
                   <div class="col">
                     <select class="form-select" name="provider" required>
@@ -258,6 +240,8 @@
                       class="btn"
                       data-bs-toggle="modal"
                       data-bs-target="#deployment-target"
+                      onclick="webconsolejs['partials/operation/manage/serverrecommendation'].getRecommendVmInfo()"
+
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
