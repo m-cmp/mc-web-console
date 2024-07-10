@@ -209,8 +209,7 @@
                 <label class="form-label">Cloud Provider / Region</label>
                 <div class="row g-2">
                   <div class="col-6">
-                    <select name="select-provider" class="form-select" id="expert_provider" onchange="webconsolejs['partials/operation/manage/mciscreate'].filterRegion(this.value)"
-                    >
+                    <select name="select-provider" class="form-select" id="expert_provider">
                       <option value="">Select Provider</option>
                       
                     </select>
@@ -227,11 +226,9 @@
                 <label class="form-label required">Cloud Connection</label>
                 <div class="row g-2">
                   <div class="col">
-                    <select class="form-select" name="provider" required>
-                      <option value="" selected>Select Connection</option>
-                      <option>aws-sao-conn</option>
-                      <option>gcp-cortado-conn</option>
-                      <option>ali-cortado-conn</option>
+                    <select class="form-select" name="select-connection" id="expert_cloudconnection" required>
+                      <option value="">Select Connection</option>
+                      
                     </select>
                   </div>
                   <div class="col-auto">
@@ -240,7 +237,7 @@
                       class="btn"
                       data-bs-toggle="modal"
                       data-bs-target="#deployment-target"
-                      onclick="webconsolejs['partials/operation/manage/serverrecommendation'].getRecommendVmInfo()"
+                      onclick="webconsolejs['partials/operation/manage/deploymenttarget'].getRecommendConnection()"
 
                     >
                       <svg
