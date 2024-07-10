@@ -67,6 +67,91 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	webconsolejs["partials/layout/modal"].modalHide('spec-search')
 
 }
+export async function setProviderList(providerList) {
+	// TODO: simple form
+
+	// expert form
+	// 모든 provider들을 대문자로 변환
+	var myProviderList = providerList.map(str => str.toUpperCase());
+	// 알파벳 순으로 정렬
+	myProviderList.sort()
+	console.log("myProviderList", myProviderList); // 변환된 배열 출력
+
+	var html = '<option value="">Select Provider</option>'
+	myProviderList.forEach(item => {
+		html += '<option value="' + item + '">' + item + '</option>'
+	})
+
+	$("#expert_provider").empty();
+	$("#expert_provider").append(html);
+
+}
+
+// for filterRegion func
+var myRegionList = []
+
+// region 목록 SET
+export async function setRegionList(regionList) {
+	// TODO: simple form
+
+	// expert form
+	myRegionList = []
+
+	// object에서 [providerName] + regionName 형태로 배열 생성
+	regionList.forEach(region => {
+		var providerName = region.ProviderName
+		var regionName = region.RegionName
+
+		var myRegionName = `[${providerName}] ${regionName}`
+
+		myRegionList.push(myRegionName)
+	})
+
+	var html = '<option value="">Select Region</option>'
+	myRegionList.forEach(item => {
+		html += '<option value="' + item + '">' + item + '</option>'
+	})
+
+	$("#expert_region").empty();
+	$("#expert_region").append(html);
+
+}
+
+// provide 선택시 region 목록 필터링
+export async function filterRegion(providerName) {
+	console.log(providerName)
+
+	var filteredRegion = myRegionList.filter(region => {
+		return region.startsWith(`[${providerName}]`)
+	})
+
+	// provider 선택 시 Region SET
+	var html = '<option value="">Select Region</option>'
+	filteredRegion.forEach(item => {
+		html += '<option value="' + item + '">' + item + '</option>'
+	})
+
+	$("#expert_region").empty();
+	$("#expert_region").append(html);
+
+
+	// test
+	// let data = {
+	// 	pathParams: {
+	// 	  providerName: "AWS",
+	// 	  regionName: "aws-ca-west-1",
+	// 	}
+	//   };
+	// let controller = "/api/" + "GetRegion";
+	// let response = await webconsolejs["common/api/http"].commonAPIPost(
+	//   controller,
+	//   data
+	// );
+	// console.log("getProviderList response : ", response)
+  
+
+}
+
 var createMcisListObj = new Object();
 var isVm = false // mcis 생성(false) / vm 추가(true)
 var Express_Server_Config_Arr = new Array();
@@ -76,7 +161,7 @@ var express_data_cnt = 0
 // 서버 더하기버튼 클릭시 서버정보 입력area 보이기/숨기기
 // isExpert의 체크 여부에 따라 바뀜.
 // newServers 와 simpleServers가 있음.
-export function displayNewServerForm() {
+export async function displayNewServerForm() {
 	var deploymentAlgo = $("#mcis_deploy_algorithm").val();
 
 	if (deploymentAlgo == "express") {
@@ -88,6 +173,17 @@ export function displayNewServerForm() {
 		// webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
 	} else if (deploymentAlgo == "expert") {
+		// call getProviderList API
+		var providerList = await webconsolejs["common/api/services/mcis_api"].getProviderList()
+		// provider set
+		await setProviderList(providerList)
+
+		// call getRegion API
+		var regionList = await webconsolejs["common/api/services/mcis_api"].getRegionList()
+		// region set
+		await setRegionList(regionList)
+
+		// toggle expert form
 		var div = document.getElementById("expert_server_configuration");
 		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
@@ -613,23 +709,23 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 	commonResultAlert("VM creation request completed");
 }
 
-
+// server quantity 
 $(document).ready(function () {
-    $(".input-number-increment").click(function () {
-        var $input = $(this).siblings(".input-number");
-        var val = parseInt($input.val(), 10);
-        var max = parseInt($input.attr('max'), 10);
-        if (val < max) {
-            $input.val(val + 1);
-        }
-    });
+	$(".input-number-increment").click(function () {
+		var $input = $(this).siblings(".input-number");
+		var val = parseInt($input.val(), 10);
+		var max = parseInt($input.attr('max'), 10);
+		if (val < max) {
+			$input.val(val + 1);
+		}
+	});
 
-    $(".input-number-decrement").click(function () {
-        var $input = $(this).siblings(".input-number");
-        var val = parseInt($input.val(), 10);
-        var min = parseInt($input.attr('min'), 10);
-        if (val > min) {
-            $input.val(val - 1);
-        }
-    });
-});
+	$(".input-number-decrement").click(function () {
+		var $input = $(this).siblings(".input-number");
+		var val = parseInt($input.val(), 10);
+		var min = parseInt($input.attr('min'), 10);
+		if (val > min) {
+			$input.val(val - 1);
+		}
+	});
+});  
