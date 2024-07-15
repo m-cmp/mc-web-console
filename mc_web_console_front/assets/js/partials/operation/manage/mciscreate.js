@@ -67,6 +67,7 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	webconsolejs["partials/layout/modal"].modalHide('spec-search')
 
 }
+
 export async function setProviderList(providerList) {
 	// TODO: simple form
 
@@ -87,52 +88,79 @@ export async function setProviderList(providerList) {
 
 }
 
-
 // region 목록 SET
 export async function setRegionList(regionList) {
 	// TODO: simple form
 
 	// expert form
-	myRegionList = []
+	if (Array.isArray(regionList) && typeof regionList[0] === 'string') {
+		var html = '<option value="">Select Region</option>'
+		myRegionList.forEach(item => {
+			html += '<option value="' + item + '">' + item + '</option>'
+		})
 
-	// object에서 [providerName] + regionName 형태로 배열 생성
-	regionList.forEach(region => {
-		var providerName = region.ProviderName
-		var regionName = region.RegionName
+		$("#expert_region").empty();
+		$("#expert_region").append(html);
+	} else if (Array.isArray(regionList)) {
+		// object에서 [providerName] + regionName 형태로 배열 생성
+		regionList.forEach(region => {
+			var providerName = region.ProviderName
+			var regionName = region.RegionName
 
-		var myRegionName = `[${providerName}] ${regionName}`
+			var myRegionName = `[${providerName}] ${regionName}`
 
-		myRegionList.push(myRegionName)
-	})
+			myRegionList.push(myRegionName)
+		})
 
-	var html = '<option value="">Select Region</option>'
-	myRegionList.forEach(item => {
-		html += '<option value="' + item + '">' + item + '</option>'
-	})
+		var html = '<option value="">Select Region</option>'
+		myRegionList.forEach(item => {
+			html += '<option value="' + item + '">' + item + '</option>'
+		})
 
-	$("#expert_region").empty();
-	$("#expert_region").append(html);
-
+		$("#expert_region").empty();
+		$("#expert_region").append(html);
+	}
 }
 
 export async function setCloudConnection(cloudConnection) {
 	// TODO: simple form
 
 	// expert form
-	// 모든 provider들을 대문자로 변환
-	myCloudConnection = cloudConnection.map(item => item.configName);
-	// 알파벳 순으로 정렬
-	myCloudConnection.sort()
-	console.log("myCloudConnection", myCloudConnection); // 변환된 배열 출력
+	if (Array.isArray(cloudConnection) && typeof cloudConnection[0] === 'string') {
+		// 배열이고 첫 번째 요소가 문자열인 경우 / filter에서 사용
 
-	var html = '<option value="">Select Connection</option>'
-	myCloudConnection.forEach(item => {
-		html += '<option value="' + item + '">' + item + '</option>'
-	})
+		// 알파벳 순으로 정렬
+		cloudConnection.sort();
+		console.log("cloudConnection", cloudConnection); // 변환된 배열 출력
 
-	$("#expert_cloudconnection").empty();
-	$("#expert_cloudconnection").append(html);
+		var html = '<option value="">Select Connection</option>';
+		cloudConnection.forEach(item => {
+			html += '<option value="' + item + '">' + item + '</option>';
+		});
 
+		$("#expert_cloudconnection").empty();
+		$("#expert_cloudconnection").append(html);
+
+	} else if (Array.isArray(cloudConnection)) {
+		// array 형태일 때
+
+		myCloudConnection = cloudConnection.map(item => item.configName);
+		// 알파벳 순으로 정렬
+		myCloudConnection.sort()
+		console.log("myCloudConnection", myCloudConnection); // 변환된 배열 출력
+
+		var html = '<option value="">Select Connection</option>'
+		myCloudConnection.forEach(item => {
+			html += '<option value="' + item + '">' + item + '</option>'
+		})
+
+		$("#expert_cloudconnection").empty();
+		$("#expert_cloudconnection").append(html);
+
+	} else {
+		console.error("Unknown cloudConnection format");
+		return;
+	}
 }
 // for filterRegion func
 // set된 값들
@@ -143,30 +171,38 @@ var myCloudConnection = []
 // provider region cloudconnection filtering
 var providerSelect = document.getElementById('expert_provider');
 var regionSelect = document.getElementById('expert_region');
-// var connectionSelect = document.getElementById('expert_connection');
+var connectionSelect = document.getElementById('expert_connection');
 providerSelect.addEventListener('change', updateConfigurationFilltering);
 regionSelect.addEventListener('change', updateConfigurationFilltering);
 // connectionSelect.addEventListener('change', updateConfigurationFilltering);
 
-function updateConfigurationFilltering(){
-	
+async function updateConfigurationFilltering() {
+
 	var selectedProvider = providerSelect.value; // 선택된 provider
 	var selectedRegion = regionSelect.value; // 선택된 region
 	// var selectedConnection = connectionSelect.value; // 선택된 connection
 
+	//초기화 했을 시 
+	if (selectedProvider === "") {
+		await setRegionList(myRegionList)
+		await setCloudConnection(myCloudConnection)
+
+		return
+	}
+
 	// providr 선택시 region, connection filtering
-	if(selectedProvider != "" && selectedRegion === "") {
-		
+	if (selectedProvider !== "" && selectedRegion === "") {
+
 		// region filter
 		var filteredRegion = myRegionList.filter(region => {
 			return region.startsWith(`[${selectedProvider}]`)
 		})
-	
+
 		var html = '<option value="">Select Region</option>'
 		filteredRegion.forEach(item => {
 			html += '<option value="' + item + '">' + item + '</option>'
 		})
-	
+
 		$("#expert_region").empty();
 		$("#expert_region").append(html);
 
@@ -176,8 +212,8 @@ function updateConfigurationFilltering(){
 		var lowerSelectedProvider = selectedProvider.toLowerCase();
 		var filteredConnection = myCloudConnection.filter(connection => {
 
-            return connection.startsWith(lowerSelectedProvider);
-        });
+			return connection.startsWith(lowerSelectedProvider);
+		});
 
 		var nhtml = '<option value="">Select Connection</option>'
 		filteredConnection.forEach(item => {
@@ -186,20 +222,20 @@ function updateConfigurationFilltering(){
 
 		$("#expert_cloudconnection").empty();
 		$("#expert_cloudconnection").append(nhtml);
-		
+
 	}
-console.log("myRegionListmyRegionListmyRegionList",myRegionList)
+
 	// region 선택시 connection filtering
-	if(selectedRegion != ""){
-		
+	if (selectedRegion != "") {
+
 		var cspRegex = /^\[(.*?)\]/; // "[CSP]" 형식의 문자열에서 CSP 이름 추출
 		var cspMatch = selectedRegion.match(cspRegex);
 		var provider = cspMatch ? cspMatch[1].toLowerCase() : null; // CSP 이름 추출 및 소문자 변환
-		
+
 		var filteredConnections = myCloudConnection.filter(connection => {
 			return connection.startsWith(`${provider}`);
 		});
-		
+
 		var html = '<option value="">Select Connection</option>'
 		filteredConnections.forEach(item => {
 			html += '<option value="' + item + '">' + item + '</option>'
@@ -207,9 +243,9 @@ console.log("myRegionListmyRegionListmyRegionList",myRegionList)
 
 		$("#expert_cloudconnection").empty();
 		$("#expert_cloudconnection").append(html);
-		
+
 	}
-	//초기화 했을 시 
+
 }
 
 var createMcisListObj = new Object();
