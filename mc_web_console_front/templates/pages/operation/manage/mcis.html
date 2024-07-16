@@ -753,7 +753,12 @@
 <%= partial("partials/operation/manage/mciscreate.html") %>
 
 <!-- add server : spec-search -->
-<%= partial("partials/operation/manage/serverrecommendation.html") %> <%=
-javascriptTag("pages/operation/manage/mcis.js") %> <%=
-javascriptTag("common/api/services/mcis_api.js") %> <%=
-javascriptTag("common/api/services/vmimage_api.js") %>
+<%= partial("partials/operation/manage/serverrecommendation.html") %> 
+<!-- add server : cspimagelist -->
+<%= partial("partials/operation/manage/cspimagelist.html") %> 
+<!-- add server : cspspeclist -->
+<%= partial("partials/operation/manage/cspspeclist.html") %> 
+
+<%= javascriptTag("pages/operation/manage/mcis.js") %>
+<%= javascriptTag("common/api/services/mcis_api.js") %> 
+<%= javascriptTag("common/api/services/vmimage_api.js") %>

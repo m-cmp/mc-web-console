@@ -37,7 +37,7 @@ export async function initMcisDashboard(callbackfunction, workspaceProject) {
 // mcisList 조회 성공시 화면에 Set
 function getMcisListCallbackSuccess(caller, mcisList) {
   console.log("getMcisListCallbackSuccess");
-
+  
   totalMcisListObj = mcisList.mcis;
 
   var returnMcisListObj = new Object();
