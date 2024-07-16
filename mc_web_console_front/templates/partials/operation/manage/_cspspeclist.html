@@ -1,0 +1,139 @@
+<!-- add server : spec-search : server recommendation -->
+<div
+  class="modal modal-blur fade"
+  id="cspspec-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">CSP Spec List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <div class="row g-2">
+              <div class="col-6">
+              <label class="form-label">Cloud Provider</label>
+
+                <select
+                  name="select-provider"
+                  class="form-select"
+                  id="assist_expert_provider"
+                >
+                  <option value="">Select Provider</option>
+                </select>
+              </div>
+              <div class="col-6">
+              <label class="form-label">Connection Name</label>
+
+                <select
+                  name="select-region"
+                  class="form-select"
+                  id="assist_expert_cloudconnection"
+                >
+                  <option value="">Select Connection</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading-1">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse-1"
+              aria-expanded="true"
+            >
+              Spec Config
+            </button>
+          </h2>
+          <div
+            id="collapse-1"
+            class="accordion-collapse collapse show"
+            data-bs-parent="#accordion-example"
+          >
+            <div class="accordion-body pt-0">
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label">Memory (GB)</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_memory"
+                      id="assist_min_memory"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_memory"
+                      id="assist_max_memory"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">vCPU</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_cpu"
+                      id="assist_min_cpu"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_cpu"
+                      id="assist_max_cpu"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-responsive" id="speclist-table"></div>
+      </div>
+
+      <div class="modal-footer">
+        <div align="right">
+          <button
+            type="submit"
+            class="btn btn-info"
+            onclick="webconsolejs['partials/operation/manage/serverrecommendation'].applySpecInfo()"
+          >
+            Apply
+          </button>
+          <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- add server : spec-search end -->
+
+<!-- <%= javascriptTag("partials/operation/manage/serverrecommendation.js") %> -->
