@@ -2,7 +2,7 @@
 //////////////////////////////////////////////////////////
 
 export function setSessionCurrentUserToken(token) {
-    sessionStorage.setItem('currentUserToken',token)
+    sessionStorage.setItem('currentUserToken', token)
 }
 
 export function getSessionCurrentUserToken() {
@@ -17,30 +17,33 @@ export function getSessionCurrentUserToken() {
 export function getSessionCurrentWorkspace() {
     return JSON.parse(sessionStorage.getItem("currentWorkspace"))
 }
+
 export function setSessionCurrentWorkspace(workspace) {
-    sessionStorage.setItem('currentWorkspace',JSON.stringify(workspace))
+    sessionStorage.setItem('currentWorkspace', JSON.stringify(workspace))
 }
 
 // // project
 export function getSessionCurrentProject() {
     return JSON.parse(sessionStorage.getItem("currentProject"))
 }
+
 export function setSessionCurrentProject(project) {
-    sessionStorage.setItem('currentProject',JSON.stringify(project))
+    sessionStorage.setItem('currentProject', JSON.stringify(project))
 }
 
 export function getSessionWorkspaceProjectList() {
     return JSON.parse(sessionStorage.getItem("currentWorkspaceProjcetList"))
 }
+
 export function setSessionWorkspaceProjectList(userWorkspaceProjectList) {
     var workspaceProjectList = JSON.stringify(userWorkspaceProjectList)
     sessionStorage.setItem('currentWorkspaceProjcetList', workspaceProjectList)
 
     var workspaceList = []
-    
-    const jsonData = JSON.parse(userWorkspaceProjectList);      
-      //console.log(jsonData)
-      jsonData.forEach(item => {
+
+    const jsonData = JSON.parse(userWorkspaceProjectList);
+
+    jsonData.forEach(item => {
         console.log(item)
         var wsItem = item.workspaceProject.workspace;
         workspaceList.push(wsItem);
@@ -49,12 +52,12 @@ export function setSessionWorkspaceProjectList(userWorkspaceProjectList) {
         var projectList = []
         proItems.forEach(subitem => {
             projectList.push(subitem);
-          });
+        });
         setSessionProjectList(wsItem.id, JSON.stringify(projectList))
         //setSessionProjectList(wsItem.name, JSON.stringify(projectList))// 공백같은 것은 없겠지?
-      });
+    });
     setSessionWorkspaceList(JSON.stringify(workspaceList))
-    
+
 }
 
 export function clearSessionCurrentWorkspaceProject() {
@@ -71,15 +74,15 @@ export function getSessionCurrentWorkspaceProjcet() {
 
 export function setSessionCurrentWorkspaceProjcet(workspaceId, projectId) {
     let currentWorksppacProject = {
-        "currentWorkspace":workspaceId,
-        "currentProject":projectId
+        "currentWorkspace": workspaceId,
+        "currentProject": projectId
     }
-    sessionStorage.setItem('currentWorkspacProject',JSON.stringify(currentWorksppacProject))
+    sessionStorage.setItem('currentWorkspacProject', JSON.stringify(currentWorksppacProject))
 }
 
 export async function getSessionWorkspaceList() {
     let workspaceList = JSON.parse(await sessionStorage.getItem('workspaceList'))
-    if (workspaceList == null){
+    if (workspaceList == null) {
         await webconsolejs["common/storage/sessionstorage"].updateSessionWorkspaceList()
         workspaceList = webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceList()
     }
@@ -87,21 +90,20 @@ export async function getSessionWorkspaceList() {
 }
 
 export async function setSessionWorkspaceList(v) {
-    sessionStorage.setItem('workspaceList',v)
+    sessionStorage.setItem('workspaceList', v)
 }
 
 export async function getSessionProjectList(workspaceId) {
     console.log("getSessionProjectList ", workspaceId)
-    let projectList = JSON.parse( await sessionStorage.getItem("projectList_"+workspaceId))
+    let projectList = JSON.parse(await sessionStorage.getItem("projectList_" + workspaceId))
     console.log(projectList);
     return projectList
 }
 
 export async function setSessionProjectList(workspaceId, projectList) {
 
-    sessionStorage.setItem("projectList_"+workspaceId,projectList)
+    sessionStorage.setItem("projectList_" + workspaceId, projectList)
 }
-
 
 // sessionStorage의 workspaceList 갱신
 export async function updateSessionWorkspaceList(workspaceList) {
@@ -112,7 +114,7 @@ export async function updateSessionWorkspaceList(workspaceList) {
 
 // sessionStorage의 projectList 갱신 : 조회된 목록을 갱신
 //export async function updateSessionProjectListByWorkspaceId(workspaceId) {
-export async function updateSessionProjectList(projectList) {    
+export async function updateSessionProjectList(projectList) {
     sessionStorage.setItem('projectList', JSON.stringify(projectList));
 }
 

@@ -547,10 +547,10 @@
                 <label class="form-label required">Deployment Algorithm</label>
                 <select
                   class="form-select"
-                  name="deploy_algorithm"
-                  id="deploy_algorithm"
+                  name="mcis_deploy_algorithm"
+                  id="mcis_deploy_algorithm"
                 >
-                  <option value="express">Express</option>
+                  <option value="express" selected>Express</option>
                   <option value="simple">Simple</option>
                   <option value="expert">Expert</option>
                 </select>
@@ -679,8 +679,8 @@
                 <label class="form-label">Deployment Algorithm</label>
                 <select
                   class="form-select"
-                  name="deploy_algorithm"
-                  id="deploy_algorithm"
+                  name="vm_deploy_algorithm"
+                  id="vm_deploy_algorithm"
                 >
                   <option value="express">Express</option>
                   <option value="simple">Simple</option>
@@ -753,7 +753,12 @@
 <%= partial("partials/operation/manage/mciscreate.html") %>
 
 <!-- add server : spec-search -->
-<%= partial("partials/operation/manage/serverrecommendation.html") %> <%=
-javascriptTag("pages/operation/manage/mcis.js") %> <%=
-javascriptTag("common/api/services/mcis_api.js") %> <%=
-javascriptTag("common/api/services/vmimage_api.js") %>
+<%= partial("partials/operation/manage/serverrecommendation.html") %> 
+<!-- add server : cspimagelist -->
+<%= partial("partials/operation/manage/cspimagelist.html") %> 
+<!-- add server : cspspeclist -->
+<%= partial("partials/operation/manage/cspspeclist.html") %> 
+
+<%= javascriptTag("pages/operation/manage/mcis.js") %>
+<%= javascriptTag("common/api/services/mcis_api.js") %> 
+<%= javascriptTag("common/api/services/vmimage_api.js") %>
