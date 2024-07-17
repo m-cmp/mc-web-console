@@ -7,15 +7,40 @@
 export function commonModal(elm, title, content, func, argument) {
     const form = elm.getAttribute('data-bs-target').replace(/^#/, '');  // 불러올 modal Id
     const funcArr = func.split(".");
-    document.getElementById(`${form}-title`).innerText = title          
+    document.getElementById(`${form}-title`).innerText = title
     document.getElementById(`${form}-content`).innerText = content
-    document.getElementById(`${form}-confirm-btn`).onclick = function() {
+    document.getElementById(`${form}-confirm-btn`).onclick = function () {
         const executefunction = `webconsolejs["${funcArr[0]}"].${funcArr[1]}('${argument}')`;
         eval(executefunction);
     };
 }
 
+// default modal show
+export function commonShowDefaultModal(title, content) {
+    const modalId = 'commonDefaultModal';  // 모달의 ID 설정
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    document.getElementById(`${modalId}-title`).innerText = title;
+    document.getElementById(`${modalId}-content`).innerText = content;
+    document.getElementById(`${modalId}-confirm-btn`).onclick = modalHide('commonDefaultModal')
 
+    modal.show();  // 모달 표시
+
+}
+
+// modal hide
+// modalId = ex)'spec-search'
+export function modalHide(modalId) {
+    var myModalEl = document.getElementById(modalId);
+    var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
+    modal.hide();
+}
+
+// workspace selection 여부 확인 function
+export function checkWorkspaceSelection(selectedWorkspaceProject) {
+    if (selectedWorkspaceProject.workspaceId == "") {
+        commonShowDefaultModal('Workspace Selection Check', 'Please select workspace first')
+    }
+}
 // Modal OLD
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -130,7 +155,7 @@ function commonConfirmOpen(targetAction, caller) {
 
 
             ["WorkspaceDelete", "Are you sure  you want to delete the Workspace ?"],
-            
+
         ]
     );
     console.log(confirmModalTextMap.get(targetAction));

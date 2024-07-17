@@ -11,68 +11,6 @@ export function commoncallbac(val) {
 var table;
 var checked_array = [];
 initWorkspaceTable();
-// function setTabulator(
-//   tableObjId,
-//   tableObjParamMap,
-//   columnsParams,
-//   isMultiSelect
-// ) {
-//   var placeholder = "No Data";
-//   var pagination = "local";
-//   var paginationSize = 5;
-//   var paginationSizeSelector = [5, 10, 15, 20];
-//   var movableColumns = true;
-//   var columnHeaderVertAlign = "middle";
-//   var paginationCounter = "rows";
-//   var layout = "fitColumns";
-
-//   if (tableObjParamMap.hasOwnProperty("placeholder")) {
-//     placeholder = tableObjParamMap.placeholder;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("pagination")) {
-//     pagination = tableObjParamMap.pagination;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-//     paginationSize = tableObjParamMap.paginationSize;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-//     paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-//     movableColumns = tableObjParamMap.movableColumns;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-//     columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-//     paginationCounter = tableObjParamMap.paginationCounter;
-//   }
-
-//   if (tableObjParamMap.hasOwnProperty("layout")) {
-//     layout = tableObjParamMap.layout;
-//   }
-
-//   var tabulatorTable = new Tabulator("#" + tableObjId, {
-//     placeholder,
-//     pagination,
-//     paginationSize,
-//     paginationSizeSelector,
-//     movableColumns,
-//     columnHeaderVertAlign,
-//     paginationCounter,
-//     layout,
-//     columns: columnsParams,
-//     selectableRows: isMultiSelect == false ? 1 : true,
-//   });
-
-//   return tabulatorTable;
-// }
 
 // Table 초기값 설정
 function initWorkspaceTable() {
@@ -88,7 +26,7 @@ function initWorkspaceTable() {
       headerHozAlign: "center",
       headerSort: false,
       width: 60,
-    },   
+    },
     {
       title: "Id",
       field: "id",
@@ -103,7 +41,7 @@ function initWorkspaceTable() {
       title: "WorkspaceId",
       field: "workspace_id",
       visible: false
-    },    
+    },
   ];
 
   //table = setTabulator("workspacelist-table", tableObjParams, columns);
@@ -112,13 +50,8 @@ function initWorkspaceTable() {
   // 행 클릭 시
   table.on("rowClick", function (e, row) {
     console.log(row)
-    //var workspaceID = row.getCell("id").getValue();
-    //var workspaceID = row.getCell("workspaceId").getValue();
     var workspaceID = row.getCell("workspace_id").getValue();
     console.log("workspaceID", workspaceID)
-    // console.log("eeeee",e)
-    //clickListOfMcis(row.getCell("id").getValue());
-
     getSelectedWorkspaceData(workspaceID)
 
   });
@@ -153,11 +86,7 @@ async function getSelectedWorkspaceData(workspaceID) {
   // SET MCIS Info 
   setWorkspaceInfoData(workspaceData)
 
-  // Toggle MCIS Info
-  // var div = document.getElementById("info_workspace");
-  // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   window.location.hash = "info_workspace"
-  //window.location.hash = ""
 
 }
 
@@ -187,9 +116,6 @@ function setWorkspaceInfoData(workspaceData) {
   } catch (e) {
     console.error(e);
   }
-
- 
-
 }
 
 
@@ -197,42 +123,18 @@ export async function workspaceDetailInfo(workspaceID) {
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
   webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-  
+
   // 기존 값들 초기화
   //clearServerInfo();
 
   var data = new Object();
-  
-  //
-  //vm info
-  // $("#mcis_server_info_status_img").attr("src", "/assets/images/common/" + mcisStatusIcon)
-  // $("#mcis_server_info_connection").empty()
-  // $("#mcis_server_info_connection").append(vmProviderIcon)
-
-
-  // $("#server_info_text").text(' [ ' + vmName + ' / ' + mcisName + ' ]')
-  // $("#server_info_name").text(vmName + "/" + vmID)
-  // $("#server_info_desc").text(vmDescription)
-  // $("#server_info_os").text(operatingSystem)
-  // $("#server_info_start_time").text(startTime)
-  // $("#server_info_private_ip").text(privateIp)
-  // $("#server_info_cspVMID").text(data.cspViewVmDetail.IId.NameId)
 
 }
 
+// function clearWorkspaceInfo() {
+//   console.log("clearWorkspaceInfo")
 
-function clearWorkspaceInfo() {
-  console.log("clearWorkspaceInfo")
-
-
-  // $("#server_info_text").text("")
-  // $("#server_detail_info_text").text("")
-
-  // $("#server_detail_view_server_status").val("");
-
-  // $("#server_info_status_icon_img").attr("src", "");
-
-}
+// }
 
 //Tabulator Filter
 //Define variables for input elements
@@ -298,6 +200,7 @@ document.getElementById("filter-clear").addEventListener("click", function () {
   table.clearFilter();
 
 });
+
 // filter end
 
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
@@ -306,16 +209,16 @@ document.addEventListener("DOMContentLoaded", getWorkspaceList);
 
 // workspace 목록조회
 async function getWorkspaceList() {
-  
-  console.log("getWorkspaceList")  
-  console.log($("#select-current-workspace") );
+
+  console.log("getWorkspaceList")
+  console.log($("#select-current-workspace"));
   var selectedWs = $("#select-current-workspace").val()//
-  
-  console.log("~~~~~~~ " , selectedWs)
+
+  console.log("~~~~~~~ ", selectedWs)
 
   const data = {
     pathParams: {
-//      nsId: nsid,
+      //      nsId: nsid,
     },
   };
   //var controller = "targetController=getmcislist"
@@ -325,7 +228,7 @@ async function getWorkspaceList() {
     data
   );
   console.log("response ", response)
-  //var workspaceList = response.data.responseData;//response 자체가 array임.  
+
   var workspaceList = response.data.responseData;//response 자체가 array임.  
 
   getWorkspaceListCallbackSuccess(workspaceList);
@@ -349,7 +252,7 @@ function getWorkspaceListCallbackSuccess(workspaceList) {
 export async function deleteWorkspace() {
   console.log("deleteWorkspace ", checked_array);
 
-  if( checked_array.length == 0 || checked_array.length > 1){
+  if (checked_array.length == 0 || checked_array.length > 1) {
     alert(" 1개만 선택 하세요 ")
     return;
   }
@@ -357,7 +260,7 @@ export async function deleteWorkspace() {
   for (const workspace of checked_array) {
     console.log(workspace.id)
     let data = {
-      pathParams: {        
+      pathParams: {
         "workspaceId": workspace.workspace_id,
       }
     };
@@ -367,30 +270,31 @@ export async function deleteWorkspace() {
       data
     );
     console.log(response)
-    if( response.data.status.code == "200" || response.data.status.code == "201" ){
+    if (response.data.status.code == "200" || response.data.status.code == "201") {
       console.log("successfully deleted")
       // 저장 후 workspace 목록 조회
       getWorkspaceList()
     }
-    
+
   }
 }
 
-function validWorkspace(){
+function validWorkspace() {
   var name = $("#create_name").val();
   var desc = $("#create_description").val();
-  
+
   return true
 }
+
 // workspace 저장 및 Create form 닫기
 export async function saveWorkspace() {
   console.log("add workspace")
-  
-  if( validWorkspace() ){
+
+  if (validWorkspace()) {
 
     var name = $("#create_name").val();
     var desc = $("#create_description").val();
-    
+
     const data = {
       request: {
         "name": name,
@@ -405,7 +309,7 @@ export async function saveWorkspace() {
     );
     console.log(response)
     // save success 시 
-    if( response.data.status.code == "200" || response.data.status.code == "201" ){
+    if (response.data.status.code == "200" || response.data.status.code == "201") {
       var div = document.getElementById("create_workspace");
       webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
@@ -417,9 +321,9 @@ export async function saveWorkspace() {
 }
 
 // Info Form 닫기
-export function closeInfoForm(){
+export function closeInfoForm() {
   console.log(" close form ")
 
   var div = document.getElementById("info_workspace");
-	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 }
