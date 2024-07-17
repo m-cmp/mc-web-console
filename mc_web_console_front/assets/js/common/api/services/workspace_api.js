@@ -45,7 +45,14 @@ export async function getUserProjectList(workspaceId) {
 
 // 유저의 workspace 목록 조회
 async function getWorkspaceProjectListByUser() {
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspacebyuserid', null)
+  var currentUserId = document.getElementById("userid").value
+  console.log("currentUserId",currentUserId)
+  var data = {
+    pathParams: {
+      userId: currentUserId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/Getworkspaceuserrolemappinglistbyuserid', data)
   return response.data.responseData
 }
 
@@ -61,7 +68,7 @@ export async function getWorkspaceListByUser() {
     var userWorkspaceProjectList = await getWorkspaceProjectListByUser()// workspace 목록, project 목록 조회
     setWorkspaceProjectList(userWorkspaceProjectList)
 
-    // workspaceProjectList에서 workspace 목록만 추출      
+    // workspaceProjectList에서 workspace 목록만 추출
     const jsonData = JSON.parse(userWorkspaceProjectList);
     //console.log(jsonData)
     jsonData.forEach(item => {
@@ -86,26 +93,26 @@ export async function getWorkspaceListByUser() {
 
 // workspace에 매핑된 project목록 조회
 export async function getProjectListByWorkspaceId(workspaceId) {
-  console.log("getProjectListByWorkspaceId", workspaceId)
+  console.debug("getProjectListByWorkspaceId", workspaceId)
+  let userId = document.getElementById("userid").value
   let requestObject = {
     "pathParams": {
       "workspaceId": workspaceId
     },
     "requestData": {
-      "userId": "mciamuser", // TODO : 실제 로그인 user의 id 설정하도록 변경할 것.          
+      "userId": userId,
     }
   }
 
-  var projectList = [];
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/projectlistbyworkspaceid', requestObject)
-  console.log(response)
-  var data = response.data.responseData.projects
+  let projectList = [];
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/GetWPmappingListByWorkspaceId', requestObject)
+  let data = response.data.responseData.projects
+  console.debug("GetWPmappingListByWorkspaceId data :", data)
   data.forEach(item => {
-    console.log(item)
+    console.debug(item)
     projectList.push(item);
   });
 
-  // project List
   return projectList;
 }
 
