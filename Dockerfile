@@ -1,8 +1,7 @@
 ##############################################################
-## Stage 1 - Go Build [API SERVER]
+## Stage 1 - Go Build Env
 ##############################################################
 
-# Using a specific version of golang based on alpine for building the application
 FROM golang:1.22.3-alpine AS builder
 
 RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
@@ -23,19 +22,25 @@ RUN mkdir -p /src/mc-web-console
 WORKDIR /src/mc-web-console
 ADD . .
 
+##############################################################
+## Stage 2 - Go Build [API SERVER]
+##############################################################
 WORKDIR /src/mc-web-console/mc_web_console_api
 RUN go mod download
 RUN buffalo build --static -o /bin/api
 
+##############################################################
+## Stage 3 - Go Build [FRONT SERVER]
+##############################################################
 WORKDIR /src/mc-web-console/mc_web_console_front
 RUN go mod download
 RUN npm install
 RUN yarn install
 RUN buffalo build --static -o /bin/front
 
-# #############################################################
-# ## Stage 2 - Application Deploy
-# ##############################################################
+#############################################################
+## Stage 4 - Application Deploy
+##############################################################
 
 FROM debian:buster-slim
 

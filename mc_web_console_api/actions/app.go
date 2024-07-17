@@ -17,6 +17,7 @@ import (
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 
 	"mc_web_console_api/handler/mciammanager"
+	"mc_web_console_api/handler/self"
 	"mc_web_console_api/models"
 )
 
@@ -49,30 +50,13 @@ func App() *buffalo.App {
 
 		auth := app.Group(apiPath + "/auth")
 		auth.POST("/login", AuthLogin)
-		// auth.POST("/login/refresh", AuthLoginRefresh)
-		auth.POST("/logout", AuthLogout)
-		// auth.GET("/userinfo", AuthGetUserInfo)
+		auth.POST("/logout", session("")(AuthLogout))
 
 		api := app.Group(apiPath)
 		api.Use(session(""))
-		api.GET("/{targetController}", GetRouteController)
-		api.POST("/{targetController}", PostRouteController)
-
-		role := app.Group("/test/role")
-		role.Use(session(""))
-		role.ANY("/alive", alive)
-
-		admin := app.Group("/test/admin")
-		admin.Use(session("admin"))
-		admin.ANY("/alive", alive)
-
-		viewer := app.Group("/test/viewer")
-		viewer.Use(session("admin"))
-		viewer.ANY("/alive", alive)
-
-		operator := app.Group("/test/operator")
-		operator.Use(session("admin"))
-		operator.ANY("/alive", alive)
+		api.POST("/disklookup", self.DiskLookup)
+		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
+		api.POST("/{operationId}", AnyController)
 	})
 
 	return app
