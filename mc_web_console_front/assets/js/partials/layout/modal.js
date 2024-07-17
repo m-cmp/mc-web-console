@@ -28,7 +28,7 @@ export function commonShowDefaultModal(title, content) {
 }
 
 // modal hide
-//modalId = ex)'spec-search'
+// modalId = ex)'spec-search'
 export function modalHide(modalId) {
     var myModalEl = document.getElementById(modalId);
     var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
