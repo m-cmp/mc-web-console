@@ -11,6 +11,7 @@ import (
 	contenttype "github.com/gobuffalo/mw-contenttype"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	"github.com/gobuffalo/x/sessions"
+	"github.com/rs/cors"
 	"github.com/unrolled/secure"
 
 	i18n "github.com/gobuffalo/mw-i18n/v2"
@@ -34,9 +35,11 @@ func App() *buffalo.App {
 		app = buffalo.New(buffalo.Options{
 			Env:          ENV,
 			SessionStore: sessions.Null{},
-			PreWares:     []buffalo.PreWare{},
-			SessionName:  "mc_web_console",
-			Addr:         os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
+			PreWares: []buffalo.PreWare{
+				cors.AllowAll().Handler,
+			},
+			SessionName: "mc_web_console",
+			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
 		app.Use(forceSSL())
