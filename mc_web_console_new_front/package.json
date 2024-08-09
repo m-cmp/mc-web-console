@@ -1,0 +1,47 @@
+{
+  "name": "front-environment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "prepare": "npx husky install",
+    "lint": "eslint 'src/**/*.{ts,js,vue,tsx}'",
+    "lint-fix": "eslint --fix 'src/**/*.{ts,js,vue,tsx}'"
+  },
+  "author": "dy",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@cloudforet-test/mirinae": "^2.0.0-dev125",
+    "axios": "^1.7.2",
+    "pinia": "^2.1.7",
+    "postcss-loader": "^8.1.1",
+    "vue": "^2.7.16",
+    "vue-fragment": "^1.5.1",
+    "vue-i18n": "^8.11.2",
+    "vue-router": "^3.6.5"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.41.0",
+    "@typescript-eslint/parser": "^5.41.0",
+    "@vitejs/plugin-vue2": "^2.3.1",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^13.0.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "8.22.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.0",
+    "postcss": "^8.4.39",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.2.2",
+    "vite": "^3.2.4",
+    "vue-tsc": "^2.0.21"
+  }
+}
