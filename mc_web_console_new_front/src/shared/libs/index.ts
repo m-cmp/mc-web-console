@@ -1,5 +1,5 @@
-import * as store from './store'
-import * as localstorage from './access-localstorage'
-import axiosInstance from "@/shared/libs/api";
+import * as store from '../../entities/user/store';
+import * as localstorage from './access-localstorage';
 
-export {store, localstorage, axiosInstance}
+export * from './api';
+export { store, localstorage };
