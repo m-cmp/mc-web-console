@@ -1,12 +1,14 @@
 import VueRouter, { Route, RouteConfig } from 'vue-router';
-import {ROOT_ROUTE} from "@/app/providers/router/constants.ts";
-import dashboardRoutes from "@/pages/dashboard/dashboard.route.ts";
-import authRoutes, {AUTH_ROUTE} from "@/pages/auth/auth.route.ts";
-import NotFound from "@/pages/error/404/NotFound.vue";
-import {useAuthenticationStore, useAuthorizationStore} from "@/shared/libs/store";
-import {AuthorizationType} from "@/shared/libs/store/authorizationStore.ts";
-import MainPage from "@/pages/main/MainPage.vue";
-
+import { ROOT_ROUTE } from '@/app/providers/router/constants.ts';
+import dashboardRoutes from '@/pages/dashboard/dashboard.route.ts';
+import authRoutes, { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
+import NotFound from '@/pages/error/404/NotFound.vue';
+import {
+  useAuthenticationStore,
+  useAuthorizationStore,
+} from '@/entities/user/store';
+import { AuthorizationType } from '@/entities/user/store/authorizationStore.ts';
+import MainPage from '@/pages/main/MainPage.vue';
 
 //TODO admin부분 고려
 
