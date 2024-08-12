@@ -5,17 +5,17 @@ services:
     build: ../
     container_name: mcwebconsole
     depends_on:
-      - postgresdb
+      - mcwebconsole-postgresdb
     ports:
       - "3000:3000"
       - "3001:3001"
     environment:
       GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
       GODEBUG: netdns=go
-      MCIAMMANAGER: https://sample.mc-iam-manager.com:5000 # Please CHANGE ME (REQUIRE)
-      MCINFRAMANAGER: http://sample.m-cmp.com:1323/tumblebug # Please CHANGE ME (REQUIRE)
-      API_USERNAME: API_USERNAME # Please CHANGE ME (REQUIRE)
-      API_PASSWORD: API_PASSWORD # Please CHANGE ME (REQUIRE)
+      MCIAMMANAGER: https://iam.onecloudcon.com # Please CHANGE ME (REQUIRE)
+      MCINFRAMANAGER: http://m.onecloudcon.com/tumblebug # Please CHANGE ME (REQUIRE)
+      API_USERNAME: default # Please CHANGE ME (REQUIRE)
+      API_PASSWORD: default # Please CHANGE ME (REQUIRE)
       DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
       PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
     restart: always
@@ -25,8 +25,9 @@ services:
   mcwebconsole-postgresdb:
     image: postgres:14-alpine
     container_name: mcwebconsole-postgresdb
-    volumes:
-      - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
+#    volumes:
+#      - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
+#      - ./dbdata:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: mcwebconsoledbdev # [mcwebconsoledbdev / mcwebconsoledbprod] # Please CHANGE ME (OPTIONAL)
       POSTGRES_USER: mcwebadmin # Please CHANGE ME (OPTIONAL)
