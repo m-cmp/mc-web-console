@@ -29,6 +29,8 @@ WORKDIR /src/mc-web-console/mc_web_console_api
 RUN go mod download
 RUN buffalo build --static -o /bin/api
 
+
+
 ##############################################################
 ## Stage 3 - Go Build [FRONT SERVER]
 ##############################################################
@@ -47,6 +49,8 @@ FROM debian:buster-slim
 WORKDIR /bin/
 COPY --from=builder /bin/api .
 COPY --from=builder /bin/front .
+
+ADD /mc_web_console_api/conf /bin/conf
 
 ENV API_ADDR 0.0.0.0
 ENV API_PORT 3000
