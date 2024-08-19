@@ -1,4 +1,4 @@
-import * as store from '../../entities/user/store';
+import * as store from './store/auth';
 import * as localstorage from './access-localstorage';
 
 export * from './api';

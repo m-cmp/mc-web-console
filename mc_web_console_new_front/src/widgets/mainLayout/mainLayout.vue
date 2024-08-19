@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import {AUTH_ROUTE} from '../../pages/auth/auth.route.ts';
-import {AUTO_LOGIN, useLocalStorage} from "@/shared/libs/access-localstorage";
-import {ILoginData} from "@/shared/libs/access-localstorage/types.ts";
-import {McmpRouter} from "@/app/providers/router";
+import { AUTO_LOGIN, useLocalStorage } from '@/shared/libs/access-localstorage';
+import { ILoginData } from '@/shared/libs/access-localstorage/types.ts';
+import { McmpRouter } from '@/app/providers/router';
+import { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
 
 const handleLogout = () => {
   const loginDataLocalStorage = useLocalStorage<ILoginData>(AUTO_LOGIN);
-  loginDataLocalStorage.setItem({role: null, autoLogin: false});
+  loginDataLocalStorage.setItem({ role: null, autoLogin: false });
 
   McmpRouter.getRouter()
-      .push({name: AUTH_ROUTE.LOGIN._NAME})
-      .catch(() => {
-      });
+    .push({ name: AUTH_ROUTE.LOGIN._NAME })
+    .catch(() => {});
 };
 </script>
 
@@ -21,23 +20,17 @@ const handleLogout = () => {
       <ul class="flex gap-5">
         <li>
           <router-link to="/main/dashboard">
-            <button>
-              Go to dashboard
-
-            </button>
+            <button>Go to dashboard</button>
           </router-link>
         </li>
         <li>
           <router-link to="/main/auth">
-            <button>
-              Go to login
-            </button>
+            <button>Go to login</button>
           </router-link>
-
         </li>
         <li>
           <router-link to="/main/auth/cookie">
-            <button> Go to cookie</button>
+            <button>Go to cookie</button>
           </router-link>
         </li>
         <li>
@@ -46,7 +39,7 @@ const handleLogout = () => {
       </ul>
     </header>
     <main class="main-body">
-      <slot/>
+      <slot />
     </main>
   </div>
 </template>
