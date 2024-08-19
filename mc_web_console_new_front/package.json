@@ -9,7 +9,7 @@
     "prepare": "npx husky install",
     "lint": "eslint 'src/**/*.{ts,js,vue,tsx}'",
     "lint-fix": "eslint --fix 'src/**/*.{ts,js,vue,tsx}'",
-    "build" : "vite build"
+    "build": "vite build"
   },
   "author": "dy",
   "license": "ISC",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@cloudforet-test/mirinae": "2.0.0-dev171",
     "axios": "^1.7.2",
+    "jwt-decode": "^4.0.0",
     "pinia": "^2.1.7",
     "postcss-loader": "^8.1.1",
     "vue": "^2.7.16",
@@ -36,7 +37,6 @@
     "eslint": "8.22.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-vue": "^9.27.0",
-    "husky": "^8.0.3",
     "lint-staged": "^13.2.0",
     "postcss": "^8.4.39",
     "prettier": "^3.3.3",

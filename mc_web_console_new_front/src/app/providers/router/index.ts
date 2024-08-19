@@ -3,12 +3,8 @@ import { ROOT_ROUTE } from '@/app/providers/router/constants.ts';
 import dashboardRoutes from '@/pages/dashboard/dashboard.route.ts';
 import authRoutes, { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
 import NotFound from '@/pages/error/404/NotFound.vue';
-import {
-  useAuthenticationStore,
-  useAuthorizationStore,
-} from '@/entities/user/store';
-import { AuthorizationType } from '@/entities/user/store/authorizationStore.ts';
 import MainPage from '@/pages/main/MainPage.vue';
+import { AuthorizationType, useAuthStore } from '@/shared/libs/store/auth';
 
 //TODO admin부분 고려
 
@@ -44,14 +40,9 @@ export class McmpRouter {
       });
 
       McmpRouter.router.beforeEach((to: Route, from: Route, next) => {
-        const isLogin = useAuthenticationStore().login;
-        const userRole = useAuthorizationStore().role;
+        const authStore = useAuthStore();
 
-        // console.log(isLogin);
-        // console.log(userRole);
-        // console.log(to);
-
-        if (!isLogin) {
+        if (!authStore.isLogin) {
           if (to.name === AUTH_ROUTE.LOGIN._NAME) {
             next();
             return;
@@ -75,7 +66,7 @@ export class McmpRouter {
          * */
 
         if (accessibleRoles.length > 0 && accessibleRoles.includes('admin')) {
-          if (userRole === 'admin') {
+          if (authStore.role === 'admin') {
             next();
           } else {
             next(false);

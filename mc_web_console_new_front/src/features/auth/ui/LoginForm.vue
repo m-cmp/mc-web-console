@@ -1,19 +1,32 @@
 <script setup lang="ts">
 import { PButton, PTextInput } from '@cloudforet-test/mirinae';
-import { useGetLogin } from '@/entities';
+import { useGetLogin, useGetUserRole } from '@/entities';
 import { IUser, IUserResponse } from '@/entities/user/model/types.ts';
-import { ref } from 'vue';
-import { IApiState } from '@/shared/libs';
+import { watch } from 'vue';
+import { useAuth } from '@/features/auth/model/useAuth.ts';
 
 const loginData: IUser = {
   id: 'mcpadmin',
   password: 'mcpuserpassword',
 };
-let res = ref<IApiState<any>>({});
-const handleLogin = async () => {
-  res.value = useGetLogin<IUserResponse, IUser>(loginData);
-  console.log(res);
+
+const resLogin = useGetLogin<IUserResponse, IUser | null>(null);
+const resUserInfo = useGetUserRole<IUserResponse>();
+const auth = useAuth();
+
+const handleLogin = () => {
+  resLogin.execute({ request: loginData });
 };
+
+watch(resLogin.data, () => {
+  auth.setUser({
+    ...resLogin.data.value?.responseData,
+    id: loginData.id,
+    role: 'admin',
+  });
+  resUserInfo.execute();
+  // jwtDecodeTest(auth.getUser().access_token);
+});
 </script>
 
 <template>
@@ -63,9 +76,15 @@ const handleLogin = async () => {
       </p-button>
     </fieldset>
     <div class="res-test-box">
-      <p v-if="res.loading">Loading</p>
-      <p v-if="!res.loading && res.success">{{ res.data }}</p>
-      <p v-if="!res.loading && !res.success">{{ res.error }}</p>
+      <p v-if="resLogin.status.value === 'idle'">idle</p>
+      <p v-if="resLogin.status.value === 'loading'">Loading</p>
+      <p v-if="resLogin.status.value === 'success'">
+        {{ resLogin.data }}
+      </p>
+      <p v-if="resLogin.status.value === 'error'">{{ resLogin.errorMsg }}</p>
+    </div>
+    <div>
+      <p>{{ auth.getUser() }}</p>
     </div>
   </div>
 </template>
@@ -82,7 +101,7 @@ const handleLogin = async () => {
 }
 
 .res-test-box {
-  width: 40px;
+  width: 400px;
   border: 1px solid red;
 }
 </style>
