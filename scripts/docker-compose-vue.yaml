@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  mc-web-console-api:
+    build: 
+      context: ../mc_web_console_api
+      dockerfile: Dockerfile.local
+    container_name: mc-web-console-api
+    depends_on:
+      - mc-web-console-postgres
+    ports:
+      - "3000:3000"
+    environment:
+      GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
+      GODEBUG: netdns=go
+      DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mc-web-console-postgres:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
+      PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mc-web-console-postgres:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
+    restart: unless-stopped
+    networks:
+      - mc-web-console-front
+      - mc-web-console-back
+  
+  mc-web-console-front:
+    build:
+      context: ../mc_web_console_new_front
+      dockerfile: Dockerfile
+    container_name: mc-web-console-front
+    depends_on:
+      - mc-web-console-api
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - mc-web-console-front
+      
+
+  mc-web-console-postgres:
+    image: postgres:14-alpine
+    container_name: mc-web-console-postgres
+    volumes:
+     - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: mcwebconsoledbdev # [mcwebconsoledbdev / mcwebconsoledbprod] # Please CHANGE ME (OPTIONAL)
+      POSTGRES_USER: mcwebadmin # Please CHANGE ME (OPTIONAL)
+      POSTGRES_PASSWORD: mcwebadminpassword # Please CHANGE ME (OPTIONAL)
+    restart: unless-stopped
+    networks:
+      - mc-web-console-back
+
+networks:
+  mc-web-console-front:
+  mc-web-console-back:

@@ -15,7 +15,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@cloudforet-test/mirinae": "^2.0.0-dev125",
+    "@cloudforet-test/mirinae": "2.0.0-dev171",
     "axios": "^1.7.2",
     "pinia": "^2.1.7",
     "postcss-loader": "^8.1.1",
