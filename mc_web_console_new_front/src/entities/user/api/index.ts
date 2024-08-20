@@ -1,4 +1,4 @@
-import { useAxiosGet, useAxiosPost } from '@/shared/libs/api/request.ts';
+import { useAxiosPost } from '@/shared/libs/api/request.ts';
 import { IAxiosResponse } from '@/shared/libs';
 
 // const LOGIN_URL = 'api/auth/login';
@@ -20,6 +20,6 @@ export function useGetLogin<T, D>(loginData: D | null) {
   );
 }
 
-export function useGetUserRole<T>() {
-  return useAxiosGet<T>(GET_USER_INFO);
+export function useGetUserRole<T, D = any>() {
+  return useAxiosPost<T, D | null>(GET_USER_INFO, null);
 }

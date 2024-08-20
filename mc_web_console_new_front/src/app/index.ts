@@ -1,3 +1,3 @@
 import app from './App.vue';
 
-export default {app}
+export default { app };
