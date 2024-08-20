@@ -2,21 +2,21 @@ cliSpecVersion: v1
 # Service Definitions (Framework Server Basic informations)
 services:
   mc-infra-connector: #service name
-    baseurl: http://dev.onecloudcon.com:1024/spider  # baseurl is Scheme + Host + Base Path
+    baseurl: http://sample.com:1024/spider  # baseurl is Scheme + Host + Base Path
     auth: #If you need an authentication method, describe the type and username and password in the sub
       type: basic
       username: default
       password: default
   
   mc-infra-manager:
-    baseurl: http://dev.onecloudcon.com:1323/tumblebug
+    baseurl: http://sample.com:1323/tumblebug
     auth:
       type: basic
       username: default
       password: default
 
   mc-iam-manager:
-    baseurl: http://dev.onecloudcon.com:4000
+    baseurl: http://sample.com:4000
     auth:
       type: bearer
 
