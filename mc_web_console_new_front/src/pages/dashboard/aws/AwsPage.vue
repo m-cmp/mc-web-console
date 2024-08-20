@@ -1,9 +1,18 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { IUserResponse, useGetUserRole } from '@/entities';
+import { PButton } from '@cloudforet-test/mirinae';
 
+const resUserInfo = useGetUserRole<IUserResponse>();
+
+const handleTestClick = () => {
+  resUserInfo.execute();
+};
+</script>
 <template>
   <div class="h-5/6">
     <h1>aws page</h1>
     <h1>Grid Test</h1>
+    <p-Button @click="handleTestClick">Token TEST!</p-Button>
     <div class="grid-container">
       <div class="grid-test-box">
         <div class="content-test" />

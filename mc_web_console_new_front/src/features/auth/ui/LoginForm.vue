@@ -4,6 +4,9 @@ import { useGetLogin, useGetUserRole } from '@/entities';
 import { IUser, IUserResponse } from '@/entities/user/model/types.ts';
 import { watch } from 'vue';
 import { useAuth } from '@/features/auth/model/useAuth.ts';
+import { McmpRouter } from '@/app/providers/router';
+import { DASHBOARD_ROUTE } from '@/pages/dashboard/dashboard.route.ts';
+
 
 const loginData: IUser = {
   id: 'mcpadmin',
@@ -22,10 +25,11 @@ watch(resLogin.data, () => {
   auth.setUser({
     ...resLogin.data.value?.responseData,
     id: loginData.id,
-    role: 'admin',
+    role: '',
   });
+  McmpRouter.getRouter().push({ name: DASHBOARD_ROUTE.AWS._NAME });
+
   resUserInfo.execute();
-  // jwtDecodeTest(auth.getUser().access_token);
 });
 </script>
 

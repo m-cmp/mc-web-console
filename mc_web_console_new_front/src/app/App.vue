@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// import { PButton } from '@cloudforet-test/mirinae';
+import { useAuth } from '@/features/auth/model/useAuth.ts';
 
-import {preAutoLogin} from "@/app/providers/router/auth.ts";
-
-preAutoLogin();
+const auth = useAuth();
+auth.loadUser();
 </script>
 
 <template>

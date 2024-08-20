@@ -6,7 +6,7 @@ import App from './app/App.vue';
 import './app/style/style.pcss';
 import { createPinia, PiniaVuePlugin } from 'pinia';
 import VueRouter from 'vue-router';
-import {McmpRouter} from "@/app/providers/router";
+import { McmpRouter } from '@/app/providers/router';
 
 const pinia = createPinia();
 Vue.use(PiniaVuePlugin);

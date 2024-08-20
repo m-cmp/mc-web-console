@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/shared/libs/store/auth';
-import { axiosPost } from '@/shared/libs';
 import { IUserResponse } from '@/entities';
 import { useAuth } from '@/features/auth/model/useAuth.ts';
 import { McmpRouter } from '@/app/providers/router';
@@ -17,7 +16,7 @@ const createInstance = () => {
   });
 };
 
-export const axiosInstance = createInstance(); //http://localhost:3000/test
+export const axiosInstance = createInstance();
 
 axiosInstance.interceptors.request.use(config => {
   const authStore = useAuthStore();
@@ -47,36 +46,33 @@ axiosInstance.interceptors.response.use(
       }
 
       try {
-        const resLogin = await axiosPost<IUserResponse>('LoginRefresh', {
-          requestBody: {
-            refresh_token: authStore.refresh_token,
+        const resLogin = await axios.post(
+          url + '/LoginRefresh',
+          {
+            request: {
+              refresh_token: authStore.refresh_token,
+            },
           },
-        });
-
+          {
+            headers: {
+              Authorization: `Bearer ${authStore.access_token}`,
+            },
+          },
+        );
         auth.setUser({
-          ...resLogin.data,
+          ...resLogin.data.responseData,
           id: authStore.id,
           role: authStore.role,
         });
-
         return axiosInstance(originalRequest);
       } catch (error) {
-        return Promise.reject(error);
+        alert('사용자 인증 만료');
+        McmpRouter.getRouter()
+          .push({ name: AUTH_ROUTE.LOGIN._NAME })
+          .catch(() => {});
       }
-    }
-
-    if (originalRequest._retry) {
-      McmpRouter.getRouter()
-        .push({ name: AUTH_ROUTE.LOGIN._NAME })
-        .catch(() => {});
     }
     return Promise.reject(error);
   },
 );
 
-/*
- * 1. 요청을 보냈지만 405 error
- * 2. 405시 refresh token을 헤더에 담아서 재발급 api에 전송
- * 3. 받아온 access token과 refresh token을 저장
- * 3. refresh token도 만료 되었을 경우에 로그인 로직으로
- * */
