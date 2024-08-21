@@ -47,7 +47,7 @@ func App() *buffalo.App {
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
 
-		app.ANY("/alive", alive)
+		app.ANY("/readyz", readyz)
 
 		apiPath := "/api"
 
@@ -66,32 +66,8 @@ func App() *buffalo.App {
 	return app
 }
 
-func alive(c buffalo.Context) error {
-	name := ""
-	roles := []string{}
-	sub := ""
-	upn := ""
-	if userName, ok := c.Value("PreferredUsername").(string); ok {
-		name = userName
-	}
-	if userRoles, ok := c.Value("RealmAccessRoles").([]string); ok {
-		roles = userRoles
-	}
-	if userSub, ok := c.Value("Sub").(string); ok {
-		sub = userSub
-	}
-	if userUpn, ok := c.Value("Upn").(string); ok {
-		upn = userUpn
-	}
-
-	return c.Render(200, r.JSON(map[string]interface{}{
-		"status":            "OK",
-		"method":            c.Request().Method,
-		"preferredUsername": name,
-		"realmAccessRoles":  roles,
-		"Sub":               sub,
-		"Upn":               upn,
-	}))
+func readyz(c buffalo.Context) error {
+	return c.Render(200, r.JSON(map[string]interface{}{"status": "OK"}))
 }
 
 func forceSSL() buffalo.MiddlewareFunc {
