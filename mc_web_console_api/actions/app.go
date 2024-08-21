@@ -53,6 +53,7 @@ func App() *buffalo.App {
 
 		auth := app.Group(apiPath + "/auth")
 		auth.POST("/login", AuthLogin)
+		auth.POST("/refresh", session("")(AuthLoginRefresh))
 		auth.POST("/logout", session("")(AuthLogout))
 
 		api := app.Group(apiPath)
