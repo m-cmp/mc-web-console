@@ -27,7 +27,6 @@ func AuthLogin(c buffalo.Context) error {
 	}
 
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
-
 }
 
 func AuthLoginRefresh(c buffalo.Context) error {
@@ -64,9 +63,9 @@ func AuthLogout(c buffalo.Context) error {
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
-func AuthGetUserInfo(c buffalo.Context) error {
+func AuthValidate(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
-	commonResponse, _ := AnyCaller(c, "getuserinfo", commonRequest, true)
+	commonResponse, _ := AnyCaller(c, "getusevalidate", commonRequest, true)
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
