@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { IUserResponse, useGetUserRole } from '@/entities';
 import { PButton } from '@cloudforet-test/mirinae';
+import JwtTokenProvider from '@/shared/libs/token';
 
 const resUserInfo = useGetUserRole<IUserResponse>();
 
 const handleTestClick = () => {
-  resUserInfo.execute();
+  // resUserInfo.execute();
+  const temp = JwtTokenProvider.getProvider().refreshTokens();
+  console.log(temp);
 };
 </script>
 <template>

@@ -1,9 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { useAuthStore } from '@/shared/libs/store/auth';
-import { IUserResponse } from '@/entities';
-import { useAuth } from '@/features/auth/model/useAuth.ts';
 import { McmpRouter } from '@/app/providers/router';
 import { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
+import JwtTokenProvider from '@/shared/libs/token';
 // const url = 'http://mcmpdemo.csesmzc.com:3000';
 const url = import.meta.env.VITE_BACKEND_ENDPOINT;
 const createInstance = () => {
@@ -19,10 +17,9 @@ const createInstance = () => {
 export const axiosInstance = createInstance();
 
 axiosInstance.interceptors.request.use(config => {
-  const authStore = useAuthStore();
-  const token = authStore.access_token;
+  const { access_token } = JwtTokenProvider.getProvider().getTokens();
 
-  if (token) config.headers.Authorization = `Bearer ${authStore.access_token}`;
+  if (access_token) config.headers.Authorization = `Bearer ${access_token}`;
 
   return config;
 });
@@ -36,43 +33,30 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 405 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const authStore = useAuthStore();
-      const auth = useAuth();
+      const jwtTokenProvider: JwtTokenProvider = JwtTokenProvider.getProvider();
+      const { refresh_token } = jwtTokenProvider.getTokens();
 
-      if (!authStore.refresh_token) {
+      if (!refresh_token) {
         McmpRouter.getRouter()
           .push({ name: AUTH_ROUTE.LOGIN._NAME })
           .catch(() => {});
       }
 
       try {
-        const resLogin = await axios.post(
-          url + '/LoginRefresh',
-          {
-            request: {
-              refresh_token: authStore.refresh_token,
-            },
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${authStore.access_token}`,
-            },
-          },
-        );
-        auth.setUser({
-          ...resLogin.data.responseData,
-          id: authStore.id,
-          role: authStore.role,
-        });
-        return axiosInstance(originalRequest);
-      } catch (error) {
-        alert('사용자 인증 만료');
-        McmpRouter.getRouter()
-          .push({ name: AUTH_ROUTE.LOGIN._NAME })
-          .catch(() => {});
+        const refreshRes = await jwtTokenProvider.refreshTokens();
+        const { refresh_token, access_token } = refreshRes.data.responseData!;
+
+        if (refresh_token && access_token) {
+          jwtTokenProvider.setTokens({ refresh_token, access_token });
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          }
+          return axiosInstance(originalRequest);
+        }
+      } catch (e) {
+        return Promise.reject(e);
       }
     }
     return Promise.reject(error);
   },
 );
-

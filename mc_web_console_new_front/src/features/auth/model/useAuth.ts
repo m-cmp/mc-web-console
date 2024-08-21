@@ -1,45 +1,34 @@
-import { useLocalStorage } from '@/shared/libs/access-localstorage';
 import { IUserResponse } from '@/entities';
 import { useAuthStore } from '@/shared/libs/store/auth';
-import { jwtDecode } from 'jwt-decode';
-
+import JwtTokenProvider from '@/shared/libs/token';
+import LocalStorageConnector from '../../../shared/libs/access-localstorage/localStorageConnector.ts';
 
 const LOGIN_AUTH = 'LOGIN_AUTH';
 
 export function useAuth() {
-  const sessionUser = useLocalStorage<
-    Pick<
-      IUserResponse,
-      'access_token' | 'refresh_token' | 'role' | 'expires_in'
-    > & { id: string }
+  const jwtTokenProvider = JwtTokenProvider.getProvider();
+  const localStorageConnector = new LocalStorageConnector<
+    Pick<IUserResponse, 'role' | 'expires_in'> & { id: string }
   >(LOGIN_AUTH);
 
   const authStore = useAuthStore();
 
-  function pareseJWT(token: any) {
-    let decodedToken: any = {};
-    try {
-      decodedToken = jwtDecode(token);
-    } catch (e) {
-      console.log(e);
-    }
-    return decodedToken;
-  }
-
   function setUser(props: IUserResponse & { id: string }) {
-    if (props.access_token) {
-      const decodedToken = pareseJWT(props.access_token);
-      props.role = decodedToken.realm_access.roles[0];
-    }
+    jwtTokenProvider.setTokens({
+      refresh_token: props.refresh_token || '',
+      access_token: props.access_token || '',
+    });
 
+    // const decodedToken = jwtTokenProvider.parseAccessToken();
+    // props.role = decodedToken.realm_access.roles[0];
+    //TODO role 관리 로직
+    // role = decodedToken.realm_access.roles[0];
     const userData = {
       id: props.id,
       role: props.role,
-      access_token: props.access_token,
-      refresh_token: props.refresh_token,
       expires_in: props.expires_in,
     };
-    sessionUser.setItem(userData);
+    localStorageConnector.setItem(userData);
     authStore.onLogin(props);
   }
 
@@ -51,26 +40,27 @@ export function useAuth() {
     role: string;
     isLogin: boolean;
   } {
-    return authStore.$state;
+    return { ...authStore.$state, ...jwtTokenProvider.getTokens() };
   }
 
   function loadUser() {
     let role = '';
 
-    if (sessionUser.data.value.access_token) {
-      const decodedToken = pareseJWT(sessionUser.data.value.access_token);
-      role = decodedToken.realm_access.roles[0];
-    }
+    // const decodedToken = jwtTokenProvider.parseAccessToken();
+    // console.log(decodedToken);
+    //TODO role 관리 로직
+    // role = decodedToken.realm_access.roles[0];
+    role = 'admin';
+    const storeValue = localStorageConnector.getValue();
+
     const userData = {
-      id: sessionUser.data.value.id,
+      id: storeValue?.id || '',
       role: role,
-      access_token: sessionUser.data.value.access_token,
-      refresh_token: sessionUser.data.value.refresh_token,
-      expires_in: sessionUser.data.value.expires_in,
+      expires_in: storeValue?.expires_in || '',
     };
 
     authStore.onLogin(userData);
   }
 
-  return { sessionUser, setUser, getUser, loadUser };
+  return { sessionUser: localStorageConnector, setUser, getUser, loadUser };
 }

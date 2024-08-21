@@ -7,7 +7,6 @@ import { useAuth } from '@/features/auth/model/useAuth.ts';
 import { McmpRouter } from '@/app/providers/router';
 import { DASHBOARD_ROUTE } from '@/pages/dashboard/dashboard.route.ts';
 
-
 const loginData: IUser = {
   id: 'mcpadmin',
   password: 'mcpuserpassword',
