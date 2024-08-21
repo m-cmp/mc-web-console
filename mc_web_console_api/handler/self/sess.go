@@ -85,6 +85,42 @@ func GetUserByUserId(tx *pop.Connection, userId string) (*models.Usersess, error
 	return &s, nil
 }
 
+func UpdateUserSesssFromResponseData(tx *pop.Connection, r *handler.CommonResponse, userId string) (*models.Usersess, error) {
+
+	t := r.ResponseData.(map[string]interface{})
+
+	s, err := GetUserByUserId(tx, userId)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	if accessToken, ok := t["access_token"]; ok {
+		s.AccessToken = accessToken.(string)
+
+	}
+	if expiresIn, ok := t["expires_in"]; ok {
+		s.ExpiresIn = expiresIn.(float64)
+
+	}
+	if refreshToken, ok := t["refresh_token"]; ok {
+		s.RefreshToken = refreshToken.(string)
+
+	}
+	if refreshExpiresIn, ok := t["refresh_expires_in"]; ok {
+		s.RefreshExpiresIn = refreshExpiresIn.(float64)
+
+	}
+
+	err = tx.Update(s)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return s, nil
+}
+
 func UpdateUserSess(tx *pop.Connection, s *models.Usersess) (*models.Usersess, error) {
 	err := tx.Update(s)
 	if err != nil {

@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/self"
 	"net/http"
@@ -33,6 +34,16 @@ func AuthLoginRefresh(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
 	commonResponse, _ := AnyCaller(c, "loginrefresh", commonRequest, true)
+
+	fmt.Println("@@@@@@@@@@@@@@@ commonResponse", commonResponse)
+
+	tx := c.Value("tx").(*pop.Connection)
+	fmt.Println("@@@@@@@@@@@@@@@ pop")
+	_, err := self.UpdateUserSesssFromResponseData(tx, commonResponse, c.Value("UserId").(string))
+	if err != nil {
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
+	}
+
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
