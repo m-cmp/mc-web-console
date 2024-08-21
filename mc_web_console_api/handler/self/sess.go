@@ -131,19 +131,18 @@ func UpdateUserSess(tx *pop.Connection, s *models.Usersess) (*models.Usersess, e
 }
 
 func DestroyUserSessByAccesstokenforLogout(tx *pop.Connection, t string) (string, error) {
-	var s models.Usersess
-	err := tx.Where("access_token = ?", t).First(&s)
+	s, err := GetUserByUserId(tx, t)
 	if err != nil {
 		log.Error(err)
 		return "", err
 	}
-	refreshToken := s.RefreshToken
-	err = DestroyUserSess(tx, &s)
+	rt := s.RefreshToken
+	err = DestroyUserSess(tx, s)
 	if err != nil {
 		log.Error(err)
 		return "", err
 	}
-	return refreshToken, nil
+	return rt, nil
 }
 
 func DestroyUserSess(tx *pop.Connection, s *models.Usersess) error {

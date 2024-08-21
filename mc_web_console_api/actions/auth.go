@@ -1,11 +1,9 @@
 package actions
 
 import (
-	"fmt"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/self"
 	"net/http"
-	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -33,11 +31,7 @@ func AuthLoginRefresh(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
 	commonResponse, _ := AnyCaller(c, "loginrefresh", commonRequest, true)
-
-	fmt.Println("@@@@@@@@@@@@@@@ commonResponse", commonResponse)
-
 	tx := c.Value("tx").(*pop.Connection)
-	fmt.Println("@@@@@@@@@@@@@@@ pop")
 	_, err := self.UpdateUserSesssFromResponseData(tx, commonResponse, c.Value("UserId").(string))
 	if err != nil {
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
@@ -47,9 +41,8 @@ func AuthLoginRefresh(c buffalo.Context) error {
 }
 
 func AuthLogout(c buffalo.Context) error {
-	accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 	tx := c.Value("tx").(*pop.Connection)
-	rt, err := self.DestroyUserSessByAccesstokenforLogout(tx, accessToken)
+	rt, err := self.DestroyUserSessByAccesstokenforLogout(tx, c.Value("UserId").(string))
 	if err != nil {
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
@@ -60,7 +53,15 @@ func AuthLogout(c buffalo.Context) error {
 		},
 	}
 	commonResponse, _ := AnyCaller(c, "logout", commonRequest, true)
-	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	return c.Render(http.StatusOK, r.JSON(commonResponse))
+}
+
+func AuthUserinfo(c buffalo.Context) error {
+	return c.Render(200, r.JSON(map[string]interface{}{
+		"userId":   c.Value("UserId"),
+		"userName": c.Value("UserName"),
+		"roles":    c.Value("Roles"),
+	}))
 }
 
 func AuthValidate(c buffalo.Context) error {
