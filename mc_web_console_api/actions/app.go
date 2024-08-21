@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"log"
 	"os"
 	"sync"
 
@@ -9,10 +8,8 @@ import (
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
 	contenttype "github.com/gobuffalo/mw-contenttype"
-	forcessl "github.com/gobuffalo/mw-forcessl"
 	"github.com/gobuffalo/x/sessions"
 	"github.com/rs/cors"
-	"github.com/unrolled/secure"
 
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
@@ -36,13 +33,12 @@ func App() *buffalo.App {
 			Env:          ENV,
 			SessionStore: sessions.Null{},
 			PreWares: []buffalo.PreWare{
-				cors.AllowAll().Handler,
+				cors.AllowAll().Handler, // disable require, when front proxy done.
 			},
 			SessionName: "mc_web_console",
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
-		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
@@ -53,12 +49,13 @@ func App() *buffalo.App {
 
 		auth := app.Group(apiPath + "/auth")
 		auth.POST("/login", AuthLogin)
-		auth.POST("/refresh", session("")(AuthLoginRefresh))
-		auth.POST("/validate", session("")(AuthValidate))
-		auth.POST("/logout", session("")(AuthLogout))
+		auth.POST("/refresh", mciammanager.Middleware()(AuthLoginRefresh))
+		auth.POST("/validate", mciammanager.Middleware()(AuthValidate))
+		auth.POST("/logout", mciammanager.Middleware()(AuthLogout))
+		auth.POST("/userinfo", mciammanager.Middleware()(AuthUserinfo))
 
 		api := app.Group(apiPath)
-		api.Use(session(""))
+		api.Use(mciammanager.Middleware())
 		api.POST("/disklookup", self.DiskLookup)
 		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 		api.POST("/{operationId}", AnyController)
@@ -71,22 +68,15 @@ func readyz(c buffalo.Context) error {
 	return c.Render(200, r.JSON(map[string]interface{}{"status": "OK"}))
 }
 
-func forceSSL() buffalo.MiddlewareFunc {
-	return forcessl.Middleware(secure.Options{
-		SSLRedirect:     ENV == "production",
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
-	})
-}
-
-func session(role string) buffalo.MiddlewareFunc {
-	if MCIAM_USE {
-		return mciammanager.Middleware(role)
-	} else {
-		return func(next buffalo.Handler) buffalo.Handler {
-			return func(c buffalo.Context) error {
-				log.Println("NO SESSION MIDDLEWARE")
-				return next(c)
-			}
-		}
-	}
-}
+// func session(role string) buffalo.MiddlewareFunc {
+// 	if MCIAM_USE {
+// 		return mciammanager.Middleware()
+// 	} else {
+// 		return func(next buffalo.Handler) buffalo.Handler {
+// 			return func(c buffalo.Context) error {
+// 				log.Println("NO SESSION MIDDLEWARE")
+// 				return next(c)
+// 			}
+// 		}
+// 	}
+// }
