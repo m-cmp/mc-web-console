@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { AUTO_LOGIN, useLocalStorage } from '@/shared/libs/access-localstorage';
-import { ILoginData } from '@/shared/libs/access-localstorage/types.ts';
-import { McmpRouter } from '@/app/providers/router';
-import { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
-
 const handleLogout = () => {
-  const loginDataLocalStorage = useLocalStorage<ILoginData>(AUTO_LOGIN);
-  loginDataLocalStorage.setItem({ role: null, autoLogin: false });
-
-  McmpRouter.getRouter()
-    .push({ name: AUTH_ROUTE.LOGIN._NAME })
-    .catch(() => {});
+  // const loginDataLocalStorage = useLocalStorage<ILoginData>(AUTO_LOGIN);
+  // loginDataLocalStorage.setItem({ role: null, autoLogin: false });
+  //
+  // McmpRouter.getRouter()
+  //   .push({ name: AUTH_ROUTE.LOGIN._NAME })
+  //   .catch(() => {});
 };
 </script>
 

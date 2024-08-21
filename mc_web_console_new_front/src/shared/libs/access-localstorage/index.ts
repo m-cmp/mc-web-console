@@ -1,4 +1,4 @@
 import { AUTO_LOGIN } from '@/shared/libs/access-localstorage/constant.ts';
-import { useLocalStorage } from '@/shared/libs/access-localstorage/useLocalStorage.ts';
+import LocalStorageConnector from '@/shared/libs/access-localstorage/localStorageConnector.ts';
 
-export { AUTO_LOGIN, useLocalStorage };
+export { AUTO_LOGIN, LocalStorageConnector };

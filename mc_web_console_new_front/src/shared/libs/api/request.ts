@@ -1,6 +1,7 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Ref, ref } from 'vue';
 import { axiosInstance } from '@/shared/libs/api/instance.ts';
+import { AsyncStatus, IUseAxiosWrapperReturnType } from '@/shared/libs';
 
 export function axiosGet<T>(url: string, config?: AxiosRequestConfig) {
   return axiosInstance.get<T>(`/${url}`, config);
@@ -12,18 +13,6 @@ export function axiosPost<T, D = any>(
   config?: AxiosRequestConfig,
 ) {
   return axiosInstance.post<T>(`/${url}`, data, config);
-}
-
-export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
-
-export interface IUseAxiosWrapperReturnType<T, D> {
-  isLoading: Ref<boolean>;
-  status: Ref<AsyncStatus>;
-  data: Ref<T | null>;
-  error: Ref<Error | null>;
-  errorMsg: Ref<string | null>;
-  execute: (payload?: D, config?: AxiosRequestConfig) => Promise<void>;
-  reset: () => void;
 }
 
 export function useAxiosWrapper<T, D = any>(
