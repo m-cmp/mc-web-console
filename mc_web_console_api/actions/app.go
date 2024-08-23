@@ -58,6 +58,9 @@ func App() *buffalo.App {
 		api.Use(mciammanager.Middleware())
 		api.POST("/disklookup", self.DiskLookup)
 		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
+
+		api.POST("/getmenutree", GetmenuTree)
+
 		api.POST("/{operationId}", AnyController)
 	})
 
@@ -67,16 +70,3 @@ func App() *buffalo.App {
 func readyz(c buffalo.Context) error {
 	return c.Render(200, r.JSON(map[string]interface{}{"status": "OK"}))
 }
-
-// func session(role string) buffalo.MiddlewareFunc {
-// 	if MCIAM_USE {
-// 		return mciammanager.Middleware()
-// 	} else {
-// 		return func(next buffalo.Handler) buffalo.Handler {
-// 			return func(c buffalo.Context) error {
-// 				log.Println("NO SESSION MIDDLEWARE")
-// 				return next(c)
-// 			}
-// 		}
-// 	}
-// }
