@@ -13,7 +13,7 @@ func AuthLogin(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
 
-	commonResponse, _ := AnyCaller(c, "login", commonRequest, false)
+	commonResponse, _ := handler.AnyCaller(c, "login", commonRequest, false)
 	if commonResponse.Status.StatusCode != 200 && commonResponse.Status.StatusCode != 201 {
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
@@ -30,14 +30,27 @@ func AuthLogin(c buffalo.Context) error {
 func AuthLoginRefresh(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
-	commonResponse, _ := AnyCaller(c, "loginrefresh", commonRequest, true)
+
 	tx := c.Value("tx").(*pop.Connection)
-	_, err := self.UpdateUserSesssFromResponseData(tx, commonResponse, c.Value("UserId").(string))
+	var refreshRes *handler.CommonResponse
+
+	if commonRequest.Request != nil {
+		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+	} else {
+		sess, err := self.GetUserByUserId(tx, c.Value("UserId").(string))
+		if err != nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
+		}
+		commonRequest.Request = map[string]interface{}{"refresh_token": sess.RefreshToken}
+		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+	}
+
+	_, err := self.UpdateUserSesssFromResponseData(tx, refreshRes, c.Value("UserId").(string))
 	if err != nil {
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
 	}
 
-	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	return c.Render(refreshRes.Status.StatusCode, r.JSON(refreshRes))
 }
 
 func AuthLogout(c buffalo.Context) error {
@@ -52,7 +65,7 @@ func AuthLogout(c buffalo.Context) error {
 			"refresh_token": rt,
 		},
 	}
-	commonResponse, _ := AnyCaller(c, "logout", commonRequest, true)
+	commonResponse, _ := handler.AnyCaller(c, "logout", commonRequest, true)
 	return c.Render(http.StatusOK, r.JSON(commonResponse))
 }
 
@@ -67,6 +80,6 @@ func AuthUserinfo(c buffalo.Context) error {
 func AuthValidate(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
-	commonResponse, _ := AnyCaller(c, "getusevalidate", commonRequest, true)
+	commonResponse, _ := handler.AnyCaller(c, "getusevalidate", commonRequest, true)
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
