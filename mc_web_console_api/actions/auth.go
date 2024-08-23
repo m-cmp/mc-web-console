@@ -80,6 +80,6 @@ func AuthUserinfo(c buffalo.Context) error {
 func AuthValidate(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
 	c.Bind(commonRequest)
-	commonResponse, _ := handler.AnyCaller(c, "getusevalidate", commonRequest, true)
+	commonResponse, _ := handler.AnyCaller(c, "authgetuservalidate", commonRequest, true)
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
