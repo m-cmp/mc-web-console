@@ -59,6 +59,7 @@ func App() *buffalo.App {
 		api.POST("/disklookup", self.DiskLookup)
 		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 
+		api.POST("/createmenus", CreateMenus)
 		api.POST("/getmenutree", GetmenuTree)
 
 		api.POST("/{operationId}", AnyController)
