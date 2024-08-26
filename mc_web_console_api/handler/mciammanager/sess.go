@@ -89,7 +89,7 @@ func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 
 func SelfApiMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		operationId := strings.TrimPrefix(c.Request().RequestURI, "/api/")
+		operationId := strings.ToLower(strings.TrimPrefix(c.Request().RequestURI, "/api/"))
 		framework, _, _, err := handler.GetApiSpec(operationId)
 		if err != nil || framework == "" {
 			commonResponse := handler.CommonResponseStatusNotFound(operationId + "-" + err.Error())

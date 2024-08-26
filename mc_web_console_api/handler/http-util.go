@@ -112,7 +112,7 @@ func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonReque
 func GetApiSpec(requestOpertinoId string) (string, Service, Spec, error) {
 	for framework, api := range ApiYamlSet.ServiceActions {
 		for opertinoId, spec := range api {
-			if opertinoId == requestOpertinoId {
+			if opertinoId == strings.ToLower(requestOpertinoId) {
 				return framework, ApiYamlSet.Services[framework], spec, nil
 			}
 		}
