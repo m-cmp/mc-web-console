@@ -195,6 +195,31 @@
                 "summary": "DiskLookup"
             }
         },
+        "/api/getmenutree": {
+            "post": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "format": "binary",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "description": "GetmenuTree",
+                "operationId": "getmenutree",
+                "summary": "GetmenuTree"
+            }
+        },
         "/api/{operationId}": {
             "parameters": [
                 {
