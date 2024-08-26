@@ -10,18 +10,17 @@ require (
 	github.com/gobuffalo/envy v1.10.2
 	github.com/gobuffalo/grift v1.5.2
 	github.com/gobuffalo/mw-contenttype v1.0.2
-	github.com/gobuffalo/mw-forcessl v1.0.2
 	github.com/gobuffalo/mw-i18n/v2 v2.0.3
 	github.com/gobuffalo/mw-paramlogger v1.0.2
 	github.com/gobuffalo/pop/v6 v6.1.1
 	github.com/gobuffalo/validate/v3 v3.3.3
 	github.com/gobuffalo/x v0.1.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/m-cmp/mc-iam-manager v0.2.8
+	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/m-cmp/mc-iam-manager v0.2.9
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/cors v1.11.0
 	github.com/spf13/viper v1.19.0
-	github.com/unrolled/secure v1.14.0
 )
 
 require (
@@ -48,7 +47,7 @@ require (
 	github.com/gobuffalo/refresh v1.13.3 // indirect
 	github.com/gobuffalo/tags/v3 v3.1.4 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect

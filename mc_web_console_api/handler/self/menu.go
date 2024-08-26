@@ -24,6 +24,7 @@ type Menu struct {
 	Priority     string `json:"priority"`
 	Menus        Menus  `json:"menus"`
 }
+
 type Menus []Menu
 
 func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
@@ -99,7 +100,7 @@ func CreateMenusByLocalMenuYaml(c buffalo.Context) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", getCreatewebmenubyyamlEndpoint(), &requestBody)
+	req, err := http.NewRequest("POST", getCreateWebMenuByYamlEndpoint(), &requestBody)
 	if err != nil {
 		fmt.Printf("Error creating POST request: %s\n", err)
 		return err
@@ -126,7 +127,7 @@ func CreateMenusByLocalMenuYaml(c buffalo.Context) error {
 	return nil
 }
 
-func getCreatewebmenubyyamlEndpoint() string {
+func getCreateWebMenuByYamlEndpoint() string {
 	viper.SetConfigName("api")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./conf")

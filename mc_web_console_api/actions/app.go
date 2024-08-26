@@ -42,24 +42,27 @@ func App() *buffalo.App {
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
+		app.Use(mciammanager.DefaultMiddleware)
 
+		app.Middleware.Skip(mciammanager.DefaultMiddleware, AuthLogin)
 		app.ANY("/readyz", readyz)
 
 		apiPath := "/api"
 
 		auth := app.Group(apiPath + "/auth")
+		auth.Middleware.Skip(mciammanager.DefaultMiddleware, AuthLogin)
 		auth.POST("/login", AuthLogin)
-		auth.POST("/refresh", mciammanager.Middleware()(AuthLoginRefresh))
-		auth.POST("/validate", mciammanager.Middleware()(AuthValidate))
-		auth.POST("/logout", mciammanager.Middleware()(AuthLogout))
-		auth.POST("/userinfo", mciammanager.Middleware()(AuthUserinfo))
+		auth.POST("/refresh", AuthLoginRefresh)
+		auth.POST("/validate", AuthValidate)
+		auth.POST("/logout", AuthLogout)
+		auth.POST("/userinfo", AuthUserinfo)
 
 		api := app.Group(apiPath)
-		api.Use(mciammanager.Middleware())
+		api.Use(mciammanager.ApiMiddleware)
 		api.POST("/disklookup", self.DiskLookup)
 		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 
-		api.POST("/createmenus", CreateMenus)
+		api.POST("/createmenuresources", CreateMenuResources)
 		api.POST("/getmenutree", GetmenuTree)
 
 		api.POST("/{operationId}", AnyController)
