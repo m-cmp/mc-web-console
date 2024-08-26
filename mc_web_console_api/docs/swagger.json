@@ -132,26 +132,17 @@
         "/api/availabledisktypebyproviderregion": {
             "post": {
                 "consumes": [
-                    "text/plain"
+                    "multipart/form-data"
                 ],
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "schema": {
-                            "format": "binary",
-                            "type": "string"
-                        }
-                    }
-                ],
+                "parameters": [],
                 "responses": {
                     "200": {
                         "description": ""
                     }
                 },
-                "description": "webAvailableDiskTypeByProviderRegion",
-                "operationId": "webavailabledisktypebyproviderregion",
-                "summary": "webAvailableDiskTypeByProviderRegion"
+                "description": "AvailableDiskTypeByProviderRegion",
+                "operationId": "availabledisktypebyproviderregion",
+                "summary": "AvailableDiskTypeByProviderRegion"
             }
         },
         "/api/createmenuresources": {
@@ -174,9 +165,9 @@
                         "description": ""
                     }
                 },
-                "description": "webCreateMenuResources",
-                "operationId": "webcreatemenuresources",
-                "summary": "webCreateMenuResources"
+                "description": "CreateMenuResources",
+                "operationId": "createmenuresources",
+                "summary": "CreateMenuResources"
             }
         },
         "/api/disklookup": {
@@ -199,9 +190,9 @@
                         "description": ""
                     }
                 },
-                "description": "webDiskLookup",
-                "operationId": "webdisklookup",
-                "summary": "webDiskLookup"
+                "description": "DiskLookup",
+                "operationId": "disklookup",
+                "summary": "DiskLookup"
             }
         },
         "/api/{operationId}": {
@@ -232,9 +223,9 @@
                         "description": ""
                     }
                 },
-                "description": "webAnyController",
-                "operationId": "webanycontroller",
-                "summary": "webAnyController"
+                "description": "AnyController",
+                "operationId": "anycontroller",
+                "summary": "AnyController"
             }
         }
     },
