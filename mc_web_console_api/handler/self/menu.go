@@ -28,7 +28,7 @@ type Menu struct {
 type Menus []Menu
 
 func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
-	commonResponse, err := handler.AnyCaller(c, "getmenuresources", &handler.CommonRequest{}, true)
+	commonResponse, err := handler.AnyCaller(c, "getallavailablemenus", &handler.CommonRequest{}, true)
 	if err != nil {
 		return &Menus{}, err
 	}
@@ -41,7 +41,7 @@ func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
 
 	menuList := &Menu{}
 	for _, menuResp := range menuListResp {
-		menuPart := strings.Split(menuResp["name"].(string), ":")
+		menuPart := strings.Split(menuResp["rsname"].(string), ":")
 
 		menu := &Menu{
 			Id:           menuPart[2],
