@@ -86,3 +86,29 @@ func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 		return next(c)
 	}
 }
+
+func SelfApiMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		operationId := strings.TrimPrefix(c.Request().RequestURI, "/api/")
+		framework, _, _, err := handler.GetApiSpec(operationId)
+		if err != nil || framework == "" {
+			commonResponse := handler.CommonResponseStatusNotFound(operationId + "-" + err.Error())
+			return c.Render(commonResponse.Status.StatusCode, render.JSON(commonResponse))
+		}
+
+		commonRequest := &handler.CommonRequest{
+			PathParams: map[string]string{
+				"framework":   framework,
+				"operationid": operationId,
+			},
+		}
+		commonResponse, err := handler.AnyCaller(c, "getpermissionticketbyoperationid", commonRequest, true)
+		if err != nil || commonResponse.Status.StatusCode != 200 {
+			return c.Render(commonResponse.Status.StatusCode, render.JSON(commonResponse))
+		}
+
+		c.Set("Authorization", commonResponse.ResponseData.(map[string]interface{})["access_token"])
+
+		return next(c)
+	}
+}
