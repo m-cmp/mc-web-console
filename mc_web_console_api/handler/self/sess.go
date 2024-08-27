@@ -8,8 +8,6 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-// buffalo db generate model usersess user_id:text access_token:text expires_in:float64 refresh_token:text refresh_expires_in:float64
-
 func CreateUserSessFromResponseData(tx *pop.Connection, r *handler.CommonResponse, userId string) (*models.Usersess, error) {
 	t := r.ResponseData.(map[string]interface{})
 	var s models.Usersess
@@ -85,6 +83,41 @@ func GetUserByUserId(tx *pop.Connection, userId string) (*models.Usersess, error
 	return &s, nil
 }
 
+func UpdateUserSesssFromResponseData(tx *pop.Connection, r *handler.CommonResponse, userId string) (*models.Usersess, error) {
+
+	t := r.ResponseData.(map[string]interface{})
+
+	s, err := GetUserByUserId(tx, userId)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	if accessToken, ok := t["access_token"]; ok {
+		s.AccessToken = accessToken.(string)
+
+	}
+	if expiresIn, ok := t["expires_in"]; ok {
+		s.ExpiresIn = expiresIn.(float64)
+
+	}
+	if refreshToken, ok := t["refresh_token"]; ok {
+		s.RefreshToken = refreshToken.(string)
+
+	}
+	if refreshExpiresIn, ok := t["refresh_expires_in"]; ok {
+		s.RefreshExpiresIn = refreshExpiresIn.(float64)
+	}
+
+	err = tx.Update(s)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return s, nil
+}
+
 func UpdateUserSess(tx *pop.Connection, s *models.Usersess) (*models.Usersess, error) {
 	err := tx.Update(s)
 	if err != nil {
@@ -95,19 +128,18 @@ func UpdateUserSess(tx *pop.Connection, s *models.Usersess) (*models.Usersess, e
 }
 
 func DestroyUserSessByAccesstokenforLogout(tx *pop.Connection, t string) (string, error) {
-	var s models.Usersess
-	err := tx.Where("access_token = ?", t).First(&s)
+	s, err := GetUserByUserId(tx, t)
 	if err != nil {
 		log.Error(err)
 		return "", err
 	}
-	refreshToken := s.RefreshToken
-	err = DestroyUserSess(tx, &s)
+	rt := s.RefreshToken
+	err = DestroyUserSess(tx, s)
 	if err != nil {
 		log.Error(err)
 		return "", err
 	}
-	return refreshToken, nil
+	return rt, nil
 }
 
 func DestroyUserSess(tx *pop.Connection, s *models.Usersess) error {

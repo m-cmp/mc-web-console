@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"log"
 	"os"
 	"sync"
 
@@ -9,10 +8,8 @@ import (
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
 	contenttype "github.com/gobuffalo/mw-contenttype"
-	forcessl "github.com/gobuffalo/mw-forcessl"
 	"github.com/gobuffalo/x/sessions"
 	"github.com/rs/cors"
-	"github.com/unrolled/secure"
 
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
@@ -36,79 +33,45 @@ func App() *buffalo.App {
 			Env:          ENV,
 			SessionStore: sessions.Null{},
 			PreWares: []buffalo.PreWare{
-				cors.AllowAll().Handler,
+				cors.AllowAll().Handler, // disable require, when front proxy done.
 			},
 			SessionName: "mc_web_console",
 			Addr:        os.Getenv("API_ADDR") + ":" + os.Getenv("API_PORT"),
 		})
 
-		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
+		app.Use(mciammanager.DefaultMiddleware)
 
-		app.ANY("/alive", alive)
+		app.Middleware.Skip(mciammanager.DefaultMiddleware, AuthLogin)
+		app.ANY("/readyz", readyz)
 
 		apiPath := "/api"
 
 		auth := app.Group(apiPath + "/auth")
+		auth.Middleware.Skip(mciammanager.DefaultMiddleware, AuthLogin)
 		auth.POST("/login", AuthLogin)
-		auth.POST("/logout", session("")(AuthLogout))
+		auth.POST("/refresh", AuthLoginRefresh)
+		auth.POST("/validate", AuthValidate)
+		auth.POST("/logout", AuthLogout)
+		auth.POST("/userinfo", AuthUserinfo)
 
 		api := app.Group(apiPath)
-		api.Use(session(""))
+
+		api.Use(mciammanager.SelfApiMiddleware)
 		api.POST("/disklookup", self.DiskLookup)
 		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
-		api.POST("/{operationId}", AnyController)
+		api.POST("/createmenuresources", CreateMenuResources)
+		api.POST("/getmenutree", GetmenuTree)
+
+		api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
+		api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
 	})
 
 	return app
 }
 
-func alive(c buffalo.Context) error {
-	name := ""
-	roles := []string{}
-	sub := ""
-	upn := ""
-	if userName, ok := c.Value("PreferredUsername").(string); ok {
-		name = userName
-	}
-	if userRoles, ok := c.Value("RealmAccessRoles").([]string); ok {
-		roles = userRoles
-	}
-	if userSub, ok := c.Value("Sub").(string); ok {
-		sub = userSub
-	}
-	if userUpn, ok := c.Value("Upn").(string); ok {
-		upn = userUpn
-	}
-
-	return c.Render(200, r.JSON(map[string]interface{}{
-		"status":            "OK",
-		"method":            c.Request().Method,
-		"preferredUsername": name,
-		"realmAccessRoles":  roles,
-		"Sub":               sub,
-		"Upn":               upn,
-	}))
-}
-
-func forceSSL() buffalo.MiddlewareFunc {
-	return forcessl.Middleware(secure.Options{
-		SSLRedirect:     ENV == "production",
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
-	})
-}
-
-func session(role string) buffalo.MiddlewareFunc {
-	if MCIAM_USE {
-		return mciammanager.Middleware(role)
-	} else {
-		return func(next buffalo.Handler) buffalo.Handler {
-			return func(c buffalo.Context) error {
-				log.Println("NO SESSION MIDDLEWARE")
-				return next(c)
-			}
-		}
-	}
+func readyz(c buffalo.Context) error {
+	return c.Render(200, r.JSON(map[string]interface{}{"status": "OK"}))
 }
