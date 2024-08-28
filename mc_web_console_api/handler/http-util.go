@@ -232,18 +232,13 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	commonResponse := &CommonResponse{}
 	commonResponse.Status.Message = resp.Status
 	commonResponse.Status.StatusCode = resp.StatusCode
-	if len(respBody) > 0 {
-		if isJSONResponse(respBody) {
-			jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
-			if jsonerr != nil {
-				log.Println("Error CommonHttp Unmarshal response:", jsonerr.Error())
-				return commonResponse, jsonerr
-			}
-		} else {
-			commonResponse.ResponseData = strings.TrimSpace(string(respBody))
-			return commonResponse, nil
-		}
+
+	jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
+	if jsonerr != nil {
+		commonResponse.ResponseData = strings.TrimSpace(string(respBody))
+		return commonResponse, nil
 	}
+
 	return commonResponse, nil
 }
 

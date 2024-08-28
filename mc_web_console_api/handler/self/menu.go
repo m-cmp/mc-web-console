@@ -2,7 +2,6 @@ package self
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -32,16 +31,10 @@ func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
 	if err != nil {
 		return &Menus{}, err
 	}
-
-	var menuListResp []map[string]interface{}
-	err = json.Unmarshal([]byte(commonResponse.ResponseData.(string)), &menuListResp)
-	if err != nil {
-		return &Menus{}, err
-	}
-
+	menuListResp := commonResponse.ResponseData.([]interface{})
 	menuList := &Menu{}
 	for _, menuResp := range menuListResp {
-		menuPart := strings.Split(menuResp["rsname"].(string), ":")
+		menuPart := strings.Split(menuResp.(map[string]interface{})["rsname"].(string), ":")
 
 		menu := &Menu{
 			Id:           menuPart[2],
