@@ -67,6 +67,7 @@ func App() *buffalo.App {
 
 		api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
 		api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+		// api.POST("/{operationId}", AnyController)
 	})
 
 	return app
