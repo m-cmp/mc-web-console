@@ -59,15 +59,15 @@ func App() *buffalo.App {
 
 		api := app.Group(apiPath)
 
-		// api.Use(mciammanager.SelfApiMiddleware)
+		api.Use(mciammanager.SelfApiMiddleware)
 		api.POST("/disklookup", self.DiskLookup)
 		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 		api.POST("/createmenuresources", CreateMenuResources)
 		api.POST("/getmenutree", GetmenuTree)
 
-		// api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
-		// api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
-		api.POST("/{operationId}", AnyController)
+		api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
+		api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+		// api.POST("/{operationId}", AnyController)
 	})
 
 	return app
