@@ -71,12 +71,12 @@ func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 		}
 
 		commonRequest := &handler.CommonRequest{
-			PathParams: map[string]string{
+			Request: map[string]string{
 				"framework":   framework,
 				"operationid": operationId,
 			},
 		}
-		commonResponse, err := handler.AnyCaller(c, "getpermissionticketbyoperationid", commonRequest, true)
+		commonResponse, err := handler.AnyCaller(c, "Getpermissionticket", commonRequest, true)
 		if err != nil || commonResponse.Status.StatusCode != 200 {
 			return c.Render(commonResponse.Status.StatusCode, render.JSON(commonResponse))
 		}
@@ -95,14 +95,13 @@ func SelfApiMiddleware(next buffalo.Handler) buffalo.Handler {
 			commonResponse := handler.CommonResponseStatusNotFound(operationId + "-" + err.Error())
 			return c.Render(commonResponse.Status.StatusCode, render.JSON(commonResponse))
 		}
-
 		commonRequest := &handler.CommonRequest{
-			PathParams: map[string]string{
+			Request: map[string]string{
 				"framework":   framework,
 				"operationid": operationId,
 			},
 		}
-		commonResponse, err := handler.AnyCaller(c, "getpermissionticketbyoperationid", commonRequest, true)
+		commonResponse, err := handler.AnyCaller(c, "Getpermissionticket", commonRequest, true)
 		if err != nil || commonResponse.Status.StatusCode != 200 {
 			return c.Render(commonResponse.Status.StatusCode, render.JSON(commonResponse))
 		}
