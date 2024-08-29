@@ -16,8 +16,7 @@ require (
 	github.com/gobuffalo/validate/v3 v3.3.3
 	github.com/gobuffalo/x v0.1.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/m-cmp/mc-iam-manager v0.2.9
+	github.com/m-cmp/mc-iam-manager v0.2.10
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/cors v1.11.0
 	github.com/spf13/viper v1.19.0
