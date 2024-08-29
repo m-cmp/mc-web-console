@@ -83,7 +83,7 @@ func init() {
 // AnyCaller는 buffalo.Context, operationId, commonRequest, auth유무 를 받아 conf/api.yaml 정보를 바탕으로 commonCaller를 호출합니다.
 // 모든 error 는 기본적으로 commonResponse 에 담아져 반환됩니다.
 func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonRequest, auth bool) (*CommonResponse, error) {
-	_, targetFrameworkInfo, targetApiSpec, err := GetApiSpec(operationId)
+	_, targetFrameworkInfo, targetApiSpec, err := GetApiSpec(strings.ToLower(operationId))
 	if (err != nil || targetFrameworkInfo == Service{} || targetApiSpec == Spec{}) {
 		commonResponse := CommonResponseStatusNotFound(operationId + "-" + err.Error())
 		return commonResponse, err
