@@ -83,7 +83,7 @@ func init() {
 // AnyCaller는 buffalo.Context, operationId, commonRequest, auth유무 를 받아 conf/api.yaml 정보를 바탕으로 commonCaller를 호출합니다.
 // 모든 error 는 기본적으로 commonResponse 에 담아져 반환됩니다.
 func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonRequest, auth bool) (*CommonResponse, error) {
-	_, targetFrameworkInfo, targetApiSpec, err := GetApiSpec(operationId)
+	_, targetFrameworkInfo, targetApiSpec, err := GetApiSpec(strings.ToLower(operationId))
 	if (err != nil || targetFrameworkInfo == Service{} || targetApiSpec == Spec{}) {
 		commonResponse := CommonResponseStatusNotFound(operationId + "-" + err.Error())
 		return commonResponse, err
@@ -112,7 +112,7 @@ func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonReque
 func GetApiSpec(requestOpertinoId string) (string, Service, Spec, error) {
 	for framework, api := range ApiYamlSet.ServiceActions {
 		for opertinoId, spec := range api {
-			if opertinoId == requestOpertinoId {
+			if opertinoId == strings.ToLower(requestOpertinoId) {
 				return framework, ApiYamlSet.Services[framework], spec, nil
 			}
 		}
@@ -232,18 +232,13 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	commonResponse := &CommonResponse{}
 	commonResponse.Status.Message = resp.Status
 	commonResponse.Status.StatusCode = resp.StatusCode
-	if len(respBody) > 0 {
-		if isJSONResponse(respBody) {
-			jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
-			if jsonerr != nil {
-				log.Println("Error CommonHttp Unmarshal response:", jsonerr.Error())
-				return commonResponse, jsonerr
-			}
-		} else {
-			commonResponse.ResponseData = strings.TrimSpace(string(respBody))
-			return commonResponse, nil
-		}
+
+	jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
+	if jsonerr != nil {
+		commonResponse.ResponseData = strings.TrimSpace(string(respBody))
+		return commonResponse, nil
 	}
+
 	return commonResponse, nil
 }
 

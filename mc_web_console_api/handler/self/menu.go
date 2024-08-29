@@ -2,7 +2,6 @@ package self
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -28,20 +27,23 @@ type Menu struct {
 type Menus []Menu
 
 func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
-	commonResponse, err := handler.AnyCaller(c, "getallavailablemenus", &handler.CommonRequest{}, true)
+	commonResponse, err := handler.AnyCaller(c, "getallavailablemenus", &handler.CommonRequest{
+		PathParams: map[string]string{
+			"framework": "mc-web-console",
+		},
+	}, true)
+
 	if err != nil {
 		return &Menus{}, err
 	}
-
-	var menuListResp []map[string]interface{}
-	err = json.Unmarshal([]byte(commonResponse.ResponseData.(string)), &menuListResp)
-	if err != nil {
-		return &Menus{}, err
+	if commonResponse.Status.StatusCode != 200 {
+		return &Menus{}, fmt.Errorf(commonResponse.Status.Message)
 	}
 
+	menuListResp := commonResponse.ResponseData.([]interface{})
 	menuList := &Menu{}
 	for _, menuResp := range menuListResp {
-		menuPart := strings.Split(menuResp["rsname"].(string), ":")
+		menuPart := strings.Split(menuResp.(map[string]interface{})["rsname"].(string), ":")
 
 		menu := &Menu{
 			Id:           menuPart[2],
