@@ -18,7 +18,7 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 		claims, err := self.GetCmigTokenClaims(accessToken)
 		if err != nil {
 			log.Println(err.Error())
-			return c.Render(http.StatusInternalServerError, render.JSON(map[string]interface{}{"error": err.Error()}))
+			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Unauthorized"}))
 		}
 		c.Set("Authorization", c.Request().Header.Get("Authorization"))
 		c.Set("UserId", claims.Upn)
