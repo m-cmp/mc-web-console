@@ -240,7 +240,6 @@ func RefreshAccessToken(refreshToken string) (*UserLoginResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("token is invalid : %s", err.Error())
 	}
-
 	if claims, ok := token.Claims.(*CmigAccesstokenClaims); ok && token.Valid {
 		if time.Now().Unix() > claims.Exp {
 			return nil, fmt.Errorf("refresh token expired")
@@ -258,11 +257,9 @@ func GetCmigTokenClaims(tokenString string) (*CmigAccesstokenClaims, error) {
 		}
 		return encryptionKey, nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("token is invalid : %s", err.Error())
 	}
-
 	if claims, ok := token.Claims.(*CmigAccesstokenClaims); ok && token.Valid {
 		return claims, nil
 	} else {

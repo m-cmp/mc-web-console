@@ -83,15 +83,29 @@ func AuthLoginRefresh(c buffalo.Context) error {
 }
 
 func AuthLogout(c buffalo.Context) error {
-	return c.Render(404, r.JSON(nil))
+	tx := c.Value("tx").(*pop.Connection)
+	_, err := self.DestroyUserSessByAccesstokenforLogout(tx, c.Value("UserId").(string))
+	if err != nil {
+		log.Println("AuthLogout err : ", err.Error())
+		commonResponse := handler.CommonResponseStatusBadRequest("no user session")
+		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+	}
+	commonResponse := handler.CommonResponseStatusNoContent(nil)
+	return c.Render(http.StatusOK, r.JSON(commonResponse))
 }
 
 func AuthUserinfo(c buffalo.Context) error {
-	return c.Render(404, r.JSON(nil))
+	commonResponse := handler.CommonResponseStatusOK(map[string]interface{}{
+		"userid":   c.Value("UserId").(string),
+		"username": c.Value("UserName").(string),
+		"email":    c.Value("Email").(string),
+	})
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
 func AuthValidate(c buffalo.Context) error {
-	return c.Render(404, r.JSON(nil))
+	commonResponse := handler.CommonResponseStatusOK(nil)
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
 // MCMP AUTH

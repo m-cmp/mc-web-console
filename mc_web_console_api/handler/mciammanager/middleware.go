@@ -61,8 +61,6 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 		c.Set("UserName", claims.UserName)       // need jwtprofile
 		c.Set("Roles", claims.RealmAccess.Roles) // need jwtprofile
 
-		// c.Set("Email", claims.Email)             // need jwtprofile
-
 		return next(c)
 	}
 }
