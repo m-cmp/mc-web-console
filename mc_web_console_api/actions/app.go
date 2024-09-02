@@ -42,37 +42,55 @@ func App() *buffalo.App {
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(contenttype.Set("application/json"))
 		app.Use(popmw.Transaction(models.DB))
-		app.Use(mciammanager.DefaultMiddleware)
 
-		app.Middleware.Skip(mciammanager.DefaultMiddleware, AuthLogin)
-		app.ANY("/readyz", readyz)
+		if MCIAM_USE { // MCIAM USE True
+			app.Use(mciammanager.DefaultMiddleware)
+			app.Middleware.Skip(mciammanager.DefaultMiddleware, readyz)
 
-		apiPath := "/api"
+			app.ANY("/readyz", readyz)
+			apiPath := "/api"
 
-		auth := app.Group(apiPath + "/auth")
-		auth.Middleware.Skip(mciammanager.DefaultMiddleware, AuthLogin)
-		auth.POST("/login", AuthLogin)
-		auth.POST("/refresh", AuthLoginRefresh)
-		auth.POST("/validate", AuthValidate)
-		auth.POST("/logout", AuthLogout)
-		auth.POST("/userinfo", AuthUserinfo)
+			auth := app.Group(apiPath + "/auth")
+			auth.Middleware.Skip(mciammanager.DefaultMiddleware, AuthMCIAMLogin)
+			auth.POST("/login", AuthMCIAMLogin)
+			auth.POST("/refresh", AuthMCIAMLoginRefresh)
+			auth.POST("/validate", AuthMCIAMValidate)
+			auth.POST("/logout", AuthMCIAMLogout)
+			auth.POST("/userinfo", AuthMCIAMUserinfo)
 
-		api := app.Group(apiPath)
+			api := app.Group(apiPath)
+			api.Use(mciammanager.SelfApiMiddleware)
+			api.POST("/disklookup", self.DiskLookup)
+			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
+			api.POST("/createmenuresources", CreateMenuResources)
+			api.POST("/getmenutree", GetmenuTree)
 
-		api.Use(mciammanager.SelfApiMiddleware)
-		api.POST("/disklookup", self.DiskLookup)
-		api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
-		api.POST("/createmenuresources", CreateMenuResources)
-		api.POST("/getmenutree", GetmenuTree)
+			api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
+			api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
 
-		api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
-		api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
-		// api.POST("/{operationId}", AnyController)
+		} else { // MCIAM USE False
+
+			app.Use(DefaultMiddleware)
+			app.Middleware.Skip(DefaultMiddleware, readyz)
+
+			app.ANY("/readyz", readyz)
+
+			apiPath := "/api"
+
+			auth := app.Group(apiPath + "/auth")
+			auth.Middleware.Skip(DefaultMiddleware, AuthLogin)
+			auth.POST("/login", AuthLogin)
+			auth.POST("/refresh", AuthLoginRefresh)
+			auth.POST("/validate", AuthValidate)
+			auth.POST("/logout", AuthLogout)
+			auth.POST("/userinfo", AuthUserinfo)
+
+		}
 	})
 
 	return app
 }
 
 func readyz(c buffalo.Context) error {
-	return c.Render(200, r.JSON(map[string]interface{}{"status": "OK"}))
+	return c.Render(200, r.JSON(map[string]interface{}{"status": "OK", "MCIAM_USE": MCIAM_USE}))
 }

@@ -5,6 +5,8 @@ import (
 	"log"
 	"mc_web_console_api/handler"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
@@ -15,11 +17,15 @@ import (
 )
 
 func init() {
-	certEndPoint := getCertsEndpoint()
-	err := iamtokenvalidator.GetPubkeyIamManager(certEndPoint)
-	if err != nil {
-		panic("Get jwks fail :" + err.Error())
+	MCIAM_USE, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+	if MCIAM_USE {
+		certEndPoint := getCertsEndpoint()
+		err := iamtokenvalidator.GetPubkeyIamManager(certEndPoint)
+		if err != nil {
+			panic("Get jwks fail :" + err.Error())
+		}
 	}
+
 }
 
 func getCertsEndpoint() string {
