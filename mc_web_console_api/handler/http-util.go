@@ -260,6 +260,17 @@ func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
 	}
 }
 
+func CommonResponseStatusNoContent(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusNoContent,
+		Message:    http.StatusText(http.StatusNoContent),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
 func CommonResponseStatusNotFound(responseData interface{}) *CommonResponse {
 	webStatus := WebStatus{
 		StatusCode: http.StatusNotFound,
