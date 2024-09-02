@@ -62,8 +62,8 @@ func App() *buffalo.App {
 			api.Use(mciammanager.SelfApiMiddleware)
 			api.POST("/disklookup", self.DiskLookup)
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
-			api.POST("/createmenuresources", CreateMenuResources)
-			api.POST("/getmenutree", GetmenuTree)
+			api.POST("/createmenuresources", CreateMCIAMMenuResources)
+			api.POST("/getmenutree", GetMCIAMmenuTree)
 
 			api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
 			api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
@@ -85,6 +85,13 @@ func App() *buffalo.App {
 			auth.POST("/logout", AuthLogout)
 			auth.POST("/userinfo", AuthUserinfo)
 
+			api := app.Group(apiPath)
+			api.POST("/disklookup", self.DiskLookup)
+			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
+			api.POST("/createmenuresources", CreateMenuResources)
+			api.POST("/getmenutree", GetmenuTree)
+
+			api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
 		}
 	})
 
