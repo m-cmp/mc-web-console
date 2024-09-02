@@ -1,0 +1,9 @@
+setting:
+  encryptionkey: cmig-secret-key-seed
+
+user:
+  id: cmiguser
+  password: cmiguserPassword # CHANGE ME
+  firstName: cloud
+  lastName: migrator
+  email: cloud@migrator.changeme
