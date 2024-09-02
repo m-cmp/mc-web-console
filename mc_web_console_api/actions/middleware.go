@@ -9,6 +9,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/render"
+	"github.com/gobuffalo/pop/v6"
 )
 
 func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
@@ -20,6 +21,13 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 			log.Println(err.Error())
 			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Unauthorized"}))
 		}
+		tx := c.Value("tx").(*pop.Connection)
+
+		isUser, err := self.IsUserSessExistByUserId(tx, claims.Upn)
+		if err != nil || !isUser {
+			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Unauthorized"}))
+		}
+
 		c.Set("Authorization", c.Request().Header.Get("Authorization"))
 		c.Set("UserId", claims.Upn)
 		c.Set("UserName", claims.Name)
