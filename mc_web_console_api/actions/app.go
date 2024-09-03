@@ -91,7 +91,7 @@ func App() *buffalo.App {
 			api.POST("/createmenuresources", CreateMenuResources)
 			api.POST("/getmenutree", GetmenuTree)
 
-			api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+			api.POST("/{operationId}", AnyController)
 		}
 	})
 
