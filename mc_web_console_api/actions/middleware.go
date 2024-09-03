@@ -32,6 +32,8 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 		c.Set("UserId", claims.Upn)
 		c.Set("UserName", claims.Name)
 		c.Set("Email", claims.Email)
+		c.Set("Role", claims.Role)
+
 		return next(c)
 	}
 }

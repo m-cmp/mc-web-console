@@ -99,6 +99,7 @@ func AuthUserinfo(c buffalo.Context) error {
 		"userid":   c.Value("UserId").(string),
 		"username": c.Value("UserName").(string),
 		"email":    c.Value("Email").(string),
+		"role":     c.Value("Role").(string),
 	})
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
