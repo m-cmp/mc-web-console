@@ -74,7 +74,6 @@ func createMenuResource() error {
 	}
 
 	CmigMenuTree.Menus = buildMenuTree(cmigMenus.Menus, "")
-	fmt.Println("@@@@@@@@@@@@@@ CmigMenuTree.Menus", CmigMenuTree.Menus)
 	return nil
 }
 
