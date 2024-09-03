@@ -24,7 +24,7 @@ func init() {
 		if err != nil {
 			log.Fatal("create menu fail : ", err.Error())
 		}
-		log.Println("C-mig Menu init success")
+		log.Println("Self Menu init success")
 	}
 }
 
@@ -55,7 +55,7 @@ func buildMenuTree(menus Menus, parentID string) Menus {
 }
 
 func createMenuResource() error {
-	yamlFile := "./conf/cmigmenu.yaml"
+	yamlFile := "./conf/selfiammenu.yaml"
 
 	data, err := os.ReadFile(yamlFile)
 	if err != nil {
