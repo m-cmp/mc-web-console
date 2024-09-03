@@ -26,7 +26,25 @@ type Menu struct {
 
 type Menus []Menu
 
-func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
+func GetMenuTree(menuList Menus) (*Menus, error) {
+	menuTree := buildMenuTree(menuList, "")
+	return &menuTree, nil
+}
+
+func buildMenuTree(menus Menus, parentID string) Menus {
+	var tree Menus
+
+	for _, menu := range menus {
+		if menu.ParentMenuId == parentID {
+			menu.Menus = buildMenuTree(menus, menu.Id)
+			tree = append(tree, menu)
+		}
+	}
+
+	return tree
+}
+
+func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 	commonResponse, err := handler.AnyCaller(c, "getallavailablemenus", &handler.CommonRequest{
 		PathParams: map[string]string{
 			"framework": "mc-web-console",
@@ -58,25 +76,7 @@ func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
 	return &menuList.Menus, nil
 }
 
-func GetMenuTree(menuList Menus) (*Menus, error) {
-	menuTree := buildMenuTree(menuList, "")
-	return &menuTree, nil
-}
-
-func buildMenuTree(menus Menus, parentID string) Menus {
-	var tree Menus
-
-	for _, menu := range menus {
-		if menu.ParentMenuId == parentID {
-			menu.Menus = buildMenuTree(menus, menu.Id)
-			tree = append(tree, menu)
-		}
-	}
-
-	return tree
-}
-
-func CreateMenusByLocalMenuYaml(c buffalo.Context) error {
+func CreateMCIAMMenusByLocalMenuYaml(c buffalo.Context) error {
 
 	yamlFile := "./conf/menu.yaml"
 

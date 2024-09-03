@@ -48,6 +48,7 @@ func App() *buffalo.App {
 			app.Middleware.Skip(mciammanager.DefaultMiddleware, readyz)
 
 			app.ANY("/readyz", readyz)
+
 			apiPath := "/api"
 
 			auth := app.Group(apiPath + "/auth")
@@ -88,7 +89,6 @@ func App() *buffalo.App {
 			api := app.Group(apiPath)
 			api.POST("/disklookup", self.DiskLookup)
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
-			api.POST("/createmenuresources", CreateMenuResources)
 			api.POST("/getmenutree", GetmenuTree)
 
 			api.POST("/{operationId}", AnyController)
