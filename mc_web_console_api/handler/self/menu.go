@@ -9,11 +9,24 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
+
+func init() {
+	MCIAM_USE, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+	if !MCIAM_USE {
+		err := createMenuResource()
+		if err != nil {
+			log.Fatal("create menu fail : ", err.Error())
+		}
+		log.Println("C-mig Menu init success")
+	}
+}
 
 type Menu struct {
 	Id           string `json:"id"` // for routing
@@ -25,6 +38,8 @@ type Menu struct {
 }
 
 type Menus []Menu
+
+var CmigMenuTree Menu
 
 func GetMenuTree(menuList Menus) (*Menus, error) {
 	menuTree := buildMenuTree(menuList, "")
@@ -42,6 +57,25 @@ func buildMenuTree(menus Menus, parentID string) Menus {
 	}
 
 	return tree
+}
+
+func createMenuResource() error {
+	yamlFile := "./conf/cmigmenu.yaml"
+
+	data, err := os.ReadFile(yamlFile)
+	if err != nil {
+		return err
+	}
+
+	var cmigMenus Menu
+	err = yaml.Unmarshal(data, &cmigMenus)
+	if err != nil {
+		return err
+	}
+
+	CmigMenuTree.Menus = buildMenuTree(cmigMenus.Menus, "")
+	fmt.Println("@@@@@@@@@@@@@@ CmigMenuTree.Menus", CmigMenuTree.Menus)
+	return nil
 }
 
 func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
