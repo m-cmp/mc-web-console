@@ -32,6 +32,7 @@ type User struct {
 	Password  string `yaml:"password"`
 	FirstName string `yaml:"firstName"`
 	LastName  string `yaml:"lastName"`
+	Role      string `yaml:"role"`
 	Email     string `yaml:"email"`
 }
 
@@ -39,8 +40,8 @@ var (
 	CmigUser        *User
 	cmigAuthSetting CmigAuthSetting
 	encryptionKey   []byte
-	datfilename     = "conf/cmiguser.dat"
-	conffilename    = "conf/cmigauthsetting.yaml"
+	datfilename     = "conf/selfiamuser.dat"
+	conffilename    = "conf/selfiamauthsetting.yaml"
 )
 
 func init() {
@@ -79,6 +80,7 @@ func initCmigAuth() {
 			Password:  string(hashedPassword),
 			FirstName: cmigAuthSetting.User.FirstName,
 			LastName:  cmigAuthSetting.User.LastName,
+			Role:      cmigAuthSetting.User.Role,
 			Email:     cmigAuthSetting.User.Email,
 		}
 
@@ -95,7 +97,7 @@ func initCmigAuth() {
 		log.Println("User create success")
 	}
 
-	log.Println("C-mig User init success")
+	log.Println("Self User init success")
 }
 
 func loadUserFromEncryptedFile() (*User, error) {
@@ -169,6 +171,7 @@ type CmigAccesstokenClaims struct {
 	Upn   string
 	Name  string
 	Email string
+	Role  string
 	Exp   int64
 }
 
@@ -186,6 +189,7 @@ func generateJWT() (*UserLoginResponse, error) {
 	claims := CmigAccesstokenClaims{
 		Upn:   CmigUser.Id,
 		Name:  CmigUser.LastName + " " + CmigUser.FirstName,
+		Role:  CmigUser.Role,
 		Email: CmigUser.Email,
 		Exp:   exp,
 		MapClaims: &jwt.MapClaims{
