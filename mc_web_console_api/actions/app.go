@@ -91,6 +91,17 @@ func App() *buffalo.App {
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 			api.POST("/getmenutree", GetmenuTree)
 
+			// Projects Manage
+			api.POST("/createproject", CreateProject)
+			api.POST("/getprojectlist", GetProjectList)
+			api.POST("/getprojectbyid", GetProjectById)
+			api.POST("/updateprojectbyid", UpdateProjectById)
+			api.POST("/deleteprojectbyid", DeleteProjectById)
+
+			// Projects and Workspace Get
+			api.POST("/getwpmappinglistbyworkspaceid", GetWPmappingListByWorkspaceId)
+			api.POST("/getworkspaceuserrolemappinglistbyuserid", GetWorkspaceUserRoleMappingListByUserId)
+
 			api.POST("/{operationId}", AnyController)
 		}
 	})
