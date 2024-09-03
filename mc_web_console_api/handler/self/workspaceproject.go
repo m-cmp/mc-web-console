@@ -24,16 +24,16 @@ type WorkspaceProjectMapping struct {
 }
 
 type Workspace struct {
-	ID          string `json:"id" ` //id 와 name 은 같다 - ws01
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type Project struct {
-	ID          string `json:"id" db:"id"` //  id와 NSid 는 같다.
-	NsID        string `json:"ns_id" db:"ns_id"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
+	ID          string `json:"id"`
+	NsID        string `json:"ns_id"`
+	Name        string `json:"name"`
+	Description string `json:"description" `
 }
 
 type Projects []Project
