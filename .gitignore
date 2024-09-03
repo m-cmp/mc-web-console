@@ -90,3 +90,5 @@ bin/conf/api.yaml
 mc_web_console_api/conf/serverinfo
 mc_web_console_api/conf/cmiguser.dat
 mc_web_console_api/conf/cmigauthsetting.yaml
+mc_web_console_api/conf/selfiamuser.dat
+mc_web_console_api/conf/selfiamauthsetting.yaml
