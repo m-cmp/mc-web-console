@@ -41,11 +41,6 @@ type Menus []Menu
 
 var CmigMenuTree Menu
 
-func GetMenuTree(menuList Menus) (*Menus, error) {
-	menuTree := buildMenuTree(menuList, "")
-	return &menuTree, nil
-}
-
 func buildMenuTree(menus Menus, parentID string) Menus {
 	var tree Menus
 
@@ -75,6 +70,11 @@ func createMenuResource() error {
 
 	CmigMenuTree.Menus = buildMenuTree(cmigMenus.Menus, "")
 	return nil
+}
+
+func GetMenuTree(menuList Menus) (*Menus, error) {
+	menuTree := buildMenuTree(menuList, "")
+	return &menuTree, nil
 }
 
 func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
