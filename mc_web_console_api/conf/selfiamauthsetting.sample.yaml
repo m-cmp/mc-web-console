@@ -1,5 +1,5 @@
 setting:
-  encryptionkey: selfiam-secret-key
+  encryptionkey: selfiam-secret-key # CHANGE ME
 
 user:
   id: selfiamuser
