@@ -8,7 +8,12 @@ import (
 )
 
 func GetmenuTree(c buffalo.Context) error {
-	menulist, err := self.GetAllAvailableMenus(c)
+	commonResponse := handler.CommonResponseStatusOK(self.CmigMenuTree.Menus)
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+}
+
+func GetMCIAMmenuTree(c buffalo.Context) error {
+	menulist, err := self.GetAllMCIAMAvailableMenus(c)
 	if err != nil {
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
@@ -25,8 +30,8 @@ func GetmenuTree(c buffalo.Context) error {
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
-func CreateMenus(c buffalo.Context) error {
-	err := self.CreateMenusByLocalMenuYaml(c)
+func CreateMCIAMMenuResources(c buffalo.Context) error {
+	err := self.CreateMCIAMMenusByLocalMenuYaml(c)
 	if err != nil {
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))

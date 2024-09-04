@@ -1,10 +1,9 @@
-import VueRouter, { Route, RouteConfig } from 'vue-router';
 import { ROOT_ROUTE } from '@/app/providers/router/constants.ts';
+import authRoutes from '@/pages/auth/auth.route.ts';
 import dashboardRoutes from '@/pages/dashboard/dashboard.route.ts';
-import authRoutes, { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
 import NotFound from '@/pages/error/404/NotFound.vue';
 import MainPage from '@/pages/main/MainPage.vue';
-import { AuthorizationType, useAuthStore } from '@/shared/libs/store/auth';
+import VueRouter, { RouteConfig } from 'vue-router';
 
 //TODO admin부분 고려
 
