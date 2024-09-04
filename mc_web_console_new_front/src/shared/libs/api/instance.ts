@@ -1,7 +1,7 @@
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { McmpRouter } from '@/app/providers/router';
 import { AUTH_ROUTE } from '@/pages/auth/auth.route.ts';
 import JwtTokenProvider from '@/shared/libs/token';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 // const url = 'http://mcmpdemo.csesmzc.com:3000';
 const url = import.meta.env.VITE_BACKEND_ENDPOINT;
 const createInstance = () => {

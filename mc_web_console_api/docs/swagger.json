@@ -1,0 +1,262 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {},
+        "title": "mc-web-console",
+        "version": "1.0.0"
+    },
+    "host": "3000",
+    "basePath": null,
+    "schemes": [
+        "localhost"
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "properties": {
+                                "request": {
+                                    "properties": {
+                                        "id": {
+                                            "example": "",
+                                            "type": "string"
+                                        },
+                                        "password": {
+                                            "example": "",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ],
+                "description": "webLogin",
+                "operationId": "weblogin",
+                "summary": "webLogin"
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ],
+                "description": "webLogout",
+                "operationId": "weblogout",
+                "summary": "webLogout"
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ],
+                "description": "webLoginRefresh",
+                "operationId": "webloginrefresh",
+                "summary": "webLoginRefresh"
+            }
+        },
+        "/api/auth/userinfo": {
+            "post": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "format": "binary",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ],
+                "description": "webGetUserInfo",
+                "operationId": "webgetuserinfo",
+                "summary": "webGetUserInfo"
+            }
+        },
+        "/api/auth/validate": {
+            "post": {
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ],
+                "description": "webValidate",
+                "operationId": "webvalidate",
+                "summary": "webValidate"
+            }
+        },
+        "/api/availabledisktypebyproviderregion": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "description": "AvailableDiskTypeByProviderRegion",
+                "operationId": "availabledisktypebyproviderregion",
+                "summary": "AvailableDiskTypeByProviderRegion"
+            }
+        },
+        "/api/createmenuresources": {
+            "post": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "format": "binary",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "description": "CreateMenuResources",
+                "operationId": "createmenuresources",
+                "summary": "CreateMenuResources"
+            }
+        },
+        "/api/disklookup": {
+            "post": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "format": "binary",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "description": "DiskLookup",
+                "operationId": "disklookup",
+                "summary": "DiskLookup"
+            }
+        },
+        "/api/getmenutree": {
+            "post": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "format": "binary",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "description": "GetmenuTree",
+                "operationId": "getmenutree",
+                "summary": "GetmenuTree"
+            }
+        },
+        "/api/{operationId}": {
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "operationId",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "post": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "format": "binary",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "description": "AnyController",
+                "operationId": "anycontroller",
+                "summary": "AnyController"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth"
+        }
+    ]
+}

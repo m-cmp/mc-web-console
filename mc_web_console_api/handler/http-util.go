@@ -69,7 +69,7 @@ var (
 func init() {
 	viper.SetConfigName("api")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../conf")
+	viper.AddConfigPath("conf")
 
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error reading actions/conf/api.yaml file: %s", err))
@@ -83,7 +83,7 @@ func init() {
 // AnyCaller는 buffalo.Context, operationId, commonRequest, auth유무 를 받아 conf/api.yaml 정보를 바탕으로 commonCaller를 호출합니다.
 // 모든 error 는 기본적으로 commonResponse 에 담아져 반환됩니다.
 func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonRequest, auth bool) (*CommonResponse, error) {
-	targetFrameworkInfo, targetApiSpec, err := getApiSpec(operationId)
+	_, targetFrameworkInfo, targetApiSpec, err := GetApiSpec(strings.ToLower(operationId))
 	if (err != nil || targetFrameworkInfo == Service{} || targetApiSpec == Spec{}) {
 		commonResponse := CommonResponseStatusNotFound(operationId + "-" + err.Error())
 		return commonResponse, err
@@ -109,15 +109,15 @@ func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonReque
 
 // getApiSpec은 OpertinoId를 받아 conf/api.yaml에 정의된 Service, Spec 을 반환합니다.
 // 없을경우 not found error를 반환합니다.
-func getApiSpec(requestOpertinoId string) (Service, Spec, error) {
+func GetApiSpec(requestOpertinoId string) (string, Service, Spec, error) {
 	for framework, api := range ApiYamlSet.ServiceActions {
 		for opertinoId, spec := range api {
-			if opertinoId == requestOpertinoId {
-				return ApiYamlSet.Services[framework], spec, nil
+			if opertinoId == strings.ToLower(requestOpertinoId) {
+				return framework, ApiYamlSet.Services[framework], spec, nil
 			}
 		}
 	}
-	return Service{}, Spec{}, fmt.Errorf("getApiSpec not found")
+	return "", Service{}, Spec{}, fmt.Errorf("getApiSpec not found")
 }
 
 // getAuth는 컨텍스트 및 대상 서비스 정보를 받아, 옳바른 Authorization 값을 반환합니다.
@@ -232,18 +232,13 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	commonResponse := &CommonResponse{}
 	commonResponse.Status.Message = resp.Status
 	commonResponse.Status.StatusCode = resp.StatusCode
-	if len(respBody) > 0 {
-		if isJSONResponse(respBody) {
-			jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
-			if jsonerr != nil {
-				log.Println("Error CommonHttp Unmarshal response:", jsonerr.Error())
-				return commonResponse, jsonerr
-			}
-		} else {
-			commonResponse.ResponseData = strings.TrimSpace(string(respBody))
-			return commonResponse, nil
-		}
+
+	jsonerr := json.Unmarshal(respBody, &commonResponse.ResponseData)
+	if jsonerr != nil {
+		commonResponse.ResponseData = strings.TrimSpace(string(respBody))
+		return commonResponse, nil
 	}
+
 	return commonResponse, nil
 }
 
@@ -258,6 +253,17 @@ func CommonResponseStatusOK(responseData interface{}) *CommonResponse {
 	webStatus := WebStatus{
 		StatusCode: http.StatusOK,
 		Message:    http.StatusText(http.StatusOK),
+	}
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}
+}
+
+func CommonResponseStatusNoContent(responseData interface{}) *CommonResponse {
+	webStatus := WebStatus{
+		StatusCode: http.StatusNoContent,
+		Message:    http.StatusText(http.StatusNoContent),
 	}
 	return &CommonResponse{
 		ResponseData: responseData,

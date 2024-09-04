@@ -1,7 +1,7 @@
-import { defineConfig, loadEnv } from 'vite';
-import vue from '@vitejs/plugin-vue2';
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs';
+import vue from '@vitejs/plugin-vue2';
 import path from 'path';
+import { defineConfig, loadEnv } from 'vite';
 
 // https://vitejs.dev/config/
 export default ({ mode }: any) => {

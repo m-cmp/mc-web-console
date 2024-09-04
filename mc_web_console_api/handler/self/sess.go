@@ -8,8 +8,6 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-// buffalo db generate model usersess user_id:text access_token:text expires_in:float64 refresh_token:text refresh_expires_in:float64
-
 func CreateUserSessFromResponseData(tx *pop.Connection, r *handler.CommonResponse, userId string) (*models.Usersess, error) {
 	t := r.ResponseData.(map[string]interface{})
 	var s models.Usersess
@@ -109,7 +107,6 @@ func UpdateUserSesssFromResponseData(tx *pop.Connection, r *handler.CommonRespon
 	}
 	if refreshExpiresIn, ok := t["refresh_expires_in"]; ok {
 		s.RefreshExpiresIn = refreshExpiresIn.(float64)
-
 	}
 
 	err = tx.Update(s)

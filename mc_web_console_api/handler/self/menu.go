@@ -2,7 +2,6 @@ package self
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -10,11 +9,24 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
+
+func init() {
+	MCIAM_USE, _ := strconv.ParseBool(os.Getenv("MCIAM_USE"))
+	if !MCIAM_USE {
+		err := createMenuResource()
+		if err != nil {
+			log.Fatal("create menu fail : ", err.Error())
+		}
+		log.Println("Self Menu init success")
+	}
+}
 
 type Menu struct {
 	Id           string `json:"id"` // for routing
@@ -24,41 +36,10 @@ type Menu struct {
 	Priority     string `json:"priority"`
 	Menus        Menus  `json:"menus"`
 }
+
 type Menus []Menu
 
-func GetAllAvailableMenus(c buffalo.Context) (*Menus, error) {
-	commonResponse, err := handler.AnyCaller(c, "getmenuresources", &handler.CommonRequest{}, true)
-	if err != nil {
-		return &Menus{}, err
-	}
-
-	var menuListResp []map[string]interface{}
-	err = json.Unmarshal([]byte(commonResponse.ResponseData.(string)), &menuListResp)
-	if err != nil {
-		return &Menus{}, err
-	}
-
-	menuList := &Menu{}
-	for _, menuResp := range menuListResp {
-		menuPart := strings.Split(menuResp["name"].(string), ":")
-
-		menu := &Menu{
-			Id:           menuPart[2],
-			DisplayName:  menuPart[3],
-			ParentMenuId: menuPart[4],
-			Priority:     menuPart[5],
-			IsAction:     menuPart[6],
-		}
-		menuList.Menus = append(menuList.Menus, *menu)
-	}
-
-	return &menuList.Menus, nil
-}
-
-func GetMenuTree(menuList Menus) (*Menus, error) {
-	menuTree := buildMenuTree(menuList, "")
-	return &menuTree, nil
-}
+var CmigMenuTree Menu
 
 func buildMenuTree(menus Menus, parentID string) Menus {
 	var tree Menus
@@ -73,7 +54,62 @@ func buildMenuTree(menus Menus, parentID string) Menus {
 	return tree
 }
 
-func CreateMenusByLocalMenuYaml(c buffalo.Context) error {
+func createMenuResource() error {
+	yamlFile := "./conf/selfiammenu.yaml"
+
+	data, err := os.ReadFile(yamlFile)
+	if err != nil {
+		return err
+	}
+
+	var cmigMenus Menu
+	err = yaml.Unmarshal(data, &cmigMenus)
+	if err != nil {
+		return err
+	}
+
+	CmigMenuTree.Menus = buildMenuTree(cmigMenus.Menus, "")
+	return nil
+}
+
+func GetMenuTree(menuList Menus) (*Menus, error) {
+	menuTree := buildMenuTree(menuList, "")
+	return &menuTree, nil
+}
+
+func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
+	commonResponse, err := handler.AnyCaller(c, "getallavailablemenus", &handler.CommonRequest{
+		PathParams: map[string]string{
+			"framework": "mc-web-console",
+		},
+	}, true)
+
+	if err != nil {
+		return &Menus{}, err
+	}
+	if commonResponse.Status.StatusCode != 200 {
+		return &Menus{}, fmt.Errorf(commonResponse.Status.Message)
+	}
+
+	menuListResp := commonResponse.ResponseData.([]interface{})
+	menuList := &Menu{}
+	for _, menuResp := range menuListResp {
+		menuPart := strings.Split(menuResp.(map[string]interface{})["rsname"].(string), ":")
+
+		menu := &Menu{
+			Id:           menuPart[2],
+			DisplayName:  menuPart[3],
+			ParentMenuId: menuPart[4],
+			Priority:     menuPart[5],
+			IsAction:     menuPart[6],
+		}
+		menuList.Menus = append(menuList.Menus, *menu)
+	}
+
+	return &menuList.Menus, nil
+}
+
+func CreateMCIAMMenusByLocalMenuYaml(c buffalo.Context) error {
 
 	yamlFile := "./conf/menu.yaml"
 
@@ -99,7 +135,7 @@ func CreateMenusByLocalMenuYaml(c buffalo.Context) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", getCreatewebmenubyyamlEndpoint(), &requestBody)
+	req, err := http.NewRequest("POST", getCreateWebMenuByYamlEndpoint(), &requestBody)
 	if err != nil {
 		fmt.Printf("Error creating POST request: %s\n", err)
 		return err
@@ -126,7 +162,7 @@ func CreateMenusByLocalMenuYaml(c buffalo.Context) error {
 	return nil
 }
 
-func getCreatewebmenubyyamlEndpoint() string {
+func getCreateWebMenuByYamlEndpoint() string {
 	viper.SetConfigName("api")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./conf")
