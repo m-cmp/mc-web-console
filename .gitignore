@@ -87,3 +87,6 @@ scripts/.env
 mc_web_console_api/conf/api.yaml
 bin/mc-web-console-api.log
 bin/conf/api.yaml
+.env
+mc_web_console_api/conf/serverinfo
+mc_web_console_api/conf/selfiamuser.dat
