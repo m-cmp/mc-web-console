@@ -1,9 +1,0 @@
-go 1.21.6
-
-toolchain go1.23.0
-
-use (
-	./mc_web_console_api
-	./mc_web_console_common_models
-	./mc_web_console_front
-)
