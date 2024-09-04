@@ -12,8 +12,8 @@ services:
     environment:
       GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
       GODEBUG: netdns=go
-      MCIAMMANAGER: https://iam.onecloudcon.com # Please CHANGE ME (REQUIRE)
-      MCINFRAMANAGER: http://m.onecloudcon.com/tumblebug # Please CHANGE ME (REQUIRE)
+      MCIAMMANAGER: https://localhost # Please CHANGE ME (REQUIRE)
+      MCINFRAMANAGER: http://localhost:1323/tumblebug # Please CHANGE ME (REQUIRE)
       API_USERNAME: default # Please CHANGE ME (REQUIRE)
       API_PASSWORD: default # Please CHANGE ME (REQUIRE)
       DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
