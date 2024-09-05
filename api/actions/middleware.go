@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"log"
 	"mc_web_console_api/handler/self"
 	"net/http"
 	"strings"
@@ -18,7 +17,7 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		claims, err := self.GetCmigTokenClaims(accessToken)
 		if err != nil {
-			log.Println(err.Error())
+			app.Logger.Error(err.Error())
 			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Unauthorized"}))
 		}
 		tx := c.Value("tx").(*pop.Connection)
