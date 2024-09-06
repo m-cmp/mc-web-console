@@ -10,7 +10,7 @@ type LookupDiskInfo struct {
 	DataDiskType []string `json:"datadisktype"`
 
 	// disk size range by diskType
-	DiskSize []string `json:"disksize"`
+	DiskSize []DiskSizeInfo `json:"disksize"`
 }
 
 type AvailableDiskType struct {
@@ -23,5 +23,12 @@ type AvailableDiskType struct {
 	DataDiskType []string `json:"datadisktype"`
 
 	// disk size range by diskType
-	DiskSize []string `json:"disksize"`
+	DiskSize []DiskSizeInfo `json:"disksize"`
+}
+
+type DiskSizeInfo struct {
+	DiskType string `json:"diskType"`
+	MinSize  string `json:"minSize"`
+	MaxSize  string `json:"maxSize"`
+	Capacity string `json:"capacity"`
 }
