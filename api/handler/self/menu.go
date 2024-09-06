@@ -55,7 +55,7 @@ func buildMenuTree(menus Menus, parentID string) Menus {
 }
 
 func createMenuResource() error {
-	yamlFile := "./conf/selfiammenu.yaml"
+	yamlFile := "../conf/selfiammenu.yaml"
 
 	data, err := os.ReadFile(yamlFile)
 	if err != nil {
