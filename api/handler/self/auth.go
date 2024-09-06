@@ -40,8 +40,8 @@ var (
 	CmigUser        *User
 	cmigAuthSetting CmigAuthSetting
 	encryptionKey   []byte
-	datfilename     = "conf/selfiamuser.dat"
-	conffilename    = "conf/selfiamauthsetting.yaml"
+	datfilename     = "../conf/selfiamuser.dat"
+	conffilename    = "../conf/selfiamauthsetting.yaml"
 )
 
 func init() {
