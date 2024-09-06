@@ -34,7 +34,6 @@ api/!.yarn/sdks
 api/!.yarn/versions
 
 
-
 # front
 
 ## env
@@ -68,14 +67,15 @@ front/.idea
 
 # bin
 bin/mc-web-console-api
+bin/mc-web-console-api.pid
+bin/mc-web-console-api.log
 bin/.env
 
+# conf
+conf/api.yaml
+conf/selfiamauthsetting.yaml
+conf/selfiamuser.dat
+conf/serverinfo
+
+# scripts
 scripts/.env
-api/conf/api.yaml
-bin/mc-web-console-api.log
-bin/conf/api.yaml
-api/conf/serverinfo
-api/conf/cmiguser.dat
-api/conf/cmigauthsetting.yaml
-api/conf/selfiamuser.dat
-api/conf/selfiamauthsetting.yaml

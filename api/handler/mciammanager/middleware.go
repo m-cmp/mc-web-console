@@ -48,7 +48,7 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 		err := iamtokenvalidator.IsTokenValid(accessToken)
 		if err != nil {
 			log.Println(err.Error())
-			return c.Render(http.StatusInternalServerError, render.JSON(map[string]interface{}{"error": err.Error()}))
+			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
 		claims, err := iamtokenvalidator.GetTokenClaimsByIamManagerClaims(accessToken)
 		if err != nil {

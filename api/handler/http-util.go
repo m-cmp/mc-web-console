@@ -69,7 +69,7 @@ var (
 func init() {
 	viper.SetConfigName("api")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("conf")
+	viper.AddConfigPath("../conf")
 
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error reading actions/conf/api.yaml file: %s", err))

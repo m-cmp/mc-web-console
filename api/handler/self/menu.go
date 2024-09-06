@@ -55,7 +55,7 @@ func buildMenuTree(menus Menus, parentID string) Menus {
 }
 
 func createMenuResource() error {
-	yamlFile := "./conf/selfiammenu.yaml"
+	yamlFile := "../conf/selfiammenu.yaml"
 
 	data, err := os.ReadFile(yamlFile)
 	if err != nil {
@@ -170,8 +170,7 @@ func getCreateWebMenuByYamlEndpoint() string {
 		log.Fatalf("Error reading config file, %s", err)
 	}
 	baseUrl := viper.Get("services.mc-iam-manager.baseurl").(string)
-	createwebmenubyyamlUri := viper.Get("serviceActions.mc-iam-manager.Createwebmenubyyaml.resourcePath").(string)
+	createwebmenubyyamlUri := viper.Get("serviceActions.mc-iam-manager.Createmenuresourcesbymenuyaml.resourcePath").(string)
 	urlModified := strings.ReplaceAll(baseUrl+createwebmenubyyamlUri, "{framework}", "web")
-	fmt.Println("Createwebmenubyyaml Endpoint is : ", urlModified)
 	return urlModified
 }

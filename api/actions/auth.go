@@ -53,14 +53,14 @@ func AuthLoginRefresh(c buffalo.Context) error {
 	userId := c.Value("UserId").(string)
 	sess, err := self.GetUserByUserId(tx, userId)
 	if err != nil {
-		log.Println(err.Error())
+		app.Logger.Error(err.Error())
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
 
 	tokenSet, err := self.RefreshAccessToken(sess.RefreshToken)
 	if err != nil {
-		log.Println(err.Error())
+		app.Logger.Error(err.Error())
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
@@ -72,7 +72,7 @@ func AuthLoginRefresh(c buffalo.Context) error {
 
 	_, err = self.UpdateUserSess(tx, sess)
 	if err != nil {
-		log.Println(err.Error())
+		app.Logger.Error(err.Error())
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
