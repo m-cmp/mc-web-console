@@ -1,10 +1,8 @@
-version: '3.9'
-
 services:
   mc-web-console-api:
     build: 
-      context: ../mc_web_console_api
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: api/Dockerfile.local
     container_name: mc-web-console-api
     depends_on:
       - mc-web-console-postgres
@@ -22,7 +20,7 @@ services:
   
   mc-web-console-front:
     build:
-      context: ../mc_web_console_new_front
+      context: ../front
       dockerfile: Dockerfile
     container_name: mc-web-console-front
     depends_on:

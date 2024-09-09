@@ -1,5 +1,5 @@
 ## Stage 1 - Go Build Env
-FROM golang:1.23.0-alpine AS build
+FROM golang:1.23-alpine AS build
 
 RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
 
@@ -15,7 +15,8 @@ ENV CGO_ENABLED=1
 
 RUN mkdir -p /src/mc-web-console-api
 WORKDIR /src/mc-web-console-api
-ADD . .
+ADD ./api .
+ADD ./conf ./conf
 
 RUN go mod download
 RUN buffalo build --static -o /bin/api
@@ -23,9 +24,8 @@ RUN buffalo build --static -o /bin/api
 ## Stage 2 - Application Deploy
 FROM debian:buster-slim as deploy
 
-WORKDIR /app/
 COPY --from=build /bin/api .
-COPY --from=build /src/mc-web-console-api/conf /app/conf
+COPY --from=build /src/mc-web-console-api/conf /conf
 
 ENV API_ADDR 0.0.0.0
 ENV API_PORT 3000
@@ -33,4 +33,4 @@ ENV API_PORT 3000
 ENV MCIAM_USE=true
 
 EXPOSE 3000
-CMD bash -c 'until /app/api migrate; do echo "Migration failed. Retrying in 10 seconds..."; sleep 10; done; /app/api > /app/api.log 2>&1 &  tail -f /app/api.log & wait'
+CMD bash -c 'until /api migrate; do echo "Migration failed. Retrying in 10 seconds..."; sleep 10; done; /api > /api.log 2>&1 &  tail -f /api.log & wait'
