@@ -25,45 +25,45 @@ func DiskLookup(c buffalo.Context) error {
 	awsRootdiskType := "standard / gp2 / gp3"
 	awsDiskType := "standard / gp2 / gp3 / io1 / io2 / st1 / sc1"
 	awsDiskSize := "standard|1|1024|GB / gp2|1|16384|GB / gp3|1|16384|GB / io1|4|16384|GB / io2|4|16384|GB / st1|125|16384|GB / sc1|125|16384|GB"
-
-	awsDiskInfo := LookupDiskInfo{}
-	awsDiskInfo.ProviderID = "AWS"
-	awsDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(awsRootdiskType, " ", ""), "/")
-	awsDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(awsDiskType, " ", ""), "/")
-	awsDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(awsDiskSize, " ", ""), "/")
+	awsDiskInfo := LookupDiskInfo{
+		ProviderID:   "AWS",
+		RootDiskType: strings.Split(strings.ReplaceAll(awsRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(awsDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(awsDiskSize),
+	}
 	diskInfoMap["AWS"] = awsDiskInfo
 
 	gcpRootdiskType := "pd-standard / pd-balanced / pd-ssd / pd-extreme"
 	gcpDiskType := "pd-standard / pd-balanced / pd-ssd / pd-extreme"
 	gcpDiskSize := "pd-standard|10|65536|GB / pd-balanced|10|65536|GB / pd-ssd|10|65536|GB / pd-extreme|500|65536|GB"
-
-	gcpDiskInfo := LookupDiskInfo{}
-	gcpDiskInfo.ProviderID = "GCP"
-	gcpDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(gcpRootdiskType, " ", ""), "/")
-	gcpDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(gcpDiskType, " ", ""), "/")
-	gcpDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(gcpDiskSize, " ", ""), "/")
+	gcpDiskInfo := LookupDiskInfo{
+		ProviderID:   "GCP",
+		RootDiskType: strings.Split(strings.ReplaceAll(gcpRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(gcpDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(gcpDiskSize),
+	}
 	diskInfoMap["GCP"] = gcpDiskInfo
 
 	aliRootdiskType := "cloud_essd / cloud_efficiency / cloud / cloud_ssd"
 	aliDiskType := "cloud / cloud_efficiency / cloud_ssd / cloud_essd"
 	aliDiskSize := "cloud|5|2000|GB / cloud_efficiency|20|32768|GB / cloud_ssd|20|32768|GB / cloud_essd_PL0|40|32768|GB / cloud_essd_PL1|20|32768|GB / cloud_essd_PL2|461|32768|GB / cloud_essd_PL3|1261|32768|GB"
-
-	aliDiskInfo := LookupDiskInfo{}
-	aliDiskInfo.ProviderID = "ALIBABA"
-	aliDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(aliRootdiskType, " ", ""), "/")
-	aliDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(aliDiskType, " ", ""), "/")
-	aliDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(aliDiskSize, " ", ""), "/")
+	aliDiskInfo := LookupDiskInfo{
+		ProviderID:   "ALIBABA",
+		RootDiskType: strings.Split(strings.ReplaceAll(aliRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(aliDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(aliDiskSize),
+	}
 	diskInfoMap["ALIBABA"] = aliDiskInfo
 
 	tencentRootdiskType := "CLOUD_PREMIUM / CLOUD_SSD"
 	tencentDiskType := "CLOUD_PREMIUM / CLOUD_SSD / CLOUD_HSSD / CLOUD_BASIC / CLOUD_TSSD"
 	tencentDiskSize := "CLOUD_PREMIUM|10|32000|GB / CLOUD_SSD|20|32000|GB / CLOUD_HSSD|20|32000|GB / CLOUD_BASIC|10|32000|GB / CLOUD_TSSD|10|32000|GB"
-
-	tencentDiskInfo := LookupDiskInfo{}
-	tencentDiskInfo.ProviderID = "TENCENT"
-	tencentDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(tencentRootdiskType, " ", ""), "/")
-	tencentDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(tencentDiskType, " ", ""), "/")
-	tencentDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(tencentDiskSize, " ", ""), "/")
+	tencentDiskInfo := LookupDiskInfo{
+		ProviderID:   "TENCENT",
+		RootDiskType: strings.Split(strings.ReplaceAll(tencentRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(tencentDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(tencentDiskSize),
+	}
 	diskInfoMap["TENCENT"] = tencentDiskInfo
 
 	dataDiskInfoList := []LookupDiskInfo{}
@@ -103,45 +103,45 @@ func AvailableDiskTypeByProviderRegion(c buffalo.Context) error {
 	awsRootdiskType := "standard / gp2 / gp3"
 	awsDiskType := "standard / gp2 / gp3 / io1 / io2 / st1 / sc1"
 	awsDiskSize := "standard|1|1024|GB / gp2|1|16384|GB / gp3|1|16384|GB / io1|4|16384|GB / io2|4|16384|GB / st1|125|16384|GB / sc1|125|16384|GB"
-
-	awsDiskInfo := AvailableDiskType{}
-	awsDiskInfo.ProviderID = "AWS"
-	awsDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(awsRootdiskType, " ", ""), "/")
-	awsDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(awsDiskType, " ", ""), "/")
-	awsDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(awsDiskSize, " ", ""), "/")
+	awsDiskInfo := AvailableDiskType{
+		ProviderID:   "AWS",
+		RootDiskType: strings.Split(strings.ReplaceAll(awsRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(awsDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(awsDiskSize),
+	}
 	diskInfoMap["AWS"] = awsDiskInfo
 
 	gcpRootdiskType := "pd-standard / pd-balanced / pd-ssd / pd-extreme"
 	gcpDiskType := "pd-standard / pd-balanced / pd-ssd / pd-extreme"
 	gcpDiskSize := "pd-standard|10|65536|GB / pd-balanced|10|65536|GB / pd-ssd|10|65536|GB / pd-extreme|500|65536|GB"
-
-	gcpDiskInfo := AvailableDiskType{}
-	gcpDiskInfo.ProviderID = "GCP"
-	gcpDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(gcpRootdiskType, " ", ""), "/")
-	gcpDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(gcpDiskType, " ", ""), "/")
-	gcpDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(gcpDiskSize, " ", ""), "/")
+	gcpDiskInfo := AvailableDiskType{
+		ProviderID:   "GCP",
+		RootDiskType: strings.Split(strings.ReplaceAll(gcpRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(gcpDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(gcpDiskSize),
+	}
 	diskInfoMap["GCP"] = gcpDiskInfo
 
 	aliRootdiskType := "cloud_essd / cloud_efficiency / cloud / cloud_ssd"
 	aliDiskType := "cloud / cloud_efficiency / cloud_ssd / cloud_essd"
 	aliDiskSize := "cloud|5|2000|GB / cloud_efficiency|20|32768|GB / cloud_ssd|20|32768|GB / cloud_essd_PL0|40|32768|GB / cloud_essd_PL1|20|32768|GB / cloud_essd_PL2|461|32768|GB / cloud_essd_PL3|1261|32768|GB"
-
-	aliDiskInfo := AvailableDiskType{}
-	aliDiskInfo.ProviderID = "ALIBABA"
-	aliDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(aliRootdiskType, " ", ""), "/")
-	aliDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(aliDiskType, " ", ""), "/")
-	aliDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(aliDiskSize, " ", ""), "/")
+	aliDiskInfo := AvailableDiskType{
+		ProviderID:   "ALIBABA",
+		RootDiskType: strings.Split(strings.ReplaceAll(aliRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(aliDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(aliDiskSize),
+	}
 	diskInfoMap["ALIBABA"] = aliDiskInfo
 
 	tencentRootdiskType := "CLOUD_PREMIUM / CLOUD_SSD"
 	tencentDiskType := "CLOUD_PREMIUM / CLOUD_SSD / CLOUD_HSSD / CLOUD_BASIC / CLOUD_TSSD"
 	tencentDiskSize := "CLOUD_PREMIUM|10|32000|GB / CLOUD_SSD|20|32000|GB / CLOUD_HSSD|20|32000|GB / CLOUD_BASIC|10|32000|GB / CLOUD_TSSD|10|32000|GB"
-
-	tencentDiskInfo := AvailableDiskType{}
-	tencentDiskInfo.ProviderID = "TENCENT"
-	tencentDiskInfo.RootDiskType = strings.Split(strings.ReplaceAll(tencentRootdiskType, " ", ""), "/")
-	tencentDiskInfo.DataDiskType = strings.Split(strings.ReplaceAll(tencentDiskType, " ", ""), "/")
-	tencentDiskInfo.DiskSize = strings.Split(strings.ReplaceAll(tencentDiskSize, " ", ""), "/")
+	tencentDiskInfo := AvailableDiskType{
+		ProviderID:   "TENCENT",
+		RootDiskType: strings.Split(strings.ReplaceAll(tencentRootdiskType, " ", ""), "/"),
+		DataDiskType: strings.Split(strings.ReplaceAll(tencentDiskType, " ", ""), "/"),
+		DiskSize:     parseDiskSize(tencentDiskSize),
+	}
 	diskInfoMap["TENCENT"] = tencentDiskInfo
 
 	dataDiskInfoList := []AvailableDiskType{}
@@ -155,4 +155,22 @@ func AvailableDiskTypeByProviderRegion(c buffalo.Context) error {
 
 	commonResponse := handler.CommonResponseStatusOK(dataDiskInfoList)
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+}
+
+func parseDiskSize(diskSizeString string) []DiskSizeInfo {
+	diskSizeList := strings.Split(strings.ReplaceAll(diskSizeString, " ", ""), "/")
+	var diskSizes []DiskSizeInfo
+	for _, size := range diskSizeList {
+		parts := strings.Split(size, "|")
+		if len(parts) == 4 {
+			diskSizeInfo := DiskSizeInfo{
+				DiskType: parts[0],
+				MinSize:  parts[1],
+				MaxSize:  parts[2],
+				Capacity: parts[3],
+			}
+			diskSizes = append(diskSizes, diskSizeInfo)
+		}
+	}
+	return diskSizes
 }
