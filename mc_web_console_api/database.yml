@@ -1,9 +1,0 @@
----
-development:
-  url: {{envOr "DEV_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/mc_web_console_api_dev?sslmode=disable"}}
-
-test:
-  url: {{envOr "TEST_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/mc_web_console_api_test?sslmode=disable"}}
-
-production:
-  url: {{envOr "PROD_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/mc_web_console_api_production?sslmode=disable"}}
