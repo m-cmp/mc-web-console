@@ -1,8 +1,0 @@
-mc_web_console_front/node_modules/
-mc_web_console_front/.pnp.*
-mc_web_console_front/*.log
-mc_web_console_front/bin/
-
-mc_web_console_api/.pnp.*
-mc_web_console_api/*.log
-mc_web_console_api/bin/
