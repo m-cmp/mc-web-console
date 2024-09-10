@@ -12,7 +12,7 @@ var DB *pop.Connection
 
 func init() {
 	var err error
-	DB, err = pop.Connect("deploy")
+	DB, err = pop.Connect("development")
 	if err != nil {
 		log.Fatal(err)
 	}

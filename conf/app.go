@@ -10,6 +10,7 @@ import (
 	csrf "github.com/gobuffalo/mw-csrf"
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
+	"github.com/gorilla/sessions"
 )
 
 // ENV is used to help switch settings based on where the
@@ -37,9 +38,10 @@ var (
 func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
-			Env:         ENV,
-			SessionName: "mc_web_console",
-			Addr:        FRONT_ADDR + ":" + FRONT_PORT,
+			Env:          ENV,
+			SessionName:  "mc_web_console",
+			SessionStore: sessions.NewCookieStore([]byte(SESSION_SECRET)),
+			Addr:         FRONT_ADDR + ":" + FRONT_PORT,
 		})
 
 		app.Use(paramlogger.ParameterLogger)
