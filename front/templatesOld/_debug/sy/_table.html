@@ -1,0 +1,103 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="input-group">
+                <select class="form-select form-select-md">
+                    <option value="category_name">category_name</option>
+                    <option value="parent_category_id">parent_category_id</option>
+                    <option value="description">description</option>
+                    <option value="sort">sort</option>
+                </select>
+                <input type="text" class="form-control form-control-md flex-grow-1" placeholder="검색..." />
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th class="text-center w-1">
+                        <input type="checkbox" class="form-check-input check-all" />
+                    </th>
+                    <th>category_name</th>
+                    <th>parent_category_id</th>
+                    <th>description</th>
+                    <th>sort</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input" />
+                    </td>
+                    <td>과일</td>
+                    <td>-</td>
+                    <td>맛있는 과일</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input" />
+                    </td>
+                    <td>사과</td>
+                    <td>과일</td>
+                    <td>붉고 달콤한 과일</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input" />
+                    </td>
+                    <td>바나나</td>
+                    <td>과일</td>
+                    <td>노랗고 달콤한 과일</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input" />
+                    </td>
+                    <td>포도</td>
+                    <td>과일</td>
+                    <td>보라색이고 달콤한 과일</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input" />
+                    </td>
+                    <td>채소</td>
+                    <td>-</td>
+                    <td>건강한 채소</td>
+                    <td>5</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-sm-12 col-md-6 text-left">
+                총 데이터: N개
+            </div>
+            <div class="col-sm-12 col-md-6 text-right">
+                <select class="form-select form-select-sm">
+                    <option value="5">5개씩 보기</option>
+                    <option value="10">10개씩 보기</option>
+                    <option value="15">15개씩 보기</option>
+                    <option value="20">20개씩 보기</option>
+                </select>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">이전</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">4</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">다음</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>

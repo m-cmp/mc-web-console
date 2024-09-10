@@ -1,0 +1,45 @@
+<div class="page page-center" >
+
+  <div class="container container-tight py-4">
+
+    <div class="text-center mb-4">
+      <a class="navbar-brand navbar-brand-autodark">
+        <div class="row">
+          <div>
+            <img src="/assets/static/logo/cloud.svg" width="150" >
+          </div>
+          <h1>MC-WEB-CONSOLE</h1>
+        </div>
+      </a>
+    </div>
+
+    <div class="card card-md">
+      <div class="card-body">
+        <h2 class="h2 text-center mb-4">Login to your Account</h2>
+        
+          <div class="mb-3">
+            <label class="form-label">ID</label>
+            <input type="ID" class="form-control" id="id" placeholder="Your ID" autocomplete="off">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Password<span class="form-label-description"><a href="#">I forgot password</a></span></label>
+            <input type="password" class="form-control" id="password" placeholder="Your password" autocomplete="off">
+          </div>
+
+          <div class="form-footer">
+            <button id="loginbtn" class="btn btn-primary w-100">Login</button>
+          </div>
+
+      </div>
+    </div>
+
+    <div class="text-center text-secondary mt-3">
+      <a href="#" tabindex="-1">Register Account</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- page JS -->
+<%= javascriptTag("pages/auth/login.js") %>
