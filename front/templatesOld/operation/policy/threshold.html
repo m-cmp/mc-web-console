@@ -1,0 +1,19 @@
+<%= partial("partials/layout/pageheader/default.html") %>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row row-deck row-cards">
+                <div class="col-12">
+                    <%= partial("partials/operation/policy/listofthreshold.html") %>
+                </div>
+                <div class="col-12">
+                    <%= partial("partials/operation/policy/thresholdinfo.html") %>
+                </div>
+                <div class="col-12">
+                    <%= partial("partials/operation/policy/createthreshold.html") %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%= javascriptTag("operation/policy/threshold.js") %>

@@ -167,7 +167,7 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
     - web_console_front
         
         ```bash
-        $ cd mc-web-console/mc_web_console_front
+        $ cd mc-web-console/front
         $ npm install
         $ yarn install
         $ buffalo build
