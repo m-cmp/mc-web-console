@@ -35,35 +35,39 @@ api/!.yarn/versions
 
 
 # front
+front/vendor/
+front/**/*.log
+front/**/*.sqlite
+front/.idea/
+front/bin/
+front/tmp/
+front/node_modules/
+front/.sass-cache/
+front/public/assets/
+front/.vscode/
+front/.grifter/
+front/.env
+front/**/.DS_Store
+front/*.pid
+front/coverage
+front/coverage.data
+front/.svn
+front/.console_history
+front/.sass-cache/*
+front/.jhw-cache/
+front/jhw.*
+front/*.sublime*
+front/dist/
+front/generated/
+front/.vendor/
+front/.pnp.*
+front/.yarn/*
+front/!.yarn/patches
+front/!.yarn/plugins
+front/!.yarn/releases
+front/!.yarn/sdks
+front/!.yarn/versions
 
-## env
-front/.env*
-
-## Logs
-front/logs
-front/*.log
-front/npm-debug.log*
-front/yarn-debug.log*
-front/yarn-error.log*
-front/pnpm-debug.log*
-front/lerna-debug.log*
-
-front/node_modules
-front/dist
-front/dist-ssr
-
-## Editor directories and files
-front/.vscode/*
-front/!.vscode/extensions.json
-front/.idea
-front/.DS_Store
-front/*.suo
-front/*.ntvs*
-front/*.njsproj
-front/*.sln
-front/*.sw?
-front/.iml
-front/.idea
 
 # bin
 bin/mc-web-console-api
@@ -73,6 +77,7 @@ bin/.env
 
 # conf
 conf/api.yaml
+conf/.env
 conf/selfiamauthsetting.yaml
 conf/selfiamuser.dat
 conf/serverinfo

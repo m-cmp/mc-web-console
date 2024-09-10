@@ -1,0 +1,188 @@
+<div class="col-12">
+  <div class="row">
+    <div class="col-md-3">
+      <h3 class="text-info">New Server #1 Config</h3>
+    </div>
+    <div class="col-md-9">
+      <ul class="steps steps-counter my-4">
+        <li class="step-item">Server</li>
+        <li class="step-item active">OS/HW</li>
+        <li class="step-item">Network</li>
+        <li class="step-item">Security</li>
+        <li class="step-item">Others</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group mb-2">
+        <label class="form-label required">Server Name</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="1"
+          placeholder="Input Name"
+        ></textarea>
+      </div>
+      <div class="form-group mb-2">
+        <label class="form-label">Description</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="3"
+          placeholder="type Description"
+        ></textarea>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group mb-2">
+        <label class="form-label">Cloud Provider / Region</label>
+        <div class="row g-2">
+          <div class="col-6">
+            <select name="select-provider" class="form-select">
+              <option value="">Select Provider</option>
+              <option value="aws">AWS</option>
+              <option value="AZURE">AZURE</option>
+              <option value="GCP">GCP</option>
+              <option value="ALIBABA">ALIBABA</option>
+              <option value="TENCENT">TENCENT</option>
+              <option value="IBM">IBM</option>
+              <option value="OPENSTACK">OPENSTACK</option>
+              <option value="CLOUDIT">CLOUDIT</option>
+              <option value="NCP">NCP</option>
+              <option value="NCPVPC">NCPVPC</option>
+              <option value="NHNCLOUD">NHNCLOUD</option>
+              <option value="KTCLOUD">KTCLOUD</option>
+              <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+              <option value="DOCKER">DOCKER</option>
+              <option value="MOCK">MOCK</option>
+              <option value="CLOUDTWIN">CLOUDTWIN</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <select name="region-select" class="form-select">
+              <option value="">Select Region</option>
+              <option value="region1" selected="">[AWS] aws-sao-rg</option>
+              <option value="region2">[GCP] gcp-tokyo-rg</option>
+              <option value="region3">[ALIBABA] ap-southeast-1</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group mb-2">
+        <label class="form-label required">Connection Connection</label>
+        <div class="row g-2">
+          <div class="col">
+            <select class="form-select" name="provider" required>
+              <option value="" selected>Select Connection</option>
+              <option>aws-sao-conn</option>
+              <option>gcp-cortado-conn</option>
+              <option>ali-cortado-conn</option>
+            </select>
+          </div>
+          <div class="col-auto">
+            <a
+              href="#"
+              class="btn"
+              data-bs-toggle="modal"
+              data-bs-target="#deployment-target"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                <path d="M21 21l-6 -6"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row row-cards">
+    <div class="col">
+      <div class="card">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+            <li class="nav-item">
+              <a
+                href="#tabs-oshw-8"
+                class="nav-link active"
+                data-bs-toggle="tab"
+                >OS/HW</a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="#tabs-network-8" class="nav-link" data-bs-toggle="tab"
+                >Network</a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="#tabs-security-8" class="nav-link" data-bs-toggle="tab"
+                >Security</a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="#tabs-other-8" class="nav-link" data-bs-toggle="tab"
+                >Other</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="container">
+            <div class="tab-content">
+              <div class="tab-pane fade active show" id="tabs-oshw-8">
+                <%= partial("partials/operation/manage/oshwtabcard.html") %>
+              </div>
+              <div class="tab-pane fade" id="tabs-network-8">
+                <%= partial("partials/operation/manage/networktabcard.html") %>
+              </div>
+              <div class="tab-pane fade" id="tabs-security-8">
+                <%= partial("partials/operation/manage/securitytabcard.html") %>
+              </div>
+              <div class="tab-pane fade" id="tabs-other-8">
+                <%= partial("partials/operation/manage/othertabcard.html") %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-md-3">
+  <label class="form-label">Server Quantity</label>
+  <input
+    type="range"
+    class="form-range mb-2"
+    value="0"
+    min="0"
+    max="100"
+    step="1"
+    oninput="this.nextElementSibling.value = this.value"
+  />
+
+  <output>0</output>
+</div>
+
+<div align="right">
+     <button type="submit" class="btn btn-info">Done</button>    <button
+    type="submit"
+    class="btn btn-secondary"
+  >
+    Clear
+  </button>
+</div>
