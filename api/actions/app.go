@@ -39,15 +39,15 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		if MCIAM_USE { // MCIAM USE True
-			app.Use(mciammanager.DefaultMiddleware)
-			app.Middleware.Skip(mciammanager.DefaultMiddleware, readyz)
+			app.Use(mciammanager.SetContextMiddleware)
+			app.Middleware.Skip(mciammanager.SetContextMiddleware, readyz)
 
 			app.ANY("/readyz", readyz)
 
 			apiPath := "/api"
 
 			auth := app.Group(apiPath + "/auth")
-			auth.Middleware.Skip(mciammanager.DefaultMiddleware, AuthMCIAMLogin)
+			auth.Middleware.Skip(mciammanager.SetContextMiddleware, AuthMCIAMLogin)
 			auth.POST("/login", AuthMCIAMLogin)
 			auth.POST("/refresh", AuthMCIAMLoginRefresh)
 			auth.POST("/validate", AuthMCIAMValidate)
@@ -55,7 +55,9 @@ func App() *buffalo.App {
 			auth.POST("/userinfo", AuthMCIAMUserinfo)
 
 			api := app.Group(apiPath)
-			api.Use(mciammanager.SelfApiMiddleware)
+			if MCIAM_TICKET_USE {
+				api.Use(mciammanager.SelfApiMiddleware)
+			}
 			api.POST("/disklookup", self.DiskLookup)
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 			api.POST("/createmenuresources", CreateMCIAMMenuResources)
@@ -65,7 +67,11 @@ func App() *buffalo.App {
 			api.POST("/getworkspaceroles", GetWorkspaceRoles)
 
 			api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
-			api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+			if MCIAM_TICKET_USE {
+				api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+			} else {
+				api.POST("/{operationId}", AnyController)
+			}
 
 		} else { // MCIAM USE False
 
