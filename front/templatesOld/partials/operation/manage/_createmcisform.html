@@ -1,0 +1,61 @@
+<div class="row bg-secondary-lt">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group mb-2">
+        <label class="form-label required">Name</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="1"
+          placeholder="Input Name"
+        ></textarea>
+      </div>
+      <div class="form-group mb-2">
+        <label class="form-label required">Description</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="6"
+          placeholder="type Description"
+        ></textarea>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group mb-2">
+        <label class="form-label required">Deployment Algorithm</label>
+        <select name="languages" id="lang">
+          <option value="express">Express</option>
+          <option value="simple">Simple</option>
+          <option value="expert">Expert</option>
+        </select>
+      </div>
+      <div class="form-group mb-2">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Import</button>
+        </div>
+        
+      </div>
+      
+    </div>
+
+    <div class="row">
+      <div class="col-md-10 offset-md-1">
+        <%= partial("partials/operation/manage/mcisserverprint.html") %>
+      </div>
+    </div>
+  </div>
+
+  <div align="right">
+       <button type="submit" class="btn btn-info">Deploy</button>
+  </div>
+
+  <div class="row bg-white">
+    <%= partial("partials/operation/manage/createmcisexpressform.html") %>
+  </div>
+  <div class="row bg-white">
+    <%= partial("partials/operation/manage/createmcissimpleform.html") %>
+  </div>
+  <div class="row bg-white">
+    <%= partial("partials/operation/manage/createmcisexpertform.html") %>
+  </div>
+</div>

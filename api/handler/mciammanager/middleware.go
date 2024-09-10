@@ -25,7 +25,6 @@ func init() {
 			panic("Get jwks fail :" + err.Error())
 		}
 	}
-
 }
 
 func getCertsEndpoint() string {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
-	"github.com/gobuffalo/envy"
 	contenttype "github.com/gobuffalo/mw-contenttype"
 	"github.com/gobuffalo/x/sessions"
 	"github.com/rs/cors"
@@ -19,8 +18,6 @@ import (
 	"mc_web_console_api/models"
 )
 
-var ENV = envy.Get("GO_ENV", "development")
-
 var (
 	app     *buffalo.App
 	appOnce sync.Once
@@ -30,7 +27,6 @@ var (
 func App() *buffalo.App {
 	appOnce.Do(func() {
 		app = buffalo.New(buffalo.Options{
-			Env:          ENV,
 			SessionStore: sessions.Null{},
 			PreWares: []buffalo.PreWare{
 				cors.AllowAll().Handler, // disable require, when front proxy done.

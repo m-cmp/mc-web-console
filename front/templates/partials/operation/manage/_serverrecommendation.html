@@ -1,0 +1,308 @@
+<!-- add server : spec-search : server recommendation -->
+<div
+  class="modal modal-blur fade"
+  id="spec-search"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Server Recommendation</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Priority Option / Limit (location)</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input type="hidden" id="latitude" />
+                <input type="hidden" id="longitude" />
+                <select
+                  class="form-select"
+                  id="assistRecommendSpecConnectionName"
+                  name="assistRecommendSpecConnectionName"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].showRecommendSpecSetting(this.value)"
+                >
+                  <option value="">Select Region</option>
+                  <option value="seoul">Seoul</option>
+                  <option value="london">London</option>
+                  <option value="newyork">NewYork</option>
+                </select>
+                <!-- <select name="user[day]" class="form-select">
+                    <option value="">Select Priority</option>
+                    <option value="location">Location</option>
+                    <option value="cost">Cost</option>
+                  </select> -->
+              </div>
+              <!-- <div class="col">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Please Use Search"
+                />
+              </div> -->
+              <div class="col-auto">
+                <a
+                  class="btn btn-icon"
+                  aria-label="Button"
+                  onclick="webconsolejs['partials/operation/manage/serverrecommendation'].getRecommendVmInfo()"
+                >
+                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                    <path d="M21 21l-6 -6"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading-1">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse-1"
+              aria-expanded="true"
+            >
+              Spec Config
+            </button>
+          </h2>
+          <div
+            id="collapse-1"
+            class="accordion-collapse collapse show"
+            data-bs-parent="#accordion-example"
+          >
+            <div class="accordion-body pt-0">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="form-label">Memory (GB)</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_memory"
+                      id="assist_min_memory"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_memory"
+                      id="assist_max_memory"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">vCPU</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_cpu"
+                      id="assist_min_cpu"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_cpu"
+                      id="assist_max_cpu"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">COST (Hour)</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_cost"
+                      id="assist_min_cost"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_cost"
+                      id="assist_max_cost"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading-2">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse-2"
+            >
+              Accelerator Config
+            </button>
+          </h2>
+          <div
+            id="collapse-2"
+            class="accordion-collapse collapse"
+            data-bs-parent="#accordion-example"
+            style=""
+          >
+            <div class="accordion-body pt-0">
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col-md-2">
+                    <span class="input-group-text">Type</span>
+                  </div>
+                  <div class="col-md-10">
+                    <select
+                      id="assist_accelerator_type"
+                      name=""
+                      class="form-select"
+                    >
+                      <option value="" selected="selected">----</option>
+                      <option value="gpu">GPU</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col-2">
+                    <span class="input-group-text">Model</span>
+                  </div>
+                  <div class="col-10">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="assist_gpu_model"
+                      name="assist_gpu_model"
+                      value=""
+                      placeholder="Ex: A100"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col-2">
+                    <span class="input-group-text">Count</span>
+                  </div>
+                  <div class="col-5">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="assist_gpu_count_min"
+                      min="1"
+                      max="999998"
+                      step="1"
+                      placeholder="min"
+                    />
+                  </div>
+
+                  <div class="col-5">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="assist_gpu_count_max"
+                      min="1"
+                      max="999999"
+                      step="1"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col-2">
+                    <span class="input-group-text">Mem(GB)</span>
+                  </div>
+                  <div class="col-5">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="assist_gpu_memory_min"
+                      min="1"
+                      max="999998"
+                      step="1"
+                      placeholder="min"
+                    />
+                  </div>
+
+                  <div class="col-5">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="assist_gpu_memory_max"
+                      min="1"
+                      max="999999"
+                      step="1"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-responsive" id="spec-table"></div>
+      </div>
+
+      <div class="modal-footer">
+        <div align="right">
+          <button
+            type="submit"
+            class="btn btn-info"
+            onclick="webconsolejs['partials/operation/manage/serverrecommendation'].applySpecInfo()"
+          >
+            Apply
+          </button>
+          <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- add server : spec-search end -->
+
+<%= javascriptTag("partials/operation/manage/serverrecommendation.js") %>
