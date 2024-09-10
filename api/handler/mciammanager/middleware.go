@@ -40,9 +40,8 @@ func getCertsEndpoint() string {
 	return baseUrl + certUri
 }
 
-func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
+func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		fmt.Println("@@@@@DefaultMiddleware ")
 		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		err := iamtokenvalidator.IsTokenValid(accessToken)
 		if err != nil {
@@ -56,10 +55,9 @@ func DefaultMiddleware(next buffalo.Handler) buffalo.Handler {
 		}
 
 		c.Set("Authorization", c.Request().Header.Get("Authorization"))
-		c.Set("UserId", claims.UserId)           // need jwtprofile
-		c.Set("UserName", claims.UserName)       // need jwtprofile
-		c.Set("Roles", claims.RealmAccess.Roles) // need jwtprofile
-
+		c.Set("UserId", claims.UserID)
+		c.Set("UserName", claims.Name)
+		c.Set("Roles", claims.RealmAccess.Roles)
 		return next(c)
 	}
 }

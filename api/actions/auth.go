@@ -172,11 +172,9 @@ func AuthMCIAMLogout(c buffalo.Context) error {
 }
 
 func AuthMCIAMUserinfo(c buffalo.Context) error {
-	return c.Render(200, r.JSON(map[string]interface{}{
-		"userId":   c.Value("UserId"),
-		"userName": c.Value("UserName"),
-		"roles":    c.Value("Roles"),
-	}))
+	commonRequest := &handler.CommonRequest{}
+	commonResponse, _ := handler.AnyCaller(c, "getuserinfo", commonRequest, true)
+	return c.Render(200, r.JSON(commonResponse))
 }
 
 func AuthMCIAMValidate(c buffalo.Context) error {
