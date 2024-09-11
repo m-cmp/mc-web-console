@@ -1,11 +1,9 @@
 package actions
 
 import (
-	"fmt"
-	"log"
 	"net/http"
-	"time"
 
+	"front/middleware"
 	"front/public"
 
 	"github.com/gobuffalo/buffalo"
@@ -45,12 +43,12 @@ func App() *buffalo.App {
 
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
-		app.Use(IsTokenExistMiddleware)
+		app.Use(middleware.IsTokenExistMiddleware)
 
 		app.GET("/alive", alive)
 
 		auth := app.Group("/auth")
-		auth.Middleware.Skip(IsTokenExistMiddleware, UserLogin, UserLogout, UserUnauthorized)
+		auth.Middleware.Skip(middleware.IsTokenExistMiddleware, UserLogin, UserLogout, UserUnauthorized)
 		auth.GET("/login", UserLogin)
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
@@ -89,22 +87,4 @@ func alive(c buffalo.Context) error {
 	return c.Render(200, defaultRender.JSON(map[string]interface{}{
 		"status": "OK",
 	}))
-}
-
-func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
-	return func(c buffalo.Context) error {
-		cookie, err := c.Request().Cookie("Authorization")
-		if err != nil {
-			log.Println(err.Error())
-			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized")
-		}
-
-		if cookie == nil || cookie.Expires.After(time.Now()) || cookie.Value == "" {
-			errMsg := fmt.Errorf("token is not exist or expired")
-			log.Println(errMsg.Error())
-			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized")
-		}
-
-		return next(c)
-	}
 }

@@ -68,6 +68,7 @@ front/!.yarn/releases
 front/!.yarn/sdks
 front/!.yarn/versions
 
+front-backup/*
 
 # bin
 bin/mc-web-console-api

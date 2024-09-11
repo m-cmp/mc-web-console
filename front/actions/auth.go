@@ -34,9 +34,7 @@ func SessionInitializer(c buffalo.Context) error {
 
 	accessToken := data["responseData"].(map[string]interface{})["access_token"]
 
-	c.Session().Set("Authorization", accessToken)
-
-	return c.Render(http.StatusOK, defaultRender.JSON(map[string]interface{}{"status": "ok"}))
+	return c.Render(http.StatusOK, defaultRender.JSON(map[string]interface{}{"access_token": accessToken}))
 }
 
 func UserLogin(c buffalo.Context) error {
