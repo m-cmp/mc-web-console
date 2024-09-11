@@ -3,11 +3,10 @@ package actions
 import (
 	"net/http"
 
+	"front/middleware"
 	"front/public"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/envy"
-	csrf "github.com/gobuffalo/mw-csrf"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
@@ -16,7 +15,6 @@ import (
 
 // ENV is used to help switch settings based on where the
 // application is being run. Default is "development".
-var ENV = envy.Get("GO_ENV", "development")
 
 var (
 	app *buffalo.App
@@ -39,30 +37,25 @@ var (
 func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
-			Env:         ENV,
 			SessionName: "mc_web_console",
 			Addr:        FRONT_ADDR + ":" + FRONT_PORT,
 		})
 
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
+		app.Use(middleware.IsTokenExistMiddleware)
 
-		if FRONT_CSRF_USE {
-			app.Use(csrf.New)
-		} else {
-			app.Use(csrfbypass)
-		}
+		app.GET("/alive", alive)
 
-		app.ANY("/alive", alive)
 		auth := app.Group("/auth")
-		auth.GET("/login", UserLoginHandler)
-		auth.GET("/logout", UserLogoutHandler)
-		auth.GET("/unauthorized", UserUnauthorizedHandler)
+		auth.Middleware.Skip(middleware.IsTokenExistMiddleware, UserLogin, UserLogout, UserUnauthorized)
+		auth.GET("/login", UserLogin)
+		auth.GET("/logout", UserLogout)
+		auth.GET("/unauthorized", UserUnauthorized)
 
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
-		pages.ANY("/alive", alive)
 		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		apiPath := "/api"
@@ -85,7 +78,7 @@ func App() *buffalo.App {
 // for more information: https://github.com/unrolled/secure/
 func forceSSL() buffalo.MiddlewareFunc {
 	return forcessl.Middleware(secure.Options{
-		SSLRedirect:     ENV == "production",
+		SSLRedirect:     false,
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
 }
@@ -93,13 +86,5 @@ func forceSSL() buffalo.MiddlewareFunc {
 func alive(c buffalo.Context) error {
 	return c.Render(200, defaultRender.JSON(map[string]interface{}{
 		"status": "OK",
-		"method": c.Request().Method,
 	}))
-}
-
-func csrfbypass(next buffalo.Handler) buffalo.Handler {
-	return func(c buffalo.Context) error {
-		c.Set("authenticity_token", "no_authenticity_token")
-		return next(c)
-	}
 }
