@@ -6,7 +6,6 @@ import (
 	"front/public"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/envy"
 	csrf "github.com/gobuffalo/mw-csrf"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	i18n "github.com/gobuffalo/mw-i18n/v2"
@@ -16,7 +15,6 @@ import (
 
 // ENV is used to help switch settings based on where the
 // application is being run. Default is "development".
-var ENV = envy.Get("GO_ENV", "development")
 
 var (
 	app *buffalo.App
@@ -39,7 +37,6 @@ var (
 func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
-			Env:         ENV,
 			SessionName: "mc_web_console",
 			Addr:        FRONT_ADDR + ":" + FRONT_PORT,
 		})
@@ -53,16 +50,16 @@ func App() *buffalo.App {
 			app.Use(csrfbypass)
 		}
 
-		app.ANY("/alive", alive)
+		app.GET("/alive", alive)
+
 		auth := app.Group("/auth")
-		auth.GET("/login", UserLoginHandler)
-		auth.GET("/logout", UserLogoutHandler)
-		auth.GET("/unauthorized", UserUnauthorizedHandler)
+		auth.GET("/login", UserLogin)
+		auth.GET("/logout", UserLogout)
+		auth.GET("/unauthorized", UserUnauthorized)
 
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
-		pages.ANY("/alive", alive)
 		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
 
 		apiPath := "/api"
@@ -85,7 +82,7 @@ func App() *buffalo.App {
 // for more information: https://github.com/unrolled/secure/
 func forceSSL() buffalo.MiddlewareFunc {
 	return forcessl.Middleware(secure.Options{
-		SSLRedirect:     ENV == "production",
+		SSLRedirect:     false,
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
 }
@@ -93,7 +90,6 @@ func forceSSL() buffalo.MiddlewareFunc {
 func alive(c buffalo.Context) error {
 	return c.Render(200, defaultRender.JSON(map[string]interface{}{
 		"status": "OK",
-		"method": c.Request().Method,
 	}))
 }
 
