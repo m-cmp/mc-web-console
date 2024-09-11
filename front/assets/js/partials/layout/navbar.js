@@ -152,6 +152,18 @@ export async function workspaceProjectInit() {
     return { workspaceId: curWorkspaceId, workspaceName: curWorkspaceName, projectId: curProjectId, projectName: curProjectName, nsId: curNsId };
 }
 
+
+
+document.getElementById("logoutbtn").addEventListener('click',async function () {
+    destroyAccessToken()
+    window.location = "/auth/logout"
+});
+
+function destroyAccessToken(){
+    let now = new Date();
+    document.cookie = `Authorization=; path=/; expires=${now.getTime()};`;
+}
+
 // workspaceObj
 // export async function setWorkspaceChanged(selectedWorkspaceValue){
 //     console.log(" setWorkspaceChanged ")
