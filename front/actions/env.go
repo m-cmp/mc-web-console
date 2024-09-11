@@ -8,7 +8,6 @@ import (
 
 func init() {
 	MCIAM_USE, _ = strconv.ParseBool(os.Getenv("MCIAM_USE"))
-	FRONT_CSRF_USE, _ = strconv.ParseBool(os.Getenv("FRONT_CSRF_USE"))
 
 	FRONT_ADDR = os.Getenv("FRONT_ADDR")
 	FRONT_PORT = os.Getenv("FRONT_PORT")
@@ -24,6 +23,5 @@ var API_ADDR = "0.0.0.0"
 var API_PORT = "3000"
 
 var MCIAM_USE = false // MC-IAM-MANAGER 사용여부, init 에서 재정의
-var FRONT_CSRF_USE = false
 
 var ApiBaseHost *url.URL
