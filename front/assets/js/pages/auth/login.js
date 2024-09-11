@@ -12,7 +12,13 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         document.getElementById("id").value = null
         document.getElementById("password").value = null
     }else{
-        // webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserToken(response.data.responseData.access_token)
+        saveAccessToken(response.data.access_token)
         window.location = "/"
     }
 });
+
+function saveAccessToken(accessToken){
+    let now = new Date();
+    now.setTime(now.getTime() + (24 * 60 * 60 * 1000)); // 1day
+    document.cookie = `Authorization=${accessToken}; path=/; expires=${now.toUTCString()};`;
+}
