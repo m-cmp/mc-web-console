@@ -1,12 +1,14 @@
 package actions
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"front/public"
 
 	"github.com/gobuffalo/buffalo"
-	csrf "github.com/gobuffalo/mw-csrf"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	i18n "github.com/gobuffalo/mw-i18n/v2"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
@@ -43,16 +45,12 @@ func App() *buffalo.App {
 
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
-
-		if FRONT_CSRF_USE {
-			app.Use(csrf.New)
-		} else {
-			app.Use(csrfbypass)
-		}
+		app.Use(IsTokenExistMiddleware)
 
 		app.GET("/alive", alive)
 
 		auth := app.Group("/auth")
+		auth.Middleware.Skip(IsTokenExistMiddleware, UserLogin, UserLogout, UserUnauthorized)
 		auth.GET("/login", UserLogin)
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
@@ -93,9 +91,20 @@ func alive(c buffalo.Context) error {
 	}))
 }
 
-func csrfbypass(next buffalo.Handler) buffalo.Handler {
+func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		c.Set("authenticity_token", "no_authenticity_token")
+		cookie, err := c.Request().Cookie("Authorization")
+		if err != nil {
+			log.Println(err.Error())
+			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized")
+		}
+
+		if cookie == nil || cookie.Expires.After(time.Now()) || cookie.Value == "" {
+			errMsg := fmt.Errorf("token is not exist or expired")
+			log.Println(errMsg.Error())
+			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized")
+		}
+
 		return next(c)
 	}
 }
