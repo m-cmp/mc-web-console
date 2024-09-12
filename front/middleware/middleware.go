@@ -23,6 +23,7 @@ func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized")
 		}
 
+		c.Set("Authorization", cookie.Value)
 		return next(c)
 	}
 }
