@@ -27,7 +27,7 @@ func ApiCaller(c buffalo.Context) error {
 	if c.Request().RequestURI == "/api/auth/login" {
 		return SessionInitializer(c) // login intercept
 	} else {
-		c.Request().Header.Add("Authorization", c.Session().Get("Authorization").(string))
+		c.Request().Header.Add("Authorization", c.Value("Authorization").(string))
 		proxy.ServeHTTP(c.Response(), c.Request())
 	}
 	log.Println("#### ServeHTTP Success")
