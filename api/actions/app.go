@@ -68,9 +68,11 @@ func App() *buffalo.App {
 
 			api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
 			if MCIAM_TICKET_USE {
-				api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+				// api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+				api.POST("/{subsystemName}/{operationId}", mciammanager.ApiMiddleware(SubsystemAnyController))
 			} else {
-				api.POST("/{operationId}", AnyController)
+				// api.POST("/{operationId}", AnyController)
+				api.POST("/{subsystemName}/{operationId}", SubsystemAnyController)
 			}
 
 		} else { // MCIAM USE False
@@ -109,7 +111,8 @@ func App() *buffalo.App {
 			api.POST("/getwpmappinglistbyworkspaceid", GetWPmappingListByWorkspaceId)
 			api.POST("/getworkspaceuserrolemappinglistbyuserid", GetWorkspaceUserRoleMappingListByUserId)
 
-			api.POST("/{operationId}", AnyController)
+			// api.POST("/{operationId}", AnyController)
+			api.POST("/{subsystemName}/{operationId}", SubsystemAnyController)
 		}
 	})
 
