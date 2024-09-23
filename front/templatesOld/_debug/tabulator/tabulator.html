@@ -1,0 +1,22 @@
+<%= partial("partials/layout/pageheader/default.html") %>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Most Visited Pages</h3>
+                    </div>
+                    <div class="card-table table-responsive" >
+                        <div id="example-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<%= javascriptTag("debug/tabulator/tabulator.js") %>

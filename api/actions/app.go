@@ -6,7 +6,6 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
-	"github.com/gobuffalo/envy"
 	contenttype "github.com/gobuffalo/mw-contenttype"
 	"github.com/gobuffalo/x/sessions"
 	"github.com/rs/cors"
@@ -19,8 +18,6 @@ import (
 	"mc_web_console_api/models"
 )
 
-var ENV = envy.Get("GO_ENV", "development")
-
 var (
 	app     *buffalo.App
 	appOnce sync.Once
@@ -30,7 +27,6 @@ var (
 func App() *buffalo.App {
 	appOnce.Do(func() {
 		app = buffalo.New(buffalo.Options{
-			Env:          ENV,
 			SessionStore: sessions.Null{},
 			PreWares: []buffalo.PreWare{
 				cors.AllowAll().Handler, // disable require, when front proxy done.
@@ -43,15 +39,15 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		if MCIAM_USE { // MCIAM USE True
-			app.Use(mciammanager.DefaultMiddleware)
-			app.Middleware.Skip(mciammanager.DefaultMiddleware, readyz)
+			app.Use(mciammanager.SetContextMiddleware)
+			app.Middleware.Skip(mciammanager.SetContextMiddleware, readyz)
 
 			app.ANY("/readyz", readyz)
 
 			apiPath := "/api"
 
 			auth := app.Group(apiPath + "/auth")
-			auth.Middleware.Skip(mciammanager.DefaultMiddleware, AuthMCIAMLogin)
+			auth.Middleware.Skip(mciammanager.SetContextMiddleware, AuthMCIAMLogin)
 			auth.POST("/login", AuthMCIAMLogin)
 			auth.POST("/refresh", AuthMCIAMLoginRefresh)
 			auth.POST("/validate", AuthMCIAMValidate)
@@ -59,7 +55,9 @@ func App() *buffalo.App {
 			auth.POST("/userinfo", AuthMCIAMUserinfo)
 
 			api := app.Group(apiPath)
-			api.Use(mciammanager.SelfApiMiddleware)
+			if MCIAM_TICKET_USE {
+				api.Use(mciammanager.SelfApiMiddleware)
+			}
 			api.POST("/disklookup", self.DiskLookup)
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 			api.POST("/createmenuresources", CreateMCIAMMenuResources)
@@ -69,7 +67,13 @@ func App() *buffalo.App {
 			api.POST("/getworkspaceroles", GetWorkspaceRoles)
 
 			api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
-			api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+			if MCIAM_TICKET_USE {
+				// api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+				api.POST("/{subsystemName}/{operationId}", mciammanager.ApiMiddleware(SubsystemAnyController))
+			} else {
+				// api.POST("/{operationId}", AnyController)
+				api.POST("/{subsystemName}/{operationId}", SubsystemAnyController)
+			}
 
 		} else { // MCIAM USE False
 
@@ -107,7 +111,8 @@ func App() *buffalo.App {
 			api.POST("/getwpmappinglistbyworkspaceid", GetWPmappingListByWorkspaceId)
 			api.POST("/getworkspaceuserrolemappinglistbyuserid", GetWorkspaceUserRoleMappingListByUserId)
 
-			api.POST("/{operationId}", AnyController)
+			// api.POST("/{operationId}", AnyController)
+			api.POST("/{subsystemName}/{operationId}", SubsystemAnyController)
 		}
 	})
 

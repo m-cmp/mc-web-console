@@ -1,0 +1,84 @@
+<div class="col-12">
+  <div class="row">
+    <div class="col-md-6">
+  <h3 class="text-info">Root Disk</h3>
+
+      <label class="form-label">Select Root Disk Type</label>
+      <div class="input-group mb-2">
+        <select class="form-select" name="rootdisk" required>
+          <option value="" selected>Select Root Disk Type</option>
+          <option>Disk1</option>
+          <option>Disk2</option>
+          <option>Disk3</option>
+        </select>
+
+        <input
+          type="text"
+          class="form-control"
+          name=""
+          id=""
+          placeholder="Root Disk Size(GB)"
+        />
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="text-info">Data Disk</h3>
+      <div class="form-group mb-2">
+        <label class="form-label">Select Data Disk</label>
+        <div class="row g-2">
+          <div class="col">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Please Use Search"
+            />
+          </div>
+          <div class="col-auto">
+            <a
+              href="#"
+              class="btn"
+              data-bs-toggle="modal"
+              data-bs-target="#availabledisk-list"
+            >
+              <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                <path d="M21 21l-6 -6"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="form-group mb-2">
+        <h3 class="text-info">Others Configuration</h3>
+        <label class="form-label">key value (Json)</label>
+        <textarea
+          class="form-control"
+          name="example-textarea-input"
+          rows="2"
+          placeholder="Input Json Context"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div align="right">
+    <button type="submit" class="btn btn-secondary">Prev</button>
+  </div>
+</div>
