@@ -1,0 +1,26 @@
+<style>
+	html, body {width: 100vw; height: 100vh; overflow: hidden;}
+	body {display: flex; flex-direction: column;}
+	#designer {flex: 1;}
+	.sqd-step-editor {padding: 10px;}
+	.step-path {background: #FFCA6F; padding: 10px; margin: 10px 0;}
+	.sqd-root-editor, .definition-json, .definition-json textarea {width: 100%; height: 100%;}
+	#validationStatus {padding: 0 10px; font-size: 11px; color: #999;}
+</style>
+
+<header class="title-bar">
+	<div class="column flex-1 hidden-mobile">
+		<h1>Fullscreen Example</h1>
+	</div>
+	<div class="column">
+		<button id="changeReadonlyButton"></button>
+		<span id="validationStatus"></span>
+	</div>
+	<div class="column text-end flex-1">
+		MZC
+	</div>
+</header>
+
+<div id="designer"></div>
+
+<%= javascriptTag("debug/workflow/workflow.js") %>

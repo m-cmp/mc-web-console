@@ -1,0 +1,1257 @@
+<div class="card">
+  <div class="card-header">
+    <div class="container">
+      <h3 class="card-title">Create MCIS</h3>
+    </div>
+    <div class="col-auto">
+      <ol class="breadcrumb breadcrumb-arrows">
+        <li class="breadcrumb-item"><a href="#">Step one</a></li>
+        <li class="breadcrumb-item active"><a href="#">Step two</a></li>
+        <li class="breadcrumb-item disabled"><a href="#">Step three</a></li>
+      </ol>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= partial("partials/operation/manage/createmcisform.html") %>
+  </div>
+</div>
+
+<!-- modal -->
+
+<!-- spec-search -->
+<div
+  class="modal modal-blur fade"
+  id="spec-search"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Server Configuration</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Priority Option / Limit</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="user[day]" class="form-select">
+                  <option value="">Select Priority</option>
+                  <option value="location">Location</option>
+                  <option value="cost">Cost</option>
+                </select>
+              </div>
+              <div class="col">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Please Use Search"
+                />
+              </div>
+              <div class="col-auto">
+                <a href="#" class="btn btn-icon" aria-label="Button">
+                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                    <path d="M21 21l-6 -6"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Memory</label>
+            <input
+              type="range"
+              class="form-range mb-2"
+              value="0"
+              min="1"
+              max="100"
+              step="1"
+              oninput="this.nextElementSibling.value = this.value"
+            />
+
+            <output>1</output>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">CPU</label>
+            <input
+              type="range"
+              class="form-range mb-2"
+              value="0"
+              min="1"
+              max="100"
+              step="1"
+              oninput="this.nextElementSibling.value = this.value"
+            />
+
+            <output>1</output>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">COST</label>
+            <input
+              type="range"
+              class="form-range mb-2"
+              value="0"
+              min="0"
+              max="100"
+              step="1"
+              oninput="this.nextElementSibling.value = this.value"
+            />
+
+            <output>0</output>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Region</th>
+                <th>Spec</th>
+                <th>Price</th>
+                <th>Memory</th>
+                <th>CPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- spec-list -->
+<div
+  class="modal modal-blur fade"
+  id="spec-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">CSP Spec List 1</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            
+            <div class="row g-2">
+              <div class="col-1">
+                <label class="form-label">Search</label>
+              </div>
+              <div class="col-auto">
+                <a href="#" class="btn btn-icon" aria-label="Button">
+                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                    <path d="M21 21l-6 -6"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select class="form-select" name="provider" required>
+                  <option value="" selected>Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+              <div class="col">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Please Use Search"
+                />
+              </div>
+              <div class="col-auto">
+                <a href="#" class="btn btn-icon" aria-label="Button">
+                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                    <path d="M21 21l-6 -6"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Memory</label>
+            <input
+              type="range"
+              class="form-range mb-2"
+              value="0"
+              min="1"
+              max="100"
+              step="1"
+              oninput="this.nextElementSibling.value = this.value"
+            />
+            <output>1</output>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">vCPU</label>
+            <input
+              type="range"
+              class="form-range mb-2"
+              value="0"
+              min="1"
+              max="100"
+              step="1"
+              oninput="this.nextElementSibling.value = this.value"
+            />
+            <output>1</output>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Csp SpecName</th>
+                <th>Memory</th>
+                <th>vCPU Info</th>
+                <th>GPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>tabulator</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- image-list -->
+<div
+  class="modal modal-blur fade"
+  id="image-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">CSP Image List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="cloud-provider" class="form-select">
+                  <option value="">Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+
+              <div class="col-6">
+                <select name="select-connection" class="form-select">
+                  <option value="" selected="">Select Connection</option>
+                  <option value="region1">[AWS] aws-sao-conn</option>
+                  <option value="region2">[GCP] gcp-tokyo-rg</option>
+                  <option value="region3">[ALIBABA] ap-southeast-1</option>
+                </select>
+              </div>
+            </div>
+            
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Input Keyword"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a href="#" class="btn btn-icon" aria-label="Button">
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>
+                  <h5><center>Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>CspImageName</center></h5>
+                </th>
+                <th>
+                  <h5><center>CspImageId</center></h5>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- myimage-list -->
+<div
+  class="modal modal-blur fade"
+  id="myimage-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">My Image List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="cloud-provider" class="form-select">
+                  <option value="">Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+
+              <div class="col-6">
+                <select name="select-connection" class="form-select">
+                  <option value="" selected="">Select Connection</option>
+                  <option value="region1">[AWS] aws-sao-conn</option>
+                  <option value="region2">[GCP] gcp-tokyo-rg</option>
+                  <option value="region3">[ALIBABA] ap-southeast-1</option>
+                </select>
+              </div>
+            </div>
+            
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Input Keyword"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a href="#" class="btn btn-icon" aria-label="Button">
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>
+                  <h5><center>Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>sourceVmId</center></h5>
+                </th>
+                <th>
+                  <h5><center>Status</center></h5>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- network-list -->
+<div
+  class="modal modal-blur fade"
+  id="network-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Network List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="cloud-provider" class="form-select">
+                  <option value="">Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+
+              <div class="col-6">
+                <select name="select-connection" class="form-select">
+                  <option value="" selected="">Select Connection</option>
+                  <option value="region1">[AWS] aws-sao-conn</option>
+                  <option value="region2">[GCP] gcp-tokyo-rg</option>
+                  <option value="region3">[ALIBABA] ap-southeast-1</option>
+                </select>
+              </div>
+            </div>
+            
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Input Keyword"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a href="#" class="btn btn-icon" aria-label="Button">
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>
+                  <h5><center>Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>CIDR Block</center></h5>
+                </th>
+                <th>
+                  <h5><center>Subnet Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>Description</center></h5>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- securitygroup-list -->
+<div
+  class="modal modal-blur fade"
+  id="securitygroup-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Security Group List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="cloud-provider" class="form-select">
+                  <option value="">Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+
+              <div class="col-6">
+                <select name="select-connection" class="form-select">
+                  <option value="" selected="">Select Connection</option>
+                  <option value="region1" >[AWS] aws-sao-conn</option>
+                  <option value="region2">[GCP] gcp-tokyo-rg</option>
+                  <option value="region3">[ALIBABA] ap-southeast-1</option>
+                </select>
+              </div>
+            </div>
+            
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Input Keyword"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a href="#" class="btn btn-icon" aria-label="Button">
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>
+                  <h5><center>Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>VPC Id</center></h5>
+                </th>
+                <th>
+                  <h5><center>Description</center></h5>
+                </th>
+                <th>
+                  <h5><center>Firewall RuleSet</center></h5>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- sshkey-list -->
+<div
+  class="modal modal-blur fade"
+  id="sshkey-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">SSH Key List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="cloud-provider" class="form-select">
+                  <option value="">Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+
+              <div class="col-6">
+                <select name="select-connection" class="form-select">
+                  <option value="" selected="">Select Connection</option>
+                  <option value="region1" >[AWS] aws-sao-conn</option>
+                  <option value="region2">[GCP] gcp-tokyo-rg</option>
+                  <option value="region3">[ALIBABA] ap-southeast-1</option>
+                </select>
+              </div>
+            </div>
+            
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Input Keyword"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a href="#" class="btn btn-icon" aria-label="Button">
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>
+                  <h5><center>Key Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>Connection Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>Description</center></h5>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- availabledisk-list -->
+<div
+  class="modal modal-blur fade"
+  id="availabledisk-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Available Disk List</h5>
+        <!-- 버튼 -->
+      </div>
+
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Disk Name</th>
+                <th>Disk Type</th>
+                <th>Disk Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  <div class="form-group mb-2">
+                    <textarea
+                      class="form-control"
+                      name="diskname-textarea-input"
+                      rows="1"
+                      placeholder="Disk Name"
+                    ></textarea>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-group mb-2">
+                    <select class="form-select" name="disktype" required>
+                      <option value="" selected>Select Disk Type</option>
+                      <option>disktype1</option>
+                      <option>disktype2</option>
+                      <option>disktype3</option>
+                    </select>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-group mb-2">
+                    <textarea
+                      class="form-control"
+                      name="disksize-textarea-input"
+                      rows="1"
+                      placeholder="Disk Size"
+                    ></textarea>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
