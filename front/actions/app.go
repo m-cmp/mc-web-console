@@ -45,6 +45,7 @@ func App() *buffalo.App {
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(middleware.IsTokenExistMiddleware)
 
+		app.Middleware.Skip(middleware.IsTokenExistMiddleware, alive)
 		app.GET("/alive", alive)
 
 		auth := app.Group("/auth")

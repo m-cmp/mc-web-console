@@ -24,6 +24,7 @@ func SessionInitializer(c buffalo.Context) error {
 	respBody, ioerr := io.ReadAll(resp.Body)
 	if ioerr != nil {
 		log.Println("Error CommonHttp reading response:", ioerr)
+		return c.Render(http.StatusInternalServerError, defaultRender.JSON(map[string]interface{}{"error": ioerr.Error()}))
 	}
 
 	var data map[string]interface{}
