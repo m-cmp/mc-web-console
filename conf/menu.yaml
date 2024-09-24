@@ -1,30 +1,36 @@
 menus:
-  - id: depth1
-    parentmenuid: ""
-    displayname: depth1
+  - id: operations
+    parentid: home
+    displayname: Operations
+    restype: menu
     isaction: "false"
-    priority: "0"
+    priority: 0
 
-  - id: depth2
-    parentmenuid: depth1
-    displayname: depth2
+  - id: manage
+    parentid: operations
+    displayname: Manage
+    restype: menu
     isaction: "false"
-    priority: "0"
+    priority: 0
 
-  - id: depth3
-    parentmenuid: depth2
-    displayname: depth3
-    isaction: "false"
-    priority: "0"
-
-  - id: menu1
-    parentmenuid: depth3
-    displayname: menu1
+  - id: workloads
+    parentid: manage
+    displayname: Workloads
+    restype: menu
     isaction: "true"
-    priority: "0"
+    priority: 0
 
-  - id: menu2
-    parentmenuid: depth3
-    displayname: menu2
+  - id: mciswls
+    parentid: workloads
+    displayname: MCIS WLs
+    restype: menu
     isaction: "true"
-    priority: "1"
+    priority: 0
+
+  - id: pmkswls
+    parentid: workloads
+    displayname: PMKS WLs
+    restype: menu
+    isaction: "true"
+    priority: 0
+

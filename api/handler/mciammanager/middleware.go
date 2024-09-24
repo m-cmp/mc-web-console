@@ -64,6 +64,7 @@ func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
 
 func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
+
 		operationId := strings.ToLower(c.Param("operationId"))
 		framework, _, _, err := handler.GetApiSpec(operationId)
 		if err != nil || framework == "" {
@@ -90,6 +91,7 @@ func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 
 func SelfApiMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
+
 		operationId := strings.ToLower(strings.TrimPrefix(c.Request().RequestURI, "/api/"))
 		framework, _, _, err := handler.GetApiSpec(operationId)
 		if err != nil || framework == "" {

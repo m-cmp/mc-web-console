@@ -73,7 +73,7 @@ func createMenuResource() error {
 }
 
 func GetMenuTree(menuList Menus) (*Menus, error) {
-	menuTree := buildMenuTree(menuList, "")
+	menuTree := buildMenuTree(menuList, "home")
 	return &menuTree, nil
 }
 
@@ -83,7 +83,6 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 			"framework": "mc-web-console",
 		},
 	}, true)
-
 	if err != nil {
 		return &Menus{}, err
 	}
@@ -95,7 +94,6 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 	menuList := &Menu{}
 	for _, menuResp := range menuListResp {
 		menuPart := strings.Split(menuResp.(map[string]interface{})["rsname"].(string), ":")
-
 		menu := &Menu{
 			Id:           menuPart[2],
 			DisplayName:  menuPart[3],
