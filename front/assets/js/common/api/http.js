@@ -9,7 +9,11 @@ export async function commonAPIPost(url, data, attempt) {
     console.log("Request Data :", JSON.stringify(data));
     console.log("-----------------------");
     try {
-        const response = await axios.post(url, data);
+        if( data === undefined) {
+            var response = await axios.post(url);
+        }else {
+            var response = await axios.post(url, data);
+        }
         console.log("#### commonAPIPost Response");
         console.log("Response status : ", response.status);
         console.log("Response : ", response.data);
