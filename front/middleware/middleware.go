@@ -17,7 +17,7 @@ func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#cookieError")
 		}
 
-		if cookie == nil || cookie.Value == "" {
+		if cookie == nil || cookie.Value == "" || cookie.Value == "undefined" {
 			errMsg := fmt.Errorf("token is not exist")
 			log.Println(errMsg.Error())
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#AuthorizationNotExist")

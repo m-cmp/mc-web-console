@@ -62,6 +62,9 @@ func App() *buffalo.App {
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 			api.POST("/createmenuresources", CreateMCIAMMenuResources)
 			api.POST("/getmenutree", GetMCIAMmenuTree)
+
+			api.POST("/getworkspaceuserrolemappingbytoken", GetWorkspaceUserRoleMappingByToken)
+
 			api.POST("/getcompanyinfo", GetCompanyInfo)
 			api.POST("/getplatformroles", GetPlatformRoles)
 			api.POST("/getworkspaceroles", GetWorkspaceRoles)

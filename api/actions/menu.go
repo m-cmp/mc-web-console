@@ -18,7 +18,6 @@ func GetMCIAMmenuTree(c buffalo.Context) error {
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
 		return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 	}
-
 	menuTree, err := self.GetMenuTree(*menulist)
 	if err != nil {
 		commonResponse := handler.CommonResponseStatusBadRequest(err.Error())
