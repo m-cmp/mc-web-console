@@ -13,8 +13,10 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         document.getElementById("id").value = null
         document.getElementById("password").value = null
     }else{
-        console.log("response.data.access_token", response.data.access_token)
         await webconsolejs["common/cookie/authcookie"].updateCookieAccessToken(response.data.access_token);
+        const menuListresponse = await webconsolejs["common/api/http"].commonAPIPost('/api/getmenutree')
+        console.log(menuListresponse)
+        webconsolejs["common/storage/localstorage"].setMenuLocalStorage(menuListresponse.data.responseData)
         window.location = "/"
     }
 });
