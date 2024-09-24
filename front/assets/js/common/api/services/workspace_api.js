@@ -86,18 +86,18 @@ export async function getWorkspaceListByUser() {
 // workspace에 매핑된 project목록 조회
 export async function getProjectListByWorkspaceId(workspaceId) {
   console.debug("getProjectListByWorkspaceId", workspaceId)
-  let userId = document.getElementById("userid").value
+  // let userId = document.getElementById("userid").value
   let requestObject = {
     "pathParams": {
       "workspaceId": workspaceId
     },
-    "requestData": {
-      "userId": userId,
-    }
+    // "requestData": {
+    //   "userId": userId,
+    // }
   }
 
   let projectList = [];
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/GetWPmappingListByWorkspaceId', requestObject)
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/getwpmappinglistbyworkspaceid', requestObject)
   let data = response.data.responseData.projects
   console.debug("GetWPmappingListByWorkspaceId data :", data)
   data.forEach(item => {
