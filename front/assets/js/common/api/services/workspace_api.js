@@ -3,8 +3,6 @@
 // workspace 만
 export function getCurrentWorkspace() {
   const currWs = webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspace()
-
-  console.log("currWs ", currWs)
   return currWs
 }
 
@@ -45,14 +43,8 @@ export async function getUserProjectList(workspaceId) {
 
 // 유저의 workspace 목록 조회
 async function getWorkspaceProjectListByUser() {
-  var currentUserId = document.getElementById("userid").value
-  console.log("currentUserId",currentUserId)
-  var data = {
-    pathParams: {
-      userId: currentUserId,
-    },
-  };
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/Getworkspaceuserrolemappinglistbyuserid', data)
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspaceuserrolemappingbytoken')
+  console.log("getWorkspaceProjectListByUser", response.data.responseData)
   return response.data.responseData
 }
 
@@ -67,11 +59,11 @@ export async function getWorkspaceListByUser() {
     console.log("not saved. get ")
     var userWorkspaceProjectList = await getWorkspaceProjectListByUser()// workspace 목록, project 목록 조회
     setWorkspaceProjectList(userWorkspaceProjectList)
-
+    console.log("userWorkspaceProjectList", userWorkspaceProjectList)
     // workspaceProjectList에서 workspace 목록만 추출
-    const jsonData = JSON.parse(userWorkspaceProjectList);
+    // const jsonData = JSON.parse(userWorkspaceProjectList);
     //console.log(jsonData)
-    jsonData.forEach(item => {
+    userWorkspaceProjectList.forEach(item => {
       //console.log(item)
       workspaceList.push(item.workspaceProject.workspace);
     });
@@ -80,9 +72,9 @@ export async function getWorkspaceListByUser() {
     setCurrentWorkspace("")
     setCurrentProject("")
   } else {
-    const jsonData = JSON.parse(userWorkspaceList);
+    // const jsonData = JSON.parse(userWorkspaceList);
     //console.log(jsonData)
-    jsonData.forEach(item => {
+    userWorkspaceList.forEach(item => {
       //console.log(item)
       workspaceList.push(item.workspaceProject.workspace);
     });
