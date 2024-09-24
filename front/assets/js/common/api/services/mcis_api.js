@@ -15,11 +15,14 @@ export async function getMcisList(nsId) {
     },
   };
 
-  var controller = "/api/" + "GetAllMcis";
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
+
+  console.log("aaa", response)
+
   var mcisList = response.data.responseData;
 
   return mcisList
@@ -38,7 +41,7 @@ export async function getMcis(nsId, mcisId) {
     }
   }
 
-  var controller = "/api/" + "GetMcis";
+  var controller = "/api/" + "mc-infra-manager/" + "GetMci";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -64,7 +67,7 @@ export function mcisLifeCycle(type, checked_array, nsId) {
         "action": type
       }
     };
-    let controller = "/api/" + "GetControlMcis";
+    let controller = "/api/" + "mc-infra-manager/" + "GetControlMci";
     let response = webconsolejs["common/api/http"].commonAPIPost(
       controller,
       data
@@ -86,7 +89,7 @@ export function vmLifeCycle(type, mcisId, nsId, vmid) {
       "action": type
     }
   };
-  let controller = "/api/" + "GetControlMcisVm";
+  let controller = "/api/" + "mc-infra-manager/" + "GetControlMciVm";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -112,7 +115,7 @@ export async function mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr,
     }
   }
 
-  var controller = "/api/" + "PostMcisDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamic";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -149,7 +152,7 @@ export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "PostMcisVmDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostMciVmDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -158,7 +161,7 @@ export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
 }
 
 export async function mcisRecommendVm(data) {
-  var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
+  var controller = "/api/" + "mc-infra-manager/" + "RecommendVm";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -173,7 +176,7 @@ export async function mcisRecommendVm(data) {
 // get all registered region list
 export async function getProviderList() {
   
-  let controller = "/api/" + "GetProviderList";
+  let controller = "/api/" + "mc-infra-manager/" + "GetProviderList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
   );
@@ -191,7 +194,7 @@ export async function getRegionList() {
 		// }
 	//   };
 	
-  let controller = "/api/" + "GetRegionList";
+  let controller = "/api/" + "mc-infra-manager/" + "GetRegionList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     
@@ -210,7 +213,7 @@ export async function getCloudConnection() {
       "filterVerified": true
     }
   };
-	let controller = "/api/" + "GetConnConfigList";
+	let controller = "/api/" + "mc-infra-manager/" + "GetConnConfigList";
 	let response = await webconsolejs["common/api/http"].commonAPIPost(
 	  controller,
 	  data

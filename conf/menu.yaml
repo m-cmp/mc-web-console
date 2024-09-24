@@ -1,4 +1,68 @@
-menus:
+menus:  
+    ########## title : Settings  ################
+  - id: settings
+    parentid: home
+    displayname: Settings
+    restype: menu
+    isaction: "false"
+    priority: 0
+
+    ########## category  : Account & Access  ################
+  - id: accountnaccess
+    parentid: settings
+    displayname: Account & Access
+    restype: menu
+    isaction: "false"
+    priority: 0
+
+    ########## menu : Organizations  ################
+  - id: organizations
+    parentid: accountnaccess
+    displayname: Organizations
+    restype: menu
+    isaction: "false"
+    priority: 0
+
+    ########## submenu  ################
+  - id: users
+    parentid: organizations
+    displayname: Users
+    restype: menu
+    isaction: "true"
+    priority: 0
+
+  - id: accesscontrols
+    parentid: organizations
+    displayname: Access Controls
+    restype: 
+    isaction: "true"
+    priority: 0
+
+    ########## category  : Environment  ################
+  - id: environment
+    parentid: settings
+    displayname: Environment
+    restype: menu
+    isaction: "false"
+    priority: 1
+
+    ########## menu : Cloud SPs  ################
+  - id: cloudsps
+    parentid: environment
+    displayname: Cloud SPs
+    restype: 
+    isaction: "false"
+    priority: 0
+
+    ########## submenu  ################
+  - id: cloudoverview
+    parentid: cloudsps
+    displayname: Cloud Overview
+    restype: 
+    isaction: "true"
+    priority: 0
+
+    ########## title : Operations  ################
   - id: operations
     parentid: home
     displayname: Operations
@@ -6,6 +70,7 @@ menus:
     isaction: "false"
     priority: 0
 
+    ########## category  : Environment  ################
   - id: manage
     parentid: operations
     displayname: Manage
@@ -13,6 +78,7 @@ menus:
     isaction: "false"
     priority: 0
 
+    ########## menu : Workloads  ################
   - id: workloads
     parentid: manage
     displayname: Workloads
@@ -20,6 +86,7 @@ menus:
     isaction: "true"
     priority: 0
 
+    ########## submenu  ################
   - id: mciswls
     parentid: workloads
     displayname: MCIS WLs
@@ -34,3 +101,36 @@ menus:
     isaction: "true"
     priority: 0
 
+
+    ########## category  : Analytics  ################
+  - id: analytics
+    parentid: home
+    displayname: Analytics
+    restype: menu
+    isaction: "false"
+    priority: 0
+
+    ########## menu : Monitorings  ################
+  - id: monitorings
+    parentid: analytics
+    displayname: Monitorings
+    restype: menu
+    isaction: "false"
+    priority: 0
+
+
+    ########## menu : Cost Analysis  ################
+  - id: costanalysis
+    parentid: analytics
+    displayname: Cost Analysis
+    restype: menu
+    isaction: "false"
+    priority: 0
+
+    ########## submenu  ################
+  - id: costanalysissubmenu
+    parentid: costanalysis
+    displayname: Cost Analysis
+    restype: menu
+    isaction: "true"
+    priority: 0
