@@ -1,8 +1,20 @@
 // user token mng START
 //////////////////////////////////////////////////////////
 
-export function setSessionCurrentUserToken(token) {
-    sessionStorage.setItem('currentUserToken', token)
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [key, value] = cookie.split('=').map(c => c.trim());
+        if (key === name) {
+            return value;
+        }
+    }
+    return null;
+}
+
+export function setSessionCurrentUserToken() {
+    const accesstoken = getCookie('Authorization');
+    sessionStorage.setItem('currentUserToken', accesstoken)
 }
 
 export function getSessionCurrentUserToken() {
@@ -41,9 +53,9 @@ export function setSessionWorkspaceProjectList(userWorkspaceProjectList) {
 
     var workspaceList = []
 
-    const jsonData = JSON.parse(userWorkspaceProjectList);
+    // const jsonData = JSON.parse(userWorkspaceProjectList);
 
-    jsonData.forEach(item => {
+    userWorkspaceProjectList.forEach(item => {
         console.log(item)
         var wsItem = item.workspaceProject.workspace;
         workspaceList.push(wsItem);

@@ -54,6 +54,10 @@ func App() *buffalo.App {
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
 
+		authapi := app.Group("/api")
+		authapi.Middleware.Skip(middleware.IsTokenExistMiddleware, SessionInitializer)
+		authapi.POST("/auth/login", SessionInitializer)
+
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
