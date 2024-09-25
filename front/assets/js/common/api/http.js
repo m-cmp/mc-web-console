@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function commonAPIPost(url, data, attempt) {
     if (attempt === undefined) {
-        attempt = 1;
+        attempt = false;
     }
     console.log("#### commonAPIPost", );
     console.log("Request URL :", url);
@@ -23,12 +23,12 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("#### commonAPIPost Error");
         console.log("Error: ", error.response ? error.response.status : error.message);
         console.log("----------------------------");
-        if (attempt < 2) {
+        if (!attempt) {
             if (error.response && error.response.status === 401) {
                 const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
                 if (authrefreshStatus) {
                     console.log("Retrying request with refreshed token...");
-                    return commonAPIPost(url, data, attempt + 1);
+                    return commonAPIPost(url, data, true);
                 } else {
                     console.log("Token refresh failed.");
                     window.location = "/auth/unauthorized"
