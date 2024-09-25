@@ -40,6 +40,31 @@ export async function commonAPIPost(url, data, attempt) {
     }
 }
 
+export async function commonAPIPostWithoutRetry(url, data) {
+    console.log("#### commonAPIPost", );
+    console.log("Request URL :", url);
+    console.log("Request Data :", JSON.stringify(data));
+    console.log("-----------------------");
+    try {
+        if( data === undefined) {
+            var response = await axios.post(url);
+        }else {
+            var response = await axios.post(url, data);
+        }
+        console.log("#### commonAPIPost Response");
+        console.log("Response status : ", response.status);
+        console.log("Response : ", response.data);
+        console.log("----------------------------");
+        return response;
+    } catch (error) {
+        console.log("#### commonAPIPost Error");
+        console.log("Error: ", error.response ? error.response.status : error.message);
+        console.log("----------------------------");
+        console.log("Request failed :", error);
+        return error
+    }
+}
+
 
 export async function commonAPIGet(url) {
     console.log("#### commonAPIGet")
