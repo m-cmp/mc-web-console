@@ -6,10 +6,9 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
             "password":document.getElementById("password").value
         }
     };
-    const response = await webconsolejs["common/api/http"].commonAPIPost('/api/auth/login', data)
-    if (response.status != 200){
-        console.log(response)
-        alert("LoginFail\n"+response.data)
+    const response = await webconsolejs["common/api/http"].commonAPIPostWithoutRetry('/api/auth/login', data)
+    if (response.status !== 200){
+        alert("LoginFail\n"+response.response.data.message)
         document.getElementById("id").value = null
         document.getElementById("password").value = null
     }else{

@@ -32,6 +32,11 @@ func SessionInitializer(c buffalo.Context) error {
 	if jsonerr != nil {
 		return c.Render(http.StatusInternalServerError, defaultRender.JSON(map[string]interface{}{"error": jsonerr.Error()}))
 	}
+	if resp.StatusCode != 200 {
+		errmsg := data["responseData"].(map[string]interface{})["message"]
+		log.Println("resp.StatusCode err :", errmsg)
+		return c.Render(resp.StatusCode, defaultRender.JSON(map[string]interface{}{"message": errmsg}))
+	}
 
 	accessToken := data["responseData"].(map[string]interface{})["access_token"]
 
