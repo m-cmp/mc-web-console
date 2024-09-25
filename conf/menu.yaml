@@ -77,13 +77,6 @@ menus:
     restype: menu
     isaction: "false"
     priority: 2
-    
-  - id: workspacessettings
-    parentid: environment
-    displayname: Workspaces Settings
-    restype: menu
-    isaction: "false"
-    priority: 3
 
     ################## step3 : menu : operations > manage  ################
   - id: workspaces
@@ -168,27 +161,6 @@ menus:
     isaction: "true"
     priority: 2    
 
-    ###################### step4 : submenu : settings > environment > workspacessettings ################
-  - id: allocatedprojects
-    parentid: workspacessettings
-    displayname: Allocated Projects
-    restype: menu
-    isaction: "true"
-    priority: 1
-
-  - id: sharemembers
-    parentid: workspacessettings
-    displayname: Share Members
-    restype: menu
-    isaction: "true"
-    priority: 2
-
-  - id: allocaterolesws
-    parentid: workspacessettings
-    displayname: Access Controls
-    restype: menu
-    isaction: "true"
-    priority: 3
 
     ###################### step4 : submenu : operations > manage > workspaces ################
   - id: projects
