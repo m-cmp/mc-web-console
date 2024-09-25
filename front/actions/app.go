@@ -61,7 +61,7 @@ func App() *buffalo.App {
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
-		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
+		pages.GET("/{path:.+}", PageController)
 
 		apiPath := "/api"
 		api := app.Group(apiPath)
