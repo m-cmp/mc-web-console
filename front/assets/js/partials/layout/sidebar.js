@@ -35,8 +35,6 @@ const iconsArr = {
 </svg>`,
 }
 
-
-
 function generateMenuHTML(menus) {
     let html = ''; //<- 메뉴 완료될때까지 유지 
     // let html = document.getElementById("sidebar-menu-inner").innerHTML ;
@@ -59,7 +57,7 @@ function generateMenuHTML(menus) {
                         html += `<div class="dropdown-menu" name="sidebar_${menu.id}"><div class="dropdown-menu-columns">`;
                         menu.menus.forEach(subMenu => {
                             html += `<div class="dropdown-menu-column">`;
-                            html += `<a class="dropdown-item" href="/webconsole/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${subMenu.id}_${subMenu.id}">`;
+                            html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${subMenu.id}_${subMenu.id}">`;
                             html += `${subMenu.displayName}</a>`;
                             html += `</div>`;
                         });
