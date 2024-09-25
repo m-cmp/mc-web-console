@@ -81,10 +81,9 @@ menus:
   - id: workspacessettings
     parentid: environment
     displayname: Workspaces Settings
-    restype: 
+    restype: menu
     isaction: "false"
     priority: 3
-
 
     ################## step3 : menu : operations > manage  ################
   - id: workspaces
@@ -139,21 +138,6 @@ menus:
     isaction: "true"
     priority: 2
 
-    ###################### step4 : submenu : settings > environment > organizations ################
-  - id: users
-    parentid: organizations
-    displayname: Users
-    restype: menu
-    isaction: "true"
-    priority: 1
-
-  - id: accesscontrols
-    parentid: organizations
-    displayname: Access Controls
-    restype: menu
-    isaction: "true"
-    priority: 2    
-
     ###################### step4 : submenu : settings > environment > cloudsps ################
   - id: cloudoverview
     parentid: cloudsps
@@ -162,7 +146,7 @@ menus:
     isaction: "true"
     priority: 1
 
-  - id: id: credentials
+  - id: credentials
     parentid: cloudsps
     displayname: Credentials
     restype: menu
