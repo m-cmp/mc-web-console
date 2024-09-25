@@ -104,6 +104,8 @@ github.com/lestrrat-go/jwx v1.2.29/go.mod h1:hU8k2l6WF0ncx20uQdOmik/Gjg6E3/wIRtX
 github.com/lib/pq v1.10.6/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/m-cmp/mc-iam-manager v0.2.8 h1:a6jMZkxFpa5KhA3FUx5xXQsH9dWWXAgER0SBhVp+cow=
 github.com/m-cmp/mc-iam-manager v0.2.8/go.mod h1:ES5A3mw32SIfHMzUodo6R6D+c3p+EYzP3ga11Fi6KE8=
+github.com/m-cmp/mc-iam-manager v0.2.12 h1:uWTKD04w3CUpe4xre+KTs4k7z1ftqWE9+FyqzKz5o4I=
+github.com/m-cmp/mc-iam-manager v0.2.12/go.mod h1:7sSO7yeGRPvXk2kI6N18qNm882I100ALQJFisozKet8=
 github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDePerRcY=
 github.com/markbates/going v1.0.2 h1:uNQHDDfMRNOUmuxDbPbvatyw4wr4UOSUZkGkdkcip1o=
 github.com/markbates/grift v1.5.0/go.mod h1:1ssFm5gSGmzTkhi3Wfh/nqlU74J73TlAjoDMttQbpfY=

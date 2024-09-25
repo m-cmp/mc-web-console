@@ -40,7 +40,7 @@ func getCertsEndpoint() string {
 	return baseUrl + certUri
 }
 
-func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
+func TokenValidMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		err := iamtokenvalidator.IsTokenValid(accessToken)
@@ -48,12 +48,18 @@ func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
 			log.Println(err.Error())
 			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
+		return next(c)
+	}
+}
+
+func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		claims, err := iamtokenvalidator.GetTokenClaimsByIamManagerClaims(accessToken)
 		if err != nil {
 			log.Println(err.Error())
 			return c.Render(http.StatusInternalServerError, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
-
 		c.Set("Authorization", c.Request().Header.Get("Authorization"))
 		c.Set("UserId", claims.UserID)
 		c.Set("UserName", claims.Name)
