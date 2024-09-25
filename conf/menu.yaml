@@ -15,11 +15,11 @@ menus:
     priority: 0   
 
     ################## step2 : auth  ################
-  - id: id: login
-    parentid: -
+  - id: login
+    parentid: none
     displayname: Login
-    restype: -
-    isaction: ""true""
+    restype: screen
+    isaction: "true"
     priority: 0
 
     ################## step2 : quick Link  ################
