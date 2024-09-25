@@ -39,6 +39,7 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		if MCIAM_USE { // MCIAM USE True
+			app.Use(mciammanager.TokenValidMiddleware)
 			app.Use(mciammanager.SetContextMiddleware)
 			app.Middleware.Skip(mciammanager.SetContextMiddleware, readyz)
 
@@ -47,6 +48,7 @@ func App() *buffalo.App {
 			apiPath := "/api"
 
 			auth := app.Group(apiPath + "/auth")
+			auth.Middleware.Skip(mciammanager.TokenValidMiddleware, AuthMCIAMLogin, AuthMCIAMLoginRefresh)
 			auth.Middleware.Skip(mciammanager.SetContextMiddleware, AuthMCIAMLogin)
 			auth.POST("/login", AuthMCIAMLogin)
 			auth.POST("/refresh", AuthMCIAMLoginRefresh)
