@@ -40,7 +40,7 @@ function generateMenuHTML(menus) {
     // let html = document.getElementById("sidebar-menu-inner").innerHTML ;
     menus.forEach(title => {
         html += ` <li class="nav-item">`
-        html += ` <span class="nav-link"><h3><strong>${title.displayName}</strong></h3></span>`
+        html += ` <div class="hr-text">${title.displayName}</div>`
         html += ` </li>`
         title.menus.forEach(category => {
             html += ` <li class="nav-item">`
