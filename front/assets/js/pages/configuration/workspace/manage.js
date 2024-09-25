@@ -1,5 +1,15 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
+// workspace List 조회
+//  . workspace list 생성 function에 data전달
+
+// 전체 workspace 의 모든 project count
+//  . 
+// 모든 workspace에 할당된 user count
+
+// Add workspace popup 호출
+
+
 ////
 // 모달 콜백 예제 : confirm 버튼을 눌렀을 때 호출될 callback 함수로 사용할 용도
 export function commoncallbac(val) {
