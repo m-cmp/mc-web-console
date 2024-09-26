@@ -77,11 +77,11 @@ bin/mc-web-console-api.log
 bin/.env
 
 # conf
-conf/api.yaml
 conf/.env
 conf/selfiamauthsetting.yaml
 conf/selfiamuser.dat
 conf/serverinfo
 
 # scripts
-scripts/.env
+!scripts/.env
+scripts/container-volume

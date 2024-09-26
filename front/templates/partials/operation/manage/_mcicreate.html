@@ -103,7 +103,7 @@
                     <select
                       class="form-select"
                       name="rootDiskType"
-                      onchange="webconsolejs['partials/operation/manage/mciscreate'].changeDiskSize(this.value)"
+                      onchange="webconsolejs['partials/operation/manage/mcicreate'].changeDiskSize(this.value)"
                       id="ep_root_disk_type"
                     >
                       <option value="">Select Root Disk Type</option>
@@ -161,7 +161,7 @@
             <button
               type="submit"
               class="btn btn-info"
-              onclick="webconsolejs['partials/operation/manage/mciscreate'].expressDone_btn()"
+              onclick="webconsolejs['partials/operation/manage/mcicreate'].expressDone_btn()"
             >
               Done
             </button>
@@ -334,7 +334,7 @@
                 <button
                   type="submit"
                   class="btn btn-info"
-                  onclick="webconsolejs['partials/operation/manage/mciscreate'].exprertDone_btn()"
+                  onclick="webconsolejs['partials/operation/manage/mcicreate'].exprertDone_btn()"
                 >
                   Done
                 </button>
@@ -349,7 +349,7 @@
 
 
 
-<%= javascriptTag("partials/operation/manage/mciscreate.js") %> <%=
-javascriptTag("common/api/services/mcis_api.js") %><!--API 호출-->
+<%= javascriptTag("partials/operation/manage/mcicreate.js") %> <%=
+javascriptTag("common/api/services/mci_api.js") %><!--API 호출-->
 <%= javascriptTag("common/api/services/disk_api.js") %><!--API 호출-->
 <%= javascriptTag("common/api/services/vmimage_api.js") %><!--API 호출-->

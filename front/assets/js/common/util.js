@@ -48,7 +48,7 @@ export function setTabulator(
   }
 
   var tabulatorTable = new Tabulator("#" + tableObjId, {
-    //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+    //ajaxURL:"http://localhost:3000/operations/mcimng?option=status",
     placeholder,
     pagination,
     paginationSize,
@@ -69,8 +69,8 @@ export function setTabulator(
 export function changePage(target, urlParamMap) {
   var url = "";
   // target에 따라 url을 달리한다.
-  if (target == "McisMng") {
-    url = "/webconsole/operation/manage/mcis"
+  if (target == "MciMng") {
+    url = "/webconsole/operation/manage/mci"
   }
 
   // pathParam을 뒤에 붙인다.

@@ -2,11 +2,11 @@
   <div class="card-header">
     <h3 class="card-title">
       Server List / Status
-      <span class="text-info" id="mcis_server_info_status"> </span>
-      <span class="text-secondary" id="mcis_server_info_count"></span>
+      <span class="text-info" id="mci_server_info_status"> </span>
+      <span class="text-secondary" id="mci_server_info_count"></span>
     </h3>
     <div class="card-actions btn-actions">
-      <a href="#addserver" class="btn btn-primary" onclick="webconsolejs['partials/operation/manage/mciscreate'].addNewVirtualMachine()">
+      <a href="#addserver" class="btn btn-primary" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="icon"
@@ -150,7 +150,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisReboot', 'Would you like to reboot MCIS ?', 'pages/operation/manage/mcis.changeVmLifeCycle', 'reboot')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'reboot')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +176,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.changeVmLifeCycle', 'suspend')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'suspend')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +202,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisResume', 'Would you like to resume MCIS ?', 'pages/operation/manage/mcis.changeVmLifeCycle', 'resume')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'resume')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +228,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisTerminate', 'Would you like to terminate MCIS ?', 'pages/operation/manage/mcis.changeVmLifeCycle', 'terminate')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'terminate')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -253,7 +253,7 @@
 
           <div class="dropdown-divider"></div>
 
-          <a class="dropdown-item" href="#addserver" onclick="webconsolejs['partials/operation/manage/mciscreate'].addNewVirtualMachine()">
+          <a class="dropdown-item" href="#addserver" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -342,7 +342,7 @@
   </div>
   <div class="card-body">
     <div>
-      <ul class="vmStatus-list" id="mcis_server_info_box"></ul>
+      <ul class="vmStatus-list" id="mci_server_info_box"></ul>
     </div>
   </div>
 
