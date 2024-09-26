@@ -1,0 +1,42 @@
+## Stage 1 - Go Build Env
+FROM golang:1.23-alpine AS build
+
+RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
+RUN npm install --global yarn
+
+RUN mkdir -p /util
+WORKDIR /util
+RUN wget https://github.com/gobuffalo/cli/releases/download/v0.18.14/buffalo_0.18.14_Linux_x86_64.tar.gz \
+    && tar -xvzf buffalo_0.18.14_Linux_x86_64.tar.gz \
+    && mv buffalo /usr/local/bin/buffalo \
+    && rm buffalo_0.18.14_Linux_x86_64.tar.gz
+
+ENV GOPROXY http://proxy.golang.org
+ENV CGO_ENABLED 1
+
+RUN mkdir -p /src/mc-web-console-front
+WORKDIR /src/mc-web-console-front
+ADD ./front .
+ADD ./conf ./conf
+
+RUN go mod download
+RUN npm install
+RUN yarn install
+RUN buffalo build --static -o /bin/front
+
+## Stage 2 - Application Deploy
+FROM debian:buster-slim as deploy
+
+WORKDIR /bin/
+COPY --from=build /bin/front .
+COPY --from=build /src/mc-web-console-front/conf /conf
+
+ENV FRONT_ADDR 0.0.0.0
+ENV FRONT_PORT 3001
+
+ENV MCIAM_USE true
+
+EXPOSE 3001
+CMD bash -c '/bin/front > /bin/front.log 2>&1 & tail -f /bin/front.log & wait'
+
+# sudo docker build -f ./front/Dockerfile.local -t my-frontend-app:latest .
