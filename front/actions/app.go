@@ -67,9 +67,6 @@ func App() *buffalo.App {
 		api := app.Group(apiPath)
 		api.ANY("/{path:.+}", ApiCaller)
 
-		devpages := app.Group("/dev")
-		devpages.GET("/apicall", Devapicall)
-
 		app.ServeFiles("/", http.FS(public.FS()))
 	}
 

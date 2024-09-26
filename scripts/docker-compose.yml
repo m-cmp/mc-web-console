@@ -1,39 +1,75 @@
 version: '3.8'
 
 services:
-  mcwebconsole:
-    build: ../
-    container_name: mcwebconsole
-    depends_on:
-      - mcwebconsole-postgresdb
-    ports:
-      - "3000:3000"
-      - "3001:3001"
-    environment:
-      GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
-      GODEBUG: netdns=go
-      MCIAMMANAGER: https://localhost # Please CHANGE ME (REQUIRE)
-      MCINFRAMANAGER: http://localhost:1323/tumblebug # Please CHANGE ME (REQUIRE)
-      API_USERNAME: default # Please CHANGE ME (REQUIRE)
-      API_PASSWORD: default # Please CHANGE ME (REQUIRE)
-      DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
-      PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
-    restart: always
-    networks:
-      - mcwebconsole
+  mc-web-console-api:
+    container_name: mc-web-console-api
 
-  mcwebconsole-postgresdb:
-    image: postgres:14-alpine
-    container_name: mcwebconsole-postgresdb
-#    volumes:
-#      - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
-#      - ./dbdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: mcwebconsoledbdev # [mcwebconsoledbdev / mcwebconsoledbprod] # Please CHANGE ME (OPTIONAL)
-      POSTGRES_USER: mcwebadmin # Please CHANGE ME (OPTIONAL)
-      POSTGRES_PASSWORD: mcwebadminpassword # Please CHANGE ME (OPTIONAL)
+    image: mc-web-console-api:latest
+    # sudo docker build -f ./api/Dockerfile.mcwebconsoleapi -t mc-web-console-api:latest .
+
+    # build:
+    #   context: ../
+    #   dockerfile: api/Dockerfile.mcwebconsoleapi
     networks:
-      - mcwebconsole
+      - mc-web-console-network
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+    depends_on:
+      - mc-web-console-db
+    environment:
+      DATABASE_URL: postgres://${WEBCONSOLE_POSTGRES_USER}:${WEBCONSOLE_POSTGRES_PASSWORD}@mc-web-console-db:5432/${WEBCONSOLE_POSTGRES_DB}
+      MCIAM_USE: "true"
+      MCIAM_TICKET_USE: "false"
+      API_ADDR: 0.0.0.0
+      API_PORT: 3000
+    volumes:
+      - ./container-volume/mc-web-console-api/conf:/conf
+    env_file:
+      - .env
+
+  mc-web-console-front:
+    container_name: mc-web-console-front
+
+    image: mc-web-console-front:latest
+    # sudo docker build -f ./front/Dockerfile.mcwebconsolefront -t mc-web-console-front:latest .
+
+    # build:
+    #   context: ../
+    #   dockerfile: front/Dockerfile.mcwebconsolefront
+    networks:
+      - mc-web-console-network
+    ports:
+      - target: 3001
+        published: 3001
+        protocol: tcp
+    depends_on:
+      - mc-web-console-db
+      - mc-web-console-api
+    environment:
+      API_ADDR: mc-web-console-api
+      API_PORT: 3000
+      FRONT_ADDR: 0.0.0.0
+      FRONT_PORT: 3001
+
+  mc-web-console-db:
+    container_name: mc-web-console-db
+    image: postgres:14-alpine
+    networks:
+      - mc-web-console-network
+    # ports:
+    #   - target: 5432
+    #     published: 5432
+    #     protocol: tcp
+    env_file:
+      - .env
+    volumes:
+      - ./container-volume/mc-web-console/postgres/postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${WEBCONSOLE_POSTGRES_DB}
+      POSTGRES_USER: ${WEBCONSOLE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${WEBCONSOLE_POSTGRES_PASSWORD}
 
 networks:
-  mcwebconsole:
+  mc-web-console-network:

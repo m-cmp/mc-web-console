@@ -22,7 +22,10 @@ func init() {
 		certEndPoint := getCertsEndpoint()
 		err := iamtokenvalidator.GetPubkeyIamManager(certEndPoint)
 		if err != nil {
-			panic("Get jwks fail :" + err.Error())
+			err = iamtokenvalidator.GetPubkeyIamManagerTlsSkipped(certEndPoint)
+			if err != nil {
+				panic("Get jwks fail :" + err.Error())
+			}
 		}
 	}
 }

@@ -1,8 +1,7 @@
-// MCIS API 관련 
+// PMK API 관련 
 
-
-// 받아온 project(namespace)로 McisList GET
-export async function getMcisList(nsId) {
+// 받아온 project(namespace)로 MciList GET
+export async function getClusterList(nsId) {
 
   if (nsId == "") {
     console.log("Project has not set")
@@ -15,33 +14,29 @@ export async function getMcisList(nsId) {
     },
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
+  var controller = "/api/" + "GetAllK8sCluster";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
+  var pmkList = response.data.responseData;
 
-  console.log("aaa", response)
-
-  var mcisList = response.data.responseData;
-
-  return mcisList
+  return pmkList
 }
 
-// mcis 단건 조회
-export async function getMcis(nsId, mcisId) {
-  if (nsId == "" || nsId == undefined || mcisId == undefined || mcisId == "") {
-    console.log(" undefined nsId: " + nsId + " mcisId " + mcisId);
+export async function getCluster(nsId, clutserId) {
+  if (nsId == "" || nsId == undefined || clutserId == undefined || clutserId == "") {
+    console.log(" undefined nsId: " + nsId + " clusterId " + clutserId);
     return;
   }
   const data = {
     pathParams: {
       nsId: nsId,
-      mcisId: mcisId
+      clutserId: clutserId
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetMci";
+  var controller = "/api/" + "GetK8sCluster";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -51,58 +46,11 @@ export async function getMcis(nsId, mcisId) {
   return response.data
 }
 
-// mcisLifeCycle 제어 option : reboot / suspend / resume / terminate
-export function mcisLifeCycle(type, checked_array, nsId) {
-  console.log("mcisLifeCycle option : ", type)
-  console.log("selected mcis : ", checked_array)
-
-  for (const mcis of checked_array) {
-    console.log(mcis.id)
-    let data = {
-      pathParams: {
-        nsId: nsId,
-        mcisId: mcis.id,
-      },
-      queryParams: {
-        "action": type
-      }
-    };
-    let controller = "/api/" + "mc-infra-manager/" + "GetControlMci";
-    let response = webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-      data
-    );
-    console.log("mcisLifeCycle response : ", response)
-  }
-}
-
-// vmLifeCycle 제어 option : reboot / suspend / resume / terminate
-export function vmLifeCycle(type, mcisId, nsId, vmid) {
-
-  let data = {
-    pathParams: {
-      nsId: nsId,
-      mcisId: mcisId,
-      vmId: vmid
-    },
-    queryParams: {
-      "action": type
-    }
-  };
-  let controller = "/api/" + "mc-infra-manager/" + "GetControlMciVm";
-  let response = webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  );
-  console.log("vmLifeCycle response : ", response)
-
-}
-
-export async function mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr, nsId) {
+export async function postCreateCluster(nsId, clusterName, clusterVersion, connectionName, vNetId, subNetId, securityGroupId, Express_Server_Config_Arr) {
 
   var obj = {}
-  obj['name'] = mcisName
-  obj['description'] = mcisDesc
+  obj['name'] = mciName
+  obj['description'] = mciDesc
   obj['vm'] = Express_Server_Config_Arr
   const data = {
     pathParams: {
@@ -115,7 +63,7 @@ export async function mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr,
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamic";
+  var controller = "/api/" + "PostMciDynamic";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -124,19 +72,19 @@ export async function mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr,
   alert("생성요청 완료");
   var urlParamMap = new Map();
 
-  // 생성요청했으므로 결과를 기다리지 않고 mcisList로 보냄
-  webconsolejs["common/util"].changePage("McisMng", urlParamMap)
+  // 생성요청했으므로 결과를 기다리지 않고 mciList로 보냄
+  webconsolejs["common/util"].changePage("MciMng", urlParamMap)
 
 }
 
-export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
+export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
 
   var obj = {}
   obj = Express_Server_Config_Arr[0]
   const data = {
     pathParams: {
       nsId: nsId,
-      mcisId: mcisId,
+      mciId: mciId,
     },
     request: {
       "commonImage": obj.commonImage,
@@ -152,7 +100,7 @@ export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciVmDynamic";
+  var controller = "/api/" + "PostMciVmDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -160,14 +108,14 @@ export async function vmDynamic(mcisId, nsId, Express_Server_Config_Arr) {
   console.log("create VMdynamic : ", response)
 }
 
-export async function mcisRecommendVm(data) {
-  var controller = "/api/" + "mc-infra-manager/" + "RecommendVm";
+export async function mciRecommendVm(data) {
+  var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
 
-  console.log("mcisrecommendvm response ", response.data.responseData)
+  console.log("mcirecommendvm response ", response.data.responseData)
 
   return response.data
 }
@@ -175,8 +123,8 @@ export async function mcisRecommendVm(data) {
 
 // get all registered region list
 export async function getProviderList() {
-  
-  let controller = "/api/" + "mc-infra-manager/" + "GetProviderList";
+
+  let controller = "/api/" + "mc-infra-manager/"  + "GetProviderList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
   );
@@ -187,17 +135,17 @@ export async function getProviderList() {
 
 export async function getRegionList() {
 
-// let data = {
-		// pathParams: {
-		//   providerName: "AWS",
-		//   regionName: "aws-ca-west-1",
-		// }
-	//   };
-	
-  let controller = "/api/" + "mc-infra-manager/" + "GetRegionList";
+  // let data = {
+  // pathParams: {
+  //   providerName: "AWS",
+  //   regionName: "aws-ca-west-1",
+  // }
+  //   };
+
+  let controller = "/api/" + "mc-infra-manager/" + "RetrieveRegionListFromCsp";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
-    
+
   );
   console.log("getRegionList response : ", response)
 
@@ -207,22 +155,22 @@ export async function getRegionList() {
 export async function getCloudConnection() {
 
 
-	// test
+  // test
   let data = {
     queryParams: {
       "filterVerified": true
     }
   };
-	let controller = "/api/" + "mc-infra-manager/" + "GetConnConfigList";
-	let response = await webconsolejs["common/api/http"].commonAPIPost(
-	  controller,
-	  data
-	);
-	
+  let controller = "/api/" + "mc-infra-manager/" + "GetConnConfigList";
+  let response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
   return response.data.responseData.connectionconfig
 }
 
-// mcis내 vm들의 provider별 connection count
+// mci내 vm들의 provider별 connection count
 export function calculateConnectionCount(vmList) {
 
   var vmCloudConnectionCountMap = new Map();
@@ -252,16 +200,16 @@ export function calculateConnectionCount(vmList) {
 
 
 // MCIS 상태를 UI에서 표현하는 방식으로 변경
-export function getMcisStatusFormatter(mcisFullStatus) {
-  console.log("getMcisStatus " + mcisFullStatus);
-  var statusArr = mcisFullStatus.split("-");
+export function getMciStatusFormatter(mciFullStatus) {
+  console.log("getMciStatus " + mciFullStatus);
+  var statusArr = mciFullStatus.split("-");
   var returnStatus = statusArr[0].toLowerCase();
 
-  if (mcisFullStatus.toLowerCase().indexOf("running") > -1) {
+  if (mciFullStatus.toLowerCase().indexOf("running") > -1) {
     returnStatus = "running";
-  } else if (mcisFullStatus.toLowerCase().indexOf("suspend") > -1) {
+  } else if (mciFullStatus.toLowerCase().indexOf("suspend") > -1) {
     returnStatus = "stop";
-  } else if (mcisFullStatus.toLowerCase().indexOf("terminate") > -1) {
+  } else if (mciFullStatus.toLowerCase().indexOf("terminate") > -1) {
     returnStatus = "terminate";
     // TODO : partial도 있는데... 처리를 어떻게 하지??
   } else {
@@ -271,34 +219,34 @@ export function getMcisStatusFormatter(mcisFullStatus) {
   return returnStatus;
 }
 
-// Mcis 상태를 icon으로 
-export function getMcisStatusIconFormatter(mcisDispStatus) {
-  var mcisStatusIcon = "";
-  if (mcisDispStatus == "running") {
-    mcisStatusIcon = "icon_running.svg"
-  } else if (mcisDispStatus == "include") {
-    mcisStatusIcon = "icon_stop.svg"
-  } else if (mcisDispStatus == "suspended") {
-    mcisStatusIcon = "icon_stop.svg"
-  } else if (mcisDispStatus == "terminate") {
-    mcisStatusIcon = "icon_terminate.svg"
+// Mci 상태를 icon으로 
+export function getMciStatusIconFormatter(mciDispStatus) {
+  var mciStatusIcon = "";
+  if (mciDispStatus == "running") {
+    mciStatusIcon = "icon_running.svg"
+  } else if (mciDispStatus == "include") {
+    mciStatusIcon = "icon_stop.svg"
+  } else if (mciDispStatus == "suspended") {
+    mciStatusIcon = "icon_stop.svg"
+  } else if (mciDispStatus == "terminate") {
+    mciStatusIcon = "icon_terminate.svg"
   } else {
-    mcisStatusIcon = "icon_stop.svg"
+    mciStatusIcon = "icon_stop.svg"
   }
-  return mcisStatusIcon
+  return mciStatusIcon
 }
 
-// Mcis에 구성된 vm들의 provider들 imgTag로
-export function getMcisInfoProviderNames(mcisData) {
+// Mci에 구성된 vm들의 provider들 imgTag로
+export function getMciInfoProviderNames(mciData) {
 
-  var mcisProviderNames = "";
+  var mciProviderNames = "";
   var vmCloudConnectionMap = calculateConnectionCount(
-    mcisData.vm
+    mciData.vm
   );
   console.log("vmCloudConnectionMap", vmCloudConnectionMap)
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
-      mcisProviderNames +=
+      mciProviderNames +=
         '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
         key +
         '.png" alt="' +
@@ -306,7 +254,7 @@ export function getMcisInfoProviderNames(mcisData) {
         '"/>';
     });
   }
-  return mcisProviderNames
+  return mciProviderNames
 }
 
 // VM 상태를 UI에서 표현하는 방식으로 변경
@@ -353,39 +301,39 @@ export function getVmStatusStyleClass(vmDispStatus) {
 }
 
 
-// 해당 mcis에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
-// dashboard, mcis 에서 사용
-export function calculateMcisStatusCount(mcisData) {
-  console.log("calculateMcisStatusCount");
+// 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
+// dashboard, mci 에서 사용
+export function calculateMciStatusCount(mciData) {
+  console.log("calculateMciStatusCount");
 
-  console.log("mcisData : ", mcisData);
-  var mcisStatusCountMap = new Map();
-  mcisStatusCountMap.set("running", 0);
-  mcisStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
-  mcisStatusCountMap.set("terminate", 0);
+  console.log("mciData : ", mciData);
+  var mciStatusCountMap = new Map();
+  mciStatusCountMap.set("running", 0);
+  mciStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
+  mciStatusCountMap.set("terminate", 0);
   try {
-    var mcisStatus = mcisData.status;
-    var mcisDispStatus = getMcisStatusFormatter(mcisStatus); // 화면 표시용 status
+    var mciStatus = mciData.status;
+    var mciDispStatus = getMciStatusFormatter(mciStatus); // 화면 표시용 status
 
-    if (mcisStatus != "") {
-      // mcis status 가 없는 경우는 skip
-      if (mcisStatusCountMap.has(mcisDispStatus)) {
-        mcisStatusCountMap.set(
-          mcisDispStatus,
-          mcisStatusCountMap.get(mcisDispStatus) + 1
+    if (mciStatus != "") {
+      // mci status 가 없는 경우는 skip
+      if (mciStatusCountMap.has(mciDispStatus)) {
+        mciStatusCountMap.set(
+          mciDispStatus,
+          mciStatusCountMap.get(mciDispStatus) + 1
         );
       }
     }
   } catch (e) {
-    console.error("mcis status error", e);
+    console.error("mci status error", e);
   }
-  // console.log(mcisStatusCountMap);
-  return mcisStatusCountMap;
+  // console.log(mciStatusCountMap);
+  return mciStatusCountMap;
 }
 
 
 // vm의 상태별 count
-export function calculateVmStatusCount(aMcis) {
+export function calculateVmStatusCount(aMci) {
   // console.log("calculateVmStatusCount")
   // console.log(vmList)
   var sumVmCnt = 0;
@@ -395,9 +343,9 @@ export function calculateVmStatusCount(aMcis) {
   vmStatusCountMap.set("terminate", 0);
 
   try {
-    if (aMcis.statusCount) {
-      console.log("statusCount part", aMcis);
-      var statusCountObj = aMcis.statusCount;
+    if (aMci.statusCount) {
+      console.log("statusCount part", aMci);
+      var statusCountObj = aMci.statusCount;
       console.log(statusCountObj);
       var countCreating = statusCountObj.countCreating;
       var countFailed = statusCountObj.countFailed;
@@ -424,9 +372,9 @@ export function calculateVmStatusCount(aMcis) {
       vmStatusCountMap.set("running", Number(countRunning));
       vmStatusCountMap.set("stop", Number(countSuspended)); // partial 도 stop으로 보고있음.
       vmStatusCountMap.set("terminate", sumEtc);
-    } else if (aMcis.vm) {
+    } else if (aMci.vm) {
       console.log("statusCount part list part");
-      vmList = aMcis.vm;
+      vmList = aMci.vm;
       for (var vmIndex in vmList) {
         var aVm = vmList[vmIndex];
         var vmStatus = aVm.status;
@@ -444,7 +392,7 @@ export function calculateVmStatusCount(aMcis) {
       }
     }
   } catch (e) {
-    console.error("mcis status error", e); // 에러 로그 처리 예시
+    console.error("mci status error", e); // 에러 로그 처리 예시
   }
   return vmStatusCountMap;
 }

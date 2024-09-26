@@ -130,7 +130,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"     
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'reboot')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'common/api/services/mci_api.mciLifeCycle', 'reboot')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +156,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'suspend')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'common/api/services/mci_api.mciLifeCycle', 'suspend')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -182,7 +182,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisResume', 'Would you like to resume MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'resume')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume MCIS ?', 'common/api/services/mci_api.mciLifeCycle', 'resume')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -208,7 +208,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisTerminate', 'Would you like to terminate MCIS ?', 'common/api/services/mcis_api.mcisLifeCycle', 'terminate')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate MCIS ?', 'common/api/services/mci_api.mciLifeCycle', 'terminate')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -323,15 +323,15 @@
   <div class="card-body">
     <div class="container-xl">
       <div class="row row-deck row-cards">
-        <input type="hidden" id="mcis_id" />
-        <input type="hidden" id="mcis_name" />
+        <input type="hidden" id="mci_id" />
+        <input type="hidden" id="mci_name" />
         <input type="hidden" id="init_select_areabox" />
-        <!-- mcis dashboard -->
-        <div class="mcislistbox" id="mcisList"></div>
+        <!-- mci dashboard -->
+        <div class="mcilistbox" id="mciList"></div>
       </div>
     </div>
   </div>
 </div>
-<%= javascriptTag("partials/operation/dashboard/mcis_dashboard.js") %>
-<%= javascriptTag("common/api/services/mcis_api.js") %>
+<%= javascriptTag("partials/operation/dashboard/mci_dashboard.js") %>
+<%= javascriptTag("common/api/services/mci_api.js") %>
 <!--API 호출-->
