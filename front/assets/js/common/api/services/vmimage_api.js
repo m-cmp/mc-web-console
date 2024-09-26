@@ -11,11 +11,12 @@ export async function getCommonVmImageInfo(imageId) {
     const data = {
       pathParams: {
         // nsId: nsid, 
+        nsId: "system", 
         imageId: imageId
       }
     }
   
-    var controller = "/api/" + "getimageid";
+    var controller = "/api/" + "mc-infra-manager/" + "GetImage";
     const response = await webconsolejs["common/api/http"].commonAPIPost(
       controller,
       data

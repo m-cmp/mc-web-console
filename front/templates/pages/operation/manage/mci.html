@@ -4,7 +4,7 @@
     <div id="index" class="section">
       <div class="row row-cards">
         <div class="col-md-7">
-          <%= partial("partials/operation/manage/mcis_status_summary.html") %>
+          <%= partial("partials/operation/manage/mci_status_summary.html") %>
         </div>
 
         <div class="col-md-5">
@@ -19,7 +19,7 @@
                 <a
                   href="#manage"
                   class="btn btn-primary"
-                  onclick="webconsolejs['partials/operation/manage/mciscreate'].addNewMcis()"
+                  onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewMci()"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +37,7 @@
                     <path d="M12 5l0 14"></path>
                     <path d="M5 12l14 0"></path>
                   </svg>
-                  Add mcis
+                  Add mci
                 </a>
 
                 <!-- filter -->
@@ -172,7 +172,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.changeMcisLifeCycle', 'reboot')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +202,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.changeMcisLifeCycle', 'suspend')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'suspend')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -232,7 +232,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.changeMcisLifeCycle', 'resume')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -262,7 +262,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'McisSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mcis.changeMcisLifeCycle', 'terminate')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -473,12 +473,12 @@
 
             <div class="card-table table-responsive">
               <!-- Tabulator TABLE SET -->
-              <div id="mcislist-table"></div>
+              <div id="mcilist-table"></div>
             </div>
           </div>
         </div>
         <div class="col-md-12">
-          <%= partial("partials/operation/manage/mcisinfo.html") %>
+          <%= partial("partials/operation/manage/mciinfo.html") %>
         </div>
       </div>
     </div>
@@ -526,8 +526,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="mcis_name"
-                  id="mcis_name"
+                  name="mci_name"
+                  id="mci_name"
                   placeholder="Input Name"
                 />
               </div>
@@ -537,8 +537,8 @@
                 <textarea
                   class="form-control"
                   rows="2"
-                  name="mcis_desc"
-                  id="mcis_desc"
+                  name="mci_desc"
+                  id="mci_desc"
                   placeholder="type Description"
                 ></textarea>
               </div>
@@ -547,8 +547,8 @@
                 <label class="form-label required">Deployment Algorithm</label>
                 <select
                   class="form-select"
-                  name="mcis_deploy_algorithm"
-                  id="mcis_deploy_algorithm"
+                  name="mci_deploy_algorithm"
+                  id="mci_deploy_algorithm"
                 >
                   <option value="express" selected>Express</option>
                   <option value="simple">Simple</option>
@@ -561,12 +561,12 @@
                   <div class="row row-cards">
                     <ul
                       class="removebullet vmStatus-list"
-                      id="mcis_server_list"
+                      id="mci_server_list"
                     >
                       <li
                         class="removebullet btn btn-secondary-lt"
-                        id="mcis_plusVmIcon"
-                        onclick="webconsolejs['partials/operation/manage/mciscreate'].displayNewServerForm()"
+                        id="mci_plusVmIcon"
+                        onclick="webconsolejs['partials/operation/manage/mcicreate'].displayNewServerForm()"
                       >
                         +
                       </li>
@@ -580,7 +580,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['partials/operation/manage/mciscreate'].deployMcis()"
+                onclick="webconsolejs['partials/operation/manage/mcicreate'].deployMci()"
               >
                 Deploy
               </button>
@@ -595,7 +595,7 @@
               <ul class="steps steps-vertical">
                 <li class="step-item active">
                   <div class="h4 m-0">MCIS Name</div>
-                  <div class="text-secondary">MCIS Name input ex) mcis01</div>
+                  <div class="text-secondary">MCIS Name input ex) mci01</div>
                 </li>
                 <li class="step-item">
                   <div class="h4 m-0">Order received</div>
@@ -658,8 +658,8 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="extend_mcis_name"
-                  id="extend_mcis_name"
+                  name="extend_mci_name"
+                  id="extend_mci_name"
                   value=""
                 />
               </div>
@@ -669,8 +669,8 @@
                 <textarea
                   class="form-control"
                   rows="2"
-                  name="extend_mcis_desc"
-                  id="extend_mcis_desc"
+                  name="extend_mci_desc"
+                  id="extend_mci_desc"
                   placeholder="type Description"
                 ></textarea>
               </div>
@@ -695,7 +695,7 @@
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="vm_plusVmIcon"
-                        onclick="webconsolejs['partials/operation/manage/mciscreate'].displayNewServerForm()"
+                        onclick="webconsolejs['partials/operation/manage/mcicreate'].displayNewServerForm()"
                       >
                         +
                       </li>
@@ -709,7 +709,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['partials/operation/manage/mciscreate'].deployVm()"
+                onclick="webconsolejs['partials/operation/manage/mcicreate'].deployVm()"
               >
                 Deploy
               </button>
@@ -724,7 +724,7 @@
               <ul class="steps steps-vertical">
                 <li class="step-item active">
                   <div class="h4 m-0">MCIS Name</div>
-                  <div class="text-secondary">MCIS Name input ex) mcis01</div>
+                  <div class="text-secondary">MCIS Name input ex) mci01</div>
                 </li>
                 <li class="step-item">
                   <div class="h4 m-0">Order received</div>
@@ -750,7 +750,7 @@
 </div>
 
 <!-- add server : server configuration -->
-<%= partial("partials/operation/manage/mciscreate.html") %>
+<%= partial("partials/operation/manage/mcicreate.html") %>
 
 <!-- add server : spec-search -->
 <%= partial("partials/operation/manage/serverrecommendation.html") %> 
@@ -759,6 +759,6 @@
 <!-- add server : cspspeclist -->
 <%= partial("partials/operation/manage/cspspeclist.html") %> 
 
-<%= javascriptTag("pages/operation/manage/mcis.js") %>
-<%= javascriptTag("common/api/services/mcis_api.js") %> 
+<%= javascriptTag("pages/operation/manage/mci.js") %>
+<%= javascriptTag("common/api/services/mci_api.js") %> 
 <%= javascriptTag("common/api/services/vmimage_api.js") %>

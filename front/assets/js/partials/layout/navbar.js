@@ -136,8 +136,9 @@ export async function workspaceProjectInit() {
         console.log("userProjectList ", userProjectList)
 
         // project 목록이 있으면 cur project set
-
+    
         let curProject = await webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+
         console.log("curProject ", curProject)
         if (curProject) {
             curProjectId = curProject.Id;
@@ -154,12 +155,12 @@ export async function workspaceProjectInit() {
 
 
 
-document.getElementById("logoutbtn").addEventListener('click',async function () {
+document.getElementById("logoutbtn").addEventListener('click', async function () {
     destroyAccessToken()
     window.location = "/auth/logout"
 });
 
-function destroyAccessToken(){
+function destroyAccessToken() {
     let now = new Date();
     document.cookie = `Authorization=; path=/; expires=${now.getTime()};`;
 }

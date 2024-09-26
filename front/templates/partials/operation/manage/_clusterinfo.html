@@ -1,10 +1,10 @@
 <!-- 표의 행 클릭 시  -->
 
-<div class="card section" id="mcis_info">
-    <input type="hidden" id="selected_mcis_id">
+<div class="card section" id="mci_info">
+    <input type="hidden" id="selected_mci_id">
   <div class="card-header">
     <h3 class="card-title">
-      MCIS Info<span id="mcis_info_text" class="text-info" value=""> </span>
+      MCIS Info<span id="mci_info_text" class="text-info" value=""> </span>
     </h3>
   </div>
   <div class="card-body">
@@ -15,7 +15,7 @@
             class="img-fluid"
             class="rounded"
             width="65"
-            id="mcis_info_status_img"
+            id="mci_info_status_img"
           />
         </div>
       </div>
@@ -24,21 +24,21 @@
           <div class="datagrid">
             <div class="datagrid-item">
               <div class="form-label">Name</div>
-              <div class="form-description" id="mcis_info_name"></div>
+              <div class="form-description" id="mci_info_name"></div>
             </div>
             <div class="datagrid-item">
               <div class="form-label">Status</div>
-              <div class="form-description" id="mcis_info_status"></div>
+              <div class="form-description" id="mci_info_status"></div>
             </div>
             <div class="datagrid-item">
               <div class="form-label">Provider</div>
               <div class="datagrid-item">
-                <span id="mcis_info_cloud_connection"></span>
+                <span id="mci_info_cloud_connection"></span>
               </div>
             </div>
             <div class="datagrid-item">
               <div class="form-label">Description</div>
-              <div class="form-description" id="mcis_info_description"></div>
+              <div class="form-description" id="mci_info_description"></div>
             </div>
           </div>
         </div>
@@ -47,13 +47,13 @@
 
     <div class="row p-4">
       <div class="col-12">
-        <%= partial("partials/operation/manage/serverlist_status.html") %>
+        < %= partial("partials/operation/manage/serverlist_status.html") % > 
       </div>
     </div>
 
     <div class="row p-4">
       <div class="col-12">
-        <%= partial("partials/operation/manage/serverinfo.html") %>
+        < %= partial("partials/operation/manage/serverinfo.html") % >
       </div>
     </div>
   </div>

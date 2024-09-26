@@ -1,6 +1,6 @@
 /*
     <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
-        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/mcis_api.commoncallbac','Arg')">
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/mci_api.commoncallbac','Arg')">
         commonSimpleModal
     </a>
 */
@@ -101,22 +101,22 @@ function commonConfirmOpen(targetAction, caller) {
             ["GotoMonitoringCost", "Would you like to view cost <br />for MCIS ?"],
             ["GotoMonitoringUtilize", "Would you like to view utilize <br />for MCIS ?"],
 
-            ["McisLifeCycleReboot", "Would you like to reboot MCIS ?"],// mcis_life_cycle('reboot')
-            ["McisLifeCycleSuspend", "Would you like to suspend MCIS ?"],//onclick="mcis_life_cycle('suspend')
-            ["McisLifeCycleResume", "Would you like to resume MCIS ?"],//onclick="mcis_life_cycle('resume')"
-            ["McisLifeCycleTerminate", "Would you like to terminate MCIS ?"],//onclick="mcis_life_cycle('terminate')
-            ["McisManagement", "Would you like to manage MCIS ?"],// 해당 function 없음...
-            ["MoveToMcisManagement", "Would you like to manage MCIS ?"],
-            ["MoveToMcisManagementFromDashboard", "Would you like to manage MCIS ?"],
+            ["MciLifeCycleReboot", "Would you like to reboot MCIS ?"],// mci_life_cycle('reboot')
+            ["MciLifeCycleSuspend", "Would you like to suspend MCIS ?"],//onclick="mci_life_cycle('suspend')
+            ["MciLifeCycleResume", "Would you like to resume MCIS ?"],//onclick="mci_life_cycle('resume')"
+            ["MciLifeCycleTerminate", "Would you like to terminate MCIS ?"],//onclick="mci_life_cycle('terminate')
+            ["MciManagement", "Would you like to manage MCIS ?"],// 해당 function 없음...
+            ["MoveToMciManagement", "Would you like to manage MCIS ?"],
+            ["MoveToMciManagementFromDashboard", "Would you like to manage MCIS ?"],
 
-            ["AddNewMcis", "Would you like to create MCIS ?"],
-            ["AddNewMcisDynamic", "Would you like to create MCIS ?"],
-            ["DeleteMcis", "Are you sure to delete this MCIS? "],
-            ["ImportScriptOfMcis", "Would you like to import MCIS script? "],
-            ["ExportScriptOfMcis", "Would you like to export MCIS script? "],
+            ["AddNewMci", "Would you like to create MCIS ?"],
+            ["AddNewMciDynamic", "Would you like to create MCIS ?"],
+            ["DeleteMci", "Are you sure to delete this MCIS? "],
+            ["ImportScriptOfMci", "Would you like to import MCIS script? "],
+            ["ExportScriptOfMci", "Would you like to export MCIS script? "],
             ["ShowMonitoring", "Would you like to go to the Monitoring page?"],
 
-            ["AddNewVmOfMcis", "Would you like to add a new VM to this MCIS ?"],
+            ["AddNewVmOfMci", "Would you like to add a new VM to this MCIS ?"],
             ["DeployServer", "Would you like to deploy?"],
 
             ["VmLifeCycle", "Would you like to view Server ?"],
@@ -126,7 +126,7 @@ function commonConfirmOpen(targetAction, caller) {
             ["VmLifeCycleTerminate", "Would you like to terminate VM ?"], // onclick="vm_life_cycle('terminate')"
             ["VmManagement", "Would you like to manage VM ?"], // 해당 function 없음
             ["AddNewVm", "Would you like to add VM ?"], //onclick="vm_add()"
-            ["ExportVmScriptOfMcis", "Would you like to export VM script ?"], //onclick="vm_add()"
+            ["ExportVmScriptOfMci", "Would you like to export VM script ?"], //onclick="vm_add()"
 
 
             ["DifferentConnection", "Do you want to set different connectionName?"],
@@ -148,7 +148,7 @@ function commonConfirmOpen(targetAction, caller) {
 
             ["DeleteNlb", "Would you like to delete NLB ?"],
 
-            ["AddNewPmks", "Would you like to create PMKS ?"],
+            ["AddNewPmk", "Would you like to create PMKS ?"],
             ["DeletePmks", "Are you sure to delete this PMKS? "],
             ["AddNewNodeGroupOfPmks", "Would you like to add a new NodeGroup to this PMKS ?"],
             ["DeleteNodeGroupOfPmks", "Would you like to delete a NodeGroup of this PMKS ?"],
@@ -262,7 +262,7 @@ function commonConfirmOk() {
     } else if (targetAction == "AddNewVmSpec") {
         displayVmSpecInfo("REG")
         goFocus('vmSpecCreateBox');
-    } else if (targetAction == "ExportVmScriptOfMcis") {
+    } else if (targetAction == "ExportVmScriptOfMci") {
         vmScriptExport();
     } else if (targetAction == "DeleteVmSpec") {
         deleteVmSpec();
@@ -271,57 +271,57 @@ function commonConfirmOk() {
         putFetchSpecs(connectionName);
     } else if (targetAction == "GotoMonitoringPerformance") {
         // alert("모니터링으로 이동 GotoMonitoringPerformance")
-        // location.href ="";//../operation/Monitoring_Mcis.html
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
+        // location.href ="";//../operation/Monitoring_Mci.html
+        var targetUrl = "/operation/monitorings/mcimng/mngform"
         changePage(targetUrl)
     } else if (targetAction == "GotoMonitoringFault") {
         // alert("모니터링으로 이동 GotoMonitoringFault")
-        // location.href ="";//../operation/Monitoring_Mcis.html
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
+        // location.href ="";//../operation/Monitoring_Mci.html
+        var targetUrl = "/operation/monitorings/mcimng/mngform"
         changePage(targetUrl)
     } else if (targetAction == "GotoMonitoringCost") {
         // alert("모니터링으로 이동 GotoMonitoringCost")
-        // location.href ="";//../operation/Monitoring_Mcis.html
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
+        // location.href ="";//../operation/Monitoring_Mci.html
+        var targetUrl = "/operation/monitorings/mcimng/mngform"
         changePage(targetUrl)
     } else if (targetAction == "GotoMonitoringUtilize") {
         // alert("모니터링으로 이동 GotoMonitoringUtilize")
-        // location.href ="";//../operation/Monitoring_Mcis.html    
-        var targetUrl = "/operation/monitorings/mcismng/mngform"
+        // location.href ="";//../operation/Monitoring_Mci.html    
+        var targetUrl = "/operation/monitorings/mcimng/mngform"
         changePage(targetUrl)
-    } else if (targetAction == "McisLifeCycleReboot") {
-        callMcisLifeCycle('reboot')
-    } else if (targetAction == "McisLifeCycleSuspend") {
-        callMcisLifeCycle('suspend')
-    } else if (targetAction == "McisLifeCycleResume") {
-        callMcisLifeCycle('resume')
-    } else if (targetAction == "McisLifeCycleTerminate") {
-        callMcisLifeCycle('terminate')
-    } else if (targetAction == "McisManagement") {
+    } else if (targetAction == "MciLifeCycleReboot") {
+        callMciLifeCycle('reboot')
+    } else if (targetAction == "MciLifeCycleSuspend") {
+        callMciLifeCycle('suspend')
+    } else if (targetAction == "MciLifeCycleResume") {
+        callMciLifeCycle('resume')
+    } else if (targetAction == "MciLifeCycleTerminate") {
+        callMciLifeCycle('terminate')
+    } else if (targetAction == "MciManagement") {
         alert("수행할 function 정의되지 않음");
-    } else if (targetAction == "MoveToMcisManagementFromDashboard") {
-        var mcisID = $("#mcis_id").val();
-        var targetUrl = "/operation/manages/mcismng/mngform?mcisid=" + mcisID;
+    } else if (targetAction == "MoveToMciManagementFromDashboard") {
+        var mciID = $("#mci_id").val();
+        var targetUrl = "/operation/manages/mcimng/mngform?mciid=" + mciID;
         changePage(targetUrl)
-    } else if (targetAction == "MoveToMcisManagement") {
-        var targetUrl = "/operation/manages/mcismng/mngform";
+    } else if (targetAction == "MoveToMciManagement") {
+        var targetUrl = "/operation/manages/mcimng/mngform";
         changePage(targetUrl)
-    } else if (targetAction == "AddNewMcis") {
+    } else if (targetAction == "AddNewMci") {
         // $('#loadingContainer').show();
-        // location.href ="/operation/manages/mcis/regform/";
-        var targetUrl = "/operation/manages/mcismng/regform";
+        // location.href ="/operation/manages/mci/regform/";
+        var targetUrl = "/operation/manages/mcimng/regform";
         changePage(targetUrl)
-    } else if (targetAction == "DeleteMcis") {
+    } else if (targetAction == "DeleteMci") {
         deleteMCIS();
     } else if (targetAction == "DeployServer") {
         deployVm();
-    } else if (targetAction == "ImportScriptOfMcis") {
-        mcisScriptImport();
-    } else if (targetAction == "ExportScriptOfMcis") {
-        mcisScriptExport();
+    } else if (targetAction == "ImportScriptOfMci") {
+        mciScriptImport();
+    } else if (targetAction == "ExportScriptOfMci") {
+        mciScriptExport();
     } else if (targetAction == "ShowMonitoring") {
-        var mcisID = $("#mcis_id").val();
-        var targetUrl = "/operation/monitorings/mcismonitoring/mngform?mcisId=" + mcisID;
+        var mciID = $("#mci_id").val();
+        var targetUrl = "/operation/monitorings/mcimonitoring/mngform?mciId=" + mciID;
         changePage(targetUrl)
     } else if (targetAction == "VmLifeCycle") {
         alert("수행할 function 정의되지 않음");
@@ -337,9 +337,9 @@ function commonConfirmOk() {
         alert("수행할 function 정의되지 않음");
     } else if (targetAction == "AddNewVm") {
         addNewVirtualMachine()
-    } else if (targetAction == "AddNewVmOfMcis") {
+    } else if (targetAction == "AddNewVmOfMci") {
         addNewVirtualMachine()
-    } else if (targetAction == "ExportVmScriptOfMcis") {
+    } else if (targetAction == "ExportVmScriptOfMci") {
         vmScriptExport();
     } else if (targetAction == "--") {
         addNewVirtualMachine()
@@ -371,8 +371,8 @@ function commonConfirmOk() {
         deleteMCKS();
     } else if (targetAction == "RegisterRecommendSpec") {
         commonPromptOpen("RegisterRecommendSpec")
-    } else if (targetAction == "AddNewMcisDynamic") {
-        dynamicMcis()
+    } else if (targetAction == "AddNewMciDynamic") {
+        dynamicMci()
     } else if (targetAction == "DeleteDataDisk") {
         deleteDataDisk();
 
@@ -385,7 +385,7 @@ function commonConfirmOk() {
 
     } else if (targetAction == "DeleteNlb") {
         deleteNlb();
-    } else if (targetAction == "AddNewPmks") {
+    } else if (targetAction == "AddNewPmk") {
         changePage("PmksClusterRegForm");
     } else if (targetAction == "DeletePmks") {
         deleteCluster();
@@ -523,16 +523,16 @@ function commonPromptOk() {
         if (targetValue) {
             filterTable(targetObjId, "Alert Event Type", targetValue)
         }
-    } else if (targetAction == 'FilterMcisName') {// Name이라는 Column을 Filtering
+    } else if (targetAction == 'FilterMciName') {// Name이라는 Column을 Filtering
         if (targetValue) {
             // keyword표시
-            searchKeyword(targetValue, 'mcislistfilter')
+            searchKeyword(targetValue, 'mcilistfilter')
         }
-    } else if (targetAction == 'FilterMcisStatus') {// Status이라는 Column을 Filtering
+    } else if (targetAction == 'FilterMciStatus') {// Status이라는 Column을 Filtering
         if (targetValue) {
             filterTable(targetObjId, "Status", targetValue)
         }
-    } else if (targetAction == 'FilterMcisDesc') {// Description이라는 Column을 Filtering
+    } else if (targetAction == 'FilterMciDesc') {// Description이라는 Column을 Filtering
         if (targetValue) {
             filterTable(targetObjId, "Description", targetValue)
         }
@@ -549,20 +549,20 @@ function commonPromptOk() {
         if (targetValue) {
             filterTable(targetObjId, "NetworkCni", targetValue)
         }
-    } else if (targetAction == 'RemoteCommandMcis') {
+    } else if (targetAction == 'RemoteCommandMci') {
         if (targetValue) {
-            remoteCommandMcis(targetValue);
-            //postRemoteCommandMcis(targetValue);
+            remoteCommandMci(targetValue);
+            //postRemoteCommandMci(targetValue);
         }
-    } else if (targetAction == 'RemoteCommandVmOfMcis') {
+    } else if (targetAction == 'RemoteCommandVmOfMci') {
         if (targetValue) {
-            remoteCommandVmMcis(targetValue);
+            remoteCommandVmMci(targetValue);
         }
     } else if (targetAction == 'RegisterRecommendSpec') {
         createRecommendSpec(targetValue);
-    } else if (targetAction == 'AddNewMcisDynamic') {
-        $("#mcis_name").val(targetValue)
-        dynamicMcis()
+    } else if (targetAction == 'AddNewMciDynamic') {
+        $("#mci_name").val(targetValue)
+        dynamicMci()
     } else if (targetAction == 'CreateSnapshot') {
         createSnapshot(targetValue);
     }

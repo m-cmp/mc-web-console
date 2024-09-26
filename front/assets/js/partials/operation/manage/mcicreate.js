@@ -1,14 +1,14 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-//import { selectedMcisObj } from "./mcis";
-//document.addEventListener("DOMContentLoaded", initMcisCreate) // page가 아닌 partials에서는 제거
+//import { selectedMciObj } from "./mci";
+//document.addEventListener("DOMContentLoaded", initMciCreate) // page가 아닌 partials에서는 제거
 
 // create page 가 load 될 때 실행해야 할 것들 정의
-export function initMcisCreate() {
-	console.log("initMcisCreate")
+export function initMciCreate() {
+	console.log("initMciCreate")
 
 	// partial init functions
 
-	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mciscreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
+	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mcicreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
 }
 
 // callback PopupData
@@ -248,8 +248,8 @@ async function updateConfigurationFilltering() {
 
 }
 
-var createMcisListObj = new Object();
-var isVm = false // mcis 생성(false) / vm 추가(true)
+var createMciListObj = new Object();
+var isVm = false // mci 생성(false) / vm 추가(true)
 var Express_Server_Config_Arr = new Array();
 var express_data_cnt = 0
 
@@ -258,7 +258,7 @@ var express_data_cnt = 0
 // isExpert의 체크 여부에 따라 바뀜.
 // newServers 와 simpleServers가 있음.
 export async function displayNewServerForm() {
-	var deploymentAlgo = $("#mcis_deploy_algorithm").val();
+	var deploymentAlgo = $("#mci_deploy_algorithm").val();
 
 	if (deploymentAlgo == "express") {
 		var div = document.getElementById("server_configuration");
@@ -270,17 +270,17 @@ export async function displayNewServerForm() {
 
 	} else if (deploymentAlgo == "expert") {
 		// call getProviderList API
-		var providerList = await webconsolejs["common/api/services/mcis_api"].getProviderList()
+		var providerList = await webconsolejs["common/api/services/mci_api"].getProviderList()
 		// provider set
 		await setProviderList(providerList)
 
 		// call getRegion API
-		var regionList = await webconsolejs["common/api/services/mcis_api"].getRegionList()
+		var regionList = await webconsolejs["common/api/services/mci_api"].getRegionList()
 		// region set
 		await setRegionList(regionList)
 
 		// call cloudconnection
-		var connectionList = await webconsolejs["common/api/services/mcis_api"].getCloudConnection()
+		var connectionList = await webconsolejs["common/api/services/mci_api"].getCloudConnection()
 		// cloudconnection set
 		await setCloudConnection(connectionList)
 
@@ -358,8 +358,8 @@ export function expressDone_btn() {
 	express_form["connectionName"] = $("#p_connectionName").val();
 	express_form["description"] = $("#p_description").val();
 	express_form["subGroupSize"] = $("#p_subGroupSize").val();
-	express_form["image"] = $("#p_imageId").val();
-	express_form["spec"] = $("#p_specId").val();
+	// express_form["image"] = $("#p_imageId").val();
+	// express_form["spec"] = $("#p_specId").val();
 	express_form["rootDiskSize"] = $("#p_root_disk_size").val();
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
 
@@ -381,7 +381,7 @@ export function expressDone_btn() {
 
 	var displayServerCnt = '(' + server_cnt + ')'
 
-	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mciscreate\'].view_express(\'' + express_data_cnt + '\')">'
+	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mcicreate\'].view_express(\'' + express_data_cnt + '\')">'
 
 		+ server_name + displayServerCnt
 
@@ -396,16 +396,16 @@ export function expressDone_btn() {
 	var div = document.getElementById("server_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
-	// $("#mcis_server_list").prepend(add_server_html)
+	// $("#mci_server_list").prepend(add_server_html)
 	// $("#plusVmIcon").remove();
-	// $("#mcis_server_list").prepend(getPlusVm());
+	// $("#mci_server_list").prepend(getPlusVm());
 
 
 	console.log("add server html");
 
 	var vmEleId = "vm"
 	if (!isVm) {
-		vmEleId = "mcis"
+		vmEleId = "mci"
 	}
 	console.log("add vm")
 	$("#" + vmEleId + "_plusVmIcon").remove();
@@ -473,7 +473,7 @@ export function changeDiskSize(type) {
 function getPlusVm(vmElementId) {
 
 	var append = "";
-	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mciscreate\'].displayNewServerForm()">';
+	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
 	append = append + "+"
 	append = append + '</li>';
 	return append;
@@ -484,22 +484,22 @@ var totalDeployServerCount = 0;
 var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
-export function deployMcis() {
-	console.log("deployMcis")
-	createMcisDynamic()
+export function deployMci() {
+	console.log("deployMci")
+	createMciDynamic()
 	// express 는 express 만, simple + expert + import 는 합쳐서
-	// 두개의 mcis는 만들어 질 수 없으므로 
+	// 두개의 mci는 만들어 질 수 없으므로 
 	// var deploymentAlgo = $("#placement_algo").val()
 	// if (deploymentAlgo == "express") {
-	// 	createMcisDynamic()
+	// 	createMciDynamic()
 	// }
 	// else{
-	//     var mcis_name = $("#mcis_name").val();
-	//     if (!mcis_name) {
+	//     var mci_name = $("#mci_name").val();
+	//     if (!mci_name) {
 	//         commonAlert("Please Input MCIS Name!!!!!")
 	//         return;
 	//     }
-	//     var mcis_desc = $("#mcis_desc").val();
+	//     var mci_desc = $("#mci_desc").val();
 	//     var placement_algo = $("#placement_algo").val();
 	//     var installMonAgent = $("#installMonAgent").val();
 
@@ -508,20 +508,20 @@ export function deployMcis() {
 	//     var vm_len = 0;
 
 	//     if (IsImport) {
-	//         // ImportedMcisScript.name = mcis_name;
-	//         // ImportedMcisScript.description = mcis_desc;
-	//         // ImportedMcisScript.installMonAgent = installMonAgent;
-	//         // console.log(ImportedMcisScript);
+	//         // ImportedMciScript.name = mci_name;
+	//         // ImportedMciScript.description = mci_desc;
+	//         // ImportedMciScript.installMonAgent = installMonAgent;
+	//         // console.log(ImportedMciScript);
 	//         //var theJson = jQuery.parseJSON($(this).val())
-	//         //$("#mcisImportScriptPretty").val(fmt);	
-	//         new_obj = $("#mcisImportScriptPretty").val();
+	//         //$("#mciImportScriptPretty").val(fmt);	
+	//         new_obj = $("#mciImportScriptPretty").val();
 	//         new_obj.id = "";// id는 비워준다.
 	//     } else {
 	//         //         console.log(Simple_Server_Config_Arr)
 
-	//         // mcis 생성이므로 mcisID가 없음
-	//         new_obj['name'] = mcis_name
-	//         new_obj['description'] = mcis_desc
+	//         // mci 생성이므로 mciID가 없음
+	//         new_obj['name'] = mci_name
+	//         new_obj['description'] = mci_desc
 	//         new_obj['installMonAgent'] = installMonAgent
 
 	//         // Express_Server_Config_Arr 은 별도처리
@@ -553,7 +553,7 @@ export function deployMcis() {
 	//         }
 	//     }
 
-	//     var url = getWebToolUrl("McisRegProc")
+	//     var url = getWebToolUrl("MciRegProc")
 	//     try {
 	//         axios.post(url, new_obj, {
 	//             // headers: {
@@ -581,8 +581,8 @@ export function deployMcis() {
 	//     }
 	// }    
 }
-export async function createMcisDynamic() {
-	console.log("createMcisDynamic")
+export async function createMciDynamic() {
+	console.log("createMciDynamic")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
@@ -593,26 +593,26 @@ export async function createMcisDynamic() {
 	var nsId = projectName;
 	console.log("create ssss nsId ", projectName)
 
-	var mcisName = $("#mcis_name").val()
-	var mcisDesc = $("#mcis_desc").val()
+	var mciName = $("#mci_name").val()
+	var mciDesc = $("#mci_desc").val()
 
 
-	console.log("mcisName", mcisName)
-	console.log("mcisDesc", mcisDesc)
+	console.log("mciName", mciName)
+	console.log("mciDesc", mciDesc)
 	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
 
 
 
-	if (!mcisName) {
+	if (!mciName) {
 		commonAlert("Please Input MCIS Name!!!!!")
 		return;
 	}
 
-	if (!mcisDesc) {
-		mcisDesc = "Made in CB-TB"
+	if (!mciDesc) {
+		mciDesc = "Made in CB-TB"
 	}
 
-	webconsolejs["common/api/services/mcis_api"].mcisDynamic(mcisName, mcisDesc, Express_Server_Config_Arr, selectedNsId)
+	webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId)
 }
 
 export async function createVmDynamic() {
@@ -624,24 +624,24 @@ export async function createVmDynamic() {
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	console.log("selected projectId : ", selectedNsId)
 
-	var mcisid = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj[0].id
-	console.log("selected mcisId : ", mcisid)
+	var mciid = webconsolejs["pages/operation/manage/mci"].selectedMciObj[0].id
+	console.log("selected mciId : ", mciid)
 
-	// var commonImage = selectedMcisObj[0].vm[0].
-	// var mcis_name = selectedMcis[0].name
+	// var commonImage = selectedMciObj[0].vm[0].
+	// var mci_name = selectedMci[0].name
 
-	// var mcis_name = $("#mcis_name").val();
-	// var mcis_id = $("#mcis_id").val();
-	// if (!mcis_id) {
+	// var mci_name = $("#mci_name").val();
+	// var mci_id = $("#mci_id").val();
+	// if (!mci_id) {
 	// 	commonAlert("Please Select MCIS !!!!!")
 	// 	return;
 	// }
 
 	///
-	webconsolejs["common/api/services/mcis_api"].vmDynamic(mcisid, selectedNsId, Express_Server_Config_Arr)
+	webconsolejs["common/api/services/mci_api"].vmDynamic(mciid, selectedNsId, Express_Server_Config_Arr)
 }
 
-export function addNewMcis() {
+export function addNewMci() {
 	isVm = false
 	Express_Server_Config_Arr = new Array();
 }
@@ -651,16 +651,16 @@ export function addNewVirtualMachine() {
 	console.log("addNewVirtualMachine")
 	Express_Server_Config_Arr = new Array();
 
-	var selectedMcis = webconsolejs["pages/operation/manage/mcis"].selectedMcisObj
-	console.log("selectedMcis", selectedMcis)
+	var selectedMci = webconsolejs["pages/operation/manage/mci"].selectedMciObj
+	console.log("selectedMci", selectedMci)
 
-	var mcis_name = selectedMcis[0].name
-	var mcis_desc = selectedMcis[0].description
+	var mci_name = selectedMci[0].name
+	var mci_desc = selectedMci[0].description
 
-	$("#extend_mcis_name").val(mcis_name)
+	$("#extend_mci_name").val(mci_name)
 
-	$("#extend_mcis_desc").val(mcis_desc)
-	console.log("extend_mcis_desc", mcis_desc)
+	$("#extend_mci_desc").val(mci_desc)
+	console.log("extend_mci_desc", mci_desc)
 
 	isVm = true
 }
@@ -671,9 +671,9 @@ export async function deployVm() {
 	await createVmDynamic()
 	// }else{
 
-	//     var mcis_name = $("#mcis_name").val();
-	//     var mcis_id = $("#mcis_id").val();
-	//     if (!mcis_id) {
+	//     var mci_name = $("#mci_name").val();
+	//     var mci_id = $("#mci_id").val();
+	//     if (!mci_id) {
 	//         commonAlert("Please Select MCIS !!!!!")
 	//         return;
 	//     }
@@ -715,11 +715,11 @@ export async function deployVm() {
 	//         $("#s_name").focus();
 	//     }
 
-	//     //var url = "/operation/manages/mcismng/" + mcis_id + "/vm/reg/proc"
+	//     //var url = "/operation/manages/mcimng/" + mci_id + "/vm/reg/proc"
 	//     var urlParamMap = new Map();
-	//     urlParamMap.set(":mcisID", mcis_id)
-	//     var url = setUrlByParam("McisVmListRegProc", urlParamMap)
-	//     //var url = getWebToolUrl("McisVmRegProc")
+	//     urlParamMap.set(":mciID", mci_id)
+	//     var url = setUrlByParam("MciVmListRegProc", urlParamMap)
+	//     //var url = getWebToolUrl("MciVmRegProc")
 	//     try {
 	//         axios.post(url, new_obj, {
 	//             // headers: {

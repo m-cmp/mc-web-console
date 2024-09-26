@@ -97,15 +97,15 @@
   }
 }
 
-// 전체 mcis / server 박스 스타일
-.mcislistbox {
+// 전체 mci / server 박스 스타일
+.mcilistbox {
   display: flex;
   flex-wrap: wrap;
   gap: 10px; /* 카드 간의 간격 */
   width: 100%;
 }
 
-.mcis-list {
+.mci-list {
   border-radius: 15px;
   border: 2px solid #ddd;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -118,7 +118,7 @@
   transition: background-color 0.3s; /* 호버 시 배경색 전환 효과 */
 }
 
-// 전체 mcis / server ul 스타일
+// 전체 mci / server ul 스타일
 .vm-list {
   display: flex;
   flex-wrap: wrap;
@@ -130,7 +130,7 @@
   flex: 1;
 }
 
-// 전체 mcis / server li 스타일
+// 전체 mci / server li 스타일
 .vm-item {
   border-radius: 10px;
   border: 1px solid #ddd;
