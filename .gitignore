@@ -83,4 +83,5 @@ conf/selfiamuser.dat
 conf/serverinfo
 
 # scripts
-scripts/.env
+!scripts/.env
+scripts/container-volume
