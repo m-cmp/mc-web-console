@@ -1658,10 +1658,6 @@ serviceActions:
       method: get
       resourcePath: /api/o11y/monitoring/influxdb/{influxDBSeq}/measurement
       description: ""
-    ListUsingGET_5:
-      method: get
-      resourcePath: /api/o11y/trigger/policy/history
-      description: ""
     ListUsingGET_4:
       method: get
       resourcePath: /api/o11y/trigger/policy
@@ -1761,10 +1757,6 @@ serviceActions:
     DeleteEmailUserUsingDELETE:
       method: delete
       resourcePath: /api/o11y/trigger/policy/{policySeq}/alert/email/{seq}
-      description: ""
-    ListUsingGET_5:
-      method: get
-      resourcePath: /api/o11y/trigger/policy/target
       description: ""
     GetSpecificAnomalyDetectionTarget:
       method: get

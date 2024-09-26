@@ -17,7 +17,6 @@ ENV CGO_ENABLED 1
 RUN mkdir -p /src/mc-web-console-front
 WORKDIR /src/mc-web-console-front
 ADD ./front .
-ADD ./conf ./conf
 
 RUN go mod download
 RUN npm install
@@ -29,14 +28,12 @@ FROM debian:buster-slim as deploy
 
 WORKDIR /bin/
 COPY --from=build /bin/front .
-COPY --from=build /src/mc-web-console-front/conf /conf
 
 ENV FRONT_ADDR 0.0.0.0
 ENV FRONT_PORT 3001
 
-ENV MCIAM_USE true
-
 EXPOSE 3001
-CMD bash -c '/bin/front > /bin/front.log 2>&1 & tail -f /bin/front.log & wait'
+CMD bash -c '/bin/front'
 
-# sudo docker build -f ./front/Dockerfile.local -t my-frontend-app:latest .
+# sudo docker build -f ./front/Dockerfile.mcwebconsolefront -t mc-web-console-front:latest .
+# sudo docker run --rm -p 3001:3001 mc-web-console-front:latest

@@ -1,0 +1,1 @@
+sudo cp ../conf/api.yaml ./container-volume/mc-web-console-api/conf/api.yaml
