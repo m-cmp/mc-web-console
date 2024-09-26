@@ -6,8 +6,8 @@ var recommendTable;
 var recommendVmSpecListObj = new Object();
 
 
-export function initServerRecommendation(callbackfunction) {
-	console.log("initServerRecommendation ")
+export function initClusterRecommendation(callbackfunction) {
+	console.log("initClusterRecommendation ")
 
 	initRecommendSpecTable();
 
@@ -90,71 +90,6 @@ function initRecommendSpecTable() {
 
 }
 
-// function setSpecTabulator(
-// 	tableObjId,
-// 	tableObjParamMap,
-// 	columnsParams,
-// 	isMultiSelect
-// ) {
-// 	var placeholder = "No Data";
-// 	var pagination = "local";
-// 	var paginationSize = 5;
-// 	var paginationSizeSelector = [5, 10, 15, 20];
-// 	var movableColumns = true;
-// 	var columnHeaderVertAlign = "middle";
-// 	var paginationCounter = "rows";
-// 	var layout = "fitColumns";
-
-// 	if (tableObjParamMap.hasOwnProperty("placeholder")) {
-// 		placeholder = tableObjParamMap.placeholder;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("pagination")) {
-// 		pagination = tableObjParamMap.pagination;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-// 		paginationSize = tableObjParamMap.paginationSize;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-// 		paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-// 		movableColumns = tableObjParamMap.movableColumns;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-// 		columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-// 		paginationCounter = tableObjParamMap.paginationCounter;
-// 	}
-
-// 	if (tableObjParamMap.hasOwnProperty("layout")) {
-// 		layout = tableObjParamMap.layout;
-// 	}
-
-// 	var tabulatorTable = new Tabulator("#" + tableObjId, {
-// 		//ajaxURL:"http://localhost:3000/operations/mcimng?option=status",
-// 		placeholder,
-// 		pagination,
-// 		paginationSize,
-// 		paginationSizeSelector,
-// 		movableColumns,
-// 		columnHeaderVertAlign,
-// 		paginationCounter,
-// 		layout,
-// 		columns: columnsParams,
-// 		selectableRows: isMultiSelect == false ? 1 : true,
-// 		selectable: true,
-// 	});
-//     console.log("tabulator Table ", tabulatorTable)
-// 	return tabulatorTable;
-// }
-
 var recommendSpecs = [];
 
 function updateSelectedRows(data) {
@@ -170,6 +105,16 @@ function updateSelectedRows(data) {
 // recommened Vm 조회
 export async function getRecommendVmInfo() {
 	console.log("in getRecommendVmInfo")
+
+	// var max_cpu = $("#num_vCPU_max").val()
+	// var min_cpu = $("#num_vCPU_min").val()
+	// var max_mem = $("#num_memory_max").val()
+	// var min_mem = $("#num_memory_min").val()
+	// var max_cost = $("#num_cost_max").val()
+	// var min_cost = $("#num_cost_min").val()
+	// var limit = $("#recommendVmLimit").val()
+	// var lon = $("#longitude").val()
+	// var lat = $("#latitude").val()
 
 	var memoryMinVal = $("#assist_min_memory").val()
 	var memoryMaxVal = $("#assist_max_memory").val()
@@ -189,6 +134,8 @@ export async function getRecommendVmInfo() {
 	var acceleratorCountMax = $("#assist_gpu_count_max").val()
 	var acceleratorMemoryMin = $("#assist_gpu_memory_min").val()
 	var acceleratorMemoryMax = $("#assist_gpu_memory_max").val()
+	console.log("acceleratorType", acceleratorType)
+	console.log("acceleratorType", lon)
 
 	var policyArr = new Array();
 	//TODO type이 추가 정의되면 type별 분기 추가
@@ -282,7 +229,7 @@ export async function getRecommendVmInfo() {
 	if (cpuMinVal != "" || cpuMaxVal != "") {
 
 		if (cpuMaxVal != "" && cpuMaxVal < cpuMinVal) {
-			console.log("cpuMaxVal",cpuMaxVal)
+			console.log("cpuMaxVal", cpuMaxVal)
 			alert("최대값이 최소값보다 작습니다.")
 		}
 
@@ -399,18 +346,23 @@ export async function getRecommendVmInfo() {
 			}
 		}
 	}
-	
+
 	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
 	console.log("respData ", respData)
-	//var specList = response.data.responseData
 	if (respData.status.code != 200) {
 		console.log(" e ", respData.status)
 		// TODO : Error 표시
 		return
 	}
+
+	// TODO : 선택된 provider 필터
+	console.log("asdasdasd", respData.responseData)
 	recommendVmSpecListObj = respData.responseData
 
 	recommendTable.setData(recommendVmSpecListObj)
+
+}
+export async function applySpecInfoNode() {
 
 }
 
@@ -423,7 +375,6 @@ export async function applySpecInfo() {
 	// pre-release -> mode = express 고정
 	//caller == "express"
 
-
 	var provider = selectedSpecs.providerName
 	var connectionName = selectedSpecs.connectionName
 	var specName = selectedSpecs.cspSpecName
@@ -435,13 +386,6 @@ export async function applySpecInfo() {
 	console.log("providerName", selectedSpecs.providerName)
 	console.log("cspSpecName", selectedSpecs.cspSpecName)
 	console.log("imageName", imageName)
-
-	// $("#ep_provider").val(provider)
-	// $("#ep_connectionName").val(connectionName)
-	// $("#ep_specId").val(specName)
-	// $("#ep_imageId").val(imageName)
-	// $("#ep_commonSpecId").val(commonSpecId)
-	// commonImage는 availableVMImageBySpec에서 조회 후 설정한다 (두 개 이상일 수 있음)
 
 	var returnObject = {}
 	returnObject.provider = provider
@@ -486,7 +430,7 @@ async function availableVMImageBySpec(id) {
 		}
 	}
 
-	var controller = "/api/" + "mc-infra-manager/" +"Postmcidynamiccheckrequest";
+	var controller = "/api/" + "mc-infra-manager/" + "Postmcidynamiccheckrequest";
 	const response = await webconsolejs["common/api/http"].commonAPIPost(
 		controller,
 		data

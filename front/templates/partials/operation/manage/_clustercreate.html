@@ -1,0 +1,234 @@
+<!-- create nodegroup form -->
+<div class="container-xl">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card sub_section" id="nodegroup_configuration">
+        <div class="card-header">
+          <h3 class="text-info">NodeGroup Configuration</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label required">Node Name</label>
+                <input
+                  class="form-control"
+                  name="node_name"
+                  id="node_name"
+                  rows="1"
+                  placeholder="Input Name"
+                />
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label required">Spec</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please Use Search"
+                      name="node-specid"
+                      id="node_specid"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="provider"
+                      id="ep_provider"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="connectionName"
+                      id="ep_connectionName"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="imageId"
+                      id="ep_imageId"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="commonImageId"
+                      id="ep_commonImageId"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="commonSpecId"
+                      id="ep_commonSpecId"
+                      value=""
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
+                      class="btn"
+                      data-bs-toggle="modal"
+                      data-bs-target="#image-search"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label required">Image</label>
+                <input
+                  class="form-control"
+                  name="node-imageid"
+                  id="node_imageid"
+                  rows="1"
+                  readonly=""
+                />
+              </div>
+
+              <div class="form-group mb-2">
+                <label class="form-label required"
+                  >manNodeSize / minNodeSize</label
+                >
+                <div class="row g-2">
+                  <div class="col-6">
+                    <select
+                      class="form-select"
+                      name="node-minnodesize"
+                      id="node_minnodesize"
+                    >
+                      <option value="">Min</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <select
+                      class="form-select"
+                      name="node_maxnodesize"
+                      id="node_maxnodesize"
+                    >
+                      <option value="">Max</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label required">sshKey</label>
+                <select
+                  class="form-select"
+                  name="node-sshkey"
+                  id="node_sshkey"
+                >
+                  <option value="">Select sshKey</option>
+                </select>
+              </div>
+
+              <div class="form-group mb-2">
+                <label class="form-label">Root Disk</label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <select
+                      class="form-select"
+                      onchange="webconsolejs['partials/operation/manage/mcicreate'].changeDiskSize(this.value)"
+                      name="node-rootdisk"
+                      id="node_rootdisk"
+                    >
+                      <option value="">Select Root Disk Type</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <textarea
+                      class="form-control"
+                      rows="1"
+                      placeholder="Root Disk Size(GB)"
+                      name="node-rootdisksize"
+                      id="node-rootdisksize"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group mb-2">
+                <label class="form-label required">AutoScaling</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <select
+                      class="form-select"
+                      name="node-autoscaling"
+                      id="node_autoscaling"
+                      required
+                    >
+                      <option value="">Select option</option>
+                      <option value="true">On</option>
+                      <option value="false">Off</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group mb-2">
+                <label class="form-label">Desired Node Size</label>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <div class="input-number-container">
+                      <button class="input-number-decrement">-</button>
+                      <input
+                        type="number"
+                        class="input-number"
+                        value="1"
+                        min="1"
+                        max="5"
+                        id="node_desirednodesize"
+                      />
+                      <button class="input-number-increment">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="row">
+            <div class="col">
+              <div align="right">
+                <button type="submit" class="btn btn-secondary">Clear</button>
+                <button
+                  type="submit"
+                  class="btn btn-info"
+                  onclick="webconsolejs['partials/operation/manage/mcicreate'].exprertDone_btn()"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%= javascriptTag("partials/operation/manage/clustercreate.js") %> <%=
+javascriptTag("common/api/services/pmk_api.js") %><!--API 호출-->
