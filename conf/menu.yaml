@@ -1,3 +1,6 @@
+# restype:menu = title > category > menu > submenu
+# restype:screen
+
 menus:  
     ########## step1 : title  ################
   - id: settings
