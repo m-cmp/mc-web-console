@@ -349,7 +349,37 @@ export function calculateConnectionCount(clusterList) {
   return clusterCloudConnectionCountMap;
 }
 
+export async function createNode(k8sClusterId, nsId, Create_Cluster_Config_Arr) {
 
+  var obj = {}
+  obj = Create_Cluster_Config_Arr[0]
+  const data = {
+    pathParams: {
+      nsId: nsId,
+      k8sClusterId: k8sClusterId,
+    },
+    request: {
+      "desiredNodeSize": obj.desiredNodeSize,
+      "imageId": obj.imageId,
+      "maxNodeSize": obj.maxNodeSize,
+      "minNodeSize": obj.minNodeSize,
+      "name": obj.name,
+      "onAutoScaling": obj.onAutoScaling,
+      "rootDiskSize": obj.rootDiskSize,
+      "rootDiskType": obj.rootDiskType,
+      "specId": obj.specId,
+      "sshKeyId": obj.sshKeyId
+    }
+  }
+
+
+  var controller = "/api/" + "mc-infra-manager/" + "Postk8snodegroup";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  console.log("create Node : ", response)
+}
 
 
 // MCIS 상태를 UI에서 표현하는 방식으로 변경
