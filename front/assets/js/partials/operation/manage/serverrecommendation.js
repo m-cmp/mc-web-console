@@ -419,6 +419,7 @@ export async function getRecommendVmInfo() {
 export async function applySpecInfo() {
 	console.log("array", recommendSpecs)
 	var selectedSpecs = recommendSpecs[0]
+	console.log("selectedSpecs : ", selectedSpecs)
 
 	// pre-release -> mode = express 고정
 	//caller == "express"
@@ -479,7 +480,7 @@ async function availableVMImageBySpec(id) {
 
 	const data = {
 		request: {
-			"CommonSpec": [
+			"commonSpec": [
 				id
 			]
 
@@ -500,7 +501,12 @@ async function availableVMImageBySpec(id) {
 			commonimageId.push(img.id);
 		});
 	});
-	$("#ep_commonImageId").val(commonimageId[0])
+
+	// TODO : dynamiccheckrequest api 오류 : 20.04 이미지는 spider에서 제공하지 않음
+	// 임시로 3번 째 22.04 사용중
+
+	// $("#ep_commonImageId").val(commonimageId[0])
+	$("#ep_commonImageId").val(commonimageId[2])
 
 	console.log("Image IDs:", imageIds);
 	console.log("firstImageId", imageIds[0])
