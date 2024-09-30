@@ -42,14 +42,12 @@ export async function getUserProjectList(workspaceId) {
 /////////////////////////////////////
 
 // 유저의 workspace 목록 조회
-async function getWorkspaceProjectListByUser() {
+async function getWorkspaceProjectListByUserToken() {
   const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspaceuserrolemappingbytoken')
-  console.log("getWorkspaceProjectListByUser", response.data.responseData)
   return response.data.responseData
 }
 
 ///////////////////////////////////////
-// 로그인 유저의 workspace 목록 조회
 export async function getWorkspaceListByUser() {
   var workspaceList = [];
   // 세션에서 찾기
@@ -57,14 +55,10 @@ export async function getWorkspaceListByUser() {
 
   if (userWorkspaceList == null) {// 없으면 조회
     console.log("not saved. get ")
-    var userWorkspaceProjectList = await getWorkspaceProjectListByUser()// workspace 목록, project 목록 조회
+    var userWorkspaceProjectList = await getWorkspaceProjectListByUserToken()// workspace 목록, project 목록 조회
     setWorkspaceProjectList(userWorkspaceProjectList)
     console.log("userWorkspaceProjectList", userWorkspaceProjectList)
-    // workspaceProjectList에서 workspace 목록만 추출
-    // const jsonData = JSON.parse(userWorkspaceProjectList);
-    //console.log(jsonData)
     userWorkspaceProjectList.forEach(item => {
-      //console.log(item)
       workspaceList.push(item.workspaceProject.workspace);
     });
 
@@ -72,10 +66,7 @@ export async function getWorkspaceListByUser() {
     setCurrentWorkspace("")
     setCurrentProject("")
   } else {
-    // const jsonData = JSON.parse(userWorkspaceList);
-    //console.log(jsonData)
     userWorkspaceList.forEach(item => {
-      //console.log(item)
       workspaceList.push(item.workspaceProject.workspace);
     });
   }
@@ -90,10 +81,7 @@ export async function getProjectListByWorkspaceId(workspaceId) {
   let requestObject = {
     "pathParams": {
       "workspaceId": workspaceId
-    },
-    // "requestData": {
-    //   "userId": userId,
-    // }
+    }
   }
 
   let projectList = [];
@@ -195,4 +183,25 @@ export function setPrjSelectBox(projectList, curProjectId) {
       opt.setAttribute("selected", "selected");
     }
   }
+}
+
+export async function getAllWorksaceList(){
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/GetWorkspaceList')
+  return response.data.responseData
+}
+
+export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
+  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListByWorkspaceId'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  
+  return response.data.responseData
 }
