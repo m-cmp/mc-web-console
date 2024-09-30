@@ -19,7 +19,7 @@ export async function callbackClusterRecommendation(vmSpec) {
 	$("#ep_connectionName").val(vmSpec.connectionName)
 	$("#ep_specId").val(vmSpec.specName)
 	$("#ep_imageId").val(vmSpec.imageName)
-	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
+	$("#ep_commonSpecId").val(vmSpec.commonSpecId)	
 
 	var diskResp = await webconsolejs["common/api/services/disk_api"].getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
 	getCommonLookupDiskInfoSuccess(vmSpec.provider, diskResp)
@@ -298,10 +298,6 @@ export async function displayNewNodeForm() {
 	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 }
 
-export async function validateCreateClusterForm() {
-
-}
-
 // plus 버튼을 추가
 function getPlusVm(vmElementId) {
 
@@ -317,29 +313,65 @@ var totalDeployServerCount = 0;
 var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
-export function deployPmk() {
-	console.log("deployPmk")
-	createCluster()
+// export function deployPmk() {
+// 	console.log("deployPmk")
+// 	createCluster()
+// }
+
+export async function deployNode() {
+	console.log("deployNode")
+	await createNode()
 }
 
-export async function addNewPmk() {
-	isVm = false
+export async function createNode() {
+	console.log("createNode")
+	console.log("Create_Cluster_Config_Arr", Create_Cluster_Config_Arr)
 
-	var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
-	// provider set
-	await setProviderList(providerList)
+	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+	var selectedNsId = selectedWorkspaceProject.nsId;
+	console.log("selected projectId : ", selectedNsId)
 
-	// call getRegion API
-	var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList()
-	// region set
-	await setRegionList(regionList)
+	var k8sClusterId = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj[0].id
+	console.log("selected clusterId : ", k8sClusterId)
 
-	// call cloudconnection
-	var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection()
-	// cloudconnection set
-	await setCloudConnection(connectionList)
+	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Cluster_Config_Arr)
 
+}
+
+export async function addNewNodeGroup() {
+	// isNode = false
+
+	// var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
+	// // provider set
+	// await setProviderList(providerList)
+
+	// // call getRegion API
+	// var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList()
+	// // region set
+	// await setRegionList(regionList)
+
+	// // call cloudconnection
+	// var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection()
+	// // cloudconnection set
+	// await setCloudConnection(connectionList)
+
+	// Create_Cluster_Config_Arr = new Array();
+
+	console.log("addNewNodeGroup")
 	Create_Cluster_Config_Arr = new Array();
+
+	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
+	console.log("selectedPmk", selectedCluster)
+
+	var cluster_name = selectedCluster[0].name
+	var cluster_desc = selectedCluster[0].description
+
+	$("#node_cluster_name").val(cluster_name)
+	$("#node_cluster_desc").val(cluster_desc)
+
+	// 
+
+	isVm = true
 }
 
 export async function changeCloudConnection(connectionName) {
