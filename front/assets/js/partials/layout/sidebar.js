@@ -19,8 +19,8 @@ function updatemenu(){
 }
 
 function generateMenuHTML(menus) {
-    let html = ''; //<- 메뉴 완료될때까지 유지 
-    // let html = document.getElementById("sidebar-menu-inner").innerHTML ;
+    // let html = ''; //<- 메뉴 완료될때까지 유지 
+    let html = document.getElementById("sidebar-menu-inner").innerHTML ;
     menus.forEach(title => {
         html += ` <li class="nav-item">`
         html += ` <div class="hr-text fs-3">${title.displayName}</div>`
