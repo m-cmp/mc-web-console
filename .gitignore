@@ -85,3 +85,4 @@ conf/serverinfo
 # scripts
 !scripts/.env
 scripts/container-volume
+conf/api.yaml
