@@ -317,43 +317,27 @@
 
             <div class="card-table table-responsive">
               <!-- Tabulator TABLE SET -->
-              <div id="mcilist-table"></div>
+              <div id="pmklist-table"></div>
             </div>
           </div>
         </div>
         <div class="col-md-12">
-          <%= partial("partials/operation/manage/mciinfo.html") %>
+          <%= partial("partials/operation/manage/clusterinfo.html") %>
         </div>
       </div>
     </div>
 
     <!-- PMK CREATE -->
-    
+
     <div id="manage" class="section">
-      <form id="express_form">
-        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
-        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
-        <input
-          type="hidden"
-          name="subGroupSize"
-          value=""
-          id="p_subGroupSize"
-        /><!-- vm_cnt에서 subGroupSize로 변경 -->
-        <input type="hidden" name="name" value="" id="p_name" />
-        <input type="hidden" name="description" id="p_description" />
-        <input type="hidden" name="provider" id="p_provider" />
-        <input type="hidden" name="image" id="p_imageId" />
-        <input type="hidden" name="spec" id="p_specId" />
-        <input type="hidden" name="commonSpec" id="p_commonSpecId" />
-        <input type="hidden" name="commonImage" id="p_commonImageId" />
-        <input type="hidden" name="rootDiskType" id="p_root_disk_type" />
-        <input type="hidden" name="rootDiskSize" id="p_root_disk_size" />
-        <input
-          type="hidden"
-          name="connectionName"
-          value=""
-          id="p_connectionName"
-        />
+      <form id="cluster_form">
+        <input type="hidden" name="name" value="" id="c_name" />
+        <input type="hidden" name="description" id="c_desc" />
+        <input type="hidden" name="connection" id="c_connection" />
+        <input type="hidden" name="vpc" id="c_vpc" />
+        <input type="hidden" name="subnet" id="c_subnet" />
+        <input type="hidden" name="sg" id="c_sg" />
+        <input type="hidden" name="version" id="c_version" />
       </form>
 
       <div class="row row-cards">
@@ -419,6 +403,7 @@
                         <select
                           class="form-select"
                           name="cluster-connection"
+                          onchange="webconsolejs['partials/operation/manage/clustercreate'].changeCloudConnection(this.value)"
                           id="cluster_cloudconnection"
                           required
                         >
@@ -427,8 +412,6 @@
                       </div>
                     </div>
                   </div>
-
-                  
                 </div>
                 <div class="col-md-6">
                   <div class="form-group mb-2">
@@ -437,7 +420,7 @@
                       <div class="col">
                         <select
                           class="form-select"
-                          name="scluster-vpc"
+                          name="cluster-vpc"
                           id="cluster_vpc"
                           required
                         >
@@ -496,10 +479,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <ul
-                      class="removebullet vmStatus-list"
-                      id="mci_server_list"
-                    >
+                    <ul class="removebullet vmStatus-list" id="mci_server_list">
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="mci_plusVmIcon"
@@ -515,7 +495,7 @@
                 <button
                   type=""
                   class="btn btn-primary"
-                  onclick="webconsolejs['partials/operation/manage/clustercreate'].deployMci()"
+                  onclick="webconsolejs['partials/operation/manage/clustercreate'].deployPmk()"
                 >
                   Deploy
                 </button>

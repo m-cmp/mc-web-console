@@ -14,7 +14,7 @@ export async function getClusterList(nsId) {
     },
   };
 
-  var controller = "/api/" + "GetAllK8sCluster";
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllK8sCluster";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -24,46 +24,72 @@ export async function getClusterList(nsId) {
   return pmkList
 }
 
-export async function getCluster(nsId, clutserId) {
-  if (nsId == "" || nsId == undefined || clutserId == undefined || clutserId == "") {
-    console.log(" undefined nsId: " + nsId + " clusterId " + clutserId);
+export async function getCluster(nsId, clusterId) {
+  if (nsId == "" || nsId == undefined || clusterId == undefined || clusterId == "") {
+    console.log(" undefined nsId: " + nsId + " clusterId " + clusterId);
     return;
   }
   const data = {
     pathParams: {
       nsId: nsId,
-      clutserId: clutserId
+      k8sClusterId: clusterId
     }
   }
 
-  var controller = "/api/" + "GetK8sCluster";
+  var controller = "/api/" + "mc-infra-manager/" + "GetK8sCluster";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
 
   // error check를 위해 response를 return
-  return response.data
+  return response
 }
 
-export async function postCreateCluster(nsId, clusterName, clusterVersion, connectionName, vNetId, subNetId, securityGroupId, Express_Server_Config_Arr) {
+export async function CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId) {
 
   var obj = {}
-  obj['name'] = mciName
-  obj['description'] = mciDesc
-  obj['vm'] = Express_Server_Config_Arr
+
+  obj['connectionName'] = selectedConnection; // 선택된 Connection
+  obj['name'] = clusterName; // 클러스터 이름
+  obj['description'] = Create_Cluster_Config_Arr.description || ""; // 설명 (옵션)
+  obj['version'] = clusterVersion; // 선택된 Kubernetes 버전
+  obj['vNetId'] = selectedVpc; // VPC ID
+  obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
+  obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
+
+  // NodeGroupList가 있으면 추가 (조건부로 추가)
+  if (Create_Cluster_Config_Arr.k8sNodeGroupList && Create_Cluster_Config_Arr.k8sNodeGroupList.length > 0) {
+    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr.k8sNodeGroupList.map(group => ({
+      desiredNodeSize: group.desiredNodeSize || "1",
+      imageId: group.imageId || "",
+      maxNodeSize: group.maxNodeSize || "3",
+      minNodeSize: group.minNodeSize || "1",
+      name: group.name || "ng-01",
+      onAutoScaling: group.onAutoScaling || "false",
+      rootDiskSize: group.rootDiskSize || "40",
+      rootDiskType: group.rootDiskType || "cloud_essd",
+      specId: group.specId || "",
+      sshKeyId: group.sshKeyId || ""
+    }));
+  }
+
   const data = {
     pathParams: {
-      "nsId": nsId
+      "nsId": selectedNsId
     },
     Request: {
+      "connectionName": obj['connectionName'],
       "name": obj['name'],
       "description": obj['description'],
-      "vm": obj['vm'],
+      "version": obj['version'],
+      "vNetId": obj['vNetId'],
+      "subnetIds": obj['subnetIds'],
+      "securityGroupIds": obj['securityGroupIds'],
     }
   }
 
-  var controller = "/api/" + "PostMciDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostK8sCluster";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -73,7 +99,134 @@ export async function postCreateCluster(nsId, clusterName, clusterVersion, conne
   var urlParamMap = new Map();
 
   // 생성요청했으므로 결과를 기다리지 않고 mciList로 보냄
-  webconsolejs["common/util"].changePage("MciMng", urlParamMap)
+  // webconsolejs["common/util"].changePage("MciMng", urlParamMap)
+
+}
+
+export async function getVpcList(connectionName, nsId) {
+
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams: {
+      filterKey: "cspResourceName",
+      filterVal: connectionName
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllVNet";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("vpcList : ", response)
+  var vpcList = response.data.responseData;
+
+  return vpcList
+
+}
+
+export async function getSubnetList(vNetId, nsId) {
+  // TODO : getSubnet api로 변경
+  // 현재 subnet관련 api 안됨
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+      vNetId: vNetId,
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getvnet"
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("subnetList : ", response.data.responseData.subnetInfoList)
+  var subnetList = response.data.responseData.subnetInfoList
+
+  return subnetList
+
+  // var data = {
+  //   pathParams: {
+  //     nsId: nsId,
+  //     vNetId: vNetId,
+  //   }
+  // }
+
+  // var controller = "/api/" + "mc-infra-manager/" + "Getallsubnet";
+  // const response = await webconsolejs["common/api/http"].commonAPIPost(
+  //   controller,
+  //   data
+  // )
+
+  // console.log("subnetList : ", response)
+  // var subnetList = response.data.responseData;
+
+  // return subnetList
+
+}
+
+export async function getSecurityGroupList(vNetId, nsId) {
+
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams: {
+      filterKey: "vNetId",
+      filterVal: vNetId
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getallsecuritygroup";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("securityGroupList : ", response.data.responseData)
+  var securityGroupList = response.data.responseData;
+
+  return securityGroupList
+
+}
+
+export async function getAvailableK8sClusterVersion(providerName, regionName) {
+  var data = {
+    queryParams: {
+      providerName: providerName,
+      regionName: regionName
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getavailablek8sclusterversion";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("availablek8sclusterversion : ", response)
+  var availablek8sclusterversionList = response.data.responseData;
+
+  return availablek8sclusterversionList
 
 }
 
@@ -124,7 +277,7 @@ export async function mciRecommendVm(data) {
 // get all registered region list
 export async function getProviderList() {
 
-  let controller = "/api/" + "mc-infra-manager/"  + "GetProviderList";
+  let controller = "/api/" + "mc-infra-manager/" + "GetProviderList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
   );
@@ -171,45 +324,45 @@ export async function getCloudConnection() {
 }
 
 // mci내 vm들의 provider별 connection count
-export function calculateConnectionCount(vmList) {
+export function calculateConnectionCount(clusterList) {
 
-  var vmCloudConnectionCountMap = new Map();
+  var clusterCloudConnectionCountMap = new Map();
 
-  for (var vmIndex in vmList) {
-    var aVm = vmList[vmIndex];
-    var location = aVm.connectionConfig;
+  for (var vmIndex in clusterList) {
+    var aCluster = clusterList[vmIndex];
+    var location = aCluster.connectionConfig;
     if (!webconsolejs["common/util"].isEmpty(location)) {
 
       var cloudType = location.providerName;
-      if (vmCloudConnectionCountMap.has(cloudType)) {
+      if (clusterCloudConnectionCountMap.has(cloudType)) {
 
-        vmCloudConnectionCountMap.set(
+        clusterCloudConnectionCountMap.set(
           cloudType,
-          vmCloudConnectionCountMap.get(cloudType) + 1
+          clusterCloudConnectionCountMap.get(cloudType) + 1
         );
       } else {
-        vmCloudConnectionCountMap.set(cloudType, 0);
+        clusterCloudConnectionCountMap.set(cloudType, 0);
       }
     }
   }
 
-  return vmCloudConnectionCountMap;
+  return clusterCloudConnectionCountMap;
 }
 
 
 
 
 // MCIS 상태를 UI에서 표현하는 방식으로 변경
-export function getMciStatusFormatter(mciFullStatus) {
-  console.log("getMciStatus " + mciFullStatus);
-  var statusArr = mciFullStatus.split("-");
+export function getPmkStatusFormatter(pmkFullStatus) {
+  console.log("getMciStatus " + pmkFullStatus);
+  var statusArr = pmkFullStatus.split("-");
   var returnStatus = statusArr[0].toLowerCase();
 
-  if (mciFullStatus.toLowerCase().indexOf("running") > -1) {
+  if (pmkFullStatus.toLowerCase().indexOf("running") > -1) {
     returnStatus = "running";
-  } else if (mciFullStatus.toLowerCase().indexOf("suspend") > -1) {
+  } else if (pmkFullStatus.toLowerCase().indexOf("suspend") > -1) {
     returnStatus = "stop";
-  } else if (mciFullStatus.toLowerCase().indexOf("terminate") > -1) {
+  } else if (pmkFullStatus.toLowerCase().indexOf("terminate") > -1) {
     returnStatus = "terminate";
     // TODO : partial도 있는데... 처리를 어떻게 하지??
   } else {
@@ -220,33 +373,33 @@ export function getMciStatusFormatter(mciFullStatus) {
 }
 
 // Mci 상태를 icon으로 
-export function getMciStatusIconFormatter(mciDispStatus) {
-  var mciStatusIcon = "";
-  if (mciDispStatus == "running") {
-    mciStatusIcon = "icon_running.svg"
-  } else if (mciDispStatus == "include") {
-    mciStatusIcon = "icon_stop.svg"
-  } else if (mciDispStatus == "suspended") {
-    mciStatusIcon = "icon_stop.svg"
-  } else if (mciDispStatus == "terminate") {
-    mciStatusIcon = "icon_terminate.svg"
+export function getPmkStatusIconFormatter(pmkDispStatus) {
+  var pmkStatusIcon = "";
+  if (pmkStatusIcon == "running") {
+    pmkStatusIcon = "icon_running.svg"
+  } else if (pmkStatusIcon == "include") {
+    pmkStatusIcon = "icon_stop.svg"
+  } else if (pmkStatusIcon == "suspended") {
+    pmkStatusIcon = "icon_stop.svg"
+  } else if (pmkStatusIcon == "terminate") {
+    pmkStatusIcon = "icon_terminate.svg"
   } else {
-    mciStatusIcon = "icon_stop.svg"
+    pmkStatusIcon = "icon_stop.svg"
   }
-  return mciStatusIcon
+  return pmkStatusIcon
 }
 
 // Mci에 구성된 vm들의 provider들 imgTag로
-export function getMciInfoProviderNames(mciData) {
+export function getPmkInfoProviderNames(pmkData) {
 
-  var mciProviderNames = "";
+  var pmkProviderNames = "";
   var vmCloudConnectionMap = calculateConnectionCount(
-    mciData.vm
+    pmkData.vm
   );
   console.log("vmCloudConnectionMap", vmCloudConnectionMap)
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
-      mciProviderNames +=
+      pmkProviderNames +=
         '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
         key +
         '.png" alt="' +
@@ -254,32 +407,7 @@ export function getMciInfoProviderNames(mciData) {
         '"/>';
     });
   }
-  return mciProviderNames
-}
-
-// VM 상태를 UI에서 표현하는 방식으로 변경
-export function getVmStatusFormatter(vmFullStatus) {
-  console.log("getVmStatusFormatter " + vmFullStatus);
-  var returnVmStatus = vmFullStatus.toLowerCase() // 소문자로 변환
-
-  const VM_STATUS_RUNNING = "running"
-  const VM_STATUS_STOPPED = "stop"
-  const VM_STATUS_RESUMING = "resuming";
-  const VM_STATUS_INCLUDE = "include"
-  const VM_STATUS_SUSPENDED = "suspended"
-  const VM_STATUS_TERMINATED = "terminated"
-  const VM_STATUS_FAILED = "failed"
-
-  if (returnVmStatus == VM_STATUS_RUNNING) {
-    returnVmStatus = "running"
-  } else if (returnVmStatus == VM_STATUS_TERMINATED) {
-    returnVmStatus = "terminate"
-  } else if (returnVmStatus == VM_STATUS_FAILED) {
-    returnVmStatus = "terminate"
-  } else {
-    returnVmStatus = "stop"
-  }
-  return returnVmStatus
+  return pmkProviderNames
 }
 
 
@@ -303,7 +431,7 @@ export function getVmStatusStyleClass(vmDispStatus) {
 
 // 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mci 에서 사용
-export function calculateMciStatusCount(mciData) {
+export function calculatePmkStatusCount(mciData) {
   console.log("calculateMciStatusCount");
 
   console.log("mciData : ", mciData);

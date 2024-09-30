@@ -1,44 +1,80 @@
 <!-- 표의 행 클릭 시  -->
 
-<div class="card section" id="mci_info">
+<div class="card section" id="cluster_info">
     <input type="hidden" id="selected_mci_id">
   <div class="card-header">
     <h3 class="card-title">
-      MCIS Info<span id="mci_info_text" class="text-info" value=""> </span>
+      Cluster Info<span id="cluster_info_text" class="text-info" value=""> </span>
     </h3>
   </div>
   <div class="card-body">
     <div class="row p-4">
-      <div class="col-md-2">
+      <!-- <div class="col-md-3">
         <div class="form-group mb-2">
           <img
             class="img-fluid"
             class="rounded"
             width="65"
-            id="mci_info_status_img"
+            id="cluster_info_status_img"
           />
         </div>
-      </div>
-      <div class="col-md-8">
+      </div> -->
+      <div class="col-md-4">
         <div class="form-group mb-2">
           <div class="datagrid">
             <div class="datagrid-item">
               <div class="form-label">Name</div>
-              <div class="form-description" id="mci_info_name"></div>
+              <div class="form-description" id="cluster_info_name"></div>
+            </div>
+            <div class="datagrid-item">
+              <div class="form-label">Version</div>
+              <div class="form-description" id="cluster_info_version"></div>
             </div>
             <div class="datagrid-item">
               <div class="form-label">Status</div>
-              <div class="form-description" id="mci_info_status"></div>
+              <div class="datagrid-item">
+                <span id="cluster_info_status"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group mb-2">
+          <div class="datagrid">
+            <div class="datagrid-item">
+              <div class="form-label">VPC</div>
+              <div class="form-description" id="cluster_info_vpc"></div>
             </div>
             <div class="datagrid-item">
-              <div class="form-label">Provider</div>
+              <div class="form-label">Subnet</div>
               <div class="datagrid-item">
-                <span id="mci_info_cloud_connection"></span>
+                <span id="cluster_info_subnet"></span>
               </div>
             </div>
             <div class="datagrid-item">
-              <div class="form-label">Description</div>
-              <div class="form-description" id="mci_info_description"></div>
+              <div class="form-label">Security Group</div>
+              <div class="form-description" id="cluster_info_securitygroup"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group mb-2">
+          <div class="datagrid">
+            <div class="datagrid-item">
+              <div class="form-label">Cloud Connection</div>
+              <div class="form-description" id="cluster_info_cloudconnection"></div>
+            </div>
+            <div class="datagrid-item">
+              <div class="form-label">End Point</div>
+              <div class="datagrid-item">
+                <span id="cluster_info_endpoint"></span>
+              </div>
+            </div>
+            <div class="datagrid-item">
+              <div class="form-label">KubeConfig</div>
+              <div class="form-description" id="cluster_info_kubeconfig"></div>
             </div>
           </div>
         </div>
@@ -47,13 +83,13 @@
 
     <div class="row p-4">
       <div class="col-12">
-        < %= partial("partials/operation/manage/serverlist_status.html") % > 
+        <%= partial("partials/operation/manage/nodegrouplist_status.html") %> 
       </div>
     </div>
 
     <div class="row p-4">
       <div class="col-12">
-        < %= partial("partials/operation/manage/serverinfo.html") % >
+        <%= partial("partials/operation/manage/nodegroupinfo.html") %>
       </div>
     </div>
   </div>
