@@ -39,14 +39,12 @@
                                 <div class="col-md">
                                     <div class="card ">
                                         <div class="card-header text-center d-flex flex-column align-items-center">
-                                            <h1 class="card-title mx-auto" id="groupMembers_count">0/0</h1>
-                                            <h1 class="card-title mx-auto">Group/Members</h1>
+                                            <h1 class="card-title mx-auto" id="groupMembers_count">0 / 0</h1>
+                                            <h1 class="card-title mx-auto">Group / Members</h1>
                                         </div>
                                     </div>
                                 </div>
-
-
-
+                                
                             </div>
                         </div>
 
@@ -60,49 +58,10 @@
                         <div class="card-header">
                             <h3 class="card-title">Worksapces</h3>
                             <div class="card-actions btn-actions">
-                                <a href="#manage" class="btn btn-primary" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewMci()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                        <path d="M12 5l0 14"></path>
-                                        <path d="M5 12l14 0"></path>
-                                    </svg>
-                                    Add
+                                <!-- Add button -->
+                                <a class="btn-action" type="button" data-bs-toggle="modal" data-bs-target="#workspace-modal-add">
+                                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
                                 </a>
-
-                                <!-- filter -->
-                                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" />
-                                    </svg>
-                                </a>
-
-                                <!-- sort -->
-                                <div class="dropdown">
-                                    <a href="#" class="btn-action" data-bs-toggle="dropdown">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-arrows-sort">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M3 9l4 -4l4 4m-4 -4v14" />
-                                            <path d="M21 15l-4 4l-4 -4m4 4v-14" />
-                                        </svg>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
-                                        <a class="dropdown-item" href="#">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                            </svg> Action </a> <a class="dropdown-item" href="#"> <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
-                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
-                                                <path d="M16 5l3 3"></path>
-                                            </svg>
-                                            Another action
-                                        </a>
-                                    </div>
-                                </div>
-
                                 <!-- Action -->
                                 <div class="dropdown">
                                     <a href="#" class="btn-action" data-bs-toggle="dropdown">
@@ -113,54 +72,7 @@
                                     </a>
 
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
-                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                            </svg>
-                                            Reboot
-                                        </a>
-
-                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'suspend')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                            </svg>
-                                            Suspend
-                                        </a>
-
-                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                            </svg>
-                                            Resume
-                                        </a>
-
-                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                            </svg>
-                                            Terminate
-                                        </a>
-
-                                        <div class="dropdown-divider"></div>
-
-                                        <a class="dropdown-item" href="#manage">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                            </svg>
-                                            New
-                                        </a>
-
-                                        <a class="dropdown-item" href="#">
+                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspace?', 'pages/operation/workspace/workspaces.deleteWorkspaces')">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                                 <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
@@ -168,27 +80,35 @@
                                             </svg>
                                             Delete
                                         </a>
-
-                                        <a class="dropdown-item" href="#">
+                                        <a class="dropdown-item" onclick="webconsolejs['pages/operation/workspace/workspaces'].editeWorkspaceModalInit()">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                                 <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
                                                 <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
                                             </svg>
-                                            Export
+                                            Edit
                                         </a>
-
                                     </div>
                                 </div>
-
-                                <!-- refresh -->
-                                <a class="btn-action">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-                                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                                <!-- filter -->
+                                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
                                     </svg>
                                 </a>
+
+                                <!-- <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#workspace-modal-add">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M12 5l0 14"></path>
+                                        <path d="M5 12l14 0"></path>
+                                    </svg>
+                                    New/Add
+                                </a> -->
+
+
+
                             </div>
                         </div>
 
@@ -201,32 +121,25 @@
                                         Field
                                     </div>
                                     <select class="col form-select" id="filter-field">
-                                        <option value="name">Name</option>
-                                        <option value="provider">Provider</option>
-                                        <option value="statusCount.countTotal">
-                                            Total Servers
-                                        </option>
-                                        <option value="statusCount.countRunning">Running</option>
-                                        <option value="statusCount.countSuspended">
-                                            Suspended
-                                        </option>
-                                        <option value="statusCount.countTerminated">
-                                            Terminated
-                                        </option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
+                                        <option value="name">name</option>
                                     </select>
                                 </div>
 
                                 <div class="col-sm-12 col-md-2 row mb-1">
-                                    <div class="col-4 col-form-label d-flex justify-content-end">
-                                        Type
-                                    </div>
+                                    <div class="col-4 col-form-label d-flex justify-content-end">Type</div>
                                     <select class="col form-select" id="filter-type">
                                         <option value="like">like</option>
                                         <option value="=">=</option>
-                                        <option value="<">
-                                            << /option>
-                                        <option value="<=">
-                                            <=< /option>
+                                        <option value="<"><< /option>
+                                        <option value="<="><=< /option>
                                         <option value=">">></option>
                                         <option value=">=">>=</option>
                                         <option value="!=">!=</option>
@@ -254,13 +167,178 @@
                         </div>
 
                         <div class="card-table table-responsive">
-
                             <!-- Tabulator TABLE SET -->
                             <div id="Workspaceslist-table"></div>
-
                         </div>
 
                     </div>
+                </div>
+
+                <!-- WORSKSPACES SUBCARD -->
+                <div class="col-md-12">
+
+                    <div class="card section" id="workspace-info-card">
+
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <div class="nav-link disabled card-title text-info" id="workspace-details-presentation"></div>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a href="#workspace-details" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Details</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a href="#workspace-projects" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">Projects</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a href="#workspace-members" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">Members</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a href="#workspace-roles" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">Roles</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a href="#workspace-costAnalytics" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">Cost Analytics</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-table">
+                            <div class="tab-content">
+                                <!-- Details Tab -->
+                                <div class="tab-pane fade active show p-4" id="workspace-details" role="tabpanel">
+                                    <div class="form-group">
+                                        <div class="datagrid mb-3">
+                                            <div class="datagrid-item">
+                                                <div class="form-label">Name</div>
+                                                <div class="form-description" id="workspace-details-name"></div>
+                                            </div>
+                                            <div class="datagrid-item">
+                                                <div class="form-label">Description</div>
+                                                <div class="form-description" id="workspace-details-description"></div>
+                                            </div>
+                                            <div class="datagrid-item">
+                                                <div class="form-label">SystemId</div>
+                                                <div class="form-description" id="workspace-details-systemId"></div>
+                                            </div>
+                                        </div>
+                                        <div class="datagrid mb-3">
+                                            <div class="datagrid-item">
+                                                <div class="form-label">Created</div>
+                                                <div class="form-description" id="workspace-details-created"></div>
+                                            </div>
+                                            <div class="datagrid-item">
+                                                <div class="form-label">Updated</div>
+                                                <div class="form-description" id="workspace-details-updated"></div>
+                                            </div>
+                                            <div class="datagrid-item"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Projects Tab -->
+                                <div class="tab-pane fade card-table table-responsive" id="workspace-projects" role="tabpanel">
+                                    <div class="row">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Projects / status</h3>
+                                            <div class="card-actions btn-actions">
+                                                <!-- Add button -->
+                                                <a class="btn-action" type="button" data-bs-toggle="modal" data-bs-target="#workspace-modal-add">
+                                                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
+                                                </a>
+                                                <!-- Action -->
+                                                <div class="dropdown">
+                                                    <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M6 9l6 6l6 -6" />
+                                                        </svg>
+                                                    </a>
+
+                                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
+                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspace?', 'pages/operation/workspace/workspaces.deleteWorkspaces')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                                                            </svg>
+                                                            Delete
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- filter -->
+                                                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
+                                                    </svg>
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Tabulator TABLE SET -->
+                                    <div id="WorkspacesProjectsInfo-table"></div>
+                                </div>
+                                <!-- Members Tab -->
+                                <div class="tab-pane fade card-table table-responsive" id="workspace-members" role="tabpanel">
+                                    <div class="row">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Share Members / status</h3>
+                                            <div class="card-actions btn-actions">
+                                                <!-- Add button -->
+                                                <a class="btn-action" type="button" data-bs-toggle="modal" data-bs-target="#">
+                                                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
+                                                </a>
+                                                <!-- Action -->
+                                                <div class="dropdown">
+                                                    <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M6 9l6 6l6 -6" />
+                                                        </svg>
+                                                    </a>
+
+                                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
+                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspace?', '')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                                                            </svg>
+                                                            Delete
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- filter -->
+                                                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
+                                                    </svg>
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Tabulator TABLE SET -->
+                                    <div id="WorkspacesUserInfo-table"></div>
+                                </div>
+                                <!-- Roles Tab -->
+                                <div class="tab-pane fade p-4" id="workspace-roles" role="tabpanel">
+                                    <h4>roles tab</h4>
+                                    <div>Fringilla egestas nunc quis tellus diam rhoncus ultricies tristique enim at diam, sem nunc amet, pellentesque id egestas velit sed</div>
+                                </div>
+                                <!-- Cost Analytics Tab -->
+                                <div class="tab-pane fade p-4" id="workspace-costAnalytics" role="tabpanel">
+                                    <h4>costAnalytics tab</h4>
+                                    <div>Fringilla egestas nunc quis tellus diam rhoncus ultricies tristique enim at diam, sem nunc amet, pellentesque id egestas velit sed</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -269,6 +347,120 @@
 
     </div>
 
+</div>
+
+<!-- WORSKSPACES ADD MODAL -->
+<div class="modal modal-blur fade" id="workspace-modal-add" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Add/New Workspace</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        신규 워크스페이스를 등록/생성합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="workspace-modal-add-name" placeholder="Workspace Name">
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-control" id="workspace-modal-add-description" placeholder="Workspace Description">
+                        </div>
+                    </div>
+
+                    <div class="hr-text"></div>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+
+                            <label class="col form-check form-switch form-label">
+                                <input class="form-check-input" type="checkbox"id="workspace-modal-add-withprojects"data-bs-toggle="collapse" data-bs-target="#workspace-modal-add-projectAccordion" aria-expanded="false">
+                                <span class="col">With Project</span>
+                            </label>
+                            <div id="workspace-modal-add-projectAccordion" class="accordion-collapse collapse">
+                                <div class="form-label">Workspace mapping Project</div>
+                                <select class="form-select tomselected" id="workspace-modal-add-multiproject" name="state[]" multiple placeholder="Select one project or more" autocomplete="off"></select>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="workspace-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].creatworkspaceProject()">Confirm</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WORSKSPACES EDIT MODAL -->
+<div class="modal modal-blur fade" id="workspace-modal-edit" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Edit Workspace</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        워크스페이스 정보 및 설정을 변경합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="workspace-modal-edit-name" placeholder="Workspace Name" readonly disabled>
+                            <input type="text" class="form-control" id="workspace-modal-edit-id" readonly disabled hidden>
+
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-control" id="workspace-modal-edit-description" placeholder="Workspace Description">
+                        </div>
+                    </div>
+
+                    <div class="hr-text"></div>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <div class="form-label">Workspace mapping Project</div>
+                            <select class="form-select tomselected" id="workspace-modal-edit-multiproject" name="state[]" multiple placeholder="Select one project or more" autocomplete="off"></select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="workspace-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].editeWorkspace()">Confirm</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <%= javascriptTag("pages/operation/workspace/workspaces.js") %>
