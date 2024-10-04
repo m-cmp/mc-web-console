@@ -20,6 +20,7 @@ function initWorkspacesTable() {
       {
         formatter: "rowSelection",
         titleFormatter: "rowSelection",
+        titleFormatterParams : {rowRange : "active"},
         vertAlign: "middle",
         hozAlign: "center",
         headerHozAlign: "center",
@@ -66,14 +67,14 @@ function initWorkspacesTable() {
     workspacesListTable = setWorkspacesTabulator("Workspaceslist-table", tableObjParams, columns, true);
 
     workspacesListTable.on("rowClick", function (e, row) {
-      var WorkspacesID = row.getCell("id").getValue();
-      getSelectedWorkspaceInfocardInit(WorkspacesID)
+      getSelectedWorkspaceInfocardInit(row.getCell("id").getValue())
     });
   
     workspacesListTable.on("rowSelectionChanged", function (data, rows) {
       checked_array = data
     });
 }
+
 
 initWorkspacesProjectsInfoTable()
 function initWorkspacesProjectsInfoTable() {
@@ -229,7 +230,6 @@ async function initWorkspace() {
     await updateInitData()
     updateSummary()
     initProjectModalSeletor()
-    initProjectModalEditSeletor()
     await setWokrspaceTableData()
 }
 
@@ -301,17 +301,19 @@ function updateSummary(){
 }
 // DOMContentLoaded area end
 
+
+
 // info card area start
 async function getSelectedWorkspaceInfocardInit(workspacesID){
   // active info card
-  if (currentClickedWorkspace !== workspacesID){
-    webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
-    currentClickedWorkspace = workspacesID
-  } else {
+  const checked_array_ids = checked_array.map(item => item.id);
+  if (!checked_array_ids.includes(workspacesID)){
     webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
-    currentClickedWorkspace = ""
     return
+  } else {
+    webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
   }
+
   // Details Tab
   var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(workspacesID);
   document.getElementById("workspace-details-name").innerText = respWorkspaceInfo.workspace.name
@@ -376,8 +378,24 @@ export async function editeWorkspaceModalInit(){
   document.getElementById("workspace-modal-edit-id").value = checked_array[0].id
   document.getElementById("workspace-modal-edit-name").value = checked_array[0].name
   document.getElementById("workspace-modal-edit-description").value = checked_array[0].description
-  var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(checked_array[0].id);
-  const projectsids = (respWorkspaceInfo.projects && Array.isArray(respWorkspaceInfo.projects)) ? respWorkspaceInfo.projects.map(item => item.id) : [];
+  var respWorkspacesInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListOrderbyWorkspace();
+  // var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(checked_array[0].id);
+  console.log(respWorkspacesInfo)
+  initProjectModalEditSeletor()
+  let otherProjectIds = [];
+  let projectsids = [];
+  for (const workpaceInfo of respWorkspacesInfo) {
+    if (workpaceInfo.workspace.id !== checked_array[0].id) {
+          workpaceInfo.projects.forEach(project => {
+          otherProjectIds.push(project.id);
+        });
+    }else {
+      projectsids = (workpaceInfo.projects && Array.isArray(workpaceInfo.projects)) ? workpaceInfo.projects.map(item => item.id) : [];
+    }
+  }
+  otherProjectIds.forEach(prjid => {
+    projectModalEditSeletor.removeOption(prjid);
+  });
   projectModalEditSeletor.setValue(projectsids)
   var modal = new bootstrap.Modal(document.getElementById('workspace-modal-edit'));
   modal.show();
@@ -389,7 +407,13 @@ export async function editeWorkspace(){
   let multiprojectSelect = document.getElementById('workspace-modal-edit-multiproject');
   let multiprojects = Array.from(multiprojectSelect.selectedOptions, option => option.value);
   await webconsolejs["common/api/services/workspace_api"].updateWorkspaceById(wsid, description);
-  await webconsolejs["common/api/services/workspace_api"].updateWPmappings(wsid, multiprojects);
+  const updateWPmappingsResp = await webconsolejs["common/api/services/workspace_api"].updateWPmappings(wsid, multiprojects);
+  if (!updateWPmappingsResp.success){
+    console.log("editeWorkspace Error : ", JSON.stringify(updateWPmappingsResp.message.error))
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal("ERROR","중복 할당된 프로젝트가 존재합니다.")
+  }else {
+    location.reload()
+  }
 }
 // tableaction area end
 

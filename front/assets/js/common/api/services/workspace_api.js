@@ -269,9 +269,12 @@ export async function updateWPmappings(wsId, projectsIdsArr){
     controller,
     data
   )
-
-  console.log(response)
-  return response.data.responseData
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
 }
 
 export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
@@ -298,6 +301,15 @@ export async function getWPmappingListByWorkspaceId(wsId){
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
+  )
+  return response.data.responseData
+}
+
+export async function getWPmappingListOrderbyWorkspace(){
+  const controller = '/api/mc-iam-manager/GetWPmappingListOrderbyWorkspace'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null
   )
   return response.data.responseData
 }
