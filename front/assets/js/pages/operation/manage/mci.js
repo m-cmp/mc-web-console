@@ -264,7 +264,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   } catch (e) {
     console.log("e", e)
   }
-  var startTime = data.cspViewVmDetail.StartTime
+  // var startTime = data.cspViewVmDetail.StartTime
   var privateIp = data.privateIP
   var securityGroupID = data.securityGroupIds[0];
   var providerName = data.connectionConfig.providerName
