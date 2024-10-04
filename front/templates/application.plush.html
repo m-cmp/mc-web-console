@@ -58,4 +58,20 @@
   
   </body>
 
+  <script>
+    // 페이지 길이에 따라 동적으로 변하는 포커스를 유지하기 위해 아래 코드 삽입.
+    let maxHeight = window.innerHeight;
+    function updateMaxHeight() {
+      const currentHeight = document.body.scrollHeight;
+      if (currentHeight > maxHeight) {
+        maxHeight = currentHeight;
+      }
+      document.body.style.minHeight = maxHeight + "px";
+    }
+    window.addEventListener("resize", updateMaxHeight);
+    window.addEventListener("load", updateMaxHeight);
+    const observer = new MutationObserver(updateMaxHeight);
+    observer.observe(document.body, { childList: true, subtree: true });
+  </script>
+
 </html>

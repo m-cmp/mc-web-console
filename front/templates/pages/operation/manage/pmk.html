@@ -317,43 +317,27 @@
 
             <div class="card-table table-responsive">
               <!-- Tabulator TABLE SET -->
-              <div id="mcilist-table"></div>
+              <div id="pmklist-table"></div>
             </div>
           </div>
         </div>
         <div class="col-md-12">
-          <%= partial("partials/operation/manage/mciinfo.html") %>
+          <%= partial("partials/operation/manage/clusterinfo.html") %>
         </div>
       </div>
     </div>
 
     <!-- PMK CREATE -->
-    
+
     <div id="manage" class="section">
-      <form id="express_form">
-        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
-        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
-        <input
-          type="hidden"
-          name="subGroupSize"
-          value=""
-          id="p_subGroupSize"
-        /><!-- vm_cnt에서 subGroupSize로 변경 -->
-        <input type="hidden" name="name" value="" id="p_name" />
-        <input type="hidden" name="description" id="p_description" />
-        <input type="hidden" name="provider" id="p_provider" />
-        <input type="hidden" name="image" id="p_imageId" />
-        <input type="hidden" name="spec" id="p_specId" />
-        <input type="hidden" name="commonSpec" id="p_commonSpecId" />
-        <input type="hidden" name="commonImage" id="p_commonImageId" />
-        <input type="hidden" name="rootDiskType" id="p_root_disk_type" />
-        <input type="hidden" name="rootDiskSize" id="p_root_disk_size" />
-        <input
-          type="hidden"
-          name="connectionName"
-          value=""
-          id="p_connectionName"
-        />
+      <form id="cluster_form">
+        <input type="hidden" name="name" value="" id="c_name" />
+        <input type="hidden" name="description" id="c_desc" />
+        <input type="hidden" name="connection" id="c_connection" />
+        <input type="hidden" name="vpc" id="c_vpc" />
+        <input type="hidden" name="subnet" id="c_subnet" />
+        <input type="hidden" name="sg" id="c_sg" />
+        <input type="hidden" name="version" id="c_version" />
       </form>
 
       <div class="row row-cards">
@@ -419,6 +403,7 @@
                         <select
                           class="form-select"
                           name="cluster-connection"
+                          onchange="webconsolejs['partials/operation/manage/clustercreate'].changeCloudConnection(this.value)"
                           id="cluster_cloudconnection"
                           required
                         >
@@ -427,8 +412,6 @@
                       </div>
                     </div>
                   </div>
-
-                  
                 </div>
                 <div class="col-md-6">
                   <div class="form-group mb-2">
@@ -437,7 +420,7 @@
                       <div class="col">
                         <select
                           class="form-select"
-                          name="scluster-vpc"
+                          name="cluster-vpc"
                           id="cluster_vpc"
                           required
                         >
@@ -496,10 +479,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <ul
-                      class="removebullet vmStatus-list"
-                      id="mci_server_list"
-                    >
+                    <ul class="removebullet vmStatus-list" id="mci_server_list">
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="mci_plusVmIcon"
@@ -515,7 +495,7 @@
                 <button
                   type=""
                   class="btn btn-primary"
-                  onclick="webconsolejs['partials/operation/manage/clustercreate'].deployMci()"
+                  onclick="webconsolejs['partials/operation/manage/clustercreate'].deployPmk()"
                 >
                   Deploy
                 </button>
@@ -525,6 +505,230 @@
         </div>
       </div>
     </div>
+  </div>
+  <!-- add node -->
+
+  <div id="addnode" class="section">
+    <form id="express_form">
+      <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
+      <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
+      <input
+        type="hidden"
+        name="subGroupSize"
+        value=""
+        id="p_subGroupSize"
+      /><!-- vm_cnt에서 subGroupSize로 변경 -->
+      <input type="hidden" name="name" value="" id="p_name" />
+      <input type="hidden" name="description" id="p_description" />
+      <input type="hidden" name="provider" id="p_provider" />
+      <input type="hidden" name="image" id="p_imageId" />
+      <input type="hidden" name="spec" id="p_specId" />
+      <input type="hidden" name="commonSpec" id="p_commonSpecId" />
+      <input type="hidden" name="commonImage" id="p_commonImageId" />
+      <input
+        type="hidden"
+        name="connectionName"
+        value=""
+        id="p_connectionName"
+      />
+    </form>
+
+    <div class="row row-cards">
+      <div class="col-md-9">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Add node</h3>
+          </div>
+
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">Cluster Name</label>
+                  <input
+                    class="form-control"
+                    name="node_cluster_name"
+                    rows="1"
+                    placeholder="Input Name"
+                    id="node_cluster_name"
+                  />
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label">Description</label>
+                  <textarea
+                    class="form-control"
+                    rows="1"
+                    placeholder="Input Description"
+                    name="node_cluster_desc"
+                    id="node_cluster_desc"
+                  ></textarea>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required"
+                    >Cloud Provider / Region</label
+                  >
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <select
+                        name="node_cluster-provider"
+                        class="form-select"
+                        id="node_cluster_provider"
+                      >
+                        <option value="">Select Provider</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <select
+                        name="node_cluster-region"
+                        class="form-select"
+                        id="node_cluster_region"
+                      >
+                        <option value="">Select Region</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group mb-2">
+                  <label class="form-label required">Cloud Connection</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <select
+                        class="form-select"
+                        name="node_cluster-connection"
+                        onchange="webconsolejs['partials/operation/manage/clustercreate'].changeCloudConnection(this.value)"
+                        id="node_cluster_cloudconnection"
+                        required
+                      >
+                        <option value="">Select Connection</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">VPC ID</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <select
+                        class="form-select"
+                        name="node_cluster-vpc"
+                        id="node_cluster_vpc"
+                        required
+                      >
+                        <option value="">Select VPC</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required">Subnet ID</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <select
+                        class="form-select"
+                        name="node_cluster-subnet"
+                        id="node_cluster_subnet"
+                        required
+                      >
+                        <option value="">Select Subnet</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required">Security Group</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <select
+                        class="form-select"
+                        name="node_cluster-sg"
+                        id="node_cluster_sg"
+                        required
+                      >
+                        <option value="">Select Security Group</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required">Cluster Version</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <select
+                        class="form-select"
+                        name="node_cluster-version"
+                        id="node_cluster_version"
+                        required
+                      >
+                        <option value="">Select Version</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <div class="row row-cards">
+                  <ul class="removebullet vmStatus-list" id="mci_server_list">
+                    <li
+                      class="removebullet btn btn-secondary-lt"
+                      id="mci_plusVmIcon"
+                      onclick="webconsolejs['partials/operation/manage/clustercreate'].displayNewNodeForm()"
+                    >
+                      +
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer text-end">
+              <button
+                type=""
+                class="btn btn-primary"
+                onclick="webconsolejs['partials/operation/manage/clustercreate'].deployNode()"
+              >
+                Deploy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title">Steps</h3>
+            <ul class="steps steps-vertical">
+              <li class="step-item active">
+                <div class="h4 m-0">MCIS Name</div>
+                <div class="text-secondary">MCIS Name input ex) mci01</div>
+              </li>
+              <li class="step-item">
+                <div class="h4 m-0">Order received</div>
+                <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card-body">
+            <ul class="steps steps-counter steps-vertical">
+              <li class="step-item active">Step one</li>
+              <li class="step-item">Step two</li>
+              <li class="step-item">Step three</li>
+              <li class="step-item">Step four</li>
+              <li class="step-item">Step five</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 노드 수정 -->
+
+    
   </div>
 
   <!-- add node : node configuration -->

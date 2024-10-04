@@ -16009,7 +16009,7 @@ Navbar
   --tblr-navbar-bg: var(--tblr-bg-surface);
   --tblr-navbar-border-width: var(--tblr-border-width);
   --tblr-navbar-active-border-color: var(--tblr-primary);
-  --tblr-navbar-active-bg: rgba(0, 0, 0, 0.06);
+  --tblr-navbar-active-bg: rgba(0, 0, 0, 0.3);
   --tblr-navbar-color: var(--tblr-body-color);
   --tblr-navbar-border-color: var(--tblr-border-color);
   align-items: stretch;
