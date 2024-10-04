@@ -48,7 +48,6 @@ export function setTabulator(
   }
 
   var tabulatorTable = new Tabulator("#" + tableObjId, {
-    //ajaxURL:"http://localhost:3000/operations/mcimng?option=status",
     placeholder,
     pagination,
     paginationSize,

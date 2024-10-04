@@ -17,9 +17,19 @@ export function toggleElement(elem) {
     if (elem.classList.contains("active")) {
         elem.classList.remove('active')
         window.location.hash = ""
+        return false
     } else {
         elem.classList.add('active')
+        return true
     }
+}
+
+export function activeElement(elem) {
+    elem.classList.add('active')
+}
+
+export function deactiveElement(elem) {
+    elem.classList.remove('active')
 }
 
 export function toggleSubElement(elem) {
