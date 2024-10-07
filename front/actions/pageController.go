@@ -2,7 +2,6 @@ package actions
 
 import (
 	"front/templates"
-	"log"
 	"net/http"
 	"strings"
 
@@ -15,11 +14,17 @@ import (
 //
 //	templates/pages 아래에 /configuration/workspace/manage 에 html 파일을 만들면 됨.
 func PageController(c buffalo.Context) error {
-	renderHtmlPath := "pages" + strings.TrimSuffix(strings.TrimPrefix(c.Request().URL.Path, "/webconsole"), "/") + ".html"
-	log.Println("renderHtmlPath : ", renderHtmlPath)
-	_, err := templates.FS().Open(renderHtmlPath)
+	renderHtmlPath := "pages" + strings.TrimSuffix(strings.TrimPrefix(c.Request().URL.Path, "/webconsole"), "/")
+	suffix := ".html"
+	iframefix := ".iframe"
+	_, err := templates.FS().Open(renderHtmlPath + suffix)
 	if err != nil {
-		return c.Render(http.StatusNotFound, defaultRender.HTML("error-404.html"))
+		_, err := templates.FS().Open(renderHtmlPath + iframefix + suffix)
+		if err != nil {
+			return c.Render(http.StatusNotFound, defaultRender.HTML("error-404.html"))
+		} else {
+			return c.Render(http.StatusOK, webconsoleIframeRender.HTML(renderHtmlPath+iframefix+suffix))
+		}
 	}
-	return c.Render(http.StatusOK, webconsoleRender.HTML(renderHtmlPath))
+	return c.Render(http.StatusOK, webconsoleRender.HTML(renderHtmlPath+suffix))
 }

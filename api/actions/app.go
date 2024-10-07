@@ -65,6 +65,8 @@ func App() *buffalo.App {
 			api.POST("/createmenuresources", CreateMCIAMMenuResources)
 			api.POST("/getmenutree", GetMCIAMmenuTree)
 
+			api.POST("/getapihosts", GetApiHosts)
+
 			api.POST("/getworkspaceuserrolemappingbytoken", GetWorkspaceUserRoleMappingByToken)
 
 			api.POST("/getcompanyinfo", GetCompanyInfo)
