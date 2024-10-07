@@ -72,7 +72,7 @@
                                     </a>
 
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
-                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspace?', 'pages/operation/workspace/workspaces.deleteWorkspaces')">
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspaces?', 'pages/operation/workspace/workspaces.deleteWorkspaces')">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                                 <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
@@ -241,7 +241,7 @@
                                             <h3 class="card-title">Projects / status</h3>
                                             <div class="card-actions btn-actions">
                                                 <!-- Add button -->
-                                                <a class="btn-action" type="button" data-bs-toggle="modal" data-bs-target="#workspace-modal-add">
+                                                <a class="btn-action" type="button" onclick="webconsolejs['pages/operation/workspace/workspaces'].addWorkspaceProjectModalInit()">
                                                     <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
                                                 </a>
                                                 <!-- Action -->
@@ -254,13 +254,13 @@
                                                     </a>
 
                                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
-                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspace?', 'pages/operation/workspace/workspaces.deleteWorkspaces')">
+                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Project Mappings', 'Would you like to delete Project Mappings?', 'pages/operation/workspace/workspaces.deleteProjects')">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                                                 <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
                                                                 <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
                                                             </svg>
-                                                            Delete
+                                                            Delete Projects Mappings
                                                         </a>
                                                     </div>
                                                 </div>
@@ -456,6 +456,67 @@
             <div class="modal-footer">
                 <div align="right">
                     <button id="workspace-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].editeWorkspace()">Confirm</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PROJECT ADD MODAL -->
+<div class="modal modal-blur fade" id="project-modal-add" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Add/New Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        신규 프로젝트를 등록/생성합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="project-modal-add-name" placeholder="Project Name">
+                            <input type="text" class="form-control" id="project-modal-add-workspaceId" placeholder="Project Name" readonly hidden>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-control" id="project-modal-add-description" placeholder="Project Description">
+                        </div>
+                    </div>
+
+                    <div class="hr-text"></div>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+
+                            <label class="col form-check form-switch form-label">
+                                <input class="form-check-input" type="checkbox"id="workspace-modal-add-withprojects"data-bs-toggle="collapse" data-bs-target="#project-modal-add-cloudenvAccordion" aria-expanded="false">
+                                <span class="col">With cloud ENV</span>
+                            </label>
+                            <div id="project-modal-add-cloudenvAccordion" class="accordion-collapse collapse">
+                                <div class="form-label">cloud ENV list</div>
+                                <select class="form-select tomselected" id="workspace-modal-add-multiproject" name="state[]" multiple placeholder="Select one project or more" autocomplete="off"></select>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="workspace-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].addWorkspaceProject()">Confirm</button>
                     <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
                 </div>
             </div>

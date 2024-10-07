@@ -22,9 +22,7 @@ export function commonShowDefaultModal(title, content) {
     document.getElementById(`${modalId}-title`).innerText = title;
     document.getElementById(`${modalId}-content`).innerText = content;
     document.getElementById(`${modalId}-confirm-btn`).onclick = modalHide('commonDefaultModal')
-
     modal.show();  // 모달 표시
-
 }
 
 // modal hide

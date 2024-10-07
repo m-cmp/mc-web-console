@@ -22,6 +22,13 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
     }
 });
 
+document.getElementById('password').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();  // 기본 엔터 동작 방지
+      document.getElementById('loginbtn').click();  // 로그인 버튼 클릭
+    }
+  });
+
 function sortMenusByPriority(menu) {
     if (menu.menus && Array.isArray(menu.menus)) {
         menu.menus.sort((a, b) => parseInt(a.priority) - parseInt(b.priority));
