@@ -52,3 +52,12 @@ func SubsystemAnyController(c buffalo.Context) error {
 
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
+
+func GetApiHosts(c buffalo.Context) error {
+	apiHosts, err := handler.GetApiHosts()
+	if err != nil {
+		return c.Render(200, r.JSON(map[string]interface{}{"error": err.Error()}))
+	}
+	commonResponse := handler.CommonResponseStatusOK(apiHosts)
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+}
