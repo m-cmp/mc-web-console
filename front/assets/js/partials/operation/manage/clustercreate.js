@@ -283,6 +283,7 @@ async function updateConfigurationFilltering() {
 var createMciListObj = new Object();
 var isVm = false // mci 생성(false) / vm 추가(true)
 var Create_Cluster_Config_Arr = new Array();
+var Create_Node_Config_Arr = new Array();
 var express_data_cnt = 0
 
 
@@ -290,13 +291,63 @@ var express_data_cnt = 0
 // isExpert의 체크 여부에 따라 바뀜.
 // newServers 와 simpleServers가 있음.
 export async function displayNewNodeForm() {
+	
+	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+	var selectedNsId = selectedWorkspaceProject.nsId;
+	
+	// getSSHKEY
+	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId)
+	console.log("sshKeyList",sshKeyList)
+	var mysshKeyList = sshKeyList.data.responseData.sshKey
+	console.log("mysshKeyList",mysshKeyList)
+	if (mysshKeyList && mysshKeyList.length > 0) {
+        var html = '<option value="">Select sshKey</option>';
+        mysshKeyList.forEach(item => {
+            html += '<option value="' + item.id + '">' + item.id + '</option>';
+        });
+    
+        $("#node_sshkey").empty();
+        $("#node_sshkey").append(html);
+    } else {
+        console.log("No SSH keys available");
+	}
+
+	//recommendVm으로 k8s spec
+	
 
 	// availablek8sclusternodeimage
+	// provider값과 region값 내려주기 전까지 임시
+	// var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
+	// var providerString = selectedCluster[0].provider
+	// var {provider, region} = extractProviderRegion(providerString)
+
+	// var availableK8sClusterNodeImageList = await webconsolejs["common/api/services/pmk_api"].getAvailablek8sClusterNodeImage(provider, region)
+	// console.log("availableK8sClusterNodeImageList",availableK8sClusterNodeImageList)
+	// if (availableK8sClusterNodeImageList && availableK8sClusterNodeImageList.length > 0) {
+    //     var html = '<option value="">Select Image</option>';
+    //     availableK8sClusterNodeImageList.forEach(item => {
+    //         html += '<option value="' + item.id + '">' + item.id + '</option>';
+    //     });
+    
+    //     $("#node_sshkey").empty();
+    //     $("#node_sshkey").append(html);
+    // } else {
+    //     console.log("No SSH keys available");
+	// }
 
 	// toggle create nodegroup form
 	var div = document.getElementById("nodegroup_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
 }
+
+// function extractProviderRegion(providerString){
+// 	var parts = providerString.split('-');
+// 	var provider = parts[0];
+// 	var region = parts.slice(1, 4).join('-');
+	
+// 	return {provider, region}
+// }
 
 // plus 버튼을 추가
 function getPlusVm(vmElementId) {
@@ -313,10 +364,10 @@ var totalDeployServerCount = 0;
 var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
-// export function deployPmk() {
-// 	console.log("deployPmk")
-// 	createCluster()
-// }
+export function deployPmk() {
+	console.log("deployPmk")
+	createCluster()
+}
 
 export async function deployNode() {
 	console.log("deployNode")
@@ -325,7 +376,7 @@ export async function deployNode() {
 
 export async function createNode() {
 	console.log("createNode")
-	console.log("Create_Cluster_Config_Arr", Create_Cluster_Config_Arr)
+	console.log("Create_Node_Config_Arr", Create_Node_Config_Arr)
 
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 	var selectedNsId = selectedWorkspaceProject.nsId;
@@ -334,7 +385,7 @@ export async function createNode() {
 	var k8sClusterId = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj[0].id
 	console.log("selected clusterId : ", k8sClusterId)
 
-	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Cluster_Config_Arr)
+	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Node_Config_Arr)
 
 }
 
@@ -355,22 +406,58 @@ export async function addNewNodeGroup() {
 	// // cloudconnection set
 	// await setCloudConnection(connectionList)
 
-	// Create_Cluster_Config_Arr = new Array();
 
 	console.log("addNewNodeGroup")
 	Create_Cluster_Config_Arr = new Array();
+	Create_Node_Config_Arr = new Array();
 
 	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
 	console.log("selectedPmk", selectedCluster)
 
 	var cluster_name = selectedCluster[0].name
 	var cluster_desc = selectedCluster[0].description
+	var cluster_connection = selectedCluster[0].provider// 임시
+	var cluster_vpc = selectedCluster[0].vpc
+	var cluster_subnet = selectedCluster[0].subnet
+	var cluster_securitygroup = selectedCluster[0].securitygroup
+	var cluster_version = selectedCluster[0].version
+	console.log("cluster_provider", selectedCluster[0])
 
 	$("#node_cluster_name").val(cluster_name)
 	$("#node_cluster_desc").val(cluster_desc)
+	// $("#node_cluster_connection").val(cluster_connection)
+	$("#node_cluster_cloudconnection").html('<option value="' + cluster_connection + '" selected>' + cluster_connection + '</option>');
+	// provider, region, connection, vpc, subnet, sg, cluster version 채워넣어 펼치기
+	$("#node_cluster_vpc").html('<option value="' + cluster_vpc + '" selected>' + cluster_vpc + '</option>');
+	$("#node_cluster_subnet").html('<option value="' + cluster_subnet + '" selected>' + cluster_subnet + '</option>');
+	$("#node_cluster_sg").html('<option value="' + cluster_securitygroup + '" selected>' + cluster_securitygroup + '</option>');
+	$("#node_cluster_version").html('<option value="' + cluster_version + '" selected>' + cluster_version + '</option>');
 
-	// 
 
+	isVm = true
+}
+
+export async function addNewPmk() {
+	// isNode = false
+
+	var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
+	// provider set
+	await setProviderList(providerList)
+
+	// call getRegion API
+	var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList()
+	// region set
+	await setRegionList(regionList)
+
+	// call cloudconnection
+	var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection()
+	// cloudconnection set
+	await setCloudConnection(connectionList)
+
+	Create_Cluster_Config_Arr = new Array();
+
+	console.log("addNewPmk")
+	
 	isVm = true
 }
 
@@ -544,6 +631,41 @@ export function clusterFormDone_btn() {
 
     Create_Cluster_Config_Arr.push(cluster_form)
 	console.log("express btn click and express form data : ", cluster_form)
+
+	var div = document.getElementById("nodegroup_configuration");
+	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
+
+	// TODO: + 박스 추가
+}
+
+export function addNodeFormDone_btn() {
+
+	$("#n_name").val($("#node_name").val())
+	$("#n_specid").val($("#node_specid").val())
+	$("#n_imageid").val($("#node_imageid").val())
+	$("#n_minnodesize").val($("#node_minnodesize").val())
+	$("#n_maxnodesize").val($("#node_maxnodesize").val())
+	$("#n_sshkey").val($("#node_sshkey").val())
+	$("#n_rootdisk").val($("#node_rootdisk").val())
+	$("#n_rootdisksize").val($("#node_rootdisksize").val())
+	$("#n_autoscaling").val($("#node_autoscaling").val())
+	$("#n_desirednodesize").val($("#node_desirednodesize").val())
+	
+	var node_form = {}
+	node_form["desiredNodeSize"] = $("#n_desirednodesize").val();
+    node_form["imageId"] = $("#n_imageid").val();
+    node_form["maxNodeSize"] = $("#n_maxnodesize").val();
+    node_form["minNodeSize"] = $("#n_minnodesize").val();
+    node_form["name"] = $("#n_name").val();
+    node_form["onAutoScaling"] = $("#n_autoscaling").val();
+    node_form["rootDiskSize"] = $("#n_rootdisksize").val();
+    node_form["rootDiskType"] = $("#n_rootdisk").val();
+    node_form["specId"] = $("#n_specid").val();
+    node_form["sshKeyId"] = $("#n_sshkey").val(); 
+
+
+    Create_Node_Config_Arr.push(node_form)
+	console.log("express btn click and express form data : ", node_form)
 
 	var div = document.getElementById("nodegroup_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)

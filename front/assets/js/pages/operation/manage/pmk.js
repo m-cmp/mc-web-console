@@ -115,7 +115,7 @@ function mappingTablePmkData(totalPmkListObj) {
         const vpc = (network.VpcIID && network.VpcIID.SystemId) || "N/A";
         const subnet = (network.SubnetIIDs && network.SubnetIIDs[0] && network.SubnetIIDs[0].SystemId) || "N/A";
         const securityGroup = (network.SecurityGroupIIDs && network.SecurityGroupIIDs[0] && network.SecurityGroupIIDs[0].SystemId) || "N/A";
-
+        const version = item.CspViewK8sClusterDetail.Version || "N/A";
         return {
             name: item.name,
             id: item.id,
@@ -128,6 +128,7 @@ function mappingTablePmkData(totalPmkListObj) {
             vpc: vpc,
             subnet: subnet,
             securitygroup: securityGroup,
+            version: version,
             statusCount: { countTotal: keyValueList.find(kv => kv.key === "size")?.value || 0 }
         };
     });
@@ -171,8 +172,9 @@ function setPmkInfoData(pmkData) {
     var pmkNetwork = clusterDetailData.Network || {};
 
     try {
-
+        
         var pmkName = clusterData.name;
+        var pmkID = clusterData.id
         var pmkVersion = clusterDetailData.Version;
         var pmkStatus = clusterDetailData.Status;
 
@@ -213,6 +215,7 @@ function setPmkInfoData(pmkData) {
 
     // TODO: pmk info로 cursor 이동
     // TODO: nodegroup box (Node group 상태 등을 추가로 처리)
+    displayNodeStatusList(pmkID, clusterData)
 }
 
 // pmk life cycle 변경
@@ -231,38 +234,40 @@ export function changeVmLifeCycle(type) {
 
 // vm 상태별 icon으로 표시
 // Server List / Status VM리스트
-function displayServerStatusList(pmkID, vmList) {
-    console.log("displayServerStatusList")
-    console.log("displayServerStatusList", vmList)
-
+function displayNodeStatusList(pmkID, clusterData) {
+    console.log("displayNodeStatusList")
+    console.log("displayNodeStatusList", clusterData)
+    var nodeGroupList = clusterData.CspViewK8sClusterDetail.NodeGroupList
+    console.log("nodeGroupList",nodeGroupList)
     var pmkName = pmkID;
-    var vmLi = "";
-    vmList.sort();
-    for (var vmIndex in vmList) {
-        var aVm = vmList[vmIndex]
+    var nodeLi = "";
+    nodeGroupList.sort();
+    for (var nodeIndex in nodeGroupList) {
+        var aNode = nodeGroupList[nodeIndex]
 
-        var vmID = aVm.id;
-        var vmName = aVm.name;
-        var vmStatus = aVm.status;
-        var vmDispStatus = webconsolejs["common/api/services/pmk_api"].getVmStatusFormatter(vmStatus); // vmStatus set
-        var vmStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(vmDispStatus) // vmStatus 별로 상태 색상 set
+        var nodeID = aNode.IId.SystemId;
+        console.log("nodeID",nodeID)
+        var nodeName = aNode.IId.NameId;
+        var nodeStatus = aNode.Status;
+        // var nodeDispStatus = webconsolejs["common/api/services/pmk_api"].getPmkStatusFormatter(nodeStatus); // vmStatus set
+        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus) // vmStatus 별로 상태 색상 set
 
-        vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/pmk\'].vmDetailInfo(\'' + pmkID + '\',\'' + pmkName + '\',\'' + vmID + '\')"><span class="text-dark-fg">' + vmName + '</span></li>';
+        nodeLi += '<li id="server_status_icon_' + pmkID + '" class="card ' + nodeStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/pmk\'].nodeGroupDetailInfo(\'' + pmkID + '\',\'' + pmkName + '\',\'' + nodeID + '\')"><span class="text-dark-fg">' + nodeName + '</span></li>';
 
     }// end of pmk loop
 
-    $("#pmk_server_info_box").empty();
-    $("#pmk_server_info_box").append(vmLi);
+    $("#pmk_node_info_box").empty();
+    $("#pmk_node_info_box").append(nodeLi);
 }
 
 // Server List / Status VM 리스트에서
 // VM 한 개 클릭시 vm의 세부 정보
-export async function vmDetailInfo(pmkID, pmkName, vmID) {
+export async function nodeGroupDetailInfo(pmkID, pmkName, vmID) {
     // Toggle PMK Info
-    var div = document.getElementById("server_info");
+    var div = document.getElementById("nodeGroup_info");
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
-    console.log("vmDetailInfo")
+    console.log("nodeDetailInfo")
     console.log("pmkID : ", pmkID)
     console.log("pmkName : ", pmkName)
     console.log("vmID : ", vmID)
@@ -278,10 +283,10 @@ export async function vmDetailInfo(pmkID, pmkName, vmID) {
         }
     }// end of pmk loop
     console.log("aPmk", aPmk);
-    var vmList = aPmk.vm;
+    var nodeList = aPmk.CspViewK8sClusterDetail.Nodes;
     var vmExist = false
     var data = new Object();
-    for (var vmIndex in vmList) {
+    for (var vmIndex in nodeList) {
         var aVm = vmList[vmIndex]
         if (vmID == aVm.id) {
             //aVm = vmData;
@@ -743,6 +748,12 @@ function initPmkTable() {
             title: "Security Group",
             field: "securitygroup",
             vertAlign: "middle"
+        },
+        {
+            title: "Version",
+            field: "version",
+            vertAlign: "middle",
+            visible: false,
         },
         {
             title: "Total Servers",
