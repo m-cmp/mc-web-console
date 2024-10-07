@@ -2,12 +2,13 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import TomSelect from 'tom-select';
 
 var checked_array = [];
+var checked_projects_array = [];
 var listData;
 var workspaceListInfoSummary = {workspaceCount:0, projectsCount:0, groupCount:0, memberCount:0}
 var workspacesListTable;
 var workspacesProjectsInfo;
 var workspacesUserInfo;
-var currentClickedWorkspace;
+var currentClickedWorkspaceId;
 
 var projectModalSeletor;
 var projectModalEditSeletor;
@@ -20,6 +21,7 @@ function initWorkspacesTable() {
       {
         formatter: "rowSelection",
         titleFormatter: "rowSelection",
+        titleFormatterParams : {rowRange : "active"},
         vertAlign: "middle",
         hozAlign: "center",
         headerHozAlign: "center",
@@ -66,8 +68,8 @@ function initWorkspacesTable() {
     workspacesListTable = setWorkspacesTabulator("Workspaceslist-table", tableObjParams, columns, true);
 
     workspacesListTable.on("rowClick", function (e, row) {
-      var WorkspacesID = row.getCell("id").getValue();
-      getSelectedWorkspaceInfocardInit(WorkspacesID)
+      currentClickedWorkspaceId = row.getCell("id").getValue()
+      getSelectedWorkspaceInfocardInit(currentClickedWorkspaceId)
     });
   
     workspacesListTable.on("rowSelectionChanged", function (data, rows) {
@@ -122,14 +124,12 @@ function initWorkspacesProjectsInfoTable() {
     ];
     workspacesProjectsInfo = setWorkspacesProjectsInfoTabulator("WorkspacesProjectsInfo-table", tableObjParams, columns, true);
 
-    // workspacesProjectsInfo.on("rowClick", function (e, row) {
-    //   var WorkspacesID = row.getCell("id").getValue();
-    //   getSelectedWorkspacesData(WorkspacesID)
-    // });
+    workspacesProjectsInfo.on("rowClick", function (e, row) {
+    });
   
-    // workspacesProjectsInfo.on("rowSelectionChanged", function (data, rows) {
-    //   checked_array = data
-    // });
+    workspacesProjectsInfo.on("rowSelectionChanged", function (data, rows) {
+      checked_projects_array = data
+    });
 }
 
 initWorkspacesUsersInfoTable()
@@ -229,7 +229,6 @@ async function initWorkspace() {
     await updateInitData()
     updateSummary()
     initProjectModalSeletor()
-    initProjectModalEditSeletor()
     await setWokrspaceTableData()
 }
 
@@ -276,9 +275,10 @@ function initProjectModalSeletor(){
     option.text = prj.name;
     selectElement.add(option);
   });
-  if (selectElement) {
-    projectModalSeletor = new TomSelect(selectElement);
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
   }
+  projectModalSeletor = new TomSelect(selectElement);
 }
 
 function initProjectModalEditSeletor(){
@@ -289,9 +289,10 @@ function initProjectModalEditSeletor(){
     option.text = prj.name;
     selectElement.add(option);
   });
-  if (selectElement) {
-    projectModalEditSeletor = new TomSelect(selectElement);
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
   }
+  projectModalEditSeletor = new TomSelect(selectElement);
 }
 
 function updateSummary(){
@@ -301,31 +302,38 @@ function updateSummary(){
 }
 // DOMContentLoaded area end
 
+
+
 // info card area start
 async function getSelectedWorkspaceInfocardInit(workspacesID){
   // active info card
-  if (currentClickedWorkspace !== workspacesID){
-    webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
-    currentClickedWorkspace = workspacesID
-  } else {
+  const checked_array_ids = checked_array.map(item => item.id);
+  if (!checked_array_ids.includes(workspacesID)){
     webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
-    currentClickedWorkspace = ""
     return
+  } else {
+    webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
   }
-  // Details Tab
+
   var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(workspacesID);
-  document.getElementById("workspace-details-name").innerText = respWorkspaceInfo.workspace.name
-  document.getElementById("workspace-details-description").innerText = respWorkspaceInfo.workspace.description
-  document.getElementById("workspace-details-systemId").innerText = respWorkspaceInfo.workspace.id
-  document.getElementById("workspace-details-created").innerText = respWorkspaceInfo.workspace.created_at
-  document.getElementById("workspace-details-updated").innerText = respWorkspaceInfo.workspace.updated_at
-  document.getElementById("workspace-details-presentation").innerText = respWorkspaceInfo.workspace.name + " Info"
+  
+  // Details Tab
+  await setWokrspaceDetailsData(respWorkspaceInfo)
 
   // Projects Tab
   setWokrspaceProjectsTableData(respWorkspaceInfo.projects)
 
   // Users Tab
   await setWokrspaceUserTableData(workspacesID)
+}
+
+async function setWokrspaceDetailsData(respWorkspaceInfo){
+  document.getElementById("workspace-details-name").innerText = respWorkspaceInfo.workspace.name
+  document.getElementById("workspace-details-description").innerText = respWorkspaceInfo.workspace.description
+  document.getElementById("workspace-details-systemId").innerText = respWorkspaceInfo.workspace.id
+  document.getElementById("workspace-details-created").innerText = respWorkspaceInfo.workspace.created_at
+  document.getElementById("workspace-details-updated").innerText = respWorkspaceInfo.workspace.updated_at
+  document.getElementById("workspace-details-presentation").innerText = respWorkspaceInfo.workspace.name + " Info"
 }
 
 function setWokrspaceProjectsTableData(projects){
@@ -347,16 +355,28 @@ async function setWokrspaceUserTableData(wsId){
 // info card area end
 
 
-// tableaction area start
+// table action area start
+
+//// workspace table action 
 export async function creatworkspaceProject(){
   let wsName = document.getElementById("workspace-modal-add-name").value
   let wsDesc = document.getElementById("workspace-modal-add-description").value
   const createdWorkspace = await webconsolejs["common/api/services/workspace_api"].createWorkspace(wsName, wsDesc);
-  if  (document.getElementById('workspace-modal-add-withprojects').checked){
+  if (!createdWorkspace.success){
+    alert(JSON.stringify(createdWorkspace.message))
+    return
+  }
+  if (document.getElementById('workspace-modal-add-withprojects').checked){
     let multiprojectSelect = document.getElementById('workspace-modal-add-multiproject');
     let multiprojects = Array.from(multiprojectSelect.selectedOptions, option => option.value);
-    const createdWPmapping = await webconsolejs["common/api/services/workspace_api"].createWPmapping(createdWorkspace.id, multiprojects);
+    const createdWPmapping = await webconsolejs["common/api/services/workspace_api"].createWPmapping(createdWorkspace.message.id, multiprojects);
+    console.log(createdWPmapping)
+    if (!createdWPmapping.success){
+      alert(JSON.stringify(createdWorkspace.message))
+      return
+    }
   }
+  location.reload()
 }
 
 export async function deleteWorkspaces(){
@@ -368,6 +388,7 @@ export async function deleteWorkspaces(){
   })
 }
 
+//// workspace table Modal 
 export async function editeWorkspaceModalInit(){
   if (checked_array.length === 0 || checked_array.length > 1){
     webconsolejs['partials/layout/modal'].commonShowDefaultModal("Edit Workspaces", "No workspaces checked or more than one.")
@@ -376,8 +397,23 @@ export async function editeWorkspaceModalInit(){
   document.getElementById("workspace-modal-edit-id").value = checked_array[0].id
   document.getElementById("workspace-modal-edit-name").value = checked_array[0].name
   document.getElementById("workspace-modal-edit-description").value = checked_array[0].description
-  var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(checked_array[0].id);
-  const projectsids = (respWorkspaceInfo.projects && Array.isArray(respWorkspaceInfo.projects)) ? respWorkspaceInfo.projects.map(item => item.id) : [];
+  var respWorkspacesInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListOrderbyWorkspace();
+  console.log(respWorkspacesInfo)
+  initProjectModalEditSeletor()
+  let otherProjectIds = [];
+  let projectsids = [];
+  for (const workpaceInfo of respWorkspacesInfo) {
+    if (workpaceInfo.workspace.id !== checked_array[0].id) {
+          workpaceInfo.projects.forEach(project => {
+          otherProjectIds.push(project.id);
+        });
+    }else {
+      projectsids = (workpaceInfo.projects && Array.isArray(workpaceInfo.projects)) ? workpaceInfo.projects.map(item => item.id) : [];
+    }
+  }
+  for (const otherProjectId of otherProjectIds){
+    projectModalEditSeletor.removeOption(otherProjectId);
+  };
   projectModalEditSeletor.setValue(projectsids)
   var modal = new bootstrap.Modal(document.getElementById('workspace-modal-edit'));
   modal.show();
@@ -389,7 +425,54 @@ export async function editeWorkspace(){
   let multiprojectSelect = document.getElementById('workspace-modal-edit-multiproject');
   let multiprojects = Array.from(multiprojectSelect.selectedOptions, option => option.value);
   await webconsolejs["common/api/services/workspace_api"].updateWorkspaceById(wsid, description);
-  await webconsolejs["common/api/services/workspace_api"].updateWPmappings(wsid, multiprojects);
+  const updateWPmappingsResp = await webconsolejs["common/api/services/workspace_api"].updateWPmappings(wsid, multiprojects);
+  if (!updateWPmappingsResp.success){
+    console.log("editeWorkspace Error : ", JSON.stringify(updateWPmappingsResp.message.error))
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal("ERROR","중복 할당된 프로젝트가 존재합니다.")
+  }else {
+    location.reload()
+  }
+}
+
+//// projects table action 
+export async function deleteProjects(){
+  if (checked_projects_array.length === 0){
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal("Delete Project Mappings", "No Checked Projects")
+    return
+  }
+  checked_projects_array.forEach(async function(checkedProject){
+    var deleteWorkspaceProjectMappingByIdResp = await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceProjectMappingById(currentClickedWorkspaceId, checkedProject.id);
+    if (!deleteWorkspaceProjectMappingByIdResp.success){
+      alert(JSON.stringify(updateWPmappingsResp.message.error))
+    }
+  })
+  location.reload()
+}
+
+//// Project tab Modal
+export function addWorkspaceProjectModalInit(){ 
+  document.getElementById("project-modal-add-workspaceId").value = currentClickedWorkspaceId
+  var modal = new bootstrap.Modal(document.getElementById('project-modal-add'));
+  modal.show();
+}
+
+export async function addWorkspaceProject(){
+  var targetWorkspaceId = document.getElementById("project-modal-add-workspaceId").value
+  var projectName = document.getElementById("project-modal-add-name").value
+  var projectDescription = document.getElementById("project-modal-add-description").value
+  const createProjectResp = await webconsolejs["common/api/services/workspace_api"].createProject(projectName, projectDescription);
+  if (!createProjectResp.success){
+    alert(JSON.stringify(createProjectResp.message))
+    return
+  }else {
+    const createWPmappingResp = await webconsolejs["common/api/services/workspace_api"].createWPmapping(targetWorkspaceId, [createProjectResp.message.id]);
+    if (!createWPmappingResp.success){
+      alert(JSON.stringify(createWPmappingResp.message))
+      return
+    } else {
+      location.reload()
+    }
+  }
 }
 // tableaction area end
 
@@ -582,9 +665,12 @@ function setWorkspacesTabulator(
       layout,
       // renderHorizontal,
       columns: columnsParams,
+      initialSort:[
+        {column:"name", dir:"asc"}
+      ],
       selectableRows: isMultiSelect == false ? 1 : true,
-    });
-  
+    })
+
     return tabulatorTable;
 }
 // tableSetup area end

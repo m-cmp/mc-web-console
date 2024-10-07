@@ -48,6 +48,10 @@ type Service struct {
 	Auth    Auth   `mapstructure:"auth"`
 }
 
+type ServiceNoAuth struct {
+	BaseURL string `mapstructure:"baseurl"`
+}
+
 type Spec struct {
 	Method       string `mapstructure:"method"`
 	ResourcePath string `mapstructure:"resourcePath"`
@@ -183,6 +187,16 @@ func getAuth(c buffalo.Context, service Service) (string, error) {
 	default:
 		return "", nil
 	}
+}
+
+func GetApiHosts() (map[string]ServiceNoAuth, error) {
+	servicesNoAuth := make(map[string]ServiceNoAuth)
+	for key, service := range ApiYamlSet.Services {
+		servicesNoAuth[key] = ServiceNoAuth{
+			BaseURL: service.BaseURL,
+		}
+	}
+	return servicesNoAuth, nil
 }
 
 ////////////////////////////////////////////////////////////////
