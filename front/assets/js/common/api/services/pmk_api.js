@@ -36,7 +36,7 @@ export async function getCluster(nsId, clusterId) {
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetK8sCluster";
+  var controller = "/api/" + "mc-infra-manager/" + "Getk8scluster";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -328,9 +328,11 @@ export function calculateConnectionCount(clusterList) {
 
   var clusterCloudConnectionCountMap = new Map();
 
-  for (var vmIndex in clusterList) {
-    var aCluster = clusterList[vmIndex];
+  for (var clusterIndex in clusterList) {
+    var aCluster = clusterList[clusterIndex];
+    // console.log("aCluster",clusterList)
     var location = aCluster.connectionConfig;
+    var location = aCluster.provider;
     if (!webconsolejs["common/util"].isEmpty(location)) {
 
       var cloudType = location.providerName;
@@ -381,26 +383,69 @@ export async function createNode(k8sClusterId, nsId, Create_Cluster_Config_Arr) 
   console.log("create Node : ", response)
 }
 
-
-// MCIS 상태를 UI에서 표현하는 방식으로 변경
-export function getPmkStatusFormatter(pmkFullStatus) {
-  console.log("getMciStatus " + pmkFullStatus);
-  var statusArr = pmkFullStatus.split("-");
-  var returnStatus = statusArr[0].toLowerCase();
-
-  if (pmkFullStatus.toLowerCase().indexOf("running") > -1) {
-    returnStatus = "running";
-  } else if (pmkFullStatus.toLowerCase().indexOf("suspend") > -1) {
-    returnStatus = "stop";
-  } else if (pmkFullStatus.toLowerCase().indexOf("terminate") > -1) {
-    returnStatus = "terminate";
-    // TODO : partial도 있는데... 처리를 어떻게 하지??
-  } else {
-    returnStatus = "terminate";
+export async function getSshKey(nsId) {
+  
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
   }
-  console.log("after status " + returnStatus);
-  return returnStatus;
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getallsshkey";
+  const response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  var sshKeyList = response
+  return sshKeyList
+
 }
+
+export async function getAvailablek8sClusterNodeImage(providerName, regionName) {
+
+  var data = {
+    queryParams: {
+      providerName: providerName,
+      regionName: regionName
+    },
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getavailablek8sclusternodeimage";
+  const response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  var imageList = response
+  return imageList
+
+
+}
+
+// // MCIS 상태를 UI에서 표현하는 방식으로 변경
+// export function getPmkStatusFormatter(pmkFullStatus) {
+//   console.log("getPmkStatusFormatter " + pmkFullStatus);
+//   var statusArr = pmkFullStatus.split("-");
+//   var returnStatus = statusArr[0].toLowerCase();
+
+//   // if (pmkFullStatus.toLowerCase().indexOf("running") > -1) {
+//   if (pmkFullStatus.toLowerCase().indexOf("Active") > -1) {
+//     returnStatus = "active";
+//   } else if (pmkFullStatus.toLowerCase().indexOf("suspend") > -1) {
+//     returnStatus = "stop";
+//   } else if (pmkFullStatus.toLowerCase().indexOf("terminate") > -1) {
+//     returnStatus = "terminate";
+//     // TODO : partial도 있는데... 처리를 어떻게 하지??
+//   } else {
+//     returnStatus = "terminate";
+//   }
+//   console.log("after status " + returnStatus);
+//   return returnStatus;
+// }
 
 // Mci 상태를 icon으로 
 export function getPmkStatusIconFormatter(pmkDispStatus) {
@@ -442,20 +487,22 @@ export function getPmkInfoProviderNames(pmkData) {
 
 
 // VM 상태 별로 Style class로 색 설정
-export function getVmStatusStyleClass(vmDispStatus) {
-  var vmStatusClass = "bg-info";
-  if (vmDispStatus == "running") {
-    vmStatusClass = "bg-info"
-  } else if (vmDispStatus == "include") {
-    vmStatusClass = "bg-red"
-  } else if (vmDispStatus == "suspended") {
-    vmStatusClass = "bg-red"
-  } else if (vmDispStatus == "terminated") {
-    vmStatusClass = "bg-secondary"
+export function getVmStatusStyleClass(nodeStatus) {
+  var nodeStatusClass = "bg-info";
+  if (nodeStatus == "Active") {
+    nodeStatusClass = "bg-info"
+  } else if (nodeStatus == "Creating") {
+    nodeStatusClass = "bg-info"
+  } else if (nodeStatus == "Inactive") {
+    nodeStatusClass = "bg-red"
+  } else if (nodeStatus == "Updating") {
+    nodeStatusClass = "bg-red"
+  } else if (nodeStatus == "Deleting") {
+    nodeStatusClass = "bg-secondary"
   } else {
-    vmStatusClass = "bg-secondary"
+    nodeStatusClass = "bg-secondary"
   }
-  return vmStatusClass;
+  return nodeStatusClass;
 }
 
 
