@@ -185,6 +185,8 @@ export function setPrjSelectBox(projectList, curProjectId) {
   }
 }
 
+// handle workspace
+
 export async function createWorkspace(name, description){
   const controller = '/api/mc-iam-manager/CreateWorkspace'
   var data = {
@@ -194,30 +196,12 @@ export async function createWorkspace(name, description){
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
-  return response.data.responseData
-}
-
-export async function deleteWorkspaceById(wsId){
-  const controller = '/api/mc-iam-manager/DeleteWorkspaceById'
-  var data = {
-    pathParams: {
-      "workspaceId": wsId
-    },
-  };
-  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
-  return response.data.responseData
-}
-
-export async function createWPmapping(worskspaceId, projectsArr){
-  const controller = '/api/mc-iam-manager/CreateWPmapping'
-  var data = {
-    request: {
-      "workspaceId": worskspaceId,
-      "projectIds": projectsArr
-    },
-  };
-  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
-  return response.data.responseData
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
 }
 
 export async function getAllWorksaceList(){
@@ -257,18 +241,28 @@ export async function updateWorkspaceById(wsId, desc){
   return response.data.responseData
 }
 
-export async function updateWPmappings(wsId, projectsIdsArr){
-  const controller = '/api/mc-iam-manager/UpdateWPmappings'
+export async function deleteWorkspaceById(wsId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceById'
   var data = {
-    request: {
-      workspaceId: wsId,
-      projectIds: projectsIdsArr,
+    pathParams: {
+      "workspaceId": wsId
     },
   };
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
+  return response.data.responseData
+}
+
+// handle project
+
+export async function createProject(prjName, prjDesc){
+  const controller = '/api/mc-iam-manager/CreateProject'
+  var data = {
+    request: {
+      "name": prjName,
+      "description": prjDesc
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller,data,null)
   try{
     return { success: true, message: response.data.responseData };
   } catch(error){
@@ -277,42 +271,13 @@ export async function updateWPmappings(wsId, projectsIdsArr){
   }
 }
 
-export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
-  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListByWorkspaceId'
-  var data = {
-    pathParams: {
-      workspaceId: wsId,
-    },
-  };
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+export async function getProjectList(){
+  const controller = '/api/mc-iam-manager/GetProjectList'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller,null,null)
   return response.data.responseData
 }
 
-export async function getWPmappingListByWorkspaceId(wsId){
-  const controller = '/api/mc-iam-manager/GetWPmappingListByWorkspaceId'
-  var data = {
-    pathParams: {
-      workspaceId: wsId,
-    },
-  };
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
-  return response.data.responseData
-}
-
-export async function getWPmappingListOrderbyWorkspace(){
-  const controller = '/api/mc-iam-manager/GetWPmappingListOrderbyWorkspace'
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    null
-  )
-  return response.data.responseData
-}
+// handle users
 
 export async function getUsers(){
   const controller = '/api/mc-iam-manager/getusers'
@@ -339,8 +304,100 @@ export async function getUsersById(userId){
   return response.data.responseData
 }
 
-export async function getProjectList(){
-  const controller = '/api/mc-iam-manager/GetProjectList'
-  const response = await webconsolejs["common/api/http"].commonAPIPost(controller,null,null)
+// handle workspace user role mapping
+
+export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
+  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListByWorkspaceId'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+// handle workspace projects mapping
+
+export async function createWPmapping(worskspaceId, projectsArr){
+  const controller = '/api/mc-iam-manager/CreateWPmapping'
+  var data = {
+    request: {
+      "workspaceId": worskspaceId,
+      "projectIds": projectsArr
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function updateWPmappings(wsId, projectsIdsArr){
+  const controller = '/api/mc-iam-manager/UpdateWPmappings'
+  var data = {
+    request: {
+      workspaceId: wsId,
+      projectIds: projectsIdsArr,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function deleteWorkspaceProjectMappingById(wsId, projectsId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceProjectMappingById'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+      projectId: projectsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getWPmappingListByWorkspaceId(wsId){
+  const controller = '/api/mc-iam-manager/GetWPmappingListByWorkspaceId'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+export async function getWPmappingListOrderbyWorkspace(){
+  const controller = '/api/mc-iam-manager/GetWPmappingListOrderbyWorkspace'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null
+  )
   return response.data.responseData
 }
