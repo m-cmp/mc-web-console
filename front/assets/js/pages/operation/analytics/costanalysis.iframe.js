@@ -3,7 +3,7 @@
 //     workspaceid: 'mzctestWs',
 //     usertoken: 'mzctoken'
 // };
-
+var host = ""
 
 // 데모환경에서 사용할 예제 데이터 입니다.
 const data = {
@@ -27,7 +27,7 @@ const data = {
 };
 
 document.addEventListener("DOMContentLoaded", async function(){
-    var host = await GetApiHosts("mc-cost-optimizer")
+    host = await GetApiHosts("mc-cost-optimizer")
     addIframe("costIframe", host)
 });
 
