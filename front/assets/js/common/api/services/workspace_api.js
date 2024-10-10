@@ -445,6 +445,23 @@ export async function deleteResourcePermissionPolicesByOperationId(reqFramework,
 
 // handle workspace user role mapping
 
+export async function createWorkspaceUserRoleMappingByName(wsId, reqRoleID, UserID){
+  const controller = '/api/mc-iam-manager/CreateWorkspaceUserRoleMappingByName'
+  var data = {
+    request:{
+      workspaceId:wsId,
+      roleId:reqRoleID,
+      userId:UserID,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  return response.data.responseData
+}
+
 export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId){
   const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListOrderbyWorkspace'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -549,3 +566,5 @@ export async function getWPmappingListOrderbyWorkspace(){
   )
   return response.data.responseData
 }
+
+
