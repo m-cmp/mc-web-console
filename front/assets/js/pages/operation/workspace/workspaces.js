@@ -6,6 +6,7 @@ var checked_projects_array = [];
 var checked_roles_array = [];
 var checked_rolePermissions_array = [];
 var checked_rolePermissionsDetail_array = [];
+var checked_userRolemapping_array = [];
 var listData;
 var workspaceListInfoSummary = {workspaceCount:0, projectsCount:0, groupCount:0, memberCount:0}
 var workspacesListTable;
@@ -208,9 +209,9 @@ function initWorkspacesUsersInfoTable() {
     //   getSelectedWorkspacesData(WorkspacesID)
     // });
   
-    // workspacesProjectsInfo.on("rowSelectionChanged", function (data, rows) {
-    //   checked_array = data
-    // });
+    workspacesUserInfo.on("rowSelectionChanged", function (data, rows) {
+      checked_userRolemapping_array = data
+    });
 }
 function userEnabledFormatter(data) {
   var userinfo = data.getData()
@@ -913,6 +914,13 @@ export async function assignUser(){
   var users = Array.from(usersSelector.selectedOptions, option => option.value);
   users.forEach(async function(user){
     const resp = await webconsolejs["common/api/services/workspace_api"].createWorkspaceUserRoleMappingByName(currentClickedWorkspaceId,roleId,user);
+  })
+  location.reload()
+}
+
+export async function deassignUser(){
+  checked_userRolemapping_array.forEach(async function name(user) {
+    const resp = await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceUserRoleMapping(currentClickedWorkspaceId,user.username);
   })
   location.reload()
 }
