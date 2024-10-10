@@ -5,6 +5,7 @@ var checked_array = [];
 var checked_projects_array = [];
 var checked_roles_array = [];
 var checked_rolePermissions_array = [];
+var checked_rolePermissionsDetail_array = [];
 var listData;
 var workspaceListInfoSummary = {workspaceCount:0, projectsCount:0, groupCount:0, memberCount:0}
 var workspacesListTable;
@@ -242,7 +243,6 @@ function initWorkspacesRolesInfoTable() {
           title: "Name",
           field: "name",
           visible: true,
-          width: 200,
       },
       {
           title: "Description",
@@ -405,7 +405,7 @@ function initWorkspacesRolesDetailInfoTable() {
   // });
 
   workspacesRolesDetailInfo.on("rowSelectionChanged", function (data, rows) {
-    checked_rolePermissions_array = data
+    checked_rolePermissionsDetail_array = data
   });
 }
 
@@ -623,16 +623,9 @@ function setWorkspacesRolesDetailTable(dependentPermissions){
     })
   })
   workspacesRolesDetailInfo.setData(data)
-  console.log(dependentPermissions)
   for (const permission of dependentPermissions) {
-    var rowIdx = parseInt(findRowIndexByColumnValue(workspacesRolesDetailInfo,"id",permission.id))
-    console.log("rowIdx :", rowIdx)
-
-    workspacesRolesDetailInfo.selectRow(rowIdx);
+    workspacesRolesDetailInfo.selectRow(permission.id);
   }
-
-  workspacesRolesDetailInfo.selectRow();
-
 }
 
 // info card area end
@@ -806,25 +799,40 @@ export async function initRoleDetailModal(role){
 
 export async function udpateRole(){
   var roleName = document.getElementById("role-modal-detail-name").value
-  var roleDesc = document.getElementById("role-modal-add-description").value
-  const createRoleResp = await webconsolejs["common/api/services/workspace_api"].createRole(roleName, roleDesc);
-  if (!createRoleResp.success){
-    alert(JSON.stringify(createRoleResp.message))
-    return
-  }else {
-    if (document.getElementById('role-modal-add-witthPolicy').checked){
-      console.log(checked_rolePermissions_array)
-      checked_rolePermissions_array.forEach(async function(role){
-        const appendPolicesResp = await webconsolejs["common/api/services/workspace_api"].appendResourcePermissionPolicesByOperationId(role.framework, role.operationId, role.description, [createRoleResp.message.name]);
-        if (!createRoleResp.success){
-          console.log(JSON.stringify(appendPolicesResp.message))
-        }else{
-          console.log(role.framework, role.operationId, [createRoleResp.message.name], "....Success!")
-        }
-      });
+  var roleDesc = document.getElementById("role-modal-detail-description").value
+  var rolePolicyid = document.getElementById("role-modal-detail-policyid").value
+  const dependentPermissions = await webconsolejs["common/api/services/workspace_api"].getdependentPermissionsByPolicyId(rolePolicyid);
+  var idsArrObj = compareArrays(dependentPermissions.message, checked_rolePermissionsDetail_array)
+
+  idsArrObj.added.forEach(async function(addedPermission){
+    var permissionName = addedPermission.name.split(":")
+    var resp = await webconsolejs["common/api/services/workspace_api"].appendResourcePermissionPolicesByOperationId(permissionName[0],permissionName[1],roleDesc,[roleName]);
+    if (!resp.success){
+      console.log(JSON.stringify(resp.message))
     }
-    location.reload()
-  }
+  })
+
+  idsArrObj.deleted.forEach(async function(deletedPermission){
+    var permissionName = deletedPermission.name.split(":")
+    var resp = await webconsolejs["common/api/services/workspace_api"].deleteResourcePermissionPolicesByOperationId(permissionName[0],permissionName[1],roleDesc,[roleName]);
+    if (!resp.success){
+      console.log(JSON.stringify(resp.message))
+    }
+  })
+
+  location.reload()
+
+}
+
+function compareArrays(oldArray, newArray) {
+  var oldIds = oldArray.map(item => item.id);
+  var newIds = newArray.map(item => item.id);
+  var deletedItems = oldArray.filter(item => !newIds.includes(item.id));
+  var addedItems = newArray.filter(item => !oldIds.includes(item.id));
+  return {
+      added: addedItems,
+      deleted: deletedItems
+  };
 }
 
 
@@ -984,7 +992,8 @@ function setWorkspaceRolesTabulator(
   var movableColumns = true;
   var columnHeaderVertAlign = "middle";
   var paginationCounter = "rows";
-  var layout = "fitColumns";
+  var layout = "fitDataFill";
+
   // var renderHorizontal = "virtual"
 
   if (tableObjParamMap.hasOwnProperty("placeholder")) {
@@ -1071,22 +1080,15 @@ function setWorkspaceRolesDetailTabulator(
   isMultiSelect
 ) {
   var placeholder = "No Data";
-  var movableColumns = true;
   var columnHeaderVertAlign = "middle";
-  var paginationCounter = "rows";
-  var layout = "fitDataFill";
+  // var layout = "fitDataFill";
 
   var tabulatorTable = new Tabulator("#" + tableObjId, {
     height:"350px",
     placeholder,
-    movableColumns,
     columnHeaderVertAlign,
-    paginationCounter,
-    layout,
+    // layout,
     columns: columnsParams,
-    initialSort:[
-      {column:"name", dir:"asc"}
-    ],
     selectableRows: true,
   })
 
@@ -1154,7 +1156,7 @@ function setWorkspacesTabulator(
       initialSort:[
         {column:"name", dir:"asc"}
       ],
-      selectableRows: isMultiSelect == false ? 1 : true,
+      selectableRows: true,
     })
 
     return tabulatorTable;

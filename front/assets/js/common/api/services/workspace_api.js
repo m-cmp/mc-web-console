@@ -418,6 +418,31 @@ export async function appendResourcePermissionPolicesByOperationId(reqFramework,
   }
 }
 
+export async function deleteResourcePermissionPolicesByOperationId(reqFramework,reqOperationid,reqDesc,reqRoleArr){
+  const controller = '/api/mc-iam-manager/DeleteResourcePermissionPolicesByOperationId'
+  var data = {
+    pathParams: {
+      framework: reqFramework,
+      operationid: reqOperationid,
+    },
+    request:{
+      desc:reqDesc,
+      role:reqRoleArr,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
 // handle workspace user role mapping
 
 export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId){
