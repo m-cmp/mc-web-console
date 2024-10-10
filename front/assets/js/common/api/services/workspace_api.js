@@ -304,13 +304,193 @@ export async function getUsersById(userId){
   return response.data.responseData
 }
 
+// handle roles
+export async function createRole(roleName, roleDescription){
+  const controller = '/api/mc-iam-manager/CreateRole'
+  var data = {
+    request: {
+      name: roleName,
+      description: roleDescription
+      // platformRole: "true"
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getRoleList(){
+  const controller = '/api/mc-iam-manager/GetRoleList'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null,
+    null
+  )
+  return response.data.responseData
+}
+
+export async function deleteRoleById(reqRoleId){
+  const controller = '/api/mc-iam-manager/DeleteRoleById'
+  var data = {
+    pathParams: {
+      roleId: reqRoleId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+// handle permissions
+export async function getPermissions(){
+  const controller = '/api/mc-iam-manager/GetPermissions'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getdependentPermissionsByPolicyId(reqPolicyid){
+  const controller = '/api/mc-iam-manager/GetdependentPermissionsByPolicyId'
+  var data = {
+    pathParams: {
+      policyid: reqPolicyid,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function appendResourcePermissionPolicesByOperationId(reqFramework,reqOperationid,reqDesc,reqRoleArr){
+  const controller = '/api/mc-iam-manager/AppendResourcePermissionPolicesByOperationId'
+  var data = {
+    pathParams: {
+      framework: reqFramework,
+      operationid: reqOperationid,
+    },
+    request:{
+      desc:reqDesc,
+      role:reqRoleArr,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function deleteResourcePermissionPolicesByOperationId(reqFramework,reqOperationid,reqDesc,reqRoleArr){
+  const controller = '/api/mc-iam-manager/DeleteResourcePermissionPolicesByOperationId'
+  var data = {
+    pathParams: {
+      framework: reqFramework,
+      operationid: reqOperationid,
+    },
+    request:{
+      desc:reqDesc,
+      role:reqRoleArr,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
 // handle workspace user role mapping
+
+export async function createWorkspaceUserRoleMappingByName(wsId, reqRoleID, UserID){
+  const controller = '/api/mc-iam-manager/CreateWorkspaceUserRoleMappingByName'
+  var data = {
+    request:{
+      workspaceId:wsId,
+      roleId:reqRoleID,
+      userId:UserID,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  return response.data.responseData
+}
+
+export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId){
+  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListOrderbyWorkspace'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null
+  )
+  return response.data.responseData
+}
 
 export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
   const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListByWorkspaceId'
   var data = {
     pathParams: {
       workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+export async function deleteWorkspaceUserRoleMapping(wsId,requserId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceUserRoleMapping'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+      userId: requserId,
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -401,3 +581,5 @@ export async function getWPmappingListOrderbyWorkspace(){
   )
   return response.data.responseData
 }
+
+
