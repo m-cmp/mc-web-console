@@ -182,7 +182,7 @@
                         <div class="card-header">
                             <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <div class="nav-link disabled card-title text-info" id="workspace-details-presentation"></div>
+                                    <strong class="nav-link disabled text-info" id="workspace-details-presentation"></strong>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <a href="#workspace-details" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Details</a>
@@ -266,12 +266,12 @@
                                                 </div>
                                                 
                                                 <!-- filter -->
-                                                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                                                <!-- <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#projects-filterbody" aria-expanded="false">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
                                                     </svg>
-                                                </a>
+                                                </a> -->
 
                                             </div>
                                         </div>
@@ -286,7 +286,7 @@
                                             <h3 class="card-title">Share Members / status</h3>
                                             <div class="card-actions btn-actions">
                                                 <!-- Add button -->
-                                                <a class="btn-action" type="button" data-bs-toggle="modal" data-bs-target="#">
+                                                <a class="btn-action" type="button" onclick="webconsolejs['pages/operation/workspace/workspaces'].addUserModalInit()">
                                                     <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
                                                 </a>
                                                 <!-- Action -->
@@ -299,7 +299,7 @@
                                                     </a>
 
                                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
-                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Workspaces', 'Would you like to delete Workspace?', '')">
+                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal"onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete User Assigned workspace', 'Would you like to delete User Assign?', 'pages/operation/workspace/workspaces.deassignUser')">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                                                 <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
@@ -311,12 +311,12 @@
                                                 </div>
 
                                                 <!-- filter -->
-                                                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                                                <!-- <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                     <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
                                                     </svg>
-                                                </a>
+                                                </a> -->
 
                                             </div>
                                         </div>
@@ -325,9 +325,48 @@
                                     <div id="WorkspacesUserInfo-table"></div>
                                 </div>
                                 <!-- Roles Tab -->
-                                <div class="tab-pane fade p-4" id="workspace-roles" role="tabpanel">
-                                    <h4>roles tab</h4>
-                                    <div>Fringilla egestas nunc quis tellus diam rhoncus ultricies tristique enim at diam, sem nunc amet, pellentesque id egestas velit sed</div>
+                                <div class="tab-pane fade card-table table-responsive" id="workspace-roles" role="tabpanel">
+                                    <div class="row">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Access Roles / status</h3>
+                                            <div class="card-actions btn-actions">
+                                                <!-- Add button -->
+                                                <a class="btn-action" type="button" onclick="webconsolejs['pages/operation/workspace/workspaces'].addRoleModalInit()">
+                                                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
+                                                </a>
+                                                <!-- Action -->
+                                                <div class="dropdown">
+                                                    <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M6 9l6 6l6 -6" />
+                                                        </svg>
+                                                    </a>
+
+                                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
+                                                        <a class="dropdown-item" data-bs-toggle="modal"data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Delete Roles', 'Would you like to delete Roles?', 'pages/operation/workspace/workspaces.deleteRoles')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                                                            </svg>
+                                                            Delete
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- filter -->
+                                                <!-- <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"/>
+                                                    </svg>
+                                                </a> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Tabulator TABLE SET -->
+                                    <div id="WorkspacesRolesInfo-table"></div>
                                 </div>
                                 <!-- Cost Analytics Tab -->
                                 <div class="tab-pane fade p-4" id="workspace-costAnalytics" role="tabpanel">
@@ -500,7 +539,7 @@
                         <div class="mb-3">
 
                             <label class="col form-check form-switch form-label">
-                                <input class="form-check-input" type="checkbox"id="workspace-modal-add-withprojects"data-bs-toggle="collapse" data-bs-target="#project-modal-add-cloudenvAccordion" aria-expanded="false">
+                                <input class="form-check-input" type="checkbox"id="project-modal-add-withprojects"data-bs-toggle="collapse" data-bs-target="#project-modal-add-cloudenvAccordion" aria-expanded="false">
                                 <span class="col">With cloud ENV</span>
                             </label>
                             <div id="project-modal-add-cloudenvAccordion" class="accordion-collapse collapse">
@@ -523,6 +562,165 @@
         </div>
     </div>
 </div>
+
+<!-- ROLE ADD MODAL -->
+<div class="modal modal-blur fade" id="role-modal-add" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Add Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        역할 정보 및 설정을 변경합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="role-modal-add-name" placeholder="Role Name">
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-control" id="role-modal-add-description" placeholder="Role Description">
+                        </div>
+                    </div>
+
+                    <div class="hr-text"></div>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+
+                            <label class="col form-check form-switch form-label">
+                                <input class="form-check-input" type="checkbox"id="role-modal-add-witthPolicy"data-bs-toggle="collapse" data-bs-target="#role-modal-add-accessPolicy" aria-expanded="false">
+                                <span class="col">With Access Policy</span>
+                            </label>
+                            <div id="role-modal-add-accessPolicy" class="accordion-collapse collapse">
+                                <!-- Tabulator TABLE SET -->
+                                <div id="role-modal-add-accessPolicy-table"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="workspace-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].addRole()">Confirm</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ROLE Detail MODAL -->
+<div class="modal modal-blur fade" id="role-modal-detail" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Role Detail</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        역할 정보 및 설정을 변경합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="role-modal-detail-name" placeholder="Role Name" readonly disabled>
+                            <input type="text" class="form-control" id="role-modal-detail-id" readonly disabled hidden>
+                            <input type="text" class="form-control" id="role-modal-detail-policyid" readonly disabled hidden>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-control" id="role-modal-detail-description" placeholder="Role Description">
+                        </div>
+                    </div>
+
+                    <div class="hr-text"></div>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">AccessPolicy</label>
+                            <div id="role-modal-detail-accessPolicy-table"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="workspace-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].udpateRole()">Save</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- USER ASSIGN MODAL -->
+<div class="modal modal-blur fade" id="user-modal-add" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Add/Assign user</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        유저를 현재 워크스페이스에 할당합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <div class="form-label">User</div>
+                            <select class="form-select tomselected" id="user-modal-add-userselector" name="state[]" multiple placeholder="Select one user or more" autocomplete="off"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Role</label>
+                            <select type="text" class="form-control" id="user-modal-add-roleselector" placeholder="Workspace Description">
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="user-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].assignUser()">Confirm</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <%= javascriptTag("pages/operation/workspace/workspaces.js") %>
 <%= javascriptTag("common/api/services/workspace_api.js") %> 

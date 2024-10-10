@@ -1,5 +1,17 @@
 <!-- create nodegroup form -->
 <div class="container-xl">
+  <form id="cluster_form">
+    <input type="hidden" name="n_name" value="" id="n_name" />
+    <input type="hidden" name="n_specid" id="n_specid" />
+    <input type="hidden" name="n_imageid" id="n_imageid" />
+    <input type="hidden" name="n_minnodesize" id="n_minnodesize" />
+    <input type="hidden" name="n_maxnodesize" id="n_maxnodesize" />
+    <input type="hidden" name="n_sshkey" id="n_sshkey" />
+    <input type="hidden" name="n_rootdisk" id="n_rootdisk" />
+    <input type="hidden" name="n_rootdisksize" id="n_rootdisksize" />
+    <input type="hidden" name="n_autoscaling" id="n_autoscaling" />
+    <input type="hidden" name="n_desirednodesize" id="n_desirednodesize" />
+  </form>
   <div class="row">
     <div class="col-md-12">
       <div class="card sub_section" id="nodegroup_configuration">
@@ -21,94 +33,29 @@
               </div>
               <div class="form-group mb-2">
                 <label class="form-label required">Spec</label>
-                <div class="row g-2">
-                  <div class="col">
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Please Use Search"
-                      name="node-specid"
-                      id="node_specid"
-                    />
-
-                    <input
-                      type="hidden"
-                      name="provider"
-                      id="ep_provider"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="connectionName"
-                      id="ep_connectionName"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="imageId"
-                      id="ep_imageId"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="commonImageId"
-                      id="ep_commonImageId"
-                      value=""
-                    />
-                    <input
-                      type="hidden"
-                      name="commonSpecId"
-                      id="ep_commonSpecId"
-                      value=""
-                    />
-                  </div>
-                  <div class="col-auto">
-                    <a
-                      href="#"
-                      class="btn"
-                      data-bs-toggle="modal"
-                      data-bs-target="#image-search"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          stroke="none"
-                          d="M0 0h24v24H0z"
-                          fill="none"
-                        ></path>
-                        <path
-                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
-                        ></path>
-                        <path d="M21 21l-6 -6"></path>
-                      </svg>
-                    </a>
-                  </div>
-                </div>
+                <select class="form-select" name="node_specid" id="node_specid">
+                  <option value="">Select Spec</option>
+                  <option value="ali-cluster-test-spec-04">ecs.g6.xlarge</option>
+                  <option value="tencent+ap-seoul+s2.medium4">s2.medium4</option>
+                </select>
               </div>
+
               <div class="form-group mb-2">
                 <label class="form-label required">Image</label>
-                <input
-                  class="form-control"
-                  name="node-imageid"
+                <select
+                  class="form-select"
+                  name="node_imageid"
                   id="node_imageid"
-                  rows="1"
-                  readonly=""
-                />
+                >
+                  <option value="">Select Image</option>
+                  <option value="alibaba+ap-northeast-1+ubuntu18.04">ubuntu_18_04_x64_20G_alibase_20240223.vhd</option>
+                  <option value="tencent+ap-seoul+s2.medium4">S2.MEDIUM4</option>
+                </select>
               </div>
 
               <div class="form-group mb-2">
                 <label class="form-label required"
-                  >manNodeSize / minNodeSize</label
+                  >maxNodeSize / minNodeSize</label
                 >
                 <div class="row g-2">
                   <div class="col-6">
@@ -118,6 +65,11 @@
                       id="node_minnodesize"
                     >
                       <option value="">Min</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
                     </select>
                   </div>
                   <div class="col-6">
@@ -127,6 +79,11 @@
                       id="node_maxnodesize"
                     >
                       <option value="">Max</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
                     </select>
                   </div>
                 </div>
@@ -136,11 +93,7 @@
             <div class="col-md-6">
               <div class="form-group mb-2">
                 <label class="form-label required">sshKey</label>
-                <select
-                  class="form-select"
-                  name="node-sshkey"
-                  id="node_sshkey"
-                >
+                <select class="form-select" name="node-sshkey" id="node_sshkey">
                   <option value="">Select sshKey</option>
                 </select>
               </div>
@@ -151,11 +104,12 @@
                   <div class="col-6">
                     <select
                       class="form-select"
-                      onchange="webconsolejs['partials/operation/manage/mcicreate'].changeDiskSize(this.value)"
                       name="node-rootdisk"
                       id="node_rootdisk"
                     >
                       <option value="">Select Root Disk Type</option>
+                      <option value="default">default</option>
+                      <option value="cloud_essd">cloud_essd</option>
                     </select>
                   </div>
                   <div class="col-6">
@@ -164,7 +118,7 @@
                       rows="1"
                       placeholder="Root Disk Size(GB)"
                       name="node-rootdisksize"
-                      id="node-rootdisksize"
+                      id="node_rootdisksize"
                     ></textarea>
                   </div>
                 </div>
@@ -218,7 +172,7 @@
                 <button
                   type="submit"
                   class="btn btn-info"
-                  onclick="webconsolejs['partials/operation/manage/clustercreate'].clusterFormDone_btn()"
+                  onclick="webconsolejs['partials/operation/manage/clustercreate'].addNodeFormDone_btn()"
                 >
                   Done
                 </button>
