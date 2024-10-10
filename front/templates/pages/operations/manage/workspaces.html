@@ -286,7 +286,7 @@
                                             <h3 class="card-title">Share Members / status</h3>
                                             <div class="card-actions btn-actions">
                                                 <!-- Add button -->
-                                                <a class="btn-action" type="button" data-bs-toggle="modal" data-bs-target="#">
+                                                <a class="btn-action" type="button" onclick="webconsolejs['pages/operation/workspace/workspaces'].addUserModalInit()">
                                                     <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
                                                 </a>
                                                 <!-- Action -->
@@ -677,6 +677,49 @@
     </div>
 </div>
 
+<!-- USER ASSIGN MODAL -->
+<div class="modal modal-blur fade" id="user-modal-add" tabindex="-1" style="display: none" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Add/Assign user</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+
+                    <p class="card-subtitle">
+                        유저를 현재 워크스페이스에 할당합니다.
+                    </p>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <div class="form-label">User</div>
+                            <select class="form-select tomselected" id="user-modal-add-userselector" name="state[]" multiple placeholder="Select one user or more" autocomplete="off"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div>
+                            <label class="form-label">Role</label>
+                            <select type="text" class="form-control" id="user-modal-add-roleselector" placeholder="Workspace Description">
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div align="right">
+                    <button id="user-modal-add-confirmbtn" class="btn btn-info" onclick="webconsolejs['pages/operation/workspace/workspaces'].assignUser()">Confirm</button>
+                    <button data-bs-dismiss="modal" aria-label="Cancel" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <%= javascriptTag("pages/operation/workspace/workspaces.js") %>

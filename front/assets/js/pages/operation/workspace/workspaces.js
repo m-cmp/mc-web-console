@@ -17,6 +17,7 @@ var workspacesRolesDetailInfo;
 var currentClickedWorkspaceId;
 
 var projectModalSeletor;
+var userAddModalSelector;
 var projectModalEditSeletor;
 var rolesModalEditSeletor;
 
@@ -460,20 +461,27 @@ async function setWokrspaceTableData(){
 
 function initProjectModalSeletor(){
   var selectElement = document.getElementById('workspace-modal-add-multiproject');
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
+  }
+  selectElement.innerHTML = '';
+
   listData.prjList.forEach(prj => {
     let option = document.createElement('option');
     option.value = prj.id;
     option.text = prj.name;
     selectElement.add(option);
   });
-  if (selectElement.tomselect) {
-    selectElement.tomselect.destroy();
-  }
   projectModalSeletor = new TomSelect(selectElement);
 }
 
 function initProjectModalEditSeletor(){
   var selectElement = document.getElementById('workspace-modal-edit-multiproject');
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
+  }
+  selectElement.innerHTML = '';
+
   listData.prjList.forEach(prj => {
     let option = document.createElement('option');
     option.value = prj.id;
@@ -484,6 +492,37 @@ function initProjectModalEditSeletor(){
     selectElement.tomselect.destroy();
   }
   projectModalEditSeletor = new TomSelect(selectElement);
+}
+
+function initUserAddSeletor(users){
+  var selectElement = document.getElementById('user-modal-add-userselector');
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
+  }
+  selectElement.innerHTML = '';
+
+  users.forEach(user => {
+    let option = document.createElement('option');
+    option.value = user;
+    option.text = user;
+    selectElement.add(option);
+  });
+
+  userAddModalSelector = new TomSelect(selectElement);
+}
+
+function initUserAddRoleSeletor(roles){
+  var selectElement = document.getElementById('user-modal-add-roleselector');
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
+  }
+  selectElement.innerHTML = '';
+  roles.forEach(role => {
+    let option = document.createElement('option');
+    option.value = role.id;
+    option.text = role.name;
+    selectElement.add(option);
+  });
 }
 
 function updateSummary(){
@@ -835,7 +874,6 @@ function compareArrays(oldArray, newArray) {
   };
 }
 
-
 //// Role Tab Action
 export async function deleteRoles(){
   checked_roles_array.forEach(async function(role){
@@ -847,6 +885,36 @@ export async function deleteRoles(){
       location.reload()
     }
   });
+}
+
+//// User Tab Modal
+export async function addUserModalInit(){
+  const resp = await webconsolejs["common/api/services/workspace_api"].getWorkspaceUserRoleMappingListByWorkspaceId(currentClickedWorkspaceId);
+  var wsUser = Array.isArray(resp.userinfo) && resp.userinfo.length > 0 
+    ? resp.userinfo.map(item => item.userid) 
+    : [];
+  var allUserIds = Array.isArray(listData.userList) && listData.userList.length > 0 
+    ? listData.userList.map(item => item.username) 
+    : [];
+  var availUser = allUserIds.filter(item => !wsUser.includes(item))
+  initUserAddSeletor(availUser)
+
+
+  const roleResp = await webconsolejs["common/api/services/workspace_api"].getRoleList();
+  initUserAddRoleSeletor(roleResp)
+
+  var modal = new bootstrap.Modal(document.getElementById('user-modal-add'));
+  modal.show();
+}
+
+export async function assignUser(){
+  var usersSelector = document.getElementById('user-modal-add-userselector');
+  var roleId = document.getElementById('user-modal-add-roleselector').value;
+  var users = Array.from(usersSelector.selectedOptions, option => option.value);
+  users.forEach(async function(user){
+    const resp = await webconsolejs["common/api/services/workspace_api"].createWorkspaceUserRoleMappingByName(currentClickedWorkspaceId,roleId,user);
+  })
+  location.reload()
 }
 
 // tableaction area end
