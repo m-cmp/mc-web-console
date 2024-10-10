@@ -485,6 +485,21 @@ export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
   return response.data.responseData
 }
 
+export async function deleteWorkspaceUserRoleMapping(wsId,requserId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceUserRoleMapping'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+      userId: requserId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
 // handle workspace projects mapping
 
 export async function createWPmapping(worskspaceId, projectsArr){
