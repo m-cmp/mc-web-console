@@ -111,6 +111,7 @@ function mappingTablePmkData(totalPmkListObj) {
         const subnet = (network.SubnetIIDs && network.SubnetIIDs[0] && network.SubnetIIDs[0].SystemId) || "N/A";
         const securityGroup = (network.SecurityGroupIIDs && network.SecurityGroupIIDs[0] && network.SecurityGroupIIDs[0].SystemId) || "N/A";
         const version = item.CspViewK8sClusterDetail.Version || "N/A";
+        const nodeGroupCount = item.CspViewK8sClusterDetail?.NodeGroupList?.length || 0;
         return {
             name: item.name,
             id: item.id,
@@ -124,7 +125,7 @@ function mappingTablePmkData(totalPmkListObj) {
             subnet: subnet,
             securitygroup: securityGroup,
             version: version,
-            statusCount: { countTotal: keyValueList.find(kv => kv.key === "size")?.value || 0 }
+            nodegroup: nodeGroupCount
         };
     });
 }
@@ -623,7 +624,7 @@ function initPmkTable() {
         },
         {
             title: "Node Group",
-            field: "statusCount.countTotal",
+            field: "nodegroup",
             vertAlign: "middle",
             hozAlign: "center",
             maxWidth: 150,
