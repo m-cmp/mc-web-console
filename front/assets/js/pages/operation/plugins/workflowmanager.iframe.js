@@ -28,7 +28,7 @@ const data = {
 
 document.addEventListener("DOMContentLoaded", async function(){
     host = await GetApiHosts("mc-workflow-manager")
-    addIframe("targetIframe", host)
+    addIframe("targetIframe", host+"/web/workflow/list")
 });
 
 function addIframe(targetDiv, srchost){
