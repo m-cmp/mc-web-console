@@ -218,33 +218,41 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   console.log("mciName : ", mciName)
   console.log("vmID : ", vmID)
 
-  clearServerInfo();
+  // get mci 
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  try {
+    var response = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, mciID);
+    var aMci = response.responseData
+    clearServerInfo();
 
-  var aMci = new Object();
-  for (var mciIndex in totalMciListObj) {
-    var tempMci = totalMciListObj[mciIndex]
-    if (mciID == tempMci.id) {
-      aMci = tempMci;
-      break;
+    console.log("aMci", aMci);
+
+    if (!aMci || !aMci.vm) {
+      console.log("aMci or vmList is not defined");
+      return;
     }
-  }// end of mci loop
-  console.log("aMci", aMci);
-  var vmList = aMci.vm;
-  var vmExist = false
-  var data = new Object();
-  for (var vmIndex in vmList) {
-    var aVm = vmList[vmIndex]
-    if (vmID == aVm.id) {
-      //aVm = vmData;
-      data = aVm;
-      vmExist = true
-      console.log("aVm", aVm)
-      break;
+
+    var vmList = aMci.vm;
+    console.log("vmList:", vmList);
+
+    var vmExist = false;
+    var data = new Object();
+
+    for (var vmIndex in vmList) {
+      var aVm = vmList[vmIndex];
+      if (vmID == aVm.id) {
+        data = aVm;
+        vmExist = true;
+        console.log("aVm", aVm);
+        break;
+      }
     }
-  }
-  if (!vmExist) {
-    console.log("vm is not exist");
-    console.log(vmList)
+
+    if (!vmExist) {
+      console.log("vm is not exist");
+    }
+  } catch (error) {
+    console.error("Error occurred: ", error);
   }
   console.log("selected Vm");
   console.log("selected vm data : ", data);
@@ -259,12 +267,14 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
 
   try {
     var imageId = data.imageId
-    var operatingSystem = await webconsolejs["common/api/services/vmimage_api"].getCommonVmImageInfo(imageId)
+    // var operatingSystem = await webconsolejs["common/api/services/vmimage_api"].getCommonVmImageInfo(imageId)
+    // var operatingSystem = data.imageId
+    var operatingSystem = "Ubuntu"
     $("#server_info_os").text(operatingSystem)
   } catch (e) {
     console.log("e", e)
   }
-  // var startTime = data.cspViewVmDetail.StartTime
+  var startTime = data.createdTime
   var privateIp = data.privateIP
   var securityGroupID = data.securityGroupIds[0];
   var providerName = data.connectionConfig.providerName
@@ -291,7 +301,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
 
   $("#server_info_start_time").text(startTime)
   $("#server_info_private_ip").text(privateIp)
-  $("#server_info_cspVMID").text(data.cspViewVmDetail.IId.NameId)
+  $("#server_info_cspVMID").text(data.cspResourceName)
 
   // ip information
   $("#server_info_public_ip").text(vmPublicIp)
@@ -350,23 +360,28 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   $("#server_info_connection_name").text(connectionName)
 
   var vmDetail = data.cspViewVmDetail;
-  var vmDetailKeyValueList = vmDetail.KeyValueList
+  // var vmDetailKeyValueList = vmDetail.KeyValueList
+  var addtionalDetails = data.addtionalDetails
+  console.log("addtionalDetails",addtionalDetails)
   var architecture = "";
+  var vpcId = ""
+  var subnetId = ""
 
-  if (vmDetailKeyValueList) {
-    for (var i = 0; i < vmDetailKeyValueList.length; i++) {
-      if (vmDetailKeyValueList[i].key === "Architecture") {
-        architecture = vmDetailKeyValueList[i].value;
-        break; // 찾았으므로 반복문을 종료
+  if (addtionalDetails) {
+    for (var i = 0; i < addtionalDetails.length; i++) {
+      if (addtionalDetails[i].key === "Architecture") {
+        architecture = addtionalDetails[i].value;
+        break; 
       }
     }
   }
-  var vmSpecName = vmDetail.VMSpecName
-  var vpcId = vmDetail.VpcIID.NameId
-  var vpcSystemId = vmDetail.VpcIID.SystemId
-  var subnetId = vmDetail.SubnetIID.NameId
-  var subnetSystemId = vmDetail.SubnetIID.SystemId
-  var eth = vmDetail.NetworkInterface
+  var vpcId = data.cspVNetId
+  var subnetId = data.cspSubnetId
+  var vmSpecName = data.cspSpecName
+  var vpcSystemId = data.vNetId
+  
+  var subnetSystemId = data.subnetId
+  var eth = data.networkInterface
 
   $("#server_info_archi").text(architecture)
   // detail tab
@@ -374,10 +389,10 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   $("#server_detail_view_vpc_id").text(vpcId + "(" + vpcSystemId + ")")
   $("#server_detail_view_subnet_id").text(subnetId + "(" + subnetSystemId + ")")
   $("#server_detail_view_eth").text(eth)
-  $("#server_detail_view_root_device_type").text(vmDetail.RootDiskType);
-  $("#server_detail_view_root_device").text(vmDetail.RootDeviceName);
-  $("#server_detail_view_keypair_name").text(vmDetail.KeyPairIId.NameId)
-  $("#server_detail_view_access_id_pass").text(vmDetail.VMUserId + "/ *** ")
+  $("#server_detail_view_root_device_type").text(data.rootDiskType);
+  $("#server_detail_view_root_device").text(data.rootDeviceName);
+  $("#server_detail_view_keypair_name").text(data.cspSshKeyId)
+  $("#server_detail_view_access_id_pass").text(data.vmUserName + "/ *** ")
 
 
   // server spec
