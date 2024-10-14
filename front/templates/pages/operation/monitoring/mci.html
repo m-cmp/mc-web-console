@@ -1,9 +1,148 @@
-<div class="card">
-  <div class="card-body">
-    <div id="cpu-chart" class="chart-lg"></div>
-    <div id="memory-chart" class="chart-lg"></div>
-    <div id="disk-chart" class="chart-lg"></div>
-    <div id="network-chart" class="chart-lg"></div>
+<div class="page-body">
+  <div class="container-xl">
+    <!-- MCIS DASHBOARD -->
+
+    <div class="row row-cards">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Monitoring For MCI</h3>
+          </div>
+
+          <div class="card-body">
+            <div class="row">
+              <div class="col-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">MCI List</label>
+                  <select class="form-select" name="" id="monitoring_mcilist">
+                    <option value="">Choose a Target MCI for Monitoring</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">Type</label>
+                  <select class="form-select" name="" id="">
+                    <option value="">Select Type(Live, History)</option>
+                  </select>
+                </div>
+
+                <div class="form-group mb-2">
+                  <label class="form-label required">Duration / Period</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <select class="form-select" name="" id="">
+                        <option value="">Duration</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <select class="form-select" name="" id="">
+                        <option value="">Period</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Selected MCI</h3>
+                </div>
+
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-3">
+                      <div class="form-group mb-2">
+                        <label class="form-label required">CPU</label>
+                        <select class="form-select" name="" id="">
+                          <option value="">Select CPU term</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="form-group mb-2">
+                        <label class="form-label required">MEMORY</label>
+                        <select class="form-select" name="" id="">
+                          <option value="">Select MEMORY term</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="form-group mb-2">
+                        <label class="form-label required">DISK</label>
+                        <select class="form-select" name="" id="">
+                          <option value="">Select DISK term</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="form-group mb-2">
+                        <label class="form-label required">NETWORK</label>
+                        <select class="form-select" name="" id="">
+                          <option value="">Select NETWORK term</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="card">
+                        <div class="card-body">
+                          <div id="cpu-chart" class="chart-lg"></div>
+                          
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="card">
+                        <div class="card-body">
+                          
+                          <div id="memory-chart" class="chart-lg"></div>
+                          
+                          
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="card">
+                        <div class="card-body">
+                          
+                          <div id="disk-chart" class="chart-lg"></div>
+                          
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="card">
+                        <div class="card-body">
+                          
+                          <div id="network-chart" class="chart-lg"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="card-header">
+                      <h3 class="card-title">Server List</h3>
+                    </div>
+                    <div class="col-md-12">
+                      <ul class="vmStatus-list" id="monitoring_server_info_box"></ul>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<%= javascriptTag("common/api/services/monitoring_api.js") %>
+
+<%= javascriptTag("pages/operation/manage/monitoring.js") %> 
+<%= javascriptTag("partials/operation/manage/server_monitoring.js") %> 
+<%= javascriptTag("common/api/services/mci_api.js") %>
+
