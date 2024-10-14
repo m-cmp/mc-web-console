@@ -28,7 +28,8 @@ const data = {
 
 document.addEventListener("DOMContentLoaded", async function(){
     host = await GetApiHosts("mc-software-manager")
-    addIframe("targetIframe", host)
+    addIframe("targetIframe-repository", host+"/web/repository/list")
+    addIframe("targetIframe-sofrwareCatalog", host+"/web/sofrwareCatalog/list")
 });
 
 function addIframe(targetDiv, srchost){
