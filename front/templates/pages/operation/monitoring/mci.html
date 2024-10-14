@@ -1,49 +1,39 @@
 <div class="page-body">
   <div class="container-xl">
-    <!-- MCIS DASHBOARD -->
+    <!-- MCI DASHBOARD -->
 
     <div class="row row-cards">
       <div class="col-md-12">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Monitoring For MCI</h3>
+            <h3 class="card-title">Monitoring Trend / Workload</h3>
           </div>
 
           <div class="card-body">
             <div class="row">
-              <div class="col-6">
-                <div class="form-group mb-2">
-                  <label class="form-label required">MCI List</label>
-                  <select class="form-select" name="" id="monitoring_mcilist">
-                    <option value="">Choose a Target MCI for Monitoring</option>
-                  </select>
-                </div>
-              </div>
+              <div class="col d-flex justify-content-end">
+                
 
-              <div class="col-6">
-                <div class="form-group mb-2">
-                  <label class="form-label required">Type</label>
-                  <select class="form-select" name="" id="">
-                    <option value="">Select Type(Live, History)</option>
-                  </select>
-                </div>
-
-                <div class="form-group mb-2">
-                  <label class="form-label required">Duration / Period</label>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <select class="form-select" name="" id="">
-                        <option value="">Duration</option>
+                <div class="mb-3 row">
+                    <label class="col-3 col-form-label text-end">Workload</label>
+                    <div class="col">
+                      <select class="form-select" name="" id="monitoring_mcilist">
+                        <option value="">Choose a Target MCI for Monitoring</option>      
                       </select>
                     </div>
-                    <div class="col-6">
-                      <select class="form-select" name="" id="">
-                        <option value="">Period</option>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-3 col-form-label text-end">Server</label>
+                    <div class="col">
+                      <select class="form-select" name="" id="monitoring_vmlist">
+                        <option value="">Choose a Target VM for Monitoring</option>      
                       </select>
                     </div>
-                  </div>
                 </div>
+
               </div>
+
+              
 
               <div class="card">
                 <div class="card-header">

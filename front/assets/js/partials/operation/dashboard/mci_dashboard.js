@@ -128,7 +128,6 @@ function setMciListTableRow(aMciData, mciIndex) {
 
   var vmStatusCountMap = totalVmStatusMap.get(aMciData.id);
   var totalVmCountOfMci = vmStatusCountMap.get('running') + vmStatusCountMap.get('stop') + vmStatusCountMap.get('terminate');
-  console.log("totalVmStatusMap", totalVmStatusMap)
   // List of Mci table
   try {
 
@@ -141,15 +140,13 @@ function setMciListTableRow(aMciData, mciIndex) {
         var aVm = vmListOfMci[vmIndex];
 
         var vmName = ""
-        var vmNamelength = aVm.name
-        console.log("vmNamelength", vmNamelength)
+        // var vmNamelength = aVm.name
+        var vmNamelength = aVm.id
+
         if (vmNamelength.length > vmLength) {
           var vmName = vmNamelength.substring(0, vmLength - 3) + "...";
-          console.log("vmNameString", vmName)
-          console.log("vmNamelength.length", vmNamelength.length)
         } else {
           vmName = vmNamelength;
-          console.log("vmName", vmName)
         }
 
 
