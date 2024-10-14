@@ -206,8 +206,12 @@ function setPmkInfoData(pmkData) {
     }
 
     // TODO: pmk info로 cursor 이동
-    // TODO: nodegroup box (Node group 상태 등을 추가로 처리)
-    displayNodeGroupStatusList(pmkID, clusterData)
+    var nodeGroupList = clusterDetailData.NodeGroupList
+    
+    // displayNodeGroupStatusList(pmkID, clusterData)
+    if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
+        displayNodeGroupStatusList(pmkID, clusterData);
+    }
 }
 
 // pmk life cycle 변경
