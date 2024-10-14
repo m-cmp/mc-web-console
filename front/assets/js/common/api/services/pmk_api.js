@@ -1,6 +1,6 @@
 // PMK API 관련 
 
-// 받아온 project(namespace)로 MciList GET
+// 받아온 project(namespace)로 PmkList GET
 export async function getClusterList(nsId) {
 
   if (nsId == "") {
@@ -98,8 +98,8 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   alert("생성요청 완료");
   var urlParamMap = new Map();
 
-  // 생성요청했으므로 결과를 기다리지 않고 mciList로 보냄
-  // webconsolejs["common/util"].changePage("MciMng", urlParamMap)
+  // 생성요청했으므로 결과를 기다리지 않고 pmkList로 보냄
+  // webconsolejs["common/util"].changePage("PmkMng", urlParamMap)
 
 }
 
@@ -230,14 +230,14 @@ export async function getAvailableK8sClusterVersion(providerName, regionName) {
 
 }
 
-export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
+export async function vmDynamic(pmkId, nsId, Express_Server_Config_Arr) {
 
   var obj = {}
   obj = Express_Server_Config_Arr[0]
   const data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      pmkId: pmkId,
     },
     request: {
       "commonImage": obj.commonImage,
@@ -253,7 +253,7 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "PostMciVmDynamic";
+  var controller = "/api/" + "PostPmkVmDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -261,17 +261,17 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
   console.log("create VMdynamic : ", response)
 }
 
-export async function mciRecommendVm(data) {
-  var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  );
+// export async function pmkRecommendVm(data) {
+//   var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
+//   const response = await webconsolejs["common/api/http"].commonAPIPost(
+//     controller,
+//     data
+//   );
 
-  console.log("mcirecommendvm response ", response.data.responseData)
+//   console.log("pmkrecommendvm response ", response.data.responseData)
 
-  return response.data
-}
+//   return response.data
+// }
 // get all provider
 
 // get all registered region list
@@ -323,7 +323,7 @@ export async function getCloudConnection() {
   return response.data.responseData.connectionconfig
 }
 
-// mci내 vm들의 provider별 connection count
+// pmk내 vm들의 provider별 connection count
 export function calculateConnectionCount(clusterList) {
 
   var clusterCloudConnectionCountMap = new Map();
@@ -447,7 +447,7 @@ export async function getAvailablek8sClusterNodeImage(providerName, regionName) 
 //   return returnStatus;
 // }
 
-// Mci 상태를 icon으로 
+// Pmk 상태를 icon으로 
 export function getPmkStatusIconFormatter(pmkDispStatus) {
   var pmkStatusIcon = "";
   if (pmkStatusIcon == "running") {
@@ -464,7 +464,7 @@ export function getPmkStatusIconFormatter(pmkDispStatus) {
   return pmkStatusIcon
 }
 
-// Mci에 구성된 vm들의 provider들 imgTag로
+// Pmk에 구성된 vm들의 provider들 imgTag로
 export function getPmkInfoProviderNames(pmkData) {
 
   var pmkProviderNames = "";
@@ -506,39 +506,39 @@ export function getVmStatusStyleClass(nodeStatus) {
 }
 
 
-// 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
-// dashboard, mci 에서 사용
-export function calculatePmkStatusCount(mciData) {
-  console.log("calculateMciStatusCount");
+// 해당 pmk에서 상태값들을 count : 1개 pmk의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
+// dashboard, pmk 에서 사용
+export function calculatePmkStatusCount(pmkData) {
+  console.log("calculatePmkStatusCount");
 
-  console.log("mciData : ", mciData);
-  var mciStatusCountMap = new Map();
-  mciStatusCountMap.set("running", 0);
-  mciStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
-  mciStatusCountMap.set("terminate", 0);
+  console.log("pmkData : ", pmkData);
+  var pmkStatusCountMap = new Map();
+  pmkStatusCountMap.set("running", 0);
+  pmkStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
+  pmkStatusCountMap.set("terminate", 0);
   try {
-    var mciStatus = mciData.status;
-    var mciDispStatus = getMciStatusFormatter(mciStatus); // 화면 표시용 status
+    var pmkStatus = pmkData.status;
+    var pmkDispStatus = getPmkStatusFormatter(pmkStatus); // 화면 표시용 status
 
-    if (mciStatus != "") {
-      // mci status 가 없는 경우는 skip
-      if (mciStatusCountMap.has(mciDispStatus)) {
-        mciStatusCountMap.set(
-          mciDispStatus,
-          mciStatusCountMap.get(mciDispStatus) + 1
+    if (pmkStatus != "") {
+      // pmk status 가 없는 경우는 skip
+      if (pmkStatusCountMap.has(pmkDispStatus)) {
+        pmkStatusCountMap.set(
+          pmkDispStatus,
+          pmkStatusCountMap.get(pmkDispStatus) + 1
         );
       }
     }
   } catch (e) {
-    console.error("mci status error", e);
+    console.error("pmk status error", e);
   }
-  // console.log(mciStatusCountMap);
-  return mciStatusCountMap;
+  // console.log(pmkStatusCountMap);
+  return pmkStatusCountMap;
 }
 
 
 // vm의 상태별 count
-export function calculateVmStatusCount(aMci) {
+export function calculateVmStatusCount(aPmk) {
   // console.log("calculateVmStatusCount")
   // console.log(vmList)
   var sumVmCnt = 0;
@@ -548,9 +548,9 @@ export function calculateVmStatusCount(aMci) {
   vmStatusCountMap.set("terminate", 0);
 
   try {
-    if (aMci.statusCount) {
-      console.log("statusCount part", aMci);
-      var statusCountObj = aMci.statusCount;
+    if (aPmk.statusCount) {
+      console.log("statusCount part", aPmk);
+      var statusCountObj = aPmk.statusCount;
       console.log(statusCountObj);
       var countCreating = statusCountObj.countCreating;
       var countFailed = statusCountObj.countFailed;
@@ -577,9 +577,9 @@ export function calculateVmStatusCount(aMci) {
       vmStatusCountMap.set("running", Number(countRunning));
       vmStatusCountMap.set("stop", Number(countSuspended)); // partial 도 stop으로 보고있음.
       vmStatusCountMap.set("terminate", sumEtc);
-    } else if (aMci.vm) {
+    } else if (aPmk.vm) {
       console.log("statusCount part list part");
-      vmList = aMci.vm;
+      vmList = aPmk.vm;
       for (var vmIndex in vmList) {
         var aVm = vmList[vmIndex];
         var vmStatus = aVm.status;
@@ -597,7 +597,7 @@ export function calculateVmStatusCount(aMci) {
       }
     }
   } catch (e) {
-    console.error("mci status error", e); // 에러 로그 처리 예시
+    console.error("pmk status error", e); // 에러 로그 처리 예시
   }
   return vmStatusCountMap;
 }
