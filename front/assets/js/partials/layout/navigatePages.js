@@ -45,3 +45,15 @@ export function toggleSubElement(elem) {
 window.addEventListener('hashchange', showSection);
 window.addEventListener('load', showSection);
 window.addEventListener('load', hideLoader);
+
+window.addEventListener("DOMContentLoaded", (event) => {
+    var pretitle = document.getElementById("page-pretitle");
+    var title = document.getElementById("page-title");
+    if (pretitle && title) {
+        let urlPaths = window.location.pathname.split("/")
+        if (urlPaths.length >= 2) {
+            title.innerHTML = urlPaths[urlPaths.length - 1]
+            pretitle.innerHTML = urlPaths[urlPaths.length - 2]
+        }
+    }
+});
