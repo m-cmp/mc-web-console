@@ -100,7 +100,7 @@ function setMciList(mciList) {
 // 선택했을 때 displayMonitoringMci 
 $("#monitoring_mcilist").on('change', async function () {
     console.log("monitoring_mcilist")
-    
+
     var selectedMci = $("#monitoring_mcilist").val()
     console.log("selectedMci", selectedMci)
 
@@ -108,40 +108,45 @@ $("#monitoring_mcilist").on('change', async function () {
     var selectedNsId = selectedWorkspaceProject.nsId;
 
     displayMonitoringMci(selectedNsId, selectedMci)
+
 })
 
 
-async function displayMonitoringMci(nsId, mciId){
+async function displayMonitoringMci(nsId, mciId) {
     console.log(mciId)
 
     //get mci
-    
+
     var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
-    console.log("respMci",respMci)
-    
-    displayServerStatusList(mciId, respMci.responseData.vm)
+    console.log("respMci", respMci)
+
+    var vmList = respMci.responseData.vm
+    if (Array.isArray(vmList) && vmList.length > 0) {
+        displayServerStatusList(mciId, respMci.responseData.vm)
+    } else {
+        alert("There is no VM List !!")
+    }
+
 
 }
 
 function displayServerStatusList(mciId, vmList) {
     console.log("displayServerStatusList")
-  
-    var mciName = mciId;
-    var vmLi = "";
-    vmList.sort();
-    for (var vmIndex in vmList) {
-      var aVm = vmList[vmIndex]
-  
-      var vmID = aVm.id;
-      var vmName = aVm.name;
-      var vmStatus = aVm.status;
-      var vmDispStatus = webconsolejs["common/api/services/mci_api"].getVmStatusFormatter(vmStatus); // vmStatus set
-      var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmStatusStyleClass(vmDispStatus) // vmStatus 별로 상태 색상 set
-  
-      vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/mci\'].vmDetailInfo(\'' + mciId + '\',\'' + mciName + '\',\'' + vmID + '\')"><span class="text-dark-fg">' + vmName + '</span></li>';
-  
-    }// end of mci loop
-  
-    $("#monitoring_server_info_box").empty();
-    $("#monitoring_server_info_box").append(vmLi);
-  }
+
+    var res_item = vmList;
+
+    if (Array.isArray(res_item)) {
+        var html = '<option value="">Choose a Target VM for Monitoring</option>';
+
+        res_item.forEach(item => {
+            html += '<option value="' + item.id + '">' + item.name + '</option>';
+        });
+
+        // monitoring_mcilist 셀렉트 박스에 옵션 추가
+        $("#monitoring_vmlist").empty();
+        $("#monitoring_vmlist").append(html);
+    } else {
+        console.error("res_item is not an array");
+    }
+
+}
