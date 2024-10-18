@@ -23,7 +23,7 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("#### commonAPIPost Error");
         console.log("Error from : ",url, error.response ? error.response.status : error.message);
         console.log("----------------------------");
-        if (!attempt) {
+        if (!attempt || undefined) {
             if (error.response && (error.response.status === 401)){
                 const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
                 if (authrefreshStatus) {
