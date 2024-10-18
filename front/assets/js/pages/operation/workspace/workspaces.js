@@ -606,7 +606,9 @@ async function setWokrspaceRolesTableData(wsId){
   workspacesRolesInfo.setData(data)
 }
 function doesRoleExistInWorkspaceById(workspaces, workspaceId, targetRoleId) {
-  const workspace = workspaces.find(ws => ws.workspace.id === workspaceId);
+  var workspace = (workspaces && Array.isArray(workspaces)) ? workspaces.find(function (ws) {
+    return ws.workspace.id === workspaceId;
+  }) : null;
   if (workspace) {
     return workspace.userinfo.some(user => user.role.id === targetRoleId);
   }
@@ -614,26 +616,43 @@ function doesRoleExistInWorkspaceById(workspaces, workspaceId, targetRoleId) {
 }
 function countRoleOccurrencesInWorkspaces(workspaces, targetRoleId) {
   var count = 0;
-  workspaces.forEach(function (workspace) {
-    workspace.userinfo.forEach(function (user) {
-      if (user.role.id === targetRoleId) {
-        count++;
+  if (workspaces && Array.isArray(workspaces)) {
+    workspaces.forEach(function (workspace) {
+      if (workspace.userinfo && Array.isArray(workspace.userinfo)) {
+        workspace.userinfo.forEach(function (user) {
+          if (user.role && user.role.id === targetRoleId) {
+            count++;
+          }
+        });
+      } else {
+        console.error("userinfo is null or not an array in workspace:", workspace);
       }
     });
-  });
+  } else {
+    console.error("workspaces is null or not an array.");
+  }
   return count;
 }
 function countWorkspacesWithRole(workspaces, targetRoleId) {
   var count = 0;
-  workspaces.forEach(function (workspace) {
-    var hasTargetId = workspace.userinfo.some(function (user) {
-      return user.role.id === targetRoleId;
+  if (workspaces && Array.isArray(workspaces)) {
+    workspaces.forEach(function (workspace) {
+      if (workspace.userinfo && Array.isArray(workspace.userinfo)) {
+        var hasTargetId = workspace.userinfo.some(function (user) {
+          return user.role && user.role.id === targetRoleId;
+        });
+
+        if (hasTargetId) {
+          count++;
+        }
+      } else {
+        console.error("userinfo is null or not an array in workspace:", workspace);
+      }
     });
-    
-    if (hasTargetId) {
-      count++;
-    }
-  });
+  } else {
+    console.error("workspaces is null or not an array.");
+  }
+
   return count;
 }
 
