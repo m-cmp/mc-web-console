@@ -7,7 +7,9 @@ $("#select-current-project").on('change', async function () {
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
     console.log("select-current-project on change ", project)
     var respPolicyList = await webconsolejs["common/api/services/eventalarm_api"].getAllPolicy();
-    getPolicyListCallbackSuccess(project.NsId, respPolicyList);
+    console.log("asdasd",respPolicyList)
+    var policyList = respPolicyList.responseData.data
+    getPolicyListCallbackSuccess(project.NsId, policyList);
 })
 
 ////
@@ -17,7 +19,13 @@ export function commoncallbac(val) {
 }
 
 initPolicyTable(); // init tabulator
+var totalPolicyListObj = new Object();
 var selectedWorkspaceProject = new Object();
+var policyListTable;
+var checked_array = [];
+export var selectedPolicyObj = new Object();
+
+
 
 document.addEventListener("DOMContentLoaded", initEventAlarm);
 async function initEventAlarm() {
@@ -51,7 +59,8 @@ async function initEventAlarm() {
 }
 
 async function getPolicyListCallbackSuccess (nsId, policyList) {
-  setPolicyList(policyList)
+    totalPolicyListObj = policyList
+    setPolicyList(policyList)
 }
 async function setPolicyList () {
   
@@ -61,7 +70,7 @@ async function setPolicyList () {
 ////////////////////////////////////////////////////// TABULATOR Start //////////////////////////////////////////////////////
 // tabulator 행, 열, 기본값 설정
 // table이 n개 가능하므로 개별 tabulator 정의 : 원리 util 안에 setTabulator있음.
-function setPmkTabulator(
+function setPolicyTabulator(
     tableObjId,
     tableObjParamMap,
     columnsParams,
@@ -186,11 +195,10 @@ function initPolicyTable() {
         },
     ];
 
-    //pmkListTable = webconsolejs["common/util"].setTabulator("pmklist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
-    pmkListTable = setPmkTabulator("policylist-table", tableObjParams, columns, true);
+    policyListTable = setPolicyTabulator("policylist-table", tableObjParams, columns, true);
 
     // 행 클릭 시
-    pmkListTable.on("rowClick", function (e, row) {
+    policyListTable.on("rowClick", function (e, row) {
         // vmid 초기화 for vmlifecycle
         // selectedClusterId = ""
 
@@ -202,7 +210,7 @@ function initPolicyTable() {
     });
 
     //  선택된 여러개 row에 대해 처리
-    pmkListTable.on("rowSelectionChanged", function (data, rows) {
+    policyListTable.on("rowSelectionChanged", function (data, rows) {
         checked_array = data
         selectedPmkObj = data
     });
@@ -211,8 +219,8 @@ function initPolicyTable() {
 
 // toggleSelectBox of table row
 function toggleRowSelection(id) {
-    // pmkListTable에서 데이터 찾기
-    var row = pmkListTable.getRow(id);
+    // policyListTable 데이터 찾기
+    var row = policyListTable.getRow(id);
     if (row) {
         row.select();
         console.log("Row with ID " + id + " is selected.");
