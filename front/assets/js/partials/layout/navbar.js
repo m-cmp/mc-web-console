@@ -100,7 +100,7 @@ document.getElementById("logoutbtn").addEventListener('click', async function ()
     window.location = "/auth/logout"
 });
 
-function destroyAccessToken() {
+export function destroyAccessToken() {
     let now = new Date();
     document.cookie = `Authorization=; path=/; expires=${now.getTime()};`;
 }
