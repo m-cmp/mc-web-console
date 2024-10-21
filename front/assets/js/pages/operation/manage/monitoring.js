@@ -1,3 +1,5 @@
+import Apexcharts from "apexcharts"
+
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
     console.log("select-current-project changed ")
@@ -97,7 +99,7 @@ function setMciList(mciList) {
     }
 }
 
-// 선택했을 때 displayMonitoringMci 
+// mci 선택했을 때 displayMonitoringMci 
 $("#monitoring_mcilist").on('change', async function () {
     console.log("monitoring_mcilist")
 
@@ -149,4 +151,177 @@ function displayServerStatusList(mciId, vmList) {
         console.error("res_item is not an array");
     }
 
+}
+
+// vm 선택했을 때 displayMonitoringMci 
+$("#monitoring_vmlist").on('change', async function () {
+    console.log("monitoring_vmlist")
+
+    var selectedVm = $("#monitoring_vmlist").val()
+    console.log("selectedVm", selectedVm)
+
+    selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+    var selectedNsId = selectedWorkspaceProject.nsId;
+
+    setMonitoringMesurement()
+
+})
+
+async function setMonitoringMesurement() {
+    var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
+    console.log("respMesurement", respMeasurement)
+    var data = respMeasurement.data;
+
+    var measurementSelect = document.getElementById("monitoring_measurement");
+
+    measurementSelect.innerHTML = "";
+
+    var defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.text = "Select Measurement";
+    measurementSelect.appendChild(defaultOption);
+
+    data.forEach(function (item) {
+        if (item.plugin_type === "INPUT") {
+            var option = document.createElement("option");
+            // option.value = item.plugin_id;
+            option.value = item.name;
+            option.text = item.name;
+
+            measurementSelect.appendChild(option);
+        }
+    });
+}
+
+export async function startMonitoring() {
+
+    var selectedMeasurement = $("#monitoring_measurement").val();
+    var selectedRange = $("#monitoring_range").val();
+    var selectedVMId = $("#monitoring_vmlist").val();
+
+    var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
+
+    var respMonitoringData = response.data.responseData
+    console.log("respMonitoringData", respMonitoringData)
+
+    drawMonitoringGraph(respMonitoringData)
+}
+
+async function drawMonitoringGraph(MonitoringData) {
+    // API 응답 데이터로부터 timestamp와 usage_idle 값을 추출합니다.
+    const chartDataList = [];
+    const chartLabels = [];
+
+    MonitoringData.data.forEach(cpuData => {
+        // const seriesData = {
+        //     name: cpuData.tags.cpu,
+        //     data: cpuData.values.map(value => ({
+        //         x: value[0], // timestamp
+        //         // y: value[1]  // usage_idle
+        //         y: parseFloat(value[1]).toFixed(2)  // usage_idle
+        //     }))
+        if (cpuData.tags.cpu === "cpu-total") {
+            const seriesData = {
+                name: cpuData.tags.cpu,
+                data: cpuData.values.map(value => ({
+                    x: value[0], // timestamp
+                    y: parseFloat(value[1]).toFixed(2)
+                }))
+            };
+            chartDataList.push(seriesData);
+
+            // timestamp를 추출하여 chartLabels에 넣음 (중복 방지)
+            cpuData.values.forEach(value => {
+                const timestamp = value[0];
+                if (!chartLabels.includes(timestamp)) {
+                    chartLabels.push(timestamp);
+                }
+            });
+        }
+    });
+
+    const options = {
+        chart: {
+          type: "area",
+          height: 240,
+          toolbar: {
+            show: true,
+          },
+          animations: {
+            enabled: false,
+          }
+        },
+        title: {
+          text: "CPU Usage Idle (cpu-total)",
+          align: "center",
+          style: {
+            fontSize: "14px",
+            fontWeight: "bold",
+            color: "#263238"
+          }
+        },
+        series: chartDataList,
+        xaxis: {
+          type: "datetime",
+          labels: {
+            format: "yyyy-MM-dd HH:mm:ss"
+          }
+        },
+        yaxis: {
+          labels: {
+            formatter: function (val) {
+              return val;  // 그대로 표시 (값은 이미 toFixed 처리됨)
+            }
+          }
+        },
+        labels: chartLabels,
+        fill: {
+          type: "solid",
+          opacity: 0.16,
+        },
+        stroke: {
+          curve: "smooth",
+          width: 2
+        },
+        colors: ['#008FFB', '#FF4560'], // 첫 번째 색상은 관찰된 데이터, 두 번째는 예측 데이터
+        legend: {
+          show: true,
+          position: "bottom",
+          markers: {
+            width: 10,
+            height: 10,
+            radius: 100,
+          }
+        },
+        tooltip: {
+          theme: "dark",
+          y: {
+            formatter: function (val) {
+              return val;  // 툴팁에서도 소수점 둘째 자리까지 표시
+            }
+          }
+        },
+        grid: {
+          strokeDashArray: 4,
+        }
+      };
+    const chart = new Apexcharts(document.getElementById("monitoring_chart_1"), options);
+    chart.render();
+
+    // prediction 켜져 있으면
+
+    var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction();
+    console.log("qweqweqew",response)
+    const predictionData = response.data.responseData.data.values.map(value => ({
+        x: value.timestamp,
+        y: parseFloat(value.value).toFixed(2) // 소수점 둘째 자리까지 표현
+      }));
+      
+      const predictionSeries = {
+        name: "CPU Total (Predicted)",
+        data: predictionData
+      };
+      
+      // prediction 데이터를 기존 차트 데이터에 추가
+      chartDataList.push(predictionSeries);
 }
