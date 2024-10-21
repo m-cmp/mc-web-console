@@ -77,8 +77,20 @@ function initWorkspacesTable() {
     workspacesListTable = setWorkspacesTabulator("Workspaceslist-table", tableObjParams, columns, true);
 
     workspacesListTable.on("rowClick", function (e, row) {
+      var tempcurWorkspaceId = currentClickedWorkspaceId
       currentClickedWorkspaceId = row.getCell("id").getValue()
-      getSelectedWorkspaceInfocardInit(currentClickedWorkspaceId)
+      if (tempcurWorkspaceId === currentClickedWorkspaceId) {
+        webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
+        currentClickedWorkspaceId = ""
+        this.deselectRow();
+        return
+      } else {
+        webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
+        this.deselectRow();
+        this.selectRow(currentClickedWorkspaceId);
+        getSelectedWorkspaceInfocardInit(currentClickedWorkspaceId)
+        return
+      }
     });
   
     workspacesListTable.on("rowSelectionChanged", function (data, rows) {
@@ -134,6 +146,7 @@ function initWorkspacesProjectsInfoTable() {
     workspacesProjectsInfo = setWorkspacesProjectsInfoTabulator("WorkspacesProjectsInfo-table", tableObjParams, columns, true);
 
     workspacesProjectsInfo.on("rowClick", function (e, row) {
+
     });
   
     workspacesProjectsInfo.on("rowSelectionChanged", function (data, rows) {
@@ -538,13 +551,16 @@ function updateSummary(){
 // info card area start
 async function getSelectedWorkspaceInfocardInit(workspacesID){
   // active info card
-  const checked_array_ids = checked_array.map(item => item.id);
-  if (!checked_array_ids.includes(workspacesID)){
-    webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
-    return
-  } else {
-    webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
-  }
+  // const checked_array_ids = checked_array.map(item => item.id);
+  // if (!checked_array_ids.includes(workspacesID)){
+  //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
+  //   return
+  // } else {
+  //   webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
+  // }
+
+  
+  
 
   var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(workspacesID);
   
@@ -606,7 +622,9 @@ async function setWokrspaceRolesTableData(wsId){
   workspacesRolesInfo.setData(data)
 }
 function doesRoleExistInWorkspaceById(workspaces, workspaceId, targetRoleId) {
-  const workspace = workspaces.find(ws => ws.workspace.id === workspaceId);
+  var workspace = (workspaces && Array.isArray(workspaces)) ? workspaces.find(function (ws) {
+    return ws.workspace.id === workspaceId;
+  }) : null;
   if (workspace) {
     return workspace.userinfo.some(user => user.role.id === targetRoleId);
   }
@@ -614,26 +632,43 @@ function doesRoleExistInWorkspaceById(workspaces, workspaceId, targetRoleId) {
 }
 function countRoleOccurrencesInWorkspaces(workspaces, targetRoleId) {
   var count = 0;
-  workspaces.forEach(function (workspace) {
-    workspace.userinfo.forEach(function (user) {
-      if (user.role.id === targetRoleId) {
-        count++;
+  if (workspaces && Array.isArray(workspaces)) {
+    workspaces.forEach(function (workspace) {
+      if (workspace.userinfo && Array.isArray(workspace.userinfo)) {
+        workspace.userinfo.forEach(function (user) {
+          if (user.role && user.role.id === targetRoleId) {
+            count++;
+          }
+        });
+      } else {
+        console.error("userinfo is null or not an array in workspace:", workspace);
       }
     });
-  });
+  } else {
+    console.error("workspaces is null or not an array.");
+  }
   return count;
 }
 function countWorkspacesWithRole(workspaces, targetRoleId) {
   var count = 0;
-  workspaces.forEach(function (workspace) {
-    var hasTargetId = workspace.userinfo.some(function (user) {
-      return user.role.id === targetRoleId;
+  if (workspaces && Array.isArray(workspaces)) {
+    workspaces.forEach(function (workspace) {
+      if (workspace.userinfo && Array.isArray(workspace.userinfo)) {
+        var hasTargetId = workspace.userinfo.some(function (user) {
+          return user.role && user.role.id === targetRoleId;
+        });
+
+        if (hasTargetId) {
+          count++;
+        }
+      } else {
+        console.error("userinfo is null or not an array in workspace:", workspace);
+      }
     });
-    
-    if (hasTargetId) {
-      count++;
-    }
-  });
+  } else {
+    console.error("workspaces is null or not an array.");
+  }
+
   return count;
 }
 
@@ -820,7 +855,6 @@ export async function addRole(){
 }
 
 export async function initRoleDetailModal(role){
-  console.log(role)
   document.getElementById("role-modal-detail-name").value=role.name
   document.getElementById("role-modal-detail-id").value=role.id
   document.getElementById("role-modal-detail-policyid").value=role.policy
@@ -1186,38 +1220,6 @@ function setWorkspacesTabulator(
     var layout = "fitColumns";
     // var renderHorizontal = "virtual"
   
-    if (tableObjParamMap.hasOwnProperty("placeholder")) {
-      placeholder = tableObjParamMap.placeholder;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("pagination")) {
-      pagination = tableObjParamMap.pagination;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-      paginationSize = tableObjParamMap.paginationSize;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-      paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-      movableColumns = tableObjParamMap.movableColumns;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-      columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-      paginationCounter = tableObjParamMap.paginationCounter;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("layout")) {
-      layout = tableObjParamMap.layout;
-    }
-  
     var tabulatorTable = new Tabulator("#" + tableObjId, {
       placeholder,
       pagination,
@@ -1232,13 +1234,12 @@ function setWorkspacesTabulator(
       initialSort:[
         {column:"name", dir:"asc"}
       ],
-      selectableRows: true,
+      // selectableRows: true,
     })
 
     return tabulatorTable;
 }
 // tableSetup area end
-
 
 function findRowIndexByColumnValue(table, column, value) {
   var tableData = table.getData();
