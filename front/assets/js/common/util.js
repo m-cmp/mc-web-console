@@ -68,9 +68,6 @@ export function setTabulator(
 export function changePage(target, urlParamMap) {
   var url = "";
   // target에 따라 url을 달리한다.
-  if (target == "MciMng") {
-    url = "/webconsole/operation/manage/mci"
-  }
 
   // pathParam을 뒤에 붙인다.
   var keyIndex = 0;
