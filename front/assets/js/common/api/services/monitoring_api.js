@@ -1,22 +1,22 @@
 export async function getPlugIns() {
-  
-    var controller = "/api/" + "mc-observability/" + "GET_plugins";
-    const response = await webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-    )
-  
-    var respMeasureMent = response.data.responseData;
-  
-    return respMeasureMent
-  }
+
+  var controller = "/api/" + "mc-observability/" + "GET_plugins";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+  )
+
+  var respMeasureMent = response.data.responseData;
+
+  return respMeasureMent
+}
 
 export async function getInfluxDBMetrics(measurement, range, vmId) {
 
   const data = {
 
     Request: {
-      // "measurement": measurement,
-      "measurement": "cpu",
+      "measurement": measurement,
+      // "measurement": "cpu",
       "range": range,
       // "range": "1h",
       "group_time": "1h",
@@ -34,7 +34,8 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
       "conditions": [
         {
           "key": "target_id",
-          "value": "vm-1"
+          // "value": "vm-1"
+          "value": "g1-1-1"
         }
       ]
     }
@@ -45,7 +46,7 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
     controller,
     data
   );
-  
+
   return response
 
 }
@@ -60,7 +61,7 @@ export async function monitoringPrediction() {
     Request: {
       "target_type": "vm",
       "measurement": "cpu",
-      "prediction_range": "24h"
+      "prediction_range": "6h"
     }
   }
 
@@ -69,7 +70,6 @@ export async function monitoringPrediction() {
     controller,
     data
   );
-  
-  return response
 
+  return response
 }
