@@ -182,7 +182,7 @@ function initLogTable() {
     
   ];
 
-  logListTable = setLogTabulator("mcilist-table", tableObjParams, columns, true);
+  logListTable = setLogTabulator("loglist-table", tableObjParams, columns, true);
 
   // 행 클릭 시
   logListTable.on("rowClick", function (e, row) {
@@ -208,16 +208,13 @@ function toggleRowSelection(id) {
 
 /////////////////////////Tabulator Filter start/////////////////////////
 //Define variables for input elements
-var fieldEl = document.getElementById("filter-field");
-var typeEl = document.getElementById("filter-type");
+
 var valueEl = document.getElementById("filter-value");
 
 
 
 // Trigger setFilter function with correct parameters
 function updateFilter() {
-  var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
-  var typeVal = typeEl.options[typeEl.selectedIndex].value;
 
 //   var filter = filterVal == "provider" ? providerFilter : filterVal;
 
@@ -234,8 +231,6 @@ function updateFilter() {
 }
 
 // Update filters on value change
-document.getElementById("filter-field").addEventListener("change", updateFilter);
-document.getElementById("filter-type").addEventListener("change", updateFilter);
 document.getElementById("filter-value").addEventListener("keyup", updateFilter);
 
 // Clear filters on "Clear Filters" button click
@@ -250,3 +245,18 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 /////////////////////////Tabulator Filter END/////////////////////////
 
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
+
+
+// Log 조회
+export async function getCollectedLog() {
+
+    var selectedMeasurement = $("#monitoring_measurement").val();
+    var selectedRange = $("#monitoring_range").val();
+    var selectedVMId = $("#monitoring_vmlist").val();
+  //GET_OpensearchLogs
+    var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
+  
+    var respMonitoringData = response.data.responseData
+    console.log("respMonitoringData", respMonitoringData)
+  
+}
