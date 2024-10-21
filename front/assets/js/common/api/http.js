@@ -76,7 +76,7 @@ function activePageLoader(){
     try{
         document.getElementById("pageloader").classList.add('active');
     }catch(error){
-        console.log("pageloader is not exist :", error)
+        console.log("pageloader is not exist ")
     }
 }
 
@@ -84,7 +84,7 @@ function deactivePageLoader(){
     try{
         document.getElementById("pageloader").classList.remove('active');
     }catch(error){
-        console.log("pageloader is not exist :", error)
+        console.log("pageloader is not exist ")
     }
 }
 
