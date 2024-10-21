@@ -239,7 +239,9 @@ export function selectMci(id, name, target, obj) {
   // active 면 이동한다.
   var urlParamMap = new Map();
   urlParamMap.set("mciID", mciId)
-  webconsolejs["common/util"].changePage("MciMng", urlParamMap)
+  // webconsolejs["common/util"].changePage("MciMng", urlParamMap)
+  window.location = "/webconsole/operations/manage/workloads/mciswls"
+
 
   // MCIS List table의 1개 Row Update
   function updateMciListTableRow(aMciData, mciIndex) {

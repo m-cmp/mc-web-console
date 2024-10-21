@@ -78,6 +78,8 @@ function initWorkspacesTable() {
 
     workspacesListTable.on("rowClick", function (e, row) {
       currentClickedWorkspaceId = row.getCell("id").getValue()
+      this.deselectRow();
+      this.selectRow(currentClickedWorkspaceId);
       getSelectedWorkspaceInfocardInit(currentClickedWorkspaceId)
     });
   
@@ -134,6 +136,7 @@ function initWorkspacesProjectsInfoTable() {
     workspacesProjectsInfo = setWorkspacesProjectsInfoTabulator("WorkspacesProjectsInfo-table", tableObjParams, columns, true);
 
     workspacesProjectsInfo.on("rowClick", function (e, row) {
+
     });
   
     workspacesProjectsInfo.on("rowSelectionChanged", function (data, rows) {
@@ -538,13 +541,16 @@ function updateSummary(){
 // info card area start
 async function getSelectedWorkspaceInfocardInit(workspacesID){
   // active info card
-  const checked_array_ids = checked_array.map(item => item.id);
-  if (!checked_array_ids.includes(workspacesID)){
-    webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
-    return
-  } else {
-    webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
-  }
+  // const checked_array_ids = checked_array.map(item => item.id);
+  // if (!checked_array_ids.includes(workspacesID)){
+  //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
+  //   return
+  // } else {
+  //   webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
+  // }
+
+  webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
+  
 
   var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(workspacesID);
   
@@ -839,7 +845,6 @@ export async function addRole(){
 }
 
 export async function initRoleDetailModal(role){
-  console.log(role)
   document.getElementById("role-modal-detail-name").value=role.name
   document.getElementById("role-modal-detail-id").value=role.id
   document.getElementById("role-modal-detail-policyid").value=role.policy
@@ -1205,38 +1210,6 @@ function setWorkspacesTabulator(
     var layout = "fitColumns";
     // var renderHorizontal = "virtual"
   
-    if (tableObjParamMap.hasOwnProperty("placeholder")) {
-      placeholder = tableObjParamMap.placeholder;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("pagination")) {
-      pagination = tableObjParamMap.pagination;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("paginationSize")) {
-      paginationSize = tableObjParamMap.paginationSize;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
-      paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("movableColumns")) {
-      movableColumns = tableObjParamMap.movableColumns;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
-      columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
-      paginationCounter = tableObjParamMap.paginationCounter;
-    }
-  
-    if (tableObjParamMap.hasOwnProperty("layout")) {
-      layout = tableObjParamMap.layout;
-    }
-  
     var tabulatorTable = new Tabulator("#" + tableObjId, {
       placeholder,
       pagination,
@@ -1251,13 +1224,12 @@ function setWorkspacesTabulator(
       initialSort:[
         {column:"name", dir:"asc"}
       ],
-      selectableRows: true,
+      // selectableRows: true,
     })
 
     return tabulatorTable;
 }
 // tableSetup area end
-
 
 function findRowIndexByColumnValue(table, column, value) {
   var tableData = table.getData();
