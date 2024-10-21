@@ -77,10 +77,20 @@ function initWorkspacesTable() {
     workspacesListTable = setWorkspacesTabulator("Workspaceslist-table", tableObjParams, columns, true);
 
     workspacesListTable.on("rowClick", function (e, row) {
+      var tempcurWorkspaceId = currentClickedWorkspaceId
       currentClickedWorkspaceId = row.getCell("id").getValue()
-      this.deselectRow();
-      this.selectRow(currentClickedWorkspaceId);
-      getSelectedWorkspaceInfocardInit(currentClickedWorkspaceId)
+      if (tempcurWorkspaceId === currentClickedWorkspaceId) {
+        webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"))
+        currentClickedWorkspaceId = ""
+        this.deselectRow();
+        return
+      } else {
+        webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
+        this.deselectRow();
+        this.selectRow(currentClickedWorkspaceId);
+        getSelectedWorkspaceInfocardInit(currentClickedWorkspaceId)
+        return
+      }
     });
   
     workspacesListTable.on("rowSelectionChanged", function (data, rows) {
@@ -549,7 +559,7 @@ async function getSelectedWorkspaceInfocardInit(workspacesID){
   //   webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
   // }
 
-  webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("workspace-info-card"))
+  
   
 
   var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(workspacesID);
