@@ -211,6 +211,11 @@ function initPolicyTable() {
             field: "description",
             visible: false,
         },
+        {
+            title: "Statistics",
+            field: "statistics",
+            visible: false,
+        },
     ];
 
     policyListTable = setPolicyTabulator("policylist-table", tableObjParams, columns, true);
