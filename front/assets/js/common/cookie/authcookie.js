@@ -5,7 +5,7 @@ export async function updateCookieAccessToken(accessToken){
 }
 
 export async function refreshCookieAccessToken(){
-    const response = await webconsolejs["common/api/http"].commonAPIPost("/api/auth/refresh")
+    const response = await webconsolejs["common/api/http"].commonAPIPostWithoutRetry("/api/auth/refresh")
     if (response.status !== 200) {
         return false
     }

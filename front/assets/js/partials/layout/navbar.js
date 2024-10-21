@@ -95,7 +95,6 @@ export async function workspaceProjectInit() {
 }
 
 
-
 document.getElementById("logoutbtn").addEventListener('click', async function () {
     destroyAccessToken()
     window.location = "/auth/logout"
