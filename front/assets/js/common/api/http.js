@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export async function commonAPIPost(url, data, attempt) {
+    activePageLoader()
     if (attempt === undefined) {
         attempt = false;
     }
@@ -18,6 +19,7 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("Response status : ", response.status);
         console.log("Response from : ",url, response.data);
         console.log("----------------------------");
+        deactivePageLoader()
         return response;
     } catch (error) {
         console.log("#### commonAPIPost Error");
@@ -39,6 +41,7 @@ export async function commonAPIPost(url, data, attempt) {
                 }
             }
         }
+        deactivePageLoader()
         alert("request error : "+ error.message);
         return error
     }
@@ -66,6 +69,22 @@ export async function commonAPIPostWithoutRetry(url, data) {
         console.log("----------------------------");
         console.log("Request failed :", error);
         return error
+    }
+}
+
+function activePageLoader(){
+    try{
+        document.getElementById("pageloader").classList.add('active');
+    }catch(error){
+        console.log("pageloader is not exist :", error)
+    }
+}
+
+function deactivePageLoader(){
+    try{
+        document.getElementById("pageloader").classList.remove('active');
+    }catch(error){
+        console.log("pageloader is not exist :", error)
     }
 }
 
