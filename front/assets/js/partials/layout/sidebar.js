@@ -27,7 +27,7 @@ function generateMenuHTML(menus) {
         html += ` </li>`
         title.menus.forEach(category => {
             html += ` <li class="nav-item">`
-            html += ` <span class="nav-link">${category.displayName}</span>`
+            html += ` <span class="nav-link" id="sidebar_${category.id}">${category.displayName}</span>`
             html += ` </li>`
             if (category.menus && category.menus.length > 0) {
                 category.menus.forEach(menu => {
@@ -58,6 +58,7 @@ function generateMenuHTML(menus) {
 function setActiveMenu() {
     try {
         const path = window.location.pathname.split('/');
+        const depth3 = path[3] ? `sidebar_${path[3]}` : null;
         const depth4 = path[4] ? `sidebar_${path[4]}` : null;
         const depth5 = path[5] ? `sidebar_${path[4]}_${path[5]}` : null;
         if (depth4) {
@@ -83,6 +84,17 @@ function setActiveMenu() {
                     pretitle.innerHTML = innerText 
                 }
                 title.innerHTML = document.getElementById(depth5).innerHTML
+            }
+        } else if (depth3&&depth4) {
+            var pretitle = document.getElementById("page-pretitle");
+            var title = document.getElementById("page-title");
+            if (pretitle && title) {
+                pretitle.innerHTML = document.getElementById(depth3).innerHTML
+                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`).querySelector('.nav-link-title');
+                if (navLinkTitle) {
+                    const innerText = navLinkTitle.innerText;
+                    title.innerHTML = innerText 
+                }
             }
         }
         
