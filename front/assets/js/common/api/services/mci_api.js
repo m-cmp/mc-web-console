@@ -125,8 +125,8 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
   var urlParamMap = new Map();
 
   // 생성요청했으므로 결과를 기다리지 않고 mciList로 보냄
-  webconsolejs["common/util"].changePage("MciMng", urlParamMap)
-
+  // webconsolejs["common/util"].changePage("MciMng", urlParamMap)
+  window.location = "/webconsole/operations/manage/workloads/mciswls"
 }
 
 export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
