@@ -21,8 +21,6 @@ export async function getMciList(nsId) {
     data
   )
 
-  console.log("aaa", response)
-
   var mciList = response.data.responseData;
 
   return mciList
