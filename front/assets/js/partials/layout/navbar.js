@@ -22,11 +22,13 @@ workspaceListselectBox.addEventListener('change', function () {
     setPrjSelectBox(workspace.Id)
 });
 
-projectListselectBox.addEventListener('change', function () {
-    if (this.value == "") return;
-    let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text }
-    webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
-});
+// projectListselectBox.addEventListener('change', function () {
+//     if (this.value === "") {
+//         return
+//     }
+//     let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
+//     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
+// });
 
 // refresh 버튼 클릭시 user의 workspace, project 목록 조회
 workspaceRefreshBtn.addEventListener('click', async function () {
