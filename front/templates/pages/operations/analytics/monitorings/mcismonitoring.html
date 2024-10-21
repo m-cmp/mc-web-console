@@ -10,155 +10,188 @@
           <div class="card-body">
             <div class="row">
               <div class="col d-flex justify-content-end">
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Workload</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_mcilist">
-                      <option value="">
-                        Choose a Target MCI for Monitoring
-                      </option>
-                    </select>
-                  </div>
+                <!-- Workload -->
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <label for="monitoring_mcilist" class="form-label me-2"
+                    >Workload</label
+                  >
+                  <select class="form-select" id="monitoring_mcilist">
+                    <option value="">Choose a Target MCI for Monitoring</option>
+                  </select>
                 </div>
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Server</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_vmlist">
-                      <option value="">
-                        Choose a Target VM for Monitoring
-                      </option>
-                    </select>
-                  </div>
+
+                <!-- Server -->
+                <div class="mb-3 d-flex align-items-center">
+                  <label for="monitoring_vmlist" class="form-label me-2"
+                    >Server</label
+                  >
+                  <select class="form-select" id="monitoring_vmlist">
+                    <option value="">Choose a Target VM for Monitoring</option>
+                  </select>
                 </div>
               </div>
             </div>
-            
-            
+
             <div class="row">
               <div class="col d-flex justify-content-end">
-                <div class="mb-3 row">
-                  <label class="col-4 col-form-label text-end">Measurement</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_mcilist">
-                      <option value="">
-                        Choose a Target MCI for Monitoring
-                      </option>
-                    </select>
-                  </div>
+                <!-- Measurement -->
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <label for="monitoring_measurement" class="form-label me-2"
+                    >Measurement</label
+                  >
+                  <select class="form-select" id="monitoring_measurement">
+                    <option value="">Select Measurement</option>
+                  </select>
                 </div>
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Metric</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_vmlist">
-                      <option value="">
-                        Choose a Target VM for Monitoring
-                      </option>
-                    </select>
-                  </div>
+
+                <!-- Metric -->
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <label for="monitoring_vmlist" class="form-label me-2"
+                    >Metric</label
+                  >
+                  <select class="form-select" id="monitoring_vmlist">
+                    <option value="">Select Metric</option>
+                  </select>
                 </div>
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Metric</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_vmlist">
-                      <option value="">
-                        Choose a Target VM for Monitoring
-                      </option>
-                    </select>
-                  </div>
+
+                <!-- Aggregation -->
+                <div class="mb-3 d-flex align-items-center">
+                  <label for="monitoring_aggregation" class="form-label me-2"
+                    >Aggregation</label
+                  >
+                  <select class="form-select" id="monitoring_aggregation">
+                    <option value="">Select Aggregation</option>
+                  </select>
                 </div>
               </div>
             </div>
-            
-            
+
             <div class="row">
               <div class="col d-flex justify-content-end">
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Range</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_mcilist">
-                      <option value="">
-                        Choose a Target MCI for Monitoring
-                      </option>
-                    </select>
+                <!-- Range -->
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <label for="monitoring_range" class="form-label me-2"
+                    >Range</label
+                  >
+                  <select class="form-select" id="monitoring_range">
+                    <option value="">Select Range</option>
+                    <option value="1h">1H</option>
+                    <option value="2h">2H</option>
+                    <option value="3h">3H</option>
+                    <option value="4h">4H</option>
+                    <option value="5h">5H</option>
+                    <option value="6h">6H</option>
+                  </select>
+                </div>
+
+                <!-- Period -->
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <label for="monitoring_vmlist" class="form-label me-2"
+                    >Period</label
+                  >
+                  <select class="form-select" id="monitoring_vmlist">
+                    <option value="">Select Period</option>
+                  </select>
+                </div>
+
+                <!-- Prediction -->
+                <div class="mb-3 d-flex align-items-center">
+                  <label
+                    for="monitoring_vmlist_prediction"
+                    class="form-label me-2"
+                    >Prediction</label
+                  >
+                  <select class="form-select" id="monitoring_vmlist_prediction">
+                    <option value="">Select Prediction</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col d-flex justify-content-end">
+                <!-- Prediction Switch -->
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input me-2"
+                      type="checkbox"
+                      id="predictionSwitch"
+                    />
+                    <label class="form-check-label" for="predictionSwitch"
+                      >Prediction</label
+                    >
                   </div>
                 </div>
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Period</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_vmlist">
-                      <option value="">
-                        Choose a Target VM for Monitoring
-                      </option>
-                    </select>
-                  </div>
-                </div>
-                <div class="mb-3 row">
-                  <label class="col-3 col-form-label text-end">Prediction</label>
-                  <div class="col">
-                    <select class="form-select" name="" id="monitoring_vmlist">
-                      <option value="">
-                        Choose a Target VM for Monitoring
-                      </option>
-                    </select>
+
+                <!-- Detection Switch -->
+                <div class="mb-3 d-flex align-items-center">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input me-2"
+                      type="checkbox"
+                      id="detectionSwitch"
+                    />
+                    <label class="form-check-label" for="detectionSwitch"
+                      >Detection</label
+                    >
                   </div>
                 </div>
               </div>
             </div>
+
+            <div class="row">
+              <div class="col d-flex justify-content-end">
+              
+                <div class="mb-3 d-flex align-items-center me-3">
+                  <button type="submit" class="btn btn-primary" onclick="webconsolejs['pages/operation/manage/monitoring'].startMonitoring()">Submit</button>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           <div class="card-body">
             <div class="card-header">
-              <h3 class="card-title">Selected MCI</h3>
+              <h3 class="card-title">Selected VM</h3>
             </div>
 
             <div class="card-body">
               <div class="row">
-                <div class="col-6">
+                <div class="col-12">
                   <div class="form-group mb-2">
-                    <label class="form-label required">CPU</label>
-                    <select class="form-select" name="" id="">
+                    <label class="form-label required">Graph 1</label>
+                    
+                    <!-- <select class="form-select" name="" id="">
                       <option value="">Select CPU term</option>
-                    </select>
+                    </select> -->
                   </div>
                 </div>
-                <div class="col-6">
+                <!-- <div class="col-6">
                   <div class="form-group mb-2">
-                    <label class="form-label required">MEMORY</label>
+                    <label class="form-label required">Graph 2</label>
+                    
                     <select class="form-select" name="" id="">
                       <option value="">Select MEMORY term</option>
                     </select>
                   </div>
-                </div>
-                
+                </div> -->
               </div>
               <div class="row">
-                <div class="col-md-6">
-                  <div class="card">
-                    <div class="card-body">
-                      <div id="cpu-chart" class="chart-lg"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="card">
-                    <div class="card-body">
-                      <div id="memory-chart" class="chart-lg"></div>
-                    </div>
-                  </div>
-                </div>
-                
-              </div>
-
-              <div class="row">
-                <div class="card-header">
-                  <h3 class="card-title">Server List</h3>
-                </div>
                 <div class="col-md-12">
-                  <ul
-                    class="vmStatus-list"
-                    id="monitoring_server_info_box"
-                  ></ul>
+                  <div class="card">
+                    <div class="card-body">
+                      <div id="monitoring_chart_1" class="chart-lg"></div>
+                    </div>
+                  </div>
                 </div>
+                <!-- <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div id="monitoring_chart_2" class="chart-lg"></div>
+                    </div>
+                  </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -170,4 +203,5 @@
 
 <%= javascriptTag("pages/operation/manage/monitoring.js") %> <%=
 javascriptTag("partials/operation/manage/server_monitoring.js") %> <%=
-javascriptTag("common/api/services/mci_api.js") %>
+javascriptTag("common/api/services/mci_api.js") %> <%=
+javascriptTag("common/api/services/monitoring_api.js") %>
