@@ -9,9 +9,8 @@
             </div>
   
             <div class="card-body">
-              <div class="row">
-                <div class="col d-flex justify-content-end">
-                  
+                <div class="row">
+                    <div class="col d-flex justify-content-end">                  
   
                   <div class="mb-3 row">
                       <label class="col-3 col-form-label text-end">Workload</label>
@@ -21,24 +20,46 @@
                             <option value="mci">MCI</option>
                             <option value="pmk">PMK</option>
                         </select>
-                      </div>
-                      <div class="col">
-                        <select class="form-select" name="" id="monitoring_mcilist">
-                          <option value="">Choose a Target Workload for Monitoring</option>
-                        </select>
-                      </div>
+                      </div>                      
                   </div>
+                  <div class="mb-3 row">                    
+                    <div class="col">
+                      <select class="form-select" name="" id="monitoring_mcilist">
+                        <option value="">Choose a Target Workload for Monitoring</option>
+                      </select>
+                    </div>
+                </div>
                   <div class="mb-3 row">
                       <label class="col-3 col-form-label text-end">Server/Node</label>
                       <div class="col">
-                        <select class="form-select" name="" id="monitoring_vmlist">
-                          <option value="">Choose a Target for Monitoring</option>      
+                        <select class="form-select" name="" id="monitoring_targetlist">
+                          <option value="">Choose a Target</option>      
                         </select>
                       </div>
                   </div>
-  
+
+                    </div>
                 </div>
-  
+                <div class="row">
+                    <div class="col d-flex justify-content-end">
+                        <div class="mb-3 row">
+                            <label class="col-3 col-form-label text-end">Keyword</label>
+                            <div class="col">
+                                <input class="form-control" name="" id="keyword"/>                            
+                            </div>
+                        </div>                       
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col d-flex justify-content-end">
+                        <div class="mb-3 d-flex align-items-center me-3">
+                            <button type="submit" class="btn btn-primary" onclick="webconsolejs['pages/operation/analytics/logmanage'].getCollectedLog()">Submit</button>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
                 <div class="col-md-12">
                     <div class="card">
                       <div class="card-header">
@@ -205,6 +226,7 @@
                     </div>
                 </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -212,5 +234,5 @@
   </div>
   
   <%= javascriptTag("pages/operation/analytics/logmanage.js") %> 
-  
+  <%= javascriptTag("common/api/services/monitoring_api.js") %>
   
