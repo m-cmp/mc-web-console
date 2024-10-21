@@ -31,6 +31,7 @@ var currentMciId = "";
 var mciListTable;
 var checked_array = [];
 var selectedMciID = ""
+var currentClickedmciID
 initMciTable(); // init tabulator
 
 //DOMContentLoaded 는 Page에서 1개만.
@@ -122,10 +123,10 @@ async function getSelectedMciData(mciID) {
     // SET MCIS Info page
     setMciInfoData(mciResp.responseData)
 
-    // Toggle MCIS Info
-    var div = document.getElementById("mci_info");
-    console.log("mciInfo ", div)
-    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+    // // Toggle MCIS Info
+    // var div = document.getElementById("mci_info");
+    // console.log("mciInfo ", div)
+    // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   }
 }
 
@@ -739,12 +740,23 @@ function initMciTable() {
   mciListTable.on("rowClick", function (e, row) {
     // vmid 초기화 for vmlifecycle
     selectedVmId = ""
-    var mciID = row.getCell("id").getValue();
-    console.log("mciID", mciID)
 
-    // 표에서 선택된 MCISInfo 
-    getSelectedMciData(mciID)
+    var tempcurmciID = currentClickedmciID
 
+    currentClickedmciID = row.getCell("id").getValue();
+    if (tempcurmciID === currentClickedmciID) {
+      webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
+      currentClickedmciID = ""
+      this.deselectRow();
+      return
+    } else {
+      webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
+      this.deselectRow();
+      this.selectRow(currentClickedmciID);
+      // 표에서 선택된 MCISInfo 
+      getSelectedMciData(currentClickedmciID)
+      return
+    }
   });
 
   //  선택된 여러개 row에 대해 처리
