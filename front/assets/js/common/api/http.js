@@ -23,19 +23,23 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("#### commonAPIPost Error");
         console.log("Error from : ",url, error.response ? error.response.status : error.message);
         console.log("----------------------------");
-        if (!attempt) {
-            if (error.response && (error.response.status === 401)){
+        if (!attempt || attempt === undefined) {
+            if (error.response.status === 429){
+                alert("too many request : "+ error.message);
+                return error
+            }
+            if (error.response && (error.response.status !== 200)){
                 const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
                 if (authrefreshStatus) {
                     console.log("Retrying request with refreshed token...");
                     return commonAPIPost(url, data, true);
+                } else {
+                    alert("refresh token failed :", error.message);
+                    window.location = "/auth/unauthorized"
                 }
-            } 
-        } else {
-            alert("error while refresh.", error);
-            window.location = "/auth/unauthorized"
+            }
         }
-        console.log("Request failed :", error);
+        alert("request error : "+ error.message);
         return error
     }
 }

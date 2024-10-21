@@ -4,6 +4,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 $("#select-current-project").on('change', async function () {
   console.log("select-current-project changed ")
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
+  if (this.value == "") return;
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
   console.log("select-current-project on change ", project)
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);

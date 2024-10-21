@@ -51,18 +51,17 @@ function generateMenuHTML(menus) {
             }
         });
     });
-    return html+debugMenu;
+    // return html+debugMenu;
+    return html;
 }
 
 function setActiveMenu() {
     try {
         const path = window.location.pathname.split('/');
-        console.log("path ", path);
         const depth4 = path[4] ? `sidebar_${path[4]}` : null;
         const depth5 = path[5] ? `sidebar_${path[4]}_${path[5]}` : null;
         if (depth4) {
             const elements = document.querySelectorAll(`[name="${depth4}"]`);
-            console.log(depth4, elements)
             elements.forEach(i => {
                 if (!i.classList.contains('show')) i.classList.add('show');
                 if (!i.classList.contains('active')) i.classList.add('active');
@@ -74,6 +73,19 @@ function setActiveMenu() {
                 element.classList.add('active');
             }
         }
+        if (depth4&&depth5) {
+            var pretitle = document.getElementById("page-pretitle");
+            var title = document.getElementById("page-title");
+            if (pretitle && title) {
+                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`).querySelector('.nav-link-title');
+                if (navLinkTitle) {
+                    const innerText = navLinkTitle.innerText;
+                    pretitle.innerHTML = innerText 
+                }
+                title.innerHTML = document.getElementById(depth5).innerHTML
+            }
+        }
+        
     } catch (error) {
         console.log('An error occurred in setActiveMenu:', error.message);
     }

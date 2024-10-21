@@ -14,11 +14,16 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
     }else{
         await webconsolejs["common/cookie/authcookie"].updateCookieAccessToken(response.data.access_token);
         const menuListresponse = await webconsolejs["common/api/http"].commonAPIPost('/api/getmenutree')
-        console.log(menuListresponse)
-        let tempMenulist = menuListresponse.data.responseData
-        tempMenulist.forEach(tempMenulist => sortMenusByPriority(tempMenulist));
-        webconsolejs["common/storage/localstorage"].setMenuLocalStorage(tempMenulist)
-        window.location = "/"
+        try{
+            let tempMenulist = menuListresponse.data.responseData
+            tempMenulist.forEach(tempMenulist => sortMenusByPriority(tempMenulist));
+            webconsolejs["common/storage/localstorage"].setMenuLocalStorage(tempMenulist)
+            window.location = "/"
+        } catch(error){
+            console.log(error)
+            alert(menuListresponse.response.data.responseData)
+            window.location = "/"
+        }
     }
 });
 
