@@ -486,7 +486,23 @@ function initProjectModalSeletor(){
     option.text = prj.name;
     selectElement.add(option);
   });
-  projectModalSeletor = new TomSelect(selectElement);
+  projectModalSeletor = new TomSelect(selectElement,{render:{
+    copyClassesToDropdown: false,
+    dropdownParent: 'body',
+    controlInput: '<input>',
+    item: function(data,escape) {
+      if( data.customProperties ){
+        return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+      }
+      return '<div>' + escape(data.text) + '</div>';
+    },
+    option: function(data,escape){
+      if( data.customProperties ){
+        return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+      }
+      return '<div>' + escape(data.text) + '</div>';
+    },
+  },});
 }
 
 function initProjectModalEditSeletor(){
@@ -505,7 +521,20 @@ function initProjectModalEditSeletor(){
   if (selectElement.tomselect) {
     selectElement.tomselect.destroy();
   }
-  projectModalEditSeletor = new TomSelect(selectElement);
+  projectModalEditSeletor = new TomSelect(selectElement,{render:{
+    item: function(data,escape) {
+      if( data.customProperties ){
+        return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+      }
+      return '<div>' + escape(data.text) + '</div>';
+    },
+    option: function(data,escape){
+      if( data.customProperties ){
+        return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+      }
+      return '<div>' + escape(data.text) + '</div>';
+    },
+  },});
 }
 
 function initUserAddSeletor(users){
@@ -522,7 +551,20 @@ function initUserAddSeletor(users){
     selectElement.add(option);
   });
 
-  userAddModalSelector = new TomSelect(selectElement);
+  userAddModalSelector = new TomSelect(selectElement,{render:{
+    item: function(data,escape) {
+      if( data.customProperties ){
+        return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+      }
+      return '<div>' + escape(data.text) + '</div>';
+    },
+    option: function(data,escape){
+      if( data.customProperties ){
+        return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+      }
+      return '<div>' + escape(data.text) + '</div>';
+    },
+  },});
 }
 
 function initUserAddRoleSeletor(roles){
