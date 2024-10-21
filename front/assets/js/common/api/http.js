@@ -39,9 +39,7 @@ export async function commonAPIPost(url, data, attempt) {
                 }
             }
         }
-        alert("session error : "+ error.message);
-        webconsolejs["partials/layout/navbar"].destroyAccessToken();
-        window.location = "/auth/unauthorized"
+        alert("request error : "+ error.message);
         return error
     }
 }
