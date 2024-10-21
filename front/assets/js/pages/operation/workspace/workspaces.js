@@ -1231,7 +1231,6 @@ function setWorkspacesTabulator(
 }
 // tableSetup area end
 
-
 function findRowIndexByColumnValue(table, column, value) {
   var tableData = table.getData();
   var rowIndex = tableData.findIndex(function(row) {
