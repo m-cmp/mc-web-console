@@ -33,11 +33,11 @@ export async function commonAPIPost(url, data, attempt) {
             if (error.response && (error.response.status !== 200)){
                 const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
                 if (authrefreshStatus) {
-                    console.log("Retrying request with refreshed token...");
+                    console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
                     return commonAPIPost(url, data, true);
                 } else {
                     alert("refresh token failed :", error.message);
-                    window.location = "/auth/unauthorized"
+                    window.location = "/auth/login"
                 }
             }
         }
