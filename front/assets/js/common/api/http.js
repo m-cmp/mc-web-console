@@ -36,13 +36,14 @@ export async function commonAPIPost(url, data, attempt) {
                     console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
                     return commonAPIPost(url, data, true);
                 } else {
-                    alert("refresh token failed :", error.message);
+                    alert("you logged in other device : ", error.message);
                     window.location = "/auth/login"
+                    return
                 }
             }
         }
         deactivePageLoader()
-        alert("request error : "+ error.message);
+        alert("request fail : "+ error.message);
         return error
     }
 }
