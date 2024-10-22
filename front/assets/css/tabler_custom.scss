@@ -8,3 +8,8 @@
   padding: 0 calc(calc(0.625rem * 2) / 2);
   justify-content: flex-start;
 }
+
+//summary font size
+.card-title.summary {
+  font-size: 200%;
+}
