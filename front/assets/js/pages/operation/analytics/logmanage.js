@@ -68,22 +68,22 @@ async function initLog() {
   }
 }
 
-// getLogList 호출 성공 시
-function getLogListCallbackSuccess(caller) {
-  console.log("getLogListCallbackSuccess");
+// // getLogList 호출 성공 시
+// function getLogListCallbackSuccess(caller) {
+//   console.log("getLogListCallbackSuccess");
   
-}
+// }
 
-// 클릭한 log의 info값 세팅
-function setLogInfoData(logData) {
-  console.log("setLogInfoData", logData)
-  try {
+// // 클릭한 log의 info값 세팅
+// function setLogInfoData(logData) {
+//   console.log("setLogInfoData", logData)
+//   try {
     
 
-  } catch (e) {
-    console.error(e);
-  }  
-}
+//   } catch (e) {
+//     console.error(e);
+//   }  
+// }
 
 
 ////////////////////////////////////////////////////// TABULATOR Start //////////////////////////////////////////////////////
@@ -167,21 +167,74 @@ function initLogTable() {
       headerSort: false,
       width: 60,
     },
-    
     {
-      title: "Id",
-      field: "id",
-      visible: true
-    },
-    
-    {
-      title: "Name",
-      field: "name",
+      title: "NS",
+      field: "tag",
+      formatter: tagNsIdFormatter,      
       vertAlign: "middle"
     },
-    
+    {
+      title: "MCI",
+      field: "tag",
+      formatter: tagMciIdFormatter,      
+      vertAlign: "middle"
+    },
+    {
+      title: "Target",
+      field: "tag",
+      formatter: tagTargetIdFormatter,      
+      vertAlign: "middle"
+    },
+    {
+      title: "Host",
+      field: "tail",
+      formatter: tailHostFormatter,      
+      vertAlign: "middle"
+    },
+    {
+      title: "PID",
+      field: "tail",
+      formatter: tailPidFormatter,      
+      vertAlign: "middle"
+    },
+    {
+      title: "Program",
+      field: "tail",
+      formatter: tailprogramFormatter,      
+      vertAlign: "middle"
+    },
+    {
+      title: "Timestamp",
+      field: "tail",
+      formatter: tailTimestampFormatter,      
+      vertAlign: "middle"
+    },
+    {
+      title: "Message",
+      field: "tail",
+      formatter: tailMessageFormatter,      
+      vertAlign: "middle"
+    },
   ];
-
+  
+  // {
+  //   "@timestamp": "2024-10-18T08:41:22.820224306Z",
+  //   measurement_name: "tail",
+  //   tag: {
+  //     host: "2ebc9c59f973",
+  //     mci_id: "mc-o11y",
+  //     ns_id: "",
+  //     path: "/var/log/syslog",
+  //     target_id: "mc-o11y"
+  //   },
+  //   tail: {
+  //     host: "o11y",
+  //     message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
+  //     pid: "886",
+  //     program: "mc-o11y-influx",
+  //     timestamp: "Oct 18 08:41:22"
+  //   }
+  // }
   logListTable = setLogTabulator("loglist-table", tableObjParams, columns, true);
 
   // 행 클릭 시
@@ -189,6 +242,49 @@ function initLogTable() {
     
   });
   
+}
+
+
+function tagHostFormatter(cell) {  
+  var row = cell.getData()
+  return row.tag.host;
+}
+function tagNsIdFormatter(cell) {  
+  var row = cell.getData()
+  return row.tag.ns_id;
+}
+function tagMciIdFormatter(cell) {  
+  var row = cell.getData()
+  return row.tag.mci_id;
+}
+function tagTargetIdFormatter(cell) {  
+  var row = cell.getData()
+  return row.tag.target_id;
+}
+function tagPathFormatter(cell) {  
+  var row = cell.getData()
+  return row.tag.path;
+}
+
+function tailHostFormatter(cell) {  
+  var row = cell.getData()
+  return row.tail.host;
+}
+function tailPidFormatter(cell) {  
+  var row = cell.getData()
+  return row.tail.pid;
+}
+function tailprogramFormatter(cell) {  
+  var row = cell.getData()
+  return row.tail.program;
+}
+function tailTimestampFormatter(cell) {  
+  var row = cell.getData()
+  return row.tail.timestamp;
+}
+function tailMessageFormatter(cell) {  
+  var row = cell.getData()
+  return row.tail.message;
 }
 
 // toggleSelectBox of table row
@@ -253,10 +349,44 @@ export async function getCollectedLog() {
     var selectedMeasurement = $("#monitoring_measurement").val();
     var selectedRange = $("#monitoring_range").val();
     var selectedVMId = $("#monitoring_vmlist").val();
-  //GET_OpensearchLogs
-    var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
+    //GET_OpensearchLogs
+
+    // try{
+    //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
+    //   getLogListCallbackSuccess(response.data.responseData)
+    // }catch(e){
+      const dataObject = {
+        data: [
+          {
+            "@timestamp": "2024-10-18T08:41:22.820224306Z",
+            measurement_name: "tail",
+            tag: {
+              host: "2ebc9c59f973",
+              mci_id: "mc-o11y",
+              ns_id: "ns01",
+              path: "/var/log/syslog",
+              target_id: "mc-o11y"
+            },
+            tail: {
+              host: "o11y",
+              message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
+              pid: "886",
+              program: "mc-o11y-influx",
+              timestamp: "Oct 18 08:41:22"
+            }
+          }
+        ]
+      };
+      getLogListCallbackSuccess(dataObject.data)
+    //}
+
+    //var respMonitoringData = response.data.responseData
+    //console.log("respMonitoringData", respMonitoringData)
   
-    var respMonitoringData = response.data.responseData
-    console.log("respMonitoringData", respMonitoringData)
-  
+}
+
+function getLogListCallbackSuccess(logList) {
+  console.log("getLogListCallbackSuccess");
+  console.log("logList : ", logList);
+  logListTable.setData(logList);
 }
