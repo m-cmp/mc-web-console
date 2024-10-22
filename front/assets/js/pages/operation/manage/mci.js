@@ -111,7 +111,7 @@ async function getSelectedMciData(mciID) {
 
   console.log('selectedMciID:', mciID);  // 출력: mciID의 값 (예: com)
   if (mciID != undefined && mciID != "") {
-    var selectedNsId = selectedWorkspaceProject.nsId;
+    var selectedNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
     currentMciId = mciID
     var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, mciID)
     console.log("mciResp ", mciResp)
