@@ -573,6 +573,10 @@ function initUserAddRoleSeletor(roles){
     selectElement.tomselect.destroy();
   }
   selectElement.innerHTML = '';
+  let option = document.createElement('option');
+  option.value = "";
+  option.text = "select Role";
+  selectElement.add(option);
   roles.forEach(role => {
     let option = document.createElement('option');
     option.value = role.id;
@@ -1144,7 +1148,7 @@ function setWorkspaceRolesTabulator(
   var movableColumns = true;
   var columnHeaderVertAlign = "middle";
   var paginationCounter = "rows";
-  var layout = "fitDataFill";
+  var layout = "fitColumns";
 
   // var renderHorizontal = "virtual"
 
