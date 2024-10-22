@@ -244,7 +244,7 @@ function initLogTable() {
   
 }
 
-
+// tag와 tail에 모두 host가 있어 function name에 prefix를 줌.
 function tagHostFormatter(cell) {  
   var row = cell.getData()
   return row.tag.host;
