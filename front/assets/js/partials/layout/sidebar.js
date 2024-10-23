@@ -55,8 +55,9 @@ function generateMenuHTML(menus) {
                                 html += `${subMenu.displayName}</a>`;
                                 html += `</div>`;
                             }else {
-                                html += `<div class="dropdown-menu-column disabled">`;
-                                html += `<a class="dropdown-item" id="sidebar_${menu.id}_${subMenu.id}" >`;
+                                console.log(`sidebar_${menu.id}_${subMenu.id} is not action` )
+                                html += `<div class="dropdown-menu-column">`;
+                                html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
                                 html += `${subMenu.displayName}</a>`;
                                 html += `</div>`;
                             }
