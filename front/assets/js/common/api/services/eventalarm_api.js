@@ -29,7 +29,8 @@ export async function getPolicyOfSeqHistory(policySeq) {
 export async function getPolicyOfSeq(policySeq) {
     var data = {
         queryParams: {
-            policySeq: policySeq,
+            // policySeq: policySeq,
+            policySeq: "11",
         },
     };
     var controller = "/api/" + "mc-observability/" + "Gettriggertargetalllist";

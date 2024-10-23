@@ -84,7 +84,7 @@ function setMciList(mciList) {
   // res_item이 배열인지 확인
   if (Array.isArray(res_item)) {
     // HTML option 리스트 초기값
-    var html = '<option value="">Choose a Target MCI for Monitoring</option>';
+    var html = '<option value="">Select</option>';
 
     // res_item 배열을 순회하면서 각 MCI의 name을 option 태그로 변환
     res_item.forEach(item => {

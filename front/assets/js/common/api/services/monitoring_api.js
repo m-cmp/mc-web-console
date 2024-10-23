@@ -1,6 +1,6 @@
 export async function getPlugIns() {
 
-  var controller = "/api/" + "mc-observability/" + "GET_plugins";
+  var controller = "/api/" + "mc-observability/" + "Getplugins";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
   )
@@ -65,7 +65,7 @@ export async function monitoringPrediction() {
     }
   }
 
-  var controller = "/api/" + "mc-observability/" + "PredictMetrics";
+  var controller = "/api/" + "mc-observability/" + "Postprediction";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data

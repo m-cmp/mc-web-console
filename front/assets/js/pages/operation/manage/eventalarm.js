@@ -260,8 +260,8 @@ async function getSelectedPolicySeqData(policySeq) {
         setPolicyInfoData(policySeqResp.data)
 
         // Toggle PMK Info
-        var div = document.getElementById("cluster_info");
-        webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+        // var div = document.getElementById("cluster_info");
+        // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
     }
 }
 
@@ -314,8 +314,24 @@ function setPolicyInfoData(policyData) {
     } catch (e) {
         console.error(e);
     }
-    eventAlarmListTable.setData(policyData);
+    console.log("policyData", policyData)
+    const rawData = policyData.responseData.data
+    const formattedData = formatEventData(rawData)
+    eventAlarmListTable.setData(formattedData);
 
+}
+
+function formatEventData(policyRawData) {
+    return policyRawData.map(item => ({
+        seq: item.seq,
+        metric: item.measurement,
+        createdAt: item.create_at,
+        occurTime: item.occur_time,
+        data: item.data,
+        hostname: item.target_id,
+        level: item.level,
+        "policy seq": item.policy_seq
+    }));
 }
 
 function initEventAlarmTable() {
@@ -335,16 +351,11 @@ function initEventAlarmTable() {
         {
             title: "Seq",
             field: "seq",
-            vertAlign: "middle"
+            visible: false
         },
         {
-            title: "Metric",
-            field: "metric",
-            vertAlign: "middle"
-        },
-        {
-            title: "CreatedAt",
-            field: "createdAt",
+            title: "Policy seq",
+            field: "policy seq",
             vertAlign: "middle"
         },
         {
@@ -353,8 +364,8 @@ function initEventAlarmTable() {
             vertAlign: "middle"
         },
         {
-            title: "Data",
-            field: "data",
+            title: "Metric",
+            field: "metric",
             vertAlign: "middle"
         },
         {
@@ -368,23 +379,32 @@ function initEventAlarmTable() {
             vertAlign: "middle"
         },
         {
-            title: "Policy seq",
-            field: "policy seq",
+            title: "CreatedAt",
+            field: "createdAt",
             vertAlign: "middle"
         },
+
+        {
+            title: "Data",
+            field: "data",
+            vertAlign: "middle"
+        },
+        
+        
+
     ]
-    
+
     eventAlarmListTable = setEventAlarmTabulator("eventAlarmlist-table", tableObjParams, columns, true);
 
     eventAlarmListTable.on("rowClick", function (e, row) {
 
-        var policySeq = row.getCell("seq").getValue();
+        // var eventSeq = row.getCell("seq").getValue();
+        var selectedEventSeq = row.getData()
 
-        // 표에서 선택된 seqInfo 
-        // getSelectedPolicySeqData(policySeq)
+        // 표에서 선택된 eventSeq
+        getSelectedEventSeqData(selectedEventSeq)
 
     });
-
     //  선택된 여러개 row에 대해 처리
     eventAlarmListTable.on("rowSelectionChanged", function (data, rows) {
         checked_array = data
@@ -454,4 +474,18 @@ function setEventAlarmTabulator(
     });
 
     return tabulatorTable;
+}
+async function getSelectedEventSeqData(selectedEventSeq) {
+    var div = document.getElementById("event_info");
+    console.log("divdivdiv", div)
+    await webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+    console.log("eventSeqResp", selectedEventSeq)
+
+    $('#event_occurtime').text(selectedEventSeq.occurTime);
+    $('#event_metric').text(selectedEventSeq.metric);
+    $('#event_level').text(selectedEventSeq.level);
+    $('#event_data').text(selectedEventSeq.data);
+    $('#event_policyseq').text(selectedEventSeq["policy seq"]);
+    $('#event_hostname').text(selectedEventSeq.hostname);
 }
