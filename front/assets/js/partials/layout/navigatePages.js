@@ -13,6 +13,7 @@ function hideLoader() {
 }
 
 export function toggleElement(elem) {
+    console.log("elem",elem)
     // 자기 자신에 대한 Toggle
     if (elem.classList.contains("active")) {
         elem.classList.remove('active')
