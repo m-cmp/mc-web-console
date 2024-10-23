@@ -221,7 +221,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   console.log("vmID : ", vmID)
 
   // get mci 
-  var selectedNsId = selectedWorkspaceProject.nsId;
+  var selectedNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
   try {
     var response = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, mciID);
     var aMci = response.responseData
