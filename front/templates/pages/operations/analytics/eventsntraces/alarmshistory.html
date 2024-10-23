@@ -20,7 +20,7 @@
           <div class="container-xl">
             <div class="row row-cards">
               <div class="col">
-                <div class="card">
+                <div class="card section" id="policy_info">
                   <div class="card-header">
                     <ul
                       class="nav nav-tabs card-header-tabs"
@@ -61,6 +61,38 @@
                           <div class="container">
                             <div class="row">
                               <!-- 여기 정보 -->
+                              <div class="col-lg-auto">
+                                <div class="datagrid">
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Name</div>
+                                    <div class="form-description" id="policy_name"> </div>
+                                  </div>
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Description</div>
+                                    <div class="form-description" id="policy_description"> </div>
+                                  </div>
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Status</div>
+                                    <div class="form-description" id="policy_status"></div>
+                                  </div>
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Measurement</div>
+                                    <div class="form-description" id="policy_measurement"> </div>
+                                  </div>
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Metric</div>
+                                    <div class="form-description" id="policy_metric"> </div>
+                                  </div>
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Statistics</div>
+                                    <div class="form-description" id="policy_statistics"> </div>
+                                  </div>
+                                  <div class="datagrid-item">
+                                    <div class="form-label">Value</div>
+                                    <div class="form-description" id="policy_value"> </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -71,6 +103,10 @@
                         >
                           <div class="container">
                             <div class="row">
+                              <div class="card-table table-responsive">
+                                <!-- Tabulator TABLE SET -->
+                                <div id="eventAlarmlist-table"></div>
+                              </div>
                               <!-- 여기 정보 -->
                             </div>
                           </div>
