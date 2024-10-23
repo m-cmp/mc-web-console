@@ -22,14 +22,6 @@ workspaceListselectBox.addEventListener('change', function () {
     setPrjSelectBox(workspace.Id)
 });
 
-// projectListselectBox.addEventListener('change', function () {
-//     if (this.value === "") {
-//         return
-//     }
-//     let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
-//     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
-// });
-
 // refresh 버튼 클릭시 user의 workspace, project 목록 조회
 workspaceRefreshBtn.addEventListener('click', async function () {
     webconsolejs["common/api/services/workspace_api"].setCurrentWorkspace("");
@@ -99,12 +91,12 @@ export async function workspaceProjectInit() {
 
 document.getElementById("logoutbtn").addEventListener('click', async function () {
     destroyAccessToken()
+    sessionStorage.clear();
     window.location = "/auth/logout"
 });
 
 export function destroyAccessToken() {
-    let now = new Date();
-    document.cookie = `Authorization=; path=/; expires=${now.getTime()};`;
+    document.cookie = `Authorization=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
 }
 
 // workspaceObj
