@@ -8,7 +8,7 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
     };
     const response = await webconsolejs["common/api/http"].commonAPIPostWithoutRetry('/api/auth/login', data)
     if (response.status !== 200){
-        alert("LoginFail\n"+response.response.data.message)
+        alert("LoginFail\n"+response)
         document.getElementById("id").value = null
         document.getElementById("password").value = null
     }else{
@@ -21,18 +21,25 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
             window.location = "/"
         } catch(error){
             console.log(error)
-            alert(menuListresponse.response.data.responseData)
+            alert("dynamic menu error : " + error)
             window.location = "/"
         }
     }
 });
 
+document.getElementById('id').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      document.getElementById('loginbtn').click();
+    }
+});
+
 document.getElementById('password').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
-      event.preventDefault();  // 기본 엔터 동작 방지
-      document.getElementById('loginbtn').click();  // 로그인 버튼 클릭
+      event.preventDefault();
+      document.getElementById('loginbtn').click();
     }
-  });
+});
 
 function sortMenusByPriority(menu) {
     if (menu.menus && Array.isArray(menu.menus)) {

@@ -11,24 +11,38 @@ let workspaceRefreshBtn = document.getElementById("refresh-user-ws-prj")// ws pr
 
 document.addEventListener('DOMContentLoaded', async function () {
     console.log("navbar init")
-    await workspaceProjectInit()// workspace select box, project select box 초기화 from local storage
+    await workspaceProjectInit() // workspace select box, project select box 초기화 from local storage
+    if (workspaceListselectBox.value === ""){
+        workspaceListselectBox.classList.add('is-invalid');
+    }
+    if (projectListselectBox.value === ""){
+        projectListselectBox.classList.add('is-invalid');
+    }
 });
 
 // navbar에서는 변경시 session에만 set. 필요화면에서 사용
 workspaceListselectBox.addEventListener('change', function () {
-    if (this.value == "") return;
+    if (this.value === ""){
+        this.classList.add('is-invalid');
+        return
+    }else{
+        this.classList.remove('is-invalid');
+    }
     let workspace = { "Id": this.value, "Name": this.options[this.selectedIndex].text }
     webconsolejs["common/api/services/workspace_api"].setCurrentWorkspace(workspace);//세션에 저장
     setPrjSelectBox(workspace.Id)
 });
 
-// projectListselectBox.addEventListener('change', function () {
-//     if (this.value === "") {
-//         return
-//     }
-//     let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
-//     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
-// });
+projectListselectBox.addEventListener('change', function () {
+    if (this.value === ""){
+        this.classList.add('is-invalid');
+        return
+    }else{
+        this.classList.remove('is-invalid');
+    }
+    let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
+    webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
+});
 
 // refresh 버튼 클릭시 user의 workspace, project 목록 조회
 workspaceRefreshBtn.addEventListener('click', async function () {
@@ -99,12 +113,12 @@ export async function workspaceProjectInit() {
 
 document.getElementById("logoutbtn").addEventListener('click', async function () {
     destroyAccessToken()
+    sessionStorage.clear();
     window.location = "/auth/logout"
 });
 
 export function destroyAccessToken() {
-    let now = new Date();
-    document.cookie = `Authorization=; path=/; expires=${now.getTime()};`;
+    document.cookie = `Authorization=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
 }
 
 // workspaceObj

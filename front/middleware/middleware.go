@@ -12,7 +12,10 @@ import (
 func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		cookie, err := c.Request().Cookie("Authorization")
-		if err != nil {
+		if err != nil && c.Request().RequestURI == "/" {
+			log.Println(err.Error())
+			return c.Redirect(http.StatusSeeOther, "/auth/login")
+		} else if err != nil {
 			log.Println(err.Error())
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#cookieError")
 		}
