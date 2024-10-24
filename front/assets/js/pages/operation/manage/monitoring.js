@@ -72,8 +72,6 @@ async function initMonitoring() {
 }
 
 function getMciListCallbackSuccess(nsId, mciList) {
-  console.log("nsId", nsId)
-  console.log("mciList", mciList)
 
   setMciList(mciList)
 }
@@ -101,10 +99,8 @@ function setMciList(mciList) {
 
 // mci 선택했을 때 displayMonitoringMci 
 $("#monitoring_mcilist").on('change', async function () {
-  console.log("monitoring_mcilist")
 
   var selectedMci = $("#monitoring_mcilist").val()
-  console.log("selectedMci", selectedMci)
 
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
   var selectedNsId = selectedWorkspaceProject.nsId;
@@ -115,12 +111,8 @@ $("#monitoring_mcilist").on('change', async function () {
 
 
 async function displayMonitoringMci(nsId, mciId) {
-  console.log(mciId)
-
-  //get mci
 
   var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
-  console.log("respMci", respMci)
 
   var vmList = respMci.responseData.vm
   if (Array.isArray(vmList) && vmList.length > 0) {
@@ -133,7 +125,6 @@ async function displayMonitoringMci(nsId, mciId) {
 }
 
 function displayServerStatusList(mciId, vmList) {
-  console.log("displayServerStatusList")
 
   var res_item = vmList;
 
@@ -155,10 +146,8 @@ function displayServerStatusList(mciId, vmList) {
 
 // vm 선택했을 때 displayMonitoringMci 
 $("#monitoring_vmlist").on('change', async function () {
-  console.log("monitoring_vmlist")
 
   var selectedVm = $("#monitoring_vmlist").val()
-  console.log("selectedVm", selectedVm)
 
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
   var selectedNsId = selectedWorkspaceProject.nsId;
@@ -169,7 +158,6 @@ $("#monitoring_vmlist").on('change', async function () {
 
 async function setMonitoringMesurement() {
   var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
-  console.log("respMesurement", respMeasurement)
   var data = respMeasurement.data;
 
   var measurementSelect = document.getElementById("monitoring_measurement");
@@ -202,7 +190,6 @@ export async function startMonitoring() {
   var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
 
   var respMonitoringData = response.data.responseData
-  console.log("respMonitoringData", respMonitoringData)
 
   drawMonitoringGraph(respMonitoringData)
 }
