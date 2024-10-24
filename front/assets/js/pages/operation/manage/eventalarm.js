@@ -63,7 +63,6 @@ async function initEventAlarm() {
 async function getPolicyListCallbackSuccess(nsId, policyList) {
 
     totalPolicyListObj = policyList.data.responseData.data
-    console.log("totalPolicyListObj", totalPolicyListObj)
     const transformedData = mapPolicyData(totalPolicyListObj)
     policyListTable.setData(transformedData);
 
@@ -245,14 +244,12 @@ function initPolicyTable() {
 // 표에서 선택된 policy seq 받아옴
 async function getSelectedPolicySeqData(policySeq) {
 
-    console.log('selectedpolicySeq:', policySeq)
     if (policySeq != undefined && policySeq != "") {
         var selectedNsId = selectedWorkspaceProject.nsId;
         currentPolicySeq = policySeq
         var policySeqResp = await webconsolejs["common/api/services/eventalarm_api"].getPolicyOfSeqHistory(currentPolicySeq.toString())
 
         if (policySeqResp.status != 200) {
-            console.log("resp status ", policySeqResp.status)
             // failed.  // TODO : Error Popup 처리
             return;
         }
@@ -286,7 +283,6 @@ function setPolicyInfoData(policyData) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
     var selectedPolicyData = totalPolicyListObj[0]
-    console.log("setPolicyInfoData", totalPolicyListObj);
 
     try {
 
@@ -314,7 +310,6 @@ function setPolicyInfoData(policyData) {
     } catch (e) {
         console.error(e);
     }
-    console.log("policyData", policyData)
     const rawData = policyData.responseData.data
     const formattedData = formatEventData(rawData)
     eventAlarmListTable.setData(formattedData);
@@ -477,10 +472,7 @@ function setEventAlarmTabulator(
 }
 async function getSelectedEventSeqData(selectedEventSeq) {
     var div = document.getElementById("event_info");
-    console.log("divdivdiv", div)
     await webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-
-    console.log("eventSeqResp", selectedEventSeq)
 
     $('#event_occurtime').text(selectedEventSeq.occurTime);
     $('#event_metric').text(selectedEventSeq.metric);

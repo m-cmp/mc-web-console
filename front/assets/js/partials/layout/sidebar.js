@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('div[name^="sidebar_"]').forEach(function(item) {
         item.addEventListener('click', function() {
             const hrefStr = this.getAttribute('href')
-            if( "#navbar-extra" !== hrefStr) {
+            if( hrefStr && "#navbar-extra" !== hrefStr) {
                 window.location = hrefStr
             }
         });
@@ -49,15 +49,13 @@ function generateMenuHTML(menus) {
                         html += `<div class="dropdown-menu" name="sidebar_${menu.id}"><div class="dropdown-menu-columns">`;
                         menu.menus.forEach(subMenu => {
                             if (stringToBool(subMenu.isAction)){
-                                console.log(`/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id} is action`)
                                 html += `<div class="dropdown-menu-column">`;
                                 html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
                                 html += `${subMenu.displayName}</a>`;
                                 html += `</div>`;
                             }else {
-                                console.log(`sidebar_${menu.id}_${subMenu.id} is not action` )
                                 html += `<div class="dropdown-menu-column">`;
-                                html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
+                                html += `<a class="dropdown-item disabled" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
                                 html += `${subMenu.displayName}</a>`;
                                 html += `</div>`;
                             }
