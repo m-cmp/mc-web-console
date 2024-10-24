@@ -1,6 +1,6 @@
 export async function getAllPolicy() {
 
-    var controller = "/api/" + "mc-observability/" + "ListUsingGET4";
+    var controller = "/api/" + "mc-observability/" + "Gettriggerpolicyalllist";
 
     const response = webconsolejs["common/api/http"].commonAPIPost(
         controller,
@@ -15,7 +15,7 @@ export async function getPolicyOfSeqHistory(policySeq) {
             policySeq: policySeq,
         },
     };
-    var controller = "/api/" + "mc-observability/" + "ListUsingGET5";
+    var controller = "/api/" + "mc-observability/" + "Gettriggerhistoryalllist";
 
     const response = webconsolejs["common/api/http"].commonAPIPost(
         controller,
@@ -29,10 +29,11 @@ export async function getPolicyOfSeqHistory(policySeq) {
 export async function getPolicyOfSeq(policySeq) {
     var data = {
         queryParams: {
-            policySeq: policySeq,
+            // policySeq: policySeq,
+            policySeq: "11",
         },
     };
-    var controller = "/api/" + "mc-observability/" + "GetPolicyOfSeq";
+    var controller = "/api/" + "mc-observability/" + "Gettriggertargetalllist";
 
     const response = webconsolejs["common/api/http"].commonAPIPost(
         controller,

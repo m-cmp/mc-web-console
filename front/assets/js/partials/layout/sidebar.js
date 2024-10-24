@@ -31,18 +31,37 @@ function generateMenuHTML(menus) {
             html += ` </li>`
             if (category.menus && category.menus.length > 0) {
                 category.menus.forEach(menu => {
-                    html += `<li class="nav-item box-link dropdown" name="sidebar_${menu.id}">`;
-                    html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${stringToBool(menu.isAction) ? `/webconsole/${title.id}/${category.id}/${menu.id}` : "#navbar-extra"}" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">`;
-                    html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
-                    html += `<span class="nav-link-title">${menu.displayName}</span>`;
-                    html += `</div>`;
+                    if (menu.menus === null){
+                        html +=`<li class="nav-item">`
+                        html +=`<a class="nav-link" ${stringToBool(menu.isAction) ? `href="/webconsole/${title.id}/${category.id}/${menu.id}"` : ""}" name="sidebar_${menu.id}">`
+                        html +=`<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
+                        html +=`<span class="nav-link-title">${menu.displayName}</span>`
+                        html +=`</a>`
+                        html +=`</li>`
+                    }else {
+                        html += `<li class="nav-item box-link dropdown" name="sidebar_${menu.id}">`;
+                        html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${stringToBool(menu.isAction) ? `/webconsole/${title.id}/${category.id}/${menu.id}` : "#navbar-extra"}" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">`;
+                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
+                        html += `<span class="nav-link-title">${menu.displayName}</span>`;
+                        html += `</div>`;
+                    }
                     if (menu.menus && menu.menus.length > 0) {
                         html += `<div class="dropdown-menu" name="sidebar_${menu.id}"><div class="dropdown-menu-columns">`;
                         menu.menus.forEach(subMenu => {
-                            html += `<div class="dropdown-menu-column">`;
-                            html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
-                            html += `${subMenu.displayName}</a>`;
-                            html += `</div>`;
+                            if (stringToBool(subMenu.isAction)){
+                                console.log(`/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id} is action`)
+                                html += `<div class="dropdown-menu-column">`;
+                                html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
+                                html += `${subMenu.displayName}</a>`;
+                                html += `</div>`;
+                            }else {
+                                console.log(`sidebar_${menu.id}_${subMenu.id} is not action` )
+                                html += `<div class="dropdown-menu-column">`;
+                                html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
+                                html += `${subMenu.displayName}</a>`;
+                                html += `</div>`;
+                            }
+
                         });
                         html += `</div></div>`;
                     }
@@ -54,6 +73,9 @@ function generateMenuHTML(menus) {
     // return html+debugMenu;
     return html;
 }
+
+
+
 
 function setActiveMenu() {
     try {
@@ -131,5 +153,11 @@ const iconsArr = {
         <path
             d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
         <path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
+        </svg>`,
+
+    "single" : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 11l3 3l8 -8">
+        </path><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"></path>
         </svg>`,
 }

@@ -240,7 +240,7 @@ export function selectMci(id, name, target, obj) {
   var urlParamMap = new Map();
   urlParamMap.set("mciID", mciId)
   // webconsolejs["common/util"].changePage("MciMng", urlParamMap)
-  window.location = "/webconsole/operations/manage/workloads/mciswls"
+  window.location = "/webconsole/operations/manage/workloads/mciworkloads"
 
 
   // MCIS List table의 1개 Row Update
