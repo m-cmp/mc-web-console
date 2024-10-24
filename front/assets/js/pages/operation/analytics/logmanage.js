@@ -71,14 +71,14 @@ async function initLog() {
 // // getLogList 호출 성공 시
 // function getLogListCallbackSuccess(caller) {
 //   console.log("getLogListCallbackSuccess");
-  
+
 // }
 
 // // 클릭한 log의 info값 세팅
 // function setLogInfoData(logData) {
 //   console.log("setLogInfoData", logData)
 //   try {
-    
+
 
 //   } catch (e) {
 //     console.error(e);
@@ -170,53 +170,53 @@ function initLogTable() {
     {
       title: "NS",
       field: "tag",
-      formatter: tagNsIdFormatter,      
+      formatter: tagNsIdFormatter,
       vertAlign: "middle"
     },
     {
       title: "MCI",
       field: "tag",
-      formatter: tagMciIdFormatter,      
+      formatter: tagMciIdFormatter,
       vertAlign: "middle"
     },
     {
       title: "Target",
       field: "tag",
-      formatter: tagTargetIdFormatter,      
+      formatter: tagTargetIdFormatter,
       vertAlign: "middle"
     },
     {
       title: "Host",
       field: "tail",
-      formatter: tailHostFormatter,      
+      formatter: tailHostFormatter,
       vertAlign: "middle"
     },
     {
       title: "PID",
       field: "tail",
-      formatter: tailPidFormatter,      
+      formatter: tailPidFormatter,
       vertAlign: "middle"
     },
     {
       title: "Program",
       field: "tail",
-      formatter: tailprogramFormatter,      
+      formatter: tailprogramFormatter,
       vertAlign: "middle"
     },
     {
       title: "Timestamp",
       field: "tail",
-      formatter: tailTimestampFormatter,      
+      formatter: tailTimestampFormatter,
       vertAlign: "middle"
     },
     {
       title: "Message",
       field: "tail",
-      formatter: tailMessageFormatter,      
+      formatter: tailMessageFormatter,
       vertAlign: "middle"
     },
   ];
-  
+
   // {
   //   "@timestamp": "2024-10-18T08:41:22.820224306Z",
   //   measurement_name: "tail",
@@ -239,50 +239,54 @@ function initLogTable() {
 
   // 행 클릭 시
   logListTable.on("rowClick", function (e, row) {
-    
+
+    var selectedLogData = row.getData()
+    console.log("selectedLogData", selectedLogData)
+    // 표에서 선택된 selectedLogData
+    getSelectedLogData(selectedLogData)
+
   });
-  
 }
 
 // tag와 tail에 모두 host가 있어 function name에 prefix를 줌.
-function tagHostFormatter(cell) {  
+function tagHostFormatter(cell) {
   var row = cell.getData()
   return row.tag.host;
 }
-function tagNsIdFormatter(cell) {  
+function tagNsIdFormatter(cell) {
   var row = cell.getData()
   return row.tag.ns_id;
 }
-function tagMciIdFormatter(cell) {  
+function tagMciIdFormatter(cell) {
   var row = cell.getData()
   return row.tag.mci_id;
 }
-function tagTargetIdFormatter(cell) {  
+function tagTargetIdFormatter(cell) {
   var row = cell.getData()
   return row.tag.target_id;
 }
-function tagPathFormatter(cell) {  
+function tagPathFormatter(cell) {
   var row = cell.getData()
   return row.tag.path;
 }
 
-function tailHostFormatter(cell) {  
+function tailHostFormatter(cell) {
   var row = cell.getData()
   return row.tail.host;
 }
-function tailPidFormatter(cell) {  
+function tailPidFormatter(cell) {
   var row = cell.getData()
   return row.tail.pid;
 }
-function tailprogramFormatter(cell) {  
+function tailprogramFormatter(cell) {
   var row = cell.getData()
   return row.tail.program;
 }
-function tailTimestampFormatter(cell) {  
+function tailTimestampFormatter(cell) {
   var row = cell.getData()
   return row.tail.timestamp;
 }
-function tailMessageFormatter(cell) {  
+function tailMessageFormatter(cell) {
   var row = cell.getData()
   return row.tail.message;
 }
@@ -312,18 +316,18 @@ var valueEl = document.getElementById("filter-value");
 // Trigger setFilter function with correct parameters
 function updateFilter() {
 
-//   var filter = filterVal == "provider" ? providerFilter : filterVal;
+  //   var filter = filterVal == "provider" ? providerFilter : filterVal;
 
-//   if (filterVal == "provider") {
-//     typeEl.value = "=";
-//     typeEl.disabled = true;
-//   } else {
-//     typeEl.disabled = false;
-//   }
+  //   if (filterVal == "provider") {
+  //     typeEl.value = "=";
+  //     typeEl.disabled = true;
+  //   } else {
+  //     typeEl.disabled = false;
+  //   }
 
-//   if (filterVal) {
-//     table.setFilter(filter, typeVal, valueEl.value);
-//   }
+  //   if (filterVal) {
+  //     table.setFilter(filter, typeVal, valueEl.value);
+  //   }
 }
 
 // Update filters on value change
@@ -346,47 +350,69 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 // Log 조회
 export async function getCollectedLog() {
 
-    var selectedMeasurement = $("#monitoring_measurement").val();
-    var selectedRange = $("#monitoring_range").val();
-    var selectedVMId = $("#monitoring_vmlist").val();
-    //GET_OpensearchLogs
+  var selectedMeasurement = $("#monitoring_measurement").val();
+  var selectedRange = $("#monitoring_range").val();
+  var selectedVMId = $("#monitoring_vmlist").val();
+  //GET_OpensearchLogs
 
-    // try{
-    //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
-    //   getLogListCallbackSuccess(response.data.responseData)
-    // }catch(e){
-      const dataObject = {
-        data: [
-          {
-            "@timestamp": "2024-10-18T08:41:22.820224306Z",
-            measurement_name: "tail",
-            tag: {
-              host: "2ebc9c59f973",
-              mci_id: "mc-o11y",
-              ns_id: "ns01",
-              path: "/var/log/syslog",
-              target_id: "mc-o11y"
-            },
-            tail: {
-              host: "o11y",
-              message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
-              pid: "886",
-              program: "mc-o11y-influx",
-              timestamp: "Oct 18 08:41:22"
-            }
-          }
-        ]
-      };
-      getLogListCallbackSuccess(dataObject.data)
-    //}
+  // try{
+  //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
+  //   getLogListCallbackSuccess(response.data.responseData)
+  // }catch(e){
+  const dataObject = {
+    data: [
+      {
+        "@timestamp": "2024-10-18T08:41:22.820224306Z",
+        measurement_name: "tail",
+        tag: {
+          host: "2ebc9c59f973",
+          mci_id: "mc-o11y",
+          ns_id: "ns01",
+          path: "/var/log/syslog",
+          target_id: "mc-o11y"
+        },
+        tail: {
+          host: "o11y",
+          message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
+          pid: "886",
+          program: "mc-o11y-influx",
+          timestamp: "Oct 18 08:41:22"
+        }
+      }
+    ]
+  };
+  getLogListCallbackSuccess(dataObject.data)
+  //}
 
-    //var respMonitoringData = response.data.responseData
-    //console.log("respMonitoringData", respMonitoringData)
-  
+  //var respMonitoringData = response.data.responseData
+  //console.log("respMonitoringData", respMonitoringData)
+
 }
 
 function getLogListCallbackSuccess(logList) {
   console.log("getLogListCallbackSuccess");
   console.log("logList : ", logList);
   logListTable.setData(logList);
+
+}
+
+async function getSelectedLogData(selectedLogData) {
+  var div = document.getElementById("log_info");
+  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  $('#log_timestamp').text(selectedLogData["@timestamp"]);
+  $('#log_measurement_name').text(selectedLogData["measurement_name"]);
+
+  $('#log_message').text(selectedLogData.tail.message);
+
+  $('#log_tag_host').text(selectedLogData.tag.host);
+  $('#log_mci_id').text(selectedLogData.tag.mci_id);
+  $('#log_ns_id').text(selectedLogData.tag.ns_id);
+  $('#log_path').text(selectedLogData.tag.path);
+  $('#log_target_id').text(selectedLogData.tag.target_id);
+
+  $('#log_tail_host').text(selectedLogData.tag.host);
+  $('#log_pid').text(selectedLogData.tail.pid);
+  $('#log_program').text(selectedLogData.tail.program);
+  $('#log_tail_timestamp').text(selectedLogData.tail.timestamp);
+
 }
