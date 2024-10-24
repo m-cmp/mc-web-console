@@ -129,7 +129,7 @@ function displayServerStatusList(mciId, vmList) {
   var res_item = vmList;
 
   if (Array.isArray(res_item)) {
-    var html = '<option value="">Choose a Target VM for Monitoring</option>';
+    var html = '<option value="">Select</option>';
 
     res_item.forEach(item => {
       html += '<option value="' + item.id + '">' + item.name + '</option>';
@@ -166,7 +166,7 @@ async function setMonitoringMesurement() {
 
   var defaultOption = document.createElement("option");
   defaultOption.value = "";
-  defaultOption.text = "Select Measurement";
+  defaultOption.text = "Select";
   measurementSelect.appendChild(defaultOption);
 
   data.forEach(function (item) {
@@ -200,120 +200,215 @@ async function drawMonitoringGraph(MonitoringData) {
 
   // cpu0, cpu1, cpu2, cpu3 데이터만 필터링
   MonitoringData.data.forEach(cpuData => {
-      if (["cpu0", "cpu1", "cpu2", "cpu3"].includes(cpuData.tags.cpu)) {
-          const seriesData = {
-              name: cpuData.tags.cpu,
-              data: cpuData.values
-                  .map(value => ({
-                      x: value[0], // timestamp
-                      y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
-                  }))
-                  .filter(point => point.y !== null)
-          };
-          chartDataList.push(seriesData);
+    if (["cpu0", "cpu1", "cpu2", "cpu3"].includes(cpuData.tags.cpu)) {
+      const seriesData = {
+        name: cpuData.tags.cpu,
+        data: cpuData.values
+          .map(value => ({
+            x: value[0], // timestamp
+            y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
+          }))
+          .filter(point => point.y !== null)
+      };
+      chartDataList.push(seriesData);
 
-          cpuData.values.forEach(value => {
-              const timestamp = value[0];
-              if (!chartLabels.includes(timestamp)) {
-                  chartLabels.push(timestamp);
-              }
-          });
-      }
+      cpuData.values.forEach(value => {
+        const timestamp = value[0];
+        if (!chartLabels.includes(timestamp)) {
+          chartLabels.push(timestamp);
+        }
+      });
+    }
   });
 
   const options = {
-      chart: {
-          type: "area",
-          height: 240,
-          toolbar: {
-              show: true,
-          },
-          animations: {
-              enabled: false,
-          }
+    chart: {
+      type: "area",
+      height: 240,
+      toolbar: {
+        show: true,
       },
-      title: {
-          text: "CPU Usage Idle (cpu0, cpu1, cpu2, cpu3)",
-          align: "center",
-          style: {
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "#263238"
-          }
-      },
-      series: chartDataList,
-      xaxis: {
-          type: "datetime",
-          labels: {
-              format: "yyyy-MM-dd HH:mm:ss"
-          }
-      },
-      yaxis: {
-          labels: {
-              formatter: function (val) {
-                  return val;
-              }
-          }
-      },
-      labels: chartLabels,
-      fill: {
-          type: "solid",
-          opacity: 0.16,
-      },
-      stroke: {
-          curve: "smooth",
-          width: 2
-      },
-      colors: ['#FF5733', '#33FF57', '#3357FF', '#FF33A6'],
-      legend: {
-          show: true,
-          position: "top",
-          horizontalAlign: "left",
-          offsetY: -10,
-          markers: {
-              width: 10,
-              height: 10,
-              radius: 100,
-          }
-      },
-      tooltip: {
-          theme: "dark",
-          y: {
-              formatter: function (val) {
-                  return val;  // 툴팁에서도 소수점 둘째 자리까지 표시
-              }
-          }
-      },
-      grid: {
-          strokeDashArray: 4,
+      animations: {
+        enabled: false,
       }
+    },
+    title: {
+      text: "CPU Usage Idle (cpu0, cpu1, cpu2, cpu3)",
+      align: "center",
+      style: {
+        fontSize: "14px",
+        fontWeight: "bold",
+        color: "#263238"
+      }
+    },
+    series: chartDataList,
+    xaxis: {
+      type: "datetime",
+      labels: {
+        format: "yyyy-MM-dd HH:mm:ss"
+      }
+    },
+    yaxis: {
+      labels: {
+        formatter: function (val) {
+          return val;
+        }
+      }
+    },
+    labels: chartLabels,
+    fill: {
+      type: "solid",
+      opacity: 0.16,
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2
+    },
+    colors: ['#FF5733', '#33FF57', '#3357FF', '#FF33A6'],
+    legend: {
+      show: true,
+      position: "top",
+      horizontalAlign: "left",
+      offsetY: -10,
+      markers: {
+        width: 10,
+        height: 10,
+        radius: 100,
+      }
+    },
+    tooltip: {
+      theme: "dark",
+      y: {
+        formatter: function (val) {
+          return val;  // 툴팁에서도 소수점 둘째 자리까지 표시
+        }
+      }
+    },
+    grid: {
+      strokeDashArray: 4,
+    }
   };
 
   const chart = new ApexCharts(document.getElementById("monitoring_chart_1"), options);
   chart.render();
 
   // const predictionSwitch = document.getElementById("monitoring_predictionSwitch").checked;
-  const predictionSwitch = true
-
-  if (predictionSwitch) {
-    console.log("checked")
+  const predictionSwitch = true;
+  // Prediction Switch 체크 여부 확인
+  if ($('#monitoring_predictionSwitch').is(':checked')) {
+    try {
+      // API 호출 시도
       var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction();
       console.log("Prediction Data:", response);
 
       if (response.data && response.data.responseData && response.data.responseData.data.values.length > 0) {
-          const predictionData = response.data.responseData.data.values.map(value => ({
-              x: value.timestamp,
-              y: parseFloat(value.value).toFixed(2) // 소수점 둘째 자리까지 표현
-          }));
+        const predictionData = response.data.responseData.data.values.map(value => ({
+          x: value.timestamp,
+          y: parseFloat(value.value).toFixed(2) // 소수점 둘째 자리까지 표현
+        }));
 
-          const predictionSeries = {
-              name: "CPU Total (Predicted)",
-              data: predictionData
-          };
+        const predictionSeries = {
+          name: "CPU Total (Predicted)",
+          data: predictionData
+        };
 
-          chart.updateSeries([...chartDataList, predictionSeries]);
+        // 기존 데이터와 함께 업데이트
+        chart.updateSeries([...chartDataList, predictionSeries]);
       } else {
-          console.log("No prediction data available");
+        console.log("No prediction data available");
       }
+    } catch (error) {
+      console.error("Prediction API failed:", error);
+      console.log("Using existing data without prediction.");
+      // 오류가 발생한 경우 예외 처리하여 기존 데이터만 표시
+    }
   }
+  // detectionchecked
+
+  // Detection Switch 체크 여부 확인
+  if ($('#detectionSwitch').is(':checked')) {
+    // 토글 후 호출
+    var div = document.getElementById("detection_graph");
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+    drawDetectionGraph()
+
+  } else {
+    console.log('Detection Switch is OFF');
+  }
+
 }
+
+async function drawDetectionGraph() {
+  var respDetection = await webconsolejs["common/api/services/monitoring_api"].getDetectionHistory();
+  console.log("Detection Data:", respDetection);
+  var detectionData = respDetection.data.values;
+  console.log("detectionData:", detectionData);
+
+  const anomalyData = detectionData.map(item => ({
+    x: item.timestamp,  
+    y: item.anomaly_score
+  }));
+
+  const options = {
+    chart: {
+      type: 'line',
+      height: 240,
+      toolbar: {
+        show: true,
+      }
+    },
+    series: [{
+      name: 'Anomaly Score',
+      data: anomalyData  
+    }],
+    title: {
+      text: 'Anomaly Score Over Time',
+      align: 'center',
+      style: {
+        fontSize: '14px',
+        fontWeight: 'bold',
+        color: '#263238'
+      }
+    },
+    xaxis: {
+      type: 'datetime',  
+      labels: {
+        format: "yyyy-MM-dd HH:mm:ss"
+      }
+    },
+    yaxis: {
+      labels: {
+        formatter: function (val) {
+          return val.toFixed(2);  
+        }
+      },
+      title: {
+        text: 'Anomaly Score'
+      }
+    },
+    markers: {
+      size: 5,
+      colors: ['#FF4560'],  
+      strokeWidth: 2
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 2
+    },
+    grid: {
+      strokeDashArray: 4,
+    },
+    tooltip: {
+      theme: "dark",
+      y: {
+        formatter: function (val) {
+          return val.toFixed(2);
+        }
+      }
+    }
+  };
+
+  const chart = new ApexCharts(document.getElementById("detection_chart_1"), options);
+  chart.render();
+}
+
