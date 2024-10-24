@@ -34,6 +34,7 @@ type Menu struct {
 	DisplayName  string `json:"displayName"` // for display
 	IsAction     string `json:"isAction"`    // maybe need type assertion..?
 	Priority     string `json:"priority"`
+	MenuNumber   string `json:"menunumber"`
 	Menus        Menus  `json:"menus"`
 }
 
@@ -89,7 +90,6 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 	if commonResponse.Status.StatusCode != 200 {
 		return &Menus{}, fmt.Errorf(commonResponse.Status.Message)
 	}
-
 	menuListResp := commonResponse.ResponseData.([]interface{})
 	menuList := &Menu{}
 	for _, menuResp := range menuListResp {
@@ -99,7 +99,8 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 			DisplayName:  menuPart[3],
 			ParentMenuId: menuPart[4],
 			Priority:     menuPart[5],
-			IsAction:     menuPart[6],
+			MenuNumber:   menuPart[6],
+			IsAction:     menuPart[7],
 		}
 		menuList.Menus = append(menuList.Menus, *menu)
 	}

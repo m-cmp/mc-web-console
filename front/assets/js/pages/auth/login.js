@@ -16,7 +16,7 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         const menuListresponse = await webconsolejs["common/api/http"].commonAPIPost('/api/getmenutree')
         try{
             let tempMenulist = menuListresponse.data.responseData
-            tempMenulist.forEach(tempMenulist => sortMenusByPriority(tempMenulist));
+            sortMenu(tempMenulist);
             webconsolejs["common/storage/localstorage"].setMenuLocalStorage(tempMenulist)
             window.location = "/"
         } catch(error){
@@ -41,10 +41,82 @@ document.getElementById('password').addEventListener('keydown', function(event) 
     }
 });
 
-function sortMenusByPriority(menu) {
-    if (menu.menus && Array.isArray(menu.menus)) {
-        menu.menus.sort((a, b) => parseInt(a.priority) - parseInt(b.priority));
-        menu.menus.forEach(subMenu => sortMenusByPriority(subMenu));
-    }
-    return menu;
+// function sortMenus(menu) {
+//     if (menu.menus && Array.isArray(menu.menus)) {
+//         menu.menus.sort((a, b) => parseInt(a.menunumber) - parseInt(b.menunumber));
+//         menu.menus.forEach(subMenu => sortMenus(subMenu));
+//     }
+//     return menu;
+// }
+
+// function sortMenu(menus) {
+//     menus.sort((a, b) => {
+//         if (a.priority === b.priority) {
+//             return a.menunumber - b.menunumber;
+//         }
+//         return a.priority - b.priority;
+//     });
+
+//     menus.forEach(menu => {
+//         if (menu.menus && menu.menus.length > 0) {
+//             sortMenu(menu.menus);
+//         }
+//     });
+// }
+
+
+// function sortMenu(menus) {
+//     // 우선순위가 2와 다르면 우선순위로 정렬, 우선순위가 같다면 메뉴 넘버로 정렬
+//     menus.sort((a, b) => {
+//         if (a.priority !== b.priority) {
+//             return a.priority - b.priority;
+//         } else {
+//             return a.menunumber - b.menunumber;
+//         }
+//     });
+
+//     // 하위 메뉴가 존재하는 경우 재귀적으로 정렬
+//     menus.forEach(menu => {
+//         if (menu.menus && menu.menus.length > 0) {
+//             sortMenu(menu.menus);
+//         }
+//     });
+// }
+
+
+function sortMenu(menus) {
+    // 재귀적으로 메뉴들을 정렬하는 함수
+    const sortRecursive = (menuArray) => {
+        // 메뉴 배열이 유효한지 확인 후, 정렬
+        if (!menuArray || menuArray.length === 0) return;
+
+        // 메뉴 배열 정렬: 우선순위 오름차순 -> 메뉴 넘버 오름차순
+        menuArray.sort((a, b) => {
+            // 우선순위 비교
+            const priorityA = parseInt(a.priority, 10);
+            const priorityB = parseInt(b.priority, 10);
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+                // console.log("우선순위 다름!", priorityA, priorityB)
+                // return priorityB - priorityA;
+            }
+            // 우선순위가 같다면 메뉴 넘버 비교
+            const menuNumberA = parseInt(a.menunumber, 10);
+            const menuNumberB = parseInt(b.menunumber, 10);
+            return menuNumberA - menuNumberB;
+            // console.log("우선순위 같음! 메뉴 넘버 비교 ", menuNumberA, menuNumberB)
+
+            // return menuNumberB - menuNumberA;
+        });
+
+        // 각 메뉴의 하위 메뉴들도 재귀적으로 정렬
+        menuArray.forEach(menu => {
+            if (menu.menus) {
+                sortRecursive(menu.menus);
+            }
+        });
+    };
+
+    // 최상위 메뉴 정렬 실행
+    sortRecursive(menus);
 }
