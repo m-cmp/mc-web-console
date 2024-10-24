@@ -300,7 +300,7 @@ menus:
     parentid: manage
     displayname: Workflows
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1998
 
@@ -308,7 +308,7 @@ menus:
     parentid: manage
     displayname: SW Catalogs
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1998
 
@@ -316,7 +316,7 @@ menus:
     parentid: manage
     displayname: Data Migrations
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1998
 
@@ -348,7 +348,7 @@ menus:
     parentid: monitorings
     displayname: 3rd party Monitoring
     restype: menu
-    isaction: true
+    isaction: false
     priority: 2
     menunumber: 1930
 
