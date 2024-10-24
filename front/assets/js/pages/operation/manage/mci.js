@@ -68,6 +68,7 @@ async function initMci() {
 
     //getMciList();// project가 선택되어 있으면 mci목록을 조회한다.
     var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    console.log("respMciListrespMciListrespMciList",respMciList)
     getMciListCallbackSuccess(selectedProjectId, respMciList);
 
 
