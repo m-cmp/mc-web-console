@@ -5,5 +5,5 @@ var (
 )
 
 func init() {
-	RootPathForRedirectString = "/webconsole/operations/manage/workloads/mciswls"
+	RootPathForRedirectString = "/webconsole/operations/manage/workloads/mciworkloads"
 }

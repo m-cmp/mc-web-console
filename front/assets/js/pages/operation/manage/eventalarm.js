@@ -18,9 +18,11 @@ export function commoncallbac(val) {
 }
 
 initPolicyTable(); // init tabulator
+initEventAlarmTable(); // init tabulator
 var totalPolicyListObj = new Object();
 var selectedWorkspaceProject = new Object();
 var policyListTable;
+var eventAlarmListTable
 var checked_array = [];
 export var selectedPolicyObj = new Object();
 var currentPolicySeq = "";
@@ -58,14 +60,15 @@ async function initEventAlarm() {
     }
 }
 
-async function getPolicyListCallbackSuccess (nsId, policyList) {
-    
+async function getPolicyListCallbackSuccess(nsId, policyList) {
+
     totalPolicyListObj = policyList.data.responseData.data
-    console.log("totalPolicyListObj",totalPolicyListObj)
+    console.log("totalPolicyListObj", totalPolicyListObj)
     const transformedData = mapPolicyData(totalPolicyListObj)
     policyListTable.setData(transformedData);
- 
+
 }
+
 function mapPolicyData(data) {
     return data.map(item => {
         // threshold 필드를 파싱하여 crit, warn, info 필드를 추출
@@ -222,7 +225,7 @@ function initPolicyTable() {
 
     // 행 클릭 시
     policyListTable.on("rowClick", function (e, row) {
-        
+
         var policySeq = row.getCell("seq").getValue();
 
         // 표에서 선택된 seqInfo 
@@ -238,8 +241,8 @@ function initPolicyTable() {
     // displayColumn(table);
 }
 
-// 클릭한 pmk info 가져오기
-// 표에서 선택된 PmkId 받아옴
+// 클릭한 policy info 가져오기
+// 표에서 선택된 policy seq 받아옴
 async function getSelectedPolicySeqData(policySeq) {
 
     console.log('selectedpolicySeq:', policySeq)
@@ -247,18 +250,18 @@ async function getSelectedPolicySeqData(policySeq) {
         var selectedNsId = selectedWorkspaceProject.nsId;
         currentPolicySeq = policySeq
         var policySeqResp = await webconsolejs["common/api/services/eventalarm_api"].getPolicyOfSeqHistory(currentPolicySeq.toString())
-        
+
         if (policySeqResp.status != 200) {
             console.log("resp status ", policySeqResp.status)
             // failed.  // TODO : Error Popup 처리
             return;
         }
-        // SET PMK Info page
+        // SET policy Info page
         setPolicyInfoData(policySeqResp.data)
 
         // Toggle PMK Info
-        var div = document.getElementById("cluster_info");
-        webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+        // var div = document.getElementById("cluster_info");
+        // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
     }
 }
 
@@ -276,61 +279,213 @@ function toggleRowSelection(id) {
 }
 
 
-// 클릭한 pmk의 info값 세팅
+// 클릭한 policy의 info값 세팅
 function setPolicyInfoData(policyData) {
-    console.log("setPolicyInfoData", policyData);
 
-    var clusterData = pmkData.responseData;
-    var clusterDetailData = clusterData.CspViewK8sClusterDetail;
-    var pmkNetwork = clusterDetailData.Network || {};
+    var div = document.getElementById("policy_info");
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+    var selectedPolicyData = totalPolicyListObj[0]
+    console.log("setPolicyInfoData", totalPolicyListObj);
 
     try {
 
-        var pmkName = clusterData.name;
-        var pmkID = clusterData.id
-        var pmkVersion = clusterDetailData.Version;
-        var pmkStatus = clusterDetailData.Status;
+        var policyName = selectedPolicyData.name;
+        var policyDescription = selectedPolicyData.description
+        var policyStatus = selectedPolicyData.status
+        var policyMeasurement = selectedPolicyData.measurement
+        var policyField = selectedPolicyData.field
+        var policyStatistics = selectedPolicyData.statistics
+        var policyThresholds = JSON.parse(selectedPolicyData.threshold)
 
-        // 네트워크 정보
-        var pmkVpc = (pmkNetwork.VpcIID && pmkNetwork.VpcIID.SystemId) || "N/A";
-        var pmkSubnet = (pmkNetwork.SubnetIIDs && pmkNetwork.SubnetIIDs[0] && pmkNetwork.SubnetIIDs[0].SystemId) || "N/A";
-        var pmkSecurityGroup = (pmkNetwork.SecurityGroupIIDs && pmkNetwork.SecurityGroupIIDs[0] && pmkNetwork.SecurityGroupIIDs[0].SystemId) || "N/A";
+        var value = ''
+        if (policyThresholds.crit) value += `Critical: ${policyThresholds.crit} `;
+        if (policyThresholds.warn) value += `Warning: ${policyThresholds.warn} `;
+        if (policyThresholds.info) value += `Info: ${policyThresholds.info} `;
 
-        // 추가정보
-        var pmkCloudConnection = clusterData.connectionName
-        var pmkEndPoint = clusterDetailData.AccessInfo.Endpoint
-        var pmkKubeConfig = clusterDetailData.AccessInfo.Kubeconfig // TODO: 너무 길어서 처리 질문
-
-        // webconsolejs["common/api/services/pmk_api"].getPmkInfoProviderNames(pmkData); // PMK에 사용된 provider
-        // var pmkDescription = clusterData.description;
-        // var pmkDispStatus = webconsolejs["common/api/services/pmk_api"].getPmkStatusFormatter(pmkStatus);
-        // var pmkStatusIcon = webconsolejs["common/api/services/pmk_api"].getPmkStatusIconFormatter(pmkDispStatus);
-        // var totalNodeGroupCount = (clusterDetailData.NodeGroupList == null) ? 0 : clusterDetailData.NodeGroupList.length;
-
-        $("#cluster_info_name").text(pmkName);
-        // $("#cluster_info_name").text(pmkName + " / " + pmkID);
-        $("#cluster_info_version").text(pmkVersion);
-        $("#cluster_info_status").text(pmkStatus);
-
-        // 네트워크 정보
-        $("#cluster_info_vpc").text(pmkVpc);
-        $("#cluster_info_subnet").text(pmkSubnet);
-        $("#cluster_info_securitygroup").text(pmkSecurityGroup);
-
-        // 추가정보
-        $("#cluster_info_cloudconnection").text(pmkCloudConnection);
-        $("#cluster_info_endpoint").text(pmkEndPoint || "N/A");
-        // $("#cluster_info_kubeconfig").text(pmkKubeConfig || "N/A");
+        $("#policy_name").text(policyName);
+        $("#policy_description").text(policyDescription);
+        $("#policy_status").text(policyStatus);
+        $("#policy_measurement").text(policyMeasurement);
+        $("#policy_metric").text(policyField);
+        $("#policy_statistics").text(policyStatistics);
+        $("#policy_value").text(value.trim());
 
     } catch (e) {
         console.error(e);
     }
+    console.log("policyData", policyData)
+    const rawData = policyData.responseData.data
+    const formattedData = formatEventData(rawData)
+    eventAlarmListTable.setData(formattedData);
 
-    // TODO: pmk info로 cursor 이동
-    var nodeGroupList = clusterDetailData.NodeGroupList
-    
-    // displayNodeGroupStatusList(pmkID, clusterData)
-    if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
-        displayNodeGroupStatusList(pmkID, clusterData);
+}
+
+function formatEventData(policyRawData) {
+    return policyRawData.map(item => ({
+        seq: item.seq,
+        metric: item.measurement,
+        createdAt: item.create_at,
+        occurTime: item.occur_time,
+        data: item.data,
+        hostname: item.target_id,
+        level: item.level,
+        "policy seq": item.policy_seq
+    }));
+}
+
+function initEventAlarmTable() {
+    var tableObjParams = {};
+
+    var columns = [
+
+        {
+            formatter: "rowSelection",
+            titleFormatter: "rowSelection",
+            vertAlign: "middle",
+            hozAlign: "center",
+            headerhozAlign: "center",
+            headerSort: false,
+            width: 60
+        },
+        {
+            title: "Seq",
+            field: "seq",
+            visible: false
+        },
+        {
+            title: "Policy seq",
+            field: "policy seq",
+            vertAlign: "middle"
+        },
+        {
+            title: "OccurTime",
+            field: "occurTime",
+            vertAlign: "middle"
+        },
+        {
+            title: "Metric",
+            field: "metric",
+            vertAlign: "middle"
+        },
+        {
+            title: "Hostname",
+            field: "hostname",
+            vertAlign: "middle"
+        },
+        {
+            title: "Level",
+            field: "level",
+            vertAlign: "middle"
+        },
+        {
+            title: "CreatedAt",
+            field: "createdAt",
+            vertAlign: "middle"
+        },
+
+        {
+            title: "Data",
+            field: "data",
+            vertAlign: "middle"
+        },
+        
+        
+
+    ]
+
+    eventAlarmListTable = setEventAlarmTabulator("eventAlarmlist-table", tableObjParams, columns, true);
+
+    eventAlarmListTable.on("rowClick", function (e, row) {
+
+        // var eventSeq = row.getCell("seq").getValue();
+        var selectedEventSeq = row.getData()
+
+        // 표에서 선택된 eventSeq
+        getSelectedEventSeqData(selectedEventSeq)
+
+    });
+    //  선택된 여러개 row에 대해 처리
+    eventAlarmListTable.on("rowSelectionChanged", function (data, rows) {
+        checked_array = data
+        selectedPolicyObj = data
+    });
+
+}
+
+function setEventAlarmTabulator(
+    tableObjId,
+    tableObjParamMap,
+    columnsParams,
+    isMultiSelect
+) {
+    var placeholder = "No Data";
+    var pagination = "local";
+    var paginationSize = 5;
+    var paginationSizeSelector = [5, 10, 15, 20];
+    var movableColumns = true;
+    var columnHeaderVertAlign = "middle";
+    var paginationCounter = "rows";
+    var layout = "fitColumns";
+
+    if (tableObjParamMap.hasOwnProperty("placeholder")) {
+        placeholder = tableObjParamMap.placeholder;
     }
+
+    if (tableObjParamMap.hasOwnProperty("pagination")) {
+        pagination = tableObjParamMap.pagination;
+    }
+
+    if (tableObjParamMap.hasOwnProperty("paginationSize")) {
+        paginationSize = tableObjParamMap.paginationSize;
+    }
+
+    if (tableObjParamMap.hasOwnProperty("paginationSizeSelector")) {
+        paginationSizeSelector = tableObjParamMap.paginationSizeSelector;
+    }
+
+    if (tableObjParamMap.hasOwnProperty("movableColumns")) {
+        movableColumns = tableObjParamMap.movableColumns;
+    }
+
+    if (tableObjParamMap.hasOwnProperty("columnHeaderVertAlign")) {
+        columnHeaderVertAlign = tableObjParamMap.columnHeaderVertAlign;
+    }
+
+    if (tableObjParamMap.hasOwnProperty("paginationCounter")) {
+        paginationCounter = tableObjParamMap.paginationCounter;
+    }
+
+    if (tableObjParamMap.hasOwnProperty("layout")) {
+        layout = tableObjParamMap.layout;
+    }
+
+    var tabulatorTable = new Tabulator("#" + tableObjId, {
+        placeholder,
+        pagination,
+        paginationSize,
+        paginationSizeSelector,
+        movableColumns,
+        columnHeaderVertAlign,
+        paginationCounter,
+        layout,
+        columns: columnsParams,
+        selectableRows: isMultiSelect == false ? 1 : true,
+    });
+
+    return tabulatorTable;
+}
+async function getSelectedEventSeqData(selectedEventSeq) {
+    var div = document.getElementById("event_info");
+    console.log("divdivdiv", div)
+    await webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+    console.log("eventSeqResp", selectedEventSeq)
+
+    $('#event_occurtime').text(selectedEventSeq.occurTime);
+    $('#event_metric').text(selectedEventSeq.metric);
+    $('#event_level').text(selectedEventSeq.level);
+    $('#event_data').text(selectedEventSeq.data);
+    $('#event_policyseq').text(selectedEventSeq["policy seq"]);
+    $('#event_hostname').text(selectedEventSeq.hostname);
 }
