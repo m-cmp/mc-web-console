@@ -5,7 +5,7 @@ menus:
     displayname: Settings
     restype: menu
     isaction: false
-    priority: 2
+    priority: 4
     menunumber: 1200
 
   - id: accountnaccess
@@ -241,7 +241,7 @@ menus:
     menunumber: 1710
 
   - id: projects
-    parentid: manage
+    parentid: workspaces
     displayname: Projects
     restype: menu
     isaction: false
@@ -249,7 +249,7 @@ menus:
     menunumber: 1720
 
   - id: members
-    parentid: manage
+    parentid: workspaces
     displayname: Members
     restype: menu
     isaction: false
@@ -257,7 +257,7 @@ menus:
     menunumber: 1730
 
   - id: roles
-    parentid: manage
+    parentid: workspaces
     displayname: Roles
     restype: menu
     isaction: false
@@ -265,7 +265,7 @@ menus:
     menunumber: 1740
 
   - id: projectboard
-    parentid: manage
+    parentid: workspaces
     displayname: Project board
     restype: menu
     isaction: false
@@ -325,7 +325,7 @@ menus:
     displayname: Analytics
     restype: menu
     isaction: false
-    priority: 2
+    priority: 3
     menunumber: 1901
 
   - id: monitorings
@@ -361,7 +361,7 @@ menus:
     menunumber: 1940
 
   - id: eventsntraces
-    parentid: manage
+    parentid: monitorings
     displayname: Events & Traces
     restype: menu
     isaction: false
@@ -409,7 +409,7 @@ menus:
     menunumber: 1996
 
   - id: costanalysis
-    parentid: manage
+    parentid: monitorings
     displayname: Cost Analysis
     restype: menu
     isaction: true

@@ -76,7 +76,7 @@ function generateMenuHTML(menus) {
 
 
 function setActiveMenu() {
-    try {
+    // try {
         const path = window.location.pathname.split('/');
         const depth3 = path[3] ? `sidebar_${path[3]}` : null;
         const depth4 = path[4] ? `sidebar_${path[4]}` : null;
@@ -95,32 +95,40 @@ function setActiveMenu() {
             }
         }
         if (depth4&&depth5) {
+            console.log("depth4&&depth5")
             var pretitle = document.getElementById("page-pretitle");
             var title = document.getElementById("page-title");
             if (pretitle && title) {
-                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`).querySelector('.nav-link-title');
+                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`);
                 if (navLinkTitle) {
-                    const innerText = navLinkTitle.innerText;
+                    const innerText = navLinkTitle.querySelector('.nav-link-title').innerText;
                     pretitle.innerHTML = innerText 
                 }
                 title.innerHTML = document.getElementById(depth5).innerHTML
             }
         } else if (depth3&&depth4) {
+            console.log("depth3&&depth4")
             var pretitle = document.getElementById("page-pretitle");
             var title = document.getElementById("page-title");
             if (pretitle && title) {
                 pretitle.innerHTML = document.getElementById(depth3).innerHTML
-                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`).querySelector('.nav-link-title');
+                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`);
                 if (navLinkTitle) {
-                    const innerText = navLinkTitle.innerText;
+                    const innerText = navLinkTitle.querySelector('.nav-link-title').innerText;
                     title.innerHTML = innerText 
+                }else {
+                    const navLinkTitle2 = document.querySelector(`[name="${depth4}"].nav-link`);
+                    if (navLinkTitle2) {
+                        const innerText = navLinkTitle2.querySelector('.nav-link-title').innerText;
+                        title.innerHTML = innerText 
+                    }
                 }
             }
         }
         
-    } catch (error) {
-        console.log('An error occurred in setActiveMenu:', error.message);
-    }
+    // } catch (error) {
+    //     console.log('An error occurred in setActiveMenu:', error.message);
+    // }
 }
 
 function stringToBool(str) {
