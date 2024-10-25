@@ -27,7 +27,7 @@ function generateMenuHTML(menus) {
         html += ` </li>`
         title.menus.forEach(category => {
             html += ` <li class="nav-item">`
-            html += ` <span class="nav-link" id="sidebar_${category.id}">${category.displayName}</span>`
+            html += ` <span class="nav-link hr-text-color" id="sidebar_${category.id}">${category.displayName}</span>`
             html += ` </li>`
             if (category.menus && category.menus.length > 0) {
                 category.menus.forEach(menu => {
