@@ -11,13 +11,10 @@ on:
       - "**.md"
       - ".gitignore"
       - "LICENSE"
-      - "CODEOWNERS"
-      - "assets/**"
       - "docs/**"
-      # - "scripts/**"
-      # - "src/testclient/scripts/**"
-      # - ".all-contributorsrc"
-
+      - "api/scripts/**"
+      - "front/scripts/**"
+      - "*/scripts/**"
 jobs:
   # The job key (i.e., ID) is "build-source-code"
   build-source-code-api-server:
@@ -99,7 +96,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
 
       - name: Install npm dependencies
         run: npm install
@@ -131,5 +128,3 @@ jobs:
         env:
           IMAGE_NAME: ${{ github.event.repository.name }}-front
         run: docker image build --file ./front/Dockerfile.mcwebconsolefront --tag $IMAGE_NAME .
-
-    name: Build a container image for mc-web-console front
