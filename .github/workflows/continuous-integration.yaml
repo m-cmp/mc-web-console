@@ -11,13 +11,10 @@ on:
       - "**.md"
       - ".gitignore"
       - "LICENSE"
-      - "CODEOWNERS"
-      - "assets/**"
       - "docs/**"
-      # - "scripts/**"
-      # - "src/testclient/scripts/**"
-      # - ".all-contributorsrc"
-
+      - "api/scripts/**"
+      - "front/scripts/**"
+      - "*/scripts/**"
 jobs:
   # The job key (i.e., ID) is "build-source-code"
   build-source-code-api-server:
