@@ -131,5 +131,3 @@ jobs:
         env:
           IMAGE_NAME: ${{ github.event.repository.name }}-front
         run: docker image build --file ./front/Dockerfile.mcwebconsolefront --tag $IMAGE_NAME .
-
-    name: Build a container image for mc-web-console front
