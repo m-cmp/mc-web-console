@@ -86,3 +86,4 @@ conf/serverinfo
 !scripts/.env
 scripts/container-volume
 conf/api.yaml
+bin/mc-web-console-front
