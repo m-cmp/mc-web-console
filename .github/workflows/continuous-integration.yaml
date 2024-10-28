@@ -102,16 +102,8 @@ jobs:
         run: npm install
         working-directory: ./front
 
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-            
       - name: Install Yarn dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
         working-directory: ./front
     
       - name: Build Buffalo application
