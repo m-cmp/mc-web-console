@@ -48,6 +48,10 @@ type Service struct {
 	Auth    Auth   `mapstructure:"auth"`
 }
 
+type ServiceNoAuth struct {
+	BaseURL string `mapstructure:"baseurl"`
+}
+
 type Spec struct {
 	Method       string `mapstructure:"method"`
 	ResourcePath string `mapstructure:"resourcePath"`
@@ -107,6 +111,34 @@ func AnyCaller(c buffalo.Context, operationId string, commonRequest *CommonReque
 	return commonResponse, err
 }
 
+// SubsystemAnyCaller buffalo.Context, subsystemName, operationId, commonRequest, auth유무 를 받아 conf/api.yaml 정보를 바탕으로 commonCaller를 호출합니다.
+// AnyCaller 와 동일한 방식으로 작동하며, subsystemName, operationId 로 호출할 서브시스템의 함수를 특정합니다.
+// 모든 응답과 error 는 commonResponse 내 설정되어 반환됩니다.
+func SubsystemAnyCaller(c buffalo.Context, subsystemName, operationId string, commonRequest *CommonRequest, auth bool) (*CommonResponse, error) {
+	targetFrameworkInfo, targetApiSpec, err := getApiSpecBySubsystem(subsystemName, operationId)
+	if (err != nil || targetFrameworkInfo == Service{} || targetApiSpec == Spec{}) {
+		commonResponse := CommonResponseStatusNotFound(operationId + "-" + err.Error())
+		return commonResponse, err
+	}
+
+	var authString string
+	if auth {
+		authString, err = getAuth(c, targetFrameworkInfo)
+		if err != nil {
+			commonResponse := CommonResponseStatusBadRequest(err.Error())
+			return commonResponse, err
+		}
+	} else {
+		authString = ""
+	}
+
+	commonResponse, err := CommonCaller(strings.ToUpper(targetApiSpec.Method), targetFrameworkInfo.BaseURL, targetApiSpec.ResourcePath, commonRequest, authString)
+	if err != nil {
+		return commonResponse, err
+	}
+	return commonResponse, err
+}
+
 // getApiSpec은 OpertinoId를 받아 conf/api.yaml에 정의된 Service, Spec 을 반환합니다.
 // 없을경우 not found error를 반환합니다.
 func GetApiSpec(requestOpertinoId string) (string, Service, Spec, error) {
@@ -118,6 +150,18 @@ func GetApiSpec(requestOpertinoId string) (string, Service, Spec, error) {
 		}
 	}
 	return "", Service{}, Spec{}, fmt.Errorf("getApiSpec not found")
+}
+
+// getApiSpecBySubsystem 은 subsystemName, OpertinoId 를 받아 conf/api.yaml에 정의된 Service, Spec 을 반환합니다.
+// 없을경우 not found error를 반환합니다.
+func getApiSpecBySubsystem(subsystemName, requestOpertinoId string) (Service, Spec, error) {
+	apis := ApiYamlSet.ServiceActions[strings.ToLower(subsystemName)]
+	for opertinoId, spec := range apis {
+		if strings.EqualFold(strings.ToLower(opertinoId), strings.ToLower(requestOpertinoId)) {
+			return ApiYamlSet.Services[strings.ToLower(subsystemName)], spec, nil
+		}
+	}
+	return Service{}, Spec{}, fmt.Errorf("getApiSpec not found")
 }
 
 // getAuth는 컨텍스트 및 대상 서비스 정보를 받아, 옳바른 Authorization 값을 반환합니다.
@@ -143,6 +187,16 @@ func getAuth(c buffalo.Context, service Service) (string, error) {
 	default:
 		return "", nil
 	}
+}
+
+func GetApiHosts() (map[string]ServiceNoAuth, error) {
+	servicesNoAuth := make(map[string]ServiceNoAuth)
+	for key, service := range ApiYamlSet.Services {
+		servicesNoAuth[key] = ServiceNoAuth{
+			BaseURL: service.BaseURL,
+		}
+	}
+	return servicesNoAuth, nil
 }
 
 ////////////////////////////////////////////////////////////////

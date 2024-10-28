@@ -22,7 +22,10 @@ func init() {
 		certEndPoint := getCertsEndpoint()
 		err := iamtokenvalidator.GetPubkeyIamManager(certEndPoint)
 		if err != nil {
-			panic("Get jwks fail :" + err.Error())
+			err = iamtokenvalidator.GetPubkeyIamManagerTlsSkipped(certEndPoint)
+			if err != nil {
+				panic("Get jwks fail :" + err.Error())
+			}
 		}
 	}
 }
@@ -40,7 +43,7 @@ func getCertsEndpoint() string {
 	return baseUrl + certUri
 }
 
-func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
+func TokenValidMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		err := iamtokenvalidator.IsTokenValid(accessToken)
@@ -48,12 +51,18 @@ func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
 			log.Println(err.Error())
 			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
+		return next(c)
+	}
+}
+
+func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		claims, err := iamtokenvalidator.GetTokenClaimsByIamManagerClaims(accessToken)
 		if err != nil {
 			log.Println(err.Error())
 			return c.Render(http.StatusInternalServerError, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
-
 		c.Set("Authorization", c.Request().Header.Get("Authorization"))
 		c.Set("UserId", claims.UserID)
 		c.Set("UserName", claims.Name)
@@ -64,6 +73,7 @@ func SetContextMiddleware(next buffalo.Handler) buffalo.Handler {
 
 func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
+
 		operationId := strings.ToLower(c.Param("operationId"))
 		framework, _, _, err := handler.GetApiSpec(operationId)
 		if err != nil || framework == "" {
@@ -90,6 +100,7 @@ func ApiMiddleware(next buffalo.Handler) buffalo.Handler {
 
 func SelfApiMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
+
 		operationId := strings.ToLower(strings.TrimPrefix(c.Request().RequestURI, "/api/"))
 		framework, _, _, err := handler.GetApiSpec(operationId)
 		if err != nil || framework == "" {

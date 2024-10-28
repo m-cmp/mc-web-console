@@ -1,5 +1,15 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
+// workspace List 조회
+//  . workspace list 생성 function에 data전달
+
+// 전체 workspace 의 모든 project count
+//  . 
+// 모든 workspace에 할당된 user count
+
+// Add workspace popup 호출
+
+
 ////
 // 모달 콜백 예제 : confirm 버튼을 눌렀을 때 호출될 callback 함수로 사용할 용도
 export function commoncallbac(val) {
@@ -90,7 +100,7 @@ async function getSelectedWorkspaceData(workspaceID) {
 
 }
 
-// 클릭한 mcis info 세팅
+// 클릭한 mci info 세팅
 function setWorkspaceInfoData(workspaceData) {
   console.log("setWorkspaceInfoData", workspaceData)
   try {
@@ -148,7 +158,7 @@ function providerFilter(data) {
   // case type like, equal, not eual
   // equal only
   if (typeEl.value == "=") {
-    var vmCloudConnectionMap = webconsolejs["common/api/services/mcis_api"].calculateConnectionCount(
+    var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
       data.vm
     );
     var valueElValue = valueEl.value;
@@ -221,7 +231,7 @@ async function getWorkspaceList() {
       //      nsId: nsid,
     },
   };
-  //var controller = "targetController=getmcislist"
+  //var controller = "targetController=getmcilist"
   var controller = "/api/" + "getworkspacelist";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -242,8 +252,8 @@ function getWorkspaceListCallbackSuccess(workspaceList) {
   table.setData(workspaceList);
 }
 
-// 해당 mcis에서 상태값들을 count : 1개 mcis의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
-// dashboard, mcis 에서 사용
+// 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
+// dashboard, mci 에서 사용
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

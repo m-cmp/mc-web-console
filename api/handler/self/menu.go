@@ -34,6 +34,7 @@ type Menu struct {
 	DisplayName  string `json:"displayName"` // for display
 	IsAction     string `json:"isAction"`    // maybe need type assertion..?
 	Priority     string `json:"priority"`
+	MenuNumber   string `json:"menunumber"`
 	Menus        Menus  `json:"menus"`
 }
 
@@ -73,7 +74,7 @@ func createMenuResource() error {
 }
 
 func GetMenuTree(menuList Menus) (*Menus, error) {
-	menuTree := buildMenuTree(menuList, "")
+	menuTree := buildMenuTree(menuList, "home")
 	return &menuTree, nil
 }
 
@@ -83,25 +84,23 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 			"framework": "mc-web-console",
 		},
 	}, true)
-
 	if err != nil {
 		return &Menus{}, err
 	}
 	if commonResponse.Status.StatusCode != 200 {
 		return &Menus{}, fmt.Errorf(commonResponse.Status.Message)
 	}
-
 	menuListResp := commonResponse.ResponseData.([]interface{})
 	menuList := &Menu{}
 	for _, menuResp := range menuListResp {
 		menuPart := strings.Split(menuResp.(map[string]interface{})["rsname"].(string), ":")
-
 		menu := &Menu{
 			Id:           menuPart[2],
 			DisplayName:  menuPart[3],
 			ParentMenuId: menuPart[4],
 			Priority:     menuPart[5],
-			IsAction:     menuPart[6],
+			MenuNumber:   menuPart[6],
+			IsAction:     menuPart[7],
 		}
 		menuList.Menus = append(menuList.Menus, *menu)
 	}
