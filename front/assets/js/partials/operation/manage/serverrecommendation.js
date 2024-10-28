@@ -409,7 +409,7 @@ export async function getRecommendVmInfo() {
 		return
 	}
 	recommendVmSpecListObj = respData.responseData
-
+	console.log("asdasdasd",respData.responseData)
 	recommendTable.setData(recommendVmSpecListObj)
 
 }
