@@ -23,13 +23,13 @@ func init() {
 func ApiCaller(c buffalo.Context) error {
 	log.Println("#### IN Api Proxy")
 	log.Println("Method", c.Request().Method)
-	log.Println("RequestURI", c.Request().RequestURI)
-	if c.Request().RequestURI == "/api/auth/login" {
-		return SessionInitializer(c) // login intercept
-	} else {
-		c.Request().Header.Add("Authorization", c.Session().Get("Authorization").(string))
-		proxy.ServeHTTP(c.Response(), c.Request())
-	}
+	log.Println("RequestURI", ApiBaseHost.String()+c.Request().RequestURI)
+
+	authorization := c.Value("Authorization").(string)
+	c.Request().Header.Add("Authorization", authorization)
+
+	proxy.ServeHTTP(c.Response(), c.Request())
+
 	log.Println("#### ServeHTTP Success")
 	return nil
 }

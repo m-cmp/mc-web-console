@@ -1,546 +1,409 @@
-import Apexcharts from "apexcharts"
+export async function getPlugIns() {
 
-// function drawGraph(data, label, ...){
+  var controller = "/api/" + "mc-observability/" + "Getplugins";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+  )
 
-// }
-const coffeeData = {
-  cpuAmericano: {
-    name: "americano",
-    data: [75, 78, 76, 52, 82, 102, 90]
-  },
-  cpuLatte: {
-    name: "latte",
-    data: [72, 43, 81, 54, 77, 63, 79]
-  },
+  var respMeasureMent = response.data.responseData;
 
-  memoryAmericano: {
-    name: "americano",
-    data: [63, 61, 65, 64, 62, 60, 76]
-  },
-  memoryLatte: {
-    name: "latte",
-    data: [52, 50, 58, 49, 42, 50, 69]
-  },
+  return respMeasureMent
+}
 
-  diskAmericano: {
-    name: "americano",
-    data: [40, 42, 41, 43, 44, 39, 42]
-  },
-  diskLatte: {
-    name: "latte",
-    data: [32, 30, 38, 39, 32, 30, 39]
-  },
+export async function getInfluxDBMetrics(measurement, range, vmId) {
 
-  networkAmericano: {
-    name: "americano",
-    data: [1520, 1410, 1583, 1495, 1623, 1389, 1501]
-  },
-  networkLatte: {
-    name: "latte",
-    data: [1120, 1250, 1293, 1225, 1183, 1199, 1161]
+  const data = {
+
+    Request: {
+      "measurement": measurement,
+      // "measurement": "cpu",
+      "range": range,
+      // "range": "1h",
+      "group_time": "1h",
+      "group_by": [
+        measurement
+        // "cpu"
+      ],
+      "limit": 10,
+      "fields": [
+        {
+          "function": "mean",
+          "field": "usage_idle"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "target_id",
+          "value": "vm-1"
+          // "value": "g1-1-1"
+        }
+      ]
+    }
   }
-};
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   console.log("=====", window)
-//   window && (new Apexcharts(document.getElementById('cpu-chart'), {
-//     chart: {
-//       type: "area",
-//       fontFamily: 'inherit',
-//       height: 240,
-//       parentHeightOffset: 0,
-//       toolbar: {
-//         show: true,
-//       },
-//       animations: {
-//         enabled: false
-//       },
-//     },
-//     title: {
-//       text: "CPU",
-//       align: 'center',
-//       margin: 10,
-//       offsetX: 0,
-//       offsetY: 0,
-//       floating: false,
-//       style: {
-//         fontSize: '14px',
-//         fontWeight: 'bold',
-//         fontFamily: undefined,
-//         color: '#263238'
-//       },
-//     },
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     fill: {
-//       opacity: .16,
-//       type: 'solid'
-//     },
-//     stroke: {
-//       width: 2,
-//       lineCap: "round",
-//       curve: "smooth",
-//     },
-//     series: [
-//       coffeeData.cpuAmericano,
-//       coffeeData.cpuLatte
-//     ],
-//     tooltip: {
-//       theme: 'dark'
-//     },
-//     grid: {
-//       padding: {
-//         top: -20,
-//         right: 0,
-//         left: -4,
-//         bottom: -4
-//       },
-//       strokeDashArray: 4,
-//     },
-//     xaxis: {
-//       labels: {
-//         padding: 0,
-//       },
-//       tooltip: {
-//         enabled: false
-//       },
-//       axisBorder: {
-//         show: false,
-//       },
-//       type: 'datetime',
-//     },
-//     yaxis: {
-//       labels: {
-//         padding: 4
-//       },
-//     },
-//     labels: [
-//       '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
-//     ],
-//     colors: [tabler.getColor("primary"), tabler.getColor("purple")],
-//     legend: {
-//       show: true,
-//       position: 'bottom',
-//       offsetY: 12,
-//       markers: {
-//         width: 10,
-//         height: 10,
-//         radius: 100,
-//       },
-//       itemMargin: {
-//         horizontal: 8,
-//         vertical: 8
-//       },
-//     },
-//   })).render();
-// });
+  var controller = "/api/" + "mc-observability/" + "GETInfluxDBMetrics";
+  const response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  if (!response) {
+    return {
+      "responseData": {
+        "data": [
+          {
+            "columns": [
+              "timestamp",
+              "usage_idle"
+            ],
+            "name": "cpu",
+            "tags": {
+              "cpu": "cpu3"
+            },
+            "values": [
+              [
+                "2024-10-24T07:00:00Z",
+                99.68705397331486
+              ],
+              [
+                "2024-10-24T06:00:00Z",
+                99.83203203091615
+              ]
+            ]
+          },
+          {
+            "columns": [
+              "timestamp",
+              "usage_idle"
+            ],
+            "name": "cpu",
+            "tags": {
+              "cpu": "cpu2"
+            },
+            "values": [
+              [
+                "2024-10-24T07:00:00Z",
+                99.68281017492095
+              ],
+              [
+                "2024-10-24T06:00:00Z",
+                99.81210507573287
+              ]
+            ]
+          },
+          {
+            "columns": [
+              "timestamp",
+              "usage_idle"
+            ],
+            "name": "cpu",
+            "tags": {
+              "cpu": "cpu1"
+            },
+            "values": [
+              [
+                "2024-10-24T07:00:00Z",
+                99.71381168104153
+              ],
+              [
+                "2024-10-24T06:00:00Z",
+                99.82824513881181
+              ]
+            ]
+          },
+          {
+            "columns": [
+              "timestamp",
+              "usage_idle"
+            ],
+            "name": "cpu",
+            "tags": {
+              "cpu": "cpu0"
+            },
+            "values": [
+              [
+                "2024-10-24T07:00:00Z",
+                99.6947330502929
+              ],
+              [
+                "2024-10-24T06:00:00Z",
+                99.80079527023894
+              ]
+            ]
+          },
+          {
+            "columns": [
+              "timestamp",
+              "usage_idle"
+            ],
+            "name": "cpu",
+            "tags": {
+              "cpu": "cpu-total"
+            },
+            "values": [
+              [
+                "2024-10-24T07:00:00Z",
+                99.69444943604847
+              ],
+              [
+                "2024-10-24T06:00:00Z",
+                99.81842505823838
+              ]
+            ]
+          }
+        ],
+        "error_message": "",
+        "rs_code": "0000",
+        "rs_msg": "완료되었습니다."
+      },
+      "status": {
+        "code": 200,
+        "message": "200 "
+      }
+    };
+  }
+  return response
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   console.log("=====", window)
-//   window && (new Apexcharts(document.getElementById('memory-chart'), {
-//     chart: {
-//       type: "area",
-//       fontFamily: 'inherit',
-//       height: 240,
-//       parentHeightOffset: 0,
-//       toolbar: {
-//         show: true,
-//       },
-//       animations: {
-//         enabled: false
-//       },
-//     },
-//     title: {
-//       text: "Memory",
-//       align: 'center',
-//       margin: 10,
-//       offsetX: 0,
-//       offsetY: 0,
-//       floating: false,
-//       style: {
-//         fontSize: '14px',
-//         fontWeight: 'bold',
-//         fontFamily: undefined,
-//         color: '#263238'
-//       },
-//     },
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     fill: {
-//       opacity: .16,
-//       type: 'solid'
-//     },
-//     stroke: {
-//       width: 2,
-//       lineCap: "round",
-//       curve: "smooth",
-//     },
-//     series: [
-//       coffeeData.memoryAmericano,
-//       coffeeData.memoryLatte
-//     ],
-//     tooltip: {
-//       theme: 'dark'
-//     },
-//     grid: {
-//       padding: {
-//         top: -20,
-//         right: 0,
-//         left: -4,
-//         bottom: -4
-//       },
-//       strokeDashArray: 4,
-//     },
-//     xaxis: {
-//       labels: {
-//         padding: 0,
-//       },
-//       tooltip: {
-//         enabled: false
-//       },
-//       axisBorder: {
-//         show: false,
-//       },
-//       type: 'datetime',
-//     },
-//     yaxis: {
-//       labels: {
-//         padding: 4
-//       },
-//     },
-//     labels: [
-//       '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
-//     ],
-//     colors: [tabler.getColor("primary"), tabler.getColor("purple")],
-//     legend: {
-//       show: true,
-//       position: 'bottom',
-//       offsetY: 12,
-//       markers: {
-//         width: 10,
-//         height: 10,
-//         radius: 100,
-//       },
-//       itemMargin: {
-//         horizontal: 8,
-//         vertical: 8
-//       },
-//     },
-//   })).render();
-// });
+}
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   console.log("=====", window)
-//   window && (new Apexcharts(document.getElementById('disk-chart'), {
-//     chart: {
-//       type: "area",
-//       fontFamily: 'inherit',
-//       height: 240,
-//       parentHeightOffset: 0,
-//       toolbar: {
-//         show: true,
-//       },
-//       animations: {
-//         enabled: false
-//       },
-//     },
+export async function monitoringPrediction() {
 
-//     title: {
-//       text: "Disk",
-//       align: 'center',
-//       margin: 10,
-//       offsetX: 0,
-//       offsetY: 0,
-//       floating: false,
-//       style: {
-//         fontSize: '14px',
-//         fontWeight: 'bold',
-//         fontFamily: undefined,
-//         color: '#263238'
-//       },
-//     },
+  const data = {
+    pathParams: {
+      "nsId": "ns01",
+      "targetId": "vm-1"
+    },
+    Request: {
+      "target_type": "vm",
+      "measurement": "cpu",
+      "prediction_range": "6h"
+    }
+    // Request: {
+    //   "measurement": "cpu",
+    //   "range": "1h",
+    //   "group_time": "1h",
+    //   "group_by": [
+    //     "cpu"
+    //   ],
+    //   "limit": 10,
+    //   "fields": [
+    //     {
+    //       "function": "mean",
+    //       "field": "usage_idle"
+    //     }
+    //   ],
+    //   "conditions": [
+    //     {
+    //       "key": "target_id",
+    //       "value": "vm-1"
+    //     }
+    //   ]
+    // }
+  }
 
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     fill: {
-//       opacity: .16,
-//       type: 'solid'
-//     },
-//     stroke: {
-//       width: 2,
-//       lineCap: "round",
-//       curve: "smooth",
-//     },
-//     series: [
-//       coffeeData.diskAmericano,
-//       coffeeData.diskLatte
-//       ],
-//     tooltip: {
-//       theme: 'dark'
-//     },
-//     grid: {
-//       padding: {
-//         top: -20,
-//         right: 0,
-//         left: -4,
-//         bottom: -4
-//       },
-//       strokeDashArray: 4,
-//     },
-//     xaxis: {
-//       labels: {
-//         padding: 0,
-//       },
-//       tooltip: {
-//         enabled: false
-//       },
-//       axisBorder: {
-//         show: false,
-//       },
-//       type: 'datetime',
-//     },
-//     yaxis: {
-//       labels: {
-//         padding: 4
-//       },
-//     },
-//     labels: [
-//       '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
-//     ],
-//     colors: [tabler.getColor("primary"), tabler.getColor("purple")],
-//     legend: {
-//       show: true,
-//       position: 'bottom',
-//       offsetY: 12,
-//       markers: {
-//         width: 10,
-//         height: 10,
-//         radius: 100,
-//       },
-//       itemMargin: {
-//         horizontal: 8,
-//         vertical: 8
-//       },
-//     },
-//   })).render();
-// });
+  var controller = "/api/" + "mc-observability/" + "Postprediction";
+  const response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  const mock = {
+    "data": {
+      "responseData": {
+        "data": {
+          "measurement": "cpu",
+          "ns_id": "ns01",
+          "target_id": "vm-1",
+          "target_type": "vm",
+          "values": [
+            {
+              "timestamp": "2024-10-24T07:10:00Z",
+              "value": 99.75
+            },
+            {
+              "timestamp": "2024-10-24T08:00:00Z",
+              "value": 99.7
+            },
+            {
+              "timestamp": "2024-10-24T09:00:00Z",
+              "value": 99.67
+            },
+            {
+              "timestamp": "2024-10-24T10:00:00Z",
+              "value": 99.64
+            },
+            {
+              "timestamp": "2024-10-24T11:00:00Z",
+              "value": 99.6
+            },
+            {
+              "timestamp": "2024-10-24T12:00:00Z",
+              "value": 99.57
+            },
+            {
+              "timestamp": "2024-10-24T13:00:00Z",
+              "value": 99.54
+            }
+          ]
+        },
+        "rs_code": "200",
+        "rs_msg": "Success"
+      },
+      "status": {
+        "code": 200,
+        "message": "200 "
+      }
+    },
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "access-control-allow-origin": "*",
+      "content-length": "490",
+      "content-type": "application/json; charset=utf-8",
+      "date": "Thu, 24 Oct 2024 07:31:23 GMT",
+      "vary": "Origin"
+    },
+    "config": {
+      "transitional": {
+        "silentJSONParsing": true,
+        "forcedJSONParsing": true,
+        "clarifyTimeoutError": false
+      },
+      "adapter": [
+        "xhr",
+        "http"
+      ],
+      "transformRequest": [
+        null
+      ],
+      "transformResponse": [
+        null
+      ],
+      "timeout": 0,
+      "xsrfCookieName": "XSRF-TOKEN",
+      "xsrfHeaderName": "X-XSRF-TOKEN",
+      "maxContentLength": -1,
+      "maxBodyLength": -1,
+      "env": {},
+      "headers": {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json"
+      },
+      "method": "post",
+      "url": "/api/mc-observability/Postprediction",
+      "data": "{\"pathParams\":{\"nsId\":\"ns01\",\"targetId\":\"vm-1\"},\"Request\":{\"target_type\":\"vm\",\"measurement\":\"cpu\",\"prediction_range\":\"6h\"}}"
+    },
+    "request": {}
+  }
+  return response
+  // return mock
+}
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   console.log("=====", window)
-//   window && (new Apexcharts(document.getElementById('network-chart'), {
-//     chart: {
-//       type: "area",
-//       fontFamily: 'inherit',
-//       height: 240,
-//       parentHeightOffset: 0,
-//       toolbar: {
-//         show: true,
-//       },
-//       animations: {
-//         enabled: false
-//       },
-//     },
+// Log 조회.
+//      limit : 가져올 row 갯수 
+//      range : ??
+//      conditions :
+//          key:"tag.ns_id", value:""       -> value는 선택된 nsId
+//          key:"tag.mci_id", value:""      -> value는 선택된 mciId
+//          key:"tag.target_id", value:""   -> value는 선택된 vmId
 
-//     title: {
-//       text: "Network",
-//       align: 'center',
-//       margin: 10,
-//       offsetX: 0,
-//       offsetY: 0,
-//       floating: false,
-//       style: {
-//         fontSize: '14px',
-//         fontWeight: 'bold',
-//         fontFamily: undefined,
-//         color: '#263238'
-//       },
-//     },
+//          key:"tail.message", value:""    -> value는 filter하고자 하는 keyword
+export async function getMonitoringLog(nsId, mciId, targetId, keyword) {
+  //GET_OpensearchLogs
 
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     fill: {
-//       opacity: .16,
-//       type: 'solid'
-//     },
-//     stroke: {
-//       width: 2,
-//       lineCap: "round",
-//       curve: "smooth",
-//     },
-//     series: [
-//       coffeeData.networkAmericano,
-//       coffeeData.networkLatte
-//     ],
-//     tooltip: {
-//       theme: 'dark'
-//     },
-//     grid: {
-//       padding: {
-//         top: -20,
-//         right: 0,
-//         left: -4,
-//         bottom: -4
-//       },
-//       strokeDashArray: 4,
-//     },
-//     xaxis: {
-//       labels: {
-//         padding: 0,
-//       },
-//       tooltip: {
-//         enabled: false
-//       },
-//       axisBorder: {
-//         show: false,
-//       },
-//       type: 'datetime',
-//     },
-//     yaxis: {
-//       labels: {
-//         padding: 4
-//       },
-//     },
-//     labels: [
-//       '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
-//     ],
-//     colors: [tabler.getColor("primary"), tabler.getColor("purple")],
-//     legend: {
-//       show: true,
-//       position: 'bottom',
-//       offsetY: 12,
-//       markers: {
-//         width: 10,
-//         height: 10,
-//         radius: 100,
-//       },
-//       itemMargin: {
-//         horizontal: 8,
-//         vertical: 8
-//       },
-//     },
-//   })).render();
-// });
+  const data = {}
+  let request = {}
+  let conditions = new Array();
+  if (nsId != "") {
+    let aCondition = {}
+    aCondition.key = "tag.ns_id";
+    aCondition.value = nsId;
+    conditions.push(aCondition)
+  }
+  if (mciId != "") {
+    let aCondition = {}
+    aCondition.key = "tag.mci_id";
+    aCondition.value = mciId;
+    conditions.push(aCondition)
+  }
+  if (targetId != "") {
+    let aCondition = {}
+    aCondition.key = "tag.target_id";
+    aCondition.value = targetId;
+    conditions.push(aCondition)
+  }
+  if (keyword != "") {
+    let aCondition = {}
+    aCondition.key = "tail.message";
+    aCondition.value = keyword
+    conditions.push(aCondition)
+  }
 
-//
+  //request.range = ""
+  request.limit = 100;
+  request.conditions = conditions;
+  data.request = request;
 
 
-// // monitoring init
-// export function monitoringDataInit() {
-//   var label = [
-//            '2020-06-21', '2020-06-22', '2020-06-23', '2020-06-24', '2020-06-25', '2020-06-26', '2020-06-27'
-//          ];
-//   var cpuDataList = new Array();
-//   cpuDataList[0] = coffeeData.cpuAmericano;
-//   cpuDataList[1] = coffeeData.cpuLatte;
-//   drawMonitoringChart('cpu-chart', "CPU", cpuDataList, label);
+  var controller = "/api/" + "mc-observability/" + "GET_OpensearchLogs";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
 
-//   var memoryDataList = new Array();
-//   memoryDataList[0] = coffeeData.memoryAmericano;
-//   memoryDataList[1] = coffeeData.memoryLatte;
-//   drawMonitoringChart('memory-chart', "CPU", memoryDataList, label);
+  console.log("response ", response)
+  return response
+}
 
-//   var diskDataList = new Array();
-//   diskDataList[0] = coffeeData.diskAmericano;
-//   diskDataList[1] = coffeeData.diskLatte;
-//   drawMonitoringChart('disk-chart', "Disk", diskDataList, label);
+export async function getDetectionHistory() {
+  const data = {
+    pathParams: {
+      "nsId": "ns01",
+      "targetId": "vm-1"
+    },
+    queryParams: {
+      "measurement": "cpu",
+      // "measurement": "mem",
+      // "start_time": "2002-07-02T06:49:28.605Z",
+      // "end_time": "2002-07-02T06:49:28.605Z"
+    },
+  }
 
-//   var networkDataList = new Array();
-//   networkDataList[0] = coffeeData.networkAmericano;
-//   networkDataList[1] = coffeeData.networkLatte;
-//   drawMonitoringChart('network-chart', "Network", cpuDataList, label);
-// };
+  var controller = "/api/" + "mc-observability/" + "Getanomalydetectionhistory";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
 
-// // data를 받아서 chart 그리기
-// function drawMonitoringChart(eleId, chartTitle, chartDataList, chartLabels){
-//   console.log("=====", window)
-//   window && (new Apexcharts(document.getElementById(eleId), {
-//     chart: {
-//       type: "area",
-//       fontFamily: 'inherit',
-//       height: 240,
-//       parentHeightOffset: 0,
-//       toolbar: {
-//         show: true,
-//       },
-//       animations: {
-//         enabled: false
-//       },
-//     },
-//     title: {
-//       text: chartTitle,
-//       align: 'center',
-//       margin: 10,
-//       offsetX: 0,
-//       offsetY: 0,
-//       floating: false,
-//       style: {
-//         fontSize: '14px',
-//         fontWeight: 'bold',
-//         fontFamily: undefined,
-//         color: '#263238'
-//       },
-//     },
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     fill: {
-//       opacity: .16,
-//       type: 'solid'
-//     },
-//     stroke: {
-//       width: 2,
-//       lineCap: "round",
-//       curve: "smooth",
-//     },
-//     series: chartDataList,
-//     tooltip: {
-//       theme: 'dark'
-//     },
-//     grid: {
-//       padding: {
-//         top: -20,
-//         right: 0,
-//         left: -4,
-//         bottom: -4
-//       },
-//       strokeDashArray: 4,
-//     },
-//     xaxis: {
-//       labels: {
-//         padding: 0,
-//       },
-//       tooltip: {
-//         enabled: false
-//       },
-//       axisBorder: {
-//         show: false,
-//       },
-//       type: 'datetime',
-//     },
-//     yaxis: {
-//       labels: {
-//         padding: 4
-//       },
-//     },
-//     labels: chartLabels,
-//     colors: [tabler.getColor("primary"), tabler.getColor("purple")],
-//     legend: {
-//       show: true,
-//       position: 'bottom',
-//       offsetY: 12,
-//       markers: {
-//         width: 10,
-//         height: 10,
-//         radius: 100,
-//       },
-//       itemMargin: {
-//         horizontal: 8,
-//         vertical: 8
-//       },
-//     },
-//   })).render();
-// }
+  var respDetectionData = response.data.responseData;
+  console.log("respDetectionData",respDetectionData)
+  const mock = {
+    "data": {
+      "ns_id": "ns01",
+      "target_id": "vm-1",
+      "measurement": "cpu",
+      "values": [
+        {
+          "timestamp": "2024-10-24T06:20:00Z",
+          "anomaly_score": 0.85,
+          "isAnomaly": 1,
+          "value": 99.5
+        },
+        {
+          "timestamp": "2024-10-24T07:00:00Z",
+          "anomaly_score": 0.95,
+          "isAnomaly": 1,
+          "value": 94.2
+        },
+        {
+          "timestamp": "2024-10-24T10:00:00Z",
+          "anomaly_score": 0.65,
+          "isAnomaly": 1,
+          "value": 97.5
+        },
+      ]
+    },
+    "rs_code": "200",
+    "rs_msg": "Success"
+  }
+  // return respDetectionData
+  return mock
+}

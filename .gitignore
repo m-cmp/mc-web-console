@@ -68,6 +68,7 @@ front/!.yarn/releases
 front/!.yarn/sdks
 front/!.yarn/versions
 
+front-backup/*
 
 # bin
 bin/mc-web-console-api
@@ -76,11 +77,13 @@ bin/mc-web-console-api.log
 bin/.env
 
 # conf
-conf/api.yaml
 conf/.env
 conf/selfiamauthsetting.yaml
 conf/selfiamuser.dat
 conf/serverinfo
 
 # scripts
-scripts/.env
+!scripts/.env
+scripts/container-volume
+conf/api.yaml
+bin/mc-web-console-front

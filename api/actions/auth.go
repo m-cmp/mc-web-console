@@ -146,6 +146,9 @@ func AuthMCIAMLoginRefresh(c buffalo.Context) error {
 		commonRequest.Request = map[string]interface{}{"refresh_token": sess.RefreshToken}
 		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
 	}
+	if refreshRes.Status.StatusCode != 200 {
+		return c.Render(refreshRes.Status.StatusCode, r.JSON(map[string]interface{}{"error": refreshRes.Status.Message}))
+	}
 
 	_, err := self.UpdateUserSesssFromResponseData(tx, refreshRes, c.Value("UserId").(string))
 	if err != nil {

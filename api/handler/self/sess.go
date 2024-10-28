@@ -99,12 +99,11 @@ func UpdateUserSesssFromResponseData(tx *pop.Connection, r *handler.CommonRespon
 	}
 	if expiresIn, ok := t["expires_in"]; ok {
 		s.ExpiresIn = expiresIn.(float64)
-
 	}
 	if refreshToken, ok := t["refresh_token"]; ok {
 		s.RefreshToken = refreshToken.(string)
-
 	}
+
 	if refreshExpiresIn, ok := t["refresh_expires_in"]; ok {
 		s.RefreshExpiresIn = refreshExpiresIn.(float64)
 	}

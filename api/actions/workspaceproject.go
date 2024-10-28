@@ -7,6 +7,16 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
+func GetWorkspaceUserRoleMappingByToken(c buffalo.Context) error {
+	commonRequest := &handler.CommonRequest{
+		PathParams: map[string]string{
+			"userId": c.Value("UserId").(string),
+		},
+	}
+	commonResponse, _ := handler.SubsystemAnyCaller(c, "mc-iam-manager", "Getworkspaceuserrolemappinglistbyuserid", commonRequest, true)
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
+}
+
 func GetWPmappingListByWorkspaceId(c buffalo.Context) error {
 	res, err := self.GetWPmappingList(c)
 	if err != nil {

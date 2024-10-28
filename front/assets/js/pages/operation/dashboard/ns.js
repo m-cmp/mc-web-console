@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", initDashboardNs);
 
-var totalMcisListObj = new Object();
-var totalMcisStatusMap = new Map();
+var totalMciListObj = new Object();
+var totalMciStatusMap = new Map();
 var totalVmStatusMap = new Map();
 
 async function initDashboardNs() {
@@ -15,7 +15,7 @@ async function initDashboardNs() {
 
   ////////////////////// partials init functions///////////////////////////////////////
   try {
-    webconsolejs["partials/operation/dashboard/mcis_dashboard"].initMcisDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
+    webconsolejs["partials/operation/dashboard/mci_dashboard"].initMciDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
   } catch (e) {
     console.log(e);
   }
@@ -27,39 +27,39 @@ export function callbackStatusChanged(caller, respData) {
   console.log("=== callback from ", caller);
   console.log("=== respData ", respData);
   
-  if (caller == "mcischanged") {// mcis 목록 조회 뒤 status 표시를 위해 호출함
+  if (caller == "mcichanged") {// mci 목록 조회 뒤 status 표시를 위해 호출함
 
-    totalMcisListObj.totalMcisStatusMap = respData.totalMcisStatusMap;
-    totalMcisListObj.totalVmStatusMap = respData.totalVmStatusMap;
+    totalMciListObj.totalMciStatusMap = respData.totalMciStatusMap;
+    totalMciListObj.totalVmStatusMap = respData.totalVmStatusMap;
 
-    webconsolejs["partials/operation/manage/mcisserver_summary"].initMcisServerSummary(null, totalMcisListObj);
+    webconsolejs["partials/operation/manage/mciserver_summary"].initMciServerSummary(null, totalMciListObj);
   }
 }
 
-function calculateMcisStatusCount(mcisData) {
-  console.log("calculateMcisStatusCount");
+function calculateMciStatusCount(mciData) {
+  console.log("calculateMciStatusCount");
 
-  console.log("mcisData : ", mcisData);
-  var mcisStatusCountMap = new Map();
-  mcisStatusCountMap.set("running", 0);
-  mcisStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
-  mcisStatusCountMap.set("terminate", 0);
+  console.log("mciData : ", mciData);
+  var mciStatusCountMap = new Map();
+  mciStatusCountMap.set("running", 0);
+  mciStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
+  mciStatusCountMap.set("terminate", 0);
   try {
-    var mcisStatus = mcisData.status;
-    var mcisDispStatus = webconsolejs["common/api/services/mcis_api"].getMcisStatusFormatter(mcisStatus); // 화면 표시용 status
+    var mciStatus = mciData.status;
+    var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus); // 화면 표시용 status
 
-    if (mcisStatus != "") {
-      // mcis status 가 없는 경우는 skip
-      if (mcisStatusCountMap.has(mcisDispStatus)) {
-        mcisStatusCountMap.set(
-          mcisDispStatus,
-          mcisStatusCountMap.get(mcisDispStatus) + 1
+    if (mciStatus != "") {
+      // mci status 가 없는 경우는 skip
+      if (mciStatusCountMap.has(mciDispStatus)) {
+        mciStatusCountMap.set(
+          mciDispStatus,
+          mciStatusCountMap.get(mciDispStatus) + 1
         );
       }
     }
   } catch (e) {
-    console.log("mcis status error", e);
+    console.log("mci status error", e);
   }
 
-  return mcisStatusCountMap;
+  return mciStatusCountMap;
 }
