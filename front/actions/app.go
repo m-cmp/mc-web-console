@@ -45,6 +45,7 @@ func App() *buffalo.App {
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(middleware.IsTokenExistMiddleware)
 
+		app.Middleware.Skip(middleware.IsTokenExistMiddleware, alive)
 		app.GET("/alive", alive)
 
 		auth := app.Group("/auth")
@@ -53,17 +54,18 @@ func App() *buffalo.App {
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
 
+		authapi := app.Group("/api")
+		authapi.Middleware.Skip(middleware.IsTokenExistMiddleware, SessionInitializer)
+		authapi.POST("/auth/login", SessionInitializer)
+
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
-		pages.GET("/{depth1}/{depth2}/{depth3}", PageController)
+		pages.GET("/{path:.+}", PageController)
 
 		apiPath := "/api"
 		api := app.Group(apiPath)
 		api.ANY("/{path:.+}", ApiCaller)
-
-		devpages := app.Group("/dev")
-		devpages.GET("/apicall", Devapicall)
 
 		app.ServeFiles("/", http.FS(public.FS()))
 	}

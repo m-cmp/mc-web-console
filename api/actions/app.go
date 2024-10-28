@@ -39,6 +39,7 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		if MCIAM_USE { // MCIAM USE True
+			app.Use(mciammanager.TokenValidMiddleware)
 			app.Use(mciammanager.SetContextMiddleware)
 			app.Middleware.Skip(mciammanager.SetContextMiddleware, readyz)
 
@@ -47,6 +48,7 @@ func App() *buffalo.App {
 			apiPath := "/api"
 
 			auth := app.Group(apiPath + "/auth")
+			auth.Middleware.Skip(mciammanager.TokenValidMiddleware, AuthMCIAMLogin, AuthMCIAMLoginRefresh)
 			auth.Middleware.Skip(mciammanager.SetContextMiddleware, AuthMCIAMLogin)
 			auth.POST("/login", AuthMCIAMLogin)
 			auth.POST("/refresh", AuthMCIAMLoginRefresh)
@@ -62,15 +64,22 @@ func App() *buffalo.App {
 			api.POST("/availabledisktypebyproviderregion", self.AvailableDiskTypeByProviderRegion)
 			api.POST("/createmenuresources", CreateMCIAMMenuResources)
 			api.POST("/getmenutree", GetMCIAMmenuTree)
+
+			api.POST("/getapihosts", GetApiHosts)
+
+			api.POST("/getworkspaceuserrolemappingbytoken", GetWorkspaceUserRoleMappingByToken)
+
 			api.POST("/getcompanyinfo", GetCompanyInfo)
 			api.POST("/getplatformroles", GetPlatformRoles)
 			api.POST("/getworkspaceroles", GetWorkspaceRoles)
 
 			api.Middleware.Skip(mciammanager.SelfApiMiddleware, AnyController)
 			if MCIAM_TICKET_USE {
-				api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+				// api.POST("/{operationId}", mciammanager.ApiMiddleware(AnyController))
+				api.POST("/{subsystemName}/{operationId}", mciammanager.ApiMiddleware(SubsystemAnyController))
 			} else {
-				api.POST("/{operationId}", AnyController)
+				// api.POST("/{operationId}", AnyController)
+				api.POST("/{subsystemName}/{operationId}", SubsystemAnyController)
 			}
 
 		} else { // MCIAM USE False
@@ -109,7 +118,8 @@ func App() *buffalo.App {
 			api.POST("/getwpmappinglistbyworkspaceid", GetWPmappingListByWorkspaceId)
 			api.POST("/getworkspaceuserrolemappinglistbyuserid", GetWorkspaceUserRoleMappingListByUserId)
 
-			api.POST("/{operationId}", AnyController)
+			// api.POST("/{operationId}", AnyController)
+			api.POST("/{subsystemName}/{operationId}", SubsystemAnyController)
 		}
 	})
 

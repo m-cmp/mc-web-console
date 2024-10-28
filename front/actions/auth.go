@@ -24,12 +24,18 @@ func SessionInitializer(c buffalo.Context) error {
 	respBody, ioerr := io.ReadAll(resp.Body)
 	if ioerr != nil {
 		log.Println("Error CommonHttp reading response:", ioerr)
+		return c.Render(http.StatusInternalServerError, defaultRender.JSON(map[string]interface{}{"error": ioerr.Error()}))
 	}
 
 	var data map[string]interface{}
 	jsonerr := json.Unmarshal(respBody, &data)
 	if jsonerr != nil {
 		return c.Render(http.StatusInternalServerError, defaultRender.JSON(map[string]interface{}{"error": jsonerr.Error()}))
+	}
+	if resp.StatusCode != 200 {
+		errmsg := data["responseData"].(map[string]interface{})["message"]
+		log.Println("resp.StatusCode err :", errmsg)
+		return c.Render(resp.StatusCode, defaultRender.JSON(map[string]interface{}{"message": errmsg}))
 	}
 
 	accessToken := data["responseData"].(map[string]interface{})["access_token"]
