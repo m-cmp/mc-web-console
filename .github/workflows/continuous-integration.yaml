@@ -92,6 +92,11 @@ jobs:
       - name: Install Go dependencies
         run: go mod download
         working-directory: ./front
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
       - name: Enable Corepack
         run: corepack enable
