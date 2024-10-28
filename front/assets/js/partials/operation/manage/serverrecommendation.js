@@ -48,7 +48,7 @@ function initRecommendSpecTable() {
 			vertAlign: "middle",
 			hozAlign: "center",
 			headerHozAlign: "center",
-			headerSort: false,
+			headerSort: true,
 			maxWidth: 100,
 		},
 		{
@@ -138,7 +138,7 @@ function initRecommendSpecTable() {
 // 	}
 
 // 	var tabulatorTable = new Tabulator("#" + tableObjId, {
-// 		//ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
+// 		//ajaxURL:"http://localhost:3000/operations/mcimng?option=status",
 // 		placeholder,
 // 		pagination,
 // 		paginationSize,
@@ -171,16 +171,6 @@ function updateSelectedRows(data) {
 export async function getRecommendVmInfo() {
 	console.log("in getRecommendVmInfo")
 
-	// var max_cpu = $("#num_vCPU_max").val()
-	// var min_cpu = $("#num_vCPU_min").val()
-	// var max_mem = $("#num_memory_max").val()
-	// var min_mem = $("#num_memory_min").val()
-	// var max_cost = $("#num_cost_max").val()
-	// var min_cost = $("#num_cost_min").val()
-	// var limit = $("#recommendVmLimit").val()
-	// var lon = $("#longitude").val()
-	// var lat = $("#latitude").val()
-
 	var memoryMinVal = $("#assist_min_memory").val()
 	var memoryMaxVal = $("#assist_max_memory").val()
 
@@ -199,8 +189,6 @@ export async function getRecommendVmInfo() {
 	var acceleratorCountMax = $("#assist_gpu_count_max").val()
 	var acceleratorMemoryMin = $("#assist_gpu_memory_min").val()
 	var acceleratorMemoryMax = $("#assist_gpu_memory_max").val()
-	console.log("acceleratorType", acceleratorType)
-	console.log("acceleratorType", lon)
 
 	var policyArr = new Array();
 	//TODO type이 추가 정의되면 type별 분기 추가
@@ -404,66 +392,15 @@ export async function getRecommendVmInfo() {
 		request: {
 			"filter": {
 				"policy": policyArr
-				// "policy": [
-				// 	{
-				// 		"condition": [
-				// 			{
-				// 				"operand": cpuVal,
-				// 				"operator": "<="
-				// 			}
-				// 		],
-				// 		"metric": "vCPU"
-				// 	},
-				// 	{
-				// 		"condition": [
-				// 			{
-				// 				"operand": memoryVal,
-				// 				"operator": "<="
-				// 			}
-				// 		],
-				// 		"metric": "memoryGiB"
-				// 	},
-				// 	{
-				// 		"condition": [
-				// 			{
-				// 				"operand": costVal,
-				// 				"operator": "<="
-				// 			}
-				// 		],
-				// 		"metric": "costPerHour"
-				// 	}
-				// ]
 			},
-			"limit": "400",
+			"limit": "1000",
 			"priority": {
 				"policy": priorityArr,
-				// "policy": [
-				// 	{
-				// 		"metric": "location",
-				// 		"parameter": [
-				// 			{
-				// 				"key": "coordinateClose",
-				// 				"val": [
-				// 					lon + "/" + lat
-				// 				]
-				// 			}
-				// 		],
-				// 		"weight": "0.3"
-				// 	}
-				// ]
 			}
 		}
 	}
-
-	// var controller = "/api/" + "mcisrecommendvm";
-	// const response = await webconsolejs["common/api/http"].commonAPIPost(
-	// 	controller,
-	// 	data
-	// );
-
-	// console.log("mcisrecommendvm response ", response.data.responseData)
-
-	var respData = await webconsolejs["common/api/services/mcis_api"].mcisRecommendVm(data);
+	
+	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
 	console.log("respData ", respData)
 	//var specList = response.data.responseData
 	if (respData.status.code != 200) {
@@ -475,31 +412,6 @@ export async function getRecommendVmInfo() {
 
 	recommendTable.setData(recommendVmSpecListObj)
 
-	// getSpecListCallBackSuccess(specList);
-
-
-	// var max_cpu = $("#num_vCPU_max").val()
-	// var min_cpu = $("#num_vCPU_min").val()
-	// var max_mem = $("#num_memory_max").val()
-	// var min_mem = $("#num_memory_min").val()
-	// var max_cost = $("#num_cost_max").val()
-	// var min_cost = $("#num_cost_min").val()
-	// var limit = $("#recommendVmLimit").val()
-	// var lon = $("#longitude").val()
-	// var lat = $("#latitude").val()
-
-	// console.log(" lon " + lon + ", lat " + lat)
-	// if (lon == "" || lat == "") {
-	// 	commonAlert(" 지도에서 위치를 선택하세요 ")
-	// 	return;
-	// }
-
-	// 	} else {
-	// 		var message = result.data.message;
-	// 		commonAlert("Fail Create Spec : " + message + "(" + statusCode + ")");
-
-	// 	}
-
 }
 
 // apply 클릭시 데이터 SET
@@ -507,6 +419,7 @@ export async function getRecommendVmInfo() {
 export async function applySpecInfo() {
 	console.log("array", recommendSpecs)
 	var selectedSpecs = recommendSpecs[0]
+	console.log("selectedSpecs : ", selectedSpecs)
 
 	// pre-release -> mode = express 고정
 	//caller == "express"
@@ -516,13 +429,13 @@ export async function applySpecInfo() {
 	var connectionName = selectedSpecs.connectionName
 	var specName = selectedSpecs.cspSpecName
 	var imageName = await availableVMImageBySpec(selectedSpecs.id)
-	var commonSpecId = selectedSpecs.id // common specid for create dynamic mcis
+	var commonSpecId = selectedSpecs.id // common specid for create dynamic mci
 
 	console.log("commonSpecId", commonSpecId)
 	console.log("connectionName", selectedSpecs.connectionName)
 	console.log("providerName", selectedSpecs.providerName)
 	console.log("cspSpecName", selectedSpecs.cspSpecName)
-	console.log("123123123", imageName)
+	console.log("imageName", imageName)
 
 	// $("#ep_provider").val(provider)
 	// $("#ep_connectionName").val(connectionName)
@@ -563,18 +476,18 @@ export function showRecommendSpecSetting(value) {
 async function availableVMImageBySpec(id) {
 
 	var imageIds = []
-	var commonimageId = [] // params for create dynamic mcis 
+	var commonimageId = [] // params for create dynamic mci 
 
 	const data = {
 		request: {
-			"CommonSpec": [
+			"commonSpec": [
 				id
 			]
 
 		}
 	}
 
-	var controller = "/api/" + "mcisdynamiccheckrequest";
+	var controller = "/api/" + "mc-infra-manager/" +"Postmcidynamiccheckrequest";
 	const response = await webconsolejs["common/api/http"].commonAPIPost(
 		controller,
 		data
@@ -584,12 +497,16 @@ async function availableVMImageBySpec(id) {
 	// image ID 추출
 	response.data.responseData.reqCheck.forEach(function (req) {
 		req.image.forEach(function (img) {
-			console.log("reqCheckreqCheckreqCheck", img)
 			imageIds.push(img.guestOS);
 			commonimageId.push(img.id);
 		});
 	});
-	$("#ep_commonImageId").val(commonimageId[0])
+
+	// TODO : dynamiccheckrequest api 오류 : 20.04 이미지는 spider에서 제공하지 않음
+	// 임시로 3번 째 22.04 사용중
+
+	// $("#ep_commonImageId").val(commonimageId[0])
+	$("#ep_commonImageId").val(commonimageId[2])
 
 	console.log("Image IDs:", imageIds);
 	console.log("firstImageId", imageIds[0])

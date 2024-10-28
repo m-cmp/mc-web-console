@@ -1,10 +1,9 @@
 
+
 // default workspace에서 sessionstorage를 사용하지 않을때, 아래에서 리턴값 재정의
 // workspace 만
 export function getCurrentWorkspace() {
   const currWs = webconsolejs["common/storage/sessionstorage"].getSessionCurrentWorkspace()
-
-  console.log("currWs ", currWs)
   return currWs
 }
 
@@ -44,20 +43,12 @@ export async function getUserProjectList(workspaceId) {
 /////////////////////////////////////
 
 // 유저의 workspace 목록 조회
-async function getWorkspaceProjectListByUser() {
-  var currentUserId = document.getElementById("userid").value
-  console.log("currentUserId",currentUserId)
-  var data = {
-    pathParams: {
-      userId: currentUserId,
-    },
-  };
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/Getworkspaceuserrolemappinglistbyuserid', data)
+async function getWorkspaceProjectListByUserToken() {
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspaceuserrolemappingbytoken')
   return response.data.responseData
 }
 
 ///////////////////////////////////////
-// 로그인 유저의 workspace 목록 조회
 export async function getWorkspaceListByUser() {
   var workspaceList = [];
   // 세션에서 찾기
@@ -65,14 +56,10 @@ export async function getWorkspaceListByUser() {
 
   if (userWorkspaceList == null) {// 없으면 조회
     console.log("not saved. get ")
-    var userWorkspaceProjectList = await getWorkspaceProjectListByUser()// workspace 목록, project 목록 조회
+    var userWorkspaceProjectList = await getWorkspaceProjectListByUserToken()// workspace 목록, project 목록 조회
     setWorkspaceProjectList(userWorkspaceProjectList)
-
-    // workspaceProjectList에서 workspace 목록만 추출
-    const jsonData = JSON.parse(userWorkspaceProjectList);
-    //console.log(jsonData)
-    jsonData.forEach(item => {
-      //console.log(item)
+    console.log("userWorkspaceProjectList", userWorkspaceProjectList)
+    userWorkspaceProjectList.forEach(item => {
       workspaceList.push(item.workspaceProject.workspace);
     });
 
@@ -80,10 +67,7 @@ export async function getWorkspaceListByUser() {
     setCurrentWorkspace("")
     setCurrentProject("")
   } else {
-    const jsonData = JSON.parse(userWorkspaceList);
-    //console.log(jsonData)
-    jsonData.forEach(item => {
-      //console.log(item)
+    userWorkspaceList.forEach(item => {
       workspaceList.push(item.workspaceProject.workspace);
     });
   }
@@ -94,18 +78,15 @@ export async function getWorkspaceListByUser() {
 // workspace에 매핑된 project목록 조회
 export async function getProjectListByWorkspaceId(workspaceId) {
   console.debug("getProjectListByWorkspaceId", workspaceId)
-  let userId = document.getElementById("userid").value
+  // let userId = document.getElementById("userid").value
   let requestObject = {
     "pathParams": {
       "workspaceId": workspaceId
-    },
-    "requestData": {
-      "userId": userId,
     }
   }
 
   let projectList = [];
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/GetWPmappingListByWorkspaceId', requestObject)
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/getwpmappinglistbyworkspaceid', requestObject)
   let data = response.data.responseData.projects
   console.debug("GetWPmappingListByWorkspaceId data :", data)
   data.forEach(item => {
@@ -136,7 +117,6 @@ export function setCurrentWorkspaceProjectList(v) {
 export function clearCurrentWorkspaceProject() {
   webconsolejs["common/storage/sessionstorage"].clearSessionCurrentWorkspaceProject()
 }
-
 
 /////////////////////// component util //////////////////////////
 // workspaceList select에 set.
@@ -204,3 +184,402 @@ export function setPrjSelectBox(projectList, curProjectId) {
     }
   }
 }
+
+// handle workspace
+
+export async function createWorkspace(name, description){
+  const controller = '/api/mc-iam-manager/CreateWorkspace'
+  var data = {
+    request: {
+      "name": name,
+      "description": description
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getAllWorksaceList(){
+  const controller = '/api/mc-iam-manager/GetWorkspaceList'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, null, null)
+  return response.data.responseData
+}
+
+export async function getWorkspaceById(wsId){
+  const controller = '/api/mc-iam-manager/GetWorkspaceById'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+export async function updateWorkspaceById(wsId, desc){
+  const controller = '/api/mc-iam-manager/UpdateWorkspaceById'
+  var data = {
+    request: {
+      description: desc,
+    },
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+export async function deleteWorkspaceById(wsId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceById'
+  var data = {
+    pathParams: {
+      "workspaceId": wsId
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
+  return response.data.responseData
+}
+
+// handle project
+
+export async function createProject(prjName, prjDesc){
+  const controller = '/api/mc-iam-manager/CreateProject'
+  var data = {
+    request: {
+      "name": prjName,
+      "description": prjDesc
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller,data,null)
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getProjectList(){
+  const controller = '/api/mc-iam-manager/GetProjectList'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller,null,null)
+  return response.data.responseData
+}
+
+// handle users
+
+export async function getUsers(){
+  const controller = '/api/mc-iam-manager/getusers'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null,
+    null
+  )
+  return response.data.responseData
+}
+
+export async function getUsersById(userId){
+  const controller = '/api/mc-iam-manager/getusers'
+  var data = {
+    queryParams: {
+      userid: userId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  return response.data.responseData
+}
+
+// handle roles
+export async function createRole(roleName, roleDescription){
+  const controller = '/api/mc-iam-manager/CreateRole'
+  var data = {
+    request: {
+      name: roleName,
+      description: roleDescription
+      // platformRole: "true"
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getRoleList(){
+  const controller = '/api/mc-iam-manager/GetRoleList'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null,
+    null
+  )
+  return response.data.responseData
+}
+
+export async function deleteRoleById(reqRoleId){
+  const controller = '/api/mc-iam-manager/DeleteRoleById'
+  var data = {
+    pathParams: {
+      roleId: reqRoleId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+// handle permissions
+export async function getPermissions(){
+  const controller = '/api/mc-iam-manager/GetPermissions'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getdependentPermissionsByPolicyId(reqPolicyid){
+  const controller = '/api/mc-iam-manager/GetdependentPermissionsByPolicyId'
+  var data = {
+    pathParams: {
+      policyid: reqPolicyid,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function appendResourcePermissionPolicesByOperationId(reqFramework,reqOperationid,reqDesc,reqRoleArr){
+  const controller = '/api/mc-iam-manager/AppendResourcePermissionPolicesByOperationId'
+  var data = {
+    pathParams: {
+      framework: reqFramework,
+      operationid: reqOperationid,
+    },
+    request:{
+      desc:reqDesc,
+      role:reqRoleArr,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function deleteResourcePermissionPolicesByOperationId(reqFramework,reqOperationid,reqDesc,reqRoleArr){
+  const controller = '/api/mc-iam-manager/DeleteResourcePermissionPolicesByOperationId'
+  var data = {
+    pathParams: {
+      framework: reqFramework,
+      operationid: reqOperationid,
+    },
+    request:{
+      desc:reqDesc,
+      role:reqRoleArr,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+// handle workspace user role mapping
+
+export async function createWorkspaceUserRoleMappingByName(wsId, reqRoleID, UserID){
+  const controller = '/api/mc-iam-manager/CreateWorkspaceUserRoleMappingByName'
+  var data = {
+    request:{
+      workspaceId:wsId,
+      roleId:reqRoleID,
+      userId:UserID,
+    }
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data,
+    null
+  )
+  return response.data.responseData
+}
+
+export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId){
+  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListOrderbyWorkspace'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null
+  )
+  return response.data.responseData
+}
+
+export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId){
+  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListByWorkspaceId'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+export async function deleteWorkspaceUserRoleMapping(wsId,requserId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceUserRoleMapping'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+      userId: requserId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+// handle workspace projects mapping
+
+export async function createWPmapping(worskspaceId, projectsArr){
+  const controller = '/api/mc-iam-manager/CreateWPmapping'
+  var data = {
+    request: {
+      "workspaceId": worskspaceId,
+      "projectIds": projectsArr
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function updateWPmappings(wsId, projectsIdsArr){
+  const controller = '/api/mc-iam-manager/UpdateWPmappings'
+  var data = {
+    request: {
+      workspaceId: wsId,
+      projectIds: projectsIdsArr,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function deleteWorkspaceProjectMappingById(wsId, projectsId){
+  const controller = '/api/mc-iam-manager/DeleteWorkspaceProjectMappingById'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+      projectId: projectsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  try{
+    return { success: true, message: response.data.responseData };
+  } catch(error){
+    console.log(error)
+    return { success: false, message: response.response.data.responseData };
+  }
+}
+
+export async function getWPmappingListByWorkspaceId(wsId){
+  const controller = '/api/mc-iam-manager/GetWPmappingListByWorkspaceId'
+  var data = {
+    pathParams: {
+      workspaceId: wsId,
+    },
+  };
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+  return response.data.responseData
+}
+
+export async function getWPmappingListOrderbyWorkspace(){
+  const controller = '/api/mc-iam-manager/GetWPmappingListOrderbyWorkspace'
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    null
+  )
+  return response.data.responseData
+}
+
+

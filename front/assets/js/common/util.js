@@ -48,7 +48,6 @@ export function setTabulator(
   }
 
   var tabulatorTable = new Tabulator("#" + tableObjId, {
-    //ajaxURL:"http://localhost:3000/operations/mcismng?option=status",
     placeholder,
     pagination,
     paginationSize,
@@ -69,9 +68,6 @@ export function setTabulator(
 export function changePage(target, urlParamMap) {
   var url = "";
   // target에 따라 url을 달리한다.
-  if (target == "McisMng") {
-    url = "/webconsole/operation/manage/mcis"
-  }
 
   // pathParam을 뒤에 붙인다.
   var keyIndex = 0;
@@ -162,4 +158,8 @@ export function getCommonData(
     });
 }
 
-
+// sw 설치화면으로 이동.
+export function installSwtoVm(){
+  // 
+  window.location = "/webconsole/operations/manage/swcatalogs";
+}
