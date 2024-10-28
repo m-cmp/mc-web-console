@@ -109,7 +109,7 @@ jobs:
         working-directory: ./front
 
       - name: Install Yarn dependencies
-        run: yarn install
+        run: yarn install --immutable
         working-directory: ./front
     
       - name: Build Buffalo application
