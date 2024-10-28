@@ -104,6 +104,12 @@ jobs:
       - name: Install Yarn 4.1.0
         run: corepack prepare yarn@4.1.0 --activate
 
+      - name: Verify versions
+        run: |
+          node -v
+          npm -v
+          yarn -v
+
       - name: Install npm dependencies
         run: npm install
         working-directory: ./front
