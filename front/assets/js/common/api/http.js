@@ -36,7 +36,7 @@ export async function commonAPIPost(url, data, attempt) {
                     console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
                     return commonAPIPost(url, data, true);
                 } else {
-                    alert("you logged in other device : ", error.message);
+                    alert("you logged in other device.");
                     window.location = "/auth/login"
                     return
                 }
