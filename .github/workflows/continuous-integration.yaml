@@ -106,7 +106,7 @@ jobs:
 
       - name: Verify versions
         run: |
-          node -v
+          node -vz
           npm -v
           yarn -v
 
