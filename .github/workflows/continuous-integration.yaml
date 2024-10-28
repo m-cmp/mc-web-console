@@ -103,7 +103,7 @@ jobs:
         working-directory: ./front
 
       - name: Install Yarn dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         working-directory: ./front
     
       - name: Build Buffalo application
