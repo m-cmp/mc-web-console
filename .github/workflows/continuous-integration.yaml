@@ -101,9 +101,12 @@ jobs:
       - name: Install npm dependencies
         run: npm install
         working-directory: ./front
+      
+      - name: Install specific Yarn version
+        run: npm install -g yarn@4.1.0
 
       - name: Install Yarn dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable-cach
         working-directory: ./front
     
       - name: Build Buffalo application
