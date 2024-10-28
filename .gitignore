@@ -61,12 +61,6 @@ front/dist/
 front/generated/
 front/.vendor/
 front/.pnp.*
-front/.yarn/*
-front/!.yarn/patches
-front/!.yarn/plugins
-front/!.yarn/releases
-front/!.yarn/sdks
-front/!.yarn/versions
 
 front-backup/*
 
