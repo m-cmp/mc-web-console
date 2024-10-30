@@ -409,7 +409,7 @@ export async function getRecommendVmInfo() {
 		return
 	}
 	recommendVmSpecListObj = respData.responseData
-
+	console.log("asdasdasd",respData.responseData)
 	recommendTable.setData(recommendVmSpecListObj)
 
 }
@@ -430,7 +430,11 @@ export async function applySpecInfo() {
 	var specName = selectedSpecs.cspSpecName
 	var imageName = await availableVMImageBySpec(selectedSpecs.id)
 	var commonSpecId = selectedSpecs.id // common specid for create dynamic mci
-
+	if (provider === "azure") {
+		imageName = "azure+koreacentral+ubuntu22.04";
+		specName = "azure+koreacentral+standard_b2ats_v2";
+	}
+	
 	console.log("commonSpecId", commonSpecId)
 	console.log("connectionName", selectedSpecs.connectionName)
 	console.log("providerName", selectedSpecs.providerName)
