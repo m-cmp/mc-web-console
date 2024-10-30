@@ -104,18 +104,16 @@ jobs:
       - name: Install Yarn 4.1.0
         run: corepack prepare yarn@4.1.0 --activate
 
-      - name: Verify versions
-        run: |
-          node -vz
-          npm -v
-          yarn -v
-
       - name: Install npm dependencies
         run: npm install
         working-directory: ./front
 
+      - name: Clean Yarn cache
+        run: yarn cache clean
+        working-directory: ./front
+
       - name: Install Yarn dependencies with cache check
-        run: yarn install --immutable --check-cache
+        run: yarn install --immutable
         working-directory: ./front
     
       - name: Build Buffalo application
