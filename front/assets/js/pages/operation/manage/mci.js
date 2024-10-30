@@ -68,7 +68,7 @@ async function initMci() {
 
     //getMciList();// project가 선택되어 있으면 mci목록을 조회한다.
     var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
-    console.log("respMciListrespMciListrespMciList",respMciList)
+    console.log("respMciListrespMciListrespMciList", respMciList)
     getMciListCallbackSuccess(selectedProjectId, respMciList);
 
 
@@ -167,6 +167,20 @@ function setMciInfoData(mciData) {
   // TODO : mci info로 cursor 이동
   // vm상태별로 icon 표시한다
   displayServerStatusList(mciID, mciData.vm)
+
+}
+
+// mci 삭제
+export function deleteMci() {
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  webconsolejs["common/api/services/mci_api"].mciDelete(checked_array, selectedNsId)
+
+}
+
+// vm 삭제
+export function deleteVm() {
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  webconsolejs["common/api/services/mci_api"].vmDelete(currentMciId, selectedNsId, selectedVmId)
 
 }
 
@@ -370,7 +384,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   var vmDetail = data.cspViewVmDetail;
   // var vmDetailKeyValueList = vmDetail.KeyValueList
   var addtionalDetails = data.addtionalDetails
-  console.log("addtionalDetails",addtionalDetails)
+  console.log("addtionalDetails", addtionalDetails)
   var architecture = "";
   var vpcId = ""
   var subnetId = ""
@@ -379,7 +393,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
     for (var i = 0; i < addtionalDetails.length; i++) {
       if (addtionalDetails[i].key === "Architecture") {
         architecture = addtionalDetails[i].value;
-        break; 
+        break;
       }
     }
   }
@@ -387,7 +401,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   var subnetId = data.cspSubnetId
   var vmSpecName = data.cspSpecName
   var vpcSystemId = data.vNetId
-  
+
   var subnetSystemId = data.subnetId
   var eth = data.networkInterface
 

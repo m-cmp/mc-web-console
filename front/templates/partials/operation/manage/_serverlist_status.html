@@ -274,7 +274,9 @@
             </svg>
             New
           </a>
-          <a class="dropdown-item" href="#">
+          <a class="dropdown-item" data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete VM ?', 'pages/operation/manage/mci.deleteVm')">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
