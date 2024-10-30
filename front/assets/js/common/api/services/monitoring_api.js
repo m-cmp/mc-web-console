@@ -364,7 +364,7 @@ export async function getDetectionHistory() {
     queryParams: {
       "measurement": "cpu",
       // "measurement": "mem",
-      "start_time": "2024-10-24T12:31:00Z",
+      "start_time": "2024-10-29T12:31:00Z",
       // "end_time": "2002-07-02T06:49:28.605Z"
     },
   }
