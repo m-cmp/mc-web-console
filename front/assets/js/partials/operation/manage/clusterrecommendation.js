@@ -356,7 +356,6 @@ export async function getRecommendVmInfo() {
 	}
 
 	// TODO : 선택된 provider 필터
-	console.log("asdasdasd", respData.responseData)
 	recommendVmSpecListObj = respData.responseData
 
 	recommendTable.setData(recommendVmSpecListObj)
