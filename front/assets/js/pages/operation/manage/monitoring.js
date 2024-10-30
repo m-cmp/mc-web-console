@@ -264,7 +264,7 @@ async function drawMonitoringGraph(MonitoringData) {
       curve: "smooth",
       width: 2
     },
-    colors: ['#FF5733', '#33FF57', '#3357FF', '#FF33A6'],
+    colors: ['#FFD700', '#33FF57', '#3357FF', '#FF33A6'],
     legend: {
       show: true,
       position: "top",
@@ -292,8 +292,6 @@ async function drawMonitoringGraph(MonitoringData) {
   const chart = new ApexCharts(document.getElementById("monitoring_chart_1"), options);
   chart.render();
 
-  // const predictionSwitch = document.getElementById("monitoring_predictionSwitch").checked;
-  const predictionSwitch = true;
   // Prediction Switch 체크 여부 확인
   if ($('#monitoring_predictionSwitch').is(':checked')) {
     try {
@@ -304,12 +302,13 @@ async function drawMonitoringGraph(MonitoringData) {
       if (response.data && response.data.responseData && response.data.responseData.data.values.length > 0) {
         const predictionData = response.data.responseData.data.values.map(value => ({
           x: value.timestamp,
-          y: parseFloat(value.value).toFixed(2) // 소수점 둘째 자리까지 표현
+          y: parseFloat(value.value).toFixed(2)
         }));
 
         const predictionSeries = {
           name: "CPU Total (Predicted)",
-          data: predictionData
+          data: predictionData,
+          color: '#FF5733'
         };
 
         // 기존 데이터와 함께 업데이트
@@ -320,10 +319,8 @@ async function drawMonitoringGraph(MonitoringData) {
     } catch (error) {
       console.error("Prediction API failed:", error);
       console.log("Using existing data without prediction.");
-      // 오류가 발생한 경우 예외 처리하여 기존 데이터만 표시
     }
   }
-  // detectionchecked
 
   // Detection Switch 체크 여부 확인
   if ($('#detectionSwitch').is(':checked')) {

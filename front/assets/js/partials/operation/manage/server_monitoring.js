@@ -66,11 +66,6 @@ export function monitoringDataInit() {
   
 // data를 받아서 chart 그리기 : TODO : 공통으로 옮기기
 function drawMonitoringChart(eleId, chartTitle, chartDataList, chartLabels){
-console.log("=====", window)
-console.log("eleId ", document.getElementById(eleId))
-console.log("chartTitle ", chartTitle)
-console.log("chartDataList ", chartDataList)
-console.log("chartLabels ", chartLabels)
 window && (new Apexcharts(document.getElementById(eleId), {
     chart: {
     type: "area",
