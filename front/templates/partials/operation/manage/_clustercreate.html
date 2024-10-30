@@ -36,7 +36,8 @@
                 <select class="form-select" name="node_specid" id="node_specid">
                   <option value="">Select Spec</option>
                   <option value="ali-cluster-test-spec-04">ecs.g6.xlarge</option>
-                  <option value="tencent+ap-seoul+s2.medium4">s2.medium4</option>
+                  <option value="tencent-tokyo-C4.8XLARGE64">C4.8XLARGE64</option>
+                  <option value="azure-koreacentral-Standard_B1ls">Standard_B1ls</option>
                 </select>
               </div>
 
@@ -49,13 +50,14 @@
                 >
                   <option value="">Select Image</option>
                   <option value="alibaba+ap-northeast-1+ubuntu18.04">ubuntu_18_04_x64_20G_alibase_20240223.vhd</option>
-                  <option value="tencent+ap-seoul+s2.medium4">S2.MEDIUM4</option>
+                  <option value="tencent-tokyo-image01">C4.8XLARGE64</option>
+                  <option value="azure-koreacentral-image">Standard_B1ls</option>
                 </select>
               </div>
 
               <div class="form-group mb-2">
                 <label class="form-label required"
-                  >maxNodeSize / minNodeSize</label
+                  >minNodeSize / maxNodeSize</label
                 >
                 <div class="row g-2">
                   <div class="col-6">
@@ -172,7 +174,7 @@
                 <button
                   type="submit"
                   class="btn btn-info"
-                  onclick="webconsolejs['partials/operation/manage/clustercreate'].addNodeFormDone_btn()"
+                  onclick="webconsolejs['partials/operation/manage/clustercreate'].clusterFormDone_btn()"
                 >
                   Done
                 </button>
