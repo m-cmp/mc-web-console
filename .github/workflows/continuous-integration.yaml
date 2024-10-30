@@ -110,7 +110,8 @@ jobs:
 
       - name: Clean Yarn cache
         run: yarn cache clean
-        
+        working-directory: ./front
+
       - name: Install Yarn dependencies with cache check
         run: yarn install --immutable
         working-directory: ./front
