@@ -15,6 +15,22 @@ export function commonModal(elm, title, content, func, argument) {
     };
 }
 
+// confirmModal을 script로 띄울 때 사용
+export function commonConfirmModal(targetModal, title, content, func, argument) {
+    const modalId = 'commonDefaultModal';  // 모달의 ID 설정
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+
+    const funcArr = func.split(".");
+    document.getElementById(`${targetModal}-title`).innerText = title
+    document.getElementById(`${targetModal}-content`).innerText = content
+    document.getElementById(`${targetModal}-confirm-btn`).onclick = function () {
+        const executefunction = `webconsolejs["${funcArr[0]}"].${funcArr[1]}('${argument}')`;
+        eval(executefunction);
+    };
+
+    modal.show();  // 모달 표시
+}
+
 // default modal show
 export function commonShowDefaultModal(title, content) {
     const modalId = 'commonDefaultModal';  // 모달의 ID 설정
