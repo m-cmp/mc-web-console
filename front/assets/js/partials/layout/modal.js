@@ -15,15 +15,21 @@ export function commonModal(elm, title, content, func, argument) {
     };
 }
 
-// confirmModal을 script로 띄울 때 사용
-export function commonConfirmModal(targetModal, title, content, func, argument) {
-    const modalId = 'commonDefaultModal';  // 모달의 ID 설정
-    const modal = new bootstrap.Modal(document.getElementById(modalId));
+/* 
+    confirmModal을 script로 띄울 때 사용
+    // targetModalId : modal.html에 정의된 모달의 ID
+    // title : modal의 title text
+    // content : modal에서 표시하는 message text
+    // func : confirm시 동작할 function 정의(경로.function)
+    // argument : function에 전달할 argument
+*/
+export function commonConfirmModal(targetModalId, title, content, func, argument) {    
+    const modal = new bootstrap.Modal(document.getElementById(targetModalId));
 
     const funcArr = func.split(".");
-    document.getElementById(`${targetModal}-title`).innerText = title
-    document.getElementById(`${targetModal}-content`).innerText = content
-    document.getElementById(`${targetModal}-confirm-btn`).onclick = function () {
+    document.getElementById(`${targetModalId}-title`).innerText = title
+    document.getElementById(`${targetModalId}-content`).innerText = content
+    document.getElementById(`${targetModalId}-confirm-btn`).onclick = function () {
         const executefunction = `webconsolejs["${funcArr[0]}"].${funcArr[1]}('${argument}')`;
         eval(executefunction);
     };
