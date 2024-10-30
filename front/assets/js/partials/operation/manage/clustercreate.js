@@ -281,7 +281,7 @@ async function updateConfigurationFilltering() {
 }
 
 var createMciListObj = new Object();
-var isVm = false // mci 생성(false) / vm 추가(true)
+var isNodeGroup = false // mci 생성(false) / vm 추가(true)
 var Create_Cluster_Config_Arr = new Array();
 var Create_Node_Config_Arr = new Array();
 var nodeGroup_data_cnt = 0
@@ -354,7 +354,7 @@ function getPlusVm(vmElementId) {
 
 	var append = "";
 	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
-	append = append + "+"
+	append = append + "+ NodeGroup"
 	append = append + '</li>';
 	return append;
 }
@@ -434,7 +434,7 @@ export async function addNewNodeGroup() {
 	$("#node_cluster_version").html('<option value="' + cluster_version + '" selected>' + cluster_version + '</option>');
 
 
-	isVm = true
+	isNodeGroup = true
 }
 
 export async function addNewPmk() {
@@ -458,7 +458,7 @@ export async function addNewPmk() {
 
 	console.log("addNewPmk")
 	
-	isVm = true
+	// isNodeGroup = true
 }
 
 export async function changeCloudConnection(connectionName) {
@@ -720,6 +720,10 @@ export function clusterFormDone_btn() {
     var div = document.getElementById("nodegroup_configuration");
     webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
 	var ngEleId = "nodegroup"
+	if (isNodeGroup) {
+		ngEleId = "addnodegroup"
+	}
+
 	
 	var element = $("#" + ngEleId + "_plusIcon");
 	console.log("Element to remove:", element);  // 선택된 요소 확인
@@ -737,7 +741,9 @@ export function clusterFormDone_btn() {
 	$("#express_form").each(function () {
 		this.reset();
 	})
+	//
 }
+
 export function addNodeFormDone_btn() {
 
 	$("#n_name").val($("#node_name").val())
