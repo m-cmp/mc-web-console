@@ -58,19 +58,20 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
+  console.log("Create_Cluster_Config_Arr",Create_Cluster_Config_Arr)
   // NodeGroupList가 있으면 추가 (조건부로 추가)
-  if (Create_Cluster_Config_Arr.k8sNodeGroupList && Create_Cluster_Config_Arr.k8sNodeGroupList.length > 0) {
-    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr.k8sNodeGroupList.map(group => ({
-      desiredNodeSize: group.desiredNodeSize || "1",
-      imageId: group.imageId || "",
-      maxNodeSize: group.maxNodeSize || "3",
-      minNodeSize: group.minNodeSize || "1",
-      name: group.name || "ng-01",
-      onAutoScaling: group.onAutoScaling || "false",
-      rootDiskSize: group.rootDiskSize || "40",
-      rootDiskType: group.rootDiskType || "cloud_essd",
-      specId: group.specId || "",
-      sshKeyId: group.sshKeyId || ""
+  if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
+    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => ({
+      desiredNodeSize: group.desiredNodeSize,
+      imageId: group.imageId,
+      maxNodeSize: group.maxNodeSize,
+      minNodeSize: group.minNodeSize,
+      name: group.name,
+      onAutoScaling: group.onAutoScaling,
+      rootDiskSize: group.rootDiskSize,
+      rootDiskType: group.rootDiskType,
+      specId: group.specId,
+      sshKeyId: group.sshKeyId
     }));
   }
 
@@ -86,6 +87,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
       "vNetId": obj['vNetId'],
       "subnetIds": obj['subnetIds'],
       "securityGroupIds": obj['securityGroupIds'],
+      "k8sNodeGroupList": obj['k8sNodeGroupList']
     }
   }
 

@@ -479,13 +479,13 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <ul class="removebullet vmStatus-list" id="mci_server_list">
+                    <ul class="removebullet vmStatus-list" id="nodegroup_list">
                       <li
                         class="removebullet btn btn-secondary-lt"
-                        id="mci_plusVmIcon"
+                        id="nodegroup_plusIcon"
                         onclick="webconsolejs['partials/operation/manage/clustercreate'].displayNewNodeForm()"
                       >
-                        +
+                        + nodeGroup
                       </li>
                     </ul>
                   </div>
@@ -506,7 +506,7 @@
       </div>
     </div>
 
-    <!-- 노드 수정 -->
+    <!-- addnode -->
     <div id="addnode" class="section">
       <form id="express_form">
         <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
@@ -671,13 +671,13 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <ul class="removebullet vmStatus-list" id="mci_server_list">
+                    <ul class="removebullet vmStatus-list" id="addnodegroup_list">
                       <li
                         class="removebullet btn btn-secondary-lt"
-                        id="mci_plusVmIcon"
+                        id="addnodegroup_plusIcon"
                         onclick="webconsolejs['partials/operation/manage/clustercreate'].displayNewNodeForm()"
                       >
-                        +
+                        + NodeGroup
                       </li>
                     </ul>
                   </div>

@@ -19,7 +19,7 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
       // "measurement": "cpu",
       "range": range,
       // "range": "1h",
-      "group_time": "1h",
+      "group_time": "3h",
       "group_by": [
         measurement
         // "cpu"
@@ -175,7 +175,7 @@ export async function monitoringPrediction() {
     Request: {
       "target_type": "vm",
       "measurement": "cpu",
-      "prediction_range": "6h"
+      "prediction_range": "3h"
     }
     // Request: {
     //   "measurement": "cpu",
@@ -205,93 +205,95 @@ export async function monitoringPrediction() {
     controller,
     data
   );
-  const mock = {
-    "data": {
-      "responseData": {
-        "data": {
-          "measurement": "cpu",
-          "ns_id": "ns01",
-          "target_id": "vm-1",
-          "target_type": "vm",
-          "values": [
-            {
-              "timestamp": "2024-10-24T07:10:00Z",
-              "value": 99.75
-            },
-            {
-              "timestamp": "2024-10-24T08:00:00Z",
-              "value": 99.7
-            },
-            {
-              "timestamp": "2024-10-24T09:00:00Z",
-              "value": 99.67
-            },
-            {
-              "timestamp": "2024-10-24T10:00:00Z",
-              "value": 99.64
-            },
-            {
-              "timestamp": "2024-10-24T11:00:00Z",
-              "value": 99.6
-            },
-            {
-              "timestamp": "2024-10-24T12:00:00Z",
-              "value": 99.57
-            },
-            {
-              "timestamp": "2024-10-24T13:00:00Z",
-              "value": 99.54
-            }
-          ]
+  if (!response) {
+    return {
+      "data": {
+        "responseData": {
+          "data": {
+            "measurement": "cpu",
+            "ns_id": "ns01",
+            "target_id": "vm-1",
+            "target_type": "vm",
+            "values": [
+              {
+                "timestamp": "2024-10-24T07:10:00Z",
+                "value": 99.75
+              },
+              {
+                "timestamp": "2024-10-24T08:00:00Z",
+                "value": 99.7
+              },
+              {
+                "timestamp": "2024-10-24T09:00:00Z",
+                "value": 99.67
+              },
+              {
+                "timestamp": "2024-10-24T10:00:00Z",
+                "value": 99.64
+              },
+              {
+                "timestamp": "2024-10-24T11:00:00Z",
+                "value": 99.6
+              },
+              {
+                "timestamp": "2024-10-24T12:00:00Z",
+                "value": 99.57
+              },
+              {
+                "timestamp": "2024-10-24T13:00:00Z",
+                "value": 99.54
+              }
+            ]
+          },
+          "rs_code": "200",
+          "rs_msg": "Success"
         },
-        "rs_code": "200",
-        "rs_msg": "Success"
+        "status": {
+          "code": 200,
+          "message": "200 "
+        }
       },
-      "status": {
-        "code": 200,
-        "message": "200 "
-      }
-    },
-    "status": 200,
-    "statusText": "OK",
-    "headers": {
-      "access-control-allow-origin": "*",
-      "content-length": "490",
-      "content-type": "application/json; charset=utf-8",
-      "date": "Thu, 24 Oct 2024 07:31:23 GMT",
-      "vary": "Origin"
-    },
-    "config": {
-      "transitional": {
-        "silentJSONParsing": true,
-        "forcedJSONParsing": true,
-        "clarifyTimeoutError": false
-      },
-      "adapter": [
-        "xhr",
-        "http"
-      ],
-      "transformRequest": [
-        null
-      ],
-      "transformResponse": [
-        null
-      ],
-      "timeout": 0,
-      "xsrfCookieName": "XSRF-TOKEN",
-      "xsrfHeaderName": "X-XSRF-TOKEN",
-      "maxContentLength": -1,
-      "maxBodyLength": -1,
-      "env": {},
+      "status": 200,
+      "statusText": "OK",
       "headers": {
-        "Accept": "application/json, text/plain, */*",
-        "Content-Type": "application/json"
+        "access-control-allow-origin": "*",
+        "content-length": "490",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Thu, 24 Oct 2024 07:31:23 GMT",
+        "vary": "Origin"
       },
-      "method": "post",
-      "url": "/api/mc-observability/Postprediction",
-      "data": "{\"pathParams\":{\"nsId\":\"ns01\",\"targetId\":\"vm-1\"},\"Request\":{\"target_type\":\"vm\",\"measurement\":\"cpu\",\"prediction_range\":\"6h\"}}"
-    },
-    "request": {}
+      "config": {
+        "transitional": {
+          "silentJSONParsing": true,
+          "forcedJSONParsing": true,
+          "clarifyTimeoutError": false
+        },
+        "adapter": [
+          "xhr",
+          "http"
+        ],
+        "transformRequest": [
+          null
+        ],
+        "transformResponse": [
+          null
+        ],
+        "timeout": 0,
+        "xsrfCookieName": "XSRF-TOKEN",
+        "xsrfHeaderName": "X-XSRF-TOKEN",
+        "maxContentLength": -1,
+        "maxBodyLength": -1,
+        "env": {},
+        "headers": {
+          "Accept": "application/json, text/plain, */*",
+          "Content-Type": "application/json"
+        },
+        "method": "post",
+        "url": "/api/mc-observability/Postprediction",
+        "data": "{\"pathParams\":{\"nsId\":\"ns01\",\"targetId\":\"vm-1\"},\"Request\":{\"target_type\":\"vm\",\"measurement\":\"cpu\",\"prediction_range\":\"6h\"}}"
+      },
+      "request": {}
+    }
   }
   return response
   // return mock
@@ -362,7 +364,7 @@ export async function getDetectionHistory() {
     queryParams: {
       "measurement": "cpu",
       // "measurement": "mem",
-      // "start_time": "2002-07-02T06:49:28.605Z",
+      "start_time": "2024-10-29T12:31:00Z",
       // "end_time": "2002-07-02T06:49:28.605Z"
     },
   }
@@ -374,36 +376,39 @@ export async function getDetectionHistory() {
   )
 
   var respDetectionData = response.data.responseData;
-  console.log("respDetectionData",respDetectionData)
-  const mock = {
-    "data": {
-      "ns_id": "ns01",
-      "target_id": "vm-1",
-      "measurement": "cpu",
-      "values": [
-        {
-          "timestamp": "2024-10-24T06:20:00Z",
-          "anomaly_score": 0.85,
-          "isAnomaly": 1,
-          "value": 99.5
-        },
-        {
-          "timestamp": "2024-10-24T07:00:00Z",
-          "anomaly_score": 0.95,
-          "isAnomaly": 1,
-          "value": 94.2
-        },
-        {
-          "timestamp": "2024-10-24T10:00:00Z",
-          "anomaly_score": 0.65,
-          "isAnomaly": 1,
-          "value": 97.5
-        },
-      ]
-    },
-    "rs_code": "200",
-    "rs_msg": "Success"
+  console.log("respDetectionData", respDetectionData)
+  if (!respDetectionData) {
+    return {
+      "data": {
+        "ns_id": "ns01",
+        "target_id": "vm-1",
+        "measurement": "cpu",
+        "values": [
+          {
+            "timestamp": "2024-10-24T06:20:00Z",
+            "anomaly_score": 0.85,
+            "isAnomaly": 1,
+            "value": 99.5
+          },
+          {
+            "timestamp": "2024-10-24T07:00:00Z",
+            "anomaly_score": 0.95,
+            "isAnomaly": 1,
+            "value": 94.2
+          },
+          {
+            "timestamp": "2024-10-24T10:00:00Z",
+            "anomaly_score": 0.65,
+            "isAnomaly": 1,
+            "value": 97.5
+          },
+        ]
+      },
+      "rs_code": "200",
+      "rs_msg": "Success"
+    }
   }
-  // return respDetectionData
-  return mock
+
+  return respDetectionData
+
 }
