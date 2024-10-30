@@ -709,6 +709,11 @@ export function clusterFormDone_btn() {
 	var nodeGroup_cnt = 1
 	var add_nodegroup_html = ""
     Create_Cluster_Config_Arr.push(cluster_form);
+	if (isNodeGroup) {
+		Create_Node_Config_Arr.push(cluster_form["k8sNodeGroupList"][0]);
+        console.log("Final node Config:", Create_Node_Config_Arr);
+	
+	}
     console.log("Final Cluster Config:", Create_Cluster_Config_Arr);
 	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
 
