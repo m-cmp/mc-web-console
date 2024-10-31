@@ -339,11 +339,11 @@ export function getMciInfoProviderNames(mciData) {
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
       mciProviderNames +=
-        '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
+        '<img class="img-fluid" width="30" src="/assets/images/common/img_logo_' +
         key +
         '.png" alt="' +
         key +
-        '"/>';
+        '" style="margin-right: 5px;"/>';
     });
   }
   return mciProviderNames
