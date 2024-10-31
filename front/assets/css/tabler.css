@@ -17498,11 +17498,12 @@ Navbar vertical
   letter-spacing: 0.04em;
   line-height: 1rem;
   color: var(--tblr-secondary);
+  margin-bottom: 0.2rem;
 }
 
 .page-title {
   margin: 0;
-  font-size: var(--tblr-font-size-h2);
+  font-size: 1.5rem;
   line-height: var(--tblr-line-height-h4);
   font-weight: var(--tblr-font-weight-headings);
   color: inherit;

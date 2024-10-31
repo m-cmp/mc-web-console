@@ -12,10 +12,11 @@
                     <div class="card">
 
                         <div class="card-header">
-                            <h3 class="card-title">Workspaces Summary</h3>
+                            <h3 class="card-title summary">Workspaces Summary</h3>
                         </div>
 
                         <div class="card-body">
+                <!--
                             <div class="row row-cards">
 
                                 <div class="col-md">
@@ -46,12 +47,87 @@
                                             <h1 class="card-title mx-auto summary text-secondary" >Group / Members</h1>
                                         </div>
                                     </div>
+                                </div>                                
+                            </div>
+                        </div>                        
+                    </div>
+                -->
+                            <div class="row row-cards">
+                                <div class="col-md">                                    
+                                    <div class="card card-sm">                            
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="avatar bg-azure-lt"> 
+                                                        <!--avatar 색상 수정 및 svg 파일 수정-->
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M21 16.008v-8.018a1.98 1.98 0 0 0 -1 -1.717l-7 -4.008a2.016 2.016 0 0 0 -2 0l-7 4.008c-.619 .355 -1 1.01 -1 1.718v8.018c0 .709 .381 1.363 1 1.717l7 4.008a2.016 2.016 0 0 0 2 0l7 -4.008c.619 -.355 1 -1.01 1 -1.718z"></path><path d="M12 22v-10"></path><path d="M12 12l8.73 -5.04"></path><path d="M3.27 6.96l8.73 5.04"></path></svg>
+                                                    </span>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="font-weight-medium" style="font-size: var(--tblr-font-size-h2);" id="workspaces_count"></div>
+                                                    <div class="text-secondary">Workspaces</div>
+                                                </div>                                
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                
+                                <div class="col-md">                                    
+                                    <div class="card card-sm">                            
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="avatar bg-cyan-lt"> 
+                                                        <!--avatar 색상 수정 및 svg 파일 수정-->
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-file">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                                          </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="font-weight-medium" style="font-size: var(--tblr-font-size-h2);" id="projects_count"></div>
+                                                    <div class="text-secondary">Projects</div>
+                                                </div>                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md">
+                                    
+                                    <div class="card card-sm">                            
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <span class="avatar bg-teal-lt"> 
+                                                        <!--avatar 색상 수정 및 svg 파일 수정-->
+                                                        
+                                                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M21 16.008v-8.018a1.98 1.98 0 0 0 -1 -1.717l-7 -4.008a2.016 2.016 0 0 0 -2 0l-7 4.008c-.619 .355 -1 1.01 -1 1.718v8.018c0 .709 .381 1.363 1 1.717l7 4.008a2.016 2.016 0 0 0 2 0l7 -4.008c.619 -.355 1 -1.01 1 -1.718z"></path>
+                                                            <path d="M12 22v-10"></path>
+                                                            <path d="M12 12l8.73 -5.04"></path>
+                                                            <path d="M3.27 6.96l8.73 5.04"></path>
+                                                        </svg> -->
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-user">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="font-weight-medium" style="font-size: var(--tblr-font-size-h2);" id="groupMembers_count"></div>
+                                                    <div class="text-secondary">Groups / Members</div>
+                                                </div>                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
                     </div>
+                    
                 </div>
 
                 <!-- WORSKSPACES -->
