@@ -331,8 +331,6 @@ export async function displayNewServerForm() {
 // express모드 -> Done버튼 클릭 시
 export function expressDone_btn() {
 
-	console.log("hi")
-
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
 	$("#p_provider").val($("#ep_provider").val())
 	$("#p_connectionName").val($("#ep_connectionName").val())
@@ -474,7 +472,7 @@ function getPlusVm(vmElementId) {
 
 	var append = "";
 	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
-	append = append + "+"
+	append = append + "+ VM"
 	append = append + '</li>';
 	return append;
 }

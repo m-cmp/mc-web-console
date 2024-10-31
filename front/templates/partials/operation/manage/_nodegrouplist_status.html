@@ -6,7 +6,11 @@
       <span class="text-secondary" id="mci_server_info_count"></span> -->
     </h3>
     <div class="card-actions btn-actions">
-      <a href="#addnode" class="btn btn-primary" onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()">
+      <a
+        href="#addnode"
+        class="btn btn-primary"
+        onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="icon"
@@ -150,7 +154,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'reboot')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot MCI ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'reboot')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +180,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'suspend')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'suspend')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +206,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'resume')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume MCI ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'resume')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +232,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate MCIS ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'terminate')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate MCI ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'terminate')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -253,7 +257,11 @@
 
           <div class="dropdown-divider"></div>
 
-          <a class="dropdown-item" href="#addnode" onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()">
+          <a
+            class="dropdown-item"
+            href="#addnode"
+            onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -274,7 +282,12 @@
             </svg>
             New
           </a>
-          <a class="dropdown-item" href="#">
+          <a
+            class="dropdown-item"
+            data-bs-toggle="modal"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/pmk.deleteNodeGroup')"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -320,7 +333,9 @@
       </div>
 
       <!-- refresh -->
-      <a class="btn-action">
+      <a class="btn-action"
+        onclick="webconsolejs['pages/operation/manage/pmk'].getSelectedPmkData()"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -345,7 +360,4 @@
       <ul class="vmStatus-list" id="pmk_nodegroup_info_box"></ul>
     </div>
   </div>
-
-  
-  
 </div>

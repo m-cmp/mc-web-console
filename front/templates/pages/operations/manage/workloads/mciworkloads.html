@@ -172,7 +172,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -232,7 +232,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -262,7 +262,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -316,7 +316,10 @@
                       </svg>
                       New
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item"
+                    data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciDelete', 'Would you like to delete MCI ?', 'pages/operation/manage/mci.deleteMci')">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
@@ -370,7 +373,9 @@
                 </div>
 
                 <!-- refresh -->
-                <a class="btn-action">
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/operation/manage/mci'].refreshMciList()"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -568,7 +573,7 @@
                         id="mci_plusVmIcon"
                         onclick="webconsolejs['partials/operation/manage/mcicreate'].displayNewServerForm()"
                       >
-                        +
+                        + VM
                       </li>
                     </ul>
                   </div>
@@ -619,7 +624,6 @@
     </div>
 
     <!-- addserver -->
-
     <div id="addserver" class="section">
       <form id="express_form">
         <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
@@ -697,7 +701,7 @@
                         id="vm_plusVmIcon"
                         onclick="webconsolejs['partials/operation/manage/mcicreate'].displayNewServerForm()"
                       >
-                        +
+                        + VM
                       </li>
                     </ul>
                   </div>
@@ -746,8 +750,9 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+    <!-- end of add server area-->
+  </div><!-- end of container-x1-->
+</div><!-- end of page-body -->
 
 <!-- add server : server configuration -->
 <%= partial("partials/operation/manage/mcicreate.html") %>
@@ -758,6 +763,9 @@
 <%= partial("partials/operation/manage/cspimagelist.html") %> 
 <!-- add server : cspspeclist -->
 <%= partial("partials/operation/manage/cspspeclist.html") %> 
+
+<!-- pageloader-->
+<%= partial("partials/layout/pageloader.html") %>
 
 <%= javascriptTag("pages/operation/manage/mci.js") %>
 <%= javascriptTag("common/api/services/mci_api.js") %> 
