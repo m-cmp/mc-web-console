@@ -622,7 +622,6 @@
     </div>
 
     <!-- addserver -->
-
     <div id="addserver" class="section">
       <form id="express_form">
         <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
@@ -749,8 +748,9 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+    <!-- end of add server area-->
+  </div><!-- end of container-x1-->
+</div><!-- end of page-body -->
 
 <!-- add server : server configuration -->
 <%= partial("partials/operation/manage/mcicreate.html") %>
@@ -761,6 +761,9 @@
 <%= partial("partials/operation/manage/cspimagelist.html") %> 
 <!-- add server : cspspeclist -->
 <%= partial("partials/operation/manage/cspspeclist.html") %> 
+
+<!-- pageloader-->
+<%= partial("partials/layout/pageloader.html") %>
 
 <%= javascriptTag("pages/operation/manage/mci.js") %>
 <%= javascriptTag("common/api/services/mci_api.js") %> 
