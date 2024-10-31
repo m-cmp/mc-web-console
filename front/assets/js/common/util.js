@@ -158,4 +158,8 @@ export function getCommonData(
     });
 }
 
-
+// sw 설치화면으로 이동.
+export function installSwtoVm(){
+  // 
+  window.location = "/webconsole/operations/manage/swcatalogs";
+}
