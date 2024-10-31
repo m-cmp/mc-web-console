@@ -1,6 +1,6 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 //import { selectedMciObj } from "./mci";
-//document.addEventListener("DOMContentLoaded", initMciCreate) // page가 아닌 partials에서는 제거
+//document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function iniClusterkCreate() {
@@ -8,7 +8,7 @@ export function iniClusterkCreate() {
 
 	// partial init functions
 
-	webconsolejs["partials/operation/manage/clusterecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
+	webconsolejs["partials/operation/manage/clusterrecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
 }
 
 // callback PopupData

@@ -295,7 +295,7 @@ export async function monitorConfigDetailInfo(mciID, mciName, vmID) {
   var vmProviderIcon = ""
   vmProviderIcon +=
     '<img class="img-fluid" class="rounded" width="80" src="/assets/images/common/img_logo_' +
-    providerName +
+    (providerName==""?"mcmp":providerName) +
     '.png" alt="' +
     providerName +
     '"/>';
