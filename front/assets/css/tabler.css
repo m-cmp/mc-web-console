@@ -4807,12 +4807,21 @@ body[data-bs-theme=dark] .navbar[data-bs-theme=light] {
   margin-left: var(--tblr-card-spacer-x);
 }
 
+
 .card-header {
   padding: var(--tblr-card-cap-padding-y) var(--tblr-card-cap-padding-x);
   margin-bottom: 0;
   color: var(--tblr-card-cap-color);
   background-color: var(--tblr-card-cap-bg);
   border-bottom: var(--tblr-card-border-width) solid var(--tblr-card-border-color);
+}
+.card-header.summary {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  justify-content: center;
+  flex-wrap: nowrap;
+  align-items: flex-start;
 }
 .card-header:first-child {
   border-radius: var(--tblr-card-inner-border-radius) var(--tblr-card-inner-border-radius) 0 0;
@@ -20599,10 +20608,17 @@ Card table
   padding-right: 1.25rem;
   border-right: 0;
 }
-.card-table thead tr:first-child,
-.card-table tbody tr:first-child,
+.card-table thead tr:first-child{
+  font-weight: var(--tblr-font-weight-bold)
+}
+.card-table tbody tr:first-child{
+  font-size: 0.875rem
+}
 .card-table tfoot tr:first-child {
   border-top: 0;
+  font-size: 0.75rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 .card-table thead tr:first-child td,
 .card-table thead tr:first-child th,
