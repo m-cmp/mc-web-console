@@ -431,10 +431,10 @@ export async function getAvailablek8sClusterNodeImage(providerName, regionName) 
 }
 
 // // MCIS 상태를 UI에서 표현하는 방식으로 변경
-// export function getPmkStatusFormatter(pmkFullStatus) {
+export function getPmkStatusFormatter(pmkFullStatus) {
 //   console.log("getPmkStatusFormatter " + pmkFullStatus);
 //   var statusArr = pmkFullStatus.split("-");
-//   var returnStatus = statusArr[0].toLowerCase();
+  var returnStatus = pmkFullStatus
 
 //   // if (pmkFullStatus.toLowerCase().indexOf("running") > -1) {
 //   if (pmkFullStatus.toLowerCase().indexOf("Active") > -1) {
@@ -448,8 +448,8 @@ export async function getAvailablek8sClusterNodeImage(providerName, regionName) 
 //     returnStatus = "terminate";
 //   }
 //   console.log("after status " + returnStatus);
-//   return returnStatus;
-// }
+  return returnStatus;
+}
 
 // Pmk 상태를 icon으로 
 export function getPmkStatusIconFormatter(pmkDispStatus) {
@@ -480,7 +480,7 @@ export function getPmkInfoProviderNames(pmkData) {
     vmCloudConnectionMap.forEach((value, key) => {
       pmkProviderNames +=
         '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-        key +
+        (key==""?"mcmp":key) +
         '.png" alt="' +
         key +
         '"/>';
