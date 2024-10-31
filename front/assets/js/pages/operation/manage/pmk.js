@@ -130,7 +130,6 @@ function mappingTablePmkData(totalPmkListObj) {
     });
 }
 
-
 // 클릭한 pmk info 가져오기
 // 표에서 선택된 PmkId 받아옴
 async function getSelectedPmkData(pmkID) {
@@ -140,7 +139,7 @@ async function getSelectedPmkData(pmkID) {
         var selectedNsId = selectedWorkspaceProject.nsId;
         currentPmkId = pmkID
         var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, pmkID)
-        
+
         if (pmkResp.status != 200) {
             console.log("resp status ", pmkResp.status)
             // failed.  // TODO : Error Popup 처리
@@ -153,6 +152,21 @@ async function getSelectedPmkData(pmkID) {
         var div = document.getElementById("cluster_info");
         webconsolejs["partials/layout/navigatePages"].toggleElement(div)
     }
+}
+
+// pmk 삭제
+export function deletePmk() {
+
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    webconsolejs["common/api/services/pmk_api"].pmkDelete(selectedNsId, currentPmkId)
+}
+
+// nodegroup 삭제
+export function deleteNodeGroup() {
+
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    webconsolejs["common/api/services/pmk_api"].nodeGroupDelete(selectedNsId, currentPmkId, selectedNodeGroupName)
+
 }
 
 // 클릭한 pmk의 info값 세팅
@@ -207,7 +221,7 @@ function setPmkInfoData(pmkData) {
 
     // TODO: pmk info로 cursor 이동
     var nodeGroupList = clusterDetailData.NodeGroupList
-    
+
     // displayNodeGroupStatusList(pmkID, clusterData)
     if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
         displayNodeGroupStatusList(pmkID, clusterData);
@@ -256,6 +270,7 @@ function displayNodeGroupStatusList(pmkID, clusterData) {
 // Server List / Status VM 리스트에서
 // VM 한 개 클릭시 vm의 세부 정보
 // export async function nodeGroupDetailInfo(pmkID, pmkName, nodeID) {
+var selectedNodeGroupName = ""
 export async function nodeGroupDetailInfo(pmkID, aNodejsonObject, nodeID) {
     // Toggle PMK Info
     var div = document.getElementById("nodeGroup_info");
@@ -268,18 +283,19 @@ export async function nodeGroupDetailInfo(pmkID, aNodejsonObject, nodeID) {
     displayNodeStatusList(aNode)
 
     var ngName = aNode.IId.NameId
+    selectedNodeGroupName = ngName
     var ngImage = aNode.ImageIID.NameId
     var ngSpec = aNode.VMSpecName
-    
+
     var ngKeyPair = aNode.KeyPairIID.NameId
     var ngDesiredNodeSize = aNode.DesiredNodeSize
     var ngMinNodeSize = aNode.MinNodeSize
     var ngMaxNodeSize = aNode.MaxNodeSize
-    
+
     var ngAutoScaling = aNode.OnAutoScaling
     var ngRootDiskType = aNode.RootDiskType
     var ngRootDiskSize = aNode.RootDiskSize
-    
+
     // Info SET
     $("#ng_info_name").text(ngName)
     $("#ng_info_image").text(ngImage)
@@ -301,7 +317,7 @@ function displayNodeStatusList(nodeData) {
     var nodeList = nodeData.Nodes
     var nodeLi = "";
 
-    for (var nodeIndex in nodeList){
+    for (var nodeIndex in nodeList) {
         var aNode = nodeList[nodeIndex]
         var nodeId = aNode.SystemId
         var nodeName = aNode.NameId
