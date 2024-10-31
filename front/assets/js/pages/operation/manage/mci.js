@@ -146,22 +146,26 @@ function setMciInfoData(mciData) {
 
     var mciStatusCell = "";
 
-    if (mciStatus.includes("Running")) {
+    // if (mciStatus.includes("Running")) {
+    if (mciStatus==="Running") {
       mciStatusCell =
         '<div class="bg-green-lt card" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
         '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
         '</div>';
-    } else if (mciStatus.includes("Suspended")) {
+    // } else if (mciStatus.includes("Suspended")) {
+    } else if (mciStatus === "Suspended") {
       mciStatusCell =
         '<div class="card bg-red-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
         '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
         '</div>';
-    } else if (mciStatus.includes("Terminated")) {
+    // } else if (mciStatus.includes("Terminated")) {
+    } else if (mciStatus === "Terminated") {
       mciStatusCell =
         '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
         '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
         '</div>';
-    } else if (mciStatus.includes("Failed")) {
+    // } else if (mciStatus.includes("Failed")) {
+    } else {
       mciStatusCell =
         '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
         '  <span class="text-muted-lt" style="font-size: 12px;">' + mciStatus + '</span>' +
@@ -175,7 +179,7 @@ function setMciInfoData(mciData) {
     $("#mci_server_info_count").text(" Server(" + totalvmCount + ")")
 
 
-    $("#mci_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
+    // $("#mci_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
     $("#mci_info_name").text(mciName + " / " + mciID)
     $("#mci_info_description").text(mciDescription)
     // $("#mci_info_status").text(mciStatus)
@@ -853,7 +857,7 @@ function statusFormatter(cell) {
   } else {
     mciStatusCell =
       '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
-      '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+      '  <span class="text-muted-lt" style="font-size: 12px;">Partial</span>' +
       '</div>';
   }
 
