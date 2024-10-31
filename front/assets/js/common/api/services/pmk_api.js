@@ -58,7 +58,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
-  console.log("Create_Cluster_Config_Arr",Create_Cluster_Config_Arr)
+  console.log("Create_Cluster_Config_Arr", Create_Cluster_Config_Arr)
   // NodeGroupList가 있으면 추가 (조건부로 추가)
   if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
     obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => ({
@@ -353,10 +353,12 @@ export function calculateConnectionCount(clusterList) {
   return clusterCloudConnectionCountMap;
 }
 
-export async function createNode(k8sClusterId, nsId, Create_Cluster_Config_Arr) {
+export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
 
   var obj = {}
-  obj = Create_Cluster_Config_Arr[0]
+  console.log("Create_Node_Config_ArrCreate_Node_Config_Arr", Create_Node_Config_Arr[0])
+
+  obj = Create_Node_Config_Arr[0]
   const data = {
     pathParams: {
       nsId: nsId,
@@ -386,7 +388,7 @@ export async function createNode(k8sClusterId, nsId, Create_Cluster_Config_Arr) 
 }
 
 export async function getSshKey(nsId) {
-  
+
   if (nsId == "") {
     console.log("Project has not set")
     return;
@@ -604,3 +606,34 @@ export function calculateVmStatusCount(aPmk) {
   return vmStatusCountMap;
 }
 
+export function pmkDelete(nsId, k8sClusterId) {
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      k8sClusterId: k8sClusterId,
+    },
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Deletek8scluster";
+  let response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("pmkDelete response : ", response)
+}
+
+export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
+
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      k8sClusterId: k8sClusterId,
+      k8sNodeGroupName: k8sNodeGroupName
+    },
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Deletek8snodegroup";
+  let response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("pmkDelete response : ", response)
+}
