@@ -1,5 +1,4 @@
 <div class="page-body">
-
   <div class="container-xl">
     <!-- PMK DASHBOARD -->
     <div id="index" class="section">
@@ -186,7 +185,12 @@
                       </svg>
                       New
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'PmkDelete', 'Would you like to delete PMK ?', 'pages/operation/manage/pmk.deletePmk')"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
@@ -247,9 +251,7 @@
                   <select class="col form-select" id="filter-field">
                     <option value="name">Name</option>
                     <option value="provider">Provider</option>
-                    <option value="statusCount.countTotal">
-                      Node Group
-                    </option>
+                    <option value="statusCount.countTotal">Node Group</option>
                     <option value="statusCount.countRunning">Running</option>
                     <option value="statusCount.countSuspended">
                       Suspended
@@ -671,7 +673,10 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <ul class="removebullet vmStatus-list" id="addnodegroup_list">
+                    <ul
+                      class="removebullet vmStatus-list"
+                      id="addnodegroup_list"
+                    >
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="addnodegroup_plusIcon"
@@ -701,33 +706,35 @@
     <div id="pageloader" class="section">
       <div class="page page-center">
         <div class="container container-slim py-4">
-            <div class="text-center">
-                <div class="mb-3">
-                    <a href="." class="navbar-brand navbar-brand-autodark"><img src="/assets/static/logo/logo-small.svg" height="36" alt=""></a>
-                </div>
-                <div class="text-secondary mb-3">Preparing Data</div>
-                <div class="progress progress-sm">
-                    <div class="progress-bar progress-bar-indeterminate"></div>
-                </div>
+          <div class="text-center">
+            <div class="mb-3">
+              <a href="." class="navbar-brand navbar-brand-autodark"
+                ><img
+                  src="/assets/static/logo/logo-small.svg"
+                  height="36"
+                  alt=""
+              /></a>
             </div>
+            <div class="text-secondary mb-3">Preparing Data</div>
+            <div class="progress progress-sm">
+              <div class="progress-bar progress-bar-indeterminate"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
   </div>
-  
 </div>
 
-  <!-- add node : node configuration -->
-  <%= partial("partials/operation/manage/clustercreate.html") %>
+<!-- add node : node configuration -->
+<%= partial("partials/operation/manage/clustercreate.html") %>
 
-  <!-- add server : spec-search -->
-  <%= partial("partials/operation/manage/clusterrecommendation.html") %>
-  <!-- add server : cspimagelist -->
-  <%= partial("partials/operation/manage/cspimagelist.html") %>
-  <!-- add server : cspspeclist -->
-  <%= partial("partials/operation/manage/cspspeclist.html") %> <%=
-  javascriptTag("pages/operation/manage/pmk.js") %> <%=
-  javascriptTag("common/api/services/pmk_api.js") %> <%=
-  javascriptTag("common/api/services/vmimage_api.js") %>
-
+<!-- add server : spec-search -->
+<%= partial("partials/operation/manage/clusterrecommendation.html") %>
+<!-- add server : cspimagelist -->
+<%= partial("partials/operation/manage/cspimagelist.html") %>
+<!-- add server : cspspeclist -->
+<%= partial("partials/operation/manage/cspspeclist.html") %> <%=
+javascriptTag("pages/operation/manage/pmk.js") %> <%=
+javascriptTag("common/api/services/pmk_api.js") %> <%=
+javascriptTag("common/api/services/vmimage_api.js") %>

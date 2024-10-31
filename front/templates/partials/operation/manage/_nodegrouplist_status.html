@@ -6,7 +6,11 @@
       <span class="text-secondary" id="mci_server_info_count"></span> -->
     </h3>
     <div class="card-actions btn-actions">
-      <a href="#addnode" class="btn btn-primary" onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()">
+      <a
+        href="#addnode"
+        class="btn btn-primary"
+        onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="icon"
@@ -253,7 +257,11 @@
 
           <div class="dropdown-divider"></div>
 
-          <a class="dropdown-item" href="#addnode" onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()">
+          <a
+            class="dropdown-item"
+            href="#addnode"
+            onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -274,7 +282,12 @@
             </svg>
             New
           </a>
-          <a class="dropdown-item" href="#">
+          <a
+            class="dropdown-item"
+            data-bs-toggle="modal"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/pmk.deleteNodeGroup')"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -345,7 +358,4 @@
       <ul class="vmStatus-list" id="pmk_nodegroup_info_box"></ul>
     </div>
   </div>
-
-  
-  
 </div>
