@@ -412,3 +412,69 @@ export async function getDetectionHistory() {
   return respDetectionData
 
 }
+
+// 모니터링 Agent가 설치된 vm 목록 by ns, mci
+export async function getTargetsNsMci(nsId, mciId) {
+
+  var controller = "/api/" + "mc-observability/" + "GetTargetsNSMCI";
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+    },
+  };
+
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  // target이 있다는 이야기는 agent가 설치되었다는 뜻으로 보면 되는가? maybe
+  var respMeasureMent = response.data.responseData;
+
+  return respMeasureMent
+}
+
+
+export async function InstallMonitoringAgent(nsId, mciId, vmId){
+  var controller = "/api/" + "mc-observability/" + "PostTarget";
+  
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      targetId: vmId,
+    },
+    request: {
+      name:vmId
+    }
+  };
+
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  return response.data.responseData
+  
+}
+
+export async function UninstallMonitoringAgent(nsId, mciId, vmId){
+  var controller = "/api/" + "mc-observability/" + "DeleteTarget";
+  
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      targetId: vmId,
+    },
+  };
+
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  return response.data.responseData
+  
+}
