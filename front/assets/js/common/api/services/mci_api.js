@@ -54,6 +54,7 @@ export function mciLifeCycle(type, checked_array, nsId) {
   console.log("mciLifeCycle option : ", type)
   console.log("selected mci : ", checked_array)
 
+
   for (const mci of checked_array) {
     console.log(mci.id)
     let data = {
@@ -62,7 +63,7 @@ export function mciLifeCycle(type, checked_array, nsId) {
         mciId: mci.id,
       },
       queryParams: {
-        "action": type
+        "action": type,
       }
     };
     let controller = "/api/" + "mc-infra-manager/" + "GetControlMci";
@@ -72,6 +73,47 @@ export function mciLifeCycle(type, checked_array, nsId) {
     );
     console.log("mciLifeCycle response : ", response)
   }
+}
+
+export function mciDelete(checked_array, nsId) {
+  for (const mci of checked_array) {
+    console.log(mci.id)
+    let data = {
+      pathParams: {
+        nsId: nsId,
+        mciId: mci.id,
+      },
+      queryParams: {
+        option: "force"
+      }
+    };
+    let controller = "/api/" + "mc-infra-manager/" + "Delmci";
+    let response = webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+    console.log("mciLifeCycle response : ", response)
+  }
+}
+
+export function vmDelete(mciId, nsId, vmId) {
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      vmId: vmId
+    },
+    queryParams: {
+      "option": "force"
+    }
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Delmcivm";
+  let response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("vmLifeCycle response : ", response)
+
 }
 
 // vmLifeCycle 제어 option : reboot / suspend / resume / terminate
@@ -173,7 +215,7 @@ export async function mciRecommendVm(data) {
 
 // get all registered region list
 export async function getProviderList() {
-  
+
   let controller = "/api/" + "mc-infra-manager/" + "GetProviderList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -185,17 +227,17 @@ export async function getProviderList() {
 
 export async function getRegionList() {
 
-// let data = {
-		// pathParams: {
-		//   providerName: "AWS",
-		//   regionName: "aws-ca-west-1",
-		// }
-	//   };
-	
+  // let data = {
+  // pathParams: {
+  //   providerName: "AWS",
+  //   regionName: "aws-ca-west-1",
+  // }
+  //   };
+
   let controller = "/api/" + "mc-infra-manager/" + "GetRegionList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
-    
+
   );
   console.log("getRegionList response : ", response)
 
@@ -205,18 +247,18 @@ export async function getRegionList() {
 export async function getCloudConnection() {
 
 
-	// test
+  // test
   let data = {
     queryParams: {
       "filterVerified": true
     }
   };
-	let controller = "/api/" + "mc-infra-manager/" + "GetConnConfigList";
-	let response = await webconsolejs["common/api/http"].commonAPIPost(
-	  controller,
-	  data
-	);
-	
+  let controller = "/api/" + "mc-infra-manager/" + "GetConnConfigList";
+  let response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
   return response.data.responseData.connectionconfig
 }
 
@@ -296,12 +338,13 @@ export function getMciInfoProviderNames(mciData) {
   console.log("vmCloudConnectionMap", vmCloudConnectionMap)
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
+      console.log("provider ", key)
       mciProviderNames +=
-        '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-        key +
+        '<img class="img-fluid" width="30" src="/assets/images/common/img_logo_' +
+        (key==""?"mcmp":key) +
         '.png" alt="' +
         key +
-        '"/>';
+        '" style="margin-right: 5px;"/>';
     });
   }
   return mciProviderNames

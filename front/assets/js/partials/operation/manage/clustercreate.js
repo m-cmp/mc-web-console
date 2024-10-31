@@ -1,6 +1,6 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 //import { selectedMciObj } from "./mci";
-//document.addEventListener("DOMContentLoaded", initMciCreate) // page가 아닌 partials에서는 제거
+//document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function iniClusterkCreate() {
@@ -8,7 +8,7 @@ export function iniClusterkCreate() {
 
 	// partial init functions
 
-	webconsolejs["partials/operation/manage/clusterecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
+	webconsolejs["partials/operation/manage/clusterrecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
 }
 
 // callback PopupData
@@ -281,10 +281,10 @@ async function updateConfigurationFilltering() {
 }
 
 var createMciListObj = new Object();
-var isVm = false // mci 생성(false) / vm 추가(true)
+var isNodeGroup = false // mci 생성(false) / vm 추가(true)
 var Create_Cluster_Config_Arr = new Array();
 var Create_Node_Config_Arr = new Array();
-var express_data_cnt = 0
+var nodeGroup_data_cnt = 0
 
 
 // 서버 더하기버튼 클릭시 서버정보 입력area 보이기/숨기기
@@ -354,7 +354,7 @@ function getPlusVm(vmElementId) {
 
 	var append = "";
 	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
-	append = append + "+"
+	append = append + "+ NodeGroup"
 	append = append + '</li>';
 	return append;
 }
@@ -434,7 +434,7 @@ export async function addNewNodeGroup() {
 	$("#node_cluster_version").html('<option value="' + cluster_version + '" selected>' + cluster_version + '</option>');
 
 
-	isVm = true
+	isNodeGroup = true
 }
 
 export async function addNewPmk() {
@@ -458,7 +458,7 @@ export async function addNewPmk() {
 
 	console.log("addNewPmk")
 	
-	isVm = true
+	// isNodeGroup = true
 }
 
 export async function changeCloudConnection(connectionName) {
@@ -592,50 +592,161 @@ export async function createCluster() {
 }
 
 // nodegroup configuration done 클릭시
-export function clusterFormDone_btn() {
-	$("#c_name").val($("#cluster_name").val())
-	$("#c_desc").val($("#cluster_desc").val())
-	$("#c_connection").val($("#cluster_connection").val())
-	$("#c_vpc").val($("#cluster_vpc").val())
-	$("#c_subnet").val($("#subent").val())
-	$("#c_sg").val($("#cluster_sg").val())
-	$("#c_version").val($("#cluster_version").val())
+// export function clusterFormDone_btn() {
+// 	$("#c_name").val($("#cluster_name").val())
+// 	$("#c_desc").val($("#cluster_desc").val())
+// 	$("#c_connection").val($("#cluster_connection").val())
+// 	$("#c_vpc").val($("#cluster_vpc").val())
+// 	$("#c_subnet").val($("#subent").val())
+// 	$("#c_sg").val($("#cluster_sg").val())
+// 	$("#c_version").val($("#cluster_version").val())
 
-	var cluster_form = {}
-	cluster_form["connectionName"] = $("#c_connection").val(); // Connection Name
-    cluster_form["name"] = $("#c_name").val(); // Cluster Name
-    cluster_form["vNetId"] = $("#c_vpc").val(); // VPC ID
-    cluster_form["subnetIds"] = [$("#c_subnet").val()]; // Subnet IDs (Array)
-    cluster_form["securityGroupIds"] = [$("#c_sg").val()]; // Security Group IDs (Array)
-    cluster_form["version"] = $("#c_version").val(); // K8s Cluster Version
-    cluster_form["description"] = $("#c_desc").val(); // Optional Description
+// 	var cluster_form = {}
+// 	cluster_form["connectionName"] = $("#c_connection").val(); // Connection Name
+//     cluster_form["name"] = $("#c_name").val(); // Cluster Name
+//     cluster_form["vNetId"] = $("#c_vpc").val(); // VPC ID
+//     cluster_form["subnetIds"] = [$("#c_subnet").val()]; // Subnet IDs (Array)
+//     cluster_form["securityGroupIds"] = [$("#c_sg").val()]; // Security Group IDs (Array)
+//     cluster_form["version"] = $("#c_version").val(); // K8s Cluster Version
+//     cluster_form["description"] = $("#c_desc").val(); // Optional Description
+
+//     // NodeGroupList 추가 (조건부로 추가, 있을 때만 넣음)
+//     var nodeGroupName = $("#nodegroup_name").val(); // 예: Node Group Name 필드
+//     if (nodeGroupName) {
+//         cluster_form["k8sNodeGroupList"] = [
+//             {
+//                 "desiredNodeSize": $("#node_desirednodesize").val(),
+//                 "imageId": $("#node_imageid").val(),
+//                 "maxNodeSize": $("#node_maxnodesize").val(),
+//                 "minNodeSize": $("#node_minnodesize").val(),
+//                 "name": nodeGroupName,
+//                 "onAutoScaling": $("#node_autoscaling").val(),
+//                 "rootDiskSize": $("#node_rootdisksize").val(),
+//                 "rootDiskType": $("#node_rootdisk").val(),
+//                 "specId": $("#node_specid").val(),
+//                 "sshKeyId": $("#node_sshkey").val()
+//             }
+//         ];
+//     }
+
+//     Create_Cluster_Config_Arr.push(cluster_form)
+// 	console.log("express btn click and express form data : ", Create_Cluster_Config_Arr)
+
+// 	var div = document.getElementById("nodegroup_configuration");
+// 	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
+
+// 	// TODO: + 박스 추가
+// }
+export function clusterFormDone_btn() {
+    // 클러스터 기본 정보 할당
+    const connectionName = $("#cluster_connection").val();
+    const clusterName = $("#cluster_name").val();
+    const vNetId = $("#cluster_vpc").val();
+    const subnetId = $("#subnet").val();
+    const securityGroupId = $("#cluster_sg").val();
+    const version = $("#cluster_version").val();
+    const description = $("#cluster_desc").val();
+
+    console.log("Connection Name:", connectionName);
+    console.log("Cluster Name:", clusterName);
+    console.log("VNet ID:", vNetId);
+    console.log("Subnet ID:", subnetId);
+    console.log("Security Group ID:", securityGroupId);
+    console.log("Version:", version);
+    console.log("Description:", description);
+
+    var cluster_form = {
+        connectionName: connectionName || "", 
+        name: clusterName || "",
+        vNetId: vNetId || "", 
+        subnetIds: [subnetId || ""],
+        securityGroupIds: [securityGroupId || ""],
+        version: version || "", 
+        description: description || ""
+    };
 
     // NodeGroupList 추가 (조건부로 추가, 있을 때만 넣음)
-    var nodeGroupName = $("#nodegroup_name").val(); // 예: Node Group Name 필드
+    const nodeGroupName = $("#node_name").val();
+    const desiredNodeSize = $("#node_desirednodesize").val();
+    const imageId = $("#node_imageid").val();
+    const maxNodeSize = $("#node_maxnodesize").val();
+    const minNodeSize = $("#node_minnodesize").val();
+    const onAutoScaling = $("#node_autoscaling").val();
+    const rootDiskSize = $("#node_rootdisksize").val();
+    const rootDiskType = $("#node_rootdisk").val();
+    const specId = $("#node_specid").val();
+    const sshKeyId = $("#node_sshkey").val();
+
+    console.log("Node Group Name:", nodeGroupName);
+    console.log("Desired Node Size:", desiredNodeSize);
+    console.log("Image ID:", imageId);
+    console.log("Max Node Size:", maxNodeSize);
+    console.log("Min Node Size:", minNodeSize);
+    console.log("Auto Scaling:", onAutoScaling);
+    console.log("Root Disk Size:", rootDiskSize);
+    console.log("Root Disk Type:", rootDiskType);
+    console.log("Spec ID:", specId);
+    console.log("SSH Key ID:", sshKeyId);
+
     if (nodeGroupName) {
         cluster_form["k8sNodeGroupList"] = [
             {
-                "desiredNodeSize": $("#nodegroup_desiredsize").val(),
-                "imageId": $("#nodegroup_imageid").val(),
-                "maxNodeSize": $("#nodegroup_maxsize").val(),
-                "minNodeSize": $("#nodegroup_minsize").val(),
+                "desiredNodeSize": desiredNodeSize || "",
+                "imageId": imageId || "",
+                "maxNodeSize": maxNodeSize || "",
+                "minNodeSize": minNodeSize || "",
                 "name": nodeGroupName,
-                "onAutoScaling": $("#nodegroup_autoscaling").is(':checked') ? "true" : "false",
-                "rootDiskSize": $("#nodegroup_rootsize").val(),
-                "rootDiskType": $("#nodegroup_roottype").val(),
-                "specId": $("#nodegroup_specid").val(),
-                "sshKeyId": $("#nodegroup_sshkeyid").val()
+                "onAutoScaling": onAutoScaling || "false",
+                "rootDiskSize": rootDiskSize || "",
+                "rootDiskType": rootDiskType || "",
+                "specId": specId || "",
+                "sshKeyId": sshKeyId || ""
             }
         ];
     }
+	var nodeGroup_name = cluster_form.name
+	// var nodeGroup_cnt = parseInt(cluster_form.k8sNodeGroupListdesiredNodeSize)
+	var nodeGroup_cnt = 1
+	var add_nodegroup_html = ""
+    Create_Cluster_Config_Arr.push(cluster_form);
+	if (isNodeGroup) {
+		Create_Node_Config_Arr.push(cluster_form["k8sNodeGroupList"][0]);
+        console.log("Final node Config:", Create_Node_Config_Arr);
+	
+	}
+    console.log("Final Cluster Config:", Create_Cluster_Config_Arr);
+	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
 
-    Create_Cluster_Config_Arr.push(cluster_form)
-	console.log("express btn click and express form data : ", cluster_form)
+	add_nodegroup_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
 
-	var div = document.getElementById("nodegroup_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
+		+ nodeGroup_name + displayNodegroupCnt
 
-	// TODO: + 박스 추가
+		+ '</li>';
+    var div = document.getElementById("nodegroup_configuration");
+    webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
+	var ngEleId = "nodegroup"
+	if (isNodeGroup) {
+		ngEleId = "addnodegroup"
+	}
+
+	
+	var element = $("#" + ngEleId + "_plusIcon");
+	console.log("Element to remove:", element);  // 선택된 요소 확인
+	if (element.length) {
+		element.remove();
+		console.log("Element removed successfully");
+	} else {
+		console.log("Element not found");
+	}
+	
+	$("#" + ngEleId + "_plusIcon").remove();
+	$("#" + ngEleId + "_list").append(add_nodegroup_html)
+	$("#" + ngEleId + "_list").prepend(getPlusVm(ngEleId));
+	nodeGroup_data_cnt++
+	$("#express_form").each(function () {
+		this.reset();
+	})
+	//
 }
 
 export function addNodeFormDone_btn() {
@@ -663,13 +774,33 @@ export function addNodeFormDone_btn() {
     node_form["specId"] = $("#n_specid").val();
     node_form["sshKeyId"] = $("#n_sshkey").val(); 
 
+	var nodeGroup_name = node_form.name
+	var nodeGroup_cnt = parseInt(node_form.desiredNodeSize)
+	var add_nodegroup_html = ""
 
     Create_Node_Config_Arr.push(node_form)
 	console.log("express btn click and express form data : ", node_form)
+	
+	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
+
+	add_nodegroup_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
+
+		+ nodeGroup_name + displayNodegroupCnt
+
+		+ '</li>';
 
 	var div = document.getElementById("nodegroup_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
 	// TODO: + 박스 추가
+	var ngEleId = "nodegroup"
+	$("#" + ngEleId + "_plusVmIcon").remove();
+	$("#" + ngEleId + "_list").append(add_nodegroup_html)
+	$("#" + ngEleId + "_list").prepend(getPlusVm(vmEleId));
 }
 
+export function view_ngForm(cnt){
+	console.log('view simple cnt : ', cnt);
+	var div = document.getElementById("nodegroup_configuration");
+	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+}
