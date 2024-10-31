@@ -139,12 +139,34 @@ function setMciInfoData(mciData) {
     var mciName = mciData.name;
     var mciDescription = mciData.description;
     var mciStatus = mciData.status;
-    console.log("setMciInfoData ", mciStatus)
-    var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
-    var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
-    var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCIS에 사용 된 provider
+    // var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
+    // var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
+    var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCI에 사용 된 provider
     var totalvmCount = mciData.vm.length; //mci의 vm개수
 
+    var mciStatusCell = "";
+
+    if (mciStatus.includes("Running")) {
+      mciStatusCell =
+        '<div class="bg-green-lt card" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
+        '</div>';
+    } else if (mciStatus.includes("Suspended")) {
+      mciStatusCell =
+        '<div class="card bg-red-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
+        '</div>';
+    } else if (mciStatus.includes("Terminated")) {
+      mciStatusCell =
+        '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+        '</div>';
+    } else if (mciStatus.includes("Failed")) {
+      mciStatusCell =
+        '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-muted-lt" style="font-size: 12px;">' + mciStatus + '</span>' +
+        '</div>';
+    }
     console.log("totalvmCount", totalvmCount)
 
     $("#mci_info_text").text(" [ " + mciName + " ]")
@@ -156,7 +178,9 @@ function setMciInfoData(mciData) {
     $("#mci_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
     $("#mci_info_name").text(mciName + " / " + mciID)
     $("#mci_info_description").text(mciDescription)
-    $("#mci_info_status").text(mciStatus)
+    // $("#mci_info_status").text(mciStatus)
+    $("#mci_info_status").empty()
+    $("#mci_info_status").append(mciStatusCell)
     $("#mci_info_cloud_connection").empty()
     $("#mci_info_cloud_connection").append(mciProviderNames)
 
@@ -194,8 +218,8 @@ export function changeMciLifeCycle(type) {
 // vm life cycle 변경
 export function changeVmLifeCycle(type) {
   var selectedNsId = selectedWorkspaceProject.nsId;
-  
-  if( selectedVmId == undefined || selectedVmId == ""){
+
+  if (selectedVmId == undefined || selectedVmId == "") {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a VM')
     return;
   }
@@ -808,12 +832,30 @@ function statusFormatter(cell) {
   var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(
     cell.getData().status
   ); // 화면 표시용 status
-  var mciStatusCell =
-    '<img title="' +
-    cell.getData().status +
-    '" src="/assets/images/common/icon_' +
-    mciDispStatus +
-    '.svg" class="icon" alt="">';
+
+  var mciStatusCell = "";
+
+  if (mciDispStatus === "running") {
+    mciStatusCell =
+      '<div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
+      '</div>';
+  } else if (mciDispStatus === "suspend") {
+    mciStatusCell =
+      '<div class="card bg-red-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
+      '</div>';
+  } else if (mciDispStatus === "terminate") {
+    mciStatusCell =
+      '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+      '</div>';
+  } else {
+    mciStatusCell =
+      '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+      '</div>';
+  }
 
   return mciStatusCell;
 }
