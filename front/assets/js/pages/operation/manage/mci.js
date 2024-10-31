@@ -194,6 +194,11 @@ export function changeMciLifeCycle(type) {
 // vm life cycle 변경
 export function changeVmLifeCycle(type) {
   var selectedNsId = selectedWorkspaceProject.nsId;
+  
+  if( selectedVmId == undefined || selectedVmId == ""){
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a VM')
+    return;
+  }
 
   webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, currentMciId, selectedNsId, selectedVmId)
 }
