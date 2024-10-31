@@ -31,7 +31,7 @@ var currentMciId = "";
 var mciListTable;
 var checked_array = [];
 var selectedMciID = ""
-var currentClickedmciID
+
 initMciTable(); // init tabulator
 
 //DOMContentLoaded 는 Page에서 1개만.
@@ -59,7 +59,11 @@ async function initMci() {
   ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
 
+  refreshMciList();
+}
 
+// Mci 전체 목록 조회
+export async function refreshMciList(){
   if (selectedWorkspaceProject.projectId != "") {
     console.log("workspaceProject ", selectedWorkspaceProject)
     var selectedProjectId = selectedWorkspaceProject.projectId;
@@ -83,13 +87,16 @@ async function initMci() {
     selectedMciID = params.get('mciID');
 
     console.log('selectedMciID:', selectedMciID);  // 출력: mciID의 값 (예: com)
-    if (selectedMciID != undefined) {
+    //if (selectedMciID != undefined) {
+      if (selectedMciID) {
+      currentMciId = selectedMciID
       toggleRowSelection(selectedMciID)
-      getSelectedMciData(selectedMciID)
+      getSelectedMciData()
     }
     ////////////////////  mciId를 set하고 조회 완료. ////////////////
   }
 }
+
 
 // getMciList 호출 성공 시
 function getMciListCallbackSuccess(caller, mciList) {
@@ -108,13 +115,13 @@ function getMciListCallbackSuccess(caller, mciList) {
 
 // 클릭한 mci info 가져오기
 // 표에서 선택된 MciId 받아옴
-async function getSelectedMciData(mciID) {
+export async function getSelectedMciData() {
 
-  console.log('selectedMciID:', mciID);  // 출력: mciID의 값 (예: com)
-  if (mciID != undefined && mciID != "") {
+  console.log('currentMciId:', currentMciId);  // 출력: mciID의 값 (예: com)
+  if (currentMciId != undefined && currentMciId != "") {
     var selectedNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
-    currentMciId = mciID
-    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, mciID)
+    
+    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, currentMciId)
     console.log("mciResp ", mciResp)
     if (mciResp.status.code != 200) {
       console.log("resp status ", mciResp.status)
@@ -331,7 +338,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   var vmProviderIcon = ""
   vmProviderIcon +=
     '<img class="img-fluid" class="rounded" width="80" src="/assets/images/common/img_logo_' +
-    providerName +
+    (providerName==""?"mcmp":providerName) +
     '.png" alt="' +
     providerName +
     '"/>';
@@ -787,24 +794,39 @@ function initMciTable() {
   // 행 클릭 시
   mciListTable.on("rowClick", function (e, row) {
     // vmid 초기화 for vmlifecycle
-    selectedVmId = ""
-
-    var tempcurmciID = currentClickedmciID
-
-    currentClickedmciID = row.getCell("id").getValue();
-    if (tempcurmciID === currentClickedmciID) {
+    
+    // var tempcurmciID = currentClickedmciID
+    // currentClickedmciID = row.getCell("id").getValue();
+    var tempcurmciID = row.getCell("id").getValue();
+    if (tempcurmciID === currentMciId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
-      currentClickedmciID = ""
+      currentMciId = ""
       this.deselectRow();
       return
-    } else {
+    }else{
+      currentMciId = tempcurmciID;
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
       this.deselectRow();
-      this.selectRow(currentClickedmciID);
+      this.selectRow(currentMciId);
       // 표에서 선택된 MCISInfo 
-      getSelectedMciData(currentClickedmciID)
+      getSelectedMciData()
       return
     }
+    // currentClickedmciID = 
+    // console.log("currentClickedmciID == ", currentClickedmciID)
+    // if (tempcurmciID === currentClickedmciID) {
+    //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
+    //   currentClickedmciID = ""
+    //   this.deselectRow();
+    //   return
+    // } else {
+    //   webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
+    //   this.deselectRow();
+    //   this.selectRow(currentClickedmciID);
+    //   // 표에서 선택된 MCISInfo 
+    //   getSelectedMciData()
+    //   return
+    // }
   });
 
   //  선택된 여러개 row에 대해 처리
@@ -875,7 +897,7 @@ function providerFormatter(data) {
   vmCloudConnectionMap.forEach((value, key) => {
     mciProviderCell +=
       '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-      key +
+      (key==""?"mcmp":key) +
       '.png" alt="' +
       key +
       '"/>';
