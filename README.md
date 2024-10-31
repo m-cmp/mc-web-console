@@ -11,7 +11,6 @@ The MC-WEB-CONSOLE multi-cloud management portal and open interfaces include sev
 - 멀티 클라우드 관리 포털 및 개방형 인터페이스
     - 멀티 클라우드 관리 플랫폼 일반 사용자 포털
     - 멀티 클라우드 관리 플랫폼 관리자 포털
-    
 
 ---
 
@@ -22,25 +21,36 @@ Use this guide to start MC-WEB-CONOLE  using the docker. This guide explains on 
 ### Prequisites
 
 - Ubuntu (22.04 is tested) with external access (https-443, http-80, ssh-ANY)
-- pre-installed [MC-IAM-MANAGER](https://github.com/m-cmp/mc-iam-manager) and [MC-INFRA-MANAGER](https://github.com/m-cmp/mc-infra-manager)
+- pre-installed [MC-INFRA-MANAGER](https://github.com/m-cmp/mc-infra-manager) and [MC-IAM-MANAGER](https://github.com/m-cmp/mc-iam-manager)
     - Both should be completed setting (users, pre-Runscript, credential ….)
 - Stop or Disable Services using 3001 port for web interface
 
 ### Step one : Clone this repo
 
 ```bash
-git clone https://github.com/m-cmp/mc-web-console <YourFolderName>
+git clone <https://github.com/m-cmp/mc-web-console> <YourFolderName>
+
 ```
 
-### Step two : Go to Scripts Folder
+### Step two : Configuration
+
+- Modifying an Environment variable in docker-compose file
+- Those marked with OPTIONAL do not have to be changed. Those marked with REQUIRED are fixed values that must be changed or used after setting.
+    - port
+    - GO_ENV
+    - MCINFRAMANAGER
+    - MCIAMMANAGER
+    - API_USERNAME
+    - API_PASSWORD
+    - DEV_DATABASE_URL
+    - POSTGRES_DB
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
 
 ```bash
 cd <YourFolderName>/scripts
+vi dockerfile
 ```
-
-### Step three: **Modifying an Environment variable in docker-compose file**
-
-Those marked with OPTIONAL do not have to be changed. Those marked with REQUIRED are fixed values that must be changed or used after setting.
 
 ```jsx
 version: '3.8'
@@ -57,8 +67,8 @@ services:
     environment:
       GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
       GODEBUG: netdns=go
-      MCIAMMANAGER: https://sample.mc-iam-manager.com:5000 # Please CHANGE ME (REQUIRE)
-      MCINFRAMANAGER: http://sample.m-cmp.com:1323/tumblebug # Please CHANGE ME (REQUIRE)
+      MCIAMMANAGER: <https://sample.mc-iam-manager.com:5000> # Please CHANGE ME (REQUIRE)
+      MCINFRAMANAGER: <http://sample.m-cmp.com:1323/tumblebug> # Please CHANGE ME (REQUIRE)
       API_USERNAME: API_USERNAME # Please CHANGE ME (REQUIRE)
       API_PASSWORD: API_PASSWORD # Please CHANGE ME (REQUIRE)
       DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
@@ -84,7 +94,7 @@ networks:
 
 ```
 
-### Step four: Excute docker-compose
+### Step three: Excute docker-compose
 
 ```bash
 docker-compose up --build -d
@@ -106,26 +116,40 @@ Step 3/32 : RUN npm install --global yarn
 .....
 Creating mcwebconsole-postgresdb ... done
 Creating mcwebconsole            ... done
+
 ```
+
+### Step four: Ready Check
+
+1. **Verify Framework and Service Status**
+    
+    • Confirm that the services required by MC-WEB-CONSOLE, such as MC-INFRA-MANAGER and MC-IAM-MANAGER, are running.
+    
+    • Ensure the database connection is established without issues.
+    
+2. **Check Status in Browser**
+    
+    • Open a web browser and navigate to the following URL to verify the service response:
+    
+    ```bash
+    http://<YOUR_ADDRESS>:3001/readyz
+    ```
+    
 
 ### WELCOME: **Visit Web pages**
 
 ```jsx
 http://<YOUR_ADDRESS>:3001/auth/login
+
 ```
 
 MC-WEB-CONSOLE has been successfully deployed if the screen below is visible during the access to the web of the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
 
-
-![Untitled](https://raw.githubusercontent.com/m-cmp/mc-web-console/docs/assets/img/login.png)
-
-
-
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/f0f57dac-70e0-4782-9dfe-1b756397554c/0fd7bc19-b439-48a1-8910-98d2e15593a5/image.png)
 
 ---
 
 **[설치 환경]**
-
 
 mc-web-console은 1.19 이상의 Go 버전이 설치된 다양한 환경에서 실행 가능하지만 최종 동작을 검증한 OS는 Ubuntu 22.0.4입니다.
 
@@ -143,18 +167,16 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
 - Git 설치
     - `$ sudo apt update`
     - `$ sudo apt install git`
-
 - Go 1.19 이상의 버전 설치 ( 공식 문서 참고 )
     - https://go.dev/doc/install
-
 - mc-web-console 설치
     
     ```bash
-    $ git clone https://github.com/m-cmp/mc-web-console.git
+    $ git clone <https://github.com/m-cmp/mc-web-console.git>
     ```
     
     ```bash
-    $ git clone https://github.com/m-cmp/mc-web-console.git
+    $ git clone <https://github.com/m-cmp/mc-web-console.git>
     ```
     
     - web_console_api
@@ -178,7 +200,8 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
 
 **[환경 설정]**
 
-- ./.env 파일에서 이용하고자 하는 개방형 API 서버의 실제 URL 정보로 수정합니다.
+- /conf/.env.sample 파일을 .env로 변경합니다.
+- .env 파일에서 이용하고자 하는 개방형 API 서버의 실제 URL 정보로 수정합니다.
     
     **[주의사항]**
     
@@ -190,4 +213,15 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
 **[mc-web-console 실행]**
 
 - 코드기반 실행
-    - `$ ./startDev.sh` /  `$ ./stopDev.sh` 활용
+    
+    ```bash
+    $ cd <YourFolderName>/api
+    $ source ../conf/.env
+    $ buffalo dev
+    ```
+    
+    ```bash
+    $ cd <YourFolderName>/front
+    $ source ../conf/.env
+    $ buffalo dev
+    ```
