@@ -47,13 +47,21 @@ document.addEventListener("DOMContentLoaded", initMci);
 // 해당 화면에서 최초 설정하는 function
 //로드 시 prj 값 받아와 getMciList 호출
 async function initMci() {
+
   console.log("initMci")
   ////////////////////// partials init functions///////////////////////////////////////
   try {
     webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();//MciCreate을 Partial로 가지고 있음. 
+
+    var targetSection = "mcicreate"
+    var createBtnName ="Add Mci";
+    var onclickEvent = "webconsolejs['partials/operation/manage/mcicreate'].addNewMci()";
+    
+    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName, onclickEvent);
+
   } catch (e) {
     console.log(e);
-  }
+  }  
   ////////////////////// partials init functions end ///////////////////////////////////////
 
 
@@ -88,6 +96,8 @@ async function initMci() {
 
   refreshMciList();
 }
+
+
 
 // Mci 전체 목록 조회
 export async function refreshMciList(){
