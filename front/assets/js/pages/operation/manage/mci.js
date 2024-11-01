@@ -31,7 +31,7 @@ var currentMciId = "";
 var mciListTable;
 var checked_array = [];
 var selectedMciID = ""
-var currentClickedmciID
+
 initMciTable(); // init tabulator
 
 //DOMContentLoaded 는 Page에서 1개만.
@@ -59,7 +59,11 @@ async function initMci() {
   ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
 
+  refreshMciList();
+}
 
+// Mci 전체 목록 조회
+export async function refreshMciList(){
   if (selectedWorkspaceProject.projectId != "") {
     console.log("workspaceProject ", selectedWorkspaceProject)
     var selectedProjectId = selectedWorkspaceProject.projectId;
@@ -83,13 +87,16 @@ async function initMci() {
     selectedMciID = params.get('mciID');
 
     console.log('selectedMciID:', selectedMciID);  // 출력: mciID의 값 (예: com)
-    if (selectedMciID != undefined) {
+    //if (selectedMciID != undefined) {
+      if (selectedMciID) {
+      currentMciId = selectedMciID
       toggleRowSelection(selectedMciID)
-      getSelectedMciData(selectedMciID)
+      getSelectedMciData()
     }
     ////////////////////  mciId를 set하고 조회 완료. ////////////////
   }
 }
+
 
 // getMciList 호출 성공 시
 function getMciListCallbackSuccess(caller, mciList) {
@@ -108,13 +115,13 @@ function getMciListCallbackSuccess(caller, mciList) {
 
 // 클릭한 mci info 가져오기
 // 표에서 선택된 MciId 받아옴
-async function getSelectedMciData(mciID) {
+export async function getSelectedMciData() {
 
-  console.log('selectedMciID:', mciID);  // 출력: mciID의 값 (예: com)
-  if (mciID != undefined && mciID != "") {
+  console.log('currentMciId:', currentMciId);  // 출력: mciID의 값 (예: com)
+  if (currentMciId != undefined && currentMciId != "") {
     var selectedNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
-    currentMciId = mciID
-    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, mciID)
+    
+    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(selectedNsId, currentMciId)
     console.log("mciResp ", mciResp)
     if (mciResp.status.code != 200) {
       console.log("resp status ", mciResp.status)
@@ -139,12 +146,38 @@ function setMciInfoData(mciData) {
     var mciName = mciData.name;
     var mciDescription = mciData.description;
     var mciStatus = mciData.status;
-    console.log("setMciInfoData ", mciStatus)
-    var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
-    var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
-    var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCIS에 사용 된 provider
+    // var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
+    // var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
+    var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCI에 사용 된 provider
     var totalvmCount = mciData.vm.length; //mci의 vm개수
 
+    var mciStatusCell = "";
+
+    // if (mciStatus.includes("Running")) {
+    if (mciStatus==="Running") {
+      mciStatusCell =
+        '<div class="bg-green-lt card" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
+        '</div>';
+    // } else if (mciStatus.includes("Suspended")) {
+    } else if (mciStatus === "Suspended") {
+      mciStatusCell =
+        '<div class="card bg-red-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
+        '</div>';
+    // } else if (mciStatus.includes("Terminated")) {
+    } else if (mciStatus === "Terminated") {
+      mciStatusCell =
+        '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+        '</div>';
+    // } else if (mciStatus.includes("Failed")) {
+    } else {
+      mciStatusCell =
+        '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-muted-lt" style="font-size: 12px;">' + mciStatus + '</span>' +
+        '</div>';
+    }
     console.log("totalvmCount", totalvmCount)
 
     $("#mci_info_text").text(" [ " + mciName + " ]")
@@ -153,10 +186,12 @@ function setMciInfoData(mciData) {
     $("#mci_server_info_count").text(" Server(" + totalvmCount + ")")
 
 
-    $("#mci_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
+    // $("#mci_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
     $("#mci_info_name").text(mciName + " / " + mciID)
     $("#mci_info_description").text(mciDescription)
-    $("#mci_info_status").text(mciStatus)
+    // $("#mci_info_status").text(mciStatus)
+    $("#mci_info_status").empty()
+    $("#mci_info_status").append(mciStatusCell)
     $("#mci_info_cloud_connection").empty()
     $("#mci_info_cloud_connection").append(mciProviderNames)
 
@@ -194,8 +229,8 @@ export function changeMciLifeCycle(type) {
 // vm life cycle 변경
 export function changeVmLifeCycle(type) {
   var selectedNsId = selectedWorkspaceProject.nsId;
-  
-  if( selectedVmId == undefined || selectedVmId == ""){
+
+  if (selectedVmId == undefined || selectedVmId == "") {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a VM')
     return;
   }
@@ -303,7 +338,7 @@ export async function vmDetailInfo(mciID, mciName, vmID) {
   var vmProviderIcon = ""
   vmProviderIcon +=
     '<img class="img-fluid" class="rounded" width="80" src="/assets/images/common/img_logo_' +
-    providerName +
+    (providerName==""?"mcmp":providerName) +
     '.png" alt="' +
     providerName +
     '"/>';
@@ -759,24 +794,39 @@ function initMciTable() {
   // 행 클릭 시
   mciListTable.on("rowClick", function (e, row) {
     // vmid 초기화 for vmlifecycle
-    selectedVmId = ""
-
-    var tempcurmciID = currentClickedmciID
-
-    currentClickedmciID = row.getCell("id").getValue();
-    if (tempcurmciID === currentClickedmciID) {
+    
+    // var tempcurmciID = currentClickedmciID
+    // currentClickedmciID = row.getCell("id").getValue();
+    var tempcurmciID = row.getCell("id").getValue();
+    if (tempcurmciID === currentMciId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
-      currentClickedmciID = ""
+      currentMciId = ""
       this.deselectRow();
       return
-    } else {
+    }else{
+      currentMciId = tempcurmciID;
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
       this.deselectRow();
-      this.selectRow(currentClickedmciID);
+      this.selectRow(currentMciId);
       // 표에서 선택된 MCISInfo 
-      getSelectedMciData(currentClickedmciID)
+      getSelectedMciData()
       return
     }
+    // currentClickedmciID = 
+    // console.log("currentClickedmciID == ", currentClickedmciID)
+    // if (tempcurmciID === currentClickedmciID) {
+    //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
+    //   currentClickedmciID = ""
+    //   this.deselectRow();
+    //   return
+    // } else {
+    //   webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
+    //   this.deselectRow();
+    //   this.selectRow(currentClickedmciID);
+    //   // 표에서 선택된 MCISInfo 
+    //   getSelectedMciData()
+    //   return
+    // }
   });
 
   //  선택된 여러개 row에 대해 처리
@@ -808,12 +858,30 @@ function statusFormatter(cell) {
   var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(
     cell.getData().status
   ); // 화면 표시용 status
-  var mciStatusCell =
-    '<img title="' +
-    cell.getData().status +
-    '" src="/assets/images/common/icon_' +
-    mciDispStatus +
-    '.svg" class="icon" alt="">';
+
+  var mciStatusCell = "";
+
+  if (mciDispStatus === "running") {
+    mciStatusCell =
+      '<div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
+      '</div>';
+  } else if (mciDispStatus === "suspend") {
+    mciStatusCell =
+      '<div class="card bg-red-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
+      '</div>';
+  } else if (mciDispStatus === "terminate") {
+    mciStatusCell =
+      '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+      '</div>';
+  } else {
+    mciStatusCell =
+      '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
+      '  <span class="text-muted-lt" style="font-size: 12px;">Partial</span>' +
+      '</div>';
+  }
 
   return mciStatusCell;
 }
@@ -829,7 +897,7 @@ function providerFormatter(data) {
   vmCloudConnectionMap.forEach((value, key) => {
     mciProviderCell +=
       '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-      key +
+      (key==""?"mcmp":key) +
       '.png" alt="' +
       key +
       '"/>';

@@ -338,12 +338,13 @@ export function getMciInfoProviderNames(mciData) {
   console.log("vmCloudConnectionMap", vmCloudConnectionMap)
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
+      console.log("provider ", key)
       mciProviderNames +=
-        '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-        key +
+        '<img class="img-fluid" width="30" src="/assets/images/common/img_logo_' +
+        (key==""?"mcmp":key) +
         '.png" alt="' +
         key +
-        '"/>';
+        '" style="margin-right: 5px;"/>';
     });
   }
   return mciProviderNames
