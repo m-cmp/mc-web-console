@@ -4,7 +4,7 @@ export function addIframe(targetDiv, srchost, data){
     iframe.onload = function() {
         console.log("iFrame loaded..");
         console.log("postMessage : ", data);
-        iframe.contentWindow.postMessage(data, host);
+        iframe.contentWindow.postMessage(data, srchost);
     };
     var div = document.getElementById(targetDiv);
     div.appendChild(iframe);
