@@ -49,6 +49,30 @@ export async function getMci(nsId, mciId) {
   return response.data
 }
 
+// mci vm 단건 조회
+export async function getMciVm(nsId, mciId, vmId) {
+  if (nsId == "" || nsId == undefined || mciId == undefined || vmId == ""|| vmId == undefined || vmId == "") {
+    console.log(" undefined nsId: " + nsId, + " mciId " + mciId, ", vmId " + vmId);
+    return;
+  }
+  const data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      vmId: vmId
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetMciVm";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  // error check를 위해 response를 return
+  return response.data
+}
+
 // mciLifeCycle 제어 option : reboot / suspend / resume / terminate
 export function mciLifeCycle(type, checked_array, nsId) {
   console.log("mciLifeCycle option : ", type)
@@ -234,7 +258,7 @@ export async function getRegionList() {
   // }
   //   };
 
-  let controller = "/api/" + "mc-infra-manager/" + "GetRegionList";
+  let controller = "/api/" + "mc-infra-manager/" + "GetRegions";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
 
@@ -293,7 +317,7 @@ export function calculateConnectionCount(vmList) {
 
 // MCI 상태를 UI에서 표현하는 방식으로 변경
 export function getMciStatusFormatter(mciFullStatus) {
-  console.log("getMciStatus " + mciFullStatus);
+  //console.log("getMciStatus " + mciFullStatus);
   var statusArr = mciFullStatus.split("-");
   var returnStatus = statusArr[0].toLowerCase();
 
@@ -307,7 +331,7 @@ export function getMciStatusFormatter(mciFullStatus) {
   } else {
     returnStatus = "terminate";
   }
-  console.log("after status " + returnStatus);
+  //console.log("after status " + returnStatus);
   return returnStatus;
 }
 
@@ -352,7 +376,7 @@ export function getMciInfoProviderNames(mciData) {
 
 // VM 상태를 UI에서 표현하는 방식으로 변경
 export function getVmStatusFormatter(vmFullStatus) {
-  console.log("getVmStatusFormatter " + vmFullStatus);
+  //console.log("getVmStatusFormatter " + vmFullStatus);
   var returnVmStatus = vmFullStatus.toLowerCase() // 소문자로 변환
 
   const VM_STATUS_RUNNING = "running"
@@ -397,9 +421,9 @@ export function getVmStatusStyleClass(vmDispStatus) {
 // 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mci 에서 사용
 export function calculateMciStatusCount(mciData) {
-  console.log("calculateMciStatusCount");
+  //console.log("calculateMciStatusCount");
 
-  console.log("mciData : ", mciData);
+  //console.log("mciData : ", mciData);
   var mciStatusCountMap = new Map();
   mciStatusCountMap.set("running", 0);
   mciStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
@@ -437,9 +461,9 @@ export function calculateVmStatusCount(aMci) {
 
   try {
     if (aMci.statusCount) {
-      console.log("statusCount part", aMci);
+      //console.log("statusCount part", aMci);
       var statusCountObj = aMci.statusCount;
-      console.log(statusCountObj);
+      //console.log(statusCountObj);
       var countCreating = statusCountObj.countCreating;
       var countFailed = statusCountObj.countFailed;
       var countRebooting = statusCountObj.countRebooting;
@@ -466,7 +490,7 @@ export function calculateVmStatusCount(aMci) {
       vmStatusCountMap.set("stop", Number(countSuspended)); // partial 도 stop으로 보고있음.
       vmStatusCountMap.set("terminate", sumEtc);
     } else if (aMci.vm) {
-      console.log("statusCount part list part");
+      // console.log("statusCount part list part");
       vmList = aMci.vm;
       for (var vmIndex in vmList) {
         var aVm = vmList[vmIndex];
