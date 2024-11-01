@@ -1,6 +1,6 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 //import { selectedMciObj } from "./mci";
-//document.addEventListener("DOMContentLoaded", initMciCreate) // page가 아닌 partials에서는 제거
+//document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function iniClusterkCreate() {
@@ -8,7 +8,7 @@ export function iniClusterkCreate() {
 
 	// partial init functions
 
-	webconsolejs["partials/operation/manage/clusterecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
+	webconsolejs["partials/operation/manage/clusterrecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
 }
 
 // callback PopupData
@@ -709,6 +709,11 @@ export function clusterFormDone_btn() {
 	var nodeGroup_cnt = 1
 	var add_nodegroup_html = ""
     Create_Cluster_Config_Arr.push(cluster_form);
+	if (isNodeGroup) {
+		Create_Node_Config_Arr.push(cluster_form["k8sNodeGroupList"][0]);
+        console.log("Final node Config:", Create_Node_Config_Arr);
+	
+	}
     console.log("Final Cluster Config:", Create_Cluster_Config_Arr);
 	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
 

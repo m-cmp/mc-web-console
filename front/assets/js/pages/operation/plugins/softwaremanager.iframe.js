@@ -3,7 +3,6 @@
 //     workspaceid: 'mzctestWs',
 //     usertoken: 'mzctoken'
 // };
-var host = ""
 
 // 데모환경에서 사용할 예제 데이터 입니다.
 const data = {
@@ -27,33 +26,12 @@ const data = {
 };
 
 document.addEventListener("DOMContentLoaded", async function(){
-    host = await GetApiHosts("mc-software-manager")
-    addIframe("targetIframe-repository", host+"/web/repository/list")
-    addIframe("targetIframe-sofrwareCatalog", host+"/web/softwareCatalog/list")
-});
+    var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-application-manager")
+    const domain = window.location.protocol + '//' + window.location.hostname;
 
-function addIframe(targetDiv, srchost){
-    var iframe = document.createElement("iframe");
-    iframe.src = srchost;
-    iframe.onload = function() {
-        console.log("iFrame loaded..");
-        console.log("postMessage : ", data);
-        iframe.contentWindow.postMessage(data, host);
-    };
-    var div = document.getElementById(targetDiv);
-    div.appendChild(iframe);
-}
-
-async function GetApiHosts(frameworkName){
-    var controller = "/api/" + "getapihosts";
-    const getapihostsresponse = await webconsolejs["common/api/http"].commonAPIPost(
-		controller,
-		null,
-	);
-    const framework = getapihostsresponse.data.responseData[frameworkName];
-    if (framework && framework.BaseURL) {
-        return framework.BaseURL;
-    } else {
-        return 'Framework not found';
+    if (host.startsWith(":")) {
+        host = `${domain}${host}`;
     }
-}
+    webconsolejs["common/iframe/iframe"].addIframe("targetIframe-repository", host+"/web/repository/list", data)
+    webconsolejs["common/iframe/iframe"].addIframe("targetIframe-sofrwareCatalog", host+"/web/softwareCatalog/list", data)
+});

@@ -24,12 +24,12 @@ export var nsid = "";
 var totalPmkStatusMap = new Map();
 var totalVmStatusMap = new Map();
 // var totalCloudConnectionMap = new Map();
-var selectedVmId = "";
-var currentPmkId = "";
 
 var pmkListTable;
 var checked_array = [];
 var selectedPmkID = ""
+var currentPmkId = "";
+
 initPmkTable(); // init tabulator
 
 //DOMContentLoaded 는 Page에서 1개만.
@@ -42,7 +42,7 @@ async function initPmk() {
     console.log("initPmk")
     ////////////////////// partials init functions///////////////////////////////////////
     try {
-        webconsolejs["partials/operation/manage/pmkcreate"].initPmkCreate();//PmkCreate을 Partial로 가지고 있음. 
+        webconsolejs["partials/operation/manage/clustercreate"].iniClusterkCreate();//PmkCreate을 Partial로 가지고 있음. 
     } catch (e) {
         console.log(e);
     }
@@ -56,8 +56,28 @@ async function initPmk() {
     webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject)
     ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
+    ////////////////////// 받은 pmkId가 있으면 해당 pmkId를 set하고 조회한다. ////////////////
 
+    // 외부(dashboard)에서 받아온 pmkID가 있으면 pmk INFO 이동
+    // 현재 브라우저의 URL
+    const url = window.location.href;
+    const urlObj = new URL(url);
+    // URLSearchParams 객체 생성
+    const params = new URLSearchParams(urlObj.search);
+    if (params.toString()) {
+        var pmkID = params.get('pmkID');// pmkID 파라미터 값 추출
+        if (pmkID !== null) {
+            currentPmkId = pmkID
+        }
+    }
+    console.log("ppp ", params)
+    console.log('before currentPmkId:', currentPmkId); 
+    
+    refreshPmkList()
+}
 
+// pmk목록 조회. init, refresh 에서 사용
+export async function refreshPmkList(){
     if (selectedWorkspaceProject.projectId != "") {
         var selectedProjectId = selectedWorkspaceProject.projectId;
         var selectedNsId = selectedWorkspaceProject.nsId;
@@ -66,21 +86,10 @@ async function initPmk() {
         var respPmkList = await webconsolejs["common/api/services/pmk_api"].getClusterList(selectedNsId);
         getPmkListCallbackSuccess(selectedProjectId, respPmkList);
 
-
-        ////////////////////// 받은 pmkId가 있으면 해당 pmkId를 set하고 조회한다. ////////////////
-        // 외부(dashboard)에서 받아온 pmkID가 있으면 pmk INFO 이동
-        // 현재 브라우저의 URL
-        const url = window.location.href;
-        const urlObj = new URL(url);
-        // URLSearchParams 객체 생성
-        const params = new URLSearchParams(urlObj.search);
-        // pmkID 파라미터 값 추출
-        selectedPmkID = params.get('pmkID');
-
-        console.log('selectedPmkID:', selectedPmkID);  // 출력: pmkID의 값 (예: com)
-        if (selectedPmkID != undefined) {
-            toggleRowSelection(selectedPmkID)
-            getSelectedPmkData(selectedPmkID)
+        console.log('currentPmkId:', currentPmkId);  // 출력: pmkID의 값 (예: com)
+        if (currentPmkId != undefined) {
+            toggleRowSelection(currentPmkId)
+            getSelectedPmkData()
         }
         ////////////////////  pmkId를 set하고 조회 완료. ////////////////
     }
@@ -130,17 +139,15 @@ function mappingTablePmkData(totalPmkListObj) {
     });
 }
 
-
 // 클릭한 pmk info 가져오기
 // 표에서 선택된 PmkId 받아옴
-async function getSelectedPmkData(pmkID) {
+export async function getSelectedPmkData() {
 
-    console.log('selectedPmkID:', pmkID);  // 출력: pmkID의 값 (예: com)
-    if (pmkID != undefined && pmkID != "") {
+    if (currentPmkId != undefined && currentPmkId != "") {
         var selectedNsId = selectedWorkspaceProject.nsId;
-        currentPmkId = pmkID
-        var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, pmkID)
         
+        var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId)
+
         if (pmkResp.status != 200) {
             console.log("resp status ", pmkResp.status)
             // failed.  // TODO : Error Popup 처리
@@ -151,8 +158,27 @@ async function getSelectedPmkData(pmkID) {
 
         // Toggle PMK Info
         var div = document.getElementById("cluster_info");
-        webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+        const hasActiveClass = div.classList.contains("active");
+        if (!hasActiveClass){
+            // cluster_info 가 active면 toggle 필요 없음
+            webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+        }
     }
+}
+
+// pmk 삭제
+export function deletePmk() {
+
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    webconsolejs["common/api/services/pmk_api"].pmkDelete(selectedNsId, currentPmkId)
+}
+
+// nodegroup 삭제
+export function deleteNodeGroup() {
+
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    webconsolejs["common/api/services/pmk_api"].nodeGroupDelete(selectedNsId, currentPmkId, selectedNodeGroupName)
+
 }
 
 // 클릭한 pmk의 info값 세팅
@@ -207,7 +233,7 @@ function setPmkInfoData(pmkData) {
 
     // TODO: pmk info로 cursor 이동
     var nodeGroupList = clusterDetailData.NodeGroupList
-    
+
     // displayNodeGroupStatusList(pmkID, clusterData)
     if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
         displayNodeGroupStatusList(pmkID, clusterData);
@@ -221,15 +247,7 @@ export function changePmkLifeCycle(type) {
     webconsolejs["common/api/services/pmk_api"].pmkLifeCycle(type, checked_array, selectedNsId)
 }
 
-// vm life cycle 변경
-export function changeVmLifeCycle(type) {
-    var selectedNsId = selectedWorkspaceProject.nsId;
-
-    webconsolejs["common/api/services/pmk_api"].vmLifeCycle(type, currentPmkId, selectedNsId, selectedVmId)
-}
-
-// vm 상태별 icon으로 표시
-// Server List / Status VM리스트
+// NodeGroup / Status 리스트
 function displayNodeGroupStatusList(pmkID, clusterData) {
     console.log("displayNodeGroupStatusList", clusterData)
 
@@ -253,9 +271,10 @@ function displayNodeGroupStatusList(pmkID, clusterData) {
     $("#pmk_nodegroup_info_box").append(nodeLi);
 }
 
-// Server List / Status VM 리스트에서
-// VM 한 개 클릭시 vm의 세부 정보
+// NodeGroup List / Status 리스트에서
+// Node의 한 개 클릭시 Node의 세부 정보
 // export async function nodeGroupDetailInfo(pmkID, pmkName, nodeID) {
+var selectedNodeGroupName = ""
 export async function nodeGroupDetailInfo(pmkID, aNodejsonObject, nodeID) {
     // Toggle PMK Info
     var div = document.getElementById("nodeGroup_info");
@@ -268,18 +287,19 @@ export async function nodeGroupDetailInfo(pmkID, aNodejsonObject, nodeID) {
     displayNodeStatusList(aNode)
 
     var ngName = aNode.IId.NameId
+    selectedNodeGroupName = ngName
     var ngImage = aNode.ImageIID.NameId
     var ngSpec = aNode.VMSpecName
-    
+
     var ngKeyPair = aNode.KeyPairIID.NameId
     var ngDesiredNodeSize = aNode.DesiredNodeSize
     var ngMinNodeSize = aNode.MinNodeSize
     var ngMaxNodeSize = aNode.MaxNodeSize
-    
+
     var ngAutoScaling = aNode.OnAutoScaling
     var ngRootDiskType = aNode.RootDiskType
     var ngRootDiskSize = aNode.RootDiskSize
-    
+
     // Info SET
     $("#ng_info_name").text(ngName)
     $("#ng_info_image").text(ngImage)
@@ -301,7 +321,7 @@ function displayNodeStatusList(nodeData) {
     var nodeList = nodeData.Nodes
     var nodeLi = "";
 
-    for (var nodeIndex in nodeList){
+    for (var nodeIndex in nodeList) {
         var aNode = nodeList[nodeIndex]
         var nodeId = aNode.SystemId
         var nodeName = aNode.NameId
@@ -643,10 +663,9 @@ function initPmkTable() {
         // vmid 초기화 for vmlifecycle
         // selectedClusterId = ""
 
-        var pmkID = row.getCell("id").getValue();
-
+        currentPmkId = row.getCell("id").getValue();
         // 표에서 선택된 PmkInfo 
-        getSelectedPmkData(pmkID)
+        getSelectedPmkData()
 
     });
 
@@ -687,19 +706,15 @@ function statusFormatter(cell) {
 
 // provider를 table에서 표시하기 위해 감싸기
 function providerFormatter(data) {
-    var vmCloudConnectionMap = webconsolejs["common/api/services/pmk_api"].calculateConnectionCount(
-        data.getData()
-    );
-    var pmkProviderCell = "";
-    vmCloudConnectionMap.forEach((value, key) => {
-        pmkProviderCell +=
-            '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-            key +
-            '.png" alt="' +
-            key +
-            '"/>';
-    });
-
+    var providerImg = data.getData().providerImg;
+    
+    var pmkProviderCell =
+    '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
+    (providerImg==""?"mcmp":providerImg) +
+    '.png" alt="' +
+    providerImg +
+    '"/>';
+    
     return pmkProviderCell;
 }
 

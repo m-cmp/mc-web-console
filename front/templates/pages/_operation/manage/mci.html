@@ -1,6 +1,6 @@
 <div class="page-body">
   <div class="container-xl">
-    <!-- MCIS DASHBOARD -->
+    <!-- MCI DASHBOARD -->
     <div id="index" class="section">
       <div class="row row-cards">
         <div class="col-md-7">
@@ -14,7 +14,7 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">List of MCIS</h3>
+              <h3 class="card-title">List of MCI</h3>
               <div class="card-actions btn-actions">
                 <a
                   href="#manage"
@@ -172,7 +172,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +202,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'suspend')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'suspend')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -232,7 +232,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -262,7 +262,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCIS ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend MCI ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -370,7 +370,9 @@
                 </div>
 
                 <!-- refresh -->
-                <a class="btn-action">
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/operation/manage/mci'].refreshMciList()"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -483,7 +485,7 @@
       </div>
     </div>
 
-    <!-- MCIS CREATE -->
+    <!-- MCI CREATE -->
 
     <!-- TODO : divide to express, simple, expert form  -->
     <div id="manage" class="section">
@@ -594,8 +596,8 @@
               <h3 class="card-title">Steps</h3>
               <ul class="steps steps-vertical">
                 <li class="step-item active">
-                  <div class="h4 m-0">MCIS Name</div>
-                  <div class="text-secondary">MCIS Name input ex) mci01</div>
+                  <div class="h4 m-0">MCI Name</div>
+                  <div class="text-secondary">MCI Name input ex) mci01</div>
                 </li>
                 <li class="step-item">
                   <div class="h4 m-0">Order received</div>
@@ -723,8 +725,8 @@
               <h3 class="card-title">Steps</h3>
               <ul class="steps steps-vertical">
                 <li class="step-item active">
-                  <div class="h4 m-0">MCIS Name</div>
-                  <div class="text-secondary">MCIS Name input ex) mci01</div>
+                  <div class="h4 m-0">MCI Name</div>
+                  <div class="text-secondary">MCI Name input ex) mci01</div>
                 </li>
                 <li class="step-item">
                   <div class="h4 m-0">Order received</div>
