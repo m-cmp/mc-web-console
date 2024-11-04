@@ -15,6 +15,14 @@ export function commonModal(elm, title, content, func, argument) {
     };
 }
 
+// Modal 띄우는 function
+export function commonTargetModal(targetModalId) {    
+    console.log("commonTargetModal", targetModalId)
+    const modal = new bootstrap.Modal(document.getElementById(targetModalId));
+    console.log(modal)
+    modal.show();  // 모달 표시
+}
+
 /* 
     confirmModal을 script로 띄울 때 사용
     // targetModalId : modal.html에 정의된 모달의 ID
