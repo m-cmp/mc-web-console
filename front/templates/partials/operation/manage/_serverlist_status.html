@@ -233,7 +233,11 @@
 
           <div class="dropdown-divider"></div>
 
-          <a class="dropdown-item" href="#addserver" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()">
+          <a
+            class="dropdown-item"
+            href="#addserver"
+            onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -254,9 +258,12 @@
             </svg>
             New
           </a>
-          <a class="dropdown-item" data-bs-toggle="modal"
-                      data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete VM ?', 'pages/operation/manage/mci.deleteVm')">
+          <a
+            class="dropdown-item"
+            data-bs-toggle="modal"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete VM ?', 'pages/operation/manage/mci.deleteVm')"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -302,7 +309,8 @@
       </div>
 
       <!-- refresh -->
-      <a class="btn-action"
+      <a
+        class="btn-action"
         onclick="webconsolejs['pages/operation/manage/mci'].getSelectedMciData()"
       >
         <svg
@@ -324,7 +332,11 @@
       </a>
 
       <!-- add server-->
-      <a href="#addserver" class="btn btn-outline-primary" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()">
+      <a
+        href="#addserver"
+        class="btn btn-outline-primary"
+        onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="icon"
@@ -349,8 +361,10 @@
     <div>
       <ul class="vmStatus-list" id="mci_server_info_box"></ul>
     </div>
+    <div class="row p-2">
+      <div class="col-12">
+        <%= partial("partials/operation/manage/serverinfo.html") %>
+      </div>
+    </div>
   </div>
-
-  
-  
 </div>
