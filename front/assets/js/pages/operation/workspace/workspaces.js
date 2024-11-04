@@ -56,11 +56,13 @@ function initWorkspacesTable() {
       {
         title: "Created At",
         field: "created_at",
+        formatter: datetimeFormatter,
         visible: true
       },
       {
         title: "Updated At",
         field: "updated_at",
+        formatter: datetimeFormatter,
         visible: false
       },
       {
@@ -435,6 +437,15 @@ async function initWorkspace() {
     updateSummary()
     initProjectModalSeletor()
     await setWokrspaceTableData()
+
+    // workspace add button
+    var targetSection = "workspace-modal-add"//workspace-modal-add
+    var createBtnName ="Add Workspace";
+    //var onclickEvent = "";
+    var onclickEvent = "webconsolejs['partials/layout/modal'].commonTargetModal('" + targetSection + "')";
+    
+    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName, onclickEvent);
+
 }
 
 async function updateInitData(){
@@ -1293,4 +1304,16 @@ function findRowIndexByColumnValue(table, column, value) {
       return row[column] === value;
   });
   return rowIndex;
+}
+
+// table date column formatter
+function datetimeFormatter(cell, formatterParams) {
+  const dateStr = cell.getValue(); // 셀의 값을 가져옴
+  if (!dateStr) return ""; // 값이 없으면 빈 문자열 반환
+
+
+  // if (formatterParams && formatterParams.format === 'YYYY/MM/DD') {
+  //   return `${year}/${month}/${day}`;
+  // }
+  return webconsolejs["common/util"].dateYYYYMMDDHH24MISS(dateStr)  
 }
