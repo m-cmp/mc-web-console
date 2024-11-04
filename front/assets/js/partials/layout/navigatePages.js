@@ -50,10 +50,15 @@ window.addEventListener('load', hideLoader);
 
 // PageHeader 오른쪽에 Button을 추가
 /*
-    ex) var targetSection = "mcicreate"
+    case1 : section 으로 show/hide 하는 경우
+        addPageHeaderButton(targetSection, createBtnName);        
+    case2 : onClickEvent 있는 경우
+        var targetSection = "mcicreate"
         var createBtnName ="Add Mci";
         var onclickEvent = "webconsolejs['partials/operation/manage/mcicreate'].addNewMci()";    
         addPageHeaderButton(targetSection, createBtnName, onclickEvent);
+
+
 */
 export function addPageHeaderButton(targetSection, createBtnName, onclickEvent){
     console.log("addPageHeaderButton")
@@ -79,7 +84,17 @@ export function addPageHeaderButton(targetSection, createBtnName, onclickEvent){
       </svg>
       ${createBtnName}
     </a>`;
-    console.log("addPageHeaderButton2 ", buttonHtml)
-    $("#page-header-btn-list").append(buttonHtml);
-  
+
+    var $button = $(buttonHtml);
+    if (onclickEvent && targetSection) {
+    //if (onclickEvent && typeof onclickEvent === "function") {        
+        $button.on("click", function(event) {
+            //console.log("click...", event)
+            //console.log("onclickEvent...", onclickEvent)
+            event.preventDefault(); // 기본 동작 방지 (필요 시 사용)
+            
+            eval(onclickEvent);            
+        });
+    }    
+    $("#page-header-btn-list").append($button);  
   }
