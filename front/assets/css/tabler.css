@@ -20878,10 +20878,10 @@ Card note
 }
 
 .datagrid-title {
-  font-size: 0.625rem;
+  font-size: 0.875rem;
   font-weight: var(--tblr-font-weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: 0em;
   line-height: 1rem;
   color: var(--tblr-secondary);
   margin-bottom: 0.25rem;
