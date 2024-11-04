@@ -345,7 +345,7 @@ export async function getMonitoringLog(nsId, mciId, targetId, keyword) {
   data.request = request;
 
 
-  var controller = "/api/" + "mc-observability/" + "GET_OpensearchLogs";
+  var controller = "/api/" + "mc-observability/" + "GETOpensearchLogs";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -428,7 +428,6 @@ export async function getTargetsNsMci(nsId, mciId) {
     controller,
     data
   )
-
   // target이 있다는 이야기는 agent가 설치되었다는 뜻으로 보면 되는가? maybe
   var respMeasureMent = response.data.responseData;
 

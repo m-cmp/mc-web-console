@@ -1,97 +1,89 @@
+<div class="card-header">
+  <h3 class="card-title">Monitor Setting / Server(vm)</h3>
+</div>
+<div class="row p-4">
+  <div class="col-md-12">
+    <div class="datagrid">
 
-<div class="card section" id="monitoringconfig_info">
-    <div class="card-header">
-      <h3 class="card-title">
-        Monitoring Setting<span id="monitoringconfig_info_text" class="text-info"> </span>
-      </h3>
-     
-    </div>
-    <div class="card-body">
-      <div class="container">
-        <div class="row p-4">
-          <div class="col-md-6">
-            <div class="datagrid">
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Name / ID</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_name"></div>
-              </div>
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Description</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_desc"></div>
-              </div>
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Name / ID</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_name"></div>
+      </div>
 
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Description</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_desc"></div>
-              </div>
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Description</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_desc"></div>
+      </div>
 
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Workload</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_workload"></div>
-              </div>
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Workload(type/name)</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_workload"></div>
+      </div>
 
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Monitor</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_monitor"></div>
-              </div>
-
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Agent Status</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_agent_status"></div>
-              </div>
-
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Collect Status</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_collect_status"></div>
-              </div>
-
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Collect datetime</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_collect_datetime"></div>
-              </div>
-
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Monitor Storage</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_monitor_storage"></div>
-              </div>
-
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Monitor Metrics</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_monitor_metrics"></div>
-              </div>
-
-              <div class="datagrid-item">
-                <div class="form-label">
-                  <h5>Log</h5>
-                </div>
-                <div class="form-description" id="monitoringconfig_info_log"></div>
-              </div>
-            </div><!--end of datagrid-->
-          </div>
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Monitor</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_monitor">
         </div>
       </div>
-  
 
-    </div>
-    
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Agent Status</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_agent_status">
+
+        </div>
+      </div>
+
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Collect Status</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_collect_status"></div>
+      </div>
+
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Collect datetime</h5>
+        </div>
+        <div class="form-description" id="monitoringconfig_info_collect_datetime"></div>
+      </div>
+
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Monitor</h5>
+        </div>
+        <div class="form-description">
+          <button class="btn btn-sm btn-secondary" onclick="document.getElementById('tabs-monitoringconfig-monitorStorages-tab-button').click();">Monitor Storages</button>
+        </div>
+      </div>
+
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Monitor Metrics</h5>
+        </div>
+        <div class="form-description">
+          <button class="btn btn-sm btn-secondary" onclick="document.getElementById('tabs-monitoringconfig-metrics-tab-button').click();">Monitor Metrics</button>
+        </div>
+      </div>
+
+      <div class="datagrid-item">
+        <div class="form-label">
+          <h5>Log</h5>
+        </div>
+        <div class="form-description">
+          <button class="btn btn-sm btn-secondary" onclick="document.getElementById('tabs-monitoringconfig-logs-tab-button').click();" >Monitor Log/Traces</button>
+        </div>
+      </div>
+      
+    </div><!--end of datagrid-->
   </div>
+</div>

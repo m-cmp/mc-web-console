@@ -6,13 +6,16 @@
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
                         <li class="nav-item">
-                            <a href="#tabs-monitoringconfig-details" class="nav-link active" data-bs-toggle="tab">Details</a>
+                            <a href="#tabs-monitoringconfig-details" id="tabs-monitoringconfig-details-tab-button"class="nav-link active" data-bs-toggle="tab">Details</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#tabs-monitoringconfig-metrics" class="nav-link" data-bs-toggle="tab">Metrics</a>
+                            <a href="#tabs-monitoringconfig-metrics" id="tabs-monitoringconfig-metrics-tab-button" class="nav-link" data-bs-toggle="tab">Metrics</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#tabs-monitoringconfig-logs" class="nav-link" data-bs-toggle="tab">Logs</a>
+                            <a href="#tabs-monitoringconfig-logs" id="tabs-monitoringconfig-logs-tab-button" class="nav-link" data-bs-toggle="tab">Logs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#tabs-monitoringconfig-monitorStorages" id="tabs-monitoringconfig-monitorStorages-tab-button" class="nav-link" data-bs-toggle="tab">Monitor Storages</a>
                         </li>
                     </ul>
                 </div>
@@ -27,6 +30,10 @@
                             </div>
                             
                             <div class="tab-pane fade" id="tabs-monitoringconfig-logs">
+                                <%= partial("partials/operations/analytics/monitorings/monitoringconfig_log.html") %>            
+                            </div>
+
+                            <div class="tab-pane fade" id="tabs-monitoringconfig-monitorStorages">
                                 <%= partial("partials/operations/analytics/monitorings/monitoringconfig_log.html") %>            
                             </div>
                         </div>
