@@ -296,10 +296,12 @@ export function changeVmLifeCycle(type) {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a VM')
     return;
   }
+  selectedVmIds.forEach(vmId => {
+    webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, currentMciId, currentNsId, vmId);
+  });
 
-  webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, currentMciId, currentNsId, currentVmId)
+  console.log(`Lifecycle action '${type}' applied to selected VMs:`, selectedVmIds);
 }
-
 // vm 상태별 icon으로 표시
 // Server List / Status VM리스트
 // function displayServerStatusList(mciID, vmList) {
@@ -358,19 +360,20 @@ function displayServerStatusList(mciID, vmList) {
     var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmStatusStyleClass(vmDispStatus);
 
     vmLi += `
-<li id="server_status_icon_${vmID}" 
-    class="card ${vmStatusClass}" 
-    style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-    onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('${vmID}')">
-  
-  <input type="checkbox" 
-         id="checkbox_${vmID}" 
-         class="vm-checkbox" 
-         style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-         onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('${vmID}')">
-  
-  <span class="text-dark-fg">${vmName}</span>
-</li>
+      <li id="server_status_icon_${vmID}" 
+          class="card ${vmStatusClass} d-flex align-items-center" 
+          style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
+          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('${vmID}')">
+        
+        <input type="checkbox" 
+               id="checkbox_${vmID}" 
+               class="vm-checkbox" 
+               style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
+               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('${vmID}')" 
+               onclick="event.stopPropagation()">
+        
+        <span class="h3 mb-0 me-2">${vmName}</span>
+      </li>
     `;
   });
 
