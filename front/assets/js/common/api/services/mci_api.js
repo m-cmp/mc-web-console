@@ -74,17 +74,14 @@ export async function getMciVm(nsId, mciId, vmId) {
 }
 
 // mciLifeCycle 제어 option : reboot / suspend / resume / terminate
-export function mciLifeCycle(type, checked_array, nsId) {
+export function mciLifeCycle(type, currentMciId, nsId) {
   console.log("mciLifeCycle option : ", type)
-  console.log("selected mci : ", checked_array)
+  console.log("selected mci : ", currentMciId)
 
-
-  for (const mci of checked_array) {
-    console.log(mci.id)
     let data = {
       pathParams: {
         nsId: nsId,
-        mciId: mci.id,
+        mciId: currentMciId,
       },
       queryParams: {
         "action": type,
@@ -97,15 +94,18 @@ export function mciLifeCycle(type, checked_array, nsId) {
     );
     console.log("mciLifeCycle response : ", response)
   }
-}
 
-export function mciDelete(checked_array, nsId) {
-  for (const mci of checked_array) {
-    console.log(mci.id)
+export function mciDelete(currentMciId, nsId) {
+  console.log("mciDeletemciDeletemciDeletemciDelete")
+  console.log("mciDeletemciDeletemciDeletemciDelete", currentMciId, nsId)
+
+  // for (const mci of checked_array) {
+  //   console.log(mci.id)
+    
     let data = {
       pathParams: {
         nsId: nsId,
-        mciId: mci.id,
+        mciId: currentMciId,
       },
       queryParams: {
         option: "force"
@@ -118,7 +118,7 @@ export function mciDelete(checked_array, nsId) {
     );
     console.log("mciLifeCycle response : ", response)
   }
-}
+// }
 
 export function vmDelete(mciId, nsId, vmId) {
   let data = {
@@ -345,10 +345,10 @@ export function getMciStatusIconFormatter(mciDispStatus) {
     mciStatusIcon = "icon_stop.svg"
   } else if (mciDispStatus == "suspended") {
     mciStatusIcon = "icon_stop.svg"
-  } else if (mciDispStatus == "terminate") {
+  } else if (mciDispStatus == "terminated") {
     mciStatusIcon = "icon_terminate.svg"
   } else {
-    mciStatusIcon = "icon_stop.svg"
+    mciStatusIcon = "icon_terminate.svg"
   }
   return mciStatusIcon
 }

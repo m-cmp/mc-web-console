@@ -52,10 +52,11 @@ async function initPmk() {
     ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
     selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
-    var targetSection = "manage"
+    var targetSection = "createcluster"
     var createBtnName = "Add cluster"
+    var onclickEvent = "webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()";
 
-    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
+    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName, onclickEvent);
 
     // workspace selection check
     webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject)
