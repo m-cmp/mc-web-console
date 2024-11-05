@@ -317,21 +317,22 @@ export function calculateConnectionCount(vmList) {
 
 // MCI 상태를 UI에서 표현하는 방식으로 변경
 export function getMciStatusFormatter(mciFullStatus) {
-  //console.log("getMciStatus " + mciFullStatus);
-  var statusArr = mciFullStatus.split("-");
-  var returnStatus = statusArr[0].toLowerCase();
+  console.log("getMciStatusgetMciStatus", mciFullStatus);
+  
+  let returnStatus = mciFullStatus.toLowerCase();
 
-  if (mciFullStatus.toLowerCase().indexOf("running") > -1) {
+  if (returnStatus.includes("partial")) {
+    returnStatus = "partial";
+  } else if (returnStatus.includes("running")) {
     returnStatus = "running";
-  } else if (mciFullStatus.toLowerCase().indexOf("suspend") > -1) {
-    returnStatus = "stop";
-  } else if (mciFullStatus.toLowerCase().indexOf("terminate") > -1) {
-    returnStatus = "terminate";
-    // TODO : partial도 있는데... 처리를 어떻게 하지??
-  } else {
-    returnStatus = "terminate";
+  } else if (returnStatus.includes("suspended")) {
+    returnStatus = "suspended";
+  } else if (returnStatus.includes("terminated")) {
+    returnStatus = "terminated";
+  } else if (returnStatus.includes("failed")) {
+    returnStatus = "failed";
   }
-  //console.log("after status " + returnStatus);
+
   return returnStatus;
 }
 
