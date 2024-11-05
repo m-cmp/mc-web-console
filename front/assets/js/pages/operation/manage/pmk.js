@@ -52,6 +52,11 @@ async function initPmk() {
     ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
     selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 
+    var targetSection = "manage"
+    var createBtnName = "Add cluster"
+
+    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
+
     // workspace selection check
     webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject)
     ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
@@ -71,13 +76,13 @@ async function initPmk() {
         }
     }
     console.log("ppp ", params)
-    console.log('before currentPmkId:', currentPmkId); 
-    
+    console.log('before currentPmkId:', currentPmkId);
+
     refreshPmkList()
 }
 
 // pmk목록 조회. init, refresh 에서 사용
-export async function refreshPmkList(){
+export async function refreshPmkList() {
     if (selectedWorkspaceProject.projectId != "") {
         var selectedProjectId = selectedWorkspaceProject.projectId;
         var selectedNsId = selectedWorkspaceProject.nsId;
@@ -145,7 +150,7 @@ export async function getSelectedPmkData() {
 
     if (currentPmkId != undefined && currentPmkId != "") {
         var selectedNsId = selectedWorkspaceProject.nsId;
-        
+
         var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId)
 
         if (pmkResp.status != 200) {
@@ -159,7 +164,7 @@ export async function getSelectedPmkData() {
         // Toggle PMK Info
         var div = document.getElementById("cluster_info");
         const hasActiveClass = div.classList.contains("active");
-        if (!hasActiveClass){
+        if (!hasActiveClass) {
             // cluster_info 가 active면 toggle 필요 없음
             webconsolejs["partials/layout/navigatePages"].toggleElement(div)
         }
@@ -249,28 +254,86 @@ export function changePmkLifeCycle(type) {
 
 // NodeGroup / Status 리스트
 function displayNodeGroupStatusList(pmkID, clusterData) {
-    console.log("displayNodeGroupStatusList", clusterData)
+    console.log("displayNodeGroupStatusList", clusterData);
 
-    var nodeGroupList = clusterData.CspViewK8sClusterDetail.NodeGroupList
+    var nodeGroupList = clusterData.CspViewK8sClusterDetail.NodeGroupList;
     var pmkName = pmkID;
     var nodeLi = "";
     nodeGroupList.sort();
-    for (var nodeIndex in nodeGroupList) {
-        var aNodeGroup = nodeGroupList[nodeIndex]
-        var nodeList = JSON.stringify(aNodeGroup).replace(/"/g, '&quot;').replace(/'/g, "\\'");
+
+    nodeGroupList.forEach((aNodeGroup) => {
         var nodeID = aNodeGroup.IId.SystemId;
         var nodeName = aNodeGroup.IId.NameId;
         var nodeStatus = aNodeGroup.Status;
-        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus) // vmStatus 별로 상태 색상 set
+        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus);
 
-        nodeLi += '<li id="nodeGroup_status_icon_' + pmkID + '" class="card ' + nodeStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/pmk\'].nodeGroupDetailInfo(\'' + pmkID + '\',\'' + nodeList + '\',\'' + nodeID + '\')"><span class="text-dark-fg">' + nodeName + '</span></li>';
-
-    }// end of pmk loop
+        nodeLi += `
+        <li id="nodeGroup_status_icon_${nodeID}" 
+            class="card ${nodeStatusClass} d-flex align-items-center" 
+            style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
+            onclick="webconsolejs['pages/operation/manage/pmk'].toggleNodeCheck('${pmkID}', '${nodeID}', ${JSON.stringify(clusterData).replace(/"/g, '&quot;')})">
+          
+          <input type="checkbox" 
+                 id="node_checkbox_${nodeID}" 
+                 class="vm-checkbox" 
+                 style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
+                 onchange="webconsolejs['pages/operation/manage/pmk'].handleNodeCheck('${pmkID}', '${nodeID}', ${JSON.stringify(clusterData).replace(/"/g, '&quot;')})">
+          
+          <span class="text-dark-fg">${nodeName}</span>
+        </li>
+      `;
+    });
 
     $("#pmk_nodegroup_info_box").empty();
     $("#pmk_nodegroup_info_box").append(nodeLi);
 }
 
+// 체크박스를 클릭했을 때 선택 상태를 반전시킴
+export function toggleNodeCheck(pmkID, nodeID, clusterData) {
+    var checkbox = $(`#node_checkbox_${nodeID}`);
+    checkbox.prop("checked", !checkbox.prop("checked"));
+    handleNodeCheck(pmkID, nodeID, clusterData);
+}
+
+// 체크박스를 선택하면 선택된 Node ID 업데이트
+var selectedNodeIds = [];
+
+export function handleNodeCheck(pmkID, nodeID, clusterData) {
+    var checkbox = $(`#node_checkbox_${nodeID}`);
+    if (checkbox.prop("checked")) {
+        if (!selectedNodeIds.includes(nodeID)) selectedNodeIds.push(nodeID);
+    } else {
+        selectedNodeIds = selectedNodeIds.filter(id => id !== nodeID);
+    }
+
+    // 마지막 선택된 Node ID로 설정 및 테두리 업데이트
+    if (selectedNodeIds.length > 0) {
+        var lastSelectedNodeID = selectedNodeIds[selectedNodeIds.length - 1];
+        var aNodejsonObject = JSON.stringify(clusterData.CspViewK8sClusterDetail.NodeGroupList.find(node => node.IId.SystemId === lastSelectedNodeID));
+        webconsolejs['pages/operation/manage/pmk'].nodeGroupDetailInfo(pmkID, aNodejsonObject, lastSelectedNodeID);
+    } else {
+        // 선택된 Node가 없다면 NodeGroupInfo를 접음
+        clearServerInfo();
+        const div = document.getElementById("nodeGroup_info");
+        if (div.classList.contains("active")) {
+            webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
+    }
+
+    // 마지막 선택된 NodeGroup 강조 표시
+    highlightSelectedNodeGroup();
+}
+
+function highlightSelectedNodeGroup() {
+    // 모든 li 요소의 테두리 제거
+    $("#pmk_nodegroup_info_box li").css("border", "none");
+
+    // 마지막 선택된 Node ID에 테두리 추가
+    if (selectedNodeIds.length > 0) {
+        const lastSelectedNodeID = selectedNodeIds[selectedNodeIds.length - 1];
+        $(`#nodeGroup_status_icon_${lastSelectedNodeID}`).css("border", "2px solid blue"); // 원하는 테두리 스타일 적용
+    }
+}
 // NodeGroup List / Status 리스트에서
 // Node의 한 개 클릭시 Node의 세부 정보
 // export async function nodeGroupDetailInfo(pmkID, pmkName, nodeID) {
@@ -326,7 +389,7 @@ function displayNodeStatusList(nodeData) {
         var nodeId = aNode.SystemId
         var nodeName = aNode.NameId
         var nodeStatus = nodeData.Status
-        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus) // vmStatus 별로 상태 색상 set
+        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus)
 
         nodeLi += '<li id="node_status_icon_' + nodeId + '" class="card ' + nodeStatusClass + '"><span class="text-dark-fg">' + nodeName + '</span></li>';
 
@@ -707,14 +770,14 @@ function statusFormatter(cell) {
 // provider를 table에서 표시하기 위해 감싸기
 function providerFormatter(data) {
     var providerImg = data.getData().providerImg;
-    
+
     var pmkProviderCell =
-    '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
-    (providerImg==""?"mcmp":providerImg) +
-    '.png" alt="' +
-    providerImg +
-    '"/>';
-    
+        '<img class="img-fluid" class="rounded" width="30" src="/assets/images/common/img_logo_' +
+        (providerImg == "" ? "mcmp" : providerImg) +
+        '.png" alt="' +
+        providerImg +
+        '"/>';
+
     return pmkProviderCell;
 }
 
