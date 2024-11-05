@@ -51,7 +51,7 @@ export async function getMci(nsId, mciId) {
 
 // mci vm 단건 조회
 export async function getMciVm(nsId, mciId, vmId) {
-  if (nsId == "" || nsId == undefined || mciId == undefined || vmId == ""|| vmId == undefined || vmId == "") {
+  if (nsId == "" || nsId == undefined || mciId == undefined || vmId == "" || vmId == undefined || vmId == "") {
     console.log(" undefined nsId: " + nsId, + " mciId " + mciId, ", vmId " + vmId);
     return;
   }
@@ -318,7 +318,7 @@ export function calculateConnectionCount(vmList) {
 // MCI 상태를 UI에서 표현하는 방식으로 변경
 export function getMciStatusFormatter(mciFullStatus) {
   console.log("getMciStatusgetMciStatus", mciFullStatus);
-  
+
   let returnStatus = mciFullStatus.toLowerCase();
 
   if (returnStatus.includes("partial")) {
@@ -366,7 +366,7 @@ export function getMciInfoProviderNames(mciData) {
       console.log("provider ", key)
       mciProviderNames +=
         '<img class="img-fluid" width="30" src="/assets/images/common/img_logo_' +
-        (key==""?"mcmp":key) +
+        (key == "" ? "mcmp" : key) +
         '.png" alt="' +
         key +
         '" style="margin-right: 5px;"/>';
@@ -390,6 +390,8 @@ export function getVmStatusFormatter(vmFullStatus) {
 
   if (returnVmStatus == VM_STATUS_RUNNING) {
     returnVmStatus = "running"
+  } else if (returnVmStatus === VM_STATUS_SUSPENDED) { // suspended 상태 확인
+    return "suspended";
   } else if (returnVmStatus == VM_STATUS_TERMINATED) {
     returnVmStatus = "terminate"
   } else if (returnVmStatus == VM_STATUS_FAILED) {
@@ -403,17 +405,17 @@ export function getVmStatusFormatter(vmFullStatus) {
 
 // VM 상태 별로 Style class로 색 설정
 export function getVmStatusStyleClass(vmDispStatus) {
-  var vmStatusClass = "bg-info";
+  var vmStatusClass = "bg-green-lt";
   if (vmDispStatus == "running") {
-    vmStatusClass = "bg-info"
+    vmStatusClass = "bg-green-lt"
   } else if (vmDispStatus == "include") {
-    vmStatusClass = "bg-red"
+    vmStatusClass = "bg-red-lt"
   } else if (vmDispStatus == "suspended") {
-    vmStatusClass = "bg-red"
+    vmStatusClass = "bg-red-lt"
   } else if (vmDispStatus == "terminated") {
-    vmStatusClass = "bg-secondary"
+    vmStatusClass = "bg-muted-lt"
   } else {
-    vmStatusClass = "bg-secondary"
+    vmStatusClass = "bg-muted-lt"
   }
   return vmStatusClass;
 }
