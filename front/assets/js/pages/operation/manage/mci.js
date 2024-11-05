@@ -275,7 +275,8 @@ function setMciInfoData(mciData) {
 
 // mci 삭제
 export function deleteMci() {
-  webconsolejs["common/api/services/mci_api"].mciDelete(checked_array, currentNsId)
+  console.log("deleteMcideleteMcideleteMci")
+  webconsolejs["common/api/services/mci_api"].mciDelete(currentMciId, currentNsId)
 
 }
 
@@ -287,7 +288,7 @@ export function deleteVm() {
 
 // mci life cycle 변경
 export function changeMciLifeCycle(type) {
-  webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, checked_array, currentNsId)
+  webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, currentMciId, currentNsId)
 }
 
 // vm life cycle 변경
@@ -1024,12 +1025,12 @@ function initMciTable() {
   });
 
   //  선택된 여러개 row에 대해 처리
-  // mciListTable.on("rowSelectionChanged", function (data, rows) {
-  //   checked_array = data
-  //   console.log("checked_array", checked_array)
-  //   console.log("rowsrows", data)
-  //   selectedMciObj = data
-  // });
+  mciListTable.on("rowSelectionChanged", function (data, rows) {
+    checked_array = data
+    console.log("checked_array", checked_array)
+    console.log("rowsrows", data)
+    selectedMciObj = data
+  });
   // displayColumn(table);
 }
 
