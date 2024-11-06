@@ -13,6 +13,8 @@
     "@melloware/coloris": "^0.19.1",
     "@popperjs/core": "^2.0.0",
     "@tabler/core": "^1.0.0-beta20",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
     "apexcharts": "^3.45.2",
     "axios": "^1.6.7",
     "bootstrap": "^5.0.0",
@@ -32,6 +34,7 @@
     "tabulator-tables": "^5.6.1",
     "tinymce": "^6.8.3",
     "tom-select": "^2.3.1",
+    "xterm-addon-fit": "^0.8.0",
     "yarn": "^1.22.22"
   },
   "devDependencies": {
