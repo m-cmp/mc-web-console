@@ -46,8 +46,8 @@ front/!.yarn/releases
 front/!.yarn/sdks
 front/!.yarn/versions
 front/yarn.lock
-
-front/tmp/front/package-lock.json
+front/package-lock.json
+front/tmp/
 front/node_modules/
 front/.sass-cache/
 front/public/assets/

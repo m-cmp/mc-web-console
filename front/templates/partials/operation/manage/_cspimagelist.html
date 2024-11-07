@@ -1,0 +1,154 @@
+<div
+  class="modal modal-blur fade"
+  id="cspimage-list"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">CSP Image List</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Cloud Provider / Connection Name</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <select name="cloud-provider" class="form-select">
+                  <option value="">Select Provider</option>
+                  <option value="aws">AWS</option>
+                  <option value="AZURE">AZURE</option>
+                  <option value="GCP">GCP</option>
+                  <option value="ALIBABA">ALIBABA</option>
+                  <option value="TENCENT">TENCENT</option>
+                  <option value="IBM">IBM</option>
+                  <option value="OPENSTACK">OPENSTACK</option>
+                  <option value="CLOUDIT">CLOUDIT</option>
+                  <option value="NCP">NCP</option>
+                  <option value="NCPVPC">NCPVPC</option>
+                  <option value="NHNCLOUD">NHNCLOUD</option>
+                  <option value="KTCLOUD">KTCLOUD</option>
+                  <option value="KTCLOUDVPC">KTCLOUDVPC</option>
+                  <option value="DOCKER">DOCKER</option>
+                  <option value="MOCK">MOCK</option>
+                  <option value="CLOUDTWIN">CLOUDTWIN</option>
+                </select>
+              </div>
+
+              <div class="col-6">
+                <select name="select-connection" class="form-select">
+                  <option value="" selected="">Select Connection</option>
+                  <option value="region1">[AWS] aws-sao-conn</option>
+                  <option value="region2">[GCP] gcp-tokyo-rg</option>
+                  <option value="region3">[ALIBABA] ap-southeast-1</option>
+                </select>
+              </div>
+            </div>
+            
+              <div class="form-group mb-2">
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Input Keyword"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a href="#" class="btn btn-icon" aria-label="Button">
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>
+                  <h5><center>Name</center></h5>
+                </th>
+                <th>
+                  <h5><center>CspImageName</center></h5>
+                </th>
+                <th>
+                  <h5><center>CspImageId</center></h5>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+                <td>
+                  tabulator
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div align="right">
+             <button type="submit" class="btn btn-info">Apply</button>
+             <button type="submit" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

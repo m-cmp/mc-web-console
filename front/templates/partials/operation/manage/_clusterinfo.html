@@ -1,0 +1,86 @@
+<!-- 표의 행 클릭 시  -->
+
+<div class="card section" id="cluster_info">
+    <input type="hidden" id="selected_mci_id">
+  <div class="card-header">
+    <h3 class="card-title">
+      Cluster Info<span id="cluster_info_text" class="text-info" value=""> </span>
+    </h3>
+  </div>
+  <div class="card-body">
+    <div class="row p-4">
+      <div class="col-md-4">
+        <div class="form-group mb-2">
+          <div class="datagrid">
+            <div class="datagrid-item">
+              <div class="datagrid-title">Name</div>
+              <div class="datagrid-content" id="cluster_info_name"></div>
+            </div>
+            <div class="datagrid-item">
+              <div class="datagrid-title">Version</div>
+              <div class="datagrid-content" id="cluster_info_version"></div>
+            </div>
+            <div class="datagrid-item">
+              <div class="datagrid-title">Status</div>
+              <div class="datagrid-item">
+                <span id="cluster_info_status"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group mb-2">
+          <div class="datagrid">
+            <div class="datagrid-item">
+              <div class="datagrid-title">VPC</div>
+              <div class="datagrid-content" id="cluster_info_vpc"></div>
+            </div>
+            <div class="datagrid-item">
+              <div class="datagrid-title">Subnet</div>
+              <div class="datagrid-item">
+                <span id="cluster_info_subnet"></span>
+              </div>
+            </div>
+            <div class="datagrid-item">
+              <div class="datagrid-title">Security Group</div>
+              <div class="datagrid-content" id="cluster_info_securitygroup"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group mb-2">
+          <div class="datagrid">
+            <div class="datagrid-item">
+              <div class="datagrid-title">Cloud Connection</div>
+              <div class="datagrid-content" id="cluster_info_cloudconnection"></div>
+            </div>
+            <div class="datagrid-item">
+              <div class="datagrid-title">End Point</div>
+              <div class="datagrid-item">
+                <span id="cluster_info_endpoint"></span>
+              </div>
+            </div>
+            <div class="datagrid-item">
+              <div class="datagrid-title">KubeConfig</div>
+              <div class="datagrid-content" id="cluster_info_kubeconfig"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row p-4">
+      <div class="col-12">
+        <%= partial("partials/operation/manage/nodegrouplist_status.html") %> 
+      </div>
+    </div>
+
+    <div class="row p-4">
+      <div class="col-12">
+        <%= partial("partials/operation/manage/nodegroupinfo.html") %>
+      </div>
+    </div>
+  </div>
+</div>

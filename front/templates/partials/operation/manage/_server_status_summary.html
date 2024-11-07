@@ -1,0 +1,56 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title summary">Server Status</h3>
+  </div>
+
+  <div class="card-body">
+    <div class="row row-cards">
+      <div class="col-md" style="padding: 20px">
+        <div class="card card-borderless" style="">
+          <div class="card-header summary">
+            <h1 class="card-title summary" id="total_vm">0</h1>
+            <span>Total</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="bg-green-lt card" style="border: 0px">
+          <div
+            class="card-body text-center"
+            style="border: 0px; display: flex; flex-direction: column"
+          >
+            <h1 class="card-title mx-auto summary" id="vm_status_running">0</h1>
+            <span>Running</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="card bg-red-lt" style="border: 0px">
+          <div
+            class="card-body"
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <h1 class="card-title mx-auto summary" id="vm_status_stopped">0</h1>
+            <span>Stopped</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="card bg-muted-lt" style="border: 0px">
+          <div
+            class="card-body"
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <h1 class="card-title mx-auto summary" id="vm_status_terminated">
+              0
+            </h1>
+            <span>Terminated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
