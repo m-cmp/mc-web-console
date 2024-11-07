@@ -1,12 +1,11 @@
-import { Terminal } from 'xterm';
 import { FitAddon } from '@xterm/addon-fit';
+import { Terminal } from 'xterm';
 
 let terminalInstance = null;
 
 export async function initTerminal(id, nsId, mciId, vmid) {
 	console.log("Trying to connect to " + nsId + " / " + mciId);
 	
-	// 기존 터미널이 존재한다면 삭제
 	if (terminalInstance) {
 		terminalInstance.dispose();
 		terminalInstance = null;
@@ -24,16 +23,13 @@ export async function initTerminal(id, nsId, mciId, vmid) {
 	const fitAddon = new FitAddon();
 	term.loadAddon(fitAddon);
 
-	// 터미널을 지정된 컨테이너에 열기
 	const container = document.getElementById(id);
 	term.open(container);
 	
 	terminalInstance = term;
 
 	const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH client IP is: $client_ip";
-	await processCommand(nsId, mciId, vmid, ipcmd, term, () => {
-		// console.log("done get ip")
-	});
+	await processCommand(nsId, mciId, vmid, ipcmd, term, () => {});
 
 	function prompt() {
 		term.write('\r\n $ ');
@@ -87,7 +83,6 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
 
 		// STDOUT 출력
 		if (stdout && Object.values(stdout).some(value => value.trim() !== '')) {
-			term.write('\r\nSTDOUT:\r\n');
 			Object.values(stdout).forEach(value => {
 				const lines = value.split('\n');
 				lines.forEach(line => {
@@ -100,7 +95,6 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
 
 		// STDERR 출력
 		if (stderr && Object.values(stderr).some(value => value.trim() !== '')) {
-			term.write('\r\nSTDERR:\r\n');
 			Object.values(stderr).forEach(value => {
 				const lines = value.split('\n');
 				lines.forEach(line => {
@@ -124,7 +118,6 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
 // 자동 줄바꿈 처리 함수
 function writeAutoWrap(term, text) {
 	const cols = term.cols;
-	console.log("@@@@@@@@@@ cols", cols)
 	let currentLine = '';
 
 	for (let i = 0; i < text.length; i++) {

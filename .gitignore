@@ -39,8 +39,15 @@ front/vendor/
 front/**/*.log
 front/**/*.sqlite
 front/.idea/
-front/bin/
-front/tmp/
+front/.yarn/*
+front/!.yarn/patches
+front/!.yarn/plugins
+front/!.yarn/releases
+front/!.yarn/sdks
+front/!.yarn/versions
+front/yarn.lock
+
+front/tmp/front/package-lock.json
 front/node_modules/
 front/.sass-cache/
 front/public/assets/
