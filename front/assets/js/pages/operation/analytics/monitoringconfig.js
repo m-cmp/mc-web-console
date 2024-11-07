@@ -99,41 +99,40 @@ $("#workloadlist").on('change', async function () {
   
   // 1. mci의 vm 목록 조회(install 여부를 위해 필요.)
   try {
-      var response = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentWorkloadId);
-      var aMci = response.responseData
-      console.log("aMci ", aMci)
-      for (var vmIndex in aMci.vm) {
-        var aVm = aMci.vm[vmIndex]
-        aVm.workloadType = "MCI";// [MCI/PMK]
-        aVm.workloadName = currentWorkloadName;
-        aVm.monAgentStatus = "Not Installed";
-        //console.log("aVm ", aVm)
-        vmMap.set(aVm.id, aVm);
-      }
-      console.log(vmMap)
+    var response = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentWorkloadId);
+    var aMci = response.responseData
+    console.log("aMci ", aMci)
+    for (var vmIndex in aMci.vm) {
+      var aVm = aMci.vm[vmIndex]
+      aVm.workloadType = "MCI"; // [MCI/PMK]
+      aVm.workloadName = currentWorkloadName;
+
+      aVm.monAgentStatus = "Not Installed";
+      vmMap.set(aVm.id, aVm);
+    }
+    console.log(vmMap)
     // 2. mci에 agent 설치된 목록 조회
     var monitorTargetList = await webconsolejs["common/api/services/monitoring_api"].getTargetsNsMci(currentNsId, currentWorkloadId)
+    console.log("monitorTargetList",monitorTargetList )
     console.log("monitorTargetList",monitorTargetList.data )
     for (var i in monitorTargetList.data) {
-      console.log("monitorTargetList.data[i].id", monitorTargetList.data[i].id)
-      // [
-      //   {
-      //       "alias_name": "77+9",
-      //       "description": "77+9bQ==",
-      //       "id": "g1-1-1",
-      //       "mci_id": "mci01",
-      //       "name": "g1-1-1",
-      //       "ns_id": "ns01",
-      //       "state": "ACTIVE"
-      //   }
-      // ]      
-      //var findVm = vmMap.get(monitorTargetList.data[i].id)
-      var findVm = vmMap.get("vm01-1")
-      console.log("findVm", findVm)
-      if( findVm){
-        console.log("findVm2", findVm)
-        //findVm.workloadType = "MCI";
+      console.log("monitorTargetList.data[i].id", i, monitorTargetList.data[i].id)
 
+      //   [
+      //     {
+      //         "alias_name": null,
+      //         "description": "dm0x",
+      //         "id": "vm-1",
+      //         "mci_id": "mci01",
+      //         "name": null,
+      //         "ns_id": "ns01",
+      //         "state": "ACTIVE"
+      //     }
+      // ]
+
+      // FIXME : 하드코드 for demo
+      var findVm = vmMap.get(monitorTargetList.data[i].id)
+      if(findVm){
         findVm.monAgentStatus = monitorTargetList.data[i].state;// [ACTIVE/INACTIVE]
         vmMap.set(findVm.id, findVm);
       }
@@ -141,12 +140,12 @@ $("#workloadlist").on('change', async function () {
   }catch(e){
     console.log(e)
   }
-  // 3. mci에 log 설정??
 
+  // 3. mci에 log 설정??
   console.log("vmMap", Array.from(vmMap.values()))
+
   // 4. table에 필요한 data set
   monitorConfigListTable.setData(Array.from(vmMap.values()));
-  
 })
 
 // getMciList 호출 성공 시
@@ -166,20 +165,13 @@ function getSelectedMonitorConfigData(servernodeId) {
     console.log("return ", servernodeId)
     return;
   }
-
-  // 
-  // Toggle Monitoring Config Info
-  // 기본은 detailTab : monitoringconfig_info 
-  // var div = document.getElementById("monitoringconfig_info");//monitoring_configuration
-  // console.log("monitoringconfig_info ", div)
-  // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-
+  console.log("selectedServerNode.id", selectedServerNode.id)
   setMonitorConfigInfoData();
   
 }
 
 // 클릭한 mci의 info값 세팅
-function setMonitorConfigInfoData() {
+async function setMonitorConfigInfoData() {
   
   // var row = monitorConfigListTable.getRow(currentServernodeId);  
   // console.log(row)
@@ -187,20 +179,30 @@ function setMonitorConfigInfoData() {
   
   //selectedServerNode 안에 현재 선택한 rowData가 들어있음
   console.log("setMonitorConfigInfoData ", selectedServerNode)
+
+
+
+  var htmlCardIdPrefix = "#monitoringconfig_info_"
   try {
-    // var mciID = mciData.id;
-    // var mciName = mciData.name;
-    // var mciDescription = mciData.description;
-    // var mciStatus = mciData.status;
-    // console.log("setMciInfoData ", mciStatus)
-    // var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
-    // var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
-    // var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCIS에 사용 된 provider
-    // var totalvmCount = mciData.vm.length; //mci의 vm개수
-
-    // console.log("totalvmCount", totalvmCount)
-
-    // $("#mci_info_text").text(" [ " + mciName + " ]")
+    const generateOnOffIndicator = (result, status) => `<label class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" checked="${result}">
+      <span class="form-check-label">${status}</span>
+    </label>`;
+    const generateStatusIndicator = (result, status) => `<span class="badge bg-${result} me-1"></span>${status}`;
+    console.log("selectedServerNode.label", selectedServerNode.label)
+    var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog(
+      selectedServerNode.label["sys.namespace"], 
+      selectedServerNode.label["sys.mciId"], 
+      selectedServerNode.label["sys.id"], 
+      "", 
+      );
+      console.log(response)
+    $(htmlCardIdPrefix+"name").text(selectedServerNode.name+" / "+selectedServerNode.id)
+    $(htmlCardIdPrefix+"desc").text(selectedServerNode.description)
+    $(htmlCardIdPrefix+"workload").text(selectedServerNode.workloadType+" / "+selectedServerNode.workloadName)
+    $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "true" : "false", selectedServerNode.monAgentStatus === "ACTIVE" ? "On" : "Off"))
+    $(htmlCardIdPrefix+"agent_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "waring", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
+    $(htmlCardIdPrefix+"collect_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "waring", selectedServerNode.monAgentStatus === "ACTIVE" ? "running" : "waring"))
     // $("#mci_server_info_status").empty();
     // $("#mci_server_info_status").text(" [ " + mciName + " ]")
     // $("#mci_server_info_count").text(" Server(" + totalvmCount + ")")
@@ -623,9 +625,8 @@ function initMonitorConfigTable() {
     // 상세 정보 표시 여부
     if (tempServernodeId === currentServernodeId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("monitoring_configuration"))
-     
-      this.deselectRow();
-      return
+      this.dese
+      returnlectRow();
     } else {
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("monitoring_configuration"))
       this.deselectRow();

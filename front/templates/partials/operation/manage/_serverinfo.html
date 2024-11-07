@@ -4,7 +4,21 @@
     <h3 class="card-title">
       Server Info<span id="server_info_text" class="text-info"> </span>
     </h3>
-    <div class="card-actions btn-actions">
+    <div class="card-actions btn-actions gap-2 ">
+
+      <!-- <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#cmdtestmodal">
+        Remote CMD
+      </a> -->
+
+      <a
+        class="btn"
+        data-bs-toggle="modal"     
+        data-bs-target="#commonDefaultModal"
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Remote CMD', 'Would you like to connect?', 'pages/operation/manage/mci.initremotecmdModal')"
+      > 
+      Remote CMD
+      </a>
+
       <a
         href="#installsw"
         class="btn btn-outline-dark"
@@ -28,6 +42,7 @@
         </svg>
         Install SW
       </a>
+
     </div>
   </div>
   <div class="card-body">
@@ -180,3 +195,22 @@
   </div>
   <!-- body end -->
 </div>
+
+
+<div class="modal modal-blur fade" id="cmdtestmodal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cmdtestmodal-title">Remote Treminal</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0"  id="cmdtestmodal-content">
+            <div id="xterm-container"></div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Disconnect</button>
+          </div>
+      </div>
+  </div>
+</div>
+<%= javascriptTag("common/api/services/remotecmd_api.js") %>

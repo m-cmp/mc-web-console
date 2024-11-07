@@ -4,7 +4,7 @@ FILE="./api.yaml"
 read -p "MCIAM USE? (y/n): " MCIAM_USE 
 
 case "$MCIAM_USE" in
-    y|Y ) URL="https://raw.githubusercontent.com/MZC-CSC/mc-admin-cli/develop/conf/api.yaml";; # m-cmp/mc-admin-cli
+    y|Y ) URL="https://raw.githubusercontent.com/m-cmp/mc-admin-cli/refs/heads/main/conf/api.yaml";; # m-cmp/mc-admin-cli
     n|N ) URL="https://raw.githubusercontent.com/cloud-barista/cm-mayfly/main/conf/api.yaml";; # cloud-barista/cm-mayfly
 esac
 
