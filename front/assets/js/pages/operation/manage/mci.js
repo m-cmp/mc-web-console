@@ -61,7 +61,7 @@ async function initMci() {
 
   } catch (e) {
     console.log(e);
-  }
+  }  
   ////////////////////// partials init functions end ///////////////////////////////////////
 
 
@@ -134,7 +134,8 @@ function getMciListCallbackSuccess(caller, mciList) {
 function refreshDisplay() {
   setToTalMciStatus(); // mci상태 표시
   setTotalVmStatus(); // mci 의 vm들 상태표시
-  mciListTable.setData(totalMciListObj);
+  
+  mciListTable.setData(totalMciListObj);  
 
   if (currentMciId) {
     for (var mciIndex in totalMciListObj) {
@@ -148,6 +149,7 @@ function refreshDisplay() {
     }
   }
 }
+
 // table의 특정 row만 갱신
 function refreshRowData(rowId, newData) {
   const selectedRows = mciListTable.getSelectedData().map(row => row.id);
@@ -165,9 +167,11 @@ function refreshRowData(rowId, newData) {
       console.error("Error updating row data:", error);
     });
 
+
   displayServerStatusList(rowId, newData.vm)
   console.log("displayServerStatusList at refreshRowData")
 }
+
 // 클릭한 mci info 가져오기
 // 표에서 선택된 MciId 받아옴
 export async function getSelectedMciData() {
@@ -195,11 +199,8 @@ export async function getSelectedMciData() {
         break;
       }
     }
-
     // SET MCIS Info page
     setMciInfoData(mciData)
-
-
 
     // // Toggle MCIS Info
     // var div = document.getElementById("mci_info");
@@ -270,7 +271,6 @@ function setMciInfoData(mciData) {
     console.error(e);
   }
 
-  // refreshDisplay();
 }
 
 // mci 삭제
@@ -989,11 +989,11 @@ function initMciTable() {
   // 행 클릭 시
   mciListTable.on("rowClick", function (e, row) {
     // vmid 초기화 for vmlifecycle
-
     // var tempcurmciID = currentClickedmciID
     // currentClickedmciID = row.getCell("id").getValue();
     var tempcurmciID = row.getCell("id").getValue();
     if (tempcurmciID === currentMciId) {
+      console.log("tempcurmciID === currentMciId")
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
       currentMciId = ""
       this.deselectRow();
@@ -1001,8 +1001,8 @@ function initMciTable() {
     } else {
       currentMciId = tempcurmciID;
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
-      this.deselectRow();
-      this.selectRow(currentMciId);
+      //this.deselectRow();
+      //this.selectRow(currentMciId);
       // 표에서 선택된 MCISInfo 
       getSelectedMciData()
       return
@@ -1025,12 +1025,12 @@ function initMciTable() {
   });
 
   //  선택된 여러개 row에 대해 처리
-  mciListTable.on("rowSelectionChanged", function (data, rows) {
-    checked_array = data
-    console.log("checked_array", checked_array)
-    console.log("rowsrows", data)
-    selectedMciObj = data
-  });
+  // mciListTable.on("rowSelectionChanged", function (data, rows) {
+  //   checked_array = data
+  //   console.log("checked_array", checked_array)
+  //   console.log("rowsrows", data)
+  //   selectedMciObj = data
+  // });
   // displayColumn(table);
 }
 
