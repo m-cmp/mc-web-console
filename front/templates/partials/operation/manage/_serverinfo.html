@@ -47,30 +47,35 @@
   </div>
   <div class="card-body">
     <div class="container">
-      <div class="row p-4">
-        <div class="col-md-2">
+      <div class="row">
+        <div class="col-lg-2">
           <div class="form-group mb-2">
             <img
-              class="img-fluid"
-              class="rounded"
+              class="img-fluid rounded"
               width="80"
               id="mci_server_info_status_img"
             />
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-10">
           <div class="datagrid">
-            <div class="datagrid-item">
-              <div class="form-label">
-                <h5>Name</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="datagrid-item mb-3">
+                  <div class="datagrid-title">
+                    <h5>Name</h5>
+                  </div>
+                  <div class="datagrid-content" id="server_info_name"></div>
+                </div>
               </div>
-              <div class="form-description" id="server_info_name"></div>
-            </div>
-            <div class="datagrid-item">
-              <div class="form-label">
-                <h5>Description</h5>
+              <div class="col-md-6">
+                <div class="datagrid-item mb-3">
+                  <div class="datagrid-title">
+                    <h5>Description</h5>
+                  </div>
+                  <div class="datagrid-content" id="server_info_desc"></div>
+                </div>
               </div>
-              <div class="form-description" id="server_info_desc"></div>
             </div>
           </div>
         </div>
@@ -78,114 +83,117 @@
     </div>
 
     <div class="container">
-      <div class="row p-4">
-        <div class="col-md-2">
+      <div class="row align-items-start">
+        <!-- Connection Info -->
+        <div class="col-lg-2">
           <div class="form-group mb-2">
             <span id="mci_server_info_connection"></span>
           </div>
         </div>
-        <div class="col-md-2">
+
+        <!-- OS and Architecture -->
+        <div class="col-lg-2">
           <div class="datagrid">
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>Operating System</h5>
               </div>
-              <div class="form-description" id="server_info_os"></div>
+              <div class="datagrid-content" id="server_info_os"></div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>Architecture</h5>
               </div>
-              <div class="form-description" id="server_info_archi"></div>
+              <div class="datagrid-content" id="server_info_archi"></div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>VMSpecName</h5>
               </div>
-              <div class="form-description" id="server_info_vmspec_name"></div>
+              <div class="datagrid-content" id="server_info_vmspec_name"></div>
             </div>
           </div>
         </div>
 
-        <div class="col-md-2">
+        <!-- Start Time and Public IP -->
+        <div class="col-lg-2">
           <div class="datagrid">
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>StartTime</h5>
               </div>
-              <div class="form-description" id="server_info_start_time"></div>
+              <div class="datagrid-content" id="server_info_start_time"></div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>Public IP</h5>
               </div>
-              <div class="form-description" id="server_info_public_ip"></div>
+              <div class="datagrid-content" id="server_info_public_ip"></div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>/ DNS</h5>
               </div>
-              <div class="form-description" id="server_info_public_dns"></div>
+              <div class="datagrid-content" id="server_info_public_dns"></div>
             </div>
           </div>
         </div>
 
-        <div class="col-md-2">
+        <!-- Private IP and Config -->
+        <div class="col-lg-2">
           <div class="datagrid">
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>Private IP</h5>
               </div>
-              <div class="form-description" id="server_info_private_ip">d</div>
+              <div class="datagrid-content" id="server_info_private_ip">d</div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>/ DNS</h5>
               </div>
-              <div class="form-description" id="server_info_private_dns"></div>
+              <div class="datagrid-content" id="server_info_private_dns"></div>
             </div>
-
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>ConfigName</h5>
               </div>
               <div
-                class="form-description"
+                class="datagrid-content"
                 id="server_info_connection_name"
               ></div>
             </div>
           </div>
         </div>
-        <div class="col-md-2">
+
+        <!-- VMID, Region, and Zone -->
+        <div class="col-lg-2">
           <div class="datagrid">
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>VMID</h5>
               </div>
-              <div class="form-description" id="server_info_cspVMID"></div>
+              <div class="datagrid-content" id="server_info_cspVMID"></div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>Region</h5>
               </div>
-              <div class="form-description" id="server_info_region"></div>
+              <div class="datagrid-content" id="server_info_region"></div>
             </div>
-            <div class="datagrid-item">
-              <div class="form-label">
+            <div class="datagrid-item mb-3" style="min-height: 30px">
+              <div class="datagrid-title">
                 <h5>Zone</h5>
               </div>
-              <div class="form-description" id="server_info_zone"></div>
+              <div class="datagrid-content" id="server_info_zone"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <%= partial("partials/operation/manage/servertabcards.html") %>
   </div>
-  <div class="row p-4">
-    <div class="col">
-      <%= partial("partials/operation/manage/serverdetailinfo.html") %>
-    </div>
-  </div>
+  <!-- body end -->
 </div>
 
 

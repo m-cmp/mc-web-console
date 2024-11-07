@@ -16,30 +16,6 @@
             <div class="card-header">
               <h3 class="card-title">List of MCI</h3>
               <div class="card-actions btn-actions">
-                <a
-                  href="#manage"
-                  class="btn btn-primary"
-                  onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewMci()"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 5l0 14"></path>
-                    <path d="M5 12l14 0"></path>
-                  </svg>
-                  Add mci
-                </a>
-
                 <!-- filter -->
                 <a
                   class="btn-action"
@@ -291,31 +267,6 @@
 
                     <div class="dropdown-divider"></div>
 
-                    <a class="dropdown-item" href="#manage">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="icon dropdown-item-icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          stroke="none"
-                          d="M0 0h24v24H0z"
-                          fill="none"
-                        ></path>
-                        <path
-                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-                        ></path>
-                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                      </svg>
-                      New
-                    </a>
                     <a class="dropdown-item"
                     data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
@@ -491,7 +442,7 @@
     <!-- MCI CREATE -->
 
     <!-- TODO : divide to express, simple, expert form  -->
-    <div id="manage" class="section">
+    <div id="mcicreate" class="section">
       <form id="express_form">
         <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
         <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->

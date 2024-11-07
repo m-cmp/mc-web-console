@@ -2,36 +2,41 @@
   <div class="container-xl">
     <!-- PMK DASHBOARD -->
     <div id="index" class="section">
+      <div class="row">
+        <div class="col">
+          <div class="d-flex justify-content-end align-items-center">
+            <!-- <a
+              href="#manage"
+              class="btn btn-primary"
+              onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M12 5l0 14"></path>
+                <path d="M5 12l14 0"></path>
+              </svg>
+              Add cluster
+            </a> -->
+          </div>
+        </div>
+      </div>
       <div class="row row-cards">
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">List of Cluster</h3>
               <div class="card-actions btn-actions">
-                <a
-                  href="#manage"
-                  class="btn btn-primary"
-                  onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 5l0 14"></path>
-                    <path d="M5 12l14 0"></path>
-                  </svg>
-                  Add cluster
-                </a>
-
                 <!-- filter -->
                 <a
                   class="btn-action"
@@ -219,7 +224,8 @@
                 </div>
 
                 <!-- refresh -->
-                <a class="btn-action"
+                <a
+                  class="btn-action"
                   onclick="webconsolejs['pages/operation/manage/pmk'].refreshPmkList()"
                 >
                   <svg
@@ -333,7 +339,7 @@
     </div>
 
     <!-- PMK CREATE -->
-    <div id="manage" class="section">
+    <div id="createcluster" class="section">
       <form id="cluster_form">
         <input type="hidden" name="name" value="" id="c_name" />
         <input type="hidden" name="description" id="c_desc" />

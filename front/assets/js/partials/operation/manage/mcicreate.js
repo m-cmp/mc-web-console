@@ -329,6 +329,7 @@ export async function displayNewServerForm() {
 
 
 // express모드 -> Done버튼 클릭 시
+
 export function expressDone_btn() {
 
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
@@ -337,88 +338,56 @@ export function expressDone_btn() {
 	$("#p_name").val($("#ep_name").val())
 	$("#p_description").val($("#ep_description").val())
 	$("#p_imageId").val($("#ep_imageId").val())
-
 	$("#p_commonImageId").val($("#ep_commonImageId").val())
-
 	$("#p_commonSpecId").val($("#ep_commonSpecId").val())
 	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
 	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
-
 	$("#p_specId").val($("#ep_specId").val())
-
 	$("#p_subGroupSize").val($("#ep_vm_add_cnt").val() + "")
 	$("#p_vm_cnt").val($("#ep_vm_add_cnt").val() + "")
 
-	//var express_form = $("#express_form").serializeObject()
 	// commonSpec 으로 set 해야하므로 재설정
 	var express_form = {}
 	express_form["name"] = $("#p_name").val();
-	express_form["connectionName"] = $("#p_connectionName").val();
 	express_form["description"] = $("#p_description").val();
 	express_form["subGroupSize"] = $("#p_subGroupSize").val();
-	// express_form["image"] = $("#p_imageId").val();
-	// express_form["spec"] = $("#p_specId").val();
 	express_form["rootDiskSize"] = $("#p_root_disk_size").val();
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
 
-	// dynamic에서 commonImage를 param으로 받기 때문에 해당 값 설정
-	express_form["commonImage"] = $("#p_commonImageId").val();
-	express_form["commonSpec"] = $("#p_commonSpecId").val();//
 
 	console.log("express_form form : ", express_form);
 
-	var server_name = express_form.name
-
-	var server_cnt = parseInt(express_form.subGroupSize)
-	console.log("server_cnt", server_cnt)
+	var server_name = express_form.name;
+	var server_cnt = parseInt(express_form.subGroupSize);
+	console.log("server_cnt", server_cnt);
 
 	var add_server_html = "";
 
-	Express_Server_Config_Arr.push(express_form)
+	Express_Server_Config_Arr.push(express_form);
 
-
-	var displayServerCnt = '(' + server_cnt + ')'
-
+	var displayServerCnt = '(' + server_cnt + ')';
 	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mcicreate\'].view_express(\'' + express_data_cnt + '\')">'
-
 		+ server_name + displayServerCnt
-
 		+ '</li>';
 
-	// }
-	// $(".section").removeClass("active");
-
-	// var div = document.getElementById("server_configuration");
-	// webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-
 	var div = document.getElementById("server_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
+	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
 
-	// $("#mci_server_list").prepend(add_server_html)
-	// $("#plusVmIcon").remove();
-	// $("#mci_server_list").prepend(getPlusVm());
-
-
-	console.log("add server html");
-
-	var vmEleId = "vm"
+	var vmEleId = "vm";
 	if (!isVm) {
-		vmEleId = "mci"
+		vmEleId = "mci";
 	}
-	console.log("add vm")
 	$("#" + vmEleId + "_plusVmIcon").remove();
-	$("#" + vmEleId + "_server_list").append(add_server_html)
+	$("#" + vmEleId + "_server_list").append(add_server_html);
 	$("#" + vmEleId + "_server_list").prepend(getPlusVm(vmEleId));
 
-
-	console.log("express btn click and express form data : ", express_form)
+	console.log("express btn click and express form data : ", express_form);
 	console.log("express data array : ", Express_Server_Config_Arr);
 	express_data_cnt++;
 	$("#express_form").each(function () {
 		this.reset();
-	})
+	});
 	$("#ep_data_disk").val("");
-
 }
 
 export function view_express(cnt) {
