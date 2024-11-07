@@ -2,6 +2,7 @@ framework,resource,adminPolicy,billadminPolicy,billviewerPolicy,operatorPolicy,v
 mc-web-console,settingsmenu,TRUE,,,TRUE,TRUE
 mc-web-console,accountnaccessmenu,TRUE,,,,
 mc-web-console,organizationsmenu,TRUE,,,,
+mc-web-console,costanalysismenu,TRUE,TRUE,TRUE,,
 mc-web-console,companyinfomenu,TRUE,,,,
 mc-web-console,usersmenu,TRUE,,,,
 mc-web-console,approvalsmenu,TRUE,,,,
