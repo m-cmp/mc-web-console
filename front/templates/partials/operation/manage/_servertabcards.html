@@ -3,16 +3,16 @@
 <div class="container-xl">
     <div class="row row-cards">
         <div class="col">
-            <div class="card">
+            <div class="card" style="border: 0px">
                 <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
-                        <li class="nav-item">
+                    <ul class="nav nav-tabs card-header-tabs"  data-bs-toggle="tabs" role="tablist" style="background-color: transparent;">
+                        <li class="nav-item" role="presentation">
                             <a href="#tabs-vm-details" class="nav-link active" data-bs-toggle="tab">Detail</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" role="presentation">
                             <a href="#tabs-vm-connection" class="nav-link" data-bs-toggle="tab">Connection</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" role="presentation">
                             <a href="#tabs-vm-monitoring" class="nav-link" data-bs-toggle="tab">Monitoring</a>
                         </li>
                     </ul>
@@ -20,14 +20,14 @@
                 <div class="card-body">
                     <div class="container">
                         <div class="tab-content">
-                            <div class="tab-pane fade active show" id="tabs-vm-details">
+                            <div class="tab-pane fade active show" id="tabs-vm-details" role="tabpanel">
                                 <%= partial("partials/operation/manage/server_detail.html") %>
                             </div>
-                            <div class="tab-pane fade" id="tabs-vm-connection">
+                            <div class="tab-pane fade" id="tabs-vm-connection" role="tabpanel">
                                 <%= partial("partials/operation/manage/server_connection.html") %>
                             </div>
                             
-                            <div class="tab-pane fade" id="tabs-vm-monitoring">
+                            <div class="tab-pane fade" id="tabs-vm-monitoring" role="tabpanel">
                                 <%= partial("partials/operation/manage/server_monitoring.html") %>            
                             </div>
                         </div>

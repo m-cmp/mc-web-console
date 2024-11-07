@@ -51,7 +51,7 @@ export async function getMci(nsId, mciId) {
 
 // mci vm 단건 조회
 export async function getMciVm(nsId, mciId, vmId) {
-  if (nsId == "" || nsId == undefined || mciId == undefined || vmId == ""|| vmId == undefined || vmId == "") {
+  if (nsId == "" || nsId == undefined || mciId == undefined || vmId == "" || vmId == undefined || vmId == "") {
     console.log(" undefined nsId: " + nsId, + " mciId " + mciId, ", vmId " + vmId);
     return;
   }
@@ -74,17 +74,14 @@ export async function getMciVm(nsId, mciId, vmId) {
 }
 
 // mciLifeCycle 제어 option : reboot / suspend / resume / terminate
-export function mciLifeCycle(type, checked_array, nsId) {
+export function mciLifeCycle(type, currentMciId, nsId) {
   console.log("mciLifeCycle option : ", type)
-  console.log("selected mci : ", checked_array)
+  console.log("selected mci : ", currentMciId)
 
-
-  for (const mci of checked_array) {
-    console.log(mci.id)
     let data = {
       pathParams: {
         nsId: nsId,
-        mciId: mci.id,
+        mciId: currentMciId,
       },
       queryParams: {
         "action": type,
@@ -97,15 +94,18 @@ export function mciLifeCycle(type, checked_array, nsId) {
     );
     console.log("mciLifeCycle response : ", response)
   }
-}
 
-export function mciDelete(checked_array, nsId) {
-  for (const mci of checked_array) {
-    console.log(mci.id)
+export function mciDelete(currentMciId, nsId) {
+  console.log("mciDeletemciDeletemciDeletemciDelete")
+  console.log("mciDeletemciDeletemciDeletemciDelete", currentMciId, nsId)
+
+  // for (const mci of checked_array) {
+  //   console.log(mci.id)
+    
     let data = {
       pathParams: {
         nsId: nsId,
-        mciId: mci.id,
+        mciId: currentMciId,
       },
       queryParams: {
         option: "force"
@@ -118,7 +118,7 @@ export function mciDelete(checked_array, nsId) {
     );
     console.log("mciLifeCycle response : ", response)
   }
-}
+// }
 
 export function vmDelete(mciId, nsId, vmId) {
   let data = {
@@ -317,21 +317,22 @@ export function calculateConnectionCount(vmList) {
 
 // MCI 상태를 UI에서 표현하는 방식으로 변경
 export function getMciStatusFormatter(mciFullStatus) {
-  //console.log("getMciStatus " + mciFullStatus);
-  var statusArr = mciFullStatus.split("-");
-  var returnStatus = statusArr[0].toLowerCase();
+  console.log("getMciStatusgetMciStatus", mciFullStatus);
 
-  if (mciFullStatus.toLowerCase().indexOf("running") > -1) {
+  let returnStatus = mciFullStatus.toLowerCase();
+
+  if (returnStatus.includes("partial")) {
+    returnStatus = "partial";
+  } else if (returnStatus.includes("running")) {
     returnStatus = "running";
-  } else if (mciFullStatus.toLowerCase().indexOf("suspend") > -1) {
-    returnStatus = "stop";
-  } else if (mciFullStatus.toLowerCase().indexOf("terminate") > -1) {
-    returnStatus = "terminate";
-    // TODO : partial도 있는데... 처리를 어떻게 하지??
-  } else {
-    returnStatus = "terminate";
+  } else if (returnStatus.includes("suspended")) {
+    returnStatus = "suspended";
+  } else if (returnStatus.includes("terminated")) {
+    returnStatus = "terminated";
+  } else if (returnStatus.includes("failed")) {
+    returnStatus = "failed";
   }
-  //console.log("after status " + returnStatus);
+
   return returnStatus;
 }
 
@@ -344,10 +345,10 @@ export function getMciStatusIconFormatter(mciDispStatus) {
     mciStatusIcon = "icon_stop.svg"
   } else if (mciDispStatus == "suspended") {
     mciStatusIcon = "icon_stop.svg"
-  } else if (mciDispStatus == "terminate") {
+  } else if (mciDispStatus == "terminated") {
     mciStatusIcon = "icon_terminate.svg"
   } else {
-    mciStatusIcon = "icon_stop.svg"
+    mciStatusIcon = "icon_terminate.svg"
   }
   return mciStatusIcon
 }
@@ -365,7 +366,7 @@ export function getMciInfoProviderNames(mciData) {
       console.log("provider ", key)
       mciProviderNames +=
         '<img class="img-fluid" width="30" src="/assets/images/common/img_logo_' +
-        (key==""?"mcmp":key) +
+        (key == "" ? "mcmp" : key) +
         '.png" alt="' +
         key +
         '" style="margin-right: 5px;"/>';
@@ -389,6 +390,8 @@ export function getVmStatusFormatter(vmFullStatus) {
 
   if (returnVmStatus == VM_STATUS_RUNNING) {
     returnVmStatus = "running"
+  } else if (returnVmStatus === VM_STATUS_SUSPENDED) { // suspended 상태 확인
+    return "suspended";
   } else if (returnVmStatus == VM_STATUS_TERMINATED) {
     returnVmStatus = "terminate"
   } else if (returnVmStatus == VM_STATUS_FAILED) {
@@ -402,17 +405,17 @@ export function getVmStatusFormatter(vmFullStatus) {
 
 // VM 상태 별로 Style class로 색 설정
 export function getVmStatusStyleClass(vmDispStatus) {
-  var vmStatusClass = "bg-info";
+  var vmStatusClass = "bg-green-lt";
   if (vmDispStatus == "running") {
-    vmStatusClass = "bg-info"
+    vmStatusClass = "bg-green-lt"
   } else if (vmDispStatus == "include") {
-    vmStatusClass = "bg-red"
+    vmStatusClass = "bg-red-lt"
   } else if (vmDispStatus == "suspended") {
-    vmStatusClass = "bg-red"
+    vmStatusClass = "bg-red-lt"
   } else if (vmDispStatus == "terminated") {
-    vmStatusClass = "bg-secondary"
+    vmStatusClass = "bg-muted-lt"
   } else {
-    vmStatusClass = "bg-secondary"
+    vmStatusClass = "bg-muted-lt"
   }
   return vmStatusClass;
 }
