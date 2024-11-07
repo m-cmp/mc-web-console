@@ -1189,3 +1189,20 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 /////////////////////////Tabulator Filter END/////////////////////////
 
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
+
+
+
+
+
+
+/////////////////// TEST TERMINAL MODAL /////////////////////////
+
+export async function initremotecmdModal(){
+  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container',nsId,currentMciId,selectedVmId) // vmStatus 별로 상태 색상 set
+  const modalElement = document.getElementById('cmdtestmodal');
+  const modalInstance = new bootstrap.Modal(modalElement);
+  modalInstance.show();
+}
+
+

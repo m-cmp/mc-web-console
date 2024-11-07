@@ -1,6 +1,10 @@
 function showSection() {
     const sections = document.querySelectorAll('.section');
+    const subSections = document.querySelectorAll('.sub_section');
+
     sections.forEach(section => section.classList.remove('active'));
+    subSections.forEach(subSections => subSections.classList.remove('active'));
+
     const hash = window.location.hash || '#index';
     const activeSection = document.querySelector(hash);
     if (activeSection) {
