@@ -258,7 +258,7 @@ export async function getRegionList() {
   // }
   //   };
 
-  let controller = "/api/" + "mc-infra-manager/" + "GetRegionList";
+  let controller = "/api/" + "mc-infra-manager/" + "GetRegions";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
 

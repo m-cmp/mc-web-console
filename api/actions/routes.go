@@ -1,8 +1,10 @@
 package actions
 
 import (
+	"fmt"
 	"log"
 	"mc_web_console_api/handler"
+	"regexp"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
@@ -59,5 +61,19 @@ func GetApiHosts(c buffalo.Context) error {
 		return c.Render(200, r.JSON(map[string]interface{}{"error": err.Error()}))
 	}
 	commonResponse := handler.CommonResponseStatusOK(apiHosts)
+
+	re := regexp.MustCompile(`:(\d+.*)`)
+	if IFRAME_TARGET_IS_HOST {
+		for fw, host := range apiHosts {
+			portUrlStr := re.FindString(host.BaseURL)
+			if portUrlStr != "" {
+				host.BaseURL = portUrlStr
+				apiHosts[fw] = host
+			}
+		}
+		fmt.Println(apiHosts)
+		commonResponse = handler.CommonResponseStatusOK(apiHosts)
+	}
+
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
