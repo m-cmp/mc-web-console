@@ -1,166 +1,211 @@
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
+import { Dropzone } from 'dropzone';
 
 let terminalInstance = null;
 
 export async function initTerminal(id, nsId, mciId, vmid) {
-	console.log("Trying to connect to " + nsId + " / " + mciId);
-	
-	if (terminalInstance) {
-		terminalInstance.dispose();
-		terminalInstance = null;
-	}
+    let fileContents = [];
 
-	// 새 터미널 및 FitAddon 생성
-	const term = new Terminal({
-		theme: {
-			background: '#1e1e1e',
-			foreground: '#ffffff',
-			cursor: '#ffcc00'
-		},
-		cursorBlink: true
-	});
-	const fitAddon = new FitAddon();
-	term.loadAddon(fitAddon);
+    if (terminalInstance) {
+        terminalInstance.dispose();
+        terminalInstance = null;
+    }
 
-	const container = document.getElementById(id);
-	term.open(container);
-	
-	terminalInstance = term;
+    const term = new Terminal({
+        theme: {
+            background: '#1e1e1e',
+            foreground: '#ffffff',
+            cursor: '#ffcc00'
+        },
+        cursorBlink: true
+    });
 
-	const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH client IP is: $client_ip";
-	await processCommand(nsId, mciId, vmid, ipcmd, term, () => {});
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
 
-	function prompt() {
-		term.write('\r\n $ ');
-	}
-	prompt();
+    const container = document.getElementById(id);
+    term.open(container);
+    
+    terminalInstance = term;
 
-	let userInput = '';
+    function prompt() {
+        term.write('\r\n\r\n $ ');
+    }
 
-	term.onData(async (data) => {
-		if (data === '\r') { 
-			const command = userInput; 
-			userInput = ''; 
-			term.write(`\r\n`); 
-			
-			await processCommand(nsId, mciId, vmid, command, term, () => {
-				prompt();
-			});
-		} else if (data === '\u007f') {
-			if (userInput.length > 0) {
-				term.write('\b \b');
-				userInput = userInput.slice(0, -1);
-			}
-		} else {
-			if (/^[a-zA-Z0-9 !@#$%^&*()_\-+=\[\]{}|;:'",.<>/?]$/.test(data)) {
-				term.write(data);
-				userInput += data;
-			}
-		}
-	});
+    const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
+    await processCommand(nsId, mciId, vmid, ipcmd, term, () => {
+        prompt();
+    });
+
+    let userInput = '';
+    term.onData(async (data) => {
+        if (data === '\r') { 
+            const command = userInput; 
+            userInput = ''; 
+            term.write(`\r\n`); 
+            await processCommand(nsId, mciId, vmid, command, term, () => {
+                prompt();
+            });
+        } else if (data === '\u007f') {
+            if (userInput.length > 0) {
+                term.write('\b \b');
+                userInput = userInput.slice(0, -1);
+            }
+        } else {
+            if (/^[a-zA-Z0-9 !@#$%^&*()_\-+=\[\]{}|;:'",.<>/?]$/.test(data)) {
+                term.write(data);
+                userInput += data;
+            }
+        }
+    });
+
+    const dropzone = new Dropzone("#dropzone-custom", {
+        autoProcessQueue: false, // Disable auto-upload
+        addRemoveLinks: true,    // Add remove link if needed
+        acceptedFiles: ".sh",    // Allow only shell script files
+        init: function () {
+            this.on("addedfile", function (file) {
+                if (file.name.endsWith(".sh")) {
+                    const reader = new FileReader();
+
+                    reader.onload = function (event) {
+                        const fileText = event.target.result;
+                        const modifiedContent = fileText
+                            .split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0)
+                            .join(' && ');
+                        fileContents.push(modifiedContent);
+                    };
+
+                    reader.onerror = function (event) {
+                        alert("Failed to read file: " + event);
+                    };
+
+                    reader.readAsText(file);
+                } else {
+                    alert("Only shell script files (.sh) are allowed.");
+                }
+            });
+        }
+    });
+
+    document.getElementById("show-content-btn").addEventListener("click", async function () {
+        if (fileContents.length > 0) {
+            for (const cmd of fileContents) {
+                try {
+                    await processCommand(nsId, mciId, vmid, cmd,terminalInstance, () => {
+						prompt();
+					});
+                } catch (error) {
+                    alert("An error occurred while processing the command: " + cmd);
+                    console.error(error);
+                }
+            }
+        } else {
+            alert("No file content available or file not loaded.");
+        }
+    });
 }
 
 async function processCommand(nsid, mciid, vmid, command, term, callback) {
-	const loadingSymbols = ['|', '/', '-', '\\'];
-	let loadingIndex = 0;
+    const loadingSymbols = ['|', '/', '-', '\\'];
+    let loadingIndex = 0;
 
-	const loadingInterval = setInterval(() => {
-		term.write(`\r${loadingSymbols[loadingIndex]} Processing...`);
-		loadingIndex = (loadingIndex + 1) % loadingSymbols.length;
-	}, 250);
+    const loadingInterval = setInterval(() => {
+        term.write(`\r     ${loadingSymbols[loadingIndex]} Processing...`);
+        loadingIndex = (loadingIndex + 1) % loadingSymbols.length;
+    }, 250);
 
-	try {
-		// API 호출 및 결과 받기
-		const result = await postcmdmci(nsid, mciid, vmid, [command]);
-		
-		clearInterval(loadingInterval); // 로딩 애니메이션 중지
-		term.write('\r                     \r'); // 로딩 텍스트 지우기
+    try {
+        const result = await postcmdmci(nsid, mciid, vmid, [command]);
+        clearInterval(loadingInterval);
+        term.write('\r                          \r');
 
-		const response = result.results[0];
-		const stdout = response.stdout;
-		const stderr = response.stderr;
+        const response = result.results[0];
+        const callErr = response.err;
+        const stdout = response.stdout;
+        const stderr = response.stderr;
 
-		// STDOUT 출력
-		if (stdout && Object.values(stdout).some(value => value.trim() !== '')) {
-			Object.values(stdout).forEach(value => {
-				const lines = value.split('\n');
-				lines.forEach(line => {
-					writeAutoWrap(term, line);
-				});
-			});
-		} else {
-			term.write('\r\nSTDOUT: (No output)\r\n');
-		}
+        if (callErr) {
+            const formattedError = JSON.stringify(callErr, null, 2);
+            writeAutoWrap(term, " > connect Error: \x1b[1m\x1b[31m" + formattedError + "\x1b[0m");
+            callback({error: callErr});
+            return;
+        }
 
-		// STDERR 출력
-		if (stderr && Object.values(stderr).some(value => value.trim() !== '')) {
-			Object.values(stderr).forEach(value => {
-				const lines = value.split('\n');
-				lines.forEach(line => {
-					if (line.trim() !== "") { 
-						writeAutoWrap(term, line);
-					}
-				});
-			});
-		}
+        if (stderr && Object.values(stderr).some(value => value.trim() !== '')) {
+            term.write('\r\n\x1b[1m\x1b[31mSTDERR RESPONSE:\r\n');
+            Object.values(stderr).forEach(value => {
+                writeAutoWrap(term, value);
+            });
+            term.write("\x1b[0m\r\n");
+        }
 
-		callback(); // 완료 콜백 호출
+        if (stdout && Object.values(stdout).some(value => value.trim() !== '')) {
+            Object.values(stdout).forEach(value => {
+                writeAutoWrap(term, value);
+            });
+        } else {
+            term.write('\r\nSTDOUT RESPONSE: (No output)\r\n');
+        }
+        
+        callback(result);
 
-	} catch (error) {
-		clearInterval(loadingInterval); // 에러 발생 시 로딩 애니메이션 중지
-		term.write('\r                     \r'); // 로딩 텍스트 지우기
-		term.write(`Error: ${error.message}\r\n`); // 에러 메시지 전달
-		callback();
-	}
+    } catch (error) {
+        clearInterval(loadingInterval);
+        term.write('\r                          \r'); 
+        term.write(`Error: ${error.message}\r\n`);
+        callback(result);
+    }
 }
 
-// 자동 줄바꿈 처리 함수
 function writeAutoWrap(term, text) {
-	const cols = term.cols;
-	let currentLine = '';
+    const cols = term.cols;
+    let currentLine = '';
 
-	for (let i = 0; i < text.length; i++) {
-		const char = text[i];
-		
-		if (char === '\n') {
-			term.write(currentLine + '\r\n');
-			currentLine = '';
-			continue;
-		}
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
 
-		currentLine += char;
-		if (currentLine.length >= cols) {
-			term.write(currentLine + '\r\n');
-			currentLine = '';
-		}
-	}
+        if (char === '\n') {
+            term.write(currentLine + '\r\n');
+            currentLine = '';
+            continue;
+        }
 
-	if (currentLine) {
-		term.write(currentLine);
-	}
+        currentLine += char;
+        if (currentLine.length >= cols) {
+            term.write(currentLine + '\r\n');
+            currentLine = '';
+        }
+    }
+
+    if (currentLine) {
+        term.write(currentLine);
+    }
 }
 
 export async function postcmdmci(nsid, mciid, vmid, cmdarr) {
-	const data = {
-		pathParams: {
-			nsId: nsid,
-			mciId: mciid
-		},
-		queryParams: {
-			vmId: vmid
-		},
-		Request: {
-			command: cmdarr,
-			userName: "cb-user"
-		}
-	}
-	const controller = "/api/" + "mc-infra-manager/" + "Postcmdmci";
-	const response = await webconsolejs["common/api/http"].commonAPIPost(
-		controller,
-		data
-	);
-	console.log("lookup disk info response : ", response);
-	const responseData = response.data.responseData;
-	return responseData;
+    const data = {
+        pathParams: {
+            nsId: nsid,
+            mciId: mciid
+        },
+        queryParams: {
+            vmId: vmid
+        },
+        Request: {
+            command: cmdarr,
+            userName: "cb-user"
+        }
+    }
+    const controller = "/api/" + "mc-infra-manager/" + "Postcmdmci";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+        controller,
+        data
+    );
+    console.log("lookup disk info response : ", response);
+    const responseData = response.data.responseData;
+    return responseData;
 }
