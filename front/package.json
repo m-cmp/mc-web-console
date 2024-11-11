@@ -62,5 +62,5 @@
     "webpack-livereload-plugin": "^3.0.0",
     "webpack-manifest-plugin": "^4.0.0"
   },
-  "packageManager": "yarn@4.1.0"
+  "packageManager": "yarn@4.5.1"
 }
