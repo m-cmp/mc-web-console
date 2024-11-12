@@ -1,1 +1,177 @@
-metric aaaa
+<div class="card-header mb-2">
+    <h3 class="card-title">
+        Monitor Metrics / Server(vm)
+        <span name="selectedMonTargetVM" class="badge bg-blue text-blue-fg ms-2"></span>
+    </h3>
+</div>
+
+<div class="d-flex justify-content-end row">
+    <div class="col-sm-12 col-md-2">
+        <a class="btn btn-outline-primary w-100 mb-3" href="#" data-bs-toggle="modal" data-bs-target="#editMetricsModal">
+            + New / Add
+        </a>
+    </div>
+    <div class="col-sm-12 col-md-8">
+        <div class="input-icon mb-3">
+            <input type="text" value="" class="form-control" placeholder="Search…">
+            <span class="input-icon-addon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M21 21l-6 -6"></path></svg>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="card-body p-0">
+        <div id="monitorMetricsTable"></div>
+        <a class="btn btn-outline-primary w-100 mb-3" href="#" data-bs-toggle="modal" data-bs-target="#setMonitoringPredictionModal">
+            TEST setMonitoringPredictionModal
+        </a>
+        <a class="btn btn-outline-primary w-100 mb-3" href="#" data-bs-toggle="modal" data-bs-target="#setAnormalyDetectionModal">
+            TEST setAnormalyDetectionModal
+        </a>
+    </div>
+</div>
+
+
+<div class="modal modal-blur fade" id="editMetricsModal" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add/New/Change Metrics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card bg-secondary-lt">
+                    <div class="card-body">
+                        <div class="card mb-3">
+                            <div class="card-header d-flex flex-column">
+                                <h3 class="col-12 text-secondary p-1"><span class="badge me-2">!</span>모니터링 Metric 항목을 추가합니다.</h3>
+                                <div class="col-12 row">
+                                    <label class="col-3 col-form-label">Target Server</label>
+                                    <div class="col">
+                                      <input class="form-control" name="selectedMonTargetVM"  disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Metric Plugin</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="editMetricsModalTable"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="setMonitoringPredictionModal" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Monitoring Prediction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card bg-secondary-lt">
+                    <div class="card-body">
+                        <div class="card">
+                            <div class="card-header d-flex flex-column">
+                                <h3 class="col-12 text-secondary p-1"><span class="badge me-2">!</span>모니터링 예측을 위한 설정을 적용합니다.</h3>
+                                <div class="col-12 row">
+                                    <label class="col-3 col-form-label">Target Server</label>
+                                    <div class="col">
+                                      <input class="form-control" name="selectedMonTargetVM" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 row">
+                                  <label class="col-3 col-form-label">Measurement</label>
+                                  <div class="col">
+                                    <select class="form-select"></select>
+                                    <small class="form-hint">(cpu, mem, disk, system load)</small>
+                                  </div>
+                                </div>
+                                <div class="mb-3 row">
+                                  <label class="col-3 col-form-label">Interval</label>
+                                  <div class="col">
+                                    <input class="form-control" name="selectedMonTargetVM"  disabled>
+                                  </div>
+                                </div>
+                                <div class="row">
+                                  <label class="col-3 col-form-label">Range</label>
+                                  <div class="col">
+                                    <input class="form-control">
+                                    <small class="form-hint">(Min:1h ~ Max:2160h)</small>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="setAnormalyDetectionModal" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Anormaly Detection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card bg-secondary-lt">
+                    <div class="card-body">
+                        <div class="card">
+                            <div class="card-header d-flex flex-column">
+                                <h3 class="col-12 text-secondary p-1"><span class="badge me-2">!</span>모니터링 이상탐지 설정을 적용합니다.</h3>
+                                <div class="col-12 row">
+                                    <label class="col-3 col-form-label">Target Server</label>
+                                    <div class="col">
+                                      <input class="form-control" name="selectedMonTargetVM" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 row">
+                                  <label class="col-3 col-form-label">Measurement/Metric</label>
+                                  <div class="col">
+                                    <select class="form-select"></select>
+                                    <small class="form-hint">(cpu/usage_idle, mem/usage_percent)</small>
+                                  </div>
+                                </div>
+                                <div class="mb-3 row">
+                                  <label class="col-3 col-form-label">Interval</label>
+                                  <div class="col">
+                                    <select class="form-select"></select>
+                                    <small class="form-hint">(Min:10m ~ Max:12h)</small>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>

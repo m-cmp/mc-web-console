@@ -204,9 +204,36 @@
               <h5 class="modal-title" id="cmdtestmodal-title">Remote Treminal</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+          
           <div class="modal-body p-0"  id="cmdtestmodal-content">
             <div id="xterm-container"></div>
           </div>
+
+          <div class="modal-body p-0"  id="cmdtestmodal-content">
+            <div class="accordion" id="command-example-accordion">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-1">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false">
+                    easy command transfer
+                  </button>
+                </h2>
+                <div id="collapse-1" class="accordion-collapse collapse" data-bs-parent="#command-example-accordion">
+                  <div class="accordion-body pt-0">
+                    <div class="d-grid gap-2">
+                      <button id="show-content-btn" class="btn btn-primary" type="button">excute commnad</button>
+                    </div>
+                    <form class="dropzone dz-clickable" id="dropzone-custom" action="./" autocomplete="off" novalidate="">
+                      <div class="dz-message">
+                        <h3 class="dropzone-msg-title">Drop Down Script Files</h3>
+                        <span class="dropzone-msg-desc">Only shell script files (.sh) are allowed.</span>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="modal-footer">
               <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Disconnect</button>
           </div>
