@@ -1,6 +1,5 @@
 // MCI API 관련 
 
-
 // 받아온 project(namespace)로 MciList GET
 export async function getMciList(nsId) {
 
@@ -13,6 +12,34 @@ export async function getMciList(nsId) {
     pathParams: {
       nsId: nsId,
     },
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  var mciList = response.data.responseData;
+
+  return mciList
+}
+
+// 받아온 project(namespace)로 MciList Id Arr GET
+export async function getMciIdList(nsId) {
+
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams : {
+      option : "id"
+    }
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
@@ -48,6 +75,7 @@ export async function getMci(nsId, mciId) {
   // error check를 위해 response를 return
   return response.data
 }
+
 
 // mci vm 단건 조회
 export async function getMciVm(nsId, mciId, vmId) {

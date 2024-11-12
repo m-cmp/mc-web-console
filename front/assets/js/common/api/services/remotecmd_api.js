@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm';
 import { Dropzone } from 'dropzone';
 
 let terminalInstance = null;
+let dropzoneInstance = null;
 
 export async function initTerminal(id, nsId, mciId, vmid) {
     let fileContents = [];
@@ -10,6 +11,11 @@ export async function initTerminal(id, nsId, mciId, vmid) {
     if (terminalInstance) {
         terminalInstance.dispose();
         terminalInstance = null;
+    }
+
+    if (dropzoneInstance) {
+        dropzoneInstance.destroy();
+        dropzoneInstance = null;
     }
 
     const term = new Terminal({
@@ -26,7 +32,6 @@ export async function initTerminal(id, nsId, mciId, vmid) {
 
     const container = document.getElementById(id);
     term.open(container);
-    
     terminalInstance = term;
 
     function prompt() {
@@ -34,17 +39,17 @@ export async function initTerminal(id, nsId, mciId, vmid) {
     }
 
     const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
-    await processCommand(nsId, mciId, vmid, ipcmd, term, () => {
+    await processCommand(nsId, mciId, vmid, [ipcmd], term, () => {
         prompt();
     });
 
     let userInput = '';
     term.onData(async (data) => {
-        if (data === '\r') { 
-            const command = userInput; 
-            userInput = ''; 
-            term.write(`\r\n`); 
-            await processCommand(nsId, mciId, vmid, command, term, () => {
+        if (data === '\r') {
+            const command = userInput;
+            userInput = '';
+            term.write(`\r\n`);
+            await processCommand(nsId, mciId, vmid, [command], term, () => {
                 prompt();
             });
         } else if (data === '\u007f') {
@@ -60,29 +65,25 @@ export async function initTerminal(id, nsId, mciId, vmid) {
         }
     });
 
-    const dropzone = new Dropzone("#dropzone-custom", {
-        autoProcessQueue: false, // Disable auto-upload
-        addRemoveLinks: true,    // Add remove link if needed
-        acceptedFiles: ".sh",    // Allow only shell script files
+    dropzoneInstance = new Dropzone("#dropzone-custom", {
+        autoProcessQueue: false,
+        addRemoveLinks: true,
+        acceptedFiles: ".sh",
         init: function () {
             this.on("addedfile", function (file) {
                 if (file.name.endsWith(".sh")) {
                     const reader = new FileReader();
-
                     reader.onload = function (event) {
                         const fileText = event.target.result;
                         const modifiedContent = fileText
                             .split('\n')
                             .map(line => line.trim())
-                            .filter(line => line.length > 0)
-                            .join(' && ');
+                            .filter(line => line.length > 0);
                         fileContents.push(modifiedContent);
                     };
-
-                    reader.onerror = function (event) {
-                        alert("Failed to read file: " + event);
+                    reader.onerror = function () {
+                        alert("Failed to read file");
                     };
-
                     reader.readAsText(file);
                 } else {
                     alert("Only shell script files (.sh) are allowed.");
@@ -93,13 +94,13 @@ export async function initTerminal(id, nsId, mciId, vmid) {
 
     document.getElementById("show-content-btn").addEventListener("click", async function () {
         if (fileContents.length > 0) {
-            for (const cmd of fileContents) {
+            for (const cmdarr of fileContents) {
                 try {
-                    await processCommand(nsId, mciId, vmid, cmd,terminalInstance, () => {
-						prompt();
-					});
+                    await processCommand(nsId, mciId, vmid, cmdarr, terminalInstance, () => {
+                        prompt();
+                    });
                 } catch (error) {
-                    alert("An error occurred while processing the command: " + cmd);
+                    alert("An error occurred while processing the command.");
                     console.error(error);
                 }
             }
@@ -119,7 +120,7 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
     }, 250);
 
     try {
-        const result = await postcmdmci(nsid, mciid, vmid, [command]);
+        const result = await postcmdmci(nsid, mciid, vmid, command);
         clearInterval(loadingInterval);
         term.write('\r                          \r');
 
@@ -131,7 +132,7 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
         if (callErr) {
             const formattedError = JSON.stringify(callErr, null, 2);
             writeAutoWrap(term, " > connect Error: \x1b[1m\x1b[31m" + formattedError + "\x1b[0m");
-            callback({error: callErr});
+            callback({ error: callErr });
             return;
         }
 
@@ -150,12 +151,11 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
         } else {
             term.write('\r\nSTDOUT RESPONSE: (No output)\r\n');
         }
-        
-        callback(result);
 
+        callback(result);
     } catch (error) {
         clearInterval(loadingInterval);
-        term.write('\r                          \r'); 
+        term.write('\r                          \r');
         term.write(`Error: ${error.message}\r\n`);
         callback(result);
     }
@@ -167,13 +167,11 @@ function writeAutoWrap(term, text) {
 
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
-
         if (char === '\n') {
             term.write(currentLine + '\r\n');
             currentLine = '';
             continue;
         }
-
         currentLine += char;
         if (currentLine.length >= cols) {
             term.write(currentLine + '\r\n');
@@ -199,13 +197,9 @@ export async function postcmdmci(nsid, mciid, vmid, cmdarr) {
             command: cmdarr,
             userName: "cb-user"
         }
-    }
+    };
     const controller = "/api/" + "mc-infra-manager/" + "Postcmdmci";
-    const response = await webconsolejs["common/api/http"].commonAPIPost(
-        controller,
-        data
-    );
-    console.log("lookup disk info response : ", response);
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     const responseData = response.data.responseData;
     return responseData;
 }
