@@ -87,7 +87,10 @@
         </div>
         <div class="datagrid-item mb-3">
           <div class="datagrid-title">Keypair Name</div>
-          <div class="datagrid-content" id="server_detail_view_keypair_name"></div>
+          <a onclick="webconsolejs['pages/operation/manage/mci'].getKeypair(this)"
+          data-bs-toggle="modal"
+          data-bs-target="#keypairModal"
+          id="server_detail_view_keypair_name" class="badge badge-outline text-secondary fw-normal badge-pill"></a>
         </div>
         <div class="datagrid-item mb-3">
           <div class="datagrid-title">Access ID / Pwd</div>
@@ -99,5 +102,23 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="modal modal-blur fade" id="keypairModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="keypairModal-title">Keypair</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <label class="form-label" id="keypairModal-bodytitle"><span class="form-label-description">ctrl+c to copy</span></label>
+            <textarea id="keypairModal-textarea" class="form-control" rows="27" readonly></textarea>
+          </div>
+          <div class="modal-footer">
+              <button id="keypairModal-confirm-btn" type="button" class="btn btn-primary" data-bs-dismiss="modal">close</button>
+          </div>
+      </div>
   </div>
 </div>
