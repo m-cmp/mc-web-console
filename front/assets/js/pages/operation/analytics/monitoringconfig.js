@@ -193,6 +193,7 @@ $("#workloadlist").on('change', async function () {
       var findVm = vmMap.get(monitorTargetList.data[i].id)
       if(findVm){
         findVm.monAgentStatus = monitorTargetList.data[i].state; // [ACTIVE/INACTIVE]
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ monitorTargetList.data[i].state", monitorTargetList.data[i])
         vmMap.set(findVm.id, findVm);
       }
     }
@@ -295,8 +296,8 @@ function initMonitorConfigTable() {
     //var workloadType = row.getCell("workloadType").getValue();    
     var tempServernodeId = currentServernodeId;    
     currentServernodeId = row.getCell("id").getValue();
-    console.log("row ", row.getData())
-    console.log("currentServernodeId ", currentServernodeId)
+    // console.log("row ", row.getData())
+    // console.log("currentServernodeId ", currentServernodeId)
 
     // 상세 정보 표시 여부
     if (tempServernodeId === currentServernodeId) {
@@ -364,21 +365,21 @@ function initMonitorMetricsTable() {
     },
     {
       title: "Server Name/Id",
-      field: "vmid",
+      field: "target_id",
       vertAlign: "middle",
       hozAlign: "center",
       headerHozAlign: "center"
     },
     {
       title: "Plugin name",
-      field: "pluginName",
+      field: "plugin_name",
       vertAlign: "middle",
       hozAlign: "center",
       headerHozAlign: "center"
     },
     {
       title: "Plugin seq",
-      field: "seq",
+      field: "plugin_seq",
       vertAlign: "middle",
       hozAlign: "center",
       headerHozAlign: "center"
@@ -413,10 +414,18 @@ function initMonitorMetricsTable() {
 }
 // formatter
 function predictionFormatterToggle(data) {
-  return data;
+  return `<a class="btn btn-outline-primary w-100 mb-3" href="#" data-bs-toggle="modal" data-bs-target="#setAnormalyDetectionModal">
+  prediction
+  </a>`
 }
 function detectionFormatterToggle(data) {
-  return data;
+  return `<a class="btn btn-outline-primary w-100 mb-3" href="#" data-bs-toggle="modal" data-bs-target="#setMonitoringPredictionModal">
+      detection
+    </a>`
+}
+
+function decodeBase64(data) {
+  return atob(data);
 }
 
 
@@ -722,18 +731,11 @@ function getSelectedMonitorConfigData(servernodeId) {
   }
   console.log("selectedServerNode.id", selectedServerNode.id)
   setMonitorConfigInfoData();
+  setMonitorMetricsTable();
 }
 
 // 클릭한 mci의 info값 세팅
 async function setMonitorConfigInfoData() {
-  
-  // var row = monitorConfigListTable.getRow(currentServernodeId);  
-  // console.log(row)
-  // console.log("setMonitorConfigInfoData", monitorConfigData)
-  
-  //selectedServerNode 안에 현재 선택한 rowData가 들어있음
-  console.log("setMonitorConfigInfoData ", selectedServerNode)
-
   var htmlCardIdPrefix = "#monitoringconfig_info_"
   try {
     const generateOnOffIndicator = (status) => `<label class="form-check form-switch">
@@ -742,15 +744,8 @@ async function setMonitorConfigInfoData() {
     `;
     const generateStatusIndicator = (result, status) => `<span class="badge bg-${result} me-1"></span>${status}`;
     console.log("selectedServerNode.label", selectedServerNode.label)
-    // var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog(
-    //   selectedServerNode.label["sys.namespace"], 
-    //   selectedServerNode.label["sys.mciId"], 
-    //   selectedServerNode.label["sys.id"], 
-    //   "", 
-    //   );
-    //   console.log(response)
     $('span[name="selectedMonTargetVM"]').each(function() {
-        $(this).html(selectedServerNode.label["sys.mciId"]+'_'+selectedServerNode.label["sys.id"]);
+        $(this).html(selectedServerNode.label["sys.id"]);
     });
 
     $('input[name="selectedMonTargetVM"]').each(function() {
@@ -763,22 +758,23 @@ async function setMonitorConfigInfoData() {
     $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? true : false))
     $(htmlCardIdPrefix+"agent_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
     $(htmlCardIdPrefix+"collect_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
-    // $("#mci_server_info_status").empty();
-    // $("#mci_server_info_status").text(" [ " + mciName + " ]")
-    // $("#mci_server_info_count").text(" Server(" + totalvmCount + ")")
-
-
-    // $("#mci_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
-    // $("#mci_info_name").text(mciName + " / " + mciID)
-    // $("#mci_info_description").text(mciDescription)
-    // $("#mci_info_status").text(mciStatus)
-    // $("#mci_info_cloud_connection").empty()
-    // $("#mci_info_cloud_connection").append(mciProviderNames)
 
   } catch (e) {
     console.error(e);
   }
 
+}
+
+// 클릭한 mci의 info값 세팅
+async function setMonitorMetricsTable() {
+  try {
+    var currentNsId = selectedWorkspaceProject.nsId;
+    var response = await webconsolejs["common/api/services/monitoring_api"].GetMetricitems(currentNsId, selectedServerNode.workloadName, selectedServerNode.id);
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@ ########### ",response)
+    monitorMetricsTable.setData(response.data);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 

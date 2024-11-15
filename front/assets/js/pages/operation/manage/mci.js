@@ -643,7 +643,7 @@ export async function vmDetailInfo(vmId) {
   $("#server_detail_view_eth").text(eth)
   $("#server_detail_view_root_device_type").text(data.rootDiskType);
   $("#server_detail_view_root_device").text(data.rootDeviceName);
-  $("#server_detail_view_keypair_name").text(data.cspSshKeyId)
+  $("#server_detail_view_keypair_name").text(data.sshKeyId)
   $("#server_detail_view_access_id_pass").text(data.vmUserName + "/ *** ")
 
 
@@ -1206,3 +1206,9 @@ export async function initremotecmdModal(){
 }
 
 
+export async function getKeypair(el){
+  const sshkeyId = el.innerText
+  $("#keypairModal-bodytitle").text(sshkeyId);
+  var respSSHkey = await webconsolejs["common/api/services/mci_api"].getsshkey(currentNsId, sshkeyId);
+  $("#keypairModal-textarea").val(respSSHkey.privateKey);
+}

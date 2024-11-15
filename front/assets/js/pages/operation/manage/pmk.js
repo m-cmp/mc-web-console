@@ -134,8 +134,8 @@ function mappingTablePmkData(totalPmkListObj) {
             systemLabel: item.systemLabel || "N/A",
             systemMessage: item.systemMessage || "N/A",
             // TODO : ima, provider api res 변경되면 수정
-            providerImg: "",  // providerImg 값을 추가해야 함 (필요시)
-            provider: item.connectionName || "N/A",
+            providerImg: item.connectionConfig.providerName || "",  // providerImg 값을 추가해야 함 (필요시)
+            provider: item.connectionConfig.providerName || "N/A",
             vpc: vpc,
             subnet: subnet,
             securitygroup: securityGroup,
