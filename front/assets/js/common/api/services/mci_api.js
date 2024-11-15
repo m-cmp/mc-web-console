@@ -479,7 +479,6 @@ export function calculateMciStatusCount(mciData) {
   return mciStatusCountMap;
 }
 
-
 // vm의 상태별 count
 export function calculateVmStatusCount(aMci) {
   // console.log("calculateVmStatusCount")
@@ -543,5 +542,28 @@ export function calculateVmStatusCount(aMci) {
     console.error("mci status error", e); // 에러 로그 처리 예시
   }
   return vmStatusCountMap;
+}
+
+export async function getsshkey(nsId, sshKeyId) {
+
+  if (nsId == "" || sshKeyId == "") {
+    console.log("path not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+      sshKeyId: sshKeyId,
+    },
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getsshkey";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  return response.data.responseData
 }
 
