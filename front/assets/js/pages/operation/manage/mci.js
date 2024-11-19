@@ -61,7 +61,7 @@ async function initMci() {
 
   } catch (e) {
     console.log(e);
-  }  
+  }
   ////////////////////// partials init functions end ///////////////////////////////////////
 
 
@@ -134,8 +134,8 @@ function getMciListCallbackSuccess(caller, mciList) {
 function refreshDisplay() {
   setToTalMciStatus(); // mci상태 표시
   setTotalVmStatus(); // mci 의 vm들 상태표시
-  
-  mciListTable.setData(totalMciListObj);  
+
+  mciListTable.setData(totalMciListObj);
 
   if (currentMciId) {
     for (var mciIndex in totalMciListObj) {
@@ -155,6 +155,8 @@ function refreshRowData(rowId, newData) {
   const selectedRows = mciListTable.getSelectedData().map(row => row.id);
   console.log("selectedRows ", selectedRows)
   console.log("rowId ", rowId)
+  //TODO: providerIMG
+  // newData.getData().vm[0].providerName = "aws";
   //mciListTable.updateData(totalMciListObj);
   mciListTable.updateData([{ id: rowId, ...newData }])
     .then(() => {
@@ -778,52 +780,148 @@ function setTotalVmStatus() {
   }
   displayVmStatusArea();
 }
-
 // mci status display
 function displayMciStatusArea() {
   console.log("displayMciStatusArea");
   var sumMciCnt = 0;
   var sumMciRunningCnt = 0;
-  var sumMciStopCnt = 0;
+  var sumMciRunningIngCnt = 0;
+  var sumMciStoppedCnt = 0;
+  var sumMciStoppedIngCnt = 0;
   var sumMciTerminateCnt = 0;
-  totalMciStatusMap.forEach((value, key) => {
-    var statusRunning = value.get("running");
-    var statusStop = value.get("stop");
-    var statusTerminate = value.get("terminate");
-    sumMciRunningCnt += statusRunning;
-    sumMciStopCnt += statusStop;
-    sumMciTerminateCnt += statusTerminate;
-    //console.log("totalMciStatusMap :: ", key, value);
-  });
-  sumMciCnt = sumMciRunningCnt + sumMciStopCnt + sumMciTerminateCnt;
+  var sumMciTerminateIngCnt = 0;
+  var sumMciFailedCnt = 0;
+  var sumMciEtcCnt = 0;
 
+  console.log("totalMciStatusMap", totalMciStatusMap);
+
+  // 각 상태 합산
+  totalMciStatusMap.forEach((value, key) => {
+    if (value instanceof Map) {
+      // 각 상태 가져오기 (값이 없으면 기본값 0)
+      const statusRunning = value.get("running") || 0;
+      const statusRunningIng = value.get("running-ing") || 0;
+      const statusStopped = value.get("stopped") || 0;
+      const statusStoppedIng = value.get("stopped-ing") || 0;
+      const statusTerminate = value.get("terminated") || 0;
+      const statusTerminateIng = value.get("terminated-ing") || 0;
+      const statusFailed = value.get("failed") || 0;
+      const statusEtc = value.get("etc") || 0;
+
+      // 누적 계산
+      sumMciRunningCnt += statusRunning;
+      sumMciRunningIngCnt += statusRunningIng;
+      sumMciStoppedCnt += statusStopped;
+      sumMciStoppedIngCnt += statusStoppedIng;
+      sumMciTerminateCnt += statusTerminate;
+      sumMciTerminateIngCnt += statusTerminateIng;
+      sumMciFailedCnt += statusFailed;
+      sumMciEtcCnt += statusEtc;
+    } else {
+      console.warn(`Invalid value for key ${key}:`, value);
+    }
+  });
+
+  // 전체 MCI 수 계산
+  sumMciCnt =
+    sumMciRunningCnt +
+    sumMciStoppedCnt +
+    sumMciTerminateCnt +
+    sumMciFailedCnt +
+    sumMciEtcCnt;
+
+  // DOM 업데이트
   $("#total_mci").text(sumMciCnt);
-  $("#mci_status_running").text(sumMciRunningCnt);
-  $("#mci_status_stopped").text(sumMciStopCnt);
-  $("#mci_status_terminated").text(sumMciTerminateCnt);
-  console.log("displayMciStatusArea ");
+  $("#mci_status_running").text(
+    sumMciRunningIngCnt > 0
+      ? `${sumMciRunningCnt}(${sumMciRunningIngCnt})`
+      : `${sumMciRunningCnt}`
+  );
+  $("#mci_status_stopped").text(
+    sumMciStoppedIngCnt > 0
+      ? `${sumMciStoppedCnt}(${sumMciStoppedIngCnt})`
+      : `${sumMciStoppedCnt}`
+  );
+  $("#mci_status_terminated").text(
+    sumMciTerminateIngCnt > 0
+      ? `${sumMciTerminateCnt}(${sumMciTerminateIngCnt})`
+      : `${sumMciTerminateCnt}`
+  );
+  $("#mci_status_failed").text(sumMciFailedCnt);
+  $("#mci_status_etc").text(sumMciEtcCnt);
+
+  console.log("displayMciStatusArea");
   console.log("running status count ", $("#mci_status_running").text());
 }
 
 // vm 상태값 표시
 function displayVmStatusArea() {
-  var sumVmCnt = 0;
-  var sumVmRunningCnt = 0;
-  var sumVmStopCnt = 0;
-  var sumVmTerminateCnt = 0;
+  console.log("displayVmStatusArea");
+
+  let sumVmCnt = 0;
+  let sumVmRunningCnt = 0;
+  let sumVmRunningIngCnt = 0;
+  let sumVmStoppedCnt = 0;
+  let sumVmStoppedIngCnt = 0;
+  let sumVmTerminatedCnt = 0;
+  let sumVmTerminatedIngCnt = 0;
+  let sumVmEtcCnt = 0;
+  console.log("totalVmStatusMaptotalVmStatusMap",totalVmStatusMap)
   totalVmStatusMap.forEach((value, key) => {
-    var statusRunning = value.get("running");
-    var statusStop = value.get("stop");
-    var statusTerminate = value.get("terminate");
-    sumVmRunningCnt += statusRunning;
-    sumVmStopCnt += statusStop;
-    sumVmTerminateCnt += statusTerminate;
+    if (value instanceof Map) {
+      // 기본 상태
+      const statusRunning = value.get("running") || 0;
+      const statusStopped = value.get("suspended") || 0;
+      const statusTerminated = value.get("terminated") || 0;
+
+      // 진행 중 상태
+      const statusRunningIng = value.get("running-ing") || 0;
+      const statusStoppedIng = value.get("stopped-ing") || 0;
+      const statusTerminatedIng = value.get("terminated-ing") || 0;
+
+      // 기타 상태
+      const statusEtc = value.get("etc") || 0;
+
+      // 합산
+      sumVmRunningCnt += statusRunning;
+      sumVmRunningIngCnt += statusRunningIng;
+      sumVmStoppedCnt += statusStopped;
+      sumVmStoppedIngCnt += statusStoppedIng;
+      sumVmTerminatedCnt += statusTerminated;
+      sumVmTerminatedIngCnt += statusTerminatedIng;
+      sumVmEtcCnt += statusEtc;
+    } else {
+      console.warn(`Invalid value for key ${key}:`, value);
+    }
   });
-  sumVmCnt = sumVmRunningCnt + sumVmStopCnt + sumVmTerminateCnt;
+
+  // 전체 VM 수 계산
+  sumVmCnt =
+    sumVmRunningCnt +
+    sumVmStoppedCnt +
+    sumVmTerminatedCnt +
+    sumVmEtcCnt;
+
+  // DOM 업데이트
   $("#total_vm").text(sumVmCnt);
-  $("#vm_status_running").text(sumVmRunningCnt);
-  $("#vm_status_stopped").text(sumVmStopCnt);
-  $("#vm_status_terminated").text(sumVmTerminateCnt);
+  $("#vm_status_running").text(
+    sumVmRunningIngCnt > 0
+      ? `${sumVmRunningCnt}(${sumVmRunningIngCnt})`
+      : `${sumVmRunningCnt}`
+  );
+  $("#vm_status_stopped").text(
+    sumVmStoppedIngCnt > 0
+      ? `${sumVmStoppedCnt}(${sumVmStoppedIngCnt})`
+      : `${sumVmStoppedCnt}`
+  );
+  $("#vm_status_terminated").text(
+    sumVmTerminatedIngCnt > 0
+      ? `${sumVmTerminatedCnt}(${sumVmTerminatedIngCnt})`
+      : `${sumVmTerminatedCnt}`
+  );
+  $("#vm_status_etc").text(sumVmEtcCnt);
+
+  console.log("Updated result: ",sumVmCnt, sumVmRunningCnt, sumVmStoppedCnt);
 }
 
 
@@ -1050,32 +1148,57 @@ function toggleRowSelection(id) {
 
 // 상태값을 table에서 표시하기 위해 감싸기
 function statusFormatter(cell) {
-  var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(
+  const mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(
     cell.getData().status
   ); // 화면 표시용 status
-  console.log("mciDispStatusmciDispStatus", mciDispStatus)
-  var mciStatusCell = "";
+
+  let mciStatusCell = "";
 
   if (mciDispStatus === "running") {
-    mciStatusCell =
-      '<div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
-      '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
-      '</div>';
-  } else if (mciDispStatus === "suspended" || mciDispStatus === "stop") {
-    mciStatusCell =
-      '<div class="card bg-red-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
-      '  <span class="text-red-lt" style="font-size: 12px;">Suspended</span>' +
-      '</div>';
+    mciStatusCell = `
+      <div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-green-lt" style="font-size: 12px;">Running</span>
+      </div>`;
+  } else if (mciDispStatus === "running-ing") {
+    mciStatusCell = `
+      <div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-green-lt" style="font-size: 12px;">running</span>
+      </div>`;
+  } else if (mciDispStatus === "stopped") {
+    mciStatusCell = `
+      <div class="bg-yellow-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-red-lt" style="font-size: 12px;">Stopped</span>
+      </div>`;
+  } else if (mciDispStatus === "stopped-ing") {
+    mciStatusCell = `
+      <div class="bg-yellow-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-red-lt" style="font-size: 12px;">Stopped</span>
+      </div>`;
   } else if (mciDispStatus === "terminated") {
-    mciStatusCell =
-      '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
-      '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
-      '</div>';
+    mciStatusCell = `
+      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>
+      </div>`;
+  } else if (mciDispStatus === "terminated-ing") {
+    mciStatusCell = `
+      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>
+      </div>`;
+  } else if (mciDispStatus === "failed") {
+    mciStatusCell = `
+      <div class="bg-red-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-red-lt" style="font-size: 12px;">Failed</span>
+      </div>`;
+  } else if (mciDispStatus === "etc") {
+    mciStatusCell = `
+      <div class="bg-azure-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-azure-lt" style="font-size: 12px;">ETC</span>
+      </div>`;
   } else {
-    mciStatusCell =
-      '<div class="card bg-muted-lt" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">' +
-      '  <span class="text-muted-lt" style="font-size: 12px;">Partial</span>' +
-      '</div>';
+    mciStatusCell = `
+      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
+        <span class="text-muted-lt" style="font-size: 12px;">Unknown</span>
+      </div>`;
   }
 
   return mciStatusCell;

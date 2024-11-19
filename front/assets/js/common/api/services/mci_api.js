@@ -1,5 +1,6 @@
 // MCI API 관련 
 
+
 // 받아온 project(namespace)로 MciList GET
 export async function getMciList(nsId) {
 
@@ -106,22 +107,22 @@ export function mciLifeCycle(type, currentMciId, nsId) {
   console.log("mciLifeCycle option : ", type)
   console.log("selected mci : ", currentMciId)
 
-    let data = {
-      pathParams: {
-        nsId: nsId,
-        mciId: currentMciId,
-      },
-      queryParams: {
-        "action": type,
-      }
-    };
-    let controller = "/api/" + "mc-infra-manager/" + "GetControlMci";
-    let response = webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-      data
-    );
-    console.log("mciLifeCycle response : ", response)
-  }
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: currentMciId,
+    },
+    queryParams: {
+      "action": type,
+    }
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "GetControlMci";
+  let response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("mciLifeCycle response : ", response)
+}
 
 export function mciDelete(currentMciId, nsId) {
   console.log("mciDeletemciDeletemciDeletemciDelete")
@@ -129,23 +130,23 @@ export function mciDelete(currentMciId, nsId) {
 
   // for (const mci of checked_array) {
   //   console.log(mci.id)
-    
-    let data = {
-      pathParams: {
-        nsId: nsId,
-        mciId: currentMciId,
-      },
-      queryParams: {
-        option: "force"
-      }
-    };
-    let controller = "/api/" + "mc-infra-manager/" + "Delmci";
-    let response = webconsolejs["common/api/http"].commonAPIPost(
-      controller,
-      data
-    );
-    console.log("mciLifeCycle response : ", response)
-  }
+
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: currentMciId,
+    },
+    queryParams: {
+      option: "force"
+    }
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Delmci";
+  let response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("mciLifeCycle response : ", response)
+}
 // }
 
 export function vmDelete(mciId, nsId, vmId) {
@@ -347,21 +348,45 @@ export function calculateConnectionCount(vmList) {
 export function getMciStatusFormatter(mciFullStatus) {
   console.log("getMciStatusgetMciStatus", mciFullStatus);
 
-  let returnStatus = mciFullStatus.toLowerCase();
-
-  if (returnStatus.includes("partial")) {
-    returnStatus = "partial";
-  } else if (returnStatus.includes("running")) {
-    returnStatus = "running";
-  } else if (returnStatus.includes("suspended")) {
-    returnStatus = "suspended";
-  } else if (returnStatus.includes("terminated")) {
-    returnStatus = "terminated";
-  } else if (returnStatus.includes("failed")) {
-    returnStatus = "failed";
+  if (!mciFullStatus || typeof mciFullStatus !== "string") {
+    return "etc";
   }
 
-  return returnStatus;
+  const lowerStatus = mciFullStatus.toLowerCase();
+
+  // Partial 상태 처리
+  if (lowerStatus.includes("partial")) {
+    return "etc";
+  }
+
+  // Running 관련 상태 처리
+  if (lowerStatus.includes("running")) {
+    return "running";
+  } else if (lowerStatus.includes("creating") || lowerStatus.includes("rebooting") || lowerStatus.includes("resuming")) {
+    return "running-ing";
+  }
+
+  // Stopped 관련 상태 처리
+  if (lowerStatus.includes("suspended")) {
+    return "stopped";
+  } else if (lowerStatus.includes("suspending")) {
+    return "stopped-ing";
+  }
+
+  // Terminated 관련 상태 처리
+  if (lowerStatus.includes("terminated")) {
+    return "terminated";
+  } else if (lowerStatus.includes("terminating")) {
+    return "terminated-ing";
+  }
+
+  // Failed 상태 처리
+  if (lowerStatus.includes("failed")) {
+    return "failed";
+  }
+
+  // 기타
+  return "etc";
 }
 
 // Mci 상태를 icon으로 
@@ -436,10 +461,10 @@ export function getVmStatusStyleClass(vmDispStatus) {
   var vmStatusClass = "bg-green-lt";
   if (vmDispStatus == "running") {
     vmStatusClass = "bg-green-lt"
-  } else if (vmDispStatus == "include") {
+  } else if (vmDispStatus == "failed") {
     vmStatusClass = "bg-red-lt"
   } else if (vmDispStatus == "suspended") {
-    vmStatusClass = "bg-red-lt"
+    vmStatusClass = "bg-yellow-lt"
   } else if (vmDispStatus == "terminated") {
     vmStatusClass = "bg-muted-lt"
   } else {
@@ -452,118 +477,84 @@ export function getVmStatusStyleClass(vmDispStatus) {
 // 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mci 에서 사용
 export function calculateMciStatusCount(mciData) {
-  //console.log("calculateMciStatusCount");
+  console.log("mciDatamciData : ", mciData);
 
-  //console.log("mciData : ", mciData);
-  var mciStatusCountMap = new Map();
-  mciStatusCountMap.set("running", 0);
-  mciStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
-  mciStatusCountMap.set("terminate", 0);
+  // 초기 상태 카운트 맵 정의
+  const mciStatusCountMap = new Map([
+    ["running", 0],
+    ["running-ing", 0],
+    ["stopped", 0],
+    ["stopped-ing", 0],
+    ["terminated", 0],
+    ["terminated-ing", 0],
+    ["failed", 0],
+    ["etc", 0],
+  ]);
+
   try {
-    var mciStatus = mciData.status;
-    var mciDispStatus = getMciStatusFormatter(mciStatus); // 화면 표시용 status
+    // mciData와 status 유효성 검사
+    if (!mciData || !mciData.status) {
+      console.error("Invalid mciData or missing status");
+      return mciStatusCountMap; // 초기값 반환
+    }
 
-    if (mciStatus != "") {
-      // mci status 가 없는 경우는 skip
-      if (mciStatusCountMap.has(mciDispStatus)) {
-        mciStatusCountMap.set(
-          mciDispStatus,
-          mciStatusCountMap.get(mciDispStatus) + 1
-        );
-      }
+    const mciStatus = mciData.status; // 원본 상태
+    const mciDispStatus = getMciStatusFormatter(mciStatus); // 화면 표시용 상태
+    console.log("mciStatusmciStatus:", mciStatus);
+    console.log("mciDispStatusmciDispStatus:", mciDispStatus);
+
+    // 상태 카운트 증가
+    if (mciStatusCountMap.has(mciDispStatus)) {
+      mciStatusCountMap.set(
+        mciDispStatus,
+        mciStatusCountMap.get(mciDispStatus) + 1
+      );
+    } else {
+      console.warn(`Unknown status: ${mciDispStatus}`);
     }
   } catch (e) {
     console.error("mci status error", e);
   }
-  // console.log(mciStatusCountMap);
+
+  console.log("mciStatusCountMapmciStatusCountMap:", mciStatusCountMap);
   return mciStatusCountMap;
 }
 
 // vm의 상태별 count
 export function calculateVmStatusCount(aMci) {
-  // console.log("calculateVmStatusCount")
-  // console.log(vmList)
-  var sumVmCnt = 0;
-  var vmStatusCountMap = new Map();
-  vmStatusCountMap.set("running", 0);
-  vmStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
-  vmStatusCountMap.set("terminate", 0);
-
+  const vmStatusCountMap = new Map([
+    ["running", 0],
+    ["running-ing", 0],
+    ["suspended", 0],
+    ["stopped-ing", 0],
+    ["terminated", 0],
+    ["terminated-ing", 0],
+    ["etc", 0],
+  ]);
+console.log("calculateVmStatusCount",aMci)
   try {
     if (aMci.statusCount) {
-      //console.log("statusCount part", aMci);
-      var statusCountObj = aMci.statusCount;
-      //console.log(statusCountObj);
-      var countCreating = statusCountObj.countCreating;
-      var countFailed = statusCountObj.countFailed;
-      var countRebooting = statusCountObj.countRebooting;
-      var countResuming = statusCountObj.countResuming;
-      var countRunning = statusCountObj.countRunning;
-      var countSuspended = statusCountObj.countSuspended;
-      var countSuspending = statusCountObj.countSuspending;
-      var countTerminated = statusCountObj.countTerminated;
-      var countTerminating = statusCountObj.countTerminating;
-      var countTotal = statusCountObj.countTotal;
-      var countUndefined = statusCountObj.countUndefined;
+      const statusCountObj = aMci.statusCount;
 
-      var sumEtc =
-        Number(countCreating) +
-        Number(countFailed) +
-        Number(countRebooting) +
-        Number(countResuming) +
-        Number(countSuspending) +
-        Number(countTerminated) +
-        Number(countTerminating) +
-        Number(countUndefined);
-
-      vmStatusCountMap.set("running", Number(countRunning));
-      vmStatusCountMap.set("stop", Number(countSuspended)); // partial 도 stop으로 보고있음.
-      vmStatusCountMap.set("terminate", sumEtc);
-    } else if (aMci.vm) {
-      // console.log("statusCount part list part");
-      vmList = aMci.vm;
-      for (var vmIndex in vmList) {
-        var aVm = vmList[vmIndex];
-        var vmStatus = aVm.status;
-        var vmDispStatus = getVmStatusFormatter(vmStatus);
-
-        if (vmStatus != "") {
-          // vm status 가 없는 경우는 skip
-          if (vmStatusCountMap.has(vmDispStatus)) {
-            vmStatusCountMap.set(
-              vmDispStatus,
-              vmStatusCountMap.get(vmDispStatus) + 1
-            );
-          }
-        }
-      }
+      vmStatusCountMap.set("running", Number(statusCountObj.countRunning || 0));
+      vmStatusCountMap.set("running-ing", Number(
+        (statusCountObj.countCreating || 0) +
+        (statusCountObj.countRebooting || 0) +
+        (statusCountObj.countResuming || 0)
+      ));
+      vmStatusCountMap.set("suspended", Number(statusCountObj.countSuspended || 0));
+      vmStatusCountMap.set("stopped-ing", Number(statusCountObj.countSuspending || 0));
+      vmStatusCountMap.set("terminated", Number(statusCountObj.countTerminated || 0));
+      vmStatusCountMap.set("terminated-ing", Number(statusCountObj.countTerminating || 0));
+      vmStatusCountMap.set("etc", Number(
+        (statusCountObj.countFailed || 0) +
+        (statusCountObj.countUndefined || 0)
+      ));
     }
   } catch (e) {
-    console.error("mci status error", e); // 에러 로그 처리 예시
+    console.error("Error calculating VM status count:", e);
   }
+
   return vmStatusCountMap;
-}
-
-export async function getsshkey(nsId, sshKeyId) {
-
-  if (nsId == "" || sshKeyId == "") {
-    console.log("path not set")
-    return;
-  }
-
-  var data = {
-    pathParams: {
-      nsId: nsId,
-      sshKeyId: sshKeyId,
-    },
-  };
-
-  var controller = "/api/" + "mc-infra-manager/" + "Getsshkey";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
-
-  return response.data.responseData
 }
 
