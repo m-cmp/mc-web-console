@@ -1079,6 +1079,15 @@ function initMciTable() {
       headerHozAlign: "center",
       maxWidth: 135,
     },
+    {
+      title: "Failed",
+      field: "statusCount.countFailed",
+      formatterParams: { status: "failed" },
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center",
+      maxWidth: 135,
+    },
   ];
 
   //mciListTable = webconsolejs["common/util"].setTabulator("mcilist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
