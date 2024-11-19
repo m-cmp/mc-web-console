@@ -587,28 +587,6 @@ function displayPmkStatusArea() {
     $("#pmk_status_terminated").text(sumPmkTerminateCnt);
 }
 
-// vm 상태값 표시
-function displayVmStatusArea() {
-    var sumVmCnt = 0;
-    var sumVmRunningCnt = 0;
-    var sumVmStopCnt = 0;
-    var sumVmTerminateCnt = 0;
-    totalVmStatusMap.forEach((value, key) => {
-        var statusRunning = value.get("running");
-        var statusStop = value.get("stop");
-        var statusTerminate = value.get("terminate");
-        sumVmRunningCnt += statusRunning;
-        sumVmStopCnt += statusStop;
-        sumVmTerminateCnt += statusTerminate;
-    });
-    sumVmCnt = sumVmRunningCnt + sumVmStopCnt + sumVmTerminateCnt;
-    $("#total_vm").text(sumVmCnt);
-    $("#vm_status_running").text(sumVmRunningCnt);
-    $("#vm_status_stopped").text(sumVmStopCnt);
-    $("#vm_status_terminated").text(sumVmTerminateCnt);
-}
-
-
 ////////////////////////////////////////////////////// TABULATOR Start //////////////////////////////////////////////////////
 // tabulator 행, 열, 기본값 설정
 // table이 n개 가능하므로 개별 tabulator 정의 : 원리 util 안에 setTabulator있음.
