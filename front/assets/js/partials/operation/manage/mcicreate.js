@@ -353,7 +353,9 @@ export function expressDone_btn() {
 	express_form["subGroupSize"] = $("#p_subGroupSize").val();
 	express_form["rootDiskSize"] = $("#p_root_disk_size").val();
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
-
+	express_form["rootDiskType"] = $("#p_root_disk_type").val();
+	express_form["commonSpec"] = $("#p_commonSpecId").val();
+	express_form["commonImage"] = $("#p_commonImageId").val();
 
 	console.log("express_form form : ", express_form);
 
