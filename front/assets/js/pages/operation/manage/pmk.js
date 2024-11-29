@@ -157,7 +157,7 @@ export async function getSelectedPmkData() {
         var selectedNsId = selectedWorkspaceProject.nsId;
 
         var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId)
-
+        
         if (pmkResp.status != 200) {
             console.log("resp status ", pmkResp.status)
             // failed.  // TODO : Error Popup 처리
@@ -560,7 +560,7 @@ function setTotalClusterStatus() {
     } catch (e) {
         console.log("pmk status error");
     }
-    displayVmStatusArea();
+    // displayVmStatusArea();
 }
 
 // pmk status display

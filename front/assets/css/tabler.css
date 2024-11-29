@@ -22819,10 +22819,13 @@ Card note
     minmax(var(--tblr-datagrid-item-width), 1fr)
   );
 }
+
 .datagrid-content {
-  min-height: 20px;
-  overflow-wrap: break-word;
-  word-break: break-word; 
+  min-height: 20px; /* 최소 높이 유지 */
+  overflow: hidden; /* 넘치는 내용 숨김 */
+  text-overflow: ellipsis; /* 넘치는 내용에 '...' 표시 */
+  white-space: nowrap;
+  max-width: 100%; /* 칸의 너비를 넘지 않도록 고정 */
 }
 .datagrid-title {
   font-size: 0.875rem;
@@ -22831,7 +22834,7 @@ Card note
   letter-spacing: 0em;
   line-height: 1rem;
   color: var(--tblr-secondary);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0; /* 공백 제거 */
 }
 
 .empty {

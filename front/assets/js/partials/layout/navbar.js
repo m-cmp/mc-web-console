@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (projectListselectBox.value === ""){
         projectListselectBox.classList.add('is-invalid');
     }
+    // tooltip 추가
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });
 
 // navbar에서는 변경시 session에만 set. 필요화면에서 사용
