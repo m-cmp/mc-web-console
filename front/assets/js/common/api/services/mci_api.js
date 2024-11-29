@@ -393,39 +393,42 @@ export function getMciStatusFormatter(mciFullStatus) {
 export function getMciStatusIconFormatter(mciDispStatus) {
   var mciStatusIcon = "";
   if (mciDispStatus == "running") {
-    mciStatusIcon = "icon_running.svg"
+    // mciStatusIcon = "icon_running.svg"
+    mciStatusIcon = "server_running.svg"
   } else if (mciDispStatus == "include") {
-    mciStatusIcon = "icon_stop.svg"
-  } else if (mciDispStatus == "suspended") {
-    mciStatusIcon = "icon_stop.svg"
+    // mciStatusIcon = "icon_stop.svg"
+    mciStatusIcon = "server_stop.svg"
+  } else if (mciDispStatus == "stopped") {
+    // mciStatusIcon = "icon_stop.svg"
+    mciStatusIcon = "server_stop.svg"
   } else if (mciDispStatus == "terminated") {
-    mciStatusIcon = "icon_terminate.svg"
+    // mciStatusIcon = "icon_terminate.svg"
+    mciStatusIcon = "server_off.svg"
   } else {
-    mciStatusIcon = "icon_terminate.svg"
+    // mciStatusIcon = "icon_terminate.svg"
+    mciStatusIcon = "server_off.svg"
   }
   return mciStatusIcon
 }
 
-// Mci에 구성된 vm들의 provider들 imgTag로
+// Mci에 구성된 vm들의 provider들 imgTag로ㅋ
 export function getMciInfoProviderNames(mciData) {
-
   var mciProviderNames = "";
-  var vmCloudConnectionMap = calculateConnectionCount(
-    mciData.vm
-  );
-  console.log("vmCloudConnectionMap", vmCloudConnectionMap)
+  var vmCloudConnectionMap = calculateConnectionCount(mciData.vm);
+  console.log("vmCloudConnectionMap", vmCloudConnectionMap);
+
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
-      console.log("provider ", key)
+      console.log("provider ", key);
       mciProviderNames +=
-        '<img class="img-fluid" width="30" src="/assets/images/common/img_logo_' +
+        '<img class="img-fluid" width="60" src="/assets/images/common/img_logo_' +
         (key == "" ? "mcmp" : key) +
         '.png" alt="' +
         key +
-        '" style="margin-right: 5px;"/>';
+        '" style="margin: 0;"/>';
     });
   }
-  return mciProviderNames
+  return mciProviderNames;
 }
 
 // VM 상태를 UI에서 표현하는 방식으로 변경

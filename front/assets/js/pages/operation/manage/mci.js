@@ -106,7 +106,7 @@ export async function refreshMciList() {
 
     //getMciList();// project가 선택되어 있으면 mci목록을 조회한다.
     var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(currentNsId);
-    console.log("respMciListrespMciListrespMciList", respMciList)
+
     getMciListCallbackSuccess(selectedWorkspaceProject.projectId, respMciList);
 
   }
@@ -236,7 +236,7 @@ function setMciInfoData(mciData) {
       // } else if (mciStatus.includes("Suspended")) {
     } else if (mciStatus === "Suspended") {
       mciStatusCell =
-        '<div class="card bg-red-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '<div class="card bg-yellow-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
         '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
         '</div>';
       // } else if (mciStatus.includes("Terminated")) {
@@ -555,7 +555,8 @@ export async function vmDetailInfo(vmId) {
 
   $("#server_info_start_time").text(startTime)
   $("#server_info_private_ip").text(privateIp)
-  $("#server_info_cspVMID").text(data.cspResourceName)
+  // $("#server_info_cspVMID").text(data.cspResourceName)
+  $("#server_info_cspVMID").text("ip-10-32-4-91.ap-northeast-2.compute.internal")
 
   // ip information
   $("#server_info_public_ip").text(vmPublicIp)
@@ -573,12 +574,12 @@ export async function vmDetailInfo(vmId) {
   $("#server_detail_info_text").text(' [' + vmName + '/' + mciName + ']')
   $("#server_detail_view_server_id").text(vmId)
   $("#server_detail_view_server_status").text(vmStatus);
-  $("#server_detail_view_public_dns").text(data.publicDNS)
-  $("#server_detail_view_public_ip").text(vmPublicIp)
-  $("#server_detail_view_private_ip").text(data.privateIP)
+  // $("#server_detail_view_public_dns").text(data.publicDNS)
+  // $("#server_detail_view_public_ip").text(vmPublicIp)
+  // $("#server_detail_view_private_ip").text(data.privateIP)
   $("#server_detail_view_security_group_text").text(securityGroupID)
-  $("#server_detail_view_private_dns").text(data.privateDNS)
-  $("#server_detail_view_private_ip").text(data.privateIP)
+  // $("#server_detail_view_private_dns").text(data.privateDNS)
+  // $("#server_detail_view_private_ip").text(data.privateIP)
   $("#server_detail_view_image_id").text(imageId)
   $("#server_detail_view_os").text(operatingSystem);
   $("#server_detail_view_user_id_pass").text(data.vmUserAccount + "/ *** ")
@@ -866,7 +867,7 @@ function displayVmStatusArea() {
   let sumVmTerminatedCnt = 0;
   let sumVmTerminatedIngCnt = 0;
   let sumVmEtcCnt = 0;
-  console.log("totalVmStatusMaptotalVmStatusMap",totalVmStatusMap)
+  console.log("totalVmStatusMaptotalVmStatusMap", totalVmStatusMap)
   totalVmStatusMap.forEach((value, key) => {
     if (value instanceof Map) {
       // 기본 상태
@@ -921,7 +922,7 @@ function displayVmStatusArea() {
   );
   $("#vm_status_etc").text(sumVmEtcCnt);
 
-  console.log("Updated result: ",sumVmCnt, sumVmRunningCnt, sumVmStoppedCnt);
+  console.log("Updated result: ", sumVmCnt, sumVmRunningCnt, sumVmStoppedCnt);
 }
 
 
@@ -1329,16 +1330,16 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 
 /////////////////// TEST TERMINAL MODAL /////////////////////////
 
-export async function initremotecmdModal(){
+export async function initremotecmdModal() {
   const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
-  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container',nsId,currentMciId,currentVmId) // vmStatus 별로 상태 색상 set
+  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container', nsId, currentMciId, currentVmId) // vmStatus 별로 상태 색상 set
   const modalElement = document.getElementById('cmdtestmodal');
   const modalInstance = new bootstrap.Modal(modalElement);
   modalInstance.show();
 }
 
 
-export async function getKeypair(el){
+export async function getKeypair(el) {
   const sshkeyId = el.innerText
   $("#keypairModal-bodytitle").text(sshkeyId);
   var respSSHkey = await webconsolejs["common/api/services/mci_api"].getsshkey(currentNsId, sshkeyId);
