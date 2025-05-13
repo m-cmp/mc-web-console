@@ -25,7 +25,8 @@ export function commoncallbac(val) {
 
 var totalMciListObj = new Object();
 var selectedWorkspaceProject = new Object();
-export var selectedMciObj = new Object();
+// export var selectedMciObj = new Object();
+export var currentMciId = new Object();
 
 var totalMciStatusMap = new Map();
 var totalVmStatusMap = new Map();
@@ -142,7 +143,6 @@ function refreshDisplay() {
       var aMci = totalMciListObj[mciIndex];
 
       if (currentMciId == aMci.id) {
-        console.log(aMci)
         displayServerStatusList(currentMciId, aMci.vm)
         break;
       }
@@ -172,6 +172,8 @@ function refreshRowData(rowId, newData) {
 
   displayServerStatusList(rowId, newData.vm)
   console.log("displayServerStatusList at refreshRowData")
+  displayServerGroupStatusList(rowId, newData.vm)
+  console.log("displayServerGroupStatusList at refreshRowData")
 }
 
 // 클릭한 mci info 가져오기
@@ -382,6 +384,71 @@ function displayServerStatusList(mciID, vmList) {
 
   $("#mci_server_info_box").empty();
   $("#mci_server_info_box").append(vmLi);
+
+  // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
+  if (currentVmId) {
+    webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
+  }
+}
+
+// subGroup 단위로 묶음
+function groupBySubGroup(vmList) {
+  const grouped = vmList.reduce((acc, vm) => {
+    const key = vm.subGroupId;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(vm);
+    return acc;
+  }, {});
+ 
+  return Object.entries(grouped).map(([subGroupId, vms]) => ({
+    subGroupId,
+    vms
+  }));
+}
+
+
+function displayServerGroupStatusList(mciID, vmList) {
+  console.log("displayServerGroupStatusList");
+
+  var groupedBySubGroup = groupBySubGroup(vmList);
+  console.log("groupedBySubGroup", groupedBySubGroup);
+  
+  var mciName = mciID;
+  var vmGroupLi = "";
+  
+  groupedBySubGroup.forEach(aSubGroup => {
+    // var subGroupID = aSubGroup.subGroupId;
+    console.log("subGroupId", aSubGroup.subGroupId)
+    console.log("vmsvmsvmsvms",aSubGroup.vms)
+
+    var subGroupId = aSubGroup.subGroupId
+    var vmList = aSubGroup.vms
+    var vmGroupStatus = webconsolejs["common/api/services/mci_api"].getVmGroupStatusFormatter(vmList);
+
+    console.log("vmGroupStatusvmGroupStatus", vmGroupStatus)
+
+    var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmGroupStatusStyleClass(vmGroupStatus);
+
+    vmGroupLi += `
+      <li id="server_status_icon_${subGroupId}" 
+          class="card ${vmStatusClass} d-flex align-items-center" 
+          style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
+          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('${subGroupId}')">
+        
+        <input type="checkbox" 
+               id="checkbox_${subGroupId}" 
+               class="vm-checkbox" 
+               style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
+               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('${subGroupId}')" 
+               onclick="event.stopPropagation()">
+        
+        <span class="h3 mb-0 me-2">${subGroupId}</span>
+      </li>
+    `;
+  });
+
+  $("#mci_servergroup_info_box").empty();
+  $("#mci_servergroup_info_box").append(vmGroupLi);
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   if (currentVmId) {

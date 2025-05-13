@@ -458,9 +458,66 @@ export function getVmStatusFormatter(vmFullStatus) {
   return returnVmStatus
 }
 
+export function getVmGroupStatusFormatter(vmGroupFullStatus) {
+  console.log("vmGroupFullStatusvmGroupFullStatus",vmGroupFullStatus)
+
+  const lowers = vmGroupFullStatus.map(vm => vm.status.toLowerCase());
+
+  if (lowers.some(s => s.includes("partial"))) {
+    return "etc";
+  }
+
+  if (lowers.every(s => s.includes("running"))) {
+    return "running";
+  }
+  if (lowers.some(s =>
+        s.includes("creating") ||
+        s.includes("rebooting") ||
+        s.includes("resuming")
+      )) {
+    return "running-ing";
+  }
+
+  if (lowers.every(s => s.includes("suspended"))) {
+    return "stopped";
+  }
+  if (lowers.some(s => s.includes("suspending"))) {
+    return "stopped-ing";
+  }
+
+  if (lowers.every(s => s.includes("terminated"))) {
+    return "terminated";
+  }
+  if (lowers.some(s => s.includes("terminating"))) {
+    return "terminated-ing";
+  }
+
+  if (lowers.some(s => s.includes("failed"))) {
+    return "failed";
+  }
+
+  return "etc";
+}
+
 
 // VM 상태 별로 Style class로 색 설정
 export function getVmStatusStyleClass(vmDispStatus) {
+  var vmStatusClass = "bg-green-lt";
+  if (vmDispStatus == "running") {
+    vmStatusClass = "bg-green-lt"
+  } else if (vmDispStatus == "failed") {
+    vmStatusClass = "bg-red-lt"
+  } else if (vmDispStatus == "suspended") {
+    vmStatusClass = "bg-yellow-lt"
+  } else if (vmDispStatus == "terminated") {
+    vmStatusClass = "bg-muted-lt"
+  } else {
+    vmStatusClass = "bg-muted-lt"
+  }
+  return vmStatusClass;
+}
+
+export function getVmGroupStatusStyleClass(vmDispStatus) {
   var vmStatusClass = "bg-green-lt";
   if (vmDispStatus == "running") {
     vmStatusClass = "bg-green-lt"

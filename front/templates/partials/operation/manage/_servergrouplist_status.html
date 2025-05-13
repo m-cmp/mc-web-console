@@ -1,0 +1,54 @@
+<div class="card bg-secondary-lt">
+  <div class="card-header">
+    <h3 class="card-title">
+      Server GroupList / Status
+      <span class="text-info" id="mci_server_group_info_status"> </span>
+      <span class="text-secondary" id="mci_server_group_info_count"></span>
+    </h3>
+    <div class="card-actions btn-actions">
+      <!-- filter -->
+      <a
+        class="btn-action"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#filterbody"
+        aria-expanded="false"
+      >
+
+      <!-- add server-->
+      <a
+        href="#addserver"
+        class="btn btn-outline-primary"
+        onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M12 5l0 14"></path>
+          <path d="M5 12l14 0"></path>
+        </svg>
+        Action
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div>
+      <ul class="vmStatus-list" id="mci_servergroup_info_box"></ul>
+    </div>
+    <div class="row p-2">
+      <div class="col-12">
+        <%= partial("partials/operation/manage/serverinfo.html") %>
+      </div>
+    </div>
+  </div>
+</div>
