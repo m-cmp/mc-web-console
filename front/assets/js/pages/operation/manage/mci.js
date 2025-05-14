@@ -34,6 +34,9 @@ var totalVmStatusMap = new Map();
 var currentNsId = "";
 var currentMciId = "";
 var currentVmId = "";
+var currentSubGroupId = "";
+var currentSubGroupVmId = "";
+var vmListGroupedBySubGroup = [];
 
 var mciListTable;
 var checked_array = [];
@@ -351,7 +354,7 @@ export function changeVmLifeCycle(type) {
 // }
 
 function displayServerStatusList(mciID, vmList) {
-  console.log("displayServerStatusList");
+  console.log("displayServerStatusList", vmList);
 
   var mciName = mciID;
   var vmLi = "";
@@ -368,13 +371,13 @@ function displayServerStatusList(mciID, vmList) {
       <li id="server_status_icon_${vmID}" 
           class="card ${vmStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('${vmID}')">
+          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vm', '${vmID}')">
         
         <input type="checkbox" 
-               id="checkbox_${vmID}" 
+               id="checkbox_vm_${vmID}" 
                class="vm-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('${vmID}')" 
+               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vm', '${vmID}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${vmName}</span>
@@ -399,47 +402,38 @@ function groupBySubGroup(vmList) {
     acc[key].push(vm);
     return acc;
   }, {});
- 
-  return Object.entries(grouped).map(([subGroupId, vms]) => ({
+
+  vmListGroupedBySubGroup = Object.entries(grouped).map(([subGroupId, vms]) => ({
     subGroupId,
     vms
   }));
+  return vmListGroupedBySubGroup
 }
-
 
 function displayServerGroupStatusList(mciID, vmList) {
   console.log("displayServerGroupStatusList");
 
-  var groupedBySubGroup = groupBySubGroup(vmList);
-  console.log("groupedBySubGroup", groupedBySubGroup);
-  
+  var vmListGroupedBySubGroup = groupBySubGroup(vmList);
   var mciName = mciID;
   var vmGroupLi = "";
-  
-  groupedBySubGroup.forEach(aSubGroup => {
-    // var subGroupID = aSubGroup.subGroupId;
-    console.log("subGroupId", aSubGroup.subGroupId)
-    console.log("vmsvmsvmsvms",aSubGroup.vms)
+  vmListGroupedBySubGroup.forEach(aSubGroup => {
 
     var subGroupId = aSubGroup.subGroupId
     var vmList = aSubGroup.vms
     var vmGroupStatus = webconsolejs["common/api/services/mci_api"].getVmGroupStatusFormatter(vmList);
-
-    console.log("vmGroupStatusvmGroupStatus", vmGroupStatus)
-
     var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmGroupStatusStyleClass(vmGroupStatus);
 
     vmGroupLi += `
-      <li id="server_status_icon_${subGroupId}" 
+      <li id="serverGroup_status_icon_${subGroupId}" 
           class="card ${vmStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('${subGroupId}')">
+          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vmGroup', '${subGroupId}')">
         
         <input type="checkbox" 
-               id="checkbox_${subGroupId}" 
-               class="vm-checkbox" 
+               id="checkbox_vmGroup_${subGroupId}" 
+               class="vmgroup-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('${subGroupId}')" 
+               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vmGroup', '${subGroupId}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${subGroupId}</span>
@@ -447,59 +441,182 @@ function displayServerGroupStatusList(mciID, vmList) {
     `;
   });
 
-  $("#mci_servergroup_info_box").empty();
-  $("#mci_servergroup_info_box").append(vmGroupLi);
+  $("#subgroup_info_box").empty();
+  $("#subgroup_info_box").append(vmGroupLi);
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
-  if (currentVmId) {
-    webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
-  }
-}
-
-// 체크박스를 클릭했을 때 선택 상태를 반전시킴
-export function toggleCheck(vmID) {
-  var checkbox = $(`#checkbox_${vmID}`);
-  checkbox.prop("checked", !checkbox.prop("checked"));
-  handleCheck(vmID);
+  // if (currentVmGroupId) {
+  //   webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmGroupId);
+  // }
 }
 
 // 체크박스를 선택하면 선택된 VM ID 업데이트
 var selectedVmIds = [];
+var selectedVmGroupIds = [];
+var selectedSubGroupVmIds = [];
+// 체크박스를 클릭했을 때 선택 상태를 반전시킴
+export function toggleCheck(type, id) {
 
-export function handleCheck(vmID) {
-  var checkbox = $(`#checkbox_${vmID}`);
-  if (checkbox.prop("checked")) {
-    if (!selectedVmIds.includes(vmID)) selectedVmIds.push(vmID);
-  } else {
-    selectedVmIds = selectedVmIds.filter(id => id !== vmID);
-  }
-
-  // 마지막 선택된 VM ID로 설정 및 테두리 업데이트
-  if (selectedVmIds.length > 0) {
-    currentVmId = selectedVmIds[selectedVmIds.length - 1];
-    webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
-  } else {
-    // 선택된 VM이 없다면 ServerInfo를 접음
-    clearServerInfo();
-    const div = document.getElementById("server_info");
-    if (div.classList.contains("active")) {
-      webconsolejs["partials/layout/navigatePages"].toggleElement(div);
-    }
-  }
-
-  // 마지막 선택된 VM 강조 표시
-  highlightSelectedVm();
+  var checkbox = $(`#checkbox_${type}_${id}`);
+  checkbox.prop("checked", !checkbox.prop("checked"));
+  handleCheck(type, id);
 }
 
-function highlightSelectedVm() {
-  // 모든 li 요소의 테두리 제거
-  $("#mci_server_info_box li").css("border", "none");
+export function handleCheck(type, id) {
+  var checkbox = $(`#checkbox_${type}_${id}`);
 
-  // 마지막 선택된 VM ID에 테두리 추가
-  if (selectedVmIds.length > 0) {
-    const lastSelectedVmID = selectedVmIds[selectedVmIds.length - 1];
-    $(`#server_status_icon_${lastSelectedVmID}`).css("border", "2px solid blue"); // 원하는 테두리 스타일 적용
+  if (type === 'vm') {
+    if (checkbox.prop("checked")) {
+      if (!selectedVmIds.includes(id)) selectedVmIds.push(id);
+    } else {
+      selectedVmIds = selectedVmIds.filter(id => id !== id);
+    }
+    // 마지막 선택된 VM ID로 설정 및 테두리 업데이트
+    if (selectedVmIds.length > 0) {
+      currentVmId = selectedVmIds[selectedVmIds.length - 1];
+      webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
+    } else {
+      // 선택된 VM이 없다면 ServerInfo를 접음
+      clearServerInfo();
+      const div = document.getElementById("server_info");
+      if (div.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+      }
+    }
+  } else if (type === 'vmGroup') { // subgroup
+
+    if (checkbox.prop("checked")) {
+      if (!selectedVmGroupIds.includes(id)) selectedVmGroupIds.push(id);
+    } else {
+      selectedVmGroupIds = selectedVmGroupIds.filter(id => id !== id);
+    }
+
+    if (selectedVmGroupIds.length > 0) {
+      // 창 열기
+      currentSubGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
+      vmListInSubGroup(currentSubGroupId);
+    } else {
+      clearServerInfo();
+
+      const div = document.getElementById("subgroup_vm");
+      if (div.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+      }
+
+    }
+  } else if (type === 'subgroup_vm') {
+    if (checkbox.prop("checked")) {
+      if (!selectedSubGroupVmIds.includes(id)) selectedSubGroupVmIds.push(id);
+    } else {
+      selectedSubGroupVmIds = selectedSubGroupVmIds.filter(id => id !== id);
+    }
+
+    if (selectedSubGroupVmIds.length > 0) {
+      // 창 열기
+      currentSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
+      webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
+      
+      // vmListInSubGroup(currentSubGroupVmId);
+    } else {
+      clearServerInfo();
+    }
   }
+  // 마지막 선택된 VM 강조 표시
+  highlightSelected(type);
+}
+
+
+function highlightSelected(type) {
+  // 모든 li 요소의 테두리 제거
+  console.log("highlightSelectedhighlightSelected", type)
+  if (type === 'vm') {
+    // VM 리스트 li 테두리 초기화
+    $("#mci_server_info_box li").css("border", "none");
+    // 마지막 선택된 VM ID
+    if (selectedVmIds.length > 0) {
+      const lastVmId = selectedVmIds[selectedVmIds.length - 1];
+      $(`#server_status_icon_${lastVmId}`)
+        .css("border", "2px solid blue");
+    }
+  }
+  else if (type === 'vmGroup') {
+    // Group 리스트 li 테두리 초기화
+    console.log("typegroup", type)
+    $("#subgroup_info_box li").css("border", "none");
+    // 마지막 선택된 Group ID
+    if (selectedVmGroupIds.length > 0) {
+      const lastGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
+      $(`#serverGroup_status_icon_${lastGroupId}`)
+        .css("border", "2px solid blue");
+    }
+  }
+  else if (type === 'subgroup_vm') {
+    $("#subgroup_vm_info_box li").css("border", "none");
+    // 마지막 선택된 VM ID
+
+    if (selectedSubGroupVmIds.length > 0) {
+      const lastSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
+      $(`#subgroup_vm_status_icon_${lastSubGroupVmId}`)
+        .css("border", "2px solid blue");
+    }
+  }
+  else {
+    alert("error")
+  }
+
+  // $("#mci_server_info_box li").css("border", "none");
+
+  // // 마지막 선택된 VM ID에 테두리 추가
+  // if (selectedVmIds.length > 0) {
+  //   const lastSelectedVmID = selectedVmIds[selectedVmIds.length - 1];
+  //   $(`#server_status_icon_${lastSelectedVmID}`).css("border", "2px solid blue");
+  // }
+}
+
+function vmListInSubGroup(subGroupId) {
+  var div = document.getElementById("subgroup_vm");
+  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+
+  // subGroupId의 vmList 정렬
+  const groupedVm = vmListGroupedBySubGroup.find(item => item.subGroupId === subGroupId);
+  const groupedVmList = groupedVm.vms
+
+  var vmLi = "";
+  groupedVmList.sort();
+
+  groupedVmList.forEach((aVm) => {
+    var vmID = aVm.id;
+    var vmName = aVm.name;
+    var vmStatus = aVm.status;
+    var vmDispStatus = webconsolejs["common/api/services/mci_api"].getVmStatusFormatter(vmStatus);
+    var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmStatusStyleClass(vmDispStatus);
+
+    vmLi += `
+      <li id="subgroup_vm_status_icon_${vmID}" 
+          class="card ${vmStatusClass} d-flex align-items-center" 
+          style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
+          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('subgroup_vm', '${vmID}')">
+        
+        <input type="checkbox" 
+               id="checkbox_subgroup_vm_${vmID}" 
+               class="vm-checkbox" 
+               style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
+               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('subgroup_vm', '${vmID}')" 
+               onclick="event.stopPropagation()">
+        
+        <span class="h3 mb-0 me-2">${vmName}</span>
+      </li>
+    `;
+  });
+
+  $("#subgroup_vm_info_box").empty();
+  $("#subgroup_vm_info_box").append(vmLi);
+
+  // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
+  // if (currentSubGroupVmId) {
+  //   webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentSubGroupVmId);
+  // }
+  // displayServerStatusList(currentMciId, groupedVmList.vms);
 }
 
 // Server List / Status VM 리스트에서
@@ -721,6 +838,228 @@ export async function vmDetailInfo(vmId) {
   // var vmSecName = data.VmSpecName
   $("#server_info_vmspec_name").text(vmSpecName)
   $("#server_detail_view_server_spec").text(vmSpecName) // detail tab
+
+  webconsolejs["partials/operation/manage/server_monitoring"].monitoringDataInit()
+}
+
+export async function subGroup_vmDetailInfo(vmId) {
+  
+  currentSubGroupVmId = vmId
+  // Toggle MCIS Info
+  var div = document.getElementById("subGroup_vm_info");
+  const hasActiveClass = div.classList.contains("active");
+  console.log("vmDetailInfo hasActiveClass", hasActiveClass)
+  if (!hasActiveClass) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  }
+
+  console.log("subGroup_vmDetailInfo")
+  console.log("mciID : ", currentMciId)
+  console.log("vmID : ", currentSubGroupVmId)
+
+  // get mci vm  
+  try {
+    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(currentNsId, currentMciId, vmId);
+    var aVm = response.responseData
+    var responseVmId = response.id;
+    console.log("vm ", aVm)
+    // 전체를 관리하는 obj 갱신
+    var aMci = {};
+    for (var mciIndex in totalMciListObj) {
+      aMci = totalMciListObj[mciIndex];
+
+      if (aMci.id == currentMciId) {
+        for (var vmIndex in aMci.vm) {
+          var tempVms = aMci.vm
+          if (currentVmId == tempVms.id) {
+            aMci.vm[vmIndex] = aVm;
+            break;
+          }
+        }
+        //aMci = totalMciListObj[mciIndex];
+        totalMciListObj[mciIndex] = aMci;
+
+        break;
+      }
+    }
+    clearServerInfo();
+
+    console.log("aMci", aMci);
+
+    if (!aMci || !aMci.vm) {
+      console.log("aMci or vmList is not defined");
+      return;
+    }
+
+    var mciName = aMci.name;
+    var vmList = aMci.vm;
+    console.log("vmList:", vmList);
+
+    var vmExist = false;
+    var data = new Object();
+
+    for (var vmIndex in vmList) {
+      var aVm = vmList[vmIndex];
+      if (currentSubGroupVmId == aVm.id) {
+        data = aVm;
+        vmExist = true;
+        console.log("aVm", aVm);
+        break;
+      }
+    }
+
+    if (!vmExist) {
+      console.log("vm is not exist");
+    }
+  } catch (error) {
+    console.error("Error occurred: ", error);
+  }
+  console.log("selected Vm");
+  console.log("selected vm data : ", data);
+  var vmId = data.id;
+  var vmName = data.name;
+  var vmStatus = data.status;
+  var vmDescription = data.description;
+  var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
+  console.log("vmPublicIp", vmPublicIp)
+  var vmSshKeyID = data.sshKeyId;
+
+  try {
+    var imageId = data.imageId
+    // var operatingSystem = await webconsolejs["common/api/services/vmimage_api"].getCommonVmImageInfo(imageId)
+    // var operatingSystem = data.imageId
+    var operatingSystem = "Ubuntu"
+    $("#subgroup_server_info_os").text(operatingSystem)
+  } catch (e) {
+    console.log("e", e)
+  }
+  var startTime = data.createdTime
+  var privateIp = data.privateIP;
+  //var securityGroupID = data.securityGroupIds[0];
+  var securityGroupID = data.securityGroupIds;
+  var providerName = data.connectionConfig.providerName
+  var vmProviderIcon = ""
+  vmProviderIcon +=
+    '<img class="img-fluid" class="rounded" width="80" src="/assets/images/common/img_logo_' +
+    (providerName == "" ? "mcmp" : providerName) +
+    '.png" alt="' +
+    providerName +
+    '"/>';
+  console.log("providerNameproviderNameproviderName",providerName)
+  var vmDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(vmStatus);
+  var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(vmDispStatus);
+
+  //vm info
+  $("#subgroup_mci_server_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
+  $("#subgroup_mci_server_info_connection").empty()
+  $("#subgroup_mci_server_info_connection").append(vmProviderIcon)
+
+
+  $("#subgroup_server_info_text").text(' [ ' + vmName + ' / ' + mciName + ' ]')
+  $("#subgroup_server_info_name").text(vmName + "/" + vmId)
+  $("#subgroup_server_info_desc").text(vmDescription)
+
+  $("#subgroup_server_info_start_time").text(startTime)
+  $("#subgroup_server_info_private_ip").text(privateIp)
+  // $("#server_info_cspVMID").text(data.cspResourceName)
+  $("#subgroup_server_info_cspVMID").text("ip-10-32-4-91.ap-northeast-2.compute.internal")
+
+  // ip information
+  $("#subgroup_server_info_public_ip").text(vmPublicIp)
+  $("#subgroup_server_detail_info_public_ip_text").text("Public IP : " + vmPublicIp)
+  $("#subgroup_server_info_public_dns").text(data.publicDNS)
+  // $("#server_info_private_ip").val(data.privateIP)
+  $("#subgroup_server_info_private_dns").text(data.privateDNS)
+
+  $("#subgroup_server_detail_view_public_ip").text(vmPublicIp)
+  $("#subgroup_server_detail_view_public_dns").text(data.publicDNS)
+  $("#subgroup_server_detail_view_private_ip").text(data.privateIP)
+  $("#subgroup_server_detail_view_private_dns").text(data.privateDNS)
+
+  // detail tab
+  $("#subgroup_server_detail_info_text").text(' [' + vmName + '/' + mciName + ']')
+  $("#subgroup_server_detail_view_server_id").text(vmId)
+  $("#subgroup_server_detail_view_server_status").text(vmStatus);
+  // $("#server_detail_view_public_dns").text(data.publicDNS)
+  // $("#server_detail_view_public_ip").text(vmPublicIp)
+  // $("#server_detail_view_private_ip").text(data.privateIP)
+  $("#subgroup_server_detail_view_security_group_text").text(securityGroupID)
+  // $("#server_detail_view_private_dns").text(data.privateDNS)
+  // $("#server_detail_view_private_ip").text(data.privateIP)
+  $("#subgroup_server_detail_view_image_id").text(imageId)
+  $("#subgroup_server_detail_view_os").text(operatingSystem);
+  $("#subgroup_server_detail_view_user_id_pass").text(data.vmUserAccount + "/ *** ")
+
+  var region = data.region.Region
+
+  var zone = data.region.Zone
+
+  // connection tab
+  var connectionName = data.connectionName
+  var credentialName = data.connectionConfig.credentialName
+  var driverName = data.connectionConfig.driverName
+  var locationInfo = data.location;
+  var cloudType = locationInfo.cloudType;
+
+  $("#subgroup_server_connection_view_connection_name").text(connectionName)
+  $("#subgroup_server_connection_view_credential_name").text(credentialName)
+  $("#subgroup_server_connection_view_csp").text(providerName)
+  $("#subgroup_server_connection_view_driver_name").text(driverName)
+  $("#subgroup_server_connection_view_region").text(providerName + " : " + region)
+  $("#subgroup_server_connection_view_zone").text(zone)
+
+  // region zone locate
+  $("#subgroup_server_info_region").text(providerName + ":" + region)
+  $("#subgroup_server_info_zone").text(zone)
+
+
+  $("#subgroup_server_detail_view_region").text(providerName + " : " + region)
+  $("#subgroup_server_detail_view_zone").text(zone)
+
+  // connection name
+  var connectionName = data.connectionName;
+  $("#subgroup_server_info_connection_name").text(connectionName)
+
+  var vmDetail = data.cspViewVmDetail;
+  // var vmDetailKeyValueList = vmDetail.KeyValueList
+  var addtionalDetails = data.addtionalDetails
+  console.log("addtionalDetails", addtionalDetails)
+  var architecture = "";
+  var vpcId = ""
+  var subnetId = ""
+
+  if (addtionalDetails) {
+    for (var i = 0; i < addtionalDetails.length; i++) {
+      if (addtionalDetails[i].key === "Architecture") {
+        architecture = addtionalDetails[i].value;
+        break;
+      }
+    }
+  }
+  var vpcId = data.cspVNetId
+  var subnetId = data.cspSubnetId
+  var vmSpecName = data.cspSpecName
+  var vpcSystemId = data.vNetId
+
+  var subnetSystemId = data.subnetId
+  var eth = data.networkInterface
+
+  $("#subgroup_server_info_archi").text(architecture)
+  // detail tab
+  $("#subgroup_server_detail_view_archi").text(architecture)
+  $("#subgroup_server_detail_view_vpc_id").text(vpcId + "(" + vpcSystemId + ")")
+  $("#subgroup_server_detail_view_subnet_id").text(subnetId + "(" + subnetSystemId + ")")
+  $("#subgroup_server_detail_view_eth").text(eth)
+  $("#subgroup_server_detail_view_root_device_type").text(data.rootDiskType);
+  $("#subgroup_server_detail_view_root_device").text(data.rootDeviceName);
+  $("#subgroup_server_detail_view_keypair_name").text(data.sshKeyId)
+  $("#subgroup_server_detail_view_access_id_pass").text(data.vmUserName + "/ *** ")
+
+
+  // server spec
+  // var vmSecName = data.VmSpecName
+  $("#subgroup_server_info_vmspec_name").text(vmSpecName)
+  $("#subgroup_server_detail_view_server_spec").text(vmSpecName) // detail tab
 
   webconsolejs["partials/operation/manage/server_monitoring"].monitoringDataInit()
 }
