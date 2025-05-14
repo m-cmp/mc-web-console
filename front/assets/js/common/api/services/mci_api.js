@@ -618,3 +618,27 @@ console.log("calculateVmStatusCount",aMci)
   return vmStatusCountMap;
 }
 
+// Policy API 관련 
+export async function getPolicyList(nsId) {
+
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Getallmcipolicy";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  var policyList = response.data.responseData;
+
+  return policyList
+}
