@@ -356,7 +356,41 @@ export function expressDone_btn() {
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
 	express_form["commonSpec"] = $("#p_commonSpecId").val();
 	express_form["commonImage"] = $("#p_commonImageId").val();
-
+	switch ($("#p_provider").val()) {
+		case "azure":
+			express_form["connectionName"] = "azure-koreacentral";
+			express_form["commonImage"] = "azure+koreacentral+ubuntu22.04";
+			express_form["commonSpec"] = "azure+koreacentral+standard_b1ms";
+			break;
+		case "aws":
+			express_form["connectionName"] = "aws-ap-northeast-2";
+			express_form["commonImage"] = "ubuntu18.04";
+			express_form["commonSpec"] = "aws+ap-northeast-2+t2.small";
+			break;
+		case "alibaba":
+			express_form["connectionName"] = "alibaba-ap-northeast-2";
+			express_form["commonImage"] = "alibaba+ap-northeast-2+ubuntu18.04";
+			express_form["commonSpec"] = "alibaba+ap-northeast-2+ecs.e-c1m2.xlarge";
+			break;
+		case "tencent":
+			express_form["connectionName"] = "tencent-ap-seoul";
+			express_form["commonImage"] = "tencent+ap-seoul+ubuntu18.04";
+			express_form["commonSpec"] = "tencent+ap-seoul+sa5.medium2";
+			break;
+		// case "gcp":
+		// 	express_form["connectionName"] = "gcp-asia-southeast3";
+		// 	// express_form["commonImage"] = "gcp+asia-southeast2+debian10";
+		// 	express_form["commonImage"] = "gcp+asia-northeast3+debian11";
+		// 	// express_form["commonSpec"] = "gcp+asia-southeast2+f1-micro";
+		// 	express_form["commonSpec"] = "gcp-asia-northeast3+g1-small";
+		// 	break;
+		case "ncpvpc":
+			express_form["connectionName"] = "ncpvpc-kr";
+			express_form["commonImage"] = "Ubuntu20.04";
+			express_form["commonSpec"] = "ncpvpc+kr+SVR.VSVR.HICPU.C004.M008.NET.SSD.B050.G002";
+		default:
+			console.log("Unknown provider");
+	}
 	console.log("express_form form : ", express_form);
 
 	var server_name = express_form.name;
@@ -573,7 +607,7 @@ export async function createMciDynamic() {
 
 
 	if (!mciName) {
-		commonAlert("Please Input MCIS Name!!!!!")
+		commonAlert("Please Input MCI Name!!!!!")
 		return;
 	}
 
@@ -593,7 +627,7 @@ export async function createVmDynamic() {
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	console.log("selected projectId : ", selectedNsId)
 
-	var mciid = webconsolejs["pages/operation/manage/mci"].selectedMciObj[0].id
+	var mciid = webconsolejs["pages/operation/manage/mci"].currentMciId
 	console.log("selected mciId : ", mciid)
 
 	// var commonImage = selectedMciObj[0].vm[0].
@@ -620,16 +654,17 @@ export function addNewVirtualMachine() {
 	console.log("addNewVirtualMachine")
 	Express_Server_Config_Arr = new Array();
 
-	var selectedMci = webconsolejs["pages/operation/manage/mci"].selectedMciObj
+	var selectedMci = webconsolejs["pages/operation/manage/mci"].currentMciId
 	console.log("selectedMci", selectedMci)
 
-	var mci_name = selectedMci[0].name
-	var mci_desc = selectedMci[0].description
+	var mci_name = selectedMci
+	// var mci_name = selectedMci[0].name
+	// var mci_desc = selectedMci[0].description
 
 	$("#extend_mci_name").val(mci_name)
 
-	$("#extend_mci_desc").val(mci_desc)
-	console.log("extend_mci_desc", mci_desc)
+	// $("#extend_mci_desc").val(mci_desc)
+	// console.log("extend_mci_desc", mci_desc)
 
 	isVm = true
 }

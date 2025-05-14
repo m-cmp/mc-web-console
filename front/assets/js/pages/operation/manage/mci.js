@@ -43,7 +43,7 @@ var checked_array = [];
 
 
 initMciTable(); // init tabulator
-
+// initPolicyTable();
 //DOMContentLoaded 는 Page에서 1개만.
 // init + 파일명 () : ex) initMci() 를 호출하도록 한다.
 document.addEventListener("DOMContentLoaded", initMci);
@@ -1622,8 +1622,6 @@ function statusFormatter(cell) {
 
 // provider를 table에서 표시하기 위해 감싸기
 function providerFormatter(data) {
-  console.log("datadata", data)
-  console.log("cell.getData().vm", data.getData().vm)
   var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
     data.getData().vm
   );
@@ -1728,6 +1726,119 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 /////////////////////////Tabulator Filter END/////////////////////////
 
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
+////////////////////////////////////////////////////// POLICY ///////////////////////////////////////////////////
+// import { TabulatorFull as Tabulator } from "tabulator-tables";
+
+let policyTable;
+let selectedPolicies = [];
+document.addEventListener('DOMContentLoaded', function() {
+  const policyTabEl = document.querySelector('a[data-bs-toggle="tab"][href="#tabs-mci-policy"]');
+  policyTabEl.addEventListener('shown.bs.tab', function(event) {
+    initPolicyPage();
+  });
+});
+
+export function initPolicyPage() {
+  initPolicyTable();
+  loadPolicyData();
+}
+// Tabulator 테이블 초기화
+function initPolicyTable() {
+    const columns = [
+        { title: "MCI ID", field: "mciId", width: 120 },
+        { title: "SubGroup", field: "subGroupId", width: 120 },
+        { title: "Metric", field: "metric", width: 100 },
+        { title: "Operator", field: "operator", width: 80 },
+        { title: "Operand", field: "operand", width: 80 },
+        { title: "Period(s)", field: "evaluationPeriod", width: 80 },
+        { title: "Action", field: "actionType", width: 100 },
+        { title: "SubGroupSize", field: "subGroupSize", width: 100 },
+        // 추가 컬럼...
+    ];
+
+    policyTable = new Tabulator("#policy-table", {
+        layout: "fitColumns",
+        selectable: true,
+        columns: columns,
+        rowClick: onPolicyRowClick,
+        rowSelectionChanged: onPolicySelectionChanged,
+    });
+    loadPolicyData();
+}
+
+// 정책 데이터 조회
+async function loadPolicyData() {
+    try {
+        const resp = await webconsolejs['common/api/services/mci_api'].getPolicyList(currentNsId);
+        const data = transformPolicyResponse(resp);
+        setPolicyTableData(data);
+    } catch (err) {
+        console.error('Policy load error:', err);
+    }
+}
+
+// API 응답을 테이블 형식으로 가공
+function transformPolicyResponse(resp) {
+    // resp.mciPolicy 배열을 flatten하여 [{ mciId, subGroupId, metric, operator, ... }, ...] 형태로 반환
+    const list = [];
+    resp.mciPolicy.forEach(mci => {
+        const mciId = mci.Id;
+        mci.policy.forEach(pol => {
+            list.push({
+                mciId: mciId,
+                subGroupId: pol.autoAction.vmDynamicReq.subGroupSize, // 예시
+                metric: pol.autoCondition.metric,
+                operator: pol.autoCondition.operator,
+                operand: pol.autoCondition.operand,
+                evaluationPeriod: pol.autoCondition.evaluationPeriod,
+                actionType: pol.autoAction.actionType,
+                subGroupSize: pol.autoAction.vmDynamicReq.subGroupSize,
+                // 필요시 추가 필드 매핑
+            });
+        });
+    });
+    return list;
+}
+
+// 테이블에 데이터 세팅
+function setPolicyTableData(data) {
+    policyTable.setData(data);
+}
+
+// 단일 행 클릭 이벤트
+function onPolicyRowClick(e, row) {
+    const policy = row.getData();
+    showPolicyDetail(policy);
+}
+
+// 선택된 행 변경 시
+function onPolicySelectionChanged(data, rows) {
+    selectedPolicies = data;
+}
+
+// 상세 보기 폼에 데이터 바인딩
+export function showPolicyDetail(policy) {
+    // TODO: 폼 요소에 policy 객체 내용을 채워넣기
+    document.getElementById('policy-form-mciId').value = policy.mciId;
+    document.getElementById('policy-form-metric').value = policy.metric;
+    // ...
+}
+
+// 선택된 정책 삭제
+export async function deleteSelectedPolicies() {
+    if (selectedPolicies.length === 0) {
+        alert('삭제할 정책을 선택하세요.');
+        return;
+    }
+    for (const p of selectedPolicies) {
+        // TODO: p 식별자 사용하여 API 호출
+        await webconsolejs['common/api/services/mci_api'].deletePolicy(p.mciId, /* policy identifier */);
+    }
+    loadPolicyData();
+}
+
+
+////////////////////////////////////////////////////// END POLICY ///////////////////////////////////////////////////
 
 
 
