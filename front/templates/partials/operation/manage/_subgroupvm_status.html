@@ -1,9 +1,9 @@
-<div class="card bg-secondary-lt">
-  <div class="card-header">
+<div class="card border-secondary-lt mb-3">
+<div class="card-header">
     <h3 class="card-title">
-      Server GroupList / Status
-      <span class="text-info" id="mci_server_group_info_status"> </span>
-      <span class="text-secondary" id="mci_server_group_info_count"></span>
+        Server GroupList / Status
+        <span class="text-info" id="mci_server_group_info_status"> </span>
+        <span class="text-secondary" id="mci_server_group_info_count"></span>
     </h3>
     <div class="card-actions btn-actions">
       <!-- filter -->
@@ -40,15 +40,15 @@
         Action
       </a>
     </div>
-  </div>
-  <div class="card-body">
+</div>
+<div class="card-body">
     <div>
-      <ul class="vmStatus-list" id="mci_servergroup_info_box"></ul>
+        <ul class="vmStatus-list" id="subgroup_info_box"></ul>
     </div>
     <div class="row p-2">
-      <div class="col-12">
-        <%= partial("partials/operation/manage/serverinfo.html") %>
-      </div>
+        <div class="col-12">
+        <%= partial("partials/operation/manage/subgroupvmlist_status.html") %>
+        </div>
     </div>
-  </div>
+</div>
 </div>
