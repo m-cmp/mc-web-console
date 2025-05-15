@@ -814,23 +814,26 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 	commonResultAlert("VM creation request completed");
 }
 
-// server quantity 
-$(document).ready(function () {
-	$(".input-number-increment").click(function () {
-		var $input = $(this).siblings(".input-number");
-		var val = parseInt($input.val(), 10);
-		var max = parseInt($input.attr('max'), 10);
-		if (val < max) {
-			$input.val(val + 1);
-		}
+// SubGroup Size
+(function(){
+	const input = document.getElementById('ep_vm_add_cnt');
+	if (!input) return;
+  
+	const container = input.parentElement; // .d-flex.align-items-center
+	const [btnDec, btnInc] = container.querySelectorAll('button');
+  
+	const minValue = 1;
+	const maxValue = Number(input.getAttribute('max')) || Infinity;
+  
+	btnDec.addEventListener('click', function(e){
+	  e.preventDefault();
+	  let val = parseInt(input.value, 10) || minValue;
+	  if (val > minValue) input.value = val - 1;
 	});
-
-	$(".input-number-decrement").click(function () {
-		var $input = $(this).siblings(".input-number");
-		var val = parseInt($input.val(), 10);
-		var min = parseInt($input.attr('min'), 10);
-		if (val > min) {
-			$input.val(val - 1);
-		}
+  
+	btnInc.addEventListener('click', function(e){
+	  e.preventDefault();
+	  let val = parseInt(input.value, 10) || minValue;
+	  if (val < maxValue) input.value = val + 1;
 	});
-});  
+  })();
