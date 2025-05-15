@@ -38,8 +38,8 @@ export async function getMciIdList(nsId) {
     pathParams: {
       nsId: nsId,
     },
-    queryParams : {
-      option : "id"
+    queryParams: {
+      option: "id"
     }
   };
 
@@ -459,7 +459,7 @@ export function getVmStatusFormatter(vmFullStatus) {
 }
 
 export function getVmGroupStatusFormatter(vmGroupFullStatus) {
-  console.log("vmGroupFullStatusvmGroupFullStatus",vmGroupFullStatus)
+  console.log("vmGroupFullStatusvmGroupFullStatus", vmGroupFullStatus)
 
   const lowers = vmGroupFullStatus.map(vm => vm.status.toLowerCase());
 
@@ -471,10 +471,10 @@ export function getVmGroupStatusFormatter(vmGroupFullStatus) {
     return "running";
   }
   if (lowers.some(s =>
-        s.includes("creating") ||
-        s.includes("rebooting") ||
-        s.includes("resuming")
-      )) {
+    s.includes("creating") ||
+    s.includes("rebooting") ||
+    s.includes("resuming")
+  )) {
     return "running-ing";
   }
 
@@ -591,7 +591,7 @@ export function calculateVmStatusCount(aMci) {
     ["terminated-ing", 0],
     ["etc", 0],
   ]);
-console.log("calculateVmStatusCount",aMci)
+  console.log("calculateVmStatusCount", aMci)
   try {
     if (aMci.statusCount) {
       const statusCountObj = aMci.statusCount;
@@ -616,6 +616,33 @@ console.log("calculateVmStatusCount",aMci)
   }
 
   return vmStatusCountMap;
+}
+
+// ScaleOut API 관련
+export async function postScaleOutSubGroup(nsId, mciId, subgroupId) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      subgroupId: subgroupId
+    },
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Postmcisubgroupscaleout";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  var responseData = response.data.responseData;
+
+  return responseData
+
 }
 
 // Policy API 관련 
