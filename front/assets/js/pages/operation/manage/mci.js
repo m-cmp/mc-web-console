@@ -21,7 +21,7 @@ export function commoncallbac(val) {
   alert(val);
 }
 //// 선택한 값이 object면 selectedXXX
-//// 선택한 값이 id면 currentㅌㅌㅌ
+//// 선택한 값이 id면 current
 
 var totalMciListObj = new Object();
 var selectedWorkspaceProject = new Object();
@@ -36,6 +36,7 @@ var currentMciId = "";
 var currentVmId = "";
 var currentSubGroupId = "";
 var currentSubGroupVmId = "";
+var currentGroupedVmList = [];
 var vmListGroupedBySubGroup = [];
 
 var mciListTable;
@@ -99,6 +100,12 @@ async function initMci() {
   ////////////////////  mciId를 set하고 조회 완료. ////////////////
 
   refreshMciList();
+  // policylist
+  const policyTabEl = document.querySelector('a[data-bs-toggle="tab"][href="#tabs-mci-policy"]');
+  policyTabEl.addEventListener('shown.bs.tab', function (event) {
+    initPolicyPage();
+  });
+
 }
 
 
@@ -174,9 +181,7 @@ function refreshRowData(rowId, newData) {
 
 
   displayServerStatusList(rowId, newData.vm)
-  console.log("displayServerStatusList at refreshRowData")
   displayServerGroupStatusList(rowId, newData.vm)
-  console.log("displayServerGroupStatusList at refreshRowData")
 }
 
 // 클릭한 mci info 가져오기
@@ -282,7 +287,6 @@ function setMciInfoData(mciData) {
 
 // mci 삭제
 export function deleteMci() {
-  console.log("deleteMcideleteMcideleteMci")
   webconsolejs["common/api/services/mci_api"].mciDelete(currentMciId, currentNsId)
 
 }
@@ -354,7 +358,6 @@ export function changeVmLifeCycle(type) {
 // }
 
 function displayServerStatusList(mciID, vmList) {
-  console.log("displayServerStatusList", vmList);
 
   var mciName = mciID;
   var vmLi = "";
@@ -417,15 +420,16 @@ function displayServerGroupStatusList(mciID, vmList) {
   var mciName = mciID;
   var vmGroupLi = "";
   vmListGroupedBySubGroup.forEach(aSubGroup => {
-
+    
     var subGroupId = aSubGroup.subGroupId
+    var vmCount = aSubGroup.vms.length
     var vmList = aSubGroup.vms
     var vmGroupStatus = webconsolejs["common/api/services/mci_api"].getVmGroupStatusFormatter(vmList);
-    var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmGroupStatusStyleClass(vmGroupStatus);
+    var vmGroupStatusClass = webconsolejs["common/api/services/mci_api"].getVmGroupStatusStyleClass(vmGroupStatus);
 
     vmGroupLi += `
       <li id="serverGroup_status_icon_${subGroupId}" 
-          class="card ${vmStatusClass} d-flex align-items-center" 
+          class="card ${vmGroupStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
           onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vmGroup', '${subGroupId}')">
         
@@ -436,7 +440,7 @@ function displayServerGroupStatusList(mciID, vmList) {
                onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vmGroup', '${subGroupId}')" 
                onclick="event.stopPropagation()">
         
-        <span class="h3 mb-0 me-2">${subGroupId}</span>
+        <span class="h3 mb-0 me-2">${subGroupId}(${vmCount})</span>
       </li>
     `;
   });
@@ -515,7 +519,7 @@ export function handleCheck(type, id) {
       // 창 열기
       currentSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
       webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
-      
+
       // vmListInSubGroup(currentSubGroupVmId);
     } else {
       clearServerInfo();
@@ -528,11 +532,10 @@ export function handleCheck(type, id) {
 
 function highlightSelected(type) {
   // 모든 li 요소의 테두리 제거
-  console.log("highlightSelectedhighlightSelected", type)
+  
   if (type === 'vm') {
-    // VM 리스트 li 테두리 초기화
+    
     $("#mci_server_info_box li").css("border", "none");
-    // 마지막 선택된 VM ID
     if (selectedVmIds.length > 0) {
       const lastVmId = selectedVmIds[selectedVmIds.length - 1];
       $(`#server_status_icon_${lastVmId}`)
@@ -540,10 +543,8 @@ function highlightSelected(type) {
     }
   }
   else if (type === 'vmGroup') {
-    // Group 리스트 li 테두리 초기화
-    console.log("typegroup", type)
+
     $("#subgroup_info_box li").css("border", "none");
-    // 마지막 선택된 Group ID
     if (selectedVmGroupIds.length > 0) {
       const lastGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
       $(`#serverGroup_status_icon_${lastGroupId}`)
@@ -551,9 +552,8 @@ function highlightSelected(type) {
     }
   }
   else if (type === 'subgroup_vm') {
+    
     $("#subgroup_vm_info_box li").css("border", "none");
-    // 마지막 선택된 VM ID
-
     if (selectedSubGroupVmIds.length > 0) {
       const lastSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
       $(`#subgroup_vm_status_icon_${lastSubGroupVmId}`)
@@ -578,8 +578,9 @@ function vmListInSubGroup(subGroupId) {
   webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
   // subGroupId의 vmList 정렬
-  const groupedVm = vmListGroupedBySubGroup.find(item => item.subGroupId === subGroupId);
-  const groupedVmList = groupedVm.vms
+  var groupedVm = vmListGroupedBySubGroup.find(item => item.subGroupId === subGroupId);
+  var groupedVmList = groupedVm.vms
+  currentGroupedVmList = groupedVmList
 
   var vmLi = "";
   groupedVmList.sort();
@@ -639,6 +640,7 @@ export async function vmDetailInfo(vmId) {
   try {
     var response = await webconsolejs["common/api/services/mci_api"].getMciVm(currentNsId, currentMciId, vmId);
     var aVm = response.responseData
+    var subGroupId = aVm.subGroupId
     var responseVmId = response.id;
     console.log("vm ", aVm)
     // 전체를 관리하는 obj 갱신
@@ -733,7 +735,7 @@ export async function vmDetailInfo(vmId) {
   $("#mci_server_info_connection").append(vmProviderIcon)
 
 
-  $("#server_info_text").text(' [ ' + vmName + ' / ' + mciName + ' ]')
+  $("#server_info_text").text(' [ ' + subGroupId + ' / '+ vmName + ' ]')
   $("#server_info_name").text(vmName + "/" + vmId)
   $("#server_info_desc").text(vmDescription)
 
@@ -843,17 +845,18 @@ export async function vmDetailInfo(vmId) {
 }
 
 export async function subGroup_vmDetailInfo(vmId) {
-  
+  console.log("subGroup_vmDetailInfo")
+
   currentSubGroupVmId = vmId
   // Toggle MCIS Info
   var div = document.getElementById("subGroup_vm_info");
+
   const hasActiveClass = div.classList.contains("active");
   console.log("vmDetailInfo hasActiveClass", hasActiveClass)
   if (!hasActiveClass) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   }
 
-  console.log("subGroup_vmDetailInfo")
   console.log("mciID : ", currentMciId)
   console.log("vmID : ", currentSubGroupVmId)
 
@@ -945,7 +948,6 @@ export async function subGroup_vmDetailInfo(vmId) {
     '.png" alt="' +
     providerName +
     '"/>';
-  console.log("providerNameproviderNameproviderName",providerName)
   var vmDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(vmStatus);
   var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(vmDispStatus);
 
@@ -955,7 +957,7 @@ export async function subGroup_vmDetailInfo(vmId) {
   $("#subgroup_mci_server_info_connection").append(vmProviderIcon)
 
 
-  $("#subgroup_server_info_text").text(' [ ' + vmName + ' / ' + mciName + ' ]')
+  $("#subgroup_server_info_text").text(' [ ' + currentSubGroupId + ' / ' + vmName + ' ]')
   $("#subgroup_server_info_name").text(vmName + "/" + vmId)
   $("#subgroup_server_info_desc").text(vmDescription)
 
@@ -1273,7 +1275,6 @@ function displayVmStatusArea() {
   let sumVmTerminatedCnt = 0;
   let sumVmTerminatedIngCnt = 0;
   let sumVmEtcCnt = 0;
-  console.log("totalVmStatusMaptotalVmStatusMap", totalVmStatusMap)
   totalVmStatusMap.forEach((value, key) => {
     if (value instanceof Map) {
       // 기본 상태
@@ -1507,7 +1508,6 @@ function initMciTable() {
     // currentClickedmciID = row.getCell("id").getValue();
     var tempcurmciID = row.getCell("id").getValue();
     if (tempcurmciID === currentMciId) {
-      console.log("tempcurmciID === currentMciId")
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
       currentMciId = ""
       this.deselectRow();
@@ -1551,9 +1551,7 @@ function initMciTable() {
 // toggleSelectBox of table row
 function toggleRowSelection(id) {
   // mciListTable에서 데이터 찾기
-  console.log("idid : ", id)
   var row = mciListTable.getRow(id);
-  console.log("rowrow", row)
   if (row) {
     row.select();
     console.log("Row with ID " + id + " is selected.");
@@ -1659,6 +1657,102 @@ function providerFormatterString(data) {
   return mciProviderCell;
 }
 
+// scale group size 버튼 토글 기능
+(function() {
+  const toggleBtn      = document.getElementById('scaleGroupToggle');
+  const collapseEl     = document.getElementById('scaleGroupSettings');
+  const formListUl     = document.getElementById('scaleGroupFormList');
+  const listBox        = document.getElementById('subgroup_info_box');
+  if (!toggleBtn || !collapseEl || !formListUl || !listBox) return;
+
+  // collapse 수동 인스턴스
+  const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+
+  toggleBtn.addEventListener('click', function(e) {
+    // 토글 열려있으면 닫기
+    if (collapseEl.classList.contains('show')) {
+      bsCollapse.hide();
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    // 0개, 1개만 체크 검증
+    const checkedBoxes = listBox.querySelectorAll('input[type="checkbox"]:checked');
+    if (checkedBoxes.length !== 1) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      alert(checkedBoxes.length === 0 
+        ? 'Please select subGroup first' 
+        : 'Please select only one subGroup');
+      return;
+    }
+
+    // 1개 선택됐을때
+    const chk = checkedBoxes[0];
+    const groupId    = chk.value;
+    const vmCount    = currentGroupedVmList.length
+    let targetCount  = vmCount;  // 숫자박스 초기값
+    formListUl.innerHTML = '';
+
+    // 컨트롤용 li 생성
+    const li = document.createElement('li');
+    li.className = 'd-flex align-items-center';
+
+    // - 버튼
+    const btnMinus = document.createElement('button');
+    btnMinus.type = 'button';
+    btnMinus.className = 'btn btn-outline-secondary btn-sm';
+    btnMinus.textContent = '–';
+    btnMinus.addEventListener('click', () => {
+      if (targetCount > 0) {
+        targetCount--;
+        inputBox.value = targetCount;
+      }
+    });
+    li.appendChild(btnMinus);
+
+    // 숫자박스
+    const inputBox = document.createElement('input');
+    inputBox.type = 'text';
+    inputBox.readOnly = true;
+    inputBox.className = 'form-control mx-2 text-center';
+    inputBox.style.width = '60px';
+    inputBox.value = targetCount;
+    li.appendChild(inputBox);
+
+    // + 버튼
+    const btnPlus = document.createElement('button');
+    btnPlus.type = 'button';
+    btnPlus.className = 'btn btn-outline-secondary btn-sm';
+    btnPlus.textContent = '+';
+    btnPlus.addEventListener('click', () => {
+      targetCount++;
+      inputBox.value = targetCount;
+    });
+    li.appendChild(btnPlus);
+
+    // OK 버튼
+    const btnOk = document.createElement('button');
+    btnOk.type = 'button';
+    btnOk.className = 'btn btn-primary btn-sm ms-3';
+    btnOk.textContent = 'OK';
+    btnOk.addEventListener('click', () => {
+      const desired = parseInt(inputBox.value, 10);
+      if (desired <= vmCount) {
+        alert(`Please select a number greater than current VM count (${vmCount})`);
+        return;
+      }
+      // API 호출
+      var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(currentNsId, currentMciId, currentSubGroupId)
+
+    });
+    li.appendChild(btnOk);
+
+    formListUl.appendChild(li);
+    bsCollapse.show();
+    toggleBtn.setAttribute('aria-expanded', 'true');
+  });
+})();
+
 /////////////////////////Tabulator Filter start/////////////////////////
 //Define variables for input elements
 var fieldEl = document.getElementById("filter-field");
@@ -1731,12 +1825,6 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 
 let policyTable;
 let selectedPolicies = [];
-document.addEventListener('DOMContentLoaded', function() {
-  const policyTabEl = document.querySelector('a[data-bs-toggle="tab"][href="#tabs-mci-policy"]');
-  policyTabEl.addEventListener('shown.bs.tab', function(event) {
-    initPolicyPage();
-  });
-});
 
 export function initPolicyPage() {
   initPolicyTable();
@@ -1744,97 +1832,101 @@ export function initPolicyPage() {
 }
 // Tabulator 테이블 초기화
 function initPolicyTable() {
-    const columns = [
-        { title: "MCI ID", field: "mciId", width: 120 },
-        { title: "SubGroup", field: "subGroupId", width: 120 },
-        { title: "Metric", field: "metric", width: 100 },
-        { title: "Operator", field: "operator", width: 80 },
-        { title: "Operand", field: "operand", width: 80 },
-        { title: "Period(s)", field: "evaluationPeriod", width: 80 },
-        { title: "Action", field: "actionType", width: 100 },
-        { title: "SubGroupSize", field: "subGroupSize", width: 100 },
-        // 추가 컬럼...
-    ];
+  const columns = [
+    {
+      formatter: "rowSelection", titleFormatter: "rowSelection", vertAlign: "middle", hozAlign: "center",        // headerHozAlign: "center",
+      width: 60,
+    },
+    { title: "MCI ID", field: "mciId", width: 120 },
+    { title: "SubGroup", field: "subGroupId", width: 120 },
+    { title: "Metric", field: "metric", width: 100 },
+    { title: "Operator", field: "operator", width: 80 },
+    { title: "Operand", field: "operand", width: 80 },
+    { title: "Period(s)", field: "evaluationPeriod", width: 80 },
+    { title: "Action", field: "actionType", width: 100 },
+    { title: "SubGroupSize", field: "subGroupSize", width: 100 },
+    // 추가 컬럼...
+  ];
 
-    policyTable = new Tabulator("#policy-table", {
-        layout: "fitColumns",
-        selectable: true,
-        columns: columns,
-        rowClick: onPolicyRowClick,
-        rowSelectionChanged: onPolicySelectionChanged,
-    });
-    loadPolicyData();
+  policyTable = new Tabulator("#policy-table", {
+    layout: "fitColumns",
+    selectable: true,
+    columns: columns,
+    rowClick: onPolicyRowClick,
+    rowSelectionChanged: onPolicySelectionChanged,
+  });
+  loadPolicyData();
 }
 
 // 정책 데이터 조회
 async function loadPolicyData() {
-    try {
-        const resp = await webconsolejs['common/api/services/mci_api'].getPolicyList(currentNsId);
-        const data = transformPolicyResponse(resp);
-        setPolicyTableData(data);
-    } catch (err) {
-        console.error('Policy load error:', err);
-    }
+  try {
+    var responseData = await webconsolejs['common/api/services/mci_api'].getPolicyList(currentNsId);
+    var transformedData = transformPolicyResponse(responseData);
+    setPolicyTableData(transformedData);
+  } catch (err) {
+    console.error('Policy load error:', err);
+  }
 }
 
 // API 응답을 테이블 형식으로 가공
 function transformPolicyResponse(resp) {
-    // resp.mciPolicy 배열을 flatten하여 [{ mciId, subGroupId, metric, operator, ... }, ...] 형태로 반환
-    const list = [];
-    resp.mciPolicy.forEach(mci => {
-        const mciId = mci.Id;
-        mci.policy.forEach(pol => {
-            list.push({
-                mciId: mciId,
-                subGroupId: pol.autoAction.vmDynamicReq.subGroupSize, // 예시
-                metric: pol.autoCondition.metric,
-                operator: pol.autoCondition.operator,
-                operand: pol.autoCondition.operand,
-                evaluationPeriod: pol.autoCondition.evaluationPeriod,
-                actionType: pol.autoAction.actionType,
-                subGroupSize: pol.autoAction.vmDynamicReq.subGroupSize,
-                // 필요시 추가 필드 매핑
-            });
-        });
+  // resp.mciPolicy 배열을 flatten하여 [{ mciId, subGroupId, metric, operator, ... }, ...] 형태로 반환
+  const list = [];
+  resp.mciPolicy.forEach(mci => {
+    const mciId = mci.Id;
+    mci.policy.forEach(pol => {
+      list.push({
+        mciId: mciId,
+        subGroupId: pol.autoAction.vmDynamicReq.subGroupSize, // 예시
+        metric: pol.autoCondition.metric,
+        operator: pol.autoCondition.operator,
+        operand: pol.autoCondition.operand,
+        evaluationPeriod: pol.autoCondition.evaluationPeriod,
+        actionType: pol.autoAction.actionType,
+        subGroupSize: pol.autoAction.vmDynamicReq.subGroupSize,
+        // 필요시 추가 필드 매핑
+      });
     });
-    return list;
+  });
+  return list;
 }
 
 // 테이블에 데이터 세팅
 function setPolicyTableData(data) {
-    policyTable.setData(data);
+  policyTable.setData(data);
 }
 
 // 단일 행 클릭 이벤트
 function onPolicyRowClick(e, row) {
-    const policy = row.getData();
-    showPolicyDetail(policy);
+  const policy = row.getData();
+  showPolicyDetail(policy);
 }
 
 // 선택된 행 변경 시
 function onPolicySelectionChanged(data, rows) {
-    selectedPolicies = data;
+  selectedPolicies = data;
 }
 
 // 상세 보기 폼에 데이터 바인딩
 export function showPolicyDetail(policy) {
-    // TODO: 폼 요소에 policy 객체 내용을 채워넣기
-    document.getElementById('policy-form-mciId').value = policy.mciId;
-    document.getElementById('policy-form-metric').value = policy.metric;
-    // ...
+  // TODO: 폼 요소에 policy 객체 내용을 채워넣기
+  document.getElementById('policy-form-mciId').value = policy.mciId;
+  document.getElementById('policy-form-metric').value = policy.metric;
+  // ...
 }
 
 // 선택된 정책 삭제
 export async function deleteSelectedPolicies() {
-    if (selectedPolicies.length === 0) {
-        alert('삭제할 정책을 선택하세요.');
-        return;
-    }
-    for (const p of selectedPolicies) {
-        // TODO: p 식별자 사용하여 API 호출
-        await webconsolejs['common/api/services/mci_api'].deletePolicy(p.mciId, /* policy identifier */);
-    }
-    loadPolicyData();
+  if (selectedPolicies.length === 0) {
+    alert('삭제할 정책을 선택하세요.');
+    return;
+  }
+  for (const p of selectedPolicies) {
+    // TODO: p 식별자 사용하여 API 호출
+    await webconsolejs['common/api/services/mci_api'].deletePolicy(p.mciId, /* policy identifier */);
+  }
+  loadPolicyData();
 }
 
 
