@@ -314,6 +314,23 @@ export function changeVmLifeCycle(type) {
 
   console.log(`Lifecycle action '${type}' applied to selected VMs:`, selectedVmIds);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('checkScalePolicy');
+    if (!btn) return;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Policy 탭을 가리키는 <a> 요소
+      const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
+      if (!policyTabLink) return;
+      // Bootstrap Tab 인스턴스 생성/취득 후 show()
+      const policyTab = bootstrap.Tab.getOrCreateInstance(policyTabLink);
+      policyTab.show();
+    });
+  });
+
+
 // vm 상태별 icon으로 표시
 // Server List / Status VM리스트
 // function displayServerStatusList(mciID, vmList) {
@@ -420,7 +437,7 @@ function displayServerGroupStatusList(mciID, vmList) {
   var mciName = mciID;
   var vmGroupLi = "";
   vmListGroupedBySubGroup.forEach(aSubGroup => {
-    
+
     var subGroupId = aSubGroup.subGroupId
     var vmCount = aSubGroup.vms.length
     var vmList = aSubGroup.vms
@@ -532,9 +549,9 @@ export function handleCheck(type, id) {
 
 function highlightSelected(type) {
   // 모든 li 요소의 테두리 제거
-  
+
   if (type === 'vm') {
-    
+
     $("#mci_server_info_box li").css("border", "none");
     if (selectedVmIds.length > 0) {
       const lastVmId = selectedVmIds[selectedVmIds.length - 1];
@@ -552,7 +569,7 @@ function highlightSelected(type) {
     }
   }
   else if (type === 'subgroup_vm') {
-    
+
     $("#subgroup_vm_info_box li").css("border", "none");
     if (selectedSubGroupVmIds.length > 0) {
       const lastSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
@@ -735,7 +752,7 @@ export async function vmDetailInfo(vmId) {
   $("#mci_server_info_connection").append(vmProviderIcon)
 
 
-  $("#server_info_text").text(' [ ' + subGroupId + ' / '+ vmName + ' ]')
+  $("#server_info_text").text(' [ ' + subGroupId + ' / ' + vmName + ' ]')
   $("#server_info_name").text(vmName + "/" + vmId)
   $("#server_info_desc").text(vmDescription)
 
@@ -1658,17 +1675,18 @@ function providerFormatterString(data) {
 }
 
 // scale group size 버튼 토글 기능
-(function() {
+(function () {
   const toggleBtn      = document.getElementById('scaleGroupToggle');
   const collapseEl     = document.getElementById('scaleGroupSettings');
-  const formListUl     = document.getElementById('scaleGroupFormList');
-  const listBox        = document.getElementById('subgroup_info_box');
+  const formListUl = document.getElementById('scaleGroupFormList');
+  const listBox = document.getElementById('subgroup_info_box');
   if (!toggleBtn || !collapseEl || !formListUl || !listBox) return;
 
   // collapse 수동 인스턴스
   const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
 
-  toggleBtn.addEventListener('click', function(e) {
+  toggleBtn.addEventListener('click', function (e) {
+    
     // 토글 열려있으면 닫기
     if (collapseEl.classList.contains('show')) {
       bsCollapse.hide();
@@ -1680,17 +1698,17 @@ function providerFormatterString(data) {
     if (checkedBoxes.length !== 1) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      alert(checkedBoxes.length === 0 
-        ? 'Please select subGroup first' 
+      alert(checkedBoxes.length === 0
+        ? 'Please select subGroup first'
         : 'Please select only one subGroup');
       return;
     }
 
     // 1개 선택됐을때
     const chk = checkedBoxes[0];
-    const groupId    = chk.value;
-    const vmCount    = currentGroupedVmList.length
-    let targetCount  = vmCount;  // 숫자박스 초기값
+    const groupId = chk.value;
+    const vmCount = currentGroupedVmList.length
+    let targetCount = vmCount;  // 숫자박스 초기값
     formListUl.innerHTML = '';
 
     // 컨트롤용 li 생성
@@ -1734,7 +1752,7 @@ function providerFormatterString(data) {
     const btnOk = document.createElement('button');
     btnOk.type = 'button';
     btnOk.className = 'btn btn-primary btn-sm ms-3';
-    btnOk.textContent = 'OK';
+    btnOk.textContent = 'Apply';
     btnOk.addEventListener('click', () => {
       const desired = parseInt(inputBox.value, 10);
       if (desired <= vmCount) {
@@ -1822,33 +1840,52 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
 ////////////////////////////////////////////////////// POLICY ///////////////////////////////////////////////////
 // import { TabulatorFull as Tabulator } from "tabulator-tables";
-
-let policyTable;
+var policyListTable;
+var currentClickedmciIdInPolicyTable = "";
 let selectedPolicies = [];
 
 export function initPolicyPage() {
   initPolicyTable();
   loadPolicyData();
 }
+
 // Tabulator 테이블 초기화
 function initPolicyTable() {
-  const columns = [
+
+  var columns = [
     {
       formatter: "rowSelection", titleFormatter: "rowSelection", vertAlign: "middle", hozAlign: "center",        // headerHozAlign: "center",
       width: 60,
     },
+    { title: "MCI Name", field: "mciName", width: 120 },
     { title: "MCI ID", field: "mciId", width: 120 },
-    { title: "SubGroup", field: "subGroupId", width: 120 },
-    { title: "Metric", field: "metric", width: 100 },
-    { title: "Operator", field: "operator", width: 80 },
-    { title: "Operand", field: "operand", width: 80 },
-    { title: "Period(s)", field: "evaluationPeriod", width: 80 },
+    { title: "SubGroupSize", field: "subGroupSize", width: 120 },
+    { title: "Condition", field: "condition", width: 150 },
+    { title: "Period(s)", field: "evaluationPeriod", width: 100 },
     { title: "Action", field: "actionType", width: 100 },
-    { title: "SubGroupSize", field: "subGroupSize", width: 100 },
-    // 추가 컬럼...
-  ];
+    { title: "Status", field: "status", width: 120 },
 
-  policyTable = new Tabulator("#policy-table", {
+    // 숨길 컬럼들
+    { title: "Action Log", field: "actionLog", visible: false },
+    { title: "Description", field: "description", visible: false },
+    { title: "Placement Algo", field: "placementAlgo", visible: false },
+    { title: "Command", field: "command", visible: false },
+    { title: "User Name", field: "userName", visible: false },
+    { title: "Common Image", field: "commonImage", visible: false },
+    { title: "Common Spec", field: "commonSpec", visible: false },
+    { title: "Connection Name", field: "connectionName", visible: false },
+    { title: "VM Description", field: "vmDescription", visible: false },
+    { title: "Label", field: "label", visible: false },
+    { title: "VM Name", field: "vmName", visible: false },
+    { title: "Root Disk Size", field: "rootDiskSize", visible: false },
+    { title: "Root Disk Type", field: "rootDiskType", visible: false },
+    { title: "Metric", field: "metric", visible: false },
+    { title: "Operator", field: "operator", visible: false },
+    { title: "Operand", field: "operand", visible: false },
+
+
+  ];
+  policyListTable = new Tabulator("#policy-table", {
     layout: "fitColumns",
     selectable: true,
     columns: columns,
@@ -1856,6 +1893,77 @@ function initPolicyTable() {
     rowSelectionChanged: onPolicySelectionChanged,
   });
   loadPolicyData();
+  policyListTable.on("rowClick", function (e, row) {
+    var tempcurMciIDInPolicyTable = currentClickedmciIdInPolicyTable
+    currentClickedmciIdInPolicyTable = row.getCell("mciId").getValue();
+    if (tempcurMciIDInPolicyTable === currentClickedmciIdInPolicyTable) {
+      webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("policy_info"))
+      currentClickedmciIdInPolicyTable = ""
+      this.deselectRow();
+      return
+    } else {
+      webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("policy_info"))
+      this.deselectRow();
+      this.selectRow(currentClickedmciIdInPolicyTable);
+      // var selectedData = this.getSelectedData();
+      var selectedData = row.getData();
+
+      setPolicyInfoData(selectedData)
+      return
+    }
+
+  })
+
+  policyListTable.on("rowSelectionChanged", function (data, rows) {
+    selectedPolicies = data
+  })
+
+}
+
+function setPolicyInfoData(selectedPolicyData) {
+  console.log("setPolicyInfoData", selectedPolicyData)
+  var policy = selectedPolicyData;
+  // --- MCI Info ---
+  document.getElementById('policy-mciId').textContent = policy.mciId || '-';
+  document.getElementById('policy-mciName').textContent = policy.mciName || '-';
+  document.getElementById('policy-actionLog').textContent = policy.actionLog || '-';
+
+  // --- SubGroup Info ---
+  // Name: using VM name as subgroup display name
+  document.getElementById('subgroup-name').textContent = policy.vmName || '-';
+  // Label: createdBy label (or stringify full label object)
+  document.getElementById('subgroup-label').textContent = policy.label?.createdBy || JSON.stringify(policy.label) || '-';
+  document.getElementById('subgroup-size').textContent = policy.subGroupSize || '-';
+  document.getElementById('subgroup-description').textContent = policy.description || '-';
+  // current VM count & min/max size – if you have those values in your context, substitute them here
+  document.getElementById('subgroup-currentVmCount').textContent = policy.currentVmCount ?? '-';
+  document.getElementById('subgroup-minMaxSize').textContent = policy.minMaxSize || '-';
+
+  // --- MCI Scale Summary ---
+  document.getElementById('summary-subgroupSize').textContent = policy.subGroupSize || '-';
+  document.getElementById('summary-currentVmCount').textContent = policy.currentVmCount ?? '-';
+  document.getElementById('summary-minMaxSize').textContent = policy.minMaxSize || '-';
+
+  // --- MCI Scale Policy Info ---
+  document.getElementById('policy-type').textContent = policy.actionType || '-';
+  document.getElementById('policy-algorithm').textContent = policy.placementAlgo || '-';
+
+  // --- MCI Scale Condition Info ---
+  document.getElementById('condition-metric').textContent = policy.metric || '-';
+  document.getElementById('condition-operator').textContent = policy.operator || '-';
+  document.getElementById('condition-operand').textContent = policy.operand || '-';
+
+  // --- Policy VM Item ---
+  document.getElementById('vm-spec').textContent = policy.commonSpec || '-';
+  document.getElementById('vm-os').textContent = policy.commonImage || '-';
+  document.getElementById('vm-disk').textContent = policy.rootDiskSize
+    ? `${policy.rootDiskSize}GB (${policy.rootDiskType})`
+    : '-';
+  // CSP: extract provider from commonSpec (e.g. "aws")
+  document.getElementById('vm-csp').textContent = policy.commonSpec
+    ? policy.commonSpec.split('+')[0]
+    : '-';
+  document.getElementById('vm-connection').textContent = policy.connectionName || '-';
 }
 
 // 정책 데이터 조회
@@ -1871,30 +1979,94 @@ async function loadPolicyData() {
 
 // API 응답을 테이블 형식으로 가공
 function transformPolicyResponse(resp) {
-  // resp.mciPolicy 배열을 flatten하여 [{ mciId, subGroupId, metric, operator, ... }, ...] 형태로 반환
   const list = [];
   resp.mciPolicy.forEach(mci => {
-    const mciId = mci.Id;
+    const { Id: mciId, Name: mciName, actionLog, description } = mci;
+
     mci.policy.forEach(pol => {
+      const {
+        autoAction = {},
+        autoCondition = {},
+        status = ''
+      } = pol;
+
+      const {
+        actionType = '',
+        placementAlgo = '',
+        postCommand = {},
+        vmDynamicReq = {}
+      } = autoAction;
+
+      const {
+        command = [],
+        userName = ''
+      } = postCommand;
+
+      const {
+        commonImage = '',
+        commonSpec = '',
+        connectionName = '',
+        description: vmDescription = '',
+        label = {},
+        name: vmName = '',
+        rootDiskSize = '',
+        rootDiskType = '',
+        subGroupSize = ''
+      } = vmDynamicReq;
+
+      const {
+        metric = '',
+        operator = '',
+        operand = '',
+        evaluationPeriod = ''
+        // evaluationValue 는 제외
+      } = autoCondition;
+
+      const condition = `${metric} ${operator} ${operand}`.trim();
+
       list.push({
-        mciId: mciId,
-        subGroupId: pol.autoAction.vmDynamicReq.subGroupSize, // 예시
-        metric: pol.autoCondition.metric,
-        operator: pol.autoCondition.operator,
-        operand: pol.autoCondition.operand,
-        evaluationPeriod: pol.autoCondition.evaluationPeriod,
-        actionType: pol.autoAction.actionType,
-        subGroupSize: pol.autoAction.vmDynamicReq.subGroupSize,
-        // 필요시 추가 필드 매핑
+        // MCI 레벨
+        mciId,
+        mciName,
+        actionLog,
+        description,
+
+        // Auto Action 레벨
+        actionType,
+        placementAlgo,
+        command,
+        userName,
+
+        // VM Dynamic Req 레벨
+        commonImage,
+        commonSpec,
+        connectionName,
+        vmDescription,
+        label,
+        vmName,
+        rootDiskSize,
+        rootDiskType,
+        subGroupSize,
+
+        // Auto Condition 레벨
+        condition,
+        metric,
+        operator,
+        operand,
+        evaluationPeriod,
+
+        // 정책 상태
+        status
       });
     });
   });
+
   return list;
 }
 
 // 테이블에 데이터 세팅
 function setPolicyTableData(data) {
-  policyTable.setData(data);
+  policyListTable.setData(data);
 }
 
 // 단일 행 클릭 이벤트
@@ -1913,20 +2085,20 @@ export function showPolicyDetail(policy) {
   // TODO: 폼 요소에 policy 객체 내용을 채워넣기
   document.getElementById('policy-form-mciId').value = policy.mciId;
   document.getElementById('policy-form-metric').value = policy.metric;
+  console.log("policy.mciId", policy.mciId)
+  console.log("policy.mciId", policy.metric)
   // ...
 }
 
 // 선택된 정책 삭제
-export async function deleteSelectedPolicies() {
+export async function deletePolicy() {
   if (selectedPolicies.length === 0) {
     alert('삭제할 정책을 선택하세요.');
     return;
   }
-  for (const p of selectedPolicies) {
-    // TODO: p 식별자 사용하여 API 호출
-    await webconsolejs['common/api/services/mci_api'].deletePolicy(p.mciId, /* policy identifier */);
-  }
-  loadPolicyData();
+
+  await webconsolejs['common/api/services/mci_api'].deletePolicy(currentNsId, currentMciId);
+  // loadPolicyData();
 }
 
 

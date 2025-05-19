@@ -125,12 +125,7 @@ export function mciLifeCycle(type, currentMciId, nsId) {
 }
 
 export function mciDelete(currentMciId, nsId) {
-  console.log("mciDeletemciDeletemciDeletemciDelete")
-  console.log("mciDeletemciDeletemciDeletemciDelete", currentMciId, nsId)
-
-  // for (const mci of checked_array) {
-  //   console.log(mci.id)
-
+  
   let data = {
     pathParams: {
       nsId: nsId,
@@ -147,7 +142,6 @@ export function mciDelete(currentMciId, nsId) {
   );
   console.log("mciLifeCycle response : ", response)
 }
-// }
 
 export function vmDelete(mciId, nsId, vmId) {
   let data = {
@@ -668,4 +662,27 @@ export async function getPolicyList(nsId) {
   var policyList = response.data.responseData;
 
   return policyList
+}
+
+export async function deletePolicy(nsId, mciId) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: currentMciId,
+    },
+    queryParams: {
+      option: "force"
+    }
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Delmcipolicy";
+  let response = webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("delete policy response : ", response)
 }

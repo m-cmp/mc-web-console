@@ -267,10 +267,12 @@
 
                     <div class="dropdown-divider"></div>
 
-                    <a class="dropdown-item"
-                    data-bs-toggle="modal"
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciDelete', 'Would you like to delete MCI ?', 'pages/operation/manage/mci.deleteMci')">
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciDelete', 'Would you like to delete MCI ?', 'pages/operation/manage/mci.deleteMci')"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon dropdown-item-icon"
@@ -324,7 +326,8 @@
                 </div>
 
                 <!-- refresh -->
-                <a class="btn-action"
+                <a
+                  class="btn-action"
                   onclick="webconsolejs['pages/operation/manage/mci'].refreshMciList()"
                 >
                   <svg
@@ -515,10 +518,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
-                    <ul
-                      class="removebullet vmStatus-list"
-                      id="mci_server_list"
-                    >
+                    <ul class="removebullet vmStatus-list" id="mci_server_list">
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="mci_plusVmIcon"
@@ -701,30 +701,286 @@
         </div>
       </div>
     </div>
+    <!-- ADD POLICY -->
+    <div id="addpolicy" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Create Policy</h3>
+        </div>
+
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label required">Policy name</label>
+            <input
+              type="text"
+              class="form-control"
+              name="policy_name"
+              id="policy_name"
+              placeholder="Input Policy Name"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea
+              class="form-control"
+              rows="2"
+              name="policy_desc"
+              id="policy_desc"
+              placeholder="Input Policy Description"
+            ></textarea>
+          </div>
+
+          <div class="form-group mb-2">
+            <label class="form-label">Policy Type / placementAlgo</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input
+                  class="form-control"
+                  name="policy_type"
+                  value="ScaleOut"
+                  id="policy_type"
+                  readonly
+                />
+              </div>
+              <div class="col-6">
+                <select
+                  class="form-select"
+                  name="policy_placementAlgo"
+                  id="policy_placementAlgo"
+                >
+                  <option value="random" selected>random</option>
+                  <option value="location">location</option>
+                  <option value="cost">cost</option>
+                  <option value="performance">performance</option>
+                  <option value="latency">latency</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label">Command</label>
+                <input
+                  class="form-control"
+                  name="policy_command"
+                  id="policy_command"
+                  placeholder="ex: List [ client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH client IP is: $client_ip ]"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label">UserName</label>
+                <input
+                  class="form-control"
+                  name="policy_username"
+                  id="policy_username"
+                  placeholder="ex: cb-user"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="text-info">Server Configuration</h3>
+            </div>
+            <div class="card-body">
+              <div class="row row-cards">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Server Name</label>
+                      <input
+                        class="form-control"
+                        name="policy_server_name"
+                        rows="1"
+                        placeholder="Input Name"
+                        id="policy_ep_name"
+                      />
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Spec</label>
+                      <div class="row g-2">
+                        <div class="col">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Please Use Search"
+                            name="spec"
+                            id="policy_ep_specId"
+                          />
+
+                          <input
+                            type="hidden"
+                            name="provider"
+                            id="policy_ep_provider"
+                            value=""
+                          />
+                          <input
+                            type="hidden"
+                            name="connectionName"
+                            id="policy_ep_connectionName"
+                            value=""
+                          />
+                          <input
+                            type="hidden"
+                            name="imageId"
+                            id="policy_ep_imageId"
+                            value=""
+                          />
+                          <input
+                            type="hidden"
+                            name="commonImageId"
+                            id="policy_ep_commonImageId"
+                            value=""
+                          />
+                          <input
+                            type="hidden"
+                            name="commonSpecId"
+                            id="policy_ep_commonSpecId"
+                            value=""
+                          />
+                        </div>
+                        <div class="col-auto">
+                          <a
+                            href="#"
+                            class="btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#spec-search"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="icon"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              fill="none"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              ></path>
+                              <path
+                                d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                              ></path>
+                              <path d="M21 21l-6 -6"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label class="form-label">Root Disk</label>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <select
+                            class="form-select"
+                            name="policy_rootDiskType"
+                            onchange="webconsolejs['partials/operation/manage/mcicreate'].changeDiskSize(this.value)"
+                            id="policy_ep_root_disk_type"
+                          >
+                            <option value="">Select Root Disk Type</option>
+                          </select>
+                        </div>
+                        <div class="col-6">
+                          <textarea
+                            class="form-control"
+                            name="policy_rootDiskSize"
+                            rows="1"
+                            placeholder="Root Disk Size(GB)"
+                            id="policy_ep_root_disk_size"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label">SubGroup Size</label>
+                      <div class="row g-2">
+                        <div class="col-md-6">
+                          <div class="d-flex align-items-center">
+                            <button
+                              type="button"
+                              class="btn btn-outline-secondary-lt btn-sm"
+                            >
+                              –
+                            </button>
+                            <input
+                              type="text"
+                              id="policy_ep_vm_add_cnt"
+                              class="form-control mx-2 text-center"
+                              style="width: 60px"
+                              value="1"
+                              readonly
+                            />
+                            <button
+                              type="button"
+                              class="btn btn-outline-secondary-lt btn-sm"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-2">
+                      <label class="form-label">Description</label>
+                      <textarea
+                        class="form-control"
+                        name="policy_server_description"
+                        id="policy_ep_description"
+                        rows="3"
+                        placeholder="type Description"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer text-end">
+          <button
+            type=""
+            class="btn btn-primary"
+            onclick="webconsolejs['partials/operation/manage/mcicreate'].deployMci()"
+          >
+            Deploy
+          </button>
+        </div>
+      </div>
+    </div>
     <!-- end of add server area-->
-  </div><!-- end of container-x1-->
-</div><!-- end of page-body -->
+  </div>
+  <!-- end of container-x1-->
+</div>
+<!-- end of page-body -->
 
 <!-- remote commnad -->
 <%= javascriptTag("common/api/services/remotecmd_api.js") %>
-
 
 <!-- add server : server configuration -->
 <%= partial("partials/operation/manage/mcicreate.html") %>
 
 <!-- add server : spec-search -->
-<%= partial("partials/operation/manage/serverrecommendation.html") %> 
+<%= partial("partials/operation/manage/serverrecommendation.html") %>
 <!-- add server : cspimagelist -->
-<%= partial("partials/operation/manage/cspimagelist.html") %> 
+<%= partial("partials/operation/manage/cspimagelist.html") %>
 <!-- add server : cspspeclist -->
-<%= partial("partials/operation/manage/cspspeclist.html") %> 
+<%= partial("partials/operation/manage/cspspeclist.html") %>
 
 <!-- pageloader-->
-<%= partial("partials/layout/pageloader.html") %>
-
-<%= javascriptTag("pages/operation/manage/mci.js") %>
-<%= javascriptTag("common/api/services/mci_api.js") %> 
-<%= javascriptTag("common/api/services/vmimage_api.js") %>
-
-
-
+<%= partial("partials/layout/pageloader.html") %> <%=
+javascriptTag("pages/operation/manage/mci.js") %> <%=
+javascriptTag("common/api/services/mci_api.js") %> <%=
+javascriptTag("common/api/services/vmimage_api.js") %>
