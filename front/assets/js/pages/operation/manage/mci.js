@@ -40,10 +40,10 @@ var currentGroupedVmList = [];
 var vmListGroupedBySubGroup = [];
 
 var mciListTable;
-var checked_array = [];
+export var checked_array = [];
 
 
-initMciTable(); // init tabulator
+// initMciTable(); // init tabulator
 // initPolicyTable();
 //DOMContentLoaded 는 Page에서 1개만.
 // init + 파일명 () : ex) initMci() 를 호출하도록 한다.
@@ -52,38 +52,24 @@ document.addEventListener("DOMContentLoaded", initMci);
 // 해당 화면에서 최초 설정하는 function
 //로드 시 prj 값 받아와 getMciList 호출
 async function initMci() {
+  initMciTable(); // init tabulator
+  console.log("initMci");
 
-  console.log("initMci")
-  ////////////////////// partials init functions///////////////////////////////////////
   try {
-    webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();//MciCreate을 Partial로 가지고 있음. 
+    webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();
 
-    var targetSection = "mcicreate"
-    var createBtnName = "Add Mci";
-    //var onclickEvent = "webconsolejs['partials/operation/manage/mcicreate'].addNewMci()";
-
+    const targetSection = "mcicreate";
+    const createBtnName = "Add Mci";
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
-
   } catch (e) {
     console.log(e);
   }
-  ////////////////////// partials init functions end ///////////////////////////////////////
 
-
-  ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
+  currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
 
-  // workspace selection check
-  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject)
-
-  // 현재 project set.
-  currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
-
-  ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
-
-  ////////////////////// 받은 mciId가 있으면 해당 mciId를 set하고 조회한다. ////////////////
-  // 외부(dashboard)에서 받아온 mciID가 있으면 MCIS INFO 이동
-  // 현재 브라우저의 URL
+  // URL 파라미터 처리
   const url = window.location.href;
   const urlObj = new URL(url);
   // URLSearchParams 객체 생성
@@ -97,17 +83,13 @@ async function initMci() {
     currentMciId = selectedMciID
     toggleRowSelection(selectedMciID)
   }
-  ////////////////////  mciId를 set하고 조회 완료. ////////////////
 
   refreshMciList();
-  // policylist
   const policyTabEl = document.querySelector('a[data-bs-toggle="tab"][href="#tabs-mci-policy"]');
   policyTabEl.addEventListener('shown.bs.tab', function (event) {
     initPolicyPage();
   });
-
 }
-
 
 
 // Mci 전체 목록 조회
@@ -126,7 +108,6 @@ export async function refreshMciList() {
 
 // getMciList 호출 성공 시
 function getMciListCallbackSuccess(caller, mciList) {
-  console.log("getMciListCallbackSuccess");
 
   totalMciListObj = mciList.mci;
   console.log("total mci : ", totalMciListObj);
@@ -137,11 +118,11 @@ function getMciListCallbackSuccess(caller, mciList) {
     console.log("getMciListCallbackSuccess current mci ", currentMciId)
     getSelectedMciData();//선택한 mci가 있으면 처리
   }
-
   refreshDisplay();
 }
 
 // data 표시 
+
 function refreshDisplay() {
   setToTalMciStatus(); // mci상태 표시
   setTotalVmStatus(); // mci 의 vm들 상태표시
@@ -159,7 +140,6 @@ function refreshDisplay() {
     }
   }
 }
-
 // table의 특정 row만 갱신
 function refreshRowData(rowId, newData) {
   const selectedRows = mciListTable.getSelectedData().map(row => row.id);
@@ -316,19 +296,19 @@ export function changeVmLifeCycle(type) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('checkScalePolicy');
-    if (!btn) return;
+  const btn = document.getElementById('checkScalePolicy');
+  if (!btn) return;
 
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      // Policy 탭을 가리키는 <a> 요소
-      const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
-      if (!policyTabLink) return;
-      // Bootstrap Tab 인스턴스 생성/취득 후 show()
-      const policyTab = bootstrap.Tab.getOrCreateInstance(policyTabLink);
-      policyTab.show();
-    });
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Policy 탭을 가리키는 <a> 요소
+    const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
+    if (!policyTabLink) return;
+    // Bootstrap Tab 인스턴스 생성/취득 후 show()
+    const policyTab = bootstrap.Tab.getOrCreateInstance(policyTabLink);
+    policyTab.show();
   });
+});
 
 
 // vm 상태별 icon으로 표시
@@ -375,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // }
 
 function displayServerStatusList(mciID, vmList) {
-
   var mciName = mciID;
   var vmLi = "";
   vmList.sort();
@@ -1418,9 +1397,7 @@ function setMciTabulator(
 
 // tabulator Table 초기값 설정
 function initMciTable() {
-
   var tableObjParams = {};
-
   var columns = [
     {
       formatter: "rowSelection",
@@ -1517,12 +1494,9 @@ function initMciTable() {
 
   //mciListTable = webconsolejs["common/util"].setTabulator("mcilist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
   mciListTable = setMciTabulator("mcilist-table", tableObjParams, columns, true);
-
   // 행 클릭 시
   mciListTable.on("rowClick", function (e, row) {
-    // vmid 초기화 for vmlifecycle
-    // var tempcurmciID = currentClickedmciID
-    // currentClickedmciID = row.getCell("id").getValue();
+    // var tempcurmciID = row.getCell("id").getValue();
     var tempcurmciID = row.getCell("id").getValue();
     if (tempcurmciID === currentMciId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
@@ -1538,22 +1512,21 @@ function initMciTable() {
       getSelectedMciData()
       return
     }
-    // currentClickedmciID = 
-    // console.log("currentClickedmciID == ", currentClickedmciID)
-    // if (tempcurmciID === currentClickedmciID) {
     //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
-    //   currentClickedmciID = ""
+    //   currentMciId = ""
     //   this.deselectRow();
     //   return
     // } else {
+    //   currentMciId = tempcurmciID;
     //   webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
-    //   this.deselectRow();
-    //   this.selectRow(currentClickedmciID);
-    //   // 표에서 선택된 MCISInfo 
+    //   //this.deselectRow();
+    //   //this.selectRow(currentMciId);
+    //   // 표에서 선택된 MCIInfo 
     //   getSelectedMciData()
     //   return
     // }
   });
+
 
   //  선택된 여러개 row에 대해 처리
   // mciListTable.on("rowSelectionChanged", function (data, rows) {
@@ -1676,8 +1649,8 @@ function providerFormatterString(data) {
 
 // scale group size 버튼 토글 기능
 (function () {
-  const toggleBtn      = document.getElementById('scaleGroupToggle');
-  const collapseEl     = document.getElementById('scaleGroupSettings');
+  const toggleBtn = document.getElementById('scaleGroupToggle');
+  const collapseEl = document.getElementById('scaleGroupSettings');
   const formListUl = document.getElementById('scaleGroupFormList');
   const listBox = document.getElementById('subgroup_info_box');
   if (!toggleBtn || !collapseEl || !formListUl || !listBox) return;
@@ -1686,7 +1659,7 @@ function providerFormatterString(data) {
   const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
 
   toggleBtn.addEventListener('click', function (e) {
-    
+
     // 토글 열려있으면 닫기
     if (collapseEl.classList.contains('show')) {
       bsCollapse.hide();
@@ -1759,8 +1732,27 @@ function providerFormatterString(data) {
         alert(`Please select a number greater than current VM count (${vmCount})`);
         return;
       }
+      var numVMsToAdd = inputBox.value
       // API 호출
-      var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(currentNsId, currentMciId, currentSubGroupId)
+      var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(currentNsId, currentMciId, currentSubGroupId, numVMsToAdd)
+        .then(async response => {
+
+          var mciData = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentMciId);
+          refreshRowData(currentMciId, mciData.responseData);
+          const groupTabLink = document.querySelector('a[href="#tabs-mci-group"]');
+          if (groupTabLink) bootstrap.Tab.getOrCreateInstance(groupTabLink).show();
+
+          // 4) 해당 서브그룹 체크 & Scale 폼 열기
+          //    (displayServerGroupStatusList 내부에서 checkbox, currentGroupedVmList 세팅됨)
+          // displayServerGroupStatusList(currentMciId, mciData.responseData);
+          const chk = document.querySelector(`#checkbox_vmGroup_${currentSubGroupId}`);
+          if (chk) {
+            chk.checked = true;
+            // collapse 토글
+            bsCollapse.show();
+            toggleBtn.setAttribute('aria-expanded', 'true');
+          }
+        });
 
     });
     li.appendChild(btnOk);
