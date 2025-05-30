@@ -594,7 +594,6 @@ export async function createMciDynamic() {
 	var projectId = $("#select-current-project").text()
 	var projectName = $('#select-current-project').find('option:selected').text();
 	var nsId = projectName;
-	console.log("create ssss nsId ", projectName)
 
 	var mciName = $("#mci_name").val()
 	var mciDesc = $("#mci_desc").val()
@@ -619,29 +618,20 @@ export async function createMciDynamic() {
 }
 
 export async function createVmDynamic() {
-	console.log("createVmDynamic")
-	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
-
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-
 	var selectedNsId = selectedWorkspaceProject.nsId;
-	console.log("selected projectId : ", selectedNsId)
+	var mciId = webconsolejs["pages/operation/manage/mci"].currentMciId
 
-	var mciid = webconsolejs["pages/operation/manage/mci"].currentMciId
-	console.log("selected mciId : ", mciid)
+	// for the test
+	// webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
 
-	// var commonImage = selectedMciObj[0].vm[0].
-	// var mci_name = selectedMci[0].name
+	// response가 있으면 
 
-	// var mci_name = $("#mci_name").val();
-	// var mci_id = $("#mci_id").val();
-	// if (!mci_id) {
-	// 	commonAlert("Please Select MCIS !!!!!")
-	// 	return;
-	// }
+	alert("생성요청 완료")
+	window.location = `/webconsole/operations/manage/workloads/mciworkloads`;
 
-	///
-	webconsolejs["common/api/services/mci_api"].vmDynamic(mciid, selectedNsId, Express_Server_Config_Arr)
+	await webconsolejs["pages/operation/manage/mci"].refreshRowData(mciId, checked_array);
+
 }
 
 export function addNewMci() {
@@ -815,25 +805,25 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 }
 
 // SubGroup Size
-(function(){
+(function () {
 	const input = document.getElementById('ep_vm_add_cnt');
 	if (!input) return;
-  
+
 	const container = input.parentElement; // .d-flex.align-items-center
 	const [btnDec, btnInc] = container.querySelectorAll('button');
-  
+
 	const minValue = 1;
 	const maxValue = Number(input.getAttribute('max')) || Infinity;
-  
-	btnDec.addEventListener('click', function(e){
-	  e.preventDefault();
-	  let val = parseInt(input.value, 10) || minValue;
-	  if (val > minValue) input.value = val - 1;
+
+	btnDec.addEventListener('click', function (e) {
+		e.preventDefault();
+		let val = parseInt(input.value, 10) || minValue;
+		if (val > minValue) input.value = val - 1;
 	});
-  
-	btnInc.addEventListener('click', function(e){
-	  e.preventDefault();
-	  let val = parseInt(input.value, 10) || minValue;
-	  if (val < maxValue) input.value = val + 1;
+
+	btnInc.addEventListener('click', function (e) {
+		e.preventDefault();
+		let val = parseInt(input.value, 10) || minValue;
+		if (val < maxValue) input.value = val + 1;
 	});
-  })();
+})();

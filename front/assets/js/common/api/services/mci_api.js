@@ -125,7 +125,7 @@ export function mciLifeCycle(type, currentMciId, nsId) {
 }
 
 export function mciDelete(currentMciId, nsId) {
-  
+
   let data = {
     pathParams: {
       nsId: nsId,
@@ -613,7 +613,7 @@ export function calculateVmStatusCount(aMci) {
 }
 
 // ScaleOut API 관련
-export async function postScaleOutSubGroup(nsId, mciId, subgroupId) {
+export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd) {
   if (nsId == "") {
     console.log("Project has not set")
     return;
@@ -625,6 +625,9 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId) {
       mciId: mciId,
       subgroupId: subgroupId
     },
+    Request: {
+      "numVMsToAdd": numVMsToAdd,
+    }
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "Postmcisubgroupscaleout";
@@ -633,9 +636,8 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId) {
     data
   )
 
-  var responseData = response.data.responseData;
-
-  return responseData
+  alert("생성요청 완료")
+  window.location = "/webconsole/operations/manage/workloads/mciworkloads"
 
 }
 
