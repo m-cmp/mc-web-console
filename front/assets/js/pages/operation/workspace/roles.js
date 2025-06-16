@@ -43,6 +43,38 @@ const rolePermissions = {
   }
 };
 
+// DOM 요소 캐싱
+const DOM = {
+  createRoleCard: document.getElementById("create_role"),
+  platformMenu: document.getElementById("platform-menu"),
+  workspaceMenu: document.getElementById("workspace-menu"),
+  cspRoleMapping: document.getElementById("csp-role-mapping")
+};
+
+// Bootstrap Collapse 객체 캐싱
+const collapseInstances = {
+  createRole: new bootstrap.Collapse(DOM.createRoleCard, { toggle: false })
+};
+
+// 카드 상태 관리 함수
+function toggleCards(showPlatform = false, showWorkspace = false, showCsp = false) {
+  if (DOM.platformMenu) {
+    DOM.platformMenu.classList.toggle('show', showPlatform);
+  }
+  if (DOM.workspaceMenu) {
+    DOM.workspaceMenu.classList.toggle('show', showWorkspace);
+  }
+  if (DOM.cspRoleMapping) {
+    DOM.cspRoleMapping.classList.toggle('show', showCsp);
+  }
+}
+
+function closeCreateRoleCard() {
+  if (DOM.createRoleCard) {
+    DOM.createRoleCard.classList.remove('show');
+  }
+}
+
 function initPlatformMenuTree() {
   console.log("Platform 메뉴 트리 초기화 시작");
   
@@ -202,60 +234,25 @@ function initRolesTable() {
     var tempcurRoleId = currentClickedRoleId;
     currentClickedRoleId = row.getCell("roleMasterId").getValue();
     
+    // Create New Role 카드 닫기
+    closeCreateRoleCard();
+    
     if (tempcurRoleId === currentClickedRoleId) {
       // 같은 행을 다시 클릭한 경우
       row.deselect();
       currentClickedRoleId = "";
-      
-      // 모든 카드 초기화 (닫기)
-      const platformMenu = document.getElementById("platform-menu");
-      const workspaceMenu = document.getElementById("workspace-menu");
-      const cspRoleMapping = document.getElementById("csp-role-mapping");
-
-      if (platformMenu) {
-        platformMenu.classList.remove('show');
-      }
-      if (workspaceMenu) {
-        workspaceMenu.classList.remove('show');
-      }
-      if (cspRoleMapping) {
-        cspRoleMapping.classList.remove('show');
-      }
+      toggleCards(false, false, false);
     } else {
       // 다른 행을 클릭한 경우
       rolesTable.deselectRow();
       row.select();
       
       const rowData = row.getData();
-
-      // 모든 카드 초기화 (닫기)
-      const platformMenu = document.getElementById("platform-menu");
-      const workspaceMenu = document.getElementById("workspace-menu");
-      const cspRoleMapping = document.getElementById("csp-role-mapping");
-
-      // 모든 카드 닫기
-      if (platformMenu) {
-        platformMenu.classList.remove('show');
-      }
-      if (workspaceMenu) {
-        workspaceMenu.classList.remove('show');
-      }
-      if (cspRoleMapping) {
-        cspRoleMapping.classList.remove('show');
-      }
-
-      // Y인 경우에만 해당 카드 열기
-      if (rowData.platformYn === "Y") {
-        platformMenu.classList.add('show');
-      }
-
-      if (rowData.workspaceYn === "Y") {
-        workspaceMenu.classList.add('show');
-      }
-
-      if (rowData.cspYn === "Y") {
-        cspRoleMapping.classList.add('show');
-      }
+      toggleCards(
+        rowData.platformYn === "Y",
+        rowData.workspaceYn === "Y",
+        rowData.cspYn === "Y"
+      );
     }
   });
 
@@ -463,29 +460,17 @@ document.addEventListener("DOMContentLoaded", function () {
       addButton.addEventListener("click", function(e) {
         e.preventDefault();
         
+        // 현재 선택된 행이 있다면 선택 해제
+        if (currentClickedRoleId) {
+          rolesTable.deselectRow();
+          currentClickedRoleId = "";
+        }
+
+        // 모든 카드 닫기
+        toggleCards(false, false, false);
+        
         // Create Role 카드 토글
-        const createRoleCard = document.getElementById("create_role");
-        const bsCreateRoleCollapse = new bootstrap.Collapse(createRoleCard);
-        bsCreateRoleCollapse.toggle();
-
-        // 다른 카드들 접기
-        const platformMenu = document.getElementById("platform-menu");
-        const workspaceMenu = document.getElementById("workspace-menu");
-        const cspRoleMapping = document.getElementById("csp-role-mapping");
-
-        if (platformMenu) {
-          const bsPlatformCollapse = bootstrap.Collapse.getInstance(platformMenu) || new bootstrap.Collapse(platformMenu);
-          bsPlatformCollapse.hide();
-        }
-
-        if (workspaceMenu) {
-          const bsWorkspaceCollapse = bootstrap.Collapse.getInstance(workspaceMenu) || new bootstrap.Collapse(workspaceMenu);
-          bsWorkspaceCollapse.hide();
-        }
-
-        if (cspRoleMapping) {
-          cspRoleMapping.style.display = "none";
-        }
+        DOM.createRoleCard.classList.toggle('show');
       });
     }
 
