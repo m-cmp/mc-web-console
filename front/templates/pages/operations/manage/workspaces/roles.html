@@ -1,14 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Roles Management</title>
-  
-  <!-- jsTree CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
-</head>
-<body>
 <div class="page-body">
   <div class="page">
     <div class="page-wrapper">
@@ -109,7 +98,9 @@
             <div class="card-body collapse" id="workspace-menu">
               <div class="alert alert-success" role="alert">
                 <h4 class="alert-title">Workspace 사용 가능</h4>
-                <div class="text-muted">선택한 역할은 Workspace 기능을 사용할 수 있습니다.</div>
+                <div class="text-muted">
+                  선택한 역할은 Workspace 기능을 사용할 수 있습니다.
+                </div>
               </div>
             </div>
           </div>
@@ -129,14 +120,4 @@
   </div>
 </div>
 
-<!-- 스크립트는 body 끝부분에 배치 -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-  // jQuery noConflict 모드 설정
-  var $j = jQuery.noConflict();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
 <%= javascriptTag("pages/operation/workspace/roles.js") %>
-</body>
-</html>

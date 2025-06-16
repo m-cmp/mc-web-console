@@ -112,7 +112,8 @@ const configurator = {
         { test: /\.jsx?$/,loader: "babel-loader",exclude: /node_modules/ },
         { test: /\.(woff|woff2|ttf|svg)(\?v=\d+\.\d+\.\d+)?$/,use: "url-loader"},
         { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,use: "file-loader" },
-        { test: /\.go$/, use: "gopherjs-loader"}
+        { test: /\.go$/, use: "gopherjs-loader"},
+        { test: /\.(png|jpg|gif|ico)$/, use: "file-loader" }
       ]
     }
   },

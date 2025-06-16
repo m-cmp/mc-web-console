@@ -1,4 +1,5 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import jstree from "jstree";
 
 var checked_array = [];
 var currentClickedRoleId = "";
@@ -151,7 +152,7 @@ function initPlatformMenuTree() {
   ];
 
   try {
-    $j('#platform-menu-tree').jstree({
+    $('#platform-menu-tree').jstree({
       'core': {
         'data': menuData,
         'themes': {
@@ -348,7 +349,7 @@ function initCspRoleMappingTree() {
   ];
 
   try {
-    $j('#csp-role-mapping-tree').jstree({
+    $('#csp-role-mapping-tree').jstree({
       'core': {
         'data': cspData,
         'themes': {
@@ -487,7 +488,7 @@ function updateMenuPermissions(roleId) {
   console.log("적용할 권한:", permissions);
 
   // 각 메뉴 항목에 권한 적용
-  $j('#platform-menu-tree').jstree(true).get_json('#', { flat: true }).forEach(node => {
+  $('#platform-menu-tree').jstree(true).get_json('#', { flat: true }).forEach(node => {
     if (node.id !== '#' && node.id !== 'j1_1') {  // 루트 노드 제외
       const menuPath = node.id.split('.');
       let currentPermissions = permissions;
@@ -502,14 +503,14 @@ function updateMenuPermissions(roleId) {
         }
       }
 
-      const element = $j('#platform-menu-tree').find(`#${node.id}`);
+      const element = $('#platform-menu-tree').find(`#${node.id}`);
       
       if (currentPermissions.view) {
         element.css('color', '#206bc4');  // 사용 가능한 메뉴는 파란색
-        $j('#platform-menu-tree').jstree(true).check_node(node.id);
+        $('#platform-menu-tree').jstree(true).check_node(node.id);
       } else {
         element.css('color', '#626976');  // 사용 불가능한 메뉴는 회색
-        $j('#platform-menu-tree').jstree(true).uncheck_node(node.id);
+        $('#platform-menu-tree').jstree(true).uncheck_node(node.id);
       }
     }
   });
