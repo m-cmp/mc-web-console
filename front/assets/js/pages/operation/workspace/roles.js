@@ -8,7 +8,41 @@ var platformMenuTable;
 
 // 역할별 메뉴 권한 정의
 const rolePermissions = {
-  RM001: {  // Viewer
+  "1": {  // admin
+    workspaces: {
+      projects: { view: true, edit: true },
+      members: { view: true, edit: true },
+      roles: { view: true, edit: true },
+      projectboard: { view: true, edit: true }
+    },
+    workloads: {
+      mciworkloads: { view: true, edit: true },
+      pmkworkloads: { view: true, edit: true }
+    },
+    monitorings: {
+      mcismonitoring: { view: true, edit: true },
+      "3rdpartymonitoring": { view: true, edit: true },
+      monitoringconfig: { view: true, edit: true }
+    }
+  },
+  "2": {  // operator
+    workspaces: {
+      projects: { view: true, edit: true },
+      members: { view: true, edit: true },
+      roles: { view: true, edit: false },
+      projectboard: { view: true, edit: true }
+    },
+    workloads: {
+      mciworkloads: { view: true, edit: true },
+      pmkworkloads: { view: true, edit: true }
+    },
+    monitorings: {
+      mcismonitoring: { view: true, edit: true },
+      "3rdpartymonitoring": { view: true, edit: true },
+      monitoringconfig: { view: true, edit: true }
+    }
+  },
+  "3": {  // viewer
     workspaces: {
       projects: { view: true, edit: false },
       members: { view: true, edit: false },
@@ -25,21 +59,38 @@ const rolePermissions = {
       monitoringconfig: { view: true, edit: false }
     }
   },
-  RM002: {  // Admin
+  "4": {  // billadmin
     workspaces: {
-      projects: { view: true, edit: true },
-      members: { view: true, edit: true },
-      roles: { view: true, edit: true },
-      projectboard: { view: true, edit: true }
+      projects: { view: true, edit: false },
+      members: { view: true, edit: false },
+      roles: { view: true, edit: false },
+      projectboard: { view: true, edit: false }
     },
     workloads: {
-      mciworkloads: { view: true, edit: true },
-      pmkworkloads: { view: true, edit: true }
+      mciworkloads: { view: true, edit: false },
+      pmkworkloads: { view: true, edit: false }
     },
     monitorings: {
-      mcismonitoring: { view: true, edit: true },
-      "3rdpartymonitoring": { view: true, edit: true },
-      monitoringconfig: { view: true, edit: true }
+      mcismonitoring: { view: true, edit: false },
+      "3rdpartymonitoring": { view: true, edit: false },
+      monitoringconfig: { view: true, edit: false }
+    }
+  },
+  "5": {  // billviewer
+    workspaces: {
+      projects: { view: true, edit: false },
+      members: { view: true, edit: false },
+      roles: { view: true, edit: false },
+      projectboard: { view: true, edit: false }
+    },
+    workloads: {
+      mciworkloads: { view: true, edit: false },
+      pmkworkloads: { view: true, edit: false }
+    },
+    monitorings: {
+      mcismonitoring: { view: true, edit: false },
+      "3rdpartymonitoring": { view: true, edit: false },
+      monitoringconfig: { view: true, edit: false }
     }
   }
 };
@@ -195,12 +246,12 @@ function initRolesTable() {
       },
       {
         title: "Role Master ID",
-        field: "roleMasterId",
+        field: "id",
         headerSort: false
       },
       {
         title: "Role Master Name",
-        field: "roleMasterName",
+        field: "name",
         headerSort: false
       },
       {
@@ -208,7 +259,10 @@ function initRolesTable() {
         field: "platformYn",
         headerSort: false,
         formatter: function(cell) {
-          return cell.getValue() === "Y" ? "Y" : "N";
+          const rowData = cell.getRow().getData();
+          const roleSubs = rowData.role_subs || [];
+          const hasPlatform = roleSubs.some(sub => sub.role_type === "platform");
+          return hasPlatform ? "Y" : "N";
         }
       },
       {
@@ -216,7 +270,10 @@ function initRolesTable() {
         field: "workspaceYn",
         headerSort: false,
         formatter: function(cell) {
-          return cell.getValue() === "Y" ? "Y" : "N";
+          const rowData = cell.getRow().getData();
+          const roleSubs = rowData.role_subs || [];
+          const hasWorkspace = roleSubs.some(sub => sub.role_type === "workspace");
+          return hasWorkspace ? "Y" : "N";
         }
       },
       {
@@ -224,7 +281,10 @@ function initRolesTable() {
         field: "cspYn",
         headerSort: false,
         formatter: function(cell) {
-          return cell.getValue() === "Y" ? "Y" : "N";
+          const rowData = cell.getRow().getData();
+          const roleSubs = rowData.role_subs || [];
+          const hasWorkspace = roleSubs.some(sub => sub.role_type === "csp");
+          return hasWorkspace ? "Y" : "N";
         }
       }
     ]
@@ -233,7 +293,7 @@ function initRolesTable() {
   // 행 클릭 이벤트 추가
   rolesTable.on("rowClick", function (e, row) {
     var tempcurRoleId = currentClickedRoleId;
-    currentClickedRoleId = row.getCell("roleMasterId").getValue();
+    currentClickedRoleId = row.getCell("id").getValue();
     
     // Create New Role 카드 닫기
     closeCreateRoleCard();
@@ -249,11 +309,12 @@ function initRolesTable() {
       row.select();
       
       const rowData = row.getData();
-      toggleCards(
-        rowData.platformYn === "Y",
-        rowData.workspaceYn === "Y",
-        rowData.cspYn === "Y"
-      );
+      const roleSubs = rowData.role_subs || [];
+      const hasPlatform = roleSubs.some(sub => sub.role_type === "platform");
+      const hasWorkspace = roleSubs.some(sub => sub.role_type === "workspace");
+      const hasCsp = roleSubs.some(sub => sub.role_type === "csp");
+      
+      toggleCards(hasPlatform, hasWorkspace, hasCsp);
     }
   });
 
@@ -378,60 +439,6 @@ function initCspRoleMappingTree() {
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM 로드됨");
   
-  // Mock Data
-  const rolesData = [
-    {
-      id: 1,
-      roleMasterId: "RM001",
-      roleMasterName: "Viewer",
-      platformYn: "Y",    // Platform 권한 있음
-      workspaceYn: "N",   // Workspace 권한 없음
-      cspYn: "N",         // CSP 권한 없음
-      menuPermissions: {
-        workspaces: {
-          projects: { view: true, edit: false },
-          members: { view: true, edit: false },
-          roles: { view: true, edit: false },
-          projectboard: { view: true, edit: false }
-        },
-        workloads: {
-          mciworkloads: { view: true, edit: false },
-          pmkworkloads: { view: true, edit: false }
-        },
-        monitorings: {
-          mcismonitoring: { view: true, edit: false },
-          "3rdpartymonitoring": { view: true, edit: false },
-          monitoringconfig: { view: true, edit: false }
-        }
-      }
-    },
-    {
-      id: 2,
-      roleMasterId: "RM002",
-      roleMasterName: "Admin",
-      platformYn: "Y",    // Platform 권한 있음
-      workspaceYn: "Y",   // Workspace 권한 있음
-      cspYn: "Y",         // CSP 권한 있음
-      menuPermissions: {
-        workspaces: {
-          projects: { view: true, edit: true },
-          members: { view: true, edit: true },
-          roles: { view: true, edit: true },
-          projectboard: { view: true, edit: true }
-        },
-        workloads: {
-          mciworkloads: { view: true, edit: true },
-          pmkworkloads: { view: true, edit: true }
-        },
-        monitorings: {
-          mcismonitoring: { view: true, edit: true },
-          "3rdpartymonitoring": { view: true, edit: true },
-          monitoringconfig: { view: true, edit: true }
-        }
-      }
-    }
-  ];
-
   try {
     console.log("Roles 테이블 초기화 시작");
     initRolesTable();
@@ -440,9 +447,134 @@ document.addEventListener("DOMContentLoaded", function () {
     initPlatformMenuTree();
     initCspRoleMappingTree();
     
+    // API 응답 데이터 설정
+    const apiResponseData = [
+      {
+        "id": 1,
+        "parent_id": null,
+        "name": "admin",
+        "description": "",
+        "predefined": false,
+        "created_at": "2025-06-14T23:28:49.662444Z",
+        "updated_at": "2025-06-14T23:28:49.662444Z",
+        "role_subs": [
+          {
+            "id": 1,
+            "role_id": 1,
+            "role_type": "platform",
+            "created_at": "2025-06-14T23:28:49.710788Z"
+          },
+          {
+            "id": 2,
+            "role_id": 1,
+            "role_type": "workspace",
+            "created_at": "2025-06-14T23:28:49.736734Z"
+          },
+          {
+            "id": 3,
+            "role_id": 1,
+            "role_type": "csp",
+            "created_at": "2025-06-14T23:28:49.736734Z"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "parent_id": null,
+        "name": "operator",
+        "description": "",
+        "predefined": false,
+        "created_at": "2025-06-14T23:28:49.817946Z",
+        "updated_at": "2025-06-14T23:28:49.817946Z",
+        "role_subs": [
+          {
+            "id": 3,
+            "role_id": 2,
+            "role_type": "platform",
+            "created_at": "2025-06-14T23:28:49.837124Z"
+          },
+          {
+            "id": 4,
+            "role_id": 2,
+            "role_type": "workspace",
+            "created_at": "2025-06-14T23:28:49.853559Z"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "parent_id": null,
+        "name": "viewer",
+        "description": "",
+        "predefined": false,
+        "created_at": "2025-06-14T23:28:49.909563Z",
+        "updated_at": "2025-06-14T23:28:49.909563Z",
+        "role_subs": [
+          {
+            "id": 5,
+            "role_id": 3,
+            "role_type": "platform",
+            "created_at": "2025-06-14T23:28:49.930737Z"
+          },
+          {
+            "id": 6,
+            "role_id": 3,
+            "role_type": "workspace",
+            "created_at": "2025-06-14T23:28:49.947701Z"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "parent_id": null,
+        "name": "billadmin",
+        "description": "",
+        "predefined": false,
+        "created_at": "2025-06-14T23:28:50.020066Z",
+        "updated_at": "2025-06-14T23:28:50.020066Z",
+        "role_subs": [
+          {
+            "id": 7,
+            "role_id": 4,
+            "role_type": "platform",
+            "created_at": "2025-06-14T23:28:50.041217Z"
+          },
+          {
+            "id": 8,
+            "role_id": 4,
+            "role_type": "workspace",
+            "created_at": "2025-06-14T23:28:50.059737Z"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "parent_id": null,
+        "name": "billviewer",
+        "description": "",
+        "predefined": false,
+        "created_at": "2025-06-14T23:28:50.117364Z",
+        "updated_at": "2025-06-14T23:28:50.117364Z",
+        "role_subs": [
+          {
+            "id": 9,
+            "role_id": 5,
+            "role_type": "platform",
+            "created_at": "2025-06-14T23:28:50.136685Z"
+          },
+          {
+            "id": 10,
+            "role_id": 5,
+            "role_type": "workspace",
+            "created_at": "2025-06-14T23:28:50.15496Z"
+          }
+        ]
+      }
+    ];
+
     rolesTable.on("tableBuilt", function() {
       console.log("Roles 테이블 빌드 완료");
-      rolesTable.setData(rolesData);
+      rolesTable.setData(apiResponseData);
     });
 
     // Workspace 토글 이벤트
