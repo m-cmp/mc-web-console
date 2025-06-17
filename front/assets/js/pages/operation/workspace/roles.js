@@ -1,6 +1,49 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import jstree from "jstree";
 
+// DOMContentLoaded 이벤트 리스너 등록
+document.addEventListener("DOMContentLoaded", initRoles);
+
+// 초기화 함수
+async function initRoles() {
+  console.log("initRoles");
+  
+  try {
+    // 1. 워크스페이스/프로젝트 초기화
+    selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+    webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
+    
+    // 2. 역할 목록 가져오기
+    await getRoleList();
+    
+    // 3. 테이블 초기화
+    initRolesTable();
+    
+    // 4. 메뉴 트리 초기화
+    initPlatformMenuTree();
+    initCspRoleMappingTree();
+    
+    // 5. 이벤트 리스너 설정
+    setupEventListeners();
+    
+  } catch (error) {
+    console.error("초기화 중 오류 발생:", error);
+  }
+}
+// roles_api 호출
+async function getRoleList() {
+  try {
+    console.log("getRoleList");
+    const roleList = await webconsolejs["common/api/services/roles_api"].getRoleList();
+    console.log('roleList:', roleList);
+    return roleList;
+  } catch (error) {
+    console.error('Error fetching roleList:', error);
+    throw error;
+  }
+}
+
+
 var checked_array = [];
 var currentClickedRoleId = "";
 var rolesTable;
@@ -101,11 +144,6 @@ const DOM = {
   platformMenu: document.getElementById("platform-menu"),
   workspaceMenu: document.getElementById("workspace-menu"),
   cspRoleMapping: document.getElementById("csp-role-mapping")
-};
-
-// Bootstrap Collapse 객체 캐싱
-const collapseInstances = {
-  createRole: new bootstrap.Collapse(DOM.createRoleCard, { toggle: false })
 };
 
 // 카드 상태 관리 함수
