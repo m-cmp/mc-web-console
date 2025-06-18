@@ -1,103 +1,69 @@
-// 기본 변수 정의
-$border-color: rgba(72, 110, 149, 0.14);
-$primary: #0054a6;
-$primary-darker: #002345;
-$green: #2fb344;
+// 전체 트리 기본 스타일
+.jstree {
+    font-size: 14px;
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  // 트리 노드 기본
+  .jstree-anchor {
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  
+    &:hover {
+      background-color: #f0f4f8;
+      color: #0054a6;
+    }
+  
+    &.jstree-clicked {
+      background-color: #e6f0ff;
+      color: #0054a6;
+      font-weight: 500;
+    }
+  }
+  
+  // 아이콘 스타일
+  .jstree-themeicon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  
+  // 체크박스 커스터마이징
+  .jstree-checkbox {
+    margin-right: 6px;
+    transform: scale(1.1);
+  }
+  
+  // 노드 간 간격
+  .jstree-node {
+    margin-bottom: 0px;
+  }
+  
+  // 하위 노드 들여쓰기
+  .jstree-children {
+    margin-left: 12px;
+  }
+  
+  // 전체 행 하이라이트 (wholerow plugin용)
+  .jstree-wholerow {
+    border-radius: 4px;
+    height: 28px;
+  }
 
-// jstree 테마 변수
-$tree-background: transparent;
-$tree-border-color: $border-color;
-$tree-text-color: inherit;
-$tree-font-size: 0.875rem; // Tabler의 기본 폰트 크기와 일치
-
-// 노드 스타일
-$node-background: transparent;
-$node-hover-background: var(--tblr-primary-lt);
-$node-selected-background: var(--tblr-primary-lt);
-$node-selected-hover-background: var(--tblr-primary-lt);
-
-// 아이콘 스타일
-$icon-color: var(--tblr-primary);
-$icon-hover-color: var(--tblr-primary-darker);
-
-// jstree 기본 스타일 import
-@import "~jstree/dist/themes/default/style.css";
-
-// 커스텀 스타일 적용
-.jstree-default {
-    background: $tree-background;
-    font-size: $tree-font-size;
-    font-family: var(--tblr-font-sans-serif);
-    
-    .jstree-node {
-        margin-left: 1rem;
-    }
-    
-    .jstree-anchor {
-        color: $tree-text-color;
-        padding: 0.375rem 0.5rem;
-        border-radius: 0.25rem;
-        transition: all 0.2s ease-in-out;
-        
-        &:hover {
-            background-color: $node-hover-background;
-            color: var(--tblr-primary);
-        }
-    }
-    
-    .jstree-clicked {
-        background-color: $node-selected-background;
-        color: var(--tblr-primary);
-        
-        &:hover {
-            background-color: $node-selected-hover-background;
-        }
-    }
-    
-    .jstree-icon {
-        color: $icon-color;
-        transition: color 0.2s ease-in-out;
-        
-        &:hover {
-            color: $icon-hover-color;
-        }
-    }
-    
-    .jstree-wholerow-clicked {
-        background-color: $node-selected-background;
-    }
-    
-    .jstree-wholerow-hovered {
-        background-color: $node-hover-background;
-    }
-
-    // 체크박스 스타일
-    .jstree-checkbox {
-        margin-right: 0.5rem;
-    }
-
-    // 드래그 앤 드롭 스타일
-    .jstree-dnd-helper {
-        background-color: var(--tblr-primary-lt);
-        border: 1px solid var(--tblr-primary);
-        border-radius: 0.25rem;
-        padding: 0.375rem 0.5rem;
-    }
-
-    // 컨텍스트 메뉴 스타일
-    .jstree-contextmenu {
-        background-color: var(--tblr-bg-surface);
-        border: 1px solid var(--tblr-border-color);
-        border-radius: 0.25rem;
-        box-shadow: var(--tblr-box-shadow);
-        
-        .jstree-contextmenu-item {
-            padding: 0.375rem 0.75rem;
-            
-            &:hover {
-                background-color: var(--tblr-primary-lt);
-                color: var(--tblr-primary);
-            }
-        }
-    }
-} 
+.jstree,
+.jstree ul,
+.jstree li {
+  list-style: none !important;
+  margin: 5;
+  padding: 0;
+}
