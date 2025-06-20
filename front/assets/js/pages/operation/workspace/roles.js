@@ -57,6 +57,93 @@ async function initRoles() {
             { role_type: "platform" },
             { role_type: "workspace" }
           ]
+        },
+        {
+          id: 3,
+          name: "viewer",
+          description: "Viewer role",
+          role_subs: [
+            { role_type: "platform" }
+          ]
+        },
+        {
+          id: 4,
+          name: "billadmin",
+          description: "Billing Administrator role",
+          role_subs: [
+            { role_type: "platform" },
+            { role_type: "csp" }
+          ]
+        },
+        {
+          id: 5,
+          name: "billviewer",
+          description: "Billing Viewer role",
+          role_subs: [
+            { role_type: "platform" }
+          ]
+        },
+        {
+          id: 6,
+          name: "developer",
+          description: "Developer role",
+          role_subs: [
+            { role_type: "platform" },
+            { role_type: "workspace" }
+          ]
+        },
+        {
+          id: 7,
+          name: "tester",
+          description: "Tester role",
+          role_subs: [
+            { role_type: "platform" }
+          ]
+        },
+        {
+          id: 8,
+          name: "manager",
+          description: "Manager role",
+          role_subs: [
+            { role_type: "platform" },
+            { role_type: "workspace" },
+            { role_type: "csp" }
+          ]
+        },
+        {
+          id: 9,
+          name: "analyst",
+          description: "Analyst role",
+          role_subs: [
+            { role_type: "platform" },
+            { role_type: "workspace" }
+          ]
+        },
+        {
+          id: 10,
+          name: "support",
+          description: "Support role",
+          role_subs: [
+            { role_type: "platform" }
+          ]
+        },
+        {
+          id: 11,
+          name: "guest",
+          description: "Guest role",
+          role_subs: [
+            { role_type: "platform" }
+          ]
+        },
+        {
+          id: 12,
+          name: "supervisor",
+          description: "Supervisor role",
+          role_subs: [
+            { role_type: "platform" },
+            { role_type: "workspace" },
+            { role_type: "csp" }
+          ]
         }
       ];
       rolesTable.setData(dummyData);
@@ -200,21 +287,22 @@ const rolePermissions = {
 // DOM 요소 캐싱
 const DOM = {
   createRoleCard: document.getElementById("create_role"),
-  platformMenu: document.getElementById("platform-menu"),
-  workspaceMenu: document.getElementById("workspace-menu"),
-  cspRoleMapping: document.getElementById("csp-role-mapping")
+  viewModeCards: document.getElementById("view-mode-cards"),
+  platformMenuBody: document.getElementById("platform-menu-body"),
+  workspaceMenuBody: document.getElementById("workspace-menu-body"),
+  cspRoleMappingBody: document.getElementById("csp-role-mapping-body")
 };
 
 // 카드 상태 관리 함수
 function toggleCards(showPlatform = false, showWorkspace = false, showCsp = false) {
-  if (DOM.platformMenu) {
-    DOM.platformMenu.classList.toggle('show', showPlatform);
+  if (DOM.platformMenuBody) {
+    DOM.platformMenuBody.classList.toggle('show', showPlatform);
   }
-  if (DOM.workspaceMenu) {
-    DOM.workspaceMenu.classList.toggle('show', showWorkspace);
+  if (DOM.workspaceMenuBody) {
+    DOM.workspaceMenuBody.classList.toggle('show', showWorkspace);
   }
-  if (DOM.cspRoleMapping) {
-    DOM.cspRoleMapping.classList.toggle('show', showCsp);
+  if (DOM.cspRoleMappingBody) {
+    DOM.cspRoleMappingBody.classList.toggle('show', showCsp);
   }
 }
 
@@ -234,7 +322,8 @@ function convertToJstreeFormat(menuData, parentId = "#") {
       id: menu.id,
       text: menu.displayName || menu.text || menu.id,
       parent: parentId,
-      state: { opened: true },
+      // state: { opened: true },
+      state: { opened: false },
       data: {
         menunumber: menu.menunumber,
         isAction: menu.isAction,
@@ -319,7 +408,10 @@ function initRolesTable() {
       rolesTable = new Tabulator("#roles-table", {
         data: [],
         layout: "fitColumns",
-        height: "400px",
+        height: "350px",
+        pagination: true,
+        paginationSize: 10,
+        paginationSizeSelector: [10, 20, 50],
         reactiveData: true,
         columns: [
           {
@@ -374,6 +466,12 @@ function initRolesTable() {
               const hasCsp = roleSubs.some(sub => sub.role_type === "csp");
               return hasCsp ? "Y" : "N";
             }
+          },
+          {
+            title: "Description",
+            field: "description",
+            headerSort: false,
+            visible: false
           }
         ]
       });
@@ -396,13 +494,34 @@ function initRolesTable() {
           // 같은 행을 다시 클릭한 경우
           row.deselect();
           currentClickedRoleId = "";
+          // view-mode-cards 숨기기
+          if (DOM.viewModeCards) {
+            DOM.viewModeCards.classList.remove('show');
+          }
           toggleCards(false, false, false);
         } else {
           // 다른 행을 클릭한 경우
           rolesTable.deselectRow();
           row.select();
 
+          // view-mode-cards 보이기
+          if (DOM.viewModeCards) {
+            DOM.viewModeCards.classList.add('show');
+          }
+
           const rowData = row.getData();
+          
+          // Role Detail 카드에 값 채우기
+          const nameElement = document.getElementById("role-detail-name-view");
+          const descElement = document.getElementById("role-detail-desc-view");
+          
+          if (nameElement) {
+            nameElement.textContent = rowData.name || "";
+          }
+          if (descElement) {
+            descElement.textContent = rowData.description || "";
+          }
+          
           const roleSubs = rowData.role_subs || [];
           const hasPlatform = roleSubs.some(sub => sub.role_type === "platform");
           const hasWorkspace = roleSubs.some(sub => sub.role_type === "workspace");
