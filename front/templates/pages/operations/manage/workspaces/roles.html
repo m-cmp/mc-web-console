@@ -15,7 +15,7 @@
                       href="#create_role"
                       class="btn btn-primary"
                       data-bs-toggle="collapse"
-                      data-bs-target="#create-role-accordion"
+                      data-bs-target="#create-mode-cards"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -42,42 +42,15 @@
                   </div>
                 </div>
 
-                <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden;">
+                <div
+                  class="card-table table-responsive"
+                  style="max-height: 400px; overflow: hidden"
+                >
                   <div id="roles-table" class="roles-table-container"></div>
                 </div>
               </div>
             </div>
             <!-- table area end -->
-          </div>
-
-          <!-- Create Role Card -->
-          <div class="row row-cards">
-            <div class="col-md-12">
-              <div class="card collapse" id="create_role">
-                <div class="card-header">
-                  <h3 class="card-title">Create New Role</h3>
-                </div>
-                <div class="card-body">
-                  <form>
-                    <div class="mb-3">
-                      <label class="form-label required">Role Name</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        name="role-name"
-                        placeholder="Enter role name"
-                        required
-                      />
-                    </div>
-                    <div class="form-footer">
-                      <button type="submit" class="btn btn-primary">
-                        Create
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- == V I E W == 모드 카드들 -->
@@ -140,50 +113,79 @@
           </div>
 
           <!-- == C R E A T E == 모드 카드들 -->
-          <div id="create-mode-cards" class="collapse">
-            <!-- Platform (Create) -->
-            <div class="card" id="platform-menu-create">
-              <div class="card-header">
-                <h3 class="card-title">Platform</h3>
-              </div>
-              <div class="card-body">
-                <div id="platform-menu-create-tree"></div>
-                <!-- Create용 트리 -->
-              </div>
-            </div>
-
-            <!-- Workspace (Create) -->
-            <div class="card" id="workspace-menu-create">
-              <div class="card-header">
-                <h3 class="card-title">Workspace</h3>
-              </div>
-              <div class="card-body">
-                <!-- TODO: Workspace 설정 UI (예: 토글 스위치) -->
-                <div class="alert alert-info">
-                  Workspace 설정을 여기에 추가합니다.
+          <div id="create-mode-cards" class="collapse bg-secondary-lt">
+            <!-- 배경 적용 카드 -->
+            <div class="card col-md-11 mx-auto">
+              <!-- Create New Role Card -->
+              <div class="card" id="create_role">
+                <div class="card-header">
+                  <h3 class="card-title">Create New Role</h3>
+                </div>
+                <div class="card-body">
+                  <form>
+                    <div class="mb-3">
+                      <label class="form-label required">Role Name</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="role-name"
+                        placeholder="Enter role name"
+                        required
+                      />
+                    </div>
+                    <div class="form-footer">
+                      <button type="submit" class="btn btn-primary">
+                        Create
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
-            </div>
 
-            <!-- CSP Role Mapping (Create) -->
-            <div class="card" id="csp-role-mapping-create">
-              <div class="card-header">
-                <h3 class="card-title">CSP Role Mapping</h3>
+              <!-- Platform (Create) -->
+              <div class="card" id="platform-menu-create">
+                <div class="card-header">
+                  <h3 class="card-title">Platform</h3>
+                </div>
+                <div class="card-body">
+                  <div id="platform-menu-create-tree"></div>
+                  <!-- Create용 트리 -->
+                </div>
               </div>
-              <div class="card-body">
-                <div id="csp-role-mapping-create-tree"></div>
-                <!-- Create용 트리 -->
-              </div>
-            </div>
 
-            <!-- Save/Cancel 버튼 -->
-            <div class="d-flex justify-content-end mt-3">
-              <button class="btn me-2" id="cancel-create-role-btn">
-                Cancel
-              </button>
-              <button class="btn btn-primary" id="save-create-role-btn">
-                Save Role
-              </button>
+              <!-- Workspace (Create) -->
+              <div class="card" id="workspace-menu-create">
+                <div class="card-header">
+                  <h3 class="card-title">Workspace</h3>
+                </div>
+                <div class="card-body">
+                  <!-- TODO: Workspace 설정 UI (예: 토글 스위치) -->
+                  <div class="alert alert-info">
+                    Workspace 설정을 여기에 추가합니다.
+                  </div>
+                </div>
+              </div>
+
+              <!-- CSP Role Mapping (Create) -->
+              <div class="card" id="csp-role-mapping-create">
+                <div class="card-header">
+                  <h3 class="card-title">CSP Role Mapping</h3>
+                </div>
+                <div class="card-body">
+                  <div id="csp-role-mapping-create-tree"></div>
+                  <!-- Create용 트리 -->
+                </div>
+              </div>
+
+              <!-- Save/Cancel 버튼 -->
+              <div class="d-flex justify-content-end mt-3">
+                <button class="btn me-2" id="cancel-create-role-btn">
+                  Cancel
+                </button>
+                <button class="btn btn-primary" id="save-create-role-btn">
+                  Save Role
+                </button>
+              </div>
             </div>
           </div>
         </div>
