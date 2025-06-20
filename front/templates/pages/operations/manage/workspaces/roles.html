@@ -42,8 +42,8 @@
                   </div>
                 </div>
 
-                <div class="card-table table-responsive">
-                  <div id="roles-table"></div>
+                <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden;">
+                  <div id="roles-table" class="roles-table-container"></div>
                 </div>
               </div>
             </div>
@@ -80,38 +80,110 @@
             </div>
           </div>
 
-          <!-- Platform -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Platform</h3>
-            </div>
-            <div class="card-body collapse" id="platform-menu">
-              <div id="platform-menu-tree"></div>
-            </div>
-          </div>
+          <!-- == V I E W == 모드 카드들 -->
+          <div id="view-mode-cards" class="collapse bg-secondary-lt">
+            <!-- 배경 적용 카드 -->
+            <div class="card col-md-11 mx-auto">
+              <!-- Role Detail 카드 (신규) -->
+              <div class="card" id="role-detail-card">
+                <div class="card-header">
+                  <h3 class="card-title">Role Detail</h3>
+                </div>
+                <div class="card-body">
+                  <!-- TODO: Role 상세 정보 필드들 -->
+                  <p>
+                    <strong>Name:</strong>
+                    <span id="role-detail-name-view"></span>
+                  </p>
+                  <p>
+                    <strong>Description:</strong>
+                    <span id="role-detail-desc-view"></span>
+                  </p>
+                </div>
+              </div>
 
-          <!-- Workspace -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Workspace</h3>
-            </div>
-            <div class="card-body collapse" id="workspace-menu">
-              <div class="alert alert-success" role="alert">
-                <h4 class="alert-title">Workspace 사용 가능</h4>
-                <div class="text-muted">
-                  선택한 역할은 Workspace 기능을 사용할 수 있습니다.
+              <!-- Platform (기존, 래퍼 안으로 이동) -->
+              <div class="card" id="platform-menu">
+                <div class="card-header">
+                  <h3 class="card-title">Platform</h3>
+                </div>
+                <div class="card-body collapse" id="platform-menu-body">
+                  <div id="platform-menu-tree"></div>
+                </div>
+              </div>
+
+              <!-- Workspace (기존, 래퍼 안으로 이동) -->
+              <div class="card" id="workspace-menu">
+                <div class="card-header">
+                  <h3 class="card-title">Workspace</h3>
+                </div>
+                <div class="card-body collapse" id="workspace-menu-body">
+                  <div class="alert alert-success" role="alert">
+                    <h4 class="alert-title">Workspace 사용 가능</h4>
+                    <div class="text-muted">
+                      선택한 역할은 Workspace 기능을 사용할 수 있습니다.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CSP Role Mapping (기존, 래퍼 안으로 이동) -->
+              <div class="card" id="csp-role-mapping">
+                <div class="card-header">
+                  <h3 class="card-title">CSP Role Mapping</h3>
+                </div>
+                <div class="card-body collapse" id="csp-role-mapping-body">
+                  <div id="csp-role-mapping-tree"></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- CSP Role Mapping -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">CSP Role Mapping</h3>
+          <!-- == C R E A T E == 모드 카드들 -->
+          <div id="create-mode-cards" class="collapse">
+            <!-- Platform (Create) -->
+            <div class="card" id="platform-menu-create">
+              <div class="card-header">
+                <h3 class="card-title">Platform</h3>
+              </div>
+              <div class="card-body">
+                <div id="platform-menu-create-tree"></div>
+                <!-- Create용 트리 -->
+              </div>
             </div>
-            <div class="card-body collapse" id="csp-role-mapping">
-              <div id="csp-role-mapping-tree"></div>
+
+            <!-- Workspace (Create) -->
+            <div class="card" id="workspace-menu-create">
+              <div class="card-header">
+                <h3 class="card-title">Workspace</h3>
+              </div>
+              <div class="card-body">
+                <!-- TODO: Workspace 설정 UI (예: 토글 스위치) -->
+                <div class="alert alert-info">
+                  Workspace 설정을 여기에 추가합니다.
+                </div>
+              </div>
+            </div>
+
+            <!-- CSP Role Mapping (Create) -->
+            <div class="card" id="csp-role-mapping-create">
+              <div class="card-header">
+                <h3 class="card-title">CSP Role Mapping</h3>
+              </div>
+              <div class="card-body">
+                <div id="csp-role-mapping-create-tree"></div>
+                <!-- Create용 트리 -->
+              </div>
+            </div>
+
+            <!-- Save/Cancel 버튼 -->
+            <div class="d-flex justify-content-end mt-3">
+              <button class="btn me-2" id="cancel-create-role-btn">
+                Cancel
+              </button>
+              <button class="btn btn-primary" id="save-create-role-btn">
+                Save Role
+              </button>
             </div>
           </div>
         </div>
@@ -120,5 +192,5 @@
   </div>
 </div>
 
-<%= javascriptTag("common/api/services/roles_api.js") %>
-<%= javascriptTag("pages/operation/workspace/roles.js") %> 
+<%= javascriptTag("common/api/services/roles_api.js") %> <%=
+javascriptTag("pages/operation/workspace/roles.js") %>
