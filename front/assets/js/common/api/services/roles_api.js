@@ -21,3 +21,29 @@ export async function getAllAvailableMenus() {
     console.log("getAllAvailableMenus response", response);
     return response.data.responseData;
 }
+
+export async function getMappedMenusByRoleList(roleId) {
+    const controller = "/api/mc-iam-manager/Getmappedmenusbyrolelist";
+    const data = {
+
+        Request: {
+            "roleId": [roleId.toString()]
+        }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+        controller,
+        data
+    );
+    console.log("getMappedMenusByRoleList response", response);
+    return response.data.responseData;
+}
+
+export async function getMenusResources() {
+    const controller = "/api/mc-iam-manager/Getmenuresources";
+
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+        controller
+    );
+    console.log("getMenusResources response", response);
+    return response.data.responseData;
+}

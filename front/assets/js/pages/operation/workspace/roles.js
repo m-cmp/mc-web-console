@@ -152,6 +152,7 @@ async function initRoles() {
     // 4. 메뉴 트리 초기화
     console.log("메뉴 트리 초기화 시작");
     await initPlatformMenuTree();
+    await initPlatformMenuCreateTree();
     await initCspRoleMappingTree();
 
     // 5. 이벤트 리스너 설정
@@ -316,47 +317,123 @@ function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
   let result = [];
   if (!Array.isArray(menuData)) return result;
 
-  menuData.forEach(menu => {
-    // 계층 단계에 따라 아이콘 결정
-    let icon = "ti ti-menu"; // 기본 아이콘
-    
-    if (level === 0) {
-      // 최상위 노드 (Operations, Settings)
-      icon = "ti ti-folder";
-    } else if (level === 1) {
-      // 2차 노드들
-      icon = "ti ti-folder-open";
-    } else if (level === 2) {
-      // 3차 노드들
-      icon = "ti ti-layout-grid";
-    } else if (level === 3) {
-      // 4차 노드들
-      icon = "ti ti-settings";
-    } else if (level >= 4) {
-      // 5차 이상 노드들
-      icon = "ti ti-click";
-    }
+  // parent_id가 null, 빈 문자열, 또는 "home"인 최상위 노드들만 먼저 처리
+  const topLevelMenus = menuData.filter(menu => !menu.parent_id || menu.parent_id === "" || menu.parent_id === "home");
+  
+  topLevelMenus.forEach(menu => {
+    result = result.concat(processMenuNode(menu, menuData, "#", 0));
+  });
 
-    // jstree 노드 객체 생성
-    const node = {
-      id: menu.id,
-      text: menu.displayName || menu.text || menu.id,
-      parent: parentId,
-      // state: { opened: true },
-      state: { opened: false },
-      icon: icon,
-      data: {
-        menunumber: menu.menunumber,
-        isAction: menu.isAction,
-        priority: menu.priority
-      }
-    };
-    result.push(node);
+  return result;
+}
 
-    // 하위 메뉴가 있으면 재귀적으로 변환 (level + 1)
-    if (Array.isArray(menu.menus) && menu.menus.length > 0) {
-      result = result.concat(convertToJstreeFormat(menu.menus, menu.id, level + 1));
+function processMenuNode(menu, allMenus, parentId, level) {
+  let result = [];
+  
+  // 계층 단계에 따라 아이콘 결정
+  let icon = "ti ti-menu"; // 기본 아이콘
+  
+  if (level === 0) {
+    // 최상위 노드 (Operations, Settings)
+    icon = "ti ti-folder";
+  } else if (level === 1) {
+    // 2차 노드들
+    icon = "ti ti-folder-open";
+  } else if (level === 2) {
+    // 3차 노드들
+    icon = "ti ti-layout-grid";
+  } else if (level === 3) {
+    // 4차 노드들
+    icon = "ti ti-settings";
+  } else if (level >= 4) {
+    // 5차 이상 노드들
+    icon = "ti ti-click";
+  }
+
+  // jstree 노드 객체 생성
+  const node = {
+    id: menu.id,
+    text: menu.display_name || menu.displayName || menu.text || menu.id,
+    parent: parentId,
+    state: { opened: false },
+    icon: icon,
+    data: {
+      menunumber: menu.menu_number || menu.menunumber,
+      isAction: menu.is_action || menu.isAction,
+      priority: menu.priority
     }
+  };
+  result.push(node);
+
+  // 현재 메뉴의 하위 메뉴들 찾기
+  const childMenus = allMenus.filter(m => m.parent_id === menu.id);
+  
+  // 하위 메뉴가 있으면 재귀적으로 처리
+  childMenus.forEach(childMenu => {
+    result = result.concat(processMenuNode(childMenu, allMenus, menu.id, level + 1));
+  });
+
+  return result;
+}
+
+function convertToJstreeFormatForCreate(menuData, parentId = "#", level = 0) {
+  let result = [];
+  if (!Array.isArray(menuData)) return result;
+
+  // parent_id가 null, 빈 문자열, 또는 "home"인 최상위 노드들만 먼저 처리
+  const topLevelMenus = menuData.filter(menu => !menu.parent_id || menu.parent_id === "" || menu.parent_id === "home");
+  
+  topLevelMenus.forEach(menu => {
+    result = result.concat(processMenuNodeForCreate(menu, menuData, "#", 0));
+  });
+
+  return result;
+}
+
+function processMenuNodeForCreate(menu, allMenus, parentId, level) {
+  let result = [];
+  
+  // 계층 단계에 따라 아이콘 결정
+  let icon = "ti ti-menu"; // 기본 아이콘
+  
+  if (level === 0) {
+    // 최상위 노드 (Operations, Settings)
+    icon = "ti ti-folder";
+  } else if (level === 1) {
+    // 2차 노드들
+    icon = "ti ti-folder-open";
+  } else if (level === 2) {
+    // 3차 노드들
+    icon = "ti ti-layout-grid";
+  } else if (level === 3) {
+    // 4차 노드들
+    icon = "ti ti-settings";
+  } else if (level >= 4) {
+    // 5차 이상 노드들
+    icon = "ti ti-click";
+  }
+
+  // jstree 노드 객체 생성
+  const node = {
+    id: menu.id,
+    text: menu.display_name || menu.displayName || menu.text || menu.id,
+    parent: parentId,
+    state: { opened: false },
+    icon: icon,
+    data: {
+      menunumber: menu.menu_number || menu.menunumber,
+      isAction: menu.is_action || menu.isAction,
+      priority: menu.priority
+    }
+  };
+  result.push(node);
+
+  // 현재 메뉴의 하위 메뉴들 찾기
+  const childMenus = allMenus.filter(m => m.parent_id === menu.id);
+  
+  // 하위 메뉴가 있으면 재귀적으로 처리
+  childMenus.forEach(childMenu => {
+    result = result.concat(processMenuNodeForCreate(childMenu, allMenus, menu.id, level + 1));
   });
 
   return result;
@@ -364,12 +441,11 @@ function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
 
 async function initPlatformMenuTree() {
   try {
-    const response = await getAllMenuResources();
+    const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
     console.log('Platform 메뉴 트리 API 응답:', response);
 
-    if (response && response.responseData) {
-
-      const treeData = convertToJstreeFormat(response.responseData);
+    if (response) {
+      const treeData = convertToJstreeFormat(response);
 
       // 기존 트리 제거
       if ($("#platform-menu-tree").jstree(true)) {
@@ -384,11 +460,27 @@ async function initPlatformMenuTree() {
           "data": treeData,
           //"check_callback":true --check_callback 허용시 dnd로 트리 내부 인사이동 가능
         },
-        "plugins": ["types", "dnd"]//추가
+        "plugins": ["types", "dnd", "checkbox"],//checkbox 플러그인 추가
+        "checkbox": {
+          "keep_selected_style": true,
+          "three_state": false
+        }
       });
-      // 트리 초기화 완료 후 이벤트 바인딩
+      
+      // View 모드 체크박스를 readonly로 만들기 위한 CSS 적용
       $("#platform-menu-tree").on("ready.jstree", function () {
         console.log("Platform 메뉴 트리 초기화 완료");
+        
+        // 체크박스를 readonly로 만들기
+        $("#platform-menu-tree .jstree-checkbox").css({
+          "pointer-events": "none",
+          "opacity": "0.7"
+        });
+        
+        // 현재 선택된 역할이 있으면 해당 역할의 메뉴 권한 표시
+        if (currentClickedRoleId) {
+          updateMenuPermissions(currentClickedRoleId);
+        }
       });
 
     } else {
@@ -396,6 +488,49 @@ async function initPlatformMenuTree() {
     }
   } catch (error) {
     console.error("Platform 메뉴 트리 초기화 중 오류 발생:", error);
+  }
+}
+
+async function initPlatformMenuCreateTree() {
+  try {
+    console.log("Create Platform 메뉴 트리 초기화 시작");
+    const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
+    console.log("getMenusResources 응답:", response);
+
+    // 응답 구조 고정
+    let menuData = response;
+
+    console.log("처리된 메뉴 데이터:", menuData);
+
+    if (menuData) {
+      const treeData = convertToJstreeFormatForCreate(menuData);
+      console.log("변환된 트리 데이터:", treeData);
+
+      // 기존 트리 제거
+      if ($("#platform-menu-create-tree").jstree(true)) {
+        $("#platform-menu-create-tree").jstree("destroy");
+      }
+      // 트리 생성
+      $('#platform-menu-create-tree').jstree({
+        "core": {
+          "themes": {
+            "responsive": true
+          },
+          "data": treeData,
+          //"check_callback":true --check_callback 허용시 dnd로 트리 내부 인사이동 가능
+        },
+        "plugins": ["types", "dnd", "checkbox"]//checkbox 플러그인 추가
+      });
+      // 트리 초기화 완료 후 이벤트 바인딩
+      $("#platform-menu-create-tree").on("ready.jstree", function () {
+        console.log("Create Platform 메뉴 트리 초기화 완료");
+      });
+
+    } else {
+      console.error("Create 메뉴 트리 데이터가 없습니다.");
+    }
+  } catch (error) {
+    console.error("Create Platform 메뉴 트리 초기화 중 오류 발생:", error);
   }
 }
 
@@ -511,6 +646,12 @@ function initRolesTable() {
             DOM.viewModeCards.classList.remove('show');
           }
           toggleCards(false, false, false);
+          
+          // 메뉴 권한 상태 아이콘 숨기기
+          const statusElement = document.getElementById('platform-menu-status');
+          if (statusElement) {
+            statusElement.style.display = 'none';
+          }
         } else {
           // 다른 행을 클릭한 경우
           rolesTable.deselectRow();
@@ -540,6 +681,11 @@ function initRolesTable() {
           const hasCsp = roleSubs.some(sub => sub.role_type === "csp");
 
           toggleCards(hasPlatform, hasWorkspace, hasCsp);
+          
+          // 선택된 역할의 메뉴 권한 업데이트
+          if (hasPlatform) {
+            updateMenuPermissions(currentClickedRoleId);
+          }
         }
       });
 
@@ -745,38 +891,58 @@ function setupEventListeners() {
 }
 
 // 메뉴 권한 업데이트 함수
-function updateMenuPermissions(roleId) {
-  console.log("메뉴 권한 업데이트 시작 - 역할:", roleId);
-
-  const permissions = rolePermissions[roleId] || {};
-  console.log("적용할 권한:", permissions);
-
-  // 각 메뉴 항목에 권한 적용
-  $('#platform-menu-tree').jstree(true).get_json('#', { flat: true }).forEach(node => {
-    if (node.id !== '#' && node.id !== 'j1_1') {  // 루트 노드 제외
-      const menuPath = node.id.split('.');
-      let currentPermissions = permissions;
-
-      // 메뉴 경로에 따라 권한 찾기
-      for (const path of menuPath) {
-        if (currentPermissions[path]) {
-          currentPermissions = currentPermissions[path];
-        } else {
-          currentPermissions = { view: false, edit: false };
-          break;
-        }
+async function updateMenuPermissions(roleId) {
+  try {
+    console.log("메뉴 권한 업데이트 시작 - 역할:", roleId);
+    
+    // getMappedMenusByRoleList API 호출
+    const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
+    console.log("getMappedMenusByRoleList 응답:", response);
+    
+    if (!response) {
+      console.error("메뉴 권한 데이터를 가져올 수 없습니다.");
+      // 메뉴 권한 상태 아이콘 숨기기
+      const statusElement = document.getElementById('platform-menu-status');
+      if (statusElement) {
+        statusElement.style.display = 'none';
       }
-
-      const element = $('#platform-menu-tree').find(`#${node.id}`);
-
-      if (currentPermissions.view) {
-        element.css('color', '#206bc4');  // 사용 가능한 메뉴는 파란색
-        $('#platform-menu-tree').jstree(true).check_node(node.id);
+      return;
+    }
+    
+    // 권한이 있는 메뉴 ID 목록 추출
+    const authorizedMenuIds = response.map(menu => menu.id || menu.menu_id);
+    console.log("권한이 있는 메뉴 ID 목록:", authorizedMenuIds);
+    
+    // 모든 노드의 체크박스 해제
+    $('#platform-menu-tree').jstree(true).uncheck_all();
+    
+    // 권한이 있는 메뉴들만 체크
+    authorizedMenuIds.forEach(menuId => {
+      const node = $('#platform-menu-tree').jstree(true).get_node(menuId);
+      if (node && node.id !== '#') {
+        $('#platform-menu-tree').jstree(true).check_node(node);
+      }
+    });
+    
+    // 메뉴 권한 상태 아이콘 표시/숨김
+    const statusElement = document.getElementById('platform-menu-status');
+    if (statusElement) {
+      if (authorizedMenuIds.length > 0) {
+        statusElement.style.display = 'inline';
       } else {
-        element.css('color', '#626976');  // 사용 불가능한 메뉴는 회색
-        $('#platform-menu-tree').jstree(true).uncheck_node(node.id);
+        statusElement.style.display = 'none';
       }
     }
-  });
+    
+    console.log("메뉴 권한 업데이트 완료");
+    
+  } catch (error) {
+    console.error("메뉴 권한 업데이트 중 오류 발생:", error);
+    // 오류 시 메뉴 권한 상태 아이콘 숨기기
+    const statusElement = document.getElementById('platform-menu-status');
+    if (statusElement) {
+      statusElement.style.display = 'none';
+    }
+  }
 }
 
