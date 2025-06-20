@@ -286,8 +286,8 @@ const rolePermissions = {
 
 // DOM 요소 캐싱
 const DOM = {
-  createRoleCard: document.getElementById("create_role"),
   viewModeCards: document.getElementById("view-mode-cards"),
+  createModeCards: document.getElementById("create-mode-cards"),
   platformMenuBody: document.getElementById("platform-menu-body"),
   workspaceMenuBody: document.getElementById("workspace-menu-body"),
   cspRoleMappingBody: document.getElementById("csp-role-mapping-body")
@@ -307,8 +307,8 @@ function toggleCards(showPlatform = false, showWorkspace = false, showCsp = fals
 }
 
 function closeCreateRoleCard() {
-  if (DOM.createRoleCard) {
-    DOM.createRoleCard.classList.remove('show');
+  if (DOM.createModeCards) {
+    DOM.createModeCards.classList.remove('show');
   }
 }
 
@@ -684,6 +684,26 @@ function setupEventListeners() {
     addButton.addEventListener("click", function (e) {
       e.preventDefault();
 
+      // create-mode-cards가 이미 펼쳐진 상태인지 확인 (className으로도 확인)
+      const isCreateModeVisible = DOM.createModeCards && (
+        DOM.createModeCards.classList.contains('show') || 
+        DOM.createModeCards.className.includes('show') ||
+        DOM.createModeCards.classList.contains('collapsing')
+      );
+      
+      // view-mode-cards 숨기기 (항상 실행)
+      if (DOM.viewModeCards) {
+        DOM.viewModeCards.classList.remove('show');
+      }
+      
+      if (isCreateModeVisible) {
+        // 이미 펼쳐진 상태라면 닫기 (Cancel 버튼과 동일한 동작)
+        if (DOM.createModeCards) {
+          DOM.createModeCards.classList.remove('show');
+        }
+        return;
+      }
+
       // 현재 선택된 행이 있다면 선택 해제
       if (currentClickedRoleId) {
         rolesTable.deselectRow();
@@ -693,8 +713,21 @@ function setupEventListeners() {
       // 모든 카드 닫기
       toggleCards(false, false, false);
 
-      // Create Role 카드 토글
-      DOM.createRoleCard.classList.toggle('show');
+      // create-mode-cards 보이기
+      if (DOM.createModeCards) {
+        DOM.createModeCards.classList.add('show');
+      }
+    });
+  }
+
+  // Cancel 버튼 클릭 이벤트
+  const cancelButton = document.getElementById("cancel-create-role-btn");
+  if (cancelButton) {
+    cancelButton.addEventListener("click", function () {
+      // create-mode-cards 숨기기
+      if (DOM.createModeCards) {
+        DOM.createModeCards.classList.remove('show');
+      }
     });
   }
 }
