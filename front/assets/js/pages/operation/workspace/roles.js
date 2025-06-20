@@ -312,11 +312,31 @@ function closeCreateRoleCard() {
   }
 }
 
-function convertToJstreeFormat(menuData, parentId = "#") {
+function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
   let result = [];
   if (!Array.isArray(menuData)) return result;
 
   menuData.forEach(menu => {
+    // 계층 단계에 따라 아이콘 결정
+    let icon = "ti ti-menu"; // 기본 아이콘
+    
+    if (level === 0) {
+      // 최상위 노드 (Operations, Settings)
+      icon = "ti ti-folder";
+    } else if (level === 1) {
+      // 2차 노드들
+      icon = "ti ti-folder-open";
+    } else if (level === 2) {
+      // 3차 노드들
+      icon = "ti ti-layout-grid";
+    } else if (level === 3) {
+      // 4차 노드들
+      icon = "ti ti-settings";
+    } else if (level >= 4) {
+      // 5차 이상 노드들
+      icon = "ti ti-click";
+    }
+
     // jstree 노드 객체 생성
     const node = {
       id: menu.id,
@@ -324,6 +344,7 @@ function convertToJstreeFormat(menuData, parentId = "#") {
       parent: parentId,
       // state: { opened: true },
       state: { opened: false },
+      icon: icon,
       data: {
         menunumber: menu.menunumber,
         isAction: menu.isAction,
@@ -332,9 +353,9 @@ function convertToJstreeFormat(menuData, parentId = "#") {
     };
     result.push(node);
 
-    // 하위 메뉴가 있으면 재귀적으로 변환
+    // 하위 메뉴가 있으면 재귀적으로 변환 (level + 1)
     if (Array.isArray(menu.menus) && menu.menus.length > 0) {
-      result = result.concat(convertToJstreeFormat(menu.menus, menu.id));
+      result = result.concat(convertToJstreeFormat(menu.menus, menu.id, level + 1));
     }
   });
 
@@ -362,15 +383,6 @@ async function initPlatformMenuTree() {
           },
           "data": treeData,
           //"check_callback":true --check_callback 허용시 dnd로 트리 내부 인사이동 가능
-        },
-        "types": {
-          "default": {
-
-            "icon": "ti ti-menu"
-          },
-          "file": {
-            "icon": '<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-folder"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" /></svg>'
-          }
         },
         "plugins": ["types", "dnd"]//추가
       });
