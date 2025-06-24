@@ -977,7 +977,9 @@ async function updateCspRoleMapping(roleId) {
     
     if (!response || !response.cspRoles || !Array.isArray(response.cspRoles)) {
       console.error("CSP 역할 매핑 데이터를 가져올 수 없습니다.");
-      cspRoleMappingTable.setData([]);
+      if (cspRoleMappingTable) {
+        cspRoleMappingTable.setData([]);
+      }
       return;
     }
     
@@ -985,7 +987,15 @@ async function updateCspRoleMapping(roleId) {
     const cspRolesData = response.cspRoles;
     console.log("CSP 역할 데이터:", cspRolesData);
     
-    cspRoleMappingTable.setData(cspRolesData);
+    // auth_method를 각 CSP 역할 객체에 추가
+    const processedData = cspRolesData.map(cspRole => ({
+      ...cspRole,
+      auth_method: response.auth_method || cspRole.auth_method
+    }));
+    
+    if (cspRoleMappingTable) {
+      cspRoleMappingTable.setData(processedData);
+    }
     
     console.log("CSP 역할 매핑 업데이트 완료");
     
@@ -1028,6 +1038,7 @@ function initCspRoleMappingTable() {
             title: "CSP Type",
             field: "csp_type",
             headerSort: false,
+            width: 80,
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -1037,7 +1048,8 @@ function initCspRoleMappingTable() {
           {
             title: "Role Name",
             field: "name",
-            headerSort: false
+            headerSort: false,
+            width: 120
           },
           {
             title: "IDP Identifier",
@@ -1051,6 +1063,12 @@ function initCspRoleMappingTable() {
                 return value.substring(0, 47) + "...";
               }
               return value;
+            },
+            cellClick: function(e, cell) {
+              const value = cell.getValue();
+              if (value && value.length > 50) {
+                alert("IDP Identifier: " + value);
+              }
             }
           },
           {
@@ -1065,12 +1083,19 @@ function initCspRoleMappingTable() {
                 return value.substring(0, 47) + "...";
               }
               return value;
+            },
+            cellClick: function(e, cell) {
+              const value = cell.getValue();
+              if (value && value.length > 50) {
+                alert("IAM Identifier: " + value);
+              }
             }
           },
           {
             title: "Auth Method",
             field: "auth_method",
             headerSort: false,
+            width: 100,
             formatter: function (cell) {
               const authMethod = cell.getValue();
               if (!authMethod) return "N/A";
