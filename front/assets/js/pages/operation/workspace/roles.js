@@ -451,19 +451,26 @@ async function initPlatformMenuTree() {
       if ($("#platform-menu-tree").jstree(true)) {
         $("#platform-menu-tree").jstree("destroy");
       }
-      // 트리 생성
+      
+      // 트리 생성 - View 모드용 설정
       $('#platform-menu-tree').jstree({
         "core": {
           "themes": {
             "responsive": true
           },
           "data": treeData,
-          //"check_callback":true --check_callback 허용시 dnd로 트리 내부 인사이동 가능
+          "check_callback": false, // 모든 상호작용 차단
+          "multiple": false // 다중 선택 비활성화
         },
-        "plugins": ["types", "dnd", "checkbox"],//checkbox 플러그인 추가
+        "plugins": ["types", "checkbox"],
         "checkbox": {
           "keep_selected_style": true,
           "three_state": false
+        },
+        "types": {
+          "default": {
+            "icon": "ti ti-menu"
+          }
         }
       });
       
@@ -471,16 +478,34 @@ async function initPlatformMenuTree() {
       $("#platform-menu-tree").on("ready.jstree", function () {
         console.log("Platform 메뉴 트리 초기화 완료");
         
+        // 모든 노드를 펼쳐놓기
+        $('#platform-menu-tree').jstree(true).open_all();
+        
         // 체크박스를 readonly로 만들기
         $("#platform-menu-tree .jstree-checkbox").css({
           "pointer-events": "none",
           "opacity": "0.7"
         });
         
+        // 노드 텍스트도 클릭 불가능하게 만들기
+        $("#platform-menu-tree .jstree-anchor").css({
+          "pointer-events": "none"
+        });
+        
         // 현재 선택된 역할이 있으면 해당 역할의 메뉴 권한 표시
         if (currentClickedRoleId) {
           updateMenuPermissions(currentClickedRoleId);
         }
+      });
+
+      // 트리 외부에서 모든 상호작용 이벤트 차단
+      $("#platform-menu-tree").off('click.jstree check_node.jstree uncheck_node.jstree select_node.jstree deselect_node.jstree');
+      
+      $("#platform-menu-tree").on('click.jstree', function (e, data) {
+        console.log("View 모드 트리 클릭 차단됨");
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
       });
 
     } else {
@@ -517,13 +542,33 @@ async function initPlatformMenuCreateTree() {
             "responsive": true
           },
           "data": treeData,
-          //"check_callback":true --check_callback 허용시 dnd로 트리 내부 인사이동 가능
+          "check_callback": false
         },
-        "plugins": ["types", "dnd", "checkbox"]//checkbox 플러그인 추가
+        "plugins": ["types", "checkbox"],
+        "types": {
+          "default": {
+            "icon": "ti ti-menu"
+          }
+        }
       });
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-create-tree").on("ready.jstree", function () {
         console.log("Create Platform 메뉴 트리 초기화 완료");
+        
+        // 모든 노드를 펼쳐놓기
+        $('#platform-menu-create-tree').jstree(true).open_all();
+        
+        // 펼치기/접기 아이콘 숨기기
+        $('#platform-menu-create-tree .jstree-ocl').hide();
+        
+        // 노드 클릭 시 펼치기/접기 방지
+        $('#platform-menu-create-tree').on('click.jstree', function (e, data) {
+          if (data.event.target.classList.contains('jstree-ocl')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        });
       });
 
     } else {
@@ -647,6 +692,12 @@ function initRolesTable() {
           }
           toggleCards(false, false, false);
           
+          // Workspace 토글 초기화
+          const workspaceToggleView = document.getElementById("workspace-toggle-view");
+          if (workspaceToggleView) {
+            workspaceToggleView.checked = false;
+          }
+          
           // 메뉴 권한 상태 아이콘 숨기기
           const statusElement = document.getElementById('platform-menu-status');
           if (statusElement) {
@@ -681,6 +732,12 @@ function initRolesTable() {
           const hasCsp = roleSubs.some(sub => sub.role_type === "csp");
 
           toggleCards(hasPlatform, hasWorkspace, hasCsp);
+          
+          // Workspace 토글 상태 업데이트
+          const workspaceToggleView = document.getElementById("workspace-toggle-view");
+          if (workspaceToggleView) {
+            workspaceToggleView.checked = hasWorkspace;
+          }
           
           // 선택된 역할의 메뉴 권한 업데이트
           if (hasPlatform) {
@@ -833,6 +890,15 @@ function setupEventListeners() {
   if (workspaceToggle) {
     workspaceToggle.addEventListener("change", function () {
       workspaceContent.style.display = this.checked ? "block" : "none";
+    });
+  }
+
+  // Create-mode Workspace 토글 이벤트
+  const workspaceToggleCreate = document.getElementById("workspace-toggle-create");
+  if (workspaceToggleCreate) {
+    workspaceToggleCreate.addEventListener("change", function () {
+      console.log("Create-mode Workspace 토글 변경:", this.checked);
+      // 여기에 필요한 로직 추가 (예: 폼 데이터 업데이트 등)
     });
   }
 
