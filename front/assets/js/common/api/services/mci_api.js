@@ -27,32 +27,32 @@ export async function getMciList(nsId) {
 }
 
 // 받아온 project(namespace)로 MciList Id Arr GET
-export async function getMciIdList(nsId) {
+// export async function getMciIdList(nsId) {
 
-  if (nsId == "") {
-    console.log("Project has not set")
-    return;
-  }
+//   if (nsId == "") {
+//     console.log("Project has not set")
+//     return;
+//   }
 
-  var data = {
-    pathParams: {
-      nsId: nsId,
-    },
-    queryParams: {
-      option: "id"
-    }
-  };
+//   var data = {
+//     pathParams: {
+//       nsId: nsId,
+//     },
+//     queryParams: {
+//       option: "id"
+//     }
+//   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+//   var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
+//   const response = await webconsolejs["common/api/http"].commonAPIPost(
+//     controller,
+//     data
+//   )
 
-  var mciList = response.data.responseData;
+//   var mciList = response.data.responseData;
 
-  return mciList
-}
+//   return mciList
+// }
 
 // mci 단건 조회
 export async function getMci(nsId, mciId) {

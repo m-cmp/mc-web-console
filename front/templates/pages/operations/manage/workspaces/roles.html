@@ -85,7 +85,7 @@
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                         <path d="M5 12l5 5l10 -10"></path>
                       </svg>
-                      <small class="text-muted">메뉴 권한 있음</small>
+                      <small class="text-muted">Menu permissions available</small>
                     </span>
                   </h3>
                 </div>
@@ -110,10 +110,16 @@
                   <h3 class="card-title">Workspace</h3>
                 </div>
                 <div class="card-body collapse" id="workspace-menu-body">
-                  <div class="alert alert-success" role="alert">
-                    <h4 class="alert-title">Workspace 사용 가능</h4>
-                    <div class="text-muted">
-                      선택한 역할은 Workspace 기능을 사용할 수 있습니다.
+                  <div class="row align-items-center">
+                    <div class="col-auto me-3">
+                      <label class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="workspace-toggle-view" disabled>
+                        <span class="form-check-label"></span>
+                      </label>
+                    </div>
+                    <div class="col">
+                      <div class="form-label text-primary">Workspace Access</div>
+                      <div class="text-muted">Enable workspace functionality for this role</div>
                     </div>
                   </div>
                 </div>
@@ -204,9 +210,17 @@
                   <h3 class="card-title">Workspace</h3>
                 </div>
                 <div class="card-body">
-                  <!-- TODO: Workspace 설정 UI (예: 토글 스위치) -->
-                  <div class="alert alert-info">
-                    Workspace 설정을 여기에 추가합니다.
+                  <div class="row align-items-center">
+                    <div class="col-auto me-3">
+                      <label class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="workspace-toggle-create">
+                        <span class="form-check-label"></span>
+                      </label>
+                    </div>
+                    <div class="col">
+                      <div class="form-label text-primary">Workspace Access</div>
+                      <div class="text-muted">Enable workspace functionality for this role</div>
+                    </div>
                   </div>
                 </div>
               </div>
