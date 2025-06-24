@@ -193,6 +193,7 @@ var checked_array = [];
 var currentClickedRoleId = "";
 var rolesTable;
 var platformMenuTable;
+var cspRoleMappingTable;
 
 // 역할별 메뉴 권한 정의
 const rolePermissions = {
@@ -696,11 +697,6 @@ function initRolesTable() {
             workspaceToggleView.checked = false;
           }
           
-          // CSP 트리 초기화
-          if ($('#csp-role-mapping-tree').jstree(true)) {
-            $('#csp-role-mapping-tree').jstree('destroy');
-          }
-          
           // 메뉴 권한 상태 아이콘 숨기기
           const statusElement = document.getElementById('platform-menu-status');
           if (statusElement) {
@@ -816,61 +812,6 @@ function showRoleDetail(role) {
       document.getElementById('role-detail-type3-field1').textContent = role.type3Field1 || '';
       document.getElementById('role-detail-type3-field2').textContent = role.type3Field2 || '';
       break;
-  }
-}
-
-function initCspRoleMappingTree() {
-  console.log("CSP Role Mapping 트리 초기화 시작");
-
-  try {
-    // 기존 트리 제거
-    if ($('#csp-role-mapping-tree').jstree(true)) {
-      $('#csp-role-mapping-tree').jstree('destroy');
-    }
-
-    // 빈 트리로 초기화 (더미 데이터 제거)
-    $('#csp-role-mapping-tree').jstree({
-      'core': {
-        'data': [], // 빈 배열로 초기화
-        'themes': {
-          'name': 'default',
-          'responsive': true
-        },
-        'check_callback': false,
-        'multiple': false
-      },
-      'plugins': ['types'],
-      'types': {
-        'default': {
-          'icon': 'ti ti-brand-aws'
-        },
-        'folder': {
-          'icon': 'ti ti-folder'
-        }
-      }
-    });
-
-    // 트리 초기화 완료 후 이벤트 바인딩
-    $('#csp-role-mapping-tree').on('ready.jstree', function () {
-      console.log('CSP Role Mapping 트리가 초기화되었습니다.');
-      
-      // 모든 상호작용 차단 (read-only)
-      $('#csp-role-mapping-tree .jstree-anchor').css({
-        'pointer-events': 'none'
-      });
-      
-      // 모든 클릭 이벤트 차단
-      $('#csp-role-mapping-tree').off('click.jstree select_node.jstree deselect_node.jstree');
-      $('#csp-role-mapping-tree').on('click.jstree', function (e, data) {
-        console.log("CSP 트리 클릭 차단됨");
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      });
-    });
-
-  } catch (error) {
-    console.error('CSP Role Mapping 트리 초기화 중 오류 발생:', error);
   }
 }
 
@@ -1024,103 +965,137 @@ async function updateCspRoleMapping(roleId) {
   try {
     console.log("CSP 역할 매핑 업데이트 시작 - 역할:", roleId);
     
-    // 트리가 없으면 생성 (지연 초기화)
-    if (!$('#csp-role-mapping-tree').jstree(true)) {
-      console.log("CSP Role Mapping 트리 생성 중...");
-      await initCspRoleMappingTree();
+    // 테이블이 없으면 생성 (지연 초기화)
+    if (!cspRoleMappingTable) {
+      console.log("CSP Role Mapping 테이블 생성 중...");
+      await initCspRoleMappingTable();
     }
     
     // getCSPRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getCSPRoleList(roleId);
     console.log("getCSPRoleList 응답:", response);
     
-    if (!response || !Array.isArray(response)) {
+    if (!response || !response.cspRoles || !Array.isArray(response.cspRoles)) {
       console.error("CSP 역할 매핑 데이터를 가져올 수 없습니다.");
+      cspRoleMappingTable.setData([]);
       return;
     }
     
-    // CSP 역할 데이터를 트리 형태로 변환
-    const cspTreeData = convertCspDataToTree(response);
-    console.log("변환된 CSP 트리 데이터:", cspTreeData);
+    // CSP 역할 데이터를 테이블에 설정
+    const cspRolesData = response.cspRoles;
+    console.log("CSP 역할 데이터:", cspRolesData);
     
-    // 기존 트리가 있는지 확인
-    const cspTree = $('#csp-role-mapping-tree').jstree(true);
-    if (cspTree) {
-      // 기존 트리 데이터 업데이트 (updateMenuPermissions와 동일한 패턴)
-      cspTree.settings.core.data = cspTreeData;
-      cspTree.refresh();
-      
-      // 모든 노드를 펼쳐놓기
-      cspTree.open_all();
-    }
+    cspRoleMappingTable.setData(cspRolesData);
     
     console.log("CSP 역할 매핑 업데이트 완료");
     
   } catch (error) {
     console.error("CSP 역할 매핑 업데이트 중 오류 발생:", error);
+    if (cspRoleMappingTable) {
+      cspRoleMappingTable.setData([]);
+    }
   }
 }
 
-// CSP 데이터를 트리 형태로 변환하는 함수
-function convertCspDataToTree(cspData) {
-  const treeData = [];
-  
-  // CSP 타입별로 그룹화
-  const cspGroups = {};
-  
-  cspData.forEach(cspRole => {
-    const cspType = cspRole.cspType || cspRole.csp_type || 'unknown';
-    
-    if (!cspGroups[cspType]) {
-      cspGroups[cspType] = [];
-    }
-    
-    cspGroups[cspType].push(cspRole);
-  });
-  
-  // 각 CSP 타입별로 트리 노드 생성
-  Object.keys(cspGroups).forEach(cspType => {
-    const cspIcon = getCspIcon(cspType);
-    const cspNode = {
-      id: cspType,
-      text: cspType.toUpperCase(),
-      icon: cspIcon,
-      state: { opened: true },
-      children: []
-    };
-    
-    // 해당 CSP의 역할들 추가
-    cspGroups[cspType].forEach(cspRole => {
-      const roleNode = {
-        id: `${cspType}-${cspRole.iamRoleId || cspRole.roleName}`,
-        text: cspRole.iamRoleId || cspRole.roleName || 'Unknown Role',
-        icon: 'ti ti-user',
-        data: { 
-          role: cspRole.iamRoleId || cspRole.roleName,
-          cspType: cspType,
-          idpIdentifier: cspRole.idpIdentifier,
-          iamIdentifier: cspRole.iamIdentifier
-        }
-      };
-      
-      cspNode.children.push(roleNode);
-    });
-    
-    treeData.push(cspNode);
-  });
-  
-  return treeData;
-}
+function initCspRoleMappingTable() {
+  return new Promise((resolve, reject) => {
+    console.log("CSP Role Mapping 테이블 초기화 시작");
 
-// CSP 타입에 따른 아이콘 반환 함수
-function getCspIcon(cspType) {
-  const iconMap = {
-    'aws': 'ti ti-brand-aws',
-    'gcp': 'ti ti-brand-google',
-    'azure': 'ti ti-brand-azure',
-    'unknown': 'ti ti-cloud'
-  };
-  
-  return iconMap[cspType.toLowerCase()] || iconMap['unknown'];
+    // 테이블이 이미 존재하는 경우 제거
+    if (cspRoleMappingTable) {
+      cspRoleMappingTable.destroy();
+    }
+
+    // 테이블 요소 확인
+    const tableElement = document.getElementById("csp-role-mapping-table");
+    if (!tableElement) {
+      console.error("csp-role-mapping-table 요소를 찾을 수 없습니다.");
+      reject(new Error("Table element not found"));
+      return;
+    }
+
+    try {
+      cspRoleMappingTable = new Tabulator("#csp-role-mapping-table", {
+        data: [],
+        layout: "fitColumns",
+        height: "300px",
+        pagination: true,
+        paginationSize: 10,
+        paginationSizeSelector: [10, 20, 50],
+        reactiveData: true,
+        columns: [
+          {
+            title: "CSP Type",
+            field: "csp_type",
+            headerSort: false,
+            formatter: function (cell) {
+              const cspType = cell.getValue();
+              if (!cspType) return "N/A";
+              return cspType.toUpperCase();
+            }
+          },
+          {
+            title: "Role Name",
+            field: "name",
+            headerSort: false
+          },
+          {
+            title: "IDP Identifier",
+            field: "idp_identifier",
+            headerSort: false,
+            formatter: function (cell) {
+              const value = cell.getValue();
+              if (!value) return "N/A";
+              // 긴 ARN을 줄여서 표시
+              if (value.length > 50) {
+                return value.substring(0, 47) + "...";
+              }
+              return value;
+            }
+          },
+          {
+            title: "IAM Identifier",
+            field: "iam_identifier",
+            headerSort: false,
+            formatter: function (cell) {
+              const value = cell.getValue();
+              if (!value) return "N/A";
+              // 긴 ARN을 줄여서 표시
+              if (value.length > 50) {
+                return value.substring(0, 47) + "...";
+              }
+              return value;
+            }
+          },
+          {
+            title: "Auth Method",
+            field: "auth_method",
+            headerSort: false,
+            formatter: function (cell) {
+              const authMethod = cell.getValue();
+              if (!authMethod) return "N/A";
+              return authMethod.toUpperCase();
+            }
+          },
+          {
+            title: "ID",
+            field: "id",
+            headerSort: false,
+            visible: false
+          }
+        ]
+      });
+
+      // 테이블 초기화 완료 후 이벤트 리스너 설정
+      cspRoleMappingTable.on("tableBuilt", function () {
+        console.log("CSP Role Mapping 테이블 초기화 완료");
+        resolve();
+      });
+
+    } catch (error) {
+      console.error("CSP Role Mapping 테이블 초기화 중 오류 발생:", error);
+      reject(error);
+    }
+  });
 }
 
