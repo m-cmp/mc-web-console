@@ -151,9 +151,7 @@ async function initRoles() {
 
     // 4. 메뉴 트리 초기화
     console.log("메뉴 트리 초기화 시작");
-    await initPlatformMenuTree();
     await initPlatformMenuCreateTree();
-    await initCspRoleMappingTree();
 
     // 5. 이벤트 리스너 설정
     console.log("이벤트 리스너 설정 시작");
@@ -698,10 +696,21 @@ function initRolesTable() {
             workspaceToggleView.checked = false;
           }
           
+          // CSP 트리 초기화
+          if ($('#csp-role-mapping-tree').jstree(true)) {
+            $('#csp-role-mapping-tree').jstree('destroy');
+          }
+          
           // 메뉴 권한 상태 아이콘 숨기기
           const statusElement = document.getElementById('platform-menu-status');
           if (statusElement) {
             statusElement.style.display = 'none';
+          }
+          
+          // CSP Role Mapping 역할 이름 숨기기
+          const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
+          if (cspRoleNameElement) {
+            cspRoleNameElement.style.display = 'none';
           }
         } else {
           // 다른 행을 클릭한 경우
@@ -739,9 +748,24 @@ function initRolesTable() {
             workspaceToggleView.checked = hasWorkspace;
           }
           
+          // CSP Role Mapping 역할 이름 표시
+          if (hasCsp) {
+            const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
+            const cspRoleNameTextElement = document.getElementById('csp-role-mapping-rolename-text');
+            if (cspRoleNameElement && cspRoleNameTextElement) {
+              cspRoleNameTextElement.textContent = rowData.name || "";
+              cspRoleNameElement.style.display = 'inline';
+            }
+          }
+          
           // 선택된 역할의 메뉴 권한 업데이트
           if (hasPlatform) {
             updateMenuPermissions(currentClickedRoleId);
+          }
+          
+          // CSP 역할 매핑 정보 업데이트
+          if (hasCsp) {
+            updateCspRoleMapping(currentClickedRoleId);
           }
         }
       });
@@ -798,80 +822,51 @@ function showRoleDetail(role) {
 function initCspRoleMappingTree() {
   console.log("CSP Role Mapping 트리 초기화 시작");
 
-  const cspData = [
-    {
-      id: "aws",
-      text: "AWS",
-      icon: "icon-tabler-brand-aws",
-      state: { opened: true },
-      children: [
-        {
-          id: "aws-mciam-viewer",
-          text: "MCIAM-Viewer",
-          icon: "icon-tabler-user",
-          data: { role: "MCIAM-Viewer" }
-        }
-      ]
-    },
-    {
-      id: "gcp",
-      text: "GCP",
-      icon: "icon-tabler-brand-google",
-      state: { opened: true },
-      children: [
-        {
-          id: "gcp-mciam-viewer",
-          text: "MCIAM-Viewer",
-          icon: "icon-tabler-user",
-          data: { role: "MCIAM-Viewer" }
-        }
-      ]
-    },
-    {
-      id: "azure",
-      text: "Azure",
-      icon: "icon-tabler-brand-azure",
-      state: { opened: true },
-      children: [
-        {
-          id: "azure-mciam-viewer",
-          text: "MCIAM-Viewer",
-          icon: "icon-tabler-user",
-          data: { role: "MCIAM-Viewer" }
-        }
-      ]
-    }
-  ];
-
   try {
     // 기존 트리 제거
     if ($('#csp-role-mapping-tree').jstree(true)) {
       $('#csp-role-mapping-tree').jstree('destroy');
     }
 
-    // 새로운 트리 초기화
+    // 빈 트리로 초기화 (더미 데이터 제거)
     $('#csp-role-mapping-tree').jstree({
       'core': {
-        'data': cspData,
+        'data': [], // 빈 배열로 초기화
         'themes': {
           'name': 'default',
           'responsive': true
-        }
+        },
+        'check_callback': false,
+        'multiple': false
       },
       'plugins': ['types'],
       'types': {
         'default': {
-          'icon': 'icon-tabler-brand-aws'
+          'icon': 'ti ti-brand-aws'
         },
         'folder': {
-          'icon': 'icon-tabler-folder'
+          'icon': 'ti ti-folder'
         }
       }
     });
 
-    // 이벤트 리스너를 별도로 등록
+    // 트리 초기화 완료 후 이벤트 바인딩
     $('#csp-role-mapping-tree').on('ready.jstree', function () {
       console.log('CSP Role Mapping 트리가 초기화되었습니다.');
+      
+      // 모든 상호작용 차단 (read-only)
+      $('#csp-role-mapping-tree .jstree-anchor').css({
+        'pointer-events': 'none'
+      });
+      
+      // 모든 클릭 이벤트 차단
+      $('#csp-role-mapping-tree').off('click.jstree select_node.jstree deselect_node.jstree');
+      $('#csp-role-mapping-tree').on('click.jstree', function (e, data) {
+        console.log("CSP 트리 클릭 차단됨");
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      });
     });
 
   } catch (error) {
@@ -936,6 +931,12 @@ function setupEventListeners() {
 
       // 모든 카드 닫기
       toggleCards(false, false, false);
+      
+      // CSP Role Mapping 역할 이름 숨기기
+      const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
+      if (cspRoleNameElement) {
+        cspRoleNameElement.style.display = 'none';
+      }
 
       // create-mode-cards 보이기
       if (DOM.createModeCards) {
@@ -960,6 +961,12 @@ function setupEventListeners() {
 async function updateMenuPermissions(roleId) {
   try {
     console.log("메뉴 권한 업데이트 시작 - 역할:", roleId);
+    
+    // 트리가 없으면 생성 (지연 초기화)
+    if (!$("#platform-menu-tree").jstree(true)) {
+      console.log("Platform 메뉴 트리 생성 중...");
+      await initPlatformMenuTree();
+    }
     
     // getMappedMenusByRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
@@ -1010,5 +1017,110 @@ async function updateMenuPermissions(roleId) {
       statusElement.style.display = 'none';
     }
   }
+}
+
+// CSP 역할 매핑 정보 업데이트 함수
+async function updateCspRoleMapping(roleId) {
+  try {
+    console.log("CSP 역할 매핑 업데이트 시작 - 역할:", roleId);
+    
+    // 트리가 없으면 생성 (지연 초기화)
+    if (!$('#csp-role-mapping-tree').jstree(true)) {
+      console.log("CSP Role Mapping 트리 생성 중...");
+      await initCspRoleMappingTree();
+    }
+    
+    // getCSPRoleList API 호출
+    const response = await webconsolejs["common/api/services/roles_api"].getCSPRoleList(roleId);
+    console.log("getCSPRoleList 응답:", response);
+    
+    if (!response || !Array.isArray(response)) {
+      console.error("CSP 역할 매핑 데이터를 가져올 수 없습니다.");
+      return;
+    }
+    
+    // CSP 역할 데이터를 트리 형태로 변환
+    const cspTreeData = convertCspDataToTree(response);
+    console.log("변환된 CSP 트리 데이터:", cspTreeData);
+    
+    // 기존 트리가 있는지 확인
+    const cspTree = $('#csp-role-mapping-tree').jstree(true);
+    if (cspTree) {
+      // 기존 트리 데이터 업데이트 (updateMenuPermissions와 동일한 패턴)
+      cspTree.settings.core.data = cspTreeData;
+      cspTree.refresh();
+      
+      // 모든 노드를 펼쳐놓기
+      cspTree.open_all();
+    }
+    
+    console.log("CSP 역할 매핑 업데이트 완료");
+    
+  } catch (error) {
+    console.error("CSP 역할 매핑 업데이트 중 오류 발생:", error);
+  }
+}
+
+// CSP 데이터를 트리 형태로 변환하는 함수
+function convertCspDataToTree(cspData) {
+  const treeData = [];
+  
+  // CSP 타입별로 그룹화
+  const cspGroups = {};
+  
+  cspData.forEach(cspRole => {
+    const cspType = cspRole.cspType || cspRole.csp_type || 'unknown';
+    
+    if (!cspGroups[cspType]) {
+      cspGroups[cspType] = [];
+    }
+    
+    cspGroups[cspType].push(cspRole);
+  });
+  
+  // 각 CSP 타입별로 트리 노드 생성
+  Object.keys(cspGroups).forEach(cspType => {
+    const cspIcon = getCspIcon(cspType);
+    const cspNode = {
+      id: cspType,
+      text: cspType.toUpperCase(),
+      icon: cspIcon,
+      state: { opened: true },
+      children: []
+    };
+    
+    // 해당 CSP의 역할들 추가
+    cspGroups[cspType].forEach(cspRole => {
+      const roleNode = {
+        id: `${cspType}-${cspRole.iamRoleId || cspRole.roleName}`,
+        text: cspRole.iamRoleId || cspRole.roleName || 'Unknown Role',
+        icon: 'ti ti-user',
+        data: { 
+          role: cspRole.iamRoleId || cspRole.roleName,
+          cspType: cspType,
+          idpIdentifier: cspRole.idpIdentifier,
+          iamIdentifier: cspRole.iamIdentifier
+        }
+      };
+      
+      cspNode.children.push(roleNode);
+    });
+    
+    treeData.push(cspNode);
+  });
+  
+  return treeData;
+}
+
+// CSP 타입에 따른 아이콘 반환 함수
+function getCspIcon(cspType) {
+  const iconMap = {
+    'aws': 'ti ti-brand-aws',
+    'gcp': 'ti ti-brand-google',
+    'azure': 'ti ti-brand-azure',
+    'unknown': 'ti ti-cloud'
+  };
+  
+  return iconMap[cspType.toLowerCase()] || iconMap['unknown'];
 }
 
