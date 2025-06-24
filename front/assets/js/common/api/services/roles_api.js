@@ -8,13 +8,7 @@ export async function getRoleList() {
     return response.data.responseData;
 }
 
-export async function getAllMenuResources() {
-    const controller = "/api/mc-iam-manager/Getmenuresources";
-    const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
-    console.log("getAllMenuResources response", response);
-    return response.data.responseData;
-}
-
+// 사용자에게 할당된 메뉴 리스트
 export async function getAllAvailableMenus() {
     const controller = "/api/mc-iam-manager/GetAllAvailableMenus";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
@@ -22,6 +16,7 @@ export async function getAllAvailableMenus() {
     return response.data.responseData;
 }
 
+// 역할에 매핑된 메뉴 리소스 조회
 export async function getMappedMenusByRoleList(roleId) {
     const controller = "/api/mc-iam-manager/Getmappedmenusbyrolelist";
     const data = {
@@ -38,6 +33,7 @@ export async function getMappedMenusByRoleList(roleId) {
     return response.data.responseData;
 }
 
+// 모든 메뉴 리소스 조회
 export async function getMenusResources() {
     const controller = "/api/mc-iam-manager/Getmenuresources";
 
@@ -45,5 +41,35 @@ export async function getMenusResources() {
         controller
     );
     console.log("getMenusResources response", response);
+    return response.data.responseData;
+}
+
+// 역할 생성
+//TODO
+export async function createRole(role) {
+    const controller = "/api/mc-iam-manager/Createrole";
+    const data = {
+        Request: {
+            name: role.name,
+            description: role.description,
+            roleTypes: role.roleTypes || [],
+            cspRoles: role.cspRoles || []
+        }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    console.log("createRole response", response);
+    return response.data.responseData;
+}
+
+// 역할별 CSP 리스트 조회
+export async function getCSPRoleList(roleId) {
+    const controller = "/api/mc-iam-manager/Getrolescsproles";
+    const data = {
+        pathParams: {
+            "roleId": roleId.toString()
+        }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    console.log("getCSPRoleList response", response);
     return response.data.responseData;
 }
