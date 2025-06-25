@@ -62,7 +62,7 @@ export async function createRole(role) {
 }
 
 // 역할별 CSP 리스트 조회
-export async function getCSPRoleList(roleId) {
+export async function getCSPRoleListByRoleId(roleId) {
     const controller = "/api/mc-iam-manager/Getrolescsproles";
     const data = {
         pathParams: {

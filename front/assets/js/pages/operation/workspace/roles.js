@@ -28,7 +28,6 @@ async function initRoles() {
     // 2. 역할 목록 가져오기
     console.log("역할 목록 가져오기 시작");
     const roleList = await getRoleList();
-    console.log('가져온 역할 목록:', roleList);
 
     // 3. 테이블 초기화 및 데이터 설정
     console.log("테이블 초기화 시작");
@@ -167,9 +166,7 @@ async function initRoles() {
 // roles_api 호출
 async function getRoleList() {
   try {
-    console.log("getRoleList");
     const roleList = await webconsolejs["common/api/services/roles_api"].getRoleList();
-    console.log('roleList:', roleList);
     return roleList;
   } catch (error) {
     console.error("Error fetching role list:", error);
@@ -181,7 +178,6 @@ async function getAllMenuResources() {
   try {
     // 로컬 스토리지에서 메뉴 데이터 가져오기
     const menuData = webconsolejs["common/storage/localstorage"].getMenuLocalStorage();
-    console.log("로컬 스토리지에서 가져온 메뉴 데이터:", menuData);
     return { responseData: menuData };
   } catch (error) {
     console.error('Error fetching menuList from localStorage:', error);
@@ -194,95 +190,6 @@ var currentClickedRoleId = "";
 var rolesTable;
 var platformMenuTable;
 var cspRoleMappingTable;
-
-// 역할별 메뉴 권한 정의
-const rolePermissions = {
-  "1": {  // admin
-    workspaces: {
-      projects: { view: true, edit: true },
-      members: { view: true, edit: true },
-      roles: { view: true, edit: true },
-      projectboard: { view: true, edit: true }
-    },
-    workloads: {
-      mciworkloads: { view: true, edit: true },
-      pmkworkloads: { view: true, edit: true }
-    },
-    monitorings: {
-      mcismonitoring: { view: true, edit: true },
-      "3rdpartymonitoring": { view: true, edit: true },
-      monitoringconfig: { view: true, edit: true }
-    }
-  },
-  "2": {  // operator
-    workspaces: {
-      projects: { view: true, edit: true },
-      members: { view: true, edit: true },
-      roles: { view: true, edit: false },
-      projectboard: { view: true, edit: true }
-    },
-    workloads: {
-      mciworkloads: { view: true, edit: true },
-      pmkworkloads: { view: true, edit: true }
-    },
-    monitorings: {
-      mcismonitoring: { view: true, edit: true },
-      "3rdpartymonitoring": { view: true, edit: true },
-      monitoringconfig: { view: true, edit: true }
-    }
-  },
-  "3": {  // viewer
-    workspaces: {
-      projects: { view: true, edit: false },
-      members: { view: true, edit: false },
-      roles: { view: true, edit: false },
-      projectboard: { view: true, edit: false }
-    },
-    workloads: {
-      mciworkloads: { view: true, edit: false },
-      pmkworkloads: { view: true, edit: false }
-    },
-    monitorings: {
-      mcismonitoring: { view: true, edit: false },
-      "3rdpartymonitoring": { view: true, edit: false },
-      monitoringconfig: { view: true, edit: false }
-    }
-  },
-  "4": {  // billadmin
-    workspaces: {
-      projects: { view: true, edit: false },
-      members: { view: true, edit: false },
-      roles: { view: true, edit: false },
-      projectboard: { view: true, edit: false }
-    },
-    workloads: {
-      mciworkloads: { view: true, edit: false },
-      pmkworkloads: { view: true, edit: false }
-    },
-    monitorings: {
-      mcismonitoring: { view: true, edit: false },
-      "3rdpartymonitoring": { view: true, edit: false },
-      monitoringconfig: { view: true, edit: false }
-    }
-  },
-  "5": {  // billviewer
-    workspaces: {
-      projects: { view: true, edit: false },
-      members: { view: true, edit: false },
-      roles: { view: true, edit: false },
-      projectboard: { view: true, edit: false }
-    },
-    workloads: {
-      mciworkloads: { view: true, edit: false },
-      pmkworkloads: { view: true, edit: false }
-    },
-    monitorings: {
-      mcismonitoring: { view: true, edit: false },
-      "3rdpartymonitoring": { view: true, edit: false },
-      monitoringconfig: { view: true, edit: false }
-    }
-  }
-};
 
 // DOM 요소 캐싱
 const DOM = {
@@ -441,7 +348,6 @@ function processMenuNodeForCreate(menu, allMenus, parentId, level) {
 async function initPlatformMenuTree() {
   try {
     const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
-    console.log('Platform 메뉴 트리 API 응답:', response);
 
     if (response) {
       const treeData = convertToJstreeFormat(response);
@@ -501,7 +407,6 @@ async function initPlatformMenuTree() {
       $("#platform-menu-tree").off('click.jstree check_node.jstree uncheck_node.jstree select_node.jstree deselect_node.jstree');
       
       $("#platform-menu-tree").on('click.jstree', function (e, data) {
-        console.log("View 모드 트리 클릭 차단됨");
         e.preventDefault();
         e.stopPropagation();
         return false;
@@ -519,12 +424,10 @@ async function initPlatformMenuCreateTree() {
   try {
     console.log("Create Platform 메뉴 트리 초기화 시작");
     const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
-    console.log("getMenusResources 응답:", response);
 
     // 응답 구조 고정
     let menuData = response;
 
-    console.log("처리된 메뉴 데이터:", menuData);
 
     if (menuData) {
       const treeData = convertToJstreeFormatForCreate(menuData);
@@ -905,13 +808,11 @@ async function updateMenuPermissions(roleId) {
     
     // 트리가 없으면 생성 (지연 초기화)
     if (!$("#platform-menu-tree").jstree(true)) {
-      console.log("Platform 메뉴 트리 생성 중...");
       await initPlatformMenuTree();
     }
     
     // getMappedMenusByRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
-    console.log("getMappedMenusByRoleList 응답:", response);
     
     if (!response) {
       console.error("메뉴 권한 데이터를 가져올 수 없습니다.");
@@ -971,9 +872,8 @@ async function updateCspRoleMapping(roleId) {
       await initCspRoleMappingTable();
     }
     
-    // getCSPRoleList API 호출
-    const response = await webconsolejs["common/api/services/roles_api"].getCSPRoleList(roleId);
-    console.log("getCSPRoleList 응답:", response);
+    // getCSPRoleListByRoleId API 호출
+    const response = await webconsolejs["common/api/services/roles_api"].getCSPRoleListByRoleId(roleId);
     
     if (!response || !response.cspRoles || !Array.isArray(response.cspRoles)) {
       console.error("CSP 역할 매핑 데이터를 가져올 수 없습니다.");
