@@ -743,9 +743,26 @@ function setupEventListeners() {
 
   // Add 버튼 클릭 이벤트
   const addButton = document.querySelector('a[href="#create_role"]');
+  
   if (addButton) {
     addButton.addEventListener("click", function (e) {
       e.preventDefault();
+
+      // 현재 선택된 행이 있다면 선택 해제 (항상 먼저 실행)
+      if (currentClickedRoleId) {
+        // Tabulator에서 선택된 행 해제
+        if (rolesTable) {
+          rolesTable.deselectRow();
+          
+          // 모든 행의 선택 상태를 명시적으로 해제
+          const rows = rolesTable.getRows();
+          rows.forEach((row) => {
+            row.deselect();
+          });
+        }
+        
+        currentClickedRoleId = "";
+      }
 
       // create-mode-cards가 이미 펼쳐진 상태인지 확인 (className으로도 확인)
       const isCreateModeVisible = DOM.createModeCards && (
@@ -765,12 +782,6 @@ function setupEventListeners() {
           DOM.createModeCards.classList.remove('show');
         }
         return;
-      }
-
-      // 현재 선택된 행이 있다면 선택 해제
-      if (currentClickedRoleId) {
-        rolesTable.deselectRow();
-        currentClickedRoleId = "";
       }
 
       // 모든 카드 닫기
