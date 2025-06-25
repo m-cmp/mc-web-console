@@ -797,8 +797,17 @@ function setupEventListeners() {
       if (DOM.createModeCards) {
         DOM.createModeCards.classList.remove('show');
       }
+      
+      // Create Role 폼 초기화
+      clearCreateRoleForm();
     });
   }
+
+  // CSP Role Mapping 폼 초기화
+  initCspRoleMappingForm();
+  
+  // Save Role 이벤트 리스너 설정
+  setupSaveRoleEventListener();
 }
 
 // 메뉴 권한 업데이트 함수
@@ -1022,5 +1031,154 @@ function initCspRoleMappingTable() {
       reject(error);
     }
   });
+}
+
+// CSP Role Mapping 관련 변수
+let selectedCspProvider = '';
+let selectedCspProtocol = '';
+
+// CSP Role Mapping 폼 초기화
+function initCspRoleMappingForm() {
+  console.log("CSP Role Mapping 폼 초기화");
+  
+  // CSP Provider 선택 이벤트
+  const cspProviderSelect = document.getElementById('csp-provider-select');
+  if (cspProviderSelect) {
+    cspProviderSelect.addEventListener('change', function() {
+      selectedCspProvider = this.value;
+      console.log('CSP Provider 선택됨:', selectedCspProvider);
+    });
+  }
+  
+  // Protocol 선택 이벤트
+  const cspProtocolSelect = document.getElementById('csp-protocol-select');
+  if (cspProtocolSelect) {
+    cspProtocolSelect.addEventListener('change', function() {
+      selectedCspProtocol = this.value;
+      console.log('Protocol 선택됨:', selectedCspProtocol);
+    });
+  }
+}
+
+// CSP 선택 정보 반환 (저장 시 사용)
+function getCspSelection() {
+  return {
+    cspProvider: selectedCspProvider,
+    cspProtocol: selectedCspProtocol
+  };
+}
+
+// CSP 선택 초기화
+function clearCspSelection() {
+  selectedCspProvider = '';
+  selectedCspProtocol = '';
+  
+  const cspProviderSelect = document.getElementById('csp-provider-select');
+  const cspProtocolSelect = document.getElementById('csp-protocol-select');
+  
+  if (cspProviderSelect) cspProviderSelect.value = '';
+  if (cspProtocolSelect) cspProtocolSelect.value = '';
+}
+
+// Save Role 버튼 이벤트 리스너 수정
+function setupSaveRoleEventListener() {
+  const saveButton = document.getElementById("save-create-role-btn");
+  if (saveButton) {
+    saveButton.addEventListener("click", async function() {
+      await saveRole();
+    });
+  }
+}
+
+// 역할 저장 함수
+async function saveRole() {
+  try {
+    const roleName = document.getElementById('role-name-input').value;
+    const roleDescription = document.getElementById('role-description-input').value;
+    
+    // 필수 필드 검증
+    if (!roleName.trim()) {
+      alert('Role Name은 필수 입력 항목입니다.');
+      return;
+    }
+    
+    // Platform 권한 가져오기
+    const platformPermissions = getPlatformPermissions();
+    
+    // Workspace 권한 가져오기
+    const workspaceEnabled = document.getElementById('workspace-toggle-create').checked;
+    
+    // CSP 선택 가져오기
+    const cspSelection = getCspSelection();
+    
+    // 역할 타입 결정
+    const roleTypes = [];
+    if (platformPermissions.length > 0) roleTypes.push('platform');
+    if (workspaceEnabled) roleTypes.push('workspace');
+    if (cspSelection.cspProvider && cspSelection.cspProtocol) roleTypes.push('csp');
+    
+    // 역할 생성 데이터
+    const roleData = {
+      name: roleName,
+      description: roleDescription,
+      roleTypes: roleTypes,
+      platformPermissions: platformPermissions,
+      workspaceEnabled: workspaceEnabled,
+      cspSelection: cspSelection
+    };
+    
+    console.log('저장할 역할 데이터:', roleData);
+    
+    // API 호출
+    const response = await webconsolejs["common/api/services/roles_api"].createRole(roleData);
+    
+    if (response) {
+      alert('역할이 성공적으로 생성되었습니다.');
+      
+      // 폼 초기화
+      clearCreateRoleForm();
+      
+      // create-mode-cards 숨기기
+      if (DOM.createModeCards) {
+        DOM.createModeCards.classList.remove('show');
+      }
+      
+      // 역할 목록 새로고침
+      await initRoles();
+    } else {
+      alert('역할 생성에 실패했습니다.');
+    }
+    
+  } catch (error) {
+    console.error('역할 저장 중 오류 발생:', error);
+    alert('역할 저장 중 오류가 발생했습니다.');
+  }
+}
+
+// Platform 권한 가져오기
+function getPlatformPermissions() {
+  const tree = $('#platform-menu-create-tree').jstree(true);
+  if (!tree) return [];
+  
+  const checkedNodes = tree.get_checked();
+  return checkedNodes.filter(nodeId => nodeId !== '#');
+}
+
+// Create Role 폼 초기화
+function clearCreateRoleForm() {
+  document.getElementById('role-name-input').value = '';
+  document.getElementById('role-description-input').value = '';
+  
+  // Platform 트리 초기화
+  const tree = $('#platform-menu-create-tree').jstree(true);
+  if (tree) {
+    tree.uncheck_all();
+  }
+  
+  // Workspace 토글 초기화
+  document.getElementById('workspace-toggle-create').checked = false;
+  
+  // CSP 선택 초기화
+  clearCspSelection();
 }
 
