@@ -56,90 +56,103 @@
           <!-- == V I E W == 모드 카드들 -->
           <div id="view-mode-cards" class="collapse bg-secondary-lt">
             <!-- 배경 적용 카드 -->
-            <div class="card col-md-11 mx-auto">
-              <!-- Role Detail 카드 (신규) -->
+            
+              <!-- Role Detail 카드 -->
               <div class="card" id="role-detail-card">
                 <div class="card-header">
-                  <h3 class="card-title">Role Detail</h3>
-                </div>
-                <div class="card-body">
-                  <!-- TODO: Role 상세 정보 필드들 -->
-                  <p>
-                    <strong>Name:</strong>
-                    <span id="role-detail-name-view"></span>
-                  </p>
-                  <p>
-                    <strong>Description:</strong>
-                    <span id="role-detail-desc-view"></span>
-                  </p>
-                </div>
-              </div>
-
-              <!-- Platform (기존, 래퍼 안으로 이동) -->
-              <div class="card" id="platform-menu">
-                <div class="card-header">
                   <h3 class="card-title">
-                    Platform
-                    <span id="platform-menu-status" class="ms-2" style="display: none;">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #206bc4;">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                        <path d="M5 12l5 5l10 -10"></path>
-                      </svg>
-                      <small class="text-muted">Menu permissions available</small>
-                    </span>
+                    Role Detail<span id="role-detail-text" class="text-info" value=""> </span>
                   </h3>
                 </div>
-                <div class="card-body collapse" id="platform-menu-body">
-                  <div
-                    id="platform-menu-tree"
-                    style="
-                      background-color: #f8f9fa;
-                      border: 1px solid #e9ecef;
-                      border-radius: 4px;
-                      padding: 10px;
-                      max-height: 300px;
-                      overflow-y: auto;
-                    "
-                  ></div>
-                </div>
-              </div>
-
-              <!-- Workspace (기존, 래퍼 안으로 이동) -->
-              <div class="card" id="workspace-menu">
-                <div class="card-header">
-                  <h3 class="card-title">Workspace</h3>
-                </div>
-                <div class="card-body collapse" id="workspace-menu-body">
-                  <div class="row align-items-center">
-                    <div class="col-auto me-3">
-                      <label class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="workspace-toggle-view" disabled>
-                        <span class="form-check-label"></span>
-                      </label>
+                <div class="card-body">
+                  <!-- Role 기본 정보 -->
+                  <div class="row p-4 mb-4" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <div class="datagrid">
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">Name</div>
+                        <div class="datagrid-content" id="role-detail-name-view"></div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">Description</div>
+                        <div class="datagrid-content" id="role-detail-desc-view"></div>
+                      </div>
+                      <div class="datagrid-item">
+                        <div class="datagrid-title">Role Types</div>
+                        <div class="datagrid-content" id="role-detail-types-view"></div>
+                      </div>
                     </div>
-                    <div class="col">
-                      <div class="form-label text-primary">Workspace Access</div>
-                      <div class="text-muted">Enable workspace functionality for this role</div>
+                  </div>
+                  
+                  <!-- 섹션 구분선 -->
+                  <div class="border-bottom mb-4"></div>
+                  
+                  <!-- Platform 카드 -->
+                  <div class="card mb-3" id="platform-menu" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #f8f9fa;">
+                      <h3 class="card-title">
+                        Platform
+                        <span id="platform-menu-status" class="ms-2" style="display: none;">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #206bc4;">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M5 12l5 5l10 -10"></path>
+                          </svg>
+                          <small class="text-muted">Menu permissions available</small>
+                        </span>
+                      </h3>
+                    </div>
+                    <div class="card-body collapse" id="platform-menu-body">
+                      <div
+                        id="platform-menu-tree"
+                        style="
+                          background-color: #f8f9fa;
+                          border: 1px solid #e9ecef;
+                          border-radius: 4px;
+                          padding: 10px;
+                          max-height: 300px;
+                          overflow-y: auto;
+                        "
+                      ></div>
+                    </div>
+                  </div>
+
+                  <!-- Workspace 카드 -->
+                  <div class="card mb-3" id="workspace-menu" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #f8f9fa;">
+                      <h3 class="card-title">Workspace</h3>
+                    </div>
+                    <div class="card-body collapse" id="workspace-menu-body">
+                      <div class="row align-items-center">
+                        <div class="col-auto me-3">
+                          <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="workspace-toggle-view" disabled>
+                            <span class="form-check-label"></span>
+                          </label>
+                        </div>
+                        <div class="col">
+                          <div class="form-label text-primary">Workspace Access</div>
+                          <div class="text-muted">Enable workspace functionality for this role</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- CSP Role Mapping 카드 -->
+                  <div class="card mb-3" id="csp-role-mapping" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #f8f9fa;">
+                      <h3 class="card-title">
+                        CSP Role Mapping
+                        <span id="csp-role-mapping-rolename" class="ms-2" style="display: none; color: #87CEEB; font-weight: normal;">
+                          [<span id="csp-role-mapping-rolename-text"></span>]
+                        </span>
+                      </h3>
+                    </div>
+                    <div class="card-body collapse" id="csp-role-mapping-body">
+                      <div id="csp-role-mapping-table"></div>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <!-- CSP Role Mapping (기존, 래퍼 안으로 이동) -->
-              <div class="card" id="csp-role-mapping">
-                <div class="card-header">
-                  <h3 class="card-title">
-                    CSP Role Mapping
-                    <span id="csp-role-mapping-rolename" class="ms-2" style="display: none; color: #87CEEB; font-weight: normal;">
-                      [<span id="csp-role-mapping-rolename-text"></span>]
-                    </span>
-                  </h3>
-                </div>
-                <div class="card-body collapse" id="csp-role-mapping-body">
-                  <div id="csp-role-mapping-table"></div>
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           <!-- == C R E A T E == 모드 카드들 -->
@@ -179,8 +192,8 @@
               </div>
 
               <!-- Platform (Create) -->
-              <div class="card" id="platform-menu-create">
-                <div class="card-header">
+              <div class="card mb-3" id="platform-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                <div class="card-header" style="background-color: #f8f9fa;">
                   <h3 class="card-title">Platform</h3>
                 </div>
                 <div class="card-body">
@@ -200,8 +213,8 @@
               </div>
 
               <!-- Workspace (Create) -->
-              <div class="card" id="workspace-menu-create">
-                <div class="card-header">
+              <div class="card mb-3" id="workspace-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                <div class="card-header" style="background-color: #f8f9fa;">
                   <h3 class="card-title">Workspace</h3>
                 </div>
                 <div class="card-body">
@@ -221,8 +234,8 @@
               </div>
 
               <!-- CSP Role Mapping (Create) -->
-              <div class="card" id="csp-role-mapping-create">
-                <div class="card-header">
+              <div class="card mb-3" id="csp-role-mapping-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                <div class="card-header" style="background-color: #f8f9fa;">
                   <h3 class="card-title">CSP Role Mapping</h3>
                 </div>
                 <div class="card-body">

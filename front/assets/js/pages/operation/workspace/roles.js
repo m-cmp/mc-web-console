@@ -211,6 +211,22 @@ function toggleCards(showPlatform = false, showWorkspace = false, showCsp = fals
   if (DOM.cspRoleMappingBody) {
     DOM.cspRoleMappingBody.classList.toggle('show', showCsp);
   }
+  
+  // Role Types 정보 업데이트
+  updateRoleTypesDisplay(showPlatform, showWorkspace, showCsp);
+}
+
+// Role Types 표시 업데이트
+function updateRoleTypesDisplay(hasPlatform = false, hasWorkspace = false, hasCsp = false) {
+  const roleTypesElement = document.getElementById('role-detail-types-view');
+  if (roleTypesElement) {
+    const types = [];
+    if (hasPlatform) types.push('Platform');
+    if (hasWorkspace) types.push('Workspace');
+    if (hasCsp) types.push('CSP');
+    
+    roleTypesElement.textContent = types.length > 0 ? types.join(', ') : 'None';
+  }
 }
 
 function closeCreateRoleCard() {
@@ -641,6 +657,9 @@ function initRolesTable() {
 
           toggleCards(hasPlatform, hasWorkspace, hasCsp);
           
+          // Role Types 업데이트
+          updateRoleTypesDisplay(hasPlatform, hasWorkspace, hasCsp);
+          
           // Workspace 토글 상태 업데이트
           const workspaceToggleView = document.getElementById("workspace-toggle-view");
           if (workspaceToggleView) {
@@ -654,6 +673,12 @@ function initRolesTable() {
             if (cspRoleNameElement && cspRoleNameTextElement) {
               cspRoleNameTextElement.textContent = rowData.name || "";
               cspRoleNameElement.style.display = 'inline';
+            }
+          } else {
+            // CSP 권한이 없으면 역할 이름 숨기기
+            const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
+            if (cspRoleNameElement) {
+              cspRoleNameElement.style.display = 'none';
             }
           }
           
