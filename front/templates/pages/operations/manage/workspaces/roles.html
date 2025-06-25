@@ -226,18 +226,30 @@
                   <h3 class="card-title">CSP Role Mapping</h3>
                 </div>
                 <div class="card-body">
-                  <div
-                    id="csp-role-mapping-create-tree"
-                    style="
-                      background-color: #f8f9fa;
-                      border: 1px solid #e9ecef;
-                      border-radius: 4px;
-                      padding: 10px;
-                      max-height: 300px;
-                      overflow-y: auto;
-                    "
-                  ></div>
-                  <!-- Create용 트리 -->
+                  <form id="csp-role-mapping-form">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">CSP Provider</label>
+                          <select class="form-select" id="csp-provider-select" name="csp-provider" required>
+                            <option value="">Select CSP Provider</option>
+                            <option value="aws">AWS</option>
+                            <option value="gcp">GCP</option>
+                            <option value="azure">Azure</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">Protocol</label>
+                          <select class="form-select" id="csp-protocol-select" name="csp-protocol" required>
+                            <option value="">Select Protocol</option>
+                            <option value="oidc">OIDC</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
                 </div>
               </div>
 

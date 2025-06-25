@@ -465,7 +465,7 @@ async function initPlatformMenuCreateTree() {
         
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-create-tree').on('click.jstree', function (e, data) {
-          if (data.event.target.classList.contains('jstree-ocl')) {
+          if (data && data.event && data.event.target && data.event.target.classList.contains('jstree-ocl')) {
             e.preventDefault();
             e.stopPropagation();
             return false;
