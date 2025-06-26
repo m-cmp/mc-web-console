@@ -622,10 +622,10 @@ function initRolesTable() {
             statusElement.style.display = 'none';
           }
           
-          // CSP Role Mapping 역할 이름 숨기기
-          const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
-          if (cspRoleNameElement) {
-            cspRoleNameElement.style.display = 'none';
+          // Role Detail 제목에서 역할 이름 숨기기
+          const roleDetailRolenameElement = document.getElementById('role-detail-rolename');
+          if (roleDetailRolenameElement) {
+            roleDetailRolenameElement.style.display = 'none';
           }
         } else {
           // 다른 행을 클릭한 경우
@@ -650,6 +650,14 @@ function initRolesTable() {
             descElement.textContent = rowData.description || "";
           }
           
+          // Role Detail 제목에 역할 이름 표시
+          const roleDetailRolenameElement = document.getElementById('role-detail-rolename');
+          const roleDetailRolenameTextElement = document.getElementById('role-detail-rolename-text');
+          if (roleDetailRolenameElement && roleDetailRolenameTextElement) {
+            roleDetailRolenameTextElement.textContent = rowData.name || "";
+            roleDetailRolenameElement.style.display = 'inline';
+          }
+          
           const roleSubs = rowData.role_subs || [];
           const hasPlatform = roleSubs.some(sub => sub.role_type === "platform");
           const hasWorkspace = roleSubs.some(sub => sub.role_type === "workspace");
@@ -664,22 +672,6 @@ function initRolesTable() {
           const workspaceToggleView = document.getElementById("workspace-toggle-view");
           if (workspaceToggleView) {
             workspaceToggleView.checked = hasWorkspace;
-          }
-          
-          // CSP Role Mapping 역할 이름 표시
-          if (hasCsp) {
-            const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
-            const cspRoleNameTextElement = document.getElementById('csp-role-mapping-rolename-text');
-            if (cspRoleNameElement && cspRoleNameTextElement) {
-              cspRoleNameTextElement.textContent = rowData.name || "";
-              cspRoleNameElement.style.display = 'inline';
-            }
-          } else {
-            // CSP 권한이 없으면 역할 이름 숨기기
-            const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
-            if (cspRoleNameElement) {
-              cspRoleNameElement.style.display = 'none';
-            }
           }
           
           // 선택된 역할의 메뉴 권한 업데이트
@@ -812,10 +804,10 @@ function setupEventListeners() {
       // 모든 카드 닫기
       toggleCards(false, false, false);
       
-      // CSP Role Mapping 역할 이름 숨기기
-      const cspRoleNameElement = document.getElementById('csp-role-mapping-rolename');
-      if (cspRoleNameElement) {
-        cspRoleNameElement.style.display = 'none';
+      // Role Detail 제목에서 역할 이름 숨기기
+      const roleDetailRolenameElement = document.getElementById('role-detail-rolename');
+      if (roleDetailRolenameElement) {
+        roleDetailRolenameElement.style.display = 'none';
       }
 
       // create-mode-cards 보이기

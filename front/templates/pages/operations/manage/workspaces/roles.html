@@ -61,7 +61,9 @@
               <div class="card" id="role-detail-card">
                 <div class="card-header">
                   <h3 class="card-title">
-                    Role Detail<span id="role-detail-text" class="text-info" value=""> </span>
+                    Role Detail<span id="role-detail-rolename" class="ms-2" style="display: none; color: #87CEEB; font-weight: normal;">
+                      [<span id="role-detail-rolename-text"></span>]
+                    </span>
                   </h3>
                 </div>
                 <div class="card-body">
@@ -139,12 +141,7 @@
                   <!-- CSP Role Mapping 카드 -->
                   <div class="card mb-3" id="csp-role-mapping" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
                     <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">
-                        CSP Role Mapping
-                        <span id="csp-role-mapping-rolename" class="ms-2" style="display: none; color: #87CEEB; font-weight: normal;">
-                          [<span id="csp-role-mapping-rolename-text"></span>]
-                        </span>
-                      </h3>
+                      <h3 class="card-title">CSP Role Mapping</h3>
                     </div>
                     <div class="card-body collapse" id="csp-role-mapping-body">
                       <div id="csp-role-mapping-table"></div>
