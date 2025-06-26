@@ -53,6 +53,7 @@ export async function createRole(role) {
             name: role.name,
             description: role.description,
             roleTypes: role.roleTypes || [],
+            menuIds: role.menuIds || [],
             cspRoles: role.cspRoles || []
         }
     }
