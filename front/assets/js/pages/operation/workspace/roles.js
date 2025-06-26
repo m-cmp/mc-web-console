@@ -1140,12 +1140,15 @@ async function saveRole() {
     
     // Platform 권한 가져오기
     const platformPermissions = getPlatformPermissions();
+    console.log('Platform 권한 데이터:', platformPermissions);
     
     // Workspace 권한 가져오기
     const workspaceEnabled = document.getElementById('workspace-toggle-create').checked;
+    console.log('Workspace 권한:', workspaceEnabled);
     
     // CSP 선택 가져오기
     const cspSelection = getCspSelection();
+    console.log('CSP 선택:', cspSelection);
     
     // 역할 타입 결정
     const roleTypes = [];
@@ -1158,9 +1161,15 @@ async function saveRole() {
       name: roleName,
       description: roleDescription,
       roleTypes: roleTypes,
-      platformPermissions: platformPermissions,
-      workspaceEnabled: workspaceEnabled,
-      cspSelection: cspSelection
+      menuIds: platformPermissions,
+      cspRoles: cspSelection.cspProvider && cspSelection.cspProtocol ? [{
+        roleName: roleName,
+        cspType: cspSelection.cspProvider,
+        idpIdentifier: "", // CSP 설정에서 가져와야 할 수 있음
+        iamIdentifier: "", // CSP 설정에서 가져와야 할 수 있음
+        iamRoleId: roleName,
+        tags: [{"key": "mciam-role", "value": "csp-role"}]
+      }] : []
     };
     
     console.log('저장할 역할 데이터:', roleData);
@@ -1193,11 +1202,18 @@ async function saveRole() {
 
 // Platform 권한 가져오기
 function getPlatformPermissions() {
+  
   const tree = $('#platform-menu-create-tree').jstree(true);
-  if (!tree) return [];
+  if (!tree) {
+    console.log("Platform 메뉴 트리가 초기화되지 않음");
+    return [];
+  }
   
   const checkedNodes = tree.get_checked();
-  return checkedNodes.filter(nodeId => nodeId !== '#');
+  
+  const filteredNodes = checkedNodes.filter(nodeId => nodeId !== '#');
+  
+  return filteredNodes;
 }
 
 // Create Role 폼 초기화
