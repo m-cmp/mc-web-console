@@ -61,7 +61,7 @@
               <div class="card" id="role-detail-card">
                 <div class="card-header">
                   <h3 class="card-title">
-                    Role Detail<span id="role-detail-rolename" class="ms-2" style="display: none; color: #87CEEB; font-weight: normal;">
+                    Role Detail<span id="role-detail-rolename" class="ms-2 text-primary" style="display: none; font-weight: normal;">
                       [<span id="role-detail-rolename-text"></span>]
                     </span>
                   </h3>
@@ -80,7 +80,8 @@
                       </div>
                       <div class="datagrid-item">
                         <div class="datagrid-title">Role Types</div>
-                        <div class="datagrid-content" id="role-detail-types-view"></div>
+                        <div class="datagrid-content" id="role-detail-types-view" 
+                             style="word-wrap: break-word; white-space: normal; min-height: 20px;"></div>
                       </div>
                     </div>
                   </div>
@@ -98,7 +99,7 @@
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                             <path d="M5 12l5 5l10 -10"></path>
                           </svg>
-                          <small class="text-muted">Menu permissions available</small>
+                          <small class="text-muted">Menu access available</small>
                         </span>
                       </h3>
                     </div>
@@ -129,6 +130,9 @@
                             <input class="form-check-input" type="checkbox" id="workspace-toggle-view" disabled>
                             <span class="form-check-label"></span>
                           </label>
+                          <div id="workspace-status-view" class="text-center mt-1" style="display: none;">
+                            <small class="text-success">(Enabled)</small>
+                          </div>
                         </div>
                         <div class="col">
                           <div class="form-label text-primary">Workspace Access</div>
@@ -144,7 +148,15 @@
                       <h3 class="card-title">CSP Role Mapping</h3>
                     </div>
                     <div class="card-body collapse" id="csp-role-mapping-body">
+                      <!-- CSP Role Mapping 테이블 -->
                       <div id="csp-role-mapping-table"></div>
+                      
+                      <!-- 빈 상태 메시지 -->
+                      <div id="csp-role-mapping-empty" class="text-center py-4" style="display: none;">
+                        <div class="text-muted">
+                          <div class="text-muted">No CSP roles mapped for this role</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -171,7 +183,7 @@
                           class="form-control"
                           id="role-name-input"
                           name="role-name"
-                          placeholder="Enter role name"
+                          placeholder="Input role name"
                           required
                         />
                       </div>
@@ -181,7 +193,7 @@
                           class="form-control"
                           id="role-description-input"
                           name="role-description"
-                          placeholder="Enter role description"
+                          placeholder="Input role description"
                           rows="3"
                         ></textarea>
                       </div>
@@ -226,7 +238,7 @@
                         </div>
                         <div class="col">
                           <div class="form-label text-primary">Workspace Access</div>
-                          <div class="text-muted">Enable workspace functionality for this role</div>
+                          <div class="text-muted">Toggle to enable workspace access for this role</div>
                         </div>
                       </div>
                     </div>
@@ -283,6 +295,9 @@
     </div>
   </div>
 </div>
+<!-- pageloader -->
+<%= partial("partials/layout/pageloader.html") %>
 
+<!-- javascript -->
 <%= javascriptTag("common/api/services/roles_api.js") %> <%=
 javascriptTag("pages/operation/workspace/roles.js") %>
