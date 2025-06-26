@@ -157,125 +157,129 @@
 
           <!-- == C R E A T E == 모드 카드들 -->
           <div id="create-mode-cards" class="collapse bg-secondary-lt">
-            <!-- 배경 적용 카드 -->
-            <div class="card col-md-11 mx-auto">
-              <!-- Create New Role Card -->
+            
+              <!-- Create New Role 카드 -->
               <div class="card" id="create_role">
                 <div class="card-header">
                   <h3 class="card-title">Create New Role</h3>
                 </div>
                 <div class="card-body">
-                  <form>
-                    <div class="mb-3">
-                      <label class="form-label required">Role Name</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="role-name-input"
-                        name="role-name"
-                        placeholder="Enter role name"
-                        required
-                      />
+                  <!-- Role 기본 정보 -->
+                  <div class="row p-4 mb-4" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <form>
+                      <div class="mb-3">
+                        <label class="form-label required">Role Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="role-name-input"
+                          name="role-name"
+                          placeholder="Enter role name"
+                          required
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea
+                          class="form-control"
+                          id="role-description-input"
+                          name="role-description"
+                          placeholder="Enter role description"
+                          rows="3"
+                        ></textarea>
+                      </div>
+                    </form>
+                  </div>
+                  
+                  <!-- 섹션 구분선 -->
+                  <div class="border-bottom mb-4"></div>
+                  
+                  <!-- Platform 카드 -->
+                  <div class="card mb-3" id="platform-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #f8f9fa;">
+                      <h3 class="card-title">Platform</h3>
                     </div>
-                    <div class="mb-3">
-                      <label class="form-label">Description</label>
-                      <textarea
-                        class="form-control"
-                        id="role-description-input"
-                        name="role-description"
-                        placeholder="Enter role description"
-                        rows="3"
-                      ></textarea>
+                    <div class="card-body">
+                      <div
+                        id="platform-menu-create-tree"
+                        style="
+                          background-color: #f8f9fa;
+                          border: 1px solid #e9ecef;
+                          border-radius: 4px;
+                          padding: 10px;
+                          max-height: 300px;
+                          overflow-y: auto;
+                        "
+                      ></div>
                     </div>
-                  </form>
-                </div>
-              </div>
+                  </div>
 
-              <!-- Platform (Create) -->
-              <div class="card mb-3" id="platform-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                <div class="card-header" style="background-color: #f8f9fa;">
-                  <h3 class="card-title">Platform</h3>
-                </div>
-                <div class="card-body">
-                  <div
-                    id="platform-menu-create-tree"
-                    style="
-                      background-color: #f8f9fa;
-                      border: 1px solid #e9ecef;
-                      border-radius: 4px;
-                      padding: 10px;
-                      max-height: 300px;
-                      overflow-y: auto;
-                    "
-                  ></div>
-                  <!-- Create용 트리 -->
-                </div>
-              </div>
+                  <!-- Workspace 카드 -->
+                  <div class="card mb-3" id="workspace-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #f8f9fa;">
+                      <h3 class="card-title">Workspace</h3>
+                    </div>
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-auto me-3">
+                          <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="workspace-toggle-create">
+                            <span class="form-check-label"></span>
+                          </label>
+                        </div>
+                        <div class="col">
+                          <div class="form-label text-primary">Workspace Access</div>
+                          <div class="text-muted">Enable workspace functionality for this role</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-              <!-- Workspace (Create) -->
-              <div class="card mb-3" id="workspace-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                <div class="card-header" style="background-color: #f8f9fa;">
-                  <h3 class="card-title">Workspace</h3>
-                </div>
-                <div class="card-body">
-                  <div class="row align-items-center">
-                    <div class="col-auto me-3">
-                      <label class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="workspace-toggle-create">
-                        <span class="form-check-label"></span>
-                      </label>
+                  <!-- CSP Role Mapping 카드 -->
+                  <div class="card mb-3" id="csp-role-mapping-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #f8f9fa;">
+                      <h3 class="card-title">CSP Role Mapping</h3>
                     </div>
-                    <div class="col">
-                      <div class="form-label text-primary">Workspace Access</div>
-                      <div class="text-muted">Enable workspace functionality for this role</div>
+                    <div class="card-body">
+                      <form id="csp-role-mapping-form">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label class="form-label required">CSP Provider</label>
+                              <select class="form-select" id="csp-provider-select" name="csp-provider" required>
+                                <option value="">Select CSP Provider</option>
+                                <option value="aws">AWS</option>
+                                <option value="gcp">GCP</option>
+                                <option value="azure">Azure</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label class="form-label required">Protocol</label>
+                              <select class="form-select" id="csp-protocol-select" name="csp-protocol" required>
+                                <option value="">Select Protocol</option>
+                                <option value="oidc">OIDC</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
                     </div>
+                  </div>
+                  
+                  <!-- Save/Cancel 버튼 -->
+                  <div class="d-flex justify-content-end mt-3">
+                    <button class="btn me-2" id="cancel-create-role-btn">
+                      Cancel
+                    </button>
+                    <button class="btn btn-primary" id="save-create-role-btn">
+                      Save Role
+                    </button>
                   </div>
                 </div>
               </div>
-
-              <!-- CSP Role Mapping (Create) -->
-              <div class="card mb-3" id="csp-role-mapping-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                <div class="card-header" style="background-color: #f8f9fa;">
-                  <h3 class="card-title">CSP Role Mapping</h3>
-                </div>
-                <div class="card-body">
-                  <form id="csp-role-mapping-form">
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label required">CSP Provider</label>
-                          <select class="form-select" id="csp-provider-select" name="csp-provider" required>
-                            <option value="">Select CSP Provider</option>
-                            <option value="aws">AWS</option>
-                            <option value="gcp">GCP</option>
-                            <option value="azure">Azure</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label required">Protocol</label>
-                          <select class="form-select" id="csp-protocol-select" name="csp-protocol" required>
-                            <option value="">Select Protocol</option>
-                            <option value="oidc">OIDC</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-
-              <!-- Save/Cancel 버튼 -->
-              <div class="d-flex justify-content-end mt-3">
-                <button class="btn me-2" id="cancel-create-role-btn">
-                  Cancel
-                </button>
-                <button class="btn btn-primary" id="save-create-role-btn">
-                  Save Role
-                </button>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
