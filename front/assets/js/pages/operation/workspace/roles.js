@@ -28,7 +28,16 @@ const DOM = {
   roleNameInput: document.getElementById('role-name-input'),
   roleDescriptionInput: document.getElementById('role-description-input'),
   cspProviderSelect: document.getElementById('csp-provider-select'),
-  cspProtocolSelect: document.getElementById('csp-protocol-select')
+  cspProtocolSelect: document.getElementById('csp-protocol-select'),
+  // 새로운 토글 버튼들 (헤더에 있는 토글들)
+  platformToggleContainer: document.getElementById('platform-toggle-container'),
+  platformToggleView: document.getElementById('platform-toggle-view'),
+  workspaceToggleContainer: document.getElementById('workspace-toggle-container'),
+  workspaceToggleHeader: document.getElementById('workspace-toggle-header'),
+  cspToggleContainer: document.getElementById('csp-toggle-container'),
+  cspToggleView: document.getElementById('csp-toggle-view'),
+  // Workspace 카드 내부의 토글 (기존 것과 구분)
+  workspaceToggleViewInner: document.getElementById('workspace-toggle-view')
 };
 
 // 중앙화된 상태 관리 객체
@@ -50,6 +59,12 @@ const AppState = {
       roles: false,
       permissions: false,
       cspMapping: false
+    },
+    // 카드 토글 상태 관리
+    cardStates: {
+      platform: { visible: false, expanded: false },
+      workspace: { visible: false, expanded: false },
+      csp: { visible: false, expanded: false }
     }
   },
   
@@ -306,6 +321,127 @@ const UIManager = {
     AppState.ui.createMode = false;
   },
 
+  // 카드 토글 상태 초기화
+  initializeCardStates() {
+    AppState.ui.cardStates = {
+      platform: { visible: false, expanded: false },
+      workspace: { visible: false, expanded: false },
+      csp: { visible: false, expanded: false }
+    };
+    // 토글 버튼도 초기화
+    this.resetAllToggles();
+  },
+
+  // 카드 토글 버튼 표시/숨김 설정
+  setCardToggleVisibility(platformVisible, workspaceVisible, cspVisible) {
+    // Platform 토글
+    if (DOM.platformToggleContainer) {
+      DOM.platformToggleContainer.style.display = platformVisible ? 'block' : 'none';
+    }
+    
+    // Workspace 토글
+    if (DOM.workspaceToggleContainer) {
+      DOM.workspaceToggleContainer.style.display = workspaceVisible ? 'block' : 'none';
+    }
+    
+    // CSP 토글
+    if (DOM.cspToggleContainer) {
+      DOM.cspToggleContainer.style.display = cspVisible ? 'block' : 'none';
+    }
+  },
+
+  // 카드 펼침/접힘 처리
+  toggleCard(cardType, expand) {
+    const cardState = AppState.ui.cardStates[cardType];
+    if (!cardState) return;
+
+    cardState.expanded = expand;
+    
+    let cardBody, toggleElement;
+    
+    switch (cardType) {
+      case 'platform':
+        cardBody = DOM.platformMenuBody;
+        toggleElement = DOM.platformToggleView;
+        break;
+      case 'workspace':
+        cardBody = DOM.workspaceMenuBody;
+        toggleElement = DOM.workspaceToggleHeader;
+        break;
+      case 'csp':
+        cardBody = DOM.cspRoleMappingBody;
+        toggleElement = DOM.cspToggleView;
+        break;
+      default:
+        return;
+    }
+    
+    if (cardBody) {
+      if (expand) {
+        cardBody.classList.remove('collapse');
+        cardBody.classList.add('show');
+      } else {
+        cardBody.classList.add('collapse');
+        cardBody.classList.remove('show');
+      }
+    }
+    
+    if (toggleElement) {
+      toggleElement.checked = expand;
+    }
+  },
+
+  // 모든 카드 접기
+  collapseAllCards() {
+    this.toggleCard('platform', false);
+    this.toggleCard('workspace', false);
+    this.toggleCard('csp', false);
+  },
+
+  // 역할 선택 시 카드 상태 설정
+  setupCardStatesForRole(role) {
+    if (!role) {
+      this.initializeCardStates();
+      this.setCardToggleVisibility(false, false, false);
+      this.collapseAllCards();
+      // 모든 토글 버튼을 명시적으로 OFF로 설정
+      this.resetAllToggles();
+      return;
+    }
+
+    const roleSubs = role.role_subs || [];
+    const hasPlatform = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.PLATFORM);
+    const hasWorkspace = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.WORKSPACE);
+    const hasCsp = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.CSP);
+
+    // 카드 상태 업데이트
+    AppState.ui.cardStates.platform = { visible: hasPlatform, expanded: false };
+    AppState.ui.cardStates.workspace = { visible: hasWorkspace, expanded: false };
+    AppState.ui.cardStates.csp = { visible: hasCsp, expanded: false };
+
+    // 토글 버튼 표시/숨김 설정
+    this.setCardToggleVisibility(hasPlatform, hasWorkspace, hasCsp);
+    
+    // 모든 카드 접기
+    this.collapseAllCards();
+    
+    // 모든 토글 버튼을 명시적으로 OFF로 설정
+    this.resetAllToggles();
+  },
+
+  // 모든 토글 버튼을 OFF로 초기화
+  resetAllToggles() {
+    if (DOM.platformToggleView) {
+      DOM.platformToggleView.checked = false;
+    }
+    if (DOM.workspaceToggleHeader) {
+      DOM.workspaceToggleHeader.checked = false;
+    }
+    if (DOM.cspToggleView) {
+      DOM.cspToggleView.checked = false;
+    }
+  },
+
   // 역할 상세 정보 업데이트
   updateRoleDetail(role) {
     if (!role) {
@@ -341,7 +477,7 @@ const UIManager = {
     }
   },
 
-  // 카드 토글
+  // 카드 토글 (기존 함수 - 호환성 유지)
   toggleCards(showPlatform = false, showWorkspace = false, showCsp = false) {
     // Platform 카드
     if (DOM.platformMenuBody) {
@@ -486,7 +622,7 @@ const TableManager = {
         sorter: "string"
       },
       {
-        title: "Platform",
+        title: "Platform access",
         field: "platformYn",
         headerSort: true,
         sorter: "string",
@@ -497,7 +633,7 @@ const TableManager = {
         }
       },
       {
-        title: "Workspace",
+        title: "Workspace access",
         field: "workspaceYn",
         headerSort: true,
         sorter: "string",
@@ -508,7 +644,7 @@ const TableManager = {
         }
       },
       {
-        title: "CSP",
+        title: "CSP Role",
         field: "cspYn",
         headerSort: true,
         sorter: "string",
@@ -544,6 +680,8 @@ const TableManager = {
       updateAppState('ui.viewMode', false);
       UIManager.hideAllModes();
       UIManager.clearRoleDetail();
+      // 카드 상태 초기화
+      UIManager.setupCardStatesForRole(null);
     } else {
       // 다른 행을 클릭한 경우
       AppState.tables.rolesTable.deselectRow();
@@ -554,23 +692,24 @@ const TableManager = {
       updateAppState('ui.viewMode', true);
       updateAppState('ui.createMode', false);
 
+      // 새로운 카드 상태 설정
+      UIManager.setupCardStatesForRole(selectedRole);
+      UIManager.updateRoleDetail(selectedRole);
+      
+      // Role Types 업데이트
       const roleSubs = selectedRole.role_subs || [];
       const hasPlatform = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.PLATFORM);
       const hasWorkspace = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.WORKSPACE);
       const hasCsp = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.CSP);
-
-      UIManager.toggleCards(hasPlatform, hasWorkspace, hasCsp);
-      UIManager.updateRoleDetail(selectedRole);
       
-      // Role Types 업데이트
       updateRoleTypesDisplay(hasPlatform, hasWorkspace, hasCsp);
       
-      // Workspace 토글 상태 업데이트
-      if (DOM.workspaceToggleView) {
-        DOM.workspaceToggleView.checked = hasWorkspace;
+      // Workspace 토글 상태 업데이트 (기존 로직 유지)
+      if (DOM.workspaceToggleViewInner) {
+        DOM.workspaceToggleViewInner.checked = hasWorkspace;
       }
       
-      // Workspace 상태 표시 업데이트
+      // Workspace 상태 표시 업데이트 (기존 로직 유지)
       if (DOM.workspaceStatusView) {
         if (hasWorkspace) {
           DOM.workspaceStatusView.style.display = 'block';
@@ -634,11 +773,14 @@ async function initRoles() {
     // 1. 워크스페이스/프로젝트 초기화
     await initWorkspace();
     
-    // 2. 역할 목록 가져오기
+    // 2. 카드 상태 초기화
+    UIManager.initializeCardStates();
+    
+    // 3. 역할 목록 가져오기
     console.log("역할 목록 가져오기 시작");
     const roleList = await RoleManager.loadRoles();
 
-    // 3. 테이블 초기화 및 데이터 설정
+    // 4. 테이블 초기화 및 데이터 설정
     console.log("테이블 초기화 시작");
     await TableManager.initRolesTable();
 
@@ -652,11 +794,11 @@ async function initRoles() {
       TableManager.setTableData(AppState.tables.rolesTable, dummyData);
     }
 
-    // 4. 메뉴 트리 초기화
+    // 5. 메뉴 트리 초기화
     console.log("메뉴 트리 초기화 시작");
     await initPlatformMenuCreateTree();
 
-    // 5. 이벤트 리스너 설정
+    // 6. 이벤트 리스너 설정
     console.log("이벤트 리스너 설정 시작");
     setupEventListeners();
 
@@ -1192,8 +1334,51 @@ function setupEventListeners() {
     saveButton.addEventListener("click", handleSaveRoleClick);
   }
 
+  // 새로운 카드 토글 버튼 이벤트 리스너
+  setupCardToggleEventListeners();
+
   // CSP Role Mapping 폼 초기화
   initCspRoleMappingForm();
+}
+
+// 카드 토글 버튼 이벤트 리스너 설정
+function setupCardToggleEventListeners() {
+  // Platform 토글
+  if (DOM.platformToggleView) {
+    DOM.platformToggleView.removeEventListener("change", handlePlatformToggle);
+    DOM.platformToggleView.addEventListener("change", handlePlatformToggle);
+  }
+
+  // Workspace 토글
+  if (DOM.workspaceToggleHeader) {
+    DOM.workspaceToggleHeader.removeEventListener("change", handleWorkspaceToggle);
+    DOM.workspaceToggleHeader.addEventListener("change", handleWorkspaceToggle);
+  }
+
+  // CSP 토글
+  if (DOM.cspToggleView) {
+    DOM.cspToggleView.removeEventListener("change", handleCspToggle);
+    DOM.cspToggleView.addEventListener("change", handleCspToggle);
+  }
+}
+
+// 카드 토글 핸들러들
+function handlePlatformToggle(e) {
+  const isChecked = e.target.checked;
+  console.log("Platform 토글 변경:", isChecked);
+  UIManager.toggleCard('platform', isChecked);
+}
+
+function handleWorkspaceToggle(e) {
+  const isChecked = e.target.checked;
+  console.log("Workspace 토글 변경:", isChecked);
+  UIManager.toggleCard('workspace', isChecked);
+}
+
+function handleCspToggle(e) {
+  const isChecked = e.target.checked;
+  console.log("CSP 토글 변경:", isChecked);
+  UIManager.toggleCard('csp', isChecked);
 }
 
 // 핸들러 함수 분리
@@ -1239,6 +1424,8 @@ function handleAddButtonClick(e) {
   }
   // 모든 카드 닫기
   toggleCards(false, false, false);
+  // 카드 상태 초기화
+  UIManager.setupCardStatesForRole(null);
   // Role Detail 제목에서 역할 이름 숨기기
   const roleDetailRolenameElement = DOM.roleDetailRolename;
   if (roleDetailRolenameElement) {
