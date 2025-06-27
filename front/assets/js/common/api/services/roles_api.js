@@ -45,7 +45,6 @@ export async function getMenusResources() {
 }
 
 // 역할 생성
-//TODO
 export async function createRole(role) {
     const controller = "/api/mc-iam-manager/Createrole";
     const data = {
@@ -59,6 +58,18 @@ export async function createRole(role) {
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     console.log("createRole response", response);
+    return response.data.responseData;
+}
+
+export async function deleteRole(roleId) {
+    const controller = "/api/mc-iam-manager/Deleterolebyid";
+    const data = {
+        pathParams: {
+            "roleId": roleId.toString()
+        }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    console.log("deleteRole response", response);
     return response.data.responseData;
 }
 
