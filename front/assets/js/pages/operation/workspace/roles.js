@@ -215,7 +215,7 @@ const RoleManager = {
           throw new Error('역할 생성에 실패했습니다.');
         }
       },
-      '역할 저장'
+      '역할 생성'
     );
   },
 
@@ -223,8 +223,13 @@ const RoleManager = {
   async deleteRole(roleId) {
     return await ErrorHandler.wrapAsync(
       async () => {
-        // 삭제 API 호출 로직
-        Utils.showAlert('역할이 성공적으로 삭제되었습니다.');
+        const response = await webconsolejs["common/api/services/roles_api"].deleteRole(roleId);
+        if (response) {
+          Utils.showAlert('역할이 성공적으로 삭제되었습니다.');
+          return response;
+        } else {
+          throw new Error('역할 삭제에 실패했습니다.');
+        }
       },
       '역할 삭제'
     );
@@ -471,17 +476,20 @@ const TableManager = {
       {
         title: "Role Master ID",
         field: "id",
-        headerSort: false
+        headerSort: true,
+        sorter: "number"
       },
       {
         title: "Role Master Name",
         field: "name",
-        headerSort: false
+        headerSort: true,
+        sorter: "string"
       },
       {
         title: "Platform",
         field: "platformYn",
-        headerSort: false,
+        headerSort: true,
+        sorter: "string",
         formatter: (cell) => {
           const rowData = cell.getRow().getData();
           const roleSubs = rowData.role_subs || [];
@@ -491,7 +499,8 @@ const TableManager = {
       {
         title: "Workspace",
         field: "workspaceYn",
-        headerSort: false,
+        headerSort: true,
+        sorter: "string",
         formatter: (cell) => {
           const rowData = cell.getRow().getData();
           const roleSubs = rowData.role_subs || [];
@@ -501,7 +510,8 @@ const TableManager = {
       {
         title: "CSP",
         field: "cspYn",
-        headerSort: false,
+        headerSort: true,
+        sorter: "string",
         formatter: (cell) => {
           const rowData = cell.getRow().getData();
           const roleSubs = rowData.role_subs || [];
@@ -511,7 +521,8 @@ const TableManager = {
       {
         title: "Description",
         field: "description",
-        headerSort: false,
+        headerSort: true,
+        sorter: "string",
         visible: false
       }
     ];
@@ -1653,7 +1664,7 @@ async function saveRole() {
     
     console.log('저장할 역할 데이터:', roleData);
     
-    // API 호출
+    // API 호출 - ErrorHandler.wrapAsync가 이미 에러를 처리하므로 catch 블록 제거
     const response = await RoleManager.saveRole(roleData);
     
     if (response) {
@@ -1668,7 +1679,8 @@ async function saveRole() {
     }
     
   } catch (error) {
-    ErrorHandler.handle(error, '역할 저장');
+    // ErrorHandler.wrapAsync가 이미 에러를 처리하므로 여기서는 추가 처리하지 않음
+    console.error('역할 저장 중 예상치 못한 오류:', error);
   }
 }
 
