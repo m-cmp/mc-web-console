@@ -28,7 +28,9 @@ const DOM = {
   roleNameInput: document.getElementById('role-name-input'),
   roleDescriptionInput: document.getElementById('role-description-input'),
   cspProviderSelect: document.getElementById('csp-provider-select'),
-  cspProtocolSelect: document.getElementById('csp-protocol-select'),
+  cspRoleNameInput: document.getElementById('csp-role-name-input'),
+  addCspRoleBtn: document.getElementById('add-csp-role-btn'),
+  createCspRoleMappingTable: document.getElementById('create-csp-role-mapping-table'),
   // View-mode 토글 버튼들
   platformToggleContainer: document.getElementById('platform-toggle-container'),
   platformToggleView: document.getElementById('platform-toggle-view'),
@@ -71,7 +73,7 @@ const DOM = {
   cspRoleMappingEditTable: document.getElementById('csp-role-mapping-edit-table'),
   cspRoleMappingEditEmpty: document.getElementById('csp-role-mapping-edit-empty'),
   editCspProviderSelect: document.getElementById('edit-csp-provider-select'),
-  editCspProtocolSelect: document.getElementById('edit-csp-protocol-select'),
+  editCspRoleNameInput: document.getElementById('edit-csp-role-name-input'),
   addCspMappingBtn: document.getElementById('add-csp-mapping-btn'),
   // Edit-mode 버튼들
   saveEditRoleBtn: document.getElementById('save-edit-role-btn'),
@@ -134,15 +136,22 @@ const AppState = {
     workspaceAccess: false,
     cspMapping: {
       provider: '',
-      protocol: ''
+      roleName: ''
     }
+  },
+  
+  // CSP Role Mapping 상태
+  cspRoleMappings: {
+    create: [], // Create 모드에서 추가된 CSP Role 목록
+    edit: []    // Edit 모드에서 추가된 CSP Role 목록
   },
   
   // 테이블 인스턴스들
   tables: {
     rolesTable: null,
     platformMenuTable: null,
-    cspRoleMappingTable: null
+    cspRoleMappingTable: null,
+    createCspRoleMappingTable: null
   }
 };
 
@@ -329,8 +338,13 @@ const RoleManager = {
     const errors = Utils.validateRoleForm(roleData.name, roleData.description);
     
     // CSP 선택 검증
-    if (roleData.cspMapping && roleData.cspMapping.provider && !roleData.cspMapping.protocol) {
-      errors.push('CSP Provider를 선택했다면 Protocol도 선택해야 합니다.');
+    if (roleData.cspSelection && roleData.cspSelection.cspRoles && roleData.cspSelection.cspRoles.length > 0) {
+      // CSP Role이 있으면 검증
+      roleData.cspSelection.cspRoles.forEach((cspRole, index) => {
+        if (!cspRole.csp_type || !cspRole.name) {
+          errors.push(`CSP Role ${index + 1}: CSP Provider와 Role Name이 모두 필요합니다.`);
+        }
+      });
     }
     
     return errors;
@@ -345,7 +359,7 @@ const RoleManager = {
     if (workspaceEnabled) {
       roleTypes.push(CONSTANTS.ROLE_TYPES.WORKSPACE);
     }
-    if (cspSelection && cspSelection.cspProvider && cspSelection.cspProtocol) {
+    if (cspSelection && cspSelection.cspRoles && cspSelection.cspRoles.length > 0) {
       roleTypes.push(CONSTANTS.ROLE_TYPES.CSP);
     }
     return roleTypes;
@@ -519,9 +533,11 @@ const UIManager = {
     if (DOM.editCspProviderSelect) {
       DOM.editCspProviderSelect.value = '';
     }
-    if (DOM.editCspProtocolSelect) {
-      DOM.editCspProtocolSelect.value = '';
+    if (DOM.editCspRoleNameInput) {
+      DOM.editCspRoleNameInput.value = '';
     }
+    selectedEditCspProvider = '';
+    selectedEditCspRoleName = '';
   },
 
   // 카드 토글 상태 초기화
@@ -734,12 +750,18 @@ const UIManager = {
       DOM.workspaceToggleCreateInner.checked = false;
     }
     
-    // CSP 선택 초기화
-    UIManager.clearCspSelection();
-    
-    // Create-mode 카드 상태 초기화
-    UIManager.initializeCreateCardStates();
-    UIManager.collapseAllCreateCards();
+      // CSP 선택 초기화
+  UIManager.clearCspSelection();
+  
+  // CSP Role Mapping 상태 초기화
+  AppState.cspRoleMappings.create = [];
+  if (AppState.tables.createCspRoleMappingTable) {
+    AppState.tables.createCspRoleMappingTable.clearData();
+  }
+  
+  // Create-mode 카드 상태 초기화
+  UIManager.initializeCreateCardStates();
+  UIManager.collapseAllCreateCards();
   },
 
   // CSP 선택 초기화
@@ -747,9 +769,11 @@ const UIManager = {
     if (DOM.cspProviderSelect) {
       DOM.cspProviderSelect.value = '';
     }
-    if (DOM.cspProtocolSelect) {
-      DOM.cspProtocolSelect.value = '';
+    if (DOM.cspRoleNameInput) {
+      DOM.cspRoleNameInput.value = '';
     }
+    selectedCspProvider = '';
+    selectedCspRoleName = '';
   },
 
   // Create-mode 카드 토글 상태 초기화
@@ -1664,7 +1688,20 @@ function setupEventListeners() {
   initCspRoleMappingForm();
   
   // Edit CSP Role Mapping 폼 초기화
-  initEditCspRoleMappingForm();
+  initEditCspRoleMappingForm().catch(error => {
+    console.error('Edit CSP Role Mapping 폼 초기화 실패:', error);
+  });
+  
+  // Role Name 입력 시 CSP Role Name 자동 업데이트
+  const roleNameInput = DOM.roleNameInput;
+  if (roleNameInput) {
+    roleNameInput.addEventListener('input', function() {
+      // CSP 카드가 열려있으면 CSP Role Name 자동 업데이트
+      if (AppState.ui.createCardStates.csp.expanded) {
+        updateCspRoleName();
+      }
+    });
+  }
 }
 
 // 카드 토글 버튼 이벤트 리스너 설정 (View-mode용)
@@ -1743,6 +1780,20 @@ function handleWorkspaceToggleCreate(e) {
 function handleCspToggleCreate(e) {
   const isChecked = e.target.checked;
   console.log("Create CSP 토글 변경:", isChecked);
+  
+  if (isChecked) {
+    // Role Name이 입력되지 않았으면 토글을 비활성화
+    const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
+    if (!roleName || !roleName.trim()) {
+      Utils.showAlert('CSP Role Mapping을 사용하려면 먼저 Role Name을 입력해주세요.');
+      e.target.checked = false;
+      return;
+    }
+    
+    // CSP Role Name 자동 설정
+    updateCspRoleName();
+  }
+  
   UIManager.toggleCreateCard('csp', isChecked);
 }
 
@@ -1774,6 +1825,10 @@ function handleAddButtonClick(e) {
   if (DOM.viewModeCards) {
     DOM.viewModeCards.classList.remove('show');
   }
+  // edit-mode-cards 숨기기 (Edit 모드에서 Add 버튼 클릭 시)
+  if (DOM.editModeCards) {
+    DOM.editModeCards.classList.remove('show');
+  }
   if (isCreateModeVisible) {
     // 이미 펼쳐진 상태라면 닫기 (Cancel 버튼과 동일한 동작)
     if (DOM.createModeCards) {
@@ -1800,6 +1855,7 @@ function handleAddButtonClick(e) {
   }
   updateAppState('ui.createMode', true);
   updateAppState('ui.viewMode', false);
+  updateAppState('ui.editMode', false);
 }
 
 function handleCancelButtonClick(e) {
@@ -2101,9 +2157,10 @@ function initCspRoleMappingTable() {
     }
 
     try {
+      // View 모드: Actions 컬럼 없이 생성
       const cspRoleMappingTable = new Tabulator("#csp-role-mapping-table", {
         data: [],
-        layout: "fitColumns",
+        layout: "fitDataFill",
         height: "300px",
         pagination: true,
         paginationSize: 7,
@@ -2111,10 +2168,10 @@ function initCspRoleMappingTable() {
         reactiveData: true,
         columns: [
           {
-            title: "CSP Type",
+            title: "CSP",
             field: "csp_type",
             headerSort: false,
-            width: 80,
+            width: "40%",
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -2125,64 +2182,7 @@ function initCspRoleMappingTable() {
             title: "Role Name",
             field: "name",
             headerSort: false,
-            width: 120
-          },
-          {
-            title: "IDP Identifier",
-            field: "idp_identifier",
-            headerSort: false,
-            formatter: function (cell) {
-              const value = cell.getValue();
-              if (!value) return "N/A";
-              // 긴 ARN을 줄여서 표시
-              if (value.length > 50) {
-                return value.substring(0, 47) + "...";
-              }
-              return value;
-            },
-            cellClick: function(e, cell) {
-              const value = cell.getValue();
-              if (value && value.length > 50) {
-                alert("IDP Identifier: " + value);
-              }
-            }
-          },
-          {
-            title: "IAM Identifier",
-            field: "iam_identifier",
-            headerSort: false,
-            formatter: function (cell) {
-              const value = cell.getValue();
-              if (!value) return "N/A";
-              // 긴 ARN을 줄여서 표시
-              if (value.length > 50) {
-                return value.substring(0, 47) + "...";
-              }
-              return value;
-            },
-            cellClick: function(e, cell) {
-              const value = cell.getValue();
-              if (value && value.length > 50) {
-                alert("IAM Identifier: " + value);
-              }
-            }
-          },
-          {
-            title: "Auth Method",
-            field: "auth_method",
-            headerSort: false,
-            width: 100,
-            formatter: function (cell) {
-              const authMethod = cell.getValue();
-              if (!authMethod) return "N/A";
-              return authMethod.toUpperCase();
-            }
-          },
-          {
-            title: "ID",
-            field: "id",
-            headerSort: false,
-            visible: false
+            width: "60%"
           }
         ]
       });
@@ -2218,7 +2218,7 @@ function initCspRoleMappingEditTable(roleId) {
     try {
       const cspRoleMappingEditTable = new Tabulator("#csp-role-mapping-edit-table", {
         data: [],
-        layout: "fitColumns",
+        layout: "fitDataFill",
         height: "300px",
         pagination: true,
         paginationSize: 7,
@@ -2226,10 +2226,10 @@ function initCspRoleMappingEditTable(roleId) {
         reactiveData: true,
         columns: [
           {
-            title: "CSP Type",
+            title: "CSP",
             field: "csp_type",
             headerSort: false,
-            width: 80,
+            width: "30%",
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -2240,72 +2240,15 @@ function initCspRoleMappingEditTable(roleId) {
             title: "Role Name",
             field: "name",
             headerSort: false,
-            width: 120
-          },
-          {
-            title: "IDP Identifier",
-            field: "idp_identifier",
-            headerSort: false,
-            formatter: function (cell) {
-              const value = cell.getValue();
-              if (!value) return "N/A";
-              // 긴 ARN을 줄여서 표시
-              if (value.length > 50) {
-                return value.substring(0, 47) + "...";
-              }
-              return value;
-            },
-            cellClick: function(e, cell) {
-              const value = cell.getValue();
-              if (value && value.length > 50) {
-                alert("IDP Identifier: " + value);
-              }
-            }
-          },
-          {
-            title: "IAM Identifier",
-            field: "iam_identifier",
-            headerSort: false,
-            formatter: function (cell) {
-              const value = cell.getValue();
-              if (!value) return "N/A";
-              // 긴 ARN을 줄여서 표시
-              if (value.length > 50) {
-                return value.substring(0, 47) + "...";
-              }
-              return value;
-            },
-            cellClick: function(e, cell) {
-              const value = cell.getValue();
-              if (value && value.length > 50) {
-                alert("IAM Identifier: " + value);
-              }
-            }
-          },
-          {
-            title: "Auth Method",
-            field: "auth_method",
-            headerSort: false,
-            width: 100,
-            formatter: function (cell) {
-              const authMethod = cell.getValue();
-              if (!authMethod) return "N/A";
-              return authMethod.toUpperCase();
-            }
+            width: "50%"
           },
           {
             title: "Actions",
             headerSort: false,
-            width: 80,
+            width: "20%",
             formatter: function (cell) {
               return '<button class="btn btn-sm btn-outline-danger" onclick="deleteCspMapping(' + cell.getRow().getData().id + ')">Delete</button>';
             }
-          },
-          {
-            title: "ID",
-            field: "id",
-            headerSort: false,
-            visible: false
           }
         ]
       });
@@ -2443,14 +2386,17 @@ async function loadEditCspRoleMapping(roleId, table) {
 
 // CSP Role Mapping 관련 변수
 let selectedCspProvider = '';
-let selectedCspProtocol = '';
+let selectedCspRoleName = '';
 
 // Edit CSP Role Mapping 관련 변수
 let selectedEditCspProvider = '';
-let selectedEditCspProtocol = '';
+let selectedEditCspRoleName = '';
 
 // CSP Role Mapping 폼 초기화
-function initCspRoleMappingForm() {
+async function initCspRoleMappingForm() {
+  // CSP Provider 드롭다운 초기화
+  await initCspProviderDropdown();
+  
   // CSP Provider 선택 이벤트
   const cspProviderSelect = DOM.cspProviderSelect;
   if (cspProviderSelect) {
@@ -2459,20 +2405,237 @@ function initCspRoleMappingForm() {
     });
   }
   
-  // Protocol 선택 이벤트
-  const cspProtocolSelect = DOM.cspProtocolSelect;
-  if (cspProtocolSelect) {
-    cspProtocolSelect.addEventListener('change', function() {
-      selectedCspProtocol = this.value;
+  // CSP Role Name 입력 이벤트
+  const cspRoleNameInput = DOM.cspRoleNameInput;
+  if (cspRoleNameInput) {
+    cspRoleNameInput.addEventListener('input', function() {
+      selectedCspRoleName = this.value;
     });
+  }
+  
+  // Add 버튼 이벤트
+  const addCspRoleBtn = DOM.addCspRoleBtn;
+  if (addCspRoleBtn) {
+    addCspRoleBtn.addEventListener('click', handleAddCspRole);
+  }
+  
+  // Create CSP Role Mapping 테이블 초기화
+  await initCreateCspRoleMappingTable();
+}
+
+// CSP Provider 드롭다운 초기화
+async function initCspProviderDropdown() {
+  try {
+    const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
+    const cspProviderSelect = DOM.cspProviderSelect;
+    
+    if (cspProviderSelect && providers) {
+      // 기존 옵션 제거
+      cspProviderSelect.innerHTML = '<option value="">Select CSP Provider</option>';
+      
+      // 새 옵션 추가
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider;
+        option.textContent = provider.toUpperCase();
+        cspProviderSelect.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('CSP Provider 드롭다운 초기화 실패:', error);
+  }
+}
+
+// Edit CSP Provider 드롭다운 초기화
+async function initEditCspProviderDropdown() {
+  try {
+    const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
+    const editCspProviderSelect = DOM.editCspProviderSelect;
+    
+    if (editCspProviderSelect && providers) {
+      // 기존 옵션 제거
+      editCspProviderSelect.innerHTML = '<option value="">Select CSP Provider</option>';
+      
+      // 새 옵션 추가
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider;
+        option.textContent = provider.toUpperCase();
+        editCspProviderSelect.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Edit CSP Provider 드롭다운 초기화 실패:', error);
+  }
+}
+
+// Create CSP Role Mapping 테이블 초기화
+async function initCreateCspRoleMappingTable() {
+  return new Promise((resolve, reject) => {
+    console.log("Create CSP Role Mapping 테이블 초기화 시작");
+
+    // 테이블 요소 확인
+    const tableElement = DOM.createCspRoleMappingTable;
+    if (!tableElement) {
+      console.error("create-csp-role-mapping-table 요소를 찾을 수 없습니다.");
+      reject(new Error("Table element not found"));
+      return;
+    }
+
+    try {
+      const createCspRoleMappingTable = new Tabulator("#create-csp-role-mapping-table", {
+        data: [],
+        layout: "fitDataFill",
+        height: "200px",
+        pagination: false,
+        reactiveData: true,
+        columns: [
+          {
+            title: "CSP",
+            field: "csp_type",
+            headerSort: false,
+            width: "30%",
+            formatter: function (cell) {
+              const cspType = cell.getValue();
+              if (!cspType) return "N/A";
+              return cspType.toUpperCase();
+            }
+          },
+          {
+            title: "Role Name",
+            field: "name",
+            headerSort: false,
+            width: "50%"
+          },
+          {
+            title: "Actions",
+            headerSort: false,
+            width: "20%",
+            formatter: function (cell) {
+              return '<button class="btn btn-sm btn-outline-danger" onclick="deleteCreateCspMapping(' + cell.getRow().getData().id + ')">Delete</button>';
+            }
+          }
+        ]
+      });
+
+      // 테이블 초기화 완료 후 이벤트 리스너 설정
+      createCspRoleMappingTable.on("tableBuilt", function () {
+        console.log("Create CSP Role Mapping 테이블 초기화 완료");
+        resolve();
+      });
+
+      // AppState에 테이블 인스턴스 저장
+      AppState.tables.createCspRoleMappingTable = createCspRoleMappingTable;
+
+    } catch (error) {
+      console.error("Create CSP Role Mapping 테이블 초기화 중 오류 발생:", error);
+      reject(error);
+    }
+  });
+}
+
+// CSP Role 추가 핸들러
+function handleAddCspRole() {
+  const cspProvider = selectedCspProvider;
+  const cspRoleName = selectedCspRoleName;
+  
+  // 입력값 검증
+  if (!cspProvider) {
+    Utils.showAlert('CSP Provider를 선택해주세요.');
+    return;
+  }
+  
+  if (!cspRoleName || !cspRoleName.trim()) {
+    Utils.showAlert('CSP Role Name을 입력해주세요.');
+    return;
+  }
+  
+  // 중복 검사 - CSP Provider와 Role Name 조합으로 검증
+  const existingMapping = AppState.cspRoleMappings.create.find(
+    mapping => mapping.csp_type === cspProvider && mapping.name === cspRoleName.trim()
+  );
+  
+  if (existingMapping) {
+    Utils.showAlert(`이미 추가된 CSP Role입니다.\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
+    return;
+  }
+  
+  // CSP Provider만 중복인 경우도 검증
+  const existingCspProvider = AppState.cspRoleMappings.create.find(
+    mapping => mapping.csp_type === cspProvider
+  );
+  
+  if (existingCspProvider) {
+    Utils.showAlert(`이미 ${cspProvider.toUpperCase()} CSP Provider가 추가되어 있습니다.\n하나의 역할에는 하나의 CSP Provider만 추가할 수 있습니다.`);
+    return;
+  }
+  
+  // 새 CSP Role 추가
+  const newCspRole = {
+    id: Date.now(), // 임시 ID
+    csp_type: cspProvider,
+    name: cspRoleName.trim()
+  };
+  
+  AppState.cspRoleMappings.create.push(newCspRole);
+  
+  // 테이블에 추가
+  if (AppState.tables.createCspRoleMappingTable) {
+    AppState.tables.createCspRoleMappingTable.addData(newCspRole);
+  }
+  
+  // 입력 필드 초기화
+  if (DOM.cspProviderSelect) {
+    DOM.cspProviderSelect.value = '';
+  }
+  if (DOM.cspRoleNameInput) {
+    // Role Name이 있으면 MCIAM_ 접두사로 초기화, 없으면 빈 값
+    const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
+    if (roleName && roleName.trim()) {
+      const cspRoleName = `MCIAM_${roleName.trim()}`;
+      DOM.cspRoleNameInput.value = cspRoleName;
+      selectedCspRoleName = cspRoleName;
+    } else {
+      DOM.cspRoleNameInput.value = '';
+      selectedCspRoleName = '';
+    }
+  }
+  selectedCspProvider = '';
+  
+  console.log('CSP Role 추가됨:', newCspRole);
+}
+
+// Create CSP Role 삭제 함수 (전역 함수)
+window.deleteCreateCspMapping = function(id) {
+  // AppState에서 제거
+  AppState.cspRoleMappings.create = AppState.cspRoleMappings.create.filter(
+    mapping => mapping.id !== id
+  );
+  
+  // 테이블에서 제거
+  if (AppState.tables.createCspRoleMappingTable) {
+    AppState.tables.createCspRoleMappingTable.deleteRow(id);
+  }
+  
+  console.log('CSP Role 삭제됨:', id);
+};
+
+// CSP Role Name 자동 설정 함수
+function updateCspRoleName() {
+  const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
+  const cspRoleNameInput = DOM.cspRoleNameInput;
+  
+  if (cspRoleNameInput && roleName) {
+    const cspRoleName = `MCIAM_${roleName}`;
+    cspRoleNameInput.value = cspRoleName;
+    selectedCspRoleName = cspRoleName;
   }
 }
 
 // CSP 선택 정보 반환 (저장 시 사용)
 function getCspSelection() {
   return {
-    cspProvider: selectedCspProvider,
-    cspProtocol: selectedCspProtocol
+    cspRoles: AppState.cspRoleMappings.create
   };
 }
 
@@ -2516,14 +2679,15 @@ async function saveRole() {
       description: formData.description,
       roleTypes: roleTypes,
       menuIds: formData.platformPermissions,
-      cspRoles: formData.cspSelection && formData.cspSelection.cspProvider && formData.cspSelection.cspProtocol ? [{
-        roleName: formData.name,
-        cspType: formData.cspSelection.cspProvider,
-        idpIdentifier: "", // CSP 설정에서 가져와야 할 수 있음
-        iamIdentifier: "", // CSP 설정에서 가져와야 할 수 있음
-        iamRoleId: formData.name,
-        tags: [{"key": "mciam-role", "value": "csp-role"}]
-      }] : []
+      cspRoles: formData.cspSelection && formData.cspSelection.cspRoles && formData.cspSelection.cspRoles.length > 0 ? 
+        formData.cspSelection.cspRoles.map(cspRole => ({
+          roleName: cspRole.name,
+          cspType: cspRole.csp_type,
+          idpIdentifier: "", // 향후 확장 가능
+          iamIdentifier: "", // 향후 확장 가능
+          iamRoleId: cspRole.name,
+          tags: [{"key": "mciam-role", "value": "csp-role"}]
+        })) : []
     };
     
     // API 호출
@@ -2687,6 +2851,13 @@ async function populateEditForm(role) {
     UIManager.toggleEditCard('csp', true);
     // CSP 매핑 테이블 초기화
     initCspRoleMappingEditTable(role.id);
+    
+    // CSP Role Name 입력 박스에 기본값 설정
+    if (DOM.editCspRoleNameInput && role.name) {
+      const cspRoleName = `MCIAM_${role.name}`;
+      DOM.editCspRoleNameInput.value = cspRoleName;
+      selectedEditCspRoleName = cspRoleName;
+    }
   }
 }
 
@@ -2713,7 +2884,10 @@ function setupEditCardStates(role) {
 }
 
 // Edit CSP Role Mapping 폼 초기화
-function initEditCspRoleMappingForm() {
+async function initEditCspRoleMappingForm() {
+  // Edit CSP Provider 드롭다운 초기화
+  await initEditCspProviderDropdown();
+  
   // Edit CSP Provider 선택 이벤트
   const editCspProviderSelect = DOM.editCspProviderSelect;
   if (editCspProviderSelect) {
@@ -2722,11 +2896,11 @@ function initEditCspRoleMappingForm() {
     });
   }
   
-  // Edit Protocol 선택 이벤트
-  const editCspProtocolSelect = DOM.editCspProtocolSelect;
-  if (editCspProtocolSelect) {
-    editCspProtocolSelect.addEventListener('change', function() {
-      selectedEditCspProtocol = this.value;
+  // Edit CSP Role Name 입력 이벤트
+  const editCspRoleNameInput = DOM.editCspRoleNameInput;
+  if (editCspRoleNameInput) {
+    editCspRoleNameInput.addEventListener('input', function() {
+      selectedEditCspRoleName = this.value;
     });
   }
 
@@ -2740,38 +2914,69 @@ function initEditCspRoleMappingForm() {
 // Edit CSP 선택 정보 반환 (저장 시 사용)
 function getEditCspSelection() {
   return {
-    cspProvider: selectedEditCspProvider,
-    cspProtocol: selectedEditCspProtocol
+    cspRoles: AppState.cspRoleMappings.edit
   };
 }
 
 // CSP 매핑 추가 핸들러
 function handleAddCspMapping() {
-  const cspSelection = getEditCspSelection();
+  const cspProvider = selectedEditCspProvider;
+  const cspRoleName = selectedEditCspRoleName;
   
-  if (!cspSelection.cspProvider || !cspSelection.cspProtocol) {
-    Utils.showAlert('CSP Provider와 Protocol을 모두 선택해주세요.');
+  // 입력값 검증
+  if (!cspProvider) {
+    Utils.showAlert('CSP Provider를 선택해주세요.');
     return;
   }
-
+  
+  if (!cspRoleName || !cspRoleName.trim()) {
+    Utils.showAlert('CSP Role Name을 입력해주세요.');
+    return;
+  }
+  
+  // 중복 검사 - CSP Provider와 Role Name 조합으로 검증
+  if (AppState.tables.cspRoleMappingEditTable) {
+    const currentData = AppState.tables.cspRoleMappingEditTable.getData();
+    const existingMapping = currentData.find(
+      mapping => mapping.csp_type === cspProvider && mapping.name === cspRoleName.trim()
+    );
+    
+    if (existingMapping) {
+      Utils.showAlert(`이미 추가된 CSP Role입니다.\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
+      return;
+    }
+    
+    // CSP Provider만 중복인 경우도 검증
+    const existingCspProvider = currentData.find(
+      mapping => mapping.csp_type === cspProvider
+    );
+    
+    if (existingCspProvider) {
+      Utils.showAlert(`이미 ${cspProvider.toUpperCase()} CSP Provider가 추가되어 있습니다.\n하나의 역할에는 하나의 CSP Provider만 추가할 수 있습니다.`);
+      return;
+    }
+  }
+  
   // 새로운 CSP 매핑을 테이블에 추가
   const newMapping = {
     id: Date.now(), // 임시 ID
-    csp_type: cspSelection.cspProvider,
-    name: AppState.roles.selectedRole.name,
-    idp_identifier: "",
-    iam_identifier: "",
-    auth_method: cspSelection.cspProtocol.toUpperCase()
+    csp_type: cspProvider,
+    name: cspRoleName.trim()
   };
 
   if (AppState.tables.cspRoleMappingEditTable) {
-    const currentData = AppState.tables.cspRoleMappingEditTable.getData();
-    currentData.push(newMapping);
-    AppState.tables.cspRoleMappingEditTable.setData(currentData);
+    AppState.tables.cspRoleMappingEditTable.addData(newMapping);
   }
 
   // 폼 초기화
   UIManager.clearEditCspSelection();
+  
+  // CSP Role Name 입력 필드에 기본값 다시 설정
+  if (DOM.editCspRoleNameInput && AppState.roles.selectedRole && AppState.roles.selectedRole.name) {
+    const cspRoleName = `MCIAM_${AppState.roles.selectedRole.name}`;
+    DOM.editCspRoleNameInput.value = cspRoleName;
+    selectedEditCspRoleName = cspRoleName;
+  }
   
   // 변경사항 표시
   updateAppState('editingRole.hasChanges', true);
@@ -2877,6 +3082,37 @@ async function updateRole() {
   } catch (error) {
     // ErrorHandler.wrapAsync가 이미 에러를 처리하므로 여기서는 추가 처리하지 않음
     console.error('역할 수정 중 예상치 못한 오류:', error);
+  }
+}
+
+// 전역 deleteRole 함수 (모달에서 호출)
+export async function deleteRole() {
+  try {
+    // 선택된 역할이 있는지 확인
+    if (!AppState.roles.selectedRole) {
+      Utils.showAlert('삭제할 역할을 선택해주세요.');
+      return;
+    }
+
+    const roleId = AppState.roles.selectedRole.id;
+    const roleName = AppState.roles.selectedRole.name;
+
+    // 역할 삭제 API 호출
+    const response = await RoleManager.deleteRole(roleId);
+    
+    if (response) {
+      // 성공 시 UI 상태 초기화
+      UIManager.hideAllModes();
+      updateAppState('roles.selectedRole', null);
+      
+      // 역할 목록 새로고침
+      await initRoles();
+      
+      Utils.showAlert(`역할 "${roleName}"이(가) 성공적으로 삭제되었습니다.`);
+    }
+  } catch (error) {
+    console.error('역할 삭제 중 오류 발생:', error);
+    Utils.showAlert('역할 삭제 중 오류가 발생했습니다.');
   }
 }
 
