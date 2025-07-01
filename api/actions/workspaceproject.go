@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"log"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/self"
 
@@ -13,7 +14,16 @@ func GetWorkspaceUserRoleMappingByToken(c buffalo.Context) error {
 			"userId": c.Value("UserId").(string),
 		},
 	}
+	// commonRequest := &handler.CommonRequest{}
+	// err := c.Bind(commonRequest)
+	// if err != nil {
+	//  log.Println("GetWorkspaceUserRoleMappingByToken Bind err : ", err)
+	//  commonRes := handler.CommonResponseStatusBadRequest(nil)
+	//  return c.Render(commonRes.Status.StatusCode, r.JSON(commonRes))
+	// }
+	log.Println("GetWorkspaceUserRoleMappingByToken commonRequest: ", commonRequest)
 	commonResponse, _ := handler.SubsystemAnyCaller(c, "mc-iam-manager", "Getworkspaceuserrolemappinglistbyuserid", commonRequest, true)
+	log.Println("GetWorkspaceUserRoleMappingByToken commonResponse: ", commonResponse)
 	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
