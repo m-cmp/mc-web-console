@@ -29,7 +29,6 @@ export async function getMappedMenusByRoleList(roleId) {
         controller,
         data
     );
-    console.log("getMappedMenusByRoleList response", response);
     return response.data.responseData;
 }
 
@@ -58,6 +57,26 @@ export async function createRole(role) {
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     console.log("createRole response", response);
+    return response.data.responseData;
+}
+
+// 역할 수정
+export async function updateRole(roleId, role) {
+    const controller = "/api/mc-iam-manager/Updaterole";
+    const data = {
+        pathParams: {
+            "roleId": roleId.toString()
+        },
+        Request: {
+            name: role.name,
+            description: role.description,
+            roleTypes: role.roleTypes || [],
+            menuIds: role.menuIds || [],
+            cspRoles: role.cspRoles || []
+        }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    console.log("updateRole response", response);
     return response.data.responseData;
 }
 
