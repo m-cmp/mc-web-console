@@ -104,3 +104,11 @@ export async function getCSPRoleListByRoleId(roleId) {
     console.log("getCSPRoleList response", response);
     return response.data.responseData;
 }
+
+// CSP Provider 목록 조회 (현재는 하드코딩, 향후 API 연동 예정)
+export async function getCspProviderList() {
+    // 현재: 하드코딩으로 AWS만 반환
+    // 향후: 실제 API 연동 예정
+    console.log("getCspProviderList called - returning hardcoded AWS");
+    return ['aws'];
+}

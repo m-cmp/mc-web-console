@@ -362,28 +362,35 @@
                     <div class="card-body collapse" id="csp-role-mapping-create-body">
                       <form id="csp-role-mapping-form">
                         <div class="row">
-                          <div class="col-md-6">
+                          <div class="col-md-4">
                             <div class="mb-3">
                               <label class="form-label required">CSP Provider</label>
                               <select class="form-select" id="csp-provider-select" name="csp-provider" required>
                                 <option value="">Select CSP Provider</option>
-                                <option value="aws">AWS</option>
-                                <option value="gcp">GCP</option>
-                                <option value="azure">Azure</option>
                               </select>
                             </div>
                           </div>
                           <div class="col-md-6">
                             <div class="mb-3">
-                              <label class="form-label required">Protocol</label>
-                              <select class="form-select" id="csp-protocol-select" name="csp-protocol" required>
-                                <option value="">Select Protocol</option>
-                                <option value="oidc">OIDC</option>
-                              </select>
+                              <label class="form-label required">CSP Role Name</label>
+                              <input type="text" class="form-control" id="csp-role-name-input" name="csp-role-name" placeholder="e.g., MCIAM_MyRole" required>
+                            </div>
+                          </div>
+                          <div class="col-md-2">
+                            <div class="mb-3">
+                              <label class="form-label">&nbsp;</label>
+                              <button type="button" class="btn btn-primary w-100" id="add-csp-role-btn">
+                                Add
+                              </button>
                             </div>
                           </div>
                         </div>
                       </form>
+                      
+                      <!-- CSP Role Mapping 테이블 -->
+                      <div class="mt-3">
+                        <div id="create-csp-role-mapping-table"></div>
+                      </div>
                     </div>
                   </div>
                   
@@ -510,51 +517,36 @@
                       </div>
                     </div>
                     <div class="card-body collapse" id="csp-role-mapping-edit-body">
-                      <!-- CSP Role Mapping 테이블 -->
-                      <div id="csp-role-mapping-edit-table"></div>
-                      
-                      <!-- 빈 상태 메시지 -->
-                      <div id="csp-role-mapping-edit-empty" class="text-center py-4" style="display: none;">
-                        <div class="text-muted">
-                          <div class="text-muted">No CSP roles mapped for this role</div>
-                        </div>
-                      </div>
-                      
-                      <!-- 새로운 CSP 매핑 추가 폼 -->
-                      <div class="mt-3 p-3" style="background-color: #f8f9fa; border-radius: 4px;">
-                        <h6 class="mb-3">Add New CSP Mapping</h6>
-                        <form id="csp-role-mapping-edit-form">
-                          <div class="row">
-                            <div class="col-md-4">
-                              <div class="mb-3">
-                                <label class="form-label required">CSP Provider</label>
-                                <select class="form-select" id="edit-csp-provider-select" name="edit-csp-provider" required>
-                                  <option value="">Select CSP Provider</option>
-                                  <option value="aws">AWS</option>
-                                  <option value="gcp">GCP</option>
-                                  <option value="azure">Azure</option>
-                                </select>
-                              </div>
-                            </div>
-                            <div class="col-md-4">
-                              <div class="mb-3">
-                                <label class="form-label required">Protocol</label>
-                                <select class="form-select" id="edit-csp-protocol-select" name="edit-csp-protocol" required>
-                                  <option value="">Select Protocol</option>
-                                  <option value="oidc">OIDC</option>
-                                </select>
-                              </div>
-                            </div>
-                            <div class="col-md-4">
-                              <div class="mb-3">
-                                <label class="form-label">&nbsp;</label>
-                                <button type="button" class="btn btn-outline-primary d-block" id="add-csp-mapping-btn">
-                                  Add Mapping
-                                </button>
-                              </div>
+                      <form id="csp-role-mapping-edit-form">
+                        <div class="row">
+                          <div class="col-md-4">
+                            <div class="mb-3">
+                              <label class="form-label required">CSP Provider</label>
+                              <select class="form-select" id="edit-csp-provider-select" name="edit-csp-provider" required>
+                                <option value="">Select CSP Provider</option>
+                              </select>
                             </div>
                           </div>
-                        </form>
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label class="form-label required">CSP Role Name</label>
+                              <input type="text" class="form-control" id="edit-csp-role-name-input" name="edit-csp-role-name" placeholder="e.g., MCIAM_MyRole" required>
+                            </div>
+                          </div>
+                          <div class="col-md-2">
+                            <div class="mb-3">
+                              <label class="form-label">&nbsp;</label>
+                              <button type="button" class="btn btn-primary w-100" id="add-csp-mapping-btn">
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                      
+                      <!-- CSP Role Mapping 테이블 -->
+                      <div class="mt-3">
+                        <div id="csp-role-mapping-edit-table"></div>
                       </div>
                     </div>
                   </div>
