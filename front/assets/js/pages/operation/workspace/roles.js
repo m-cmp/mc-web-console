@@ -1437,10 +1437,7 @@ async function initPlatformMenuTree() {
           "pointer-events": "none"
         });
         
-        // 현재 선택된 역할이 있으면 해당 역할의 메뉴 권한 표시
-        if (AppState.roles.selectedRole && AppState.roles.selectedRole.id) {
-          updateMenuPermissions(AppState.roles.selectedRole.id);
-        }
+        // 트리 초기화 완료 - 권한 업데이트는 handleRoleRowClick에서 처리됨
       });
 
       // 트리 외부에서 모든 상호작용 이벤트 차단
@@ -1528,6 +1525,7 @@ async function initPlatformMenuEditTree() {
     if (DOM.platformMenuEditTree && $(DOM.platformMenuEditTree).jstree(true)) {
       return;
     }
+    
     const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
 
     // 응답 구조 고정
@@ -1540,6 +1538,7 @@ async function initPlatformMenuEditTree() {
       if ($("#platform-menu-edit-tree").jstree(true)) {
         $("#platform-menu-edit-tree").jstree("destroy");
       }
+      
       // 트리 생성
       $('#platform-menu-edit-tree').jstree({
         "core": {
@@ -1547,15 +1546,21 @@ async function initPlatformMenuEditTree() {
             "responsive": true
           },
           "data": treeData,
-          "check_callback": false
+          "check_callback": false,
+          "multiple": false
         },
         "plugins": ["types", "checkbox"],
+        "checkbox": {
+          "keep_selected_style": true,
+          "three_state": false
+        },
         "types": {
           "default": {
             "icon": "ti ti-menu"
           }
         }
       });
+      
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-edit-tree").on("ready.jstree", function () {
         // 모든 노드를 펼쳐놓기
@@ -1572,6 +1577,16 @@ async function initPlatformMenuEditTree() {
             return false;
           }
         });
+        
+        // 트리 초기화 시 모든 체크박스 해제
+        $('#platform-menu-edit-tree').jstree(true).uncheck_all();
+        
+        // 현재 선택된 역할이 있으면 권한 업데이트 실행
+        if (AppState.roles.selectedRole && AppState.roles.selectedRole.id) {
+          setTimeout(() => {
+            updateEditMenuPermissions(AppState.roles.selectedRole.id);
+          }, 100);
+        }
       });
 
     } else {
@@ -1885,25 +1900,55 @@ async function updateEditMenuPermissions(roleId) {
     // getMappedMenusByRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
     
-    if (!response) {
-      console.error("Edit 모드 메뉴 권한 데이터를 가져올 수 없습니다.");
+    console.log("Edit 모드: 선택된 권한 메뉴 API 응답:", response);
+    console.log("Edit 모드: 선택된 권한 메뉴 개수:", response ? response.length : 0);
+    
+    // response가 null, undefined, 빈 배열인 경우 처리
+    if (!response || (Array.isArray(response) && response.length === 0)) {
+      console.log("Edit 모드: 권한 데이터가 없음, 모든 체크박스 해제");
+      // 모든 체크박스 해제
+      $('#platform-menu-edit-tree').jstree(true).uncheck_all();
       return;
     }
     
     // 권한이 있는 메뉴 ID 목록 추출
-    const authorizedMenuIds = response.map(menu => menu.id || menu.menu_id);
+    let authorizedMenuIds = [];
+    if (Array.isArray(response)) {
+      authorizedMenuIds = response.map(menu => menu.id || menu.menu_id);
+    } else if (response && typeof response === 'object') {
+      // response가 객체인 경우, 내부에 배열이 있을 수 있음
+      if (response.menus && Array.isArray(response.menus)) {
+        authorizedMenuIds = response.menus.map(menu => menu.id || menu.menu_id);
+      } else if (response.data && Array.isArray(response.data)) {
+        authorizedMenuIds = response.data.map(menu => menu.id || menu.menu_id);
+      }
+    }
+    
     console.log("Edit 모드 권한이 있는 메뉴 ID 목록:", authorizedMenuIds);
     
     // 모든 노드의 체크박스 해제
     $('#platform-menu-edit-tree').jstree(true).uncheck_all();
+    console.log("Edit 모드: 모든 체크박스 해제 완료");
+    
+    // 실제 체크된 노드 확인
+    const uncheckedNodes = $('#platform-menu-edit-tree').jstree(true).get_checked();
+    console.log("Edit 모드: 해제 후 실제 체크된 노드:", uncheckedNodes);
     
     // 권한이 있는 메뉴들만 체크
+    let checkedCount = 0;
     authorizedMenuIds.forEach(menuId => {
       const node = $('#platform-menu-edit-tree').jstree(true).get_node(menuId);
       if (node && node.id !== '#') {
         $('#platform-menu-edit-tree').jstree(true).check_node(node);
+        checkedCount++;
       }
     });
+    console.log("Edit 모드: 체크된 노드 수:", checkedCount);
+    
+    // 실제 체크된 노드 다시 확인
+    const finalCheckedNodes = $('#platform-menu-edit-tree').jstree(true).get_checked();
+    console.log("Edit 모드: 최종 실제 체크된 노드:", finalCheckedNodes);
+    console.log("Edit 모드: 최종 실제 체크된 노드 수:", finalCheckedNodes.length);
     
     console.log("Edit 모드 메뉴 권한 업데이트 완료");
     
@@ -2555,7 +2600,7 @@ function handleCspToggleEdit(e) {
 }
 
 // Edit 버튼 클릭 핸들러
-function handleEditButtonClick(e) {
+async function handleEditButtonClick(e) {
   e.preventDefault();
 
   if (!AppState.roles.selectedRole) {
@@ -2564,7 +2609,7 @@ function handleEditButtonClick(e) {
   }
 
   // Edit 모드 활성화
-  showEditMode(AppState.roles.selectedRole);
+  await showEditMode(AppState.roles.selectedRole);
 }
 
 // Edit Cancel 버튼 핸들러
@@ -2588,7 +2633,7 @@ function handleSaveEditRoleClick(e) {
 }
 
 // Edit 모드 표시 함수
-function showEditMode(role) {
+async function showEditMode(role) {
   // Edit 모드 활성화
   UIManager.showEditMode();
   updateAppState('ui.editMode', true);
@@ -2601,14 +2646,14 @@ function showEditMode(role) {
   updateAppState('editingRole.hasChanges', false);
 
   // 폼에 기존 데이터 채우기
-  populateEditForm(role);
+  await populateEditForm(role);
 
   // Edit-mode 카드 상태 설정
   setupEditCardStates(role);
 }
 
 // Edit 폼에 데이터 채우기
-function populateEditForm(role) {
+async function populateEditForm(role) {
   // 기본 정보
   if (DOM.editRoleNameInput) {
     DOM.editRoleNameInput.value = role.name || '';
@@ -2623,10 +2668,10 @@ function populateEditForm(role) {
   // Platform 권한 설정
   if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.PLATFORM)) {
     UIManager.toggleEditCard('platform', true);
-    // 메뉴 트리 초기화 및 기존 권한 체크
-    initPlatformMenuEditTree().then(() => {
-      updateEditMenuPermissions(role.id);
-    });
+    // 메뉴 트리 초기화 (권한 업데이트는 ready.jstree 이벤트에서 처리)
+    console.log("Edit 모드: Platform 권한 설정 시작");
+    await initPlatformMenuEditTree();
+    console.log("Edit 모드: 메뉴 트리 초기화 완료");
   }
 
   // Workspace 권한 설정
