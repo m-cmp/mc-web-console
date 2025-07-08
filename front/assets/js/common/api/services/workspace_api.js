@@ -91,7 +91,7 @@ export async function getProjectListByWorkspaceId(workspaceId) {
   }
 
   let projectList = [];
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/getwpmappinglistbyworkspaceid', requestObject)
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/getProjectsByWorkspaceId', requestObject)
   let data = response.data.responseData.projects
   console.debug("GetWPmappingListByWorkspaceId data :", data)
   data.forEach(item => {

@@ -105,10 +105,19 @@ export async function getCSPRoleListByRoleId(roleId) {
     return response.data.responseData;
 }
 
-// CSP Provider 목록 조회 (현재는 하드코딩, 향후 API 연동 예정)
+// CSP Provider 목록 조회
 export async function getCspProviderList() {
-    // 현재: 하드코딩으로 AWS만 반환
-    // 향후: 실제 API 연동 예정
-    console.log("getCspProviderList called - returning hardcoded AWS");
-    return ['aws'];
+    const controller = "/api/mc-iam-manager/getTempCredentialProviders";
+
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+        controller
+    );
+    console.log("getCSPProviderList response", response);
+    
+    // responseData에서 provider 값들만 추출하여 반환
+    if (response.data && response.data.responseData) {
+        return response.data.responseData.map(item => item.provider);
+    }
+    
+    return [];
 }
