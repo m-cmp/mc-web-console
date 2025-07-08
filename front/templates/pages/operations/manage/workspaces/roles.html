@@ -152,11 +152,7 @@
                         <div class="datagrid-title">Description</div>
                         <div class="datagrid-content" id="role-detail-desc-view"></div>
                       </div>
-                      <div class="datagrid-item">
-                        <div class="datagrid-title">Role Types</div>
-                        <div class="datagrid-content" id="role-detail-types-view" 
-                             style="word-wrap: break-word; white-space: normal; min-height: 20px;"></div>
-                      </div>
+
                     </div>
                   </div>
                   
@@ -165,9 +161,9 @@
                   
                   <!-- Platform 카드 -->
                   <div class="card mb-3" id="platform-menu" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
+                    <div class="card-header" id="platform-header" style="background-color: #f8f9fa; cursor: pointer;">
                       <h3 class="card-title">
-                        Platform
+                        Platform access
                         <span id="platform-menu-status" class="ms-2" style="display: none;">
                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #206bc4;">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -177,10 +173,9 @@
                         </span>
                       </h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="platform-toggle-container" style="display: none;">
-                          <input class="form-check-input" type="checkbox" id="platform-toggle-view">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="platform-toggle-btn" style="display: none;">
+                          <i class="ti ti-chevron-down" id="platform-arrow"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="platform-menu-body">
@@ -200,13 +195,21 @@
 
                   <!-- Workspace 카드 -->
                   <div class="card mb-3" id="workspace-menu" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">Workspace</h3>
+                    <div class="card-header" id="workspace-header" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">
+                        Workspace access
+                        <span id="workspace-menu-status" class="ms-2" style="display: none;">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #206bc4;">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M5 12l5 5l10 -10"></path>
+                          </svg>
+                          <small class="text-muted">Workspace access available</small>
+                        </span>
+                      </h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="workspace-toggle-container" style="display: none;">
-                          <input class="form-check-input" type="checkbox" id="workspace-toggle-header">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="workspace-toggle-btn" style="display: none;">
+                          <i class="ti ti-chevron-down" id="workspace-arrow"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="workspace-menu-body">
@@ -230,13 +233,21 @@
 
                   <!-- CSP Role Mapping 카드 -->
                   <div class="card mb-3" id="csp-role-mapping" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">CSP Role Mapping</h3>
+                    <div class="card-header" id="csp-header" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">
+                        CSP Role
+                        <span id="csp-menu-status" class="ms-2" style="display: none;">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #206bc4;">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M5 12l5 5l10 -10"></path>
+                          </svg>
+                          <small class="text-muted">CSP Role access available</small>
+                        </span>
+                      </h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="csp-toggle-container" style="display: none;">
-                          <input class="form-check-input" type="checkbox" id="csp-toggle-view">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="csp-toggle-btn" style="display: none;">
+                          <i class="ti ti-chevron-down" id="csp-arrow"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="csp-role-mapping-body">
@@ -297,13 +308,12 @@
                   
                   <!-- Platform 카드 -->
                   <div class="card mb-3" id="platform-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">Platform</h3>
+                    <div class="card-header" id="platform-header-create" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">Platform access</h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="platform-toggle-container-create">
-                          <input class="form-check-input" type="checkbox" id="platform-toggle-create">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="platform-toggle-btn-create">
+                          <i class="ti ti-chevron-down" id="platform-arrow-create"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="platform-menu-create-body">
@@ -323,13 +333,12 @@
 
                   <!-- Workspace 카드 -->
                   <div class="card mb-3" id="workspace-menu-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">Workspace</h3>
+                    <div class="card-header" id="workspace-header-create" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">Workspace access</h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="workspace-toggle-container-create">
-                          <input class="form-check-input" type="checkbox" id="workspace-toggle-create">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="workspace-toggle-btn-create">
+                          <i class="ti ti-chevron-down" id="workspace-arrow-create"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="workspace-menu-create-body">
@@ -350,13 +359,12 @@
 
                   <!-- CSP Role Mapping 카드 -->
                   <div class="card mb-3" id="csp-role-mapping-create" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">CSP Role Mapping</h3>
+                    <div class="card-header" id="csp-header-create" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">CSP Role</h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="csp-toggle-container-create">
-                          <input class="form-check-input" type="checkbox" id="csp-toggle-create">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="csp-toggle-btn-create">
+                          <i class="ti ti-chevron-down" id="csp-arrow-create"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="csp-role-mapping-create-body">
@@ -454,13 +462,12 @@
                   
                   <!-- Platform 카드 -->
                   <div class="card mb-3" id="platform-menu-edit" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">Platform</h3>
+                    <div class="card-header" id="platform-header-edit" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">Platform access</h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="platform-toggle-container-edit">
-                          <input class="form-check-input" type="checkbox" id="platform-toggle-edit">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="platform-toggle-btn-edit">
+                          <i class="ti ti-chevron-down" id="platform-arrow-edit"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="platform-menu-edit-body">
@@ -480,13 +487,12 @@
 
                   <!-- Workspace 카드 -->
                   <div class="card mb-3" id="workspace-menu-edit" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">Workspace</h3>
+                    <div class="card-header" id="workspace-header-edit" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">Workspace access</h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="workspace-toggle-container-edit">
-                          <input class="form-check-input" type="checkbox" id="workspace-toggle-edit">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="workspace-toggle-btn-edit">
+                          <i class="ti ti-chevron-down" id="workspace-arrow-edit"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="workspace-menu-edit-body">
@@ -507,13 +513,12 @@
 
                   <!-- CSP Role Mapping 카드 -->
                   <div class="card mb-3" id="csp-role-mapping-edit" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <div class="card-header" style="background-color: #f8f9fa;">
-                      <h3 class="card-title">CSP Role Mapping</h3>
+                    <div class="card-header" id="csp-header-edit" style="background-color: #f8f9fa; cursor: pointer;">
+                      <h3 class="card-title">CSP Role</h3>
                       <div class="card-actions btn-actions">
-                        <label class="form-check form-switch mb-0" id="csp-toggle-container-edit">
-                          <input class="form-check-input" type="checkbox" id="csp-toggle-edit">
-                          <span class="form-check-label"></span>
-                        </label>
+                        <button class="btn btn-link p-0" id="csp-toggle-btn-edit">
+                          <i class="ti ti-chevron-down" id="csp-arrow-edit"></i>
+                        </button>
                       </div>
                     </div>
                     <div class="card-body collapse" id="csp-role-mapping-edit-body">
