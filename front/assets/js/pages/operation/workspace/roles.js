@@ -1510,6 +1510,11 @@ async function initPlatformMenuCreateTree() {
           "check_callback": false
         },
         "plugins": ["types", "checkbox"],
+        "checkbox": {
+          "keep_selected_style": true,
+          "three_state": true,
+          "cascade": "up"
+        },
         "types": {
           "default": {
             "icon": "ti ti-menu"
@@ -1571,12 +1576,13 @@ async function initPlatformMenuEditTree() {
           },
           "data": treeData,
           "check_callback": false,
-          "multiple": false
+          "multiple": true
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
           "keep_selected_style": true,
-          "three_state": false
+          "three_state": true,
+          "cascade": "up"
         },
         "types": {
           "default": {
@@ -1600,6 +1606,12 @@ async function initPlatformMenuEditTree() {
             e.stopPropagation();
             return false;
           }
+        });
+        
+        // 체크박스 이벤트 핸들러 추가
+        $('#platform-menu-edit-tree').on('check_node.jstree uncheck_node.jstree', function (e, data) {
+          // 변경사항 표시
+          updateAppState('editingRole.hasChanges', true);
         });
         
         // 트리 초기화 시 모든 체크박스 해제
@@ -1946,7 +1958,6 @@ async function updateMenuPermissions(roleId) {
 // Edit 모드 메뉴 권한 업데이트 함수
 async function updateEditMenuPermissions(roleId) {
   try {
-    console.log("Edit 모드 메뉴 권한 업데이트 시작 - 역할:", roleId);
     
     // 트리가 없으면 생성 (지연 초기화)
     if (!$("#platform-menu-edit-tree").jstree(true)) {
@@ -1956,12 +1967,8 @@ async function updateEditMenuPermissions(roleId) {
     // getMappedMenusByRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
     
-    console.log("Edit 모드: 선택된 권한 메뉴 API 응답:", response);
-    console.log("Edit 모드: 선택된 권한 메뉴 개수:", response ? response.length : 0);
-    
     // response가 null, undefined, 빈 배열인 경우 처리
     if (!response || (Array.isArray(response) && response.length === 0)) {
-      console.log("Edit 모드: 권한 데이터가 없음, 모든 체크박스 해제");
       // 모든 체크박스 해제
       $('#platform-menu-edit-tree').jstree(true).uncheck_all();
       return;
@@ -1980,16 +1987,12 @@ async function updateEditMenuPermissions(roleId) {
       }
     }
     
-    console.log("Edit 모드 권한이 있는 메뉴 ID 목록:", authorizedMenuIds);
-    
     // 모든 노드의 체크박스 해제
     $('#platform-menu-edit-tree').jstree(true).uncheck_all();
-    console.log("Edit 모드: 모든 체크박스 해제 완료");
-    
+
     // 실제 체크된 노드 확인
     const uncheckedNodes = $('#platform-menu-edit-tree').jstree(true).get_checked();
-    console.log("Edit 모드: 해제 후 실제 체크된 노드:", uncheckedNodes);
-    
+
     // 권한이 있는 메뉴들만 체크
     let checkedCount = 0;
     authorizedMenuIds.forEach(menuId => {
@@ -1999,15 +2002,7 @@ async function updateEditMenuPermissions(roleId) {
         checkedCount++;
       }
     });
-    console.log("Edit 모드: 체크된 노드 수:", checkedCount);
-    
-    // 실제 체크된 노드 다시 확인
-    const finalCheckedNodes = $('#platform-menu-edit-tree').jstree(true).get_checked();
-    console.log("Edit 모드: 최종 실제 체크된 노드:", finalCheckedNodes);
-    console.log("Edit 모드: 최종 실제 체크된 노드 수:", finalCheckedNodes.length);
-    
-    console.log("Edit 모드 메뉴 권한 업데이트 완료");
-    
+        
   } catch (error) {
     console.error("Edit 모드 메뉴 권한 업데이트 중 오류 발생:", error);
     alert("Edit 모드 메뉴 권한 정보를 불러오는데 실패했습니다.");
@@ -2429,7 +2424,7 @@ async function initCspProviderDropdown() {
     const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
     const cspProviderSelect = DOM.cspProviderSelect;
     
-    if (cspProviderSelect && providers) {
+    if (cspProviderSelect && providers && Array.isArray(providers)) {
       // 기존 옵션 제거
       cspProviderSelect.innerHTML = '<option value="">Select CSP Provider</option>';
       
@@ -2452,7 +2447,7 @@ async function initEditCspProviderDropdown() {
     const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
     const editCspProviderSelect = DOM.editCspProviderSelect;
     
-    if (editCspProviderSelect && providers) {
+    if (editCspProviderSelect && providers && Array.isArray(providers)) {
       // 기존 옵션 제거
       editCspProviderSelect.innerHTML = '<option value="">Select CSP Provider</option>';
       
@@ -2702,6 +2697,9 @@ async function saveRole() {
       
       // 역할 목록 새로고침
       await initRoles();
+      
+      // 페이지를 맨 위로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
   } catch (error) {
@@ -2833,9 +2831,7 @@ async function populateEditForm(role) {
   if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.PLATFORM)) {
     UIManager.toggleEditCard('platform', true);
     // 메뉴 트리 초기화 (권한 업데이트는 ready.jstree 이벤트에서 처리)
-    console.log("Edit 모드: Platform 권한 설정 시작");
     await initPlatformMenuEditTree();
-    console.log("Edit 모드: 메뉴 트리 초기화 완료");
   }
 
   // Workspace 권한 설정
@@ -3077,6 +3073,9 @@ async function updateRole() {
       
       // 역할 목록 새로고침
       await initRoles();
+      
+      // 페이지를 맨 위로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
   } catch (error) {
@@ -3107,6 +3106,9 @@ export async function deleteRole() {
       
       // 역할 목록 새로고침
       await initRoles();
+      
+      // 페이지를 맨 위로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       
       Utils.showAlert(`역할 "${roleName}"이(가) 성공적으로 삭제되었습니다.`);
     }

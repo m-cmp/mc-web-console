@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
     updatemenu();
     document.querySelectorAll('div[name^="sidebar_"]').forEach(function(item) {
@@ -14,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function updatemenu(){
     var  menuData = webconsolejs["common/storage/localstorage"].getMenuLocalStorage()
+    console.log("menuData", menuData);
     const menuHTML = generateMenuHTML(menuData);
     document.getElementById("sidebar-menu-inner").innerHTML = menuHTML;
 }
@@ -104,7 +104,10 @@ function setActiveMenu() {
                     const innerText = navLinkTitle.querySelector('.nav-link-title').innerText;
                     pretitle.innerHTML = innerText 
                 }
-                title.innerHTML = document.getElementById(depth5).innerHTML
+                const depth5Element = document.getElementById(depth5);
+                if (depth5Element) {
+                    title.innerHTML = depth5Element.innerHTML;
+                }
             }
         } else if (depth3&&depth4) {
             console.log("depth3&&depth4")
@@ -131,8 +134,17 @@ function setActiveMenu() {
     // }
 }
 
-function stringToBool(str) {
-    return str.toLowerCase() === 'true';
+function stringToBool(value) {
+    // boolean 타입인 경우
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    // 문자열인 경우
+    if (typeof value === 'string') {
+        return value.toLowerCase() === 'true';
+    }
+    // 기타 타입은 false로 처리
+    return false;
 }
 
 const iconsArr = {
