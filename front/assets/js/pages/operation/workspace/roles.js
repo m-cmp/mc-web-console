@@ -1,6 +1,28 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import 'jstree';
 
+// CSS 스타일 추가
+const style = document.createElement('style');
+style.textContent = `
+  .ti-chevron-down, .ti-chevron-up {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .ti-chevron-up {
+    transform: rotate(180deg);
+  }
+  
+  .btn-link {
+    color: #6c757d;
+    text-decoration: none;
+  }
+  
+  .btn-link:hover {
+    color: #495057;
+  }
+`;
+document.head.appendChild(style);
+
 // DOM 요소 캐싱 (최적화)
 const DOM = {
   viewModeCards: document.getElementById("view-mode-cards"),
@@ -13,7 +35,7 @@ const DOM = {
   roleDetailRolenameText: document.getElementById('role-detail-rolename-text'),
   roleDetailNameView: document.getElementById('role-detail-name-view'),
   roleDetailDescView: document.getElementById('role-detail-desc-view'),
-  roleDetailTypesView: document.getElementById('role-detail-types-view'),
+
   workspaceStatusView: document.getElementById('workspace-status-view'),
   platformMenuStatus: document.getElementById('platform-menu-status'),
   saveCreateRoleBtn: document.getElementById('save-create-role-btn'),
@@ -32,22 +54,22 @@ const DOM = {
   addCspRoleBtn: document.getElementById('add-csp-role-btn'),
   createCspRoleMappingTable: document.getElementById('create-csp-role-mapping-table'),
   // View-mode 토글 버튼들
-  platformToggleContainer: document.getElementById('platform-toggle-container'),
-  platformToggleView: document.getElementById('platform-toggle-view'),
-  workspaceToggleContainer: document.getElementById('workspace-toggle-container'),
-  workspaceToggleHeader: document.getElementById('workspace-toggle-header'),
-  cspToggleContainer: document.getElementById('csp-toggle-container'),
-  cspToggleView: document.getElementById('csp-toggle-view'),
+  platformToggleBtn: document.getElementById('platform-toggle-btn'),
+  platformArrow: document.getElementById('platform-arrow'),
+  workspaceToggleBtn: document.getElementById('workspace-toggle-btn'),
+  workspaceArrow: document.getElementById('workspace-arrow'),
+  cspToggleBtn: document.getElementById('csp-toggle-btn'),
+  cspArrow: document.getElementById('csp-arrow'),
   // Workspace 카드 내부의 토글들
   workspaceToggleViewInner: document.getElementById('workspace-toggle-view'),
   workspaceToggleCreateInner: document.getElementById('workspace-toggle-create-inner'),
   // Create-mode 토글 버튼들
-  platformToggleContainerCreate: document.getElementById('platform-toggle-container-create'),
-  platformToggleCreate: document.getElementById('platform-toggle-create'),
-  workspaceToggleContainerCreate: document.getElementById('workspace-toggle-container-create'),
-  workspaceToggleCreate: document.getElementById('workspace-toggle-create'),
-  cspToggleContainerCreate: document.getElementById('csp-toggle-container-create'),
-  cspToggleCreate: document.getElementById('csp-toggle-create'),
+  platformToggleBtnCreate: document.getElementById('platform-toggle-btn-create'),
+  platformArrowCreate: document.getElementById('platform-arrow-create'),
+  workspaceToggleBtnCreate: document.getElementById('workspace-toggle-btn-create'),
+  workspaceArrowCreate: document.getElementById('workspace-arrow-create'),
+  cspToggleBtnCreate: document.getElementById('csp-toggle-btn-create'),
+  cspArrowCreate: document.getElementById('csp-arrow-create'),
   // Create-mode 카드 바디들
   platformMenuCreateBody: document.getElementById('platform-menu-create-body'),
   workspaceMenuCreateBody: document.getElementById('workspace-menu-create-body'),
@@ -58,13 +80,13 @@ const DOM = {
   editRoleNameInput: document.getElementById('edit-role-name-input'),
   editRoleDescriptionInput: document.getElementById('edit-role-description-input'),
   // Edit-mode 토글 버튼들
-  platformToggleContainerEdit: document.getElementById('platform-toggle-container-edit'),
-  platformToggleEdit: document.getElementById('platform-toggle-edit'),
-  workspaceToggleContainerEdit: document.getElementById('workspace-toggle-container-edit'),
-  workspaceToggleEdit: document.getElementById('workspace-toggle-edit'),
+  platformToggleBtnEdit: document.getElementById('platform-toggle-btn-edit'),
+  platformArrowEdit: document.getElementById('platform-arrow-edit'),
+  workspaceToggleBtnEdit: document.getElementById('workspace-toggle-btn-edit'),
+  workspaceArrowEdit: document.getElementById('workspace-arrow-edit'),
   workspaceToggleEditInner: document.getElementById('workspace-toggle-edit-inner'),
-  cspToggleContainerEdit: document.getElementById('csp-toggle-container-edit'),
-  cspToggleEdit: document.getElementById('csp-toggle-edit'),
+  cspToggleBtnEdit: document.getElementById('csp-toggle-btn-edit'),
+  cspArrowEdit: document.getElementById('csp-arrow-edit'),
   // Edit-mode 카드 바디들
   platformMenuEditBody: document.getElementById('platform-menu-edit-body'),
   workspaceMenuEditBody: document.getElementById('workspace-menu-edit-body'),
@@ -77,7 +99,16 @@ const DOM = {
   addCspMappingBtn: document.getElementById('add-csp-mapping-btn'),
   // Edit-mode 버튼들
   saveEditRoleBtn: document.getElementById('save-edit-role-btn'),
-  cancelEditRoleBtn: document.getElementById('cancel-edit-role-btn')
+  cancelEditRoleBtn: document.getElementById('cancel-edit-role-btn'),
+  platformHeader: document.getElementById('platform-header'),
+  workspaceHeader: document.getElementById('workspace-header'),
+  cspHeader: document.getElementById('csp-header'),
+  platformHeaderCreate: document.getElementById('platform-header-create'),
+  workspaceHeaderCreate: document.getElementById('workspace-header-create'),
+  cspHeaderCreate: document.getElementById('csp-header-create'),
+  platformHeaderEdit: document.getElementById('platform-header-edit'),
+  workspaceHeaderEdit: document.getElementById('workspace-header-edit'),
+  cspHeaderEdit: document.getElementById('csp-header-edit')
 };
 
 // 중앙화된 상태 관리 객체
@@ -446,20 +477,20 @@ const UIManager = {
 
     cardState.expanded = expand;
     
-    let cardBody, toggleElement;
+    let cardBody, arrowElement;
     
     switch (cardType) {
       case 'platform':
         cardBody = DOM.platformMenuEditBody;
-        toggleElement = DOM.platformToggleEdit;
+        arrowElement = DOM.platformArrowEdit;
         break;
       case 'workspace':
         cardBody = DOM.workspaceMenuEditBody;
-        toggleElement = DOM.workspaceToggleEdit;
+        arrowElement = DOM.workspaceArrowEdit;
         break;
       case 'csp':
         cardBody = DOM.cspRoleMappingEditBody;
-        toggleElement = DOM.cspToggleEdit;
+        arrowElement = DOM.cspArrowEdit;
         break;
       default:
         return;
@@ -475,8 +506,14 @@ const UIManager = {
       }
     }
     
-    if (toggleElement) {
-      toggleElement.checked = expand;
+    if (arrowElement) {
+      if (expand) {
+        arrowElement.classList.remove('ti-chevron-down');
+        arrowElement.classList.add('ti-chevron-up');
+      } else {
+        arrowElement.classList.remove('ti-chevron-up');
+        arrowElement.classList.add('ti-chevron-down');
+      }
     }
   },
 
@@ -489,14 +526,17 @@ const UIManager = {
 
   // 모든 Edit-mode 토글 버튼을 OFF로 초기화
   resetAllEditToggles() {
-    if (DOM.platformToggleEdit) {
-      DOM.platformToggleEdit.checked = false;
+    if (DOM.platformArrowEdit) {
+      DOM.platformArrowEdit.classList.remove('ti-chevron-up');
+      DOM.platformArrowEdit.classList.add('ti-chevron-down');
     }
-    if (DOM.workspaceToggleEdit) {
-      DOM.workspaceToggleEdit.checked = false;
+    if (DOM.workspaceArrowEdit) {
+      DOM.workspaceArrowEdit.classList.remove('ti-chevron-up');
+      DOM.workspaceArrowEdit.classList.add('ti-chevron-down');
     }
-    if (DOM.cspToggleEdit) {
-      DOM.cspToggleEdit.checked = false;
+    if (DOM.cspArrowEdit) {
+      DOM.cspArrowEdit.classList.remove('ti-chevron-up');
+      DOM.cspArrowEdit.classList.add('ti-chevron-down');
     }
   },
 
@@ -549,23 +589,56 @@ const UIManager = {
     };
     // 토글 버튼도 초기화
     this.resetAllToggles();
+    // 모든 access available 상태 숨기기
+    this.hideAllAccessAvailable();
   },
 
   // 카드 토글 버튼 표시/숨김 설정
   setCardToggleVisibility(platformVisible, workspaceVisible, cspVisible) {
     // Platform 토글
-    if (DOM.platformToggleContainer) {
-      DOM.platformToggleContainer.style.display = platformVisible ? 'block' : 'none';
+    if (DOM.platformToggleBtn) {
+      DOM.platformToggleBtn.style.display = platformVisible ? 'block' : 'none';
     }
-    
+    if (DOM.platformHeader) {
+      if (!platformVisible) {
+        DOM.platformHeader.setAttribute('tabIndex', '-1');
+        DOM.platformHeader.setAttribute('aria-disabled', 'true');
+        DOM.platformHeader.style.cursor = 'default';
+      } else {
+        DOM.platformHeader.removeAttribute('tabIndex');
+        DOM.platformHeader.removeAttribute('aria-disabled');
+        DOM.platformHeader.style.cursor = 'pointer';
+      }
+    }
     // Workspace 토글
-    if (DOM.workspaceToggleContainer) {
-      DOM.workspaceToggleContainer.style.display = workspaceVisible ? 'block' : 'none';
+    if (DOM.workspaceToggleBtn) {
+      DOM.workspaceToggleBtn.style.display = workspaceVisible ? 'block' : 'none';
     }
-    
+    if (DOM.workspaceHeader) {
+      if (!workspaceVisible) {
+        DOM.workspaceHeader.setAttribute('tabIndex', '-1');
+        DOM.workspaceHeader.setAttribute('aria-disabled', 'true');
+        DOM.workspaceHeader.style.cursor = 'default';
+      } else {
+        DOM.workspaceHeader.removeAttribute('tabIndex');
+        DOM.workspaceHeader.removeAttribute('aria-disabled');
+        DOM.workspaceHeader.style.cursor = 'pointer';
+      }
+    }
     // CSP 토글
-    if (DOM.cspToggleContainer) {
-      DOM.cspToggleContainer.style.display = cspVisible ? 'block' : 'none';
+    if (DOM.cspToggleBtn) {
+      DOM.cspToggleBtn.style.display = cspVisible ? 'block' : 'none';
+    }
+    if (DOM.cspHeader) {
+      if (!cspVisible) {
+        DOM.cspHeader.setAttribute('tabIndex', '-1');
+        DOM.cspHeader.setAttribute('aria-disabled', 'true');
+        DOM.cspHeader.style.cursor = 'default';
+      } else {
+        DOM.cspHeader.removeAttribute('tabIndex');
+        DOM.cspHeader.removeAttribute('aria-disabled');
+        DOM.cspHeader.style.cursor = 'pointer';
+      }
     }
   },
 
@@ -576,20 +649,20 @@ const UIManager = {
 
     cardState.expanded = expand;
     
-    let cardBody, toggleElement;
+    let cardBody, arrowElement;
     
     switch (cardType) {
       case 'platform':
         cardBody = DOM.platformMenuBody;
-        toggleElement = DOM.platformToggleView;
+        arrowElement = DOM.platformArrow;
         break;
       case 'workspace':
         cardBody = DOM.workspaceMenuBody;
-        toggleElement = DOM.workspaceToggleHeader;
+        arrowElement = DOM.workspaceArrow;
         break;
       case 'csp':
         cardBody = DOM.cspRoleMappingBody;
-        toggleElement = DOM.cspToggleView;
+        arrowElement = DOM.cspArrow;
         break;
       default:
         return;
@@ -605,8 +678,14 @@ const UIManager = {
       }
     }
     
-    if (toggleElement) {
-      toggleElement.checked = expand;
+    if (arrowElement) {
+      if (expand) {
+        arrowElement.classList.remove('ti-chevron-down');
+        arrowElement.classList.add('ti-chevron-up');
+      } else {
+        arrowElement.classList.remove('ti-chevron-up');
+        arrowElement.classList.add('ti-chevron-down');
+      }
     }
   },
 
@@ -625,6 +704,8 @@ const UIManager = {
       this.collapseAllCards();
       // 모든 토글 버튼을 명시적으로 OFF로 설정
       this.resetAllToggles();
+      // 모든 access available 상태 숨기기
+      this.hideAllAccessAvailable();
       return;
     }
 
@@ -646,18 +727,59 @@ const UIManager = {
     
     // 모든 토글 버튼을 명시적으로 OFF로 설정
     this.resetAllToggles();
+    
+    // 역할의 권한에 따라 access available 상태 설정
+    this.setAccessAvailableStates(hasPlatform, hasWorkspace, hasCsp);
   },
 
   // 모든 토글 버튼을 OFF로 초기화
   resetAllToggles() {
-    if (DOM.platformToggleView) {
-      DOM.platformToggleView.checked = false;
+    if (DOM.platformArrow) {
+      DOM.platformArrow.classList.remove('ti-chevron-up');
+      DOM.platformArrow.classList.add('ti-chevron-down');
     }
-    if (DOM.workspaceToggleHeader) {
-      DOM.workspaceToggleHeader.checked = false;
+    if (DOM.workspaceArrow) {
+      DOM.workspaceArrow.classList.remove('ti-chevron-up');
+      DOM.workspaceArrow.classList.add('ti-chevron-down');
     }
-    if (DOM.cspToggleView) {
-      DOM.cspToggleView.checked = false;
+    if (DOM.cspArrow) {
+      DOM.cspArrow.classList.remove('ti-chevron-up');
+      DOM.cspArrow.classList.add('ti-chevron-down');
+    }
+  },
+
+  // 모든 access available 상태 숨기기
+  hideAllAccessAvailable() {
+    if (DOM.platformMenuStatus) {
+      DOM.platformMenuStatus.style.display = 'none';
+    }
+    const workspaceStatusElement = document.getElementById('workspace-menu-status');
+    if (workspaceStatusElement) {
+      workspaceStatusElement.style.display = 'none';
+    }
+    const cspStatusElement = document.getElementById('csp-menu-status');
+    if (cspStatusElement) {
+      cspStatusElement.style.display = 'none';
+    }
+  },
+
+  // 역할의 권한에 따라 access available 상태 설정
+  setAccessAvailableStates(hasPlatform, hasWorkspace, hasCsp) {
+    // Platform access available
+    if (DOM.platformMenuStatus) {
+      DOM.platformMenuStatus.style.display = hasPlatform ? 'inline' : 'none';
+    }
+    
+    // Workspace access available
+    const workspaceStatusElement = document.getElementById('workspace-menu-status');
+    if (workspaceStatusElement) {
+      workspaceStatusElement.style.display = hasWorkspace ? 'inline' : 'none';
+    }
+    
+    // CSP Role access available
+    const cspStatusElement = document.getElementById('csp-menu-status');
+    if (cspStatusElement) {
+      cspStatusElement.style.display = hasCsp ? 'inline' : 'none';
     }
   },
 
@@ -702,16 +824,8 @@ const UIManager = {
     if (DOM.platformMenuBody) {
       if (showPlatform) {
         DOM.platformMenuBody.classList.add('show');
-        // Platform 카드가 열릴 때 "Menu permissions available" 텍스트 표시
-        if (DOM.platformMenuStatus) {
-          DOM.platformMenuStatus.style.display = 'inline';
-        }
       } else {
         DOM.platformMenuBody.classList.remove('show');
-        // Platform 카드가 닫힐 때 "Menu permissions available" 텍스트 숨김
-        if (DOM.platformMenuStatus) {
-          DOM.platformMenuStatus.style.display = 'none';
-        }
       }
     }
 
@@ -793,20 +907,20 @@ const UIManager = {
 
     cardState.expanded = expand;
     
-    let cardBody, toggleElement;
+    let cardBody, arrowElement;
     
     switch (cardType) {
       case 'platform':
         cardBody = DOM.platformMenuCreateBody;
-        toggleElement = DOM.platformToggleCreate;
+        arrowElement = DOM.platformArrowCreate;
         break;
       case 'workspace':
         cardBody = DOM.workspaceMenuCreateBody;
-        toggleElement = DOM.workspaceToggleCreate;
+        arrowElement = DOM.workspaceArrowCreate;
         break;
       case 'csp':
         cardBody = DOM.cspRoleMappingCreateBody;
-        toggleElement = DOM.cspToggleCreate;
+        arrowElement = DOM.cspArrowCreate;
         break;
       default:
         return;
@@ -822,8 +936,14 @@ const UIManager = {
       }
     }
     
-    if (toggleElement) {
-      toggleElement.checked = expand;
+    if (arrowElement) {
+      if (expand) {
+        arrowElement.classList.remove('ti-chevron-down');
+        arrowElement.classList.add('ti-chevron-up');
+      } else {
+        arrowElement.classList.remove('ti-chevron-up');
+        arrowElement.classList.add('ti-chevron-down');
+      }
     }
   },
 
@@ -836,14 +956,17 @@ const UIManager = {
 
   // 모든 Create-mode 토글 버튼을 OFF로 초기화
   resetAllCreateToggles() {
-    if (DOM.platformToggleCreate) {
-      DOM.platformToggleCreate.checked = false;
+    if (DOM.platformArrowCreate) {
+      DOM.platformArrowCreate.classList.remove('ti-chevron-up');
+      DOM.platformArrowCreate.classList.add('ti-chevron-down');
     }
-    if (DOM.workspaceToggleCreate) {
-      DOM.workspaceToggleCreate.checked = false;
+    if (DOM.workspaceArrowCreate) {
+      DOM.workspaceArrowCreate.classList.remove('ti-chevron-up');
+      DOM.workspaceArrowCreate.classList.add('ti-chevron-down');
     }
-    if (DOM.cspToggleCreate) {
-      DOM.cspToggleCreate.checked = false;
+    if (DOM.cspArrowCreate) {
+      DOM.cspArrowCreate.classList.remove('ti-chevron-up');
+      DOM.cspArrowCreate.classList.add('ti-chevron-down');
     }
   }
 };
@@ -1013,13 +1136,11 @@ const TableManager = {
       UIManager.setupCardStatesForRole(selectedRole);
       UIManager.updateRoleDetail(selectedRole);
       
-      // Role Types 업데이트
+      // Role Types 업데이트 (제거됨 - Role Detail에서 Role Types 컬럼 삭제)
       const roleSubs = selectedRole.role_subs || [];
       const hasPlatform = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.PLATFORM);
       const hasWorkspace = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.WORKSPACE);
       const hasCsp = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.CSP);
-      
-      updateRoleTypesDisplay(hasPlatform, hasWorkspace, hasCsp);
       
       // Workspace 토글 상태 업데이트 (기존 로직 유지)
       if (DOM.workspaceToggleViewInner) {
@@ -1329,19 +1450,7 @@ function toggleCards(showPlatform = false, showWorkspace = false, showCsp = fals
   UIManager.toggleCards(showPlatform, showWorkspace, showCsp);
 }
 
-// Role Types 표시 업데이트
-function updateRoleTypesDisplay(hasPlatform = false, hasWorkspace = false, hasCsp = false) {
-  const roleTypesElement = DOM.roleDetailTypesView;
-  if (roleTypesElement) {
-    const types = [];
-    if (hasPlatform) types.push('Platform (Menu Access)');
-    if (hasWorkspace) types.push('Workspace (Workspace Access)');
-    if (hasCsp) types.push('CSP (Cloud Provider Access)');
-    
-    const displayText = types.length > 0 ? types.join(', ') : 'None';
-    roleTypesElement.textContent = displayText;
-  }
-}
+
 
 function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
   let result = [];
@@ -1696,6 +1805,9 @@ function setupEventListeners() {
   // Edit-mode 카드 토글 버튼 이벤트 리스너
   setupEditCardToggleEventListeners();
 
+  // 헤더 클릭 이벤트 리스너 설정
+  setupHeaderClickEvents();
+
   // CSP Role Mapping 폼 초기화
   initCspRoleMappingForm();
   
@@ -1719,86 +1831,86 @@ function setupEventListeners() {
 // 카드 토글 버튼 이벤트 리스너 설정 (View-mode용)
 function setupCardToggleEventListeners() {
   // Platform 토글
-  if (DOM.platformToggleView) {
-    DOM.platformToggleView.removeEventListener("change", handlePlatformToggle);
-    DOM.platformToggleView.addEventListener("change", handlePlatformToggle);
+  if (DOM.platformToggleBtn) {
+    DOM.platformToggleBtn.removeEventListener("click", handlePlatformToggle);
+    DOM.platformToggleBtn.addEventListener("click", handlePlatformToggle);
   }
 
   // Workspace 토글
-  if (DOM.workspaceToggleHeader) {
-    DOM.workspaceToggleHeader.removeEventListener("change", handleWorkspaceToggle);
-    DOM.workspaceToggleHeader.addEventListener("change", handleWorkspaceToggle);
+  if (DOM.workspaceToggleBtn) {
+    DOM.workspaceToggleBtn.removeEventListener("click", handleWorkspaceToggle);
+    DOM.workspaceToggleBtn.addEventListener("click", handleWorkspaceToggle);
   }
 
   // CSP 토글
-  if (DOM.cspToggleView) {
-    DOM.cspToggleView.removeEventListener("change", handleCspToggle);
-    DOM.cspToggleView.addEventListener("change", handleCspToggle);
+  if (DOM.cspToggleBtn) {
+    DOM.cspToggleBtn.removeEventListener("click", handleCspToggle);
+    DOM.cspToggleBtn.addEventListener("click", handleCspToggle);
   }
 }
 
 // View-mode 카드 토글 핸들러들
 function handlePlatformToggle(e) {
-  const isChecked = e.target.checked;
-  UIManager.toggleCard('platform', isChecked);
+  if (!AppState.ui.cardStates.platform.visible) return;
+  const isExpanded = DOM.platformMenuBody.classList.contains('show');
+  UIManager.toggleCard('platform', !isExpanded);
 }
 
 function handleWorkspaceToggle(e) {
-  const isChecked = e.target.checked;
-  console.log("Workspace 토글 변경:", isChecked);
-  UIManager.toggleCard('workspace', isChecked);
+  if (!AppState.ui.cardStates.workspace.visible) return;
+  const isExpanded = DOM.workspaceMenuBody.classList.contains('show');
+  UIManager.toggleCard('workspace', !isExpanded);
 }
 
 function handleCspToggle(e) {
-  const isChecked = e.target.checked;
-  console.log("CSP 토글 변경:", isChecked);
-  UIManager.toggleCard('csp', isChecked);
+  if (!AppState.ui.cardStates.csp.visible) return;
+  const isExpanded = DOM.cspRoleMappingBody.classList.contains('show');
+  UIManager.toggleCard('csp', !isExpanded);
 }
 
 // Create-mode 카드 토글 버튼 이벤트 리스너 설정
 function setupCreateCardToggleEventListeners() {
   // Platform 토글
-  if (DOM.platformToggleCreate) {
-    DOM.platformToggleCreate.removeEventListener("change", handlePlatformToggleCreate);
-    DOM.platformToggleCreate.addEventListener("change", handlePlatformToggleCreate);
+  if (DOM.platformToggleBtnCreate) {
+    DOM.platformToggleBtnCreate.removeEventListener("click", handlePlatformToggleCreate);
+    DOM.platformToggleBtnCreate.addEventListener("click", handlePlatformToggleCreate);
   }
 
   // Workspace 토글
-  if (DOM.workspaceToggleCreate) {
-    DOM.workspaceToggleCreate.removeEventListener("change", handleWorkspaceToggleCreate);
-    DOM.workspaceToggleCreate.addEventListener("change", handleWorkspaceToggleCreate);
+  if (DOM.workspaceToggleBtnCreate) {
+    DOM.workspaceToggleBtnCreate.removeEventListener("click", handleWorkspaceToggleCreate);
+    DOM.workspaceToggleBtnCreate.addEventListener("click", handleWorkspaceToggleCreate);
   }
 
   // CSP 토글
-  if (DOM.cspToggleCreate) {
-    DOM.cspToggleCreate.removeEventListener("change", handleCspToggleCreate);
-    DOM.cspToggleCreate.addEventListener("change", handleCspToggleCreate);
+  if (DOM.cspToggleBtnCreate) {
+    DOM.cspToggleBtnCreate.removeEventListener("click", handleCspToggleCreate);
+    DOM.cspToggleBtnCreate.addEventListener("click", handleCspToggleCreate);
   }
 }
 
 // Create-mode 카드 토글 핸들러들
 function handlePlatformToggleCreate(e) {
-  const isChecked = e.target.checked;
-  console.log("Create Platform 토글 변경:", isChecked);
-  UIManager.toggleCreateCard('platform', isChecked);
+  const isExpanded = DOM.platformMenuCreateBody.classList.contains('show');
+  console.log("Create Platform 토글 변경:", !isExpanded);
+  UIManager.toggleCreateCard('platform', !isExpanded);
 }
 
 function handleWorkspaceToggleCreate(e) {
-  const isChecked = e.target.checked;
-  console.log("Create Workspace 토글 변경:", isChecked);
-  UIManager.toggleCreateCard('workspace', isChecked);
+  const isExpanded = DOM.workspaceMenuCreateBody.classList.contains('show');
+  console.log("Create Workspace 토글 변경:", !isExpanded);
+  UIManager.toggleCreateCard('workspace', !isExpanded);
 }
 
 function handleCspToggleCreate(e) {
-  const isChecked = e.target.checked;
-  console.log("Create CSP 토글 변경:", isChecked);
+  const isExpanded = DOM.cspRoleMappingCreateBody.classList.contains('show');
+  console.log("Create CSP 토글 변경:", !isExpanded);
   
-  if (isChecked) {
+  if (!isExpanded) {
     // Role Name이 입력되지 않았으면 토글을 비활성화
     const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
     if (!roleName || !roleName.trim()) {
       Utils.showAlert('CSP Role Mapping을 사용하려면 먼저 Role Name을 입력해주세요.');
-      e.target.checked = false;
       return;
     }
     
@@ -1806,7 +1918,7 @@ function handleCspToggleCreate(e) {
     updateCspRoleName();
   }
   
-  UIManager.toggleCreateCard('csp', isChecked);
+  UIManager.toggleCreateCard('csp', !isExpanded);
 }
 
 // 핸들러 함수 분리
@@ -2294,13 +2406,13 @@ async function loadEditCspRoleMapping(roleId, table) {
       }
     };
     
-    // API 응답이 null이거나 undefined인 경우 빈 상태 메시지 표시
+    // API 응답이 null이거나 undefined인 경우 빈 테이블 표시
     if (!response) {
       console.log("Edit CSP 역할 매핑 데이터가 없습니다. (API 응답: null)");
       if (table) {
         table.setData([]);
       }
-      showCspContent(false, true);
+      showCspContent(true, false);
       return;
     }
     
@@ -2316,7 +2428,7 @@ async function loadEditCspRoleMapping(roleId, table) {
         if (table) {
           table.setData([]);
         }
-        showCspContent(false, true);
+        showCspContent(true, false);
       }
       return;
     }
@@ -2351,30 +2463,30 @@ async function loadEditCspRoleMapping(roleId, table) {
         if (table) {
           table.setData([]);
         }
-        showCspContent(false, true);
+        showCspContent(true, false);
       }
     } else {
-      // cspRoles 속성이 없는 경우 빈 상태 메시지 표시
+      // cspRoles 속성이 없는 경우 빈 테이블 표시
       console.log("Edit CSP 역할 매핑 데이터가 없습니다. (cspRoles 속성 없음)");
       if (table) {
         table.setData([]);
       }
-      showCspContent(false, true);
+      showCspContent(true, false);
     }
     
     console.log("Edit CSP 역할 매핑 데이터 로드 완료");
     
   } catch (error) {
     console.error("Edit CSP 역할 매핑 데이터 로드 중 오류 발생:", error);
-    // 오류가 발생해도 테이블을 빈 배열로 설정하고 빈 상태 메시지 표시
+    // 오류가 발생해도 테이블을 빈 배열로 설정하고 테이블 표시
     if (table) {
       table.setData([]);
     }
     if (DOM.cspRoleMappingEditTable) {
-      DOM.cspRoleMappingEditTable.style.display = 'none';
+      DOM.cspRoleMappingEditTable.style.display = 'block';
     }
     if (DOM.cspRoleMappingEditEmpty) {
-      DOM.cspRoleMappingEditEmpty.style.display = 'block';
+      DOM.cspRoleMappingEditEmpty.style.display = 'none';
     }
   }
 }
@@ -2724,41 +2836,53 @@ function getPlatformPermissions() {
 // Edit-mode 카드 토글 버튼 이벤트 리스너 설정
 function setupEditCardToggleEventListeners() {
   // Platform 토글
-  if (DOM.platformToggleEdit) {
-    DOM.platformToggleEdit.removeEventListener("change", handlePlatformToggleEdit);
-    DOM.platformToggleEdit.addEventListener("change", handlePlatformToggleEdit);
+  if (DOM.platformToggleBtnEdit) {
+    DOM.platformToggleBtnEdit.removeEventListener("click", handlePlatformToggleEdit);
+    DOM.platformToggleBtnEdit.addEventListener("click", handlePlatformToggleEdit);
   }
 
   // Workspace 토글
-  if (DOM.workspaceToggleEdit) {
-    DOM.workspaceToggleEdit.removeEventListener("change", handleWorkspaceToggleEdit);
-    DOM.workspaceToggleEdit.addEventListener("change", handleWorkspaceToggleEdit);
+  if (DOM.workspaceToggleBtnEdit) {
+    DOM.workspaceToggleBtnEdit.removeEventListener("click", handleWorkspaceToggleEdit);
+    DOM.workspaceToggleBtnEdit.addEventListener("click", handleWorkspaceToggleEdit);
   }
 
   // CSP 토글
-  if (DOM.cspToggleEdit) {
-    DOM.cspToggleEdit.removeEventListener("change", handleCspToggleEdit);
-    DOM.cspToggleEdit.addEventListener("change", handleCspToggleEdit);
+  if (DOM.cspToggleBtnEdit) {
+    DOM.cspToggleBtnEdit.removeEventListener("click", handleCspToggleEdit);
+    DOM.cspToggleBtnEdit.addEventListener("click", handleCspToggleEdit);
   }
 }
 
 // Edit-mode 카드 토글 핸들러들
 function handlePlatformToggleEdit(e) {
-  const isChecked = e.target.checked;
-  console.log("Edit Platform 토글 변경:", isChecked);
-  UIManager.toggleEditCard('platform', isChecked);
+  const isExpanded = DOM.platformMenuEditBody.classList.contains('show');
+  console.log("Edit Platform 토글 변경:", !isExpanded);
+  UIManager.toggleEditCard('platform', !isExpanded);
 }
 
 function handleWorkspaceToggleEdit(e) {
-  const isChecked = e.target.checked;
-  console.log("Edit Workspace 토글 변경:", isChecked);
-  UIManager.toggleEditCard('workspace', isChecked);
+  const isExpanded = DOM.workspaceMenuEditBody.classList.contains('show');
+  console.log("Edit Workspace 토글 변경:", !isExpanded);
+  UIManager.toggleEditCard('workspace', !isExpanded);
 }
 
 function handleCspToggleEdit(e) {
-  const isChecked = e.target.checked;
-  console.log("Edit CSP 토글 변경:", isChecked);
-  UIManager.toggleEditCard('csp', isChecked);
+  const isExpanded = DOM.cspRoleMappingEditBody.classList.contains('show');
+  console.log("Edit CSP 토글 변경:", !isExpanded);
+  UIManager.toggleEditCard('csp', !isExpanded);
+  
+  // 카드가 펼쳐질 때 CSP Role 매핑 테이블 초기화 및 CSP Role Name 자동 설정
+  if (!isExpanded && AppState.roles.selectedRole) {
+    initCspRoleMappingEditTable(AppState.roles.selectedRole.id);
+    
+    // CSP Role Name 자동 설정
+    if (DOM.editCspRoleNameInput && AppState.roles.selectedRole.name) {
+      const cspRoleName = `MCIAM_${AppState.roles.selectedRole.name}`;
+      DOM.editCspRoleNameInput.value = cspRoleName;
+      selectedEditCspRoleName = cspRoleName;
+    }
+  }
 }
 
 // Edit 버튼 클릭 핸들러
@@ -2845,9 +2969,6 @@ async function populateEditForm(role) {
   // CSP 권한 설정
   if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.CSP)) {
     UIManager.toggleEditCard('csp', true);
-    // CSP 매핑 테이블 초기화
-    initCspRoleMappingEditTable(role.id);
-    
     // CSP Role Name 입력 박스에 기본값 설정
     if (DOM.editCspRoleNameInput && role.name) {
       const cspRoleName = `MCIAM_${role.name}`;
@@ -2855,6 +2976,9 @@ async function populateEditForm(role) {
       selectedEditCspRoleName = cspRoleName;
     }
   }
+  
+  // CSP 매핑 테이블은 권한과 관계없이 항상 초기화 (Edit 모드에서 CSP Role 카드를 사용할 수 있도록)
+  initCspRoleMappingEditTable(role.id);
 }
 
 // Edit 카드 상태 설정
@@ -3115,6 +3239,67 @@ export async function deleteRole() {
   } catch (error) {
     console.error('역할 삭제 중 오류 발생:', error);
     Utils.showAlert('역할 삭제 중 오류가 발생했습니다.');
+  }
+}
+
+// 카드 헤더 전체 클릭 이벤트 연결
+function setupHeaderClickEvents() {
+  // View 모드
+  if (DOM.platformHeader) {
+    DOM.platformHeader.addEventListener('click', function(e) {
+      if (e.target.closest('#platform-toggle-btn')) return;
+      handlePlatformToggle(e);
+    });
+  }
+  if (DOM.workspaceHeader) {
+    DOM.workspaceHeader.addEventListener('click', function(e) {
+      if (e.target.closest('#workspace-toggle-btn')) return;
+      handleWorkspaceToggle(e);
+    });
+  }
+  if (DOM.cspHeader) {
+    DOM.cspHeader.addEventListener('click', function(e) {
+      if (e.target.closest('#csp-toggle-btn')) return;
+      handleCspToggle(e);
+    });
+  }
+  // Create 모드
+  if (DOM.platformHeaderCreate) {
+    DOM.platformHeaderCreate.addEventListener('click', function(e) {
+      if (e.target.closest('#platform-toggle-btn-create')) return;
+      handlePlatformToggleCreate(e);
+    });
+  }
+  if (DOM.workspaceHeaderCreate) {
+    DOM.workspaceHeaderCreate.addEventListener('click', function(e) {
+      if (e.target.closest('#workspace-toggle-btn-create')) return;
+      handleWorkspaceToggleCreate(e);
+    });
+  }
+  if (DOM.cspHeaderCreate) {
+    DOM.cspHeaderCreate.addEventListener('click', function(e) {
+      if (e.target.closest('#csp-toggle-btn-create')) return;
+      handleCspToggleCreate(e);
+    });
+  }
+  // Edit 모드
+  if (DOM.platformHeaderEdit) {
+    DOM.platformHeaderEdit.addEventListener('click', function(e) {
+      if (e.target.closest('#platform-toggle-btn-edit')) return;
+      handlePlatformToggleEdit(e);
+    });
+  }
+  if (DOM.workspaceHeaderEdit) {
+    DOM.workspaceHeaderEdit.addEventListener('click', function(e) {
+      if (e.target.closest('#workspace-toggle-btn-edit')) return;
+      handleWorkspaceToggleEdit(e);
+    });
+  }
+  if (DOM.cspHeaderEdit) {
+    DOM.cspHeaderEdit.addEventListener('click', function(e) {
+      if (e.target.closest('#csp-toggle-btn-edit')) return;
+      handleCspToggleEdit(e);
+    });
   }
 }
 
