@@ -1197,11 +1197,146 @@ const TableManager = {
   }
 };
 
+// 핸들러 함수를 먼저 전역에 등록
+window.handleAddButtonClick = function(e) {
+  e.preventDefault();
+
+  // 현재 선택된 행이 있다면 선택 해제 (항상 먼저 실행)
+  if (AppState.roles.selectedRole) {
+    // Tabulator에서 선택된 행 해제
+    if (AppState.tables.rolesTable) {
+      AppState.tables.rolesTable.deselectRow();
+      // 모든 행의 선택 상태를 명시적으로 해제
+      const rows = AppState.tables.rolesTable.getRows();
+      rows.forEach((row) => {
+        row.deselect();
+      });
+    }
+    updateAppState('roles.selectedRole', null);
+  }
+
+  // create-mode-cards가 이미 펼쳐진 상태인지 확인 (className으로도 확인)
+  const createModeCards = document.getElementById('create-mode-cards');
+  const isCreateModeVisible = createModeCards && (
+    createModeCards.classList.contains('show') || 
+    createModeCards.className.includes('show') ||
+    createModeCards.classList.contains('collapsing')
+  );
+  
+  // view-mode-cards 숨기기 (항상 실행)
+  const viewModeCards = document.getElementById('view-mode-cards');
+  if (viewModeCards) {
+    viewModeCards.classList.remove('show');
+  }
+  
+  // edit-mode-cards 숨기기 (Edit 모드에서 Add 버튼 클릭 시)
+  const editModeCards = document.getElementById('edit-mode-cards');
+  if (editModeCards) {
+    editModeCards.classList.remove('show');
+  }
+  
+  if (isCreateModeVisible) {
+    // 이미 펼쳐진 상태라면 닫기 (Cancel 버튼과 동일한 동작)
+    if (createModeCards) {
+      createModeCards.classList.remove('show');
+    }
+    updateAppState('ui.createMode', false);
+    return;
+  }
+  
+  // 모든 카드 닫기
+  toggleCards(false, false, false);
+  
+  // 카드 상태 초기화
+  UIManager.setupCardStatesForRole(null);
+  
+  // Create-mode 카드 상태 초기화
+  UIManager.initializeCreateCardStates();
+  UIManager.collapseAllCreateCards();
+  
+  // Role Detail 제목에서 역할 이름 숨기기
+  const roleDetailRolenameElement = document.getElementById('role-detail-rolename');
+  if (roleDetailRolenameElement) {
+    roleDetailRolenameElement.style.display = 'none';
+  }
+  
+  // create-mode-cards 보이기
+  if (createModeCards) {
+    createModeCards.classList.add('show');
+  }
+  
+  updateAppState('ui.createMode', true);
+  updateAppState('ui.viewMode', false);
+  updateAppState('ui.editMode', false);
+};
+
+// 필터 기능 초기화
+function initFilter() {
+  // 필터 요소들 참조
+  var fieldEl = document.getElementById("filter-field");
+  var typeEl = document.getElementById("filter-type");
+  var valueEl = document.getElementById("filter-value");
+
+  // 필터 업데이트 함수
+  function updateFilter() {
+    var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+    var typeVal = typeEl.options[typeEl.selectedIndex].value;
+
+    if (filterVal && AppState.tables.rolesTable) {
+      AppState.tables.rolesTable.setFilter(filterVal, typeVal, valueEl.value);
+    }
+  }
+
+  // 이벤트 리스너 등록
+  if (fieldEl) {
+    fieldEl.addEventListener("change", updateFilter);
+  }
+  if (typeEl) {
+    typeEl.addEventListener("change", updateFilter);
+  }
+  if (valueEl) {
+    valueEl.addEventListener("keyup", updateFilter);
+  }
+
+  // Clear filters 버튼
+  var clearBtn = document.getElementById("filter-clear");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      if (fieldEl) fieldEl.value = "";
+      if (typeEl) typeEl.value = "=";
+      if (valueEl) valueEl.value = "";
+      
+      if (AppState.tables.rolesTable) {
+        AppState.tables.rolesTable.clearFilter();
+      }
+    });
+  }
+}
+
+// 역할 목록 새로고침 함수
+export function refreshRolesList() {
+  console.log("역할 목록 새로고침");
+  initRoles();
+}
+
 // DOMContentLoaded 이벤트 리스너 등록
 document.addEventListener("DOMContentLoaded", async function () {
   console.log("DOM 로드됨");
+  
   try {
+    // 페이지 헤더에 Add Role 버튼 추가 (기존 동작 유지)
+    if (typeof webconsolejs !== 'undefined' && webconsolejs['partials/layout/navigatePages']) {
+      webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(
+        null, // targetSection - null로 설정하여 onclickEvent 사용
+        "Add Role", // createBtnName
+        "handleAddButtonClick(event)" // 기존 Add 버튼의 동작과 동일
+      );
+    }
+    
     await initRoles();
+    
+    // 필터 기능 초기화
+    initFilter();
   } catch (error) {
     console.error("초기화 중 오류 발생:", error);
   }
@@ -1659,9 +1794,9 @@ async function initPlatformMenuCreateTree() {
 
 async function initPlatformMenuEditTree() {
   try {
-    // 이미 트리가 초기화되어 있으면 재초기화하지 않음
+    // 트리가 이미 초기화되어 있으면 제거하고 재초기화
     if (DOM.platformMenuEditTree && $(DOM.platformMenuEditTree).jstree(true)) {
-      return;
+      $("#platform-menu-edit-tree").jstree("destroy");
     }
     
     const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
@@ -1726,12 +1861,7 @@ async function initPlatformMenuEditTree() {
         // 트리 초기화 시 모든 체크박스 해제
         $('#platform-menu-edit-tree').jstree(true).uncheck_all();
         
-        // 현재 선택된 역할이 있으면 권한 업데이트 실행
-        if (AppState.roles.selectedRole && AppState.roles.selectedRole.id) {
-          setTimeout(() => {
-            updateEditMenuPermissions(AppState.roles.selectedRole.id);
-          }, 100);
-        }
+        // 권한 업데이트는 handlePlatformToggleEdit에서 명시적으로 호출
       });
 
     } else {
@@ -1921,66 +2051,7 @@ function handleCspToggleCreate(e) {
   UIManager.toggleCreateCard('csp', !isExpanded);
 }
 
-// 핸들러 함수 분리
-function handleAddButtonClick(e) {
-  e.preventDefault();
 
-  // 현재 선택된 행이 있다면 선택 해제 (항상 먼저 실행)
-  if (AppState.roles.selectedRole) {
-    // Tabulator에서 선택된 행 해제
-    if (AppState.tables.rolesTable) {
-      AppState.tables.rolesTable.deselectRow();
-      // 모든 행의 선택 상태를 명시적으로 해제
-      const rows = AppState.tables.rolesTable.getRows();
-      rows.forEach((row) => {
-        row.deselect();
-      });
-    }
-    updateAppState('roles.selectedRole', null);
-  }
-
-  // create-mode-cards가 이미 펼쳐진 상태인지 확인 (className으로도 확인)
-  const isCreateModeVisible = DOM.createModeCards && (
-    DOM.createModeCards.classList.contains('show') || 
-    DOM.createModeCards.className.includes('show') ||
-    DOM.createModeCards.classList.contains('collapsing')
-  );
-  // view-mode-cards 숨기기 (항상 실행)
-  if (DOM.viewModeCards) {
-    DOM.viewModeCards.classList.remove('show');
-  }
-  // edit-mode-cards 숨기기 (Edit 모드에서 Add 버튼 클릭 시)
-  if (DOM.editModeCards) {
-    DOM.editModeCards.classList.remove('show');
-  }
-  if (isCreateModeVisible) {
-    // 이미 펼쳐진 상태라면 닫기 (Cancel 버튼과 동일한 동작)
-    if (DOM.createModeCards) {
-      DOM.createModeCards.classList.remove('show');
-    }
-    updateAppState('ui.createMode', false);
-    return;
-  }
-  // 모든 카드 닫기
-  toggleCards(false, false, false);
-  // 카드 상태 초기화
-  UIManager.setupCardStatesForRole(null);
-  // Create-mode 카드 상태 초기화
-  UIManager.initializeCreateCardStates();
-  UIManager.collapseAllCreateCards();
-  // Role Detail 제목에서 역할 이름 숨기기
-  const roleDetailRolenameElement = DOM.roleDetailRolename;
-  if (roleDetailRolenameElement) {
-    roleDetailRolenameElement.style.display = 'none';
-  }
-  // create-mode-cards 보이기
-  if (DOM.createModeCards) {
-    DOM.createModeCards.classList.add('show');
-  }
-  updateAppState('ui.createMode', true);
-  updateAppState('ui.viewMode', false);
-  updateAppState('ui.editMode', false);
-}
 
 function handleCancelButtonClick(e) {
   // create-mode-cards 숨기기
@@ -2071,9 +2142,10 @@ async function updateMenuPermissions(roleId) {
 async function updateEditMenuPermissions(roleId) {
   try {
     
-    // 트리가 없으면 생성 (지연 초기화)
+    // 트리가 없으면 함수 종료 (트리 초기화는 handlePlatformToggleEdit에서 처리)
     if (!$("#platform-menu-edit-tree").jstree(true)) {
-      await initPlatformMenuEditTree();
+      console.log("Edit Platform 메뉴 트리가 초기화되지 않았습니다.");
+      return;
     }
     
     // getMappedMenusByRoleList API 호출
@@ -2859,6 +2931,22 @@ function handlePlatformToggleEdit(e) {
   const isExpanded = DOM.platformMenuEditBody.classList.contains('show');
   console.log("Edit Platform 토글 변경:", !isExpanded);
   UIManager.toggleEditCard('platform', !isExpanded);
+  
+  // 카드가 펼쳐질 때 Platform 메뉴 트리 초기화 및 권한 업데이트
+  if (!isExpanded && AppState.roles.selectedRole) {
+    // 메뉴 트리가 없으면 초기화
+    if (!$("#platform-menu-edit-tree").jstree(true)) {
+      initPlatformMenuEditTree().then(() => {
+        // 트리 초기화 완료 후 권한 업데이트
+        if (AppState.roles.selectedRole && AppState.roles.selectedRole.id) {
+          updateEditMenuPermissions(AppState.roles.selectedRole.id);
+        }
+      });
+    } else {
+      // 트리가 이미 있으면 권한만 업데이트
+      updateEditMenuPermissions(AppState.roles.selectedRole.id);
+    }
+  }
 }
 
 function handleWorkspaceToggleEdit(e) {
@@ -2951,12 +3039,14 @@ async function populateEditForm(role) {
     DOM.editRoleNameText.textContent = role.name || '';
   }
 
-  // Platform 권한 설정
+  // Platform 권한 설정 - 권한이 없어도 Edit 모드에서 Platform access 카드를 사용할 수 있도록 수정
   if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.PLATFORM)) {
     UIManager.toggleEditCard('platform', true);
     // 메뉴 트리 초기화 (권한 업데이트는 ready.jstree 이벤트에서 처리)
     await initPlatformMenuEditTree();
   }
+  // Platform 권한이 없어도 Edit 모드에서 Platform access 카드를 열 수 있도록 메뉴 트리는 초기화하지 않음
+  // (카드를 열 때 handlePlatformToggleEdit에서 지연 초기화)
 
   // Workspace 권한 설정
   if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.WORKSPACE)) {

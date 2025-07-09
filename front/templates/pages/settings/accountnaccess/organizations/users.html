@@ -1,1 +1,562 @@
-<%= partial("underdevelop.html") %>
+<%= contentFor("content") %>
+
+<div class="page-body">
+  <div class="container-xl">
+    <!-- USER LIST SECTION -->
+    <div id="index" class="section">
+
+
+    <!-- table area -->
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">List of Users</h3>
+            <div class="card-actions btn-actions">
+              <!-- filter -->
+              <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filterbody" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"></path>
+                </svg>
+              </a>
+
+              <!-- sort -->
+              <div class="dropdown">
+                <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-arrows-sort">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M3 9l4 -4l4 4m-4 -4v14"></path>
+                    <path d="M21 15l-4 4l-4 -4m4 4v-14"></path>
+                  </svg>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
+                  <a class="dropdown-item" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    </svg>
+                    Name (A-Z)
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    </svg>
+                    Name (Z-A)
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    </svg>
+                    Email (A-Z)
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    </svg>
+                    Email (Z-A)
+                  </a>
+                </div>
+              </div>
+
+              <!-- Action -->
+              <div class="dropdown">
+                <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M6 9l6 6l6 -6"></path>
+                  </svg>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow">
+                  <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#commonDefaultModal" onclick="webconsolejs['partials/layout/modal'].commonModal(this,'UserDelete', 'Would you like to delete this user ?', 'pages/settings/accountnaccess/organizations/users.deleteUser')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    </svg>
+                    Delete
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    </svg>
+                    Export
+                  </a>
+                </div>
+              </div>
+
+              <!-- refresh -->
+              <a class="btn-action" onclick="webconsolejs['pages/settings/accountnaccess/organizations/users'].refreshUsersList()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Filter 영역 -->
+          <div id="filterbody" class="accordion-collapse collapse">
+            <div class="accordion-body p-3 row">
+              <div class="col-sm-12 col-md-3 row mb-1">
+                <div class="col-4 col-form-label required d-flex justify-content-end">
+                  Field
+                </div>
+                <select class="col form-select" id="filter-field">
+                  <option value="id">User ID</option>
+                  <option value="name">User Name</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
+
+              <div class="col-sm-12 col-md-2 row mb-1">
+                <div class="col-4 col-form-label d-flex justify-content-end">
+                  Type
+                </div>
+                <select class="col form-select" id="filter-type">
+                  <option value="like">like</option>
+                  <option value="=">=</option>
+                  <option value="<"><</option>
+                  <option value="<="><=</option>
+                  <option value=">">></option>
+                  <option value=">=">>=</option>
+                  <option value="!=">!=</option>
+                </select>
+              </div>
+
+              <div class="col-sm-12 col-md-7 row mb-1">
+                <div class="col-sm-4 col-md-1 col-form-label required d-flex justify-content-end">
+                  Filter
+                </div>
+                <input class="col form-control" id="filter-value" type="text" placeholder="value to filter">
+                <div class="col-auto">
+                  <a id="filter-clear" class="btn btn-icon" type="button" aria-label="Button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M18 6l-12 12"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+            <div id="users-table" class="users-table-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- == V I E W == 모드 카드들 -->
+    <div id="view-mode-cards" class="collapse bg-secondary-lt">
+      <!-- User Info 카드 -->
+      <div class="card" id="user-info-card">
+        <div class="card-header">
+          <h3 class="card-title">
+            User Info<span id="user-info-username" class="ms-2 text-primary" style="display: none; font-weight: normal;">
+              [<span id="user-info-username-text"></span>]
+            </span>
+          </h3>
+          <div class="card-actions btn-actions">
+            <a href="#edit_user" class="btn btn-outline-warning" data-bs-toggle="collapse" data-bs-target="#edit-mode-cards" style="display: none;">
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
+                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
+                <path d="M16 5l3 3"></path>
+              </svg>
+              Edit
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- User 기본 정보 -->
+          <div class="row p-4 mb-4" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+            <div class="datagrid">
+              <div class="datagrid-item">
+                <div class="datagrid-title">First Name</div>
+                <div class="datagrid-content" id="user-info-firstname"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Last Name</div>
+                <div class="datagrid-content" id="user-info-lastname"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Email</div>
+                <div class="datagrid-content" id="user-info-email"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Status</div>
+                <div class="datagrid-content" id="user-info-enabled"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 섹션 구분선 -->
+          <div class="border-bottom mb-4"></div>
+          
+          <!-- Roles 테이블 -->
+          <div class="datagrid-item" style="grid-column: 1 / -1;">
+            <div class="datagrid-content">
+              <div class="card card-sm">
+                <div class="table-responsive">
+                  <table class="table table-vcenter card-table">
+                    <thead>
+                      <tr>
+                        <th class="w-20">Role Type</th>
+                        <th class="w-30">Role Name</th>
+                        <th class="w-40">Description</th>
+                        <th class="w-10">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Platform Roles Row -->
+                      <tr>
+                        <td>
+                          <span class="fw-medium">Platform</span>
+                        </td>
+                        <td id="platform-roles-names">
+                          <span class="text-muted">-</span>
+                        </td>
+                        <td id="platform-roles-descriptions">
+                          <span class="text-muted">-</span>
+                        </td>
+                        <td id="platform-roles-actions" class="text-center">
+                          <div class="btn-list justify-content-center">
+                            <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('platform')" title="Add Platform role">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 5l0 14"></path>
+                                <path d="M5 12l14 0"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Workspace Roles Row -->
+                      <tr>
+                        <td>
+                          <span class="fw-medium">Workspace</span>
+                        </td>
+                        <td id="workspace-roles-names">
+                          <span class="text-muted">-</span>
+                        </td>
+                        <td id="workspace-roles-descriptions">
+                          <span class="text-muted">-</span>
+                        </td>
+                        <td id="workspace-roles-actions" class="text-center">
+                          <div class="btn-list justify-content-center">
+                            <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('workspace')" title="Add Workspace role">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 5l0 14"></path>
+                                <path d="M5 12l14 0"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- CSP Roles Row -->
+                      <tr>
+                        <td>
+                          <span class="fw-medium">CSP</span>
+                        </td>
+                        <td id="csp-roles-names">
+                          <span class="text-muted">-</span>
+                        </td>
+                        <td id="csp-roles-descriptions">
+                          <span class="text-muted">-</span>
+                        </td>
+                        <td id="csp-roles-actions" class="text-center">
+                          <div class="btn-list justify-content-center">
+                            <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('csp')" title="Add CSP role">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 5l0 14"></path>
+                                <path d="M5 12l14 0"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+
+<!-- USER CREATE SECTION -->
+<div id="usercreate" class="section">
+  <div class="row row-cards">
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Create User</h3>
+        </div>
+
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">First Name</label>
+                <input type="text" class="form-control" id="create-user-firstname" placeholder="Enter first name" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">Last Name</label>
+                <input type="text" class="form-control" id="create-user-lastname" placeholder="Enter last name" required>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Email</label>
+            <input type="email" class="form-control" id="create-user-email" placeholder="Enter email address" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" id="create-user-password" placeholder="Enter password">
+          </div>
+          <div class="mb-3">
+            <label class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="create-user-enabled" checked>
+              <span class="form-check-label">Enabled</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card-footer text-end">
+          <button type="button" class="btn btn-secondary me-2" onclick="goBackToUserList()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="deployUser()">Deploy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">Steps</h3>
+          <ul class="steps steps-vertical">
+            <li class="step-item active">
+              <div class="h4 m-0">User Information</div>
+              <div class="text-secondary">Enter user's basic information</div>
+            </li>
+            <li class="step-item">
+              <div class="h4 m-0">Review</div>
+              <div class="text-secondary">Review and confirm user details</div>
+            </li>
+            <li class="step-item">
+              <div class="h4 m-0">Create</div>
+              <div class="text-secondary">Create user account</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal modal-blur fade" id="add-user-modal" tabindex="-1" style="display: none" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Add User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-user-form">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">First Name</label>
+                <input type="text" class="form-control" id="add-user-firstname" placeholder="Enter first name" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">Last Name</label>
+                <input type="text" class="form-control" id="add-user-lastname" placeholder="Enter last name" required>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Email</label>
+            <input type="email" class="form-control" id="add-user-email" placeholder="Enter email address" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" id="add-user-password" placeholder="Enter password">
+          </div>
+          <div class="mb-3">
+            <label class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="add-user-enabled" checked>
+              <span class="form-check-label">Enabled</span>
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="createUser()">Create User</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Role Mapping Modal -->
+<div class="modal modal-blur fade" id="add-role-mapping-modal" tabindex="-1" style="display: none" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Add Role Mapping</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-role-mapping-form">
+          <div class="mb-3">
+            <label class="form-label required">Role Type</label>
+            <select class="form-select" id="role-mapping-type" required>
+              <option value="">Select role type</option>
+              <option value="platform">Platform Role</option>
+              <option value="workspace">Workspace Role</option>
+              <option value="csp">CSP Role</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Role</label>
+            <select class="form-select" id="role-mapping-role" required>
+              <option value="">Select role</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="addUserRole()">Add Role</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- pageloader -->
+<%= partial("partials/layout/pageloader.html") %>
+
+<!-- Custom Styles -->
+<style>
+  /* 세련된 테이블 스타일 */
+  .card-table {
+    border: none;
+    box-shadow: none;
+  }
+  
+  .card-table thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .card-table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+  }
+  
+  .card-table tbody tr:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+  }
+  
+  /* 아바타 스타일 */
+  .avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+  }
+  
+  /* 버튼 리스트 스타일 */
+  .btn-list {
+    gap: 4px;
+  }
+  
+  .btn-list .btn {
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-list .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  
+  /* 역할 이름 스타일 */
+  .role-name {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .role-description {
+    color: #6c757d;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  /* 카드 스타일 */
+  .card-sm {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  /* 반응형 테이블 */
+  @media (max-width: 768px) {
+    .card-table {
+      font-size: 0.875rem;
+    }
+    
+    .card-table thead th,
+    .card-table tbody td {
+      padding: 8px 12px;
+    }
+    
+    .avatar-sm {
+      width: 24px;
+      height: 24px;
+      font-size: 10px;
+    }
+  }
+</style>
+
+<!-- javascript -->
+<%= javascriptTag("common/api/services/users_api.js") %>
+<%= javascriptTag("pages/settings/accountnaccess/organizations/users.js") %>
