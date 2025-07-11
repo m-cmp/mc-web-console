@@ -289,7 +289,7 @@ const UIManager = {
     this.updateRoleRow('csp', cspRoles);
   },
   
-  // 개별 역할 row 업데이트
+  // 개별 역할 row 업데이트 (그리드 형태)
   updateRoleRow(roleType, roles) {
     const namesElement = document.getElementById(`${roleType}-roles-names`);
     const descriptionsElement = document.getElementById(`${roleType}-roles-descriptions`);
@@ -316,13 +316,16 @@ const UIManager = {
         </div>
       `;
     } else {
-      // 역할이 있을 때
-      namesElement.innerHTML = roles.map(role => `<span class="role-name">${role.name}</span>`).join('<br>');
-      descriptionsElement.innerHTML = roles.map(role => `<span class="role-description">${role.description || 'No description'}</span>`).join('<br>');
+      // 역할이 있을 때 - 그리드 형태에 맞게 스타일 조정
+      const roleNames = roles.map(role => `<span class="badge bg-primary me-1 mb-1">${role.name}</span>`).join('');
+      namesElement.innerHTML = roleNames || '<span class="text-muted">-</span>';
+      
+      const roleDescriptions = roles.map(role => `<div class="text-muted small mb-1">${role.description || 'No description'}</div>`).join('');
+      descriptionsElement.innerHTML = roleDescriptions || '<span class="text-muted">-</span>';
       
       // Actions 컬럼 (삭제 버튼들 + 추가 버튼)
       const removeButtons = roles.map(role => `
-        <button class="btn btn-outline-danger btn-sm" onclick="removeUserRole('${role.id}')" title="Remove role">
+        <button class="btn btn-outline-danger btn-sm me-1" onclick="removeUserRole('${role.id}')" title="Remove ${role.name}">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
             <path d="M4 7l16 0"></path>
@@ -730,6 +733,34 @@ window.removeUserRole = async function(roleId) {
   }
 };
 
+// Workspace 제거 함수
+window.removeUserWorkspace = async function(workspaceId) {
+  if (!AppState.users.selectedUser) {
+    Utils.showAlert('유저를 선택해주세요.');
+    return;
+  }
+
+  if (confirm('이 워크스페이스를 제거하시겠습니까?')) {
+    try {
+      // TODO: Workspace 제거 API 호출 (API가 구현되면 추가)
+      // await webconsolejs["common/api/services/users_api"].removeUserWorkspace(
+      //   AppState.users.selectedUser.id, 
+      //   workspaceId
+      // );
+      
+      Utils.showAlert('워크스페이스가 성공적으로 제거되었습니다.');
+      
+      // Workspace 정보 새로고침
+      const workspaceData = await webconsolejs["common/api/services/users_api"].getUserWorkspacesByUserID(AppState.users.selectedUser.id);
+      updateWorkspaceInfo(workspaceData);
+      
+    } catch (error) {
+      console.error('워크스페이스 제거 중 오류:', error);
+      Utils.showAlert('워크스페이스 제거 중 오류가 발생했습니다.');
+    }
+  }
+};
+
 // 선택된 유저들 삭제 (roles.js의 deleteRole과 동일한 패턴)
 window.deleteUsers = async function() {
   console.log("deleteUsers", checked_array);
@@ -785,6 +816,19 @@ async function getSelectedUserData(userID) {
       user.workspace_roles || [],
       user.csp_roles || []
     );
+    
+    // Workspace 정보 로드 (getUserWorkspacesByUserID API 호출)
+    try {
+      const workspaceData = await webconsolejs["common/api/services/users_api"].getUserWorkspacesByUserID(userID);
+      console.log("Workspace data:", workspaceData);
+      
+      // Workspace 정보를 테이블에 업데이트
+      updateWorkspaceInfo(workspaceData);
+    } catch (workspaceError) {
+      console.error("Workspace 정보 로드 실패:", workspaceError);
+      // Workspace 정보 로드 실패 시 빈 배열로 설정
+      updateWorkspaceInfo([]);
+    }
   } catch (error) {
     console.error("유저 정보 로드 실패:", error);
   }
@@ -800,6 +844,74 @@ function setUserInfoData(userData) {
     console.log("Selected user set:", userData);
   } catch (e) {
     console.error(e);
+  }
+}
+
+// Workspace 정보를 테이블에 업데이트하는 함수
+function updateWorkspaceInfo(workspaceData) {
+  console.log("updateWorkspaceInfo called with:", workspaceData);
+  
+  const namesElement = document.getElementById('workspace-roles-names');
+  const descriptionsElement = document.getElementById('workspace-roles-descriptions');
+  const actionsElement = document.getElementById('workspace-roles-actions');
+  
+  if (!namesElement || !descriptionsElement || !actionsElement) {
+    console.error("Workspace role elements not found");
+    return;
+  }
+  
+  if (!workspaceData || workspaceData.length === 0) {
+    // Workspace 정보가 없을 때
+    namesElement.innerHTML = '<span class="text-muted">-</span>';
+    descriptionsElement.innerHTML = '<span class="text-muted">-</span>';
+    actionsElement.innerHTML = `
+      <div class="btn-list justify-content-center">
+        <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('workspace')" title="Add Workspace role">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 5l0 14"></path>
+            <path d="M5 12l14 0"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+  } else {
+    // Workspace 정보가 있을 때
+    // API 응답 구조에 따라 필드명 조정 (예상: name, description, id 등)
+    namesElement.innerHTML = workspaceData.map(workspace => 
+      `<span class="role-name">${workspace.name || workspace.workspaceName || workspace.id || 'Unknown'}</span>`
+    ).join('<br>');
+    
+    descriptionsElement.innerHTML = workspaceData.map(workspace => 
+      `<span class="role-description">${workspace.description || workspace.workspaceDescription || 'No description'}</span>`
+    ).join('<br>');
+    
+    // Actions 컬럼 (삭제 버튼들 + 추가 버튼)
+    const removeButtons = workspaceData.map(workspace => `
+      <button class="btn btn-outline-danger btn-sm" onclick="removeUserWorkspace('${workspace.id || workspace.workspaceId}')" title="Remove workspace">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M4 7l16 0"></path>
+          <path d="M10 11l0 6"></path>
+          <path d="M14 11l0 6"></path>
+          <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+          <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+        </svg>
+      </button>
+    `).join('');
+    
+    actionsElement.innerHTML = `
+      <div class="btn-list justify-content-center">
+        ${removeButtons}
+        <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('workspace')" title="Add Workspace role">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 5l0 14"></path>
+            <path d="M5 12l14 0"></path>
+          </svg>
+        </button>
+      </div>
+    `;
   }
 }
 
