@@ -2846,6 +2846,9 @@ async function saveRole() {
       // 역할 목록 새로고침
       await initRoles();
       
+      // 헤더 클릭 이벤트 리스너 재설정 (DOM 재생성 후 이벤트 연결)
+      setupHeaderClickEvents();
+      
       // 페이지를 맨 위로 스크롤
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3306,6 +3309,7 @@ export async function deleteRole() {
 
 // 카드 헤더 전체 클릭 이벤트 연결
 function setupHeaderClickEvents() {
+  console.log('[DEBUG] setupHeaderClickEvents() 호출');
   // View 모드
   if (DOM.platformHeader) {
     DOM.platformHeader.addEventListener('click', function(e) {
