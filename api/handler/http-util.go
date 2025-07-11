@@ -176,14 +176,16 @@ func getAuth(c buffalo.Context, service Service) (string, error) {
 		} else {
 			return "", fmt.Errorf("username or password is empty")
 		}
-
 	case "bearer":
-		if authValue, ok := c.Value("Authorization").(string); ok {
-			return authValue, nil
-		} else {
-			return "", fmt.Errorf("authorization key does not exist or is not a string")
+		authValue, ok := c.Value("Authorization").(string)
+		if !ok || authValue == "" {
+			return "", fmt.Errorf("authorization key does not exist or is empty")
 		}
-
+		// Check if the token already has Bearer prefix
+		if !strings.HasPrefix(authValue, "Bearer ") {
+			authValue = "Bearer " + authValue
+		}
+		return authValue, nil
 	default:
 		return "", nil
 	}

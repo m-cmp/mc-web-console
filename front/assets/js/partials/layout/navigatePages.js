@@ -90,8 +90,7 @@ export function addPageHeaderButton(targetSection, createBtnName, onclickEvent){
     </a>`;
 
     var $button = $(buttonHtml);
-    if (onclickEvent && targetSection) {
-    //if (onclickEvent && typeof onclickEvent === "function") {        
+    if (onclickEvent) {
         $button.on("click", function(event) {
             //console.log("click...", event)
             //console.log("onclickEvent...", onclickEvent)

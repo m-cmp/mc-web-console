@@ -48,28 +48,29 @@ export function getSessionWorkspaceProjectList() {
 }
 
 export function setSessionWorkspaceProjectList(userWorkspaceProjectList) {
+    //console.log("setSessionWorkspaceProjectList userWorkspaceProjectList", userWorkspaceProjectList)
     var workspaceProjectList = JSON.stringify(userWorkspaceProjectList)
     sessionStorage.setItem('currentWorkspaceProjcetList', workspaceProjectList)
-
-    var workspaceList = []
-
+    //var workspaceList = []
+    var workspaceList = userWorkspaceProjectList;
     // const jsonData = JSON.parse(userWorkspaceProjectList);
-
     userWorkspaceProjectList.forEach(item => {
         console.log(item)
-        var wsItem = item.workspaceProject.workspace;
-        workspaceList.push(wsItem);
-
-        var proItems = item.workspaceProject.projects;
-        var projectList = []
-        proItems.forEach(subitem => {
-            projectList.push(subitem);
-        });
-        setSessionProjectList(wsItem.id, JSON.stringify(projectList))
+        // var wsItem = item.workspaceProject.workspace;
+        // workspaceList.push(wsItem);
+        // console.log("setSessionWorkspaceProjectList wsItem", wsItem)
+        // // var proItems = item.workspaceProject.projects;
+        // var proItems = wsItem.projects;
+        // var projectList = []
+        // proItems.forEach(subitem => {
+        //     projectList.push(subitem);
+        // });
+        // console.log("setSessionWorkspaceProjectList projectList", projectList)
+        // setSessionProjectList(wsItem.id, JSON.stringify(projectList))
         //setSessionProjectList(wsItem.name, JSON.stringify(projectList))// 공백같은 것은 없겠지?
+        setSessionProjectList(item.id, JSON.stringify(item.projects))
     });
     setSessionWorkspaceList(JSON.stringify(workspaceList))
-
 }
 
 export function clearSessionCurrentWorkspaceProject() {
