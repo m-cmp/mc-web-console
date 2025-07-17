@@ -284,7 +284,31 @@
         </div>
       </div>
 
+
+
       <div class="modal-body">
+        <div class="row mb-2">
+          <div class="col-md-3">
+            <label class="form-label">Cloud Provider Filter</label>
+            <select
+              class="form-select form-select-sm"
+              id="spec-provider-filter"
+              name="spec-provider-filter"
+              onchange="webconsolejs['partials/operation/manage/serverrecommendation'].filterByProvider(this.value)"
+            >
+              <option value="">All Providers</option>
+              <option value="aws">AWS</option>
+              <option value="azure">Azure</option>
+              <option value="alibaba">Alibaba</option>
+              <option value="gcp">GCP</option>
+              <option value="tencent">Tencent</option>
+              <option value="ncp">NCP</option>
+              <option value="ncpvpc">NCP VPC</option>
+              <option value="nhn">NHN</option>
+              <option value="ibm">IBM</option>
+            </select>
+          </div>
+        </div>
         <div class="table-responsive" id="spec-table"></div>
       </div>
 
@@ -293,11 +317,12 @@
           <button
             type="submit"
             class="btn btn-info"
+            data-bs-dismiss="modal"
             onclick="webconsolejs['partials/operation/manage/serverrecommendation'].applySpecInfo()"
           >
             Apply
           </button>
-          <button type="submit" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
