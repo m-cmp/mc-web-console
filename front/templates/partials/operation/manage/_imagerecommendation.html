@@ -1,0 +1,194 @@
+<!-- add server : image-search : image recommendation -->
+<div
+  class="modal modal-blur fade"
+  id="image-search"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Image Recommendation</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Spec Information</label>
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label">Provider</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="image-provider"
+                  readonly
+                  placeholder="Provider from spec selection"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Region</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="image-region"
+                  readonly
+                  placeholder="Region from spec selection"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">OS Architecture</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="image-os-architecture"
+                  readonly
+                  placeholder="OS Architecture from spec selection"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Image Search Options</label>
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label">OS Type</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="assist_os_type"
+                    name="assist_os_type"
+                    value="ubuntu 22.04"
+                    placeholder="Enter OS type or select from list"
+                    list="os-type-list"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    onclick="webconsolejs['partials/operation/manage/imagerecommendation'].toggleOSDropdown()"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="icon"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      fill="none"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M6 9l6 6l6 -6"></path>
+                    </svg>
+                  </button>
+                  <ul
+                    class="dropdown-menu dropdown-menu-end"
+                    id="os-type-dropdown"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onclick="webconsolejs['partials/operation/manage/imagerecommendation'].selectOSType('ubuntu 22.04')"
+                        >Ubuntu 22.04</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+                <datalist id="os-type-list">
+                  <option value="ubuntu 22.04">Ubuntu 22.04</option>
+                </datalist>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">is GPU Image</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="assist_gpu_image"
+                        name="assist_gpu_image"
+                        onchange="webconsolejs['partials/operation/manage/imagerecommendation'].updateGPUStatus()"
+                      />
+                      <input type="hidden" id="gpu_image_value" value="false" />
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      class="btn btn-icon"
+                      aria-label="Button"
+                      onclick="webconsolejs['partials/operation/manage/imagerecommendation'].getRecommendImageInfo()"
+                    >
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2"></div>
+        <div class="table-responsive" id="image-table"></div>
+      </div>
+
+      <div class="modal-footer">
+        <div align="right">
+          <button
+            type="submit"
+            class="btn btn-info"
+            onclick="webconsolejs['partials/operation/manage/imagerecommendation'].applyImageInfo()"
+          >
+            Apply
+          </button>
+          <button
+            type="submit"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- add server : image-search end -->
+
+<%= javascriptTag("partials/operation/manage/imagerecommendation.js") %>

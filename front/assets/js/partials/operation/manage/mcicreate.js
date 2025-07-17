@@ -4,25 +4,73 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function initMciCreate() {
-	console.log("initMciCreate")
+	console.log("=== initMciCreate START ===")
 
 	// partial init functions
 
 	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mcicreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
+	console.log("Server recommendation initialized");
+	
+	console.log("About to initialize image modal...");
+	webconsolejs["partials/operation/manage/imagerecommendation"].initImageModal(); // 이미지 추천 모달 초기화
+	console.log("Image modal initialization called");
+	
+	// 이미지 선택 콜백 함수 설정
+	webconsolejs["partials/operation/manage/imagerecommendation"].setImageSelectionCallback(webconsolejs["partials/operation/manage/mcicreate"].callbackImageRecommendation);
+	console.log("Image selection callback set");
+	
+	console.log("=== initMciCreate END ===")
 }
 
 // callback PopupData
 export async function callbackServerRecommendation(vmSpec) {
-	console.log("callbackServerRecommendation")
+	console.log("=== callbackServerRecommendation START ===");
+	console.log("callbackServerRecommendation - vmSpec:", vmSpec);
+	console.log("vmSpec.osArchitecture:", vmSpec.osArchitecture);
 
 	$("#ep_provider").val(vmSpec.provider)
 	$("#ep_connectionName").val(vmSpec.connectionName)
 	$("#ep_specId").val(vmSpec.specName)
-	$("#ep_imageId").val(vmSpec.imageName)
 	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
+	
+	// spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
+	if (vmSpec.osArchitecture) {
+		window.selectedSpecInfo = {
+			provider: vmSpec.provider,
+			connectionName: vmSpec.connectionName,
+			regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
+			osArchitecture: vmSpec.osArchitecture,
+			specName: vmSpec.specName,
+			commonSpecId: vmSpec.commonSpecId
+		};
+		console.log("Saved spec info to window.selectedSpecInfo:", window.selectedSpecInfo);
+		console.log("window.selectedSpecInfo type:", typeof window.selectedSpecInfo);
+	} else {
+		console.log("No osArchitecture found in vmSpec, not saving to window.selectedSpecInfo");
+	}
 
 	var diskResp = await webconsolejs["common/api/services/disk_api"].getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
 	getCommonLookupDiskInfoSuccess(vmSpec.provider, diskResp)
+	
+	console.log("=== callbackServerRecommendation END ===");
+}
+
+// 이미지 선택 콜백 함수
+export function callbackImageRecommendation(selectedImage) {
+	console.log("=== callbackImageRecommendation START ===");
+	console.log("Selected image:", selectedImage);
+	
+	// 부모 폼의 input 필드에 이미지 정보 설정
+	$("#ep_imageId_input").val(selectedImage.name || selectedImage.cspImageName || "");
+	$("#ep_imageId").val(selectedImage.id || selectedImage.name || "");
+	$("#ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
+	
+	console.log("Image info set to form:");
+	console.log("- ep_imageId_input:", $("#ep_imageId_input").val());
+	console.log("- ep_imageId:", $("#ep_imageId").val());
+	console.log("- ep_commonImageId:", $("#ep_commonImageId").val());
+	
+	console.log("=== callbackImageRecommendation END ===");
 }
 
 var DISK_SIZE = [];
@@ -331,7 +379,7 @@ export async function displayNewServerForm() {
 // express모드 -> Done버튼 클릭 시
 
 export function expressDone_btn() {
-
+	console.log("expressDone_btn")
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
 	$("#p_provider").val($("#ep_provider").val())
 	$("#p_connectionName").val($("#ep_connectionName").val())
@@ -339,6 +387,7 @@ export function expressDone_btn() {
 	$("#p_description").val($("#ep_description").val())
 	$("#p_imageId").val($("#ep_imageId").val())
 	$("#p_commonImageId").val($("#ep_commonImageId").val())
+	$("#ep_imageId_input").val($("#ep_imageId").val()) // 이미지 입력 필드도 업데이트
 	$("#p_commonSpecId").val($("#ep_commonSpecId").val())
 	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
 	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
@@ -418,13 +467,16 @@ var ROOT_DISK_MIN_VALUE = 0;
 export function changeDiskSize(type) {
 	var disk_size = DISK_SIZE;
 
-	if (disk_size) {
+	if (disk_size && Array.isArray(disk_size)) {
 		disk_size.forEach(item => {
-			var temp_size = item.split("|")
-			var temp_type = temp_size[0];
-			if (temp_type == type) {
-				ROOT_DISK_MAX_VALUE = temp_size[1]
-				ROOT_DISK_MIN_VALUE = temp_size[2]
+			// item이 문자열인지 확인 후 split 실행
+			if (typeof item === 'string' && item.includes('|')) {
+				var temp_size = item.split("|")
+				var temp_type = temp_size[0];
+				if (temp_type == type) {
+					ROOT_DISK_MAX_VALUE = temp_size[1]
+					ROOT_DISK_MIN_VALUE = temp_size[2]
+				}
 			}
 		})
 	}

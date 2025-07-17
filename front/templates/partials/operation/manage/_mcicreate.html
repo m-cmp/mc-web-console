@@ -95,6 +95,50 @@
                   </div>
                 </div>
               </div>
+              <div class="form-group mb-2">
+                <label class="form-label required">Image</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please Use Search"
+                      name="image"
+                      id="ep_imageId_input"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
+                      class="btn"
+                      onclick="webconsolejs['partials/operation/manage/imagerecommendation'].validateAndOpenImageModal(event)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
 
               <div class="form-group mb-2">
                 <label class="form-label">Root Disk</label>
@@ -121,7 +165,8 @@
                 </div>
               </div>
               <div class="form-group mb-2">
-                <label class="form-label">SubGroup Size</label>
+                <label class="fo
+                rm-label">SubGroup Size</label>
                 <div class="row g-2">
                   <div class="col-md-6">
                     <div class="d-flex align-items-center">
@@ -347,6 +392,8 @@
 </div>
 
 
+
+<%= partial("partials/operation/manage/imagerecommendation.html") %>
 
 <%= javascriptTag("partials/operation/manage/mcicreate.js") %> <%=
 javascriptTag("common/api/services/mci_api.js") %><!--API 호출-->

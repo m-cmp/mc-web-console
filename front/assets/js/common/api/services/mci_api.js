@@ -258,6 +258,37 @@ export async function mciRecommendVm(data) {
 
   return response.data
 }
+
+// 이미지 검색 API
+export async function searchImage(nsId, searchParams) {
+  console.log("searchImage called with nsId:", nsId, "searchParams:", searchParams);
+  
+  const data = {
+    pathParams: {
+      nsId: "system"
+    },
+    request: {
+      includeDeprecatedImage: searchParams.includeDeprecatedImage || false,
+      isGPUImage: searchParams.isGPUImage || false,
+      isKubernetesImage: searchParams.isKubernetesImage || false,
+      isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
+      osArchitecture: searchParams.osArchitecture || "x86_64",
+      osType: searchParams.osType || "ubuntu 22.04",
+      providerName: searchParams.providerName || "",
+      regionName: searchParams.regionName || ""
+    }
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Searchimage";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  console.log("searchImage response:", response.data);
+  return response.data;
+}
+
 // get all provider
 
 // get all registered region list
