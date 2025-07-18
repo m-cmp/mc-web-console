@@ -48,8 +48,7 @@ export async function getUserProjectList(workspaceId) {
 
 // 유저의 workspace 목록 조회
 async function getWorkspaceProjectListByUserToken() {
-  // const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/listUserWorkspaces')
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/mc-iam-manager/listUserWorkspaces')
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/listUserWorkspaces')
   return response.data.responseData
 }
 

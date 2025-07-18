@@ -637,3 +637,74 @@ export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
   );
   console.log("pmkDelete response : ", response)
 }
+
+// PMK용 Spec 추천 API
+export async function getPmkRecommendSpec(data) {
+  var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  console.log("pmk recommend spec response ", response.data.responseData)
+
+  return response.data
+}
+
+// PMK용 Spec 목록 API
+export async function getPmkSpecList(connectionName, nsId) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams: {
+      filterKey: "cspResourceName",
+      filterVal: connectionName
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllVMSpec";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("pmk specList : ", response)
+  var specList = response.data.responseData;
+
+  return specList
+}
+
+// PMK용 Image 목록 API
+export async function getPmkImageList(connectionName, nsId) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams: {
+      filterKey: "cspResourceName",
+      filterVal: connectionName
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllVMImage";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("pmk imageList : ", response)
+  var imageList = response.data.responseData;
+
+  return imageList
+}

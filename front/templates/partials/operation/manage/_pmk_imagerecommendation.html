@@ -1,7 +1,7 @@
-<!-- add server : image-search : image recommendation -->
+<!-- PMK용 image-search : image recommendation -->
 <div
   class="modal modal-blur fade"
-  id="image-search"
+  id="image-search-pmk"
   tabindex="-1"
   style="display: none"
   aria-hidden="true"
@@ -21,14 +21,13 @@
       <div class="modal-body">
         <div class="row">
           <div class="form-group mb-2">
-            <label class="form-label">Spec Information</label>
             <div class="row g-2">
               <div class="col-md-4">
                 <label class="form-label">Provider</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="image-provider"
+                  id="image-provider-pmk"
                   readonly
                   placeholder="Provider from spec selection"
                 />
@@ -38,7 +37,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  id="image-region"
+                  id="image-region-pmk"
                   readonly
                   placeholder="Region from spec selection"
                 />
@@ -48,7 +47,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  id="image-os-architecture"
+                  id="image-os-architecture-pmk"
                   readonly
                   placeholder="OS Architecture from spec selection"
                 />
@@ -65,18 +64,18 @@
                   <input
                     type="text"
                     class="form-control"
-                    id="assist_os_type"
-                    name="assist_os_type"
+                    id="assist_os_type-pmk"
+                    name="assist_os_type-pmk"
                     value="ubuntu 22.04"
                     placeholder="Enter OS type or select from list"
-                    list="os-type-list"
+                    list="os-type-list-pmk"
                   />
                   <button
                     class="btn btn-outline-secondary"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    onclick="webconsolejs['partials/operation/manage/imagerecommendation'].toggleOSDropdown()"
+                    onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].toggleOSDropdownPmk()"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -96,19 +95,19 @@
                   </button>
                   <ul
                     class="dropdown-menu dropdown-menu-end"
-                    id="os-type-dropdown"
+                    id="os-type-dropdown-pmk"
                   >
                     <li>
                       <a
                         class="dropdown-item"
                         href="#"
-                        onclick="webconsolejs['partials/operation/manage/imagerecommendation'].selectOSType('ubuntu 22.04')"
+                        onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].selectOSTypePmk('ubuntu 22.04')"
                         >Ubuntu 22.04</a
                       >
                     </li>
                   </ul>
                 </div>
-                <datalist id="os-type-list">
+                <datalist id="os-type-list-pmk">
                   <option value="ubuntu 22.04">Ubuntu 22.04</option>
                 </datalist>
               </div>
@@ -120,18 +119,18 @@
                       <input
                         class="form-check-input"
                         type="checkbox"
-                        id="assist_gpu_image"
-                        name="assist_gpu_image"
-                        onchange="webconsolejs['partials/operation/manage/imagerecommendation'].updateGPUStatus()"
+                        id="assist_gpu_image-pmk"
+                        name="assist_gpu_image-pmk"
+                        onchange="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk()"
                       />
-                      <input type="hidden" id="gpu_image_value" value="false" />
+                      <input type="hidden" id="gpu_image_value-pmk" value="false" />
                     </div>
                   </div>
                   <div class="col-auto">
                     <a
                       class="btn btn-icon"
                       aria-label="Button"
-                      onclick="webconsolejs['partials/operation/manage/imagerecommendation'].getRecommendImageInfo()"
+                      onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].getRecommendImageInfoPmk()"
                     >
                       <!-- Download SVG icon from http://tabler-icons.io/i/search -->
                       <svg
@@ -164,7 +163,7 @@
           </div>
         </div>
         <div class="row mb-2"></div>
-        <div class="table-responsive" id="image-table"></div>
+        <div class="table-responsive" id="image-table-pmk"></div>
       </div>
 
       <div class="modal-footer">
@@ -172,7 +171,8 @@
           <button
             type="submit"
             class="btn btn-info"
-            onclick="webconsolejs['partials/operation/manage/imagerecommendation'].applyImageInfo()"
+            data-bs-dismiss="modal"
+            onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].applyImageInfoPmk()"
           >
             Apply
           </button>
@@ -188,6 +188,4 @@
     </div>
   </div>
 </div>
-<!-- add server : image-search end -->
-
-<%= javascriptTag("partials/operation/manage/imagerecommendation.js") %>
+<!-- PMK용 image-search end --> 
