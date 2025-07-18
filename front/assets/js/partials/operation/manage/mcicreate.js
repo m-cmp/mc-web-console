@@ -4,29 +4,21 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function initMciCreate() {
-	console.log("=== initMciCreate START ===")
+	// MCI Create 초기화
 
 	// partial init functions
 
 	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mcicreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
-	console.log("Server recommendation initialized");
 	
-	console.log("About to initialize image modal...");
 	webconsolejs["partials/operation/manage/imagerecommendation"].initImageModal(); // 이미지 추천 모달 초기화
-	console.log("Image modal initialization called");
 	
 	// 이미지 선택 콜백 함수 설정
 	webconsolejs["partials/operation/manage/imagerecommendation"].setImageSelectionCallback(webconsolejs["partials/operation/manage/mcicreate"].callbackImageRecommendation);
-	console.log("Image selection callback set");
-	
-	console.log("=== initMciCreate END ===")
 }
 
 // callback PopupData
 export async function callbackServerRecommendation(vmSpec) {
-	console.log("=== callbackServerRecommendation START ===");
-	console.log("callbackServerRecommendation - vmSpec:", vmSpec);
-	console.log("vmSpec.osArchitecture:", vmSpec.osArchitecture);
+	// MCI Server Recommendation 콜백 함수
 
 	$("#ep_provider").val(vmSpec.provider)
 	$("#ep_connectionName").val(vmSpec.connectionName)
@@ -34,43 +26,36 @@ export async function callbackServerRecommendation(vmSpec) {
 	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
 	
 	// spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
-	if (vmSpec.osArchitecture) {
-		window.selectedSpecInfo = {
-			provider: vmSpec.provider,
-			connectionName: vmSpec.connectionName,
-			regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
-			osArchitecture: vmSpec.osArchitecture,
-			specName: vmSpec.specName,
-			commonSpecId: vmSpec.commonSpecId
-		};
-		console.log("Saved spec info to window.selectedSpecInfo:", window.selectedSpecInfo);
-		console.log("window.selectedSpecInfo type:", typeof window.selectedSpecInfo);
-	} else {
-		console.log("No osArchitecture found in vmSpec, not saving to window.selectedSpecInfo");
-	}
+	window.selectedSpecInfo = {
+		provider: vmSpec.provider,
+		connectionName: vmSpec.connectionName,
+		regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
+		osArchitecture: vmSpec.osArchitecture || "x86_64", // 기본값 설정
+		specName: vmSpec.specName,
+		commonSpecId: vmSpec.commonSpecId
+	};
+	
+	// 이미지 모달의 필드들을 즉시 세팅 (PMK와 동일한 방식)
+	$("#image-provider").val(window.selectedSpecInfo.provider);
+	$("#image-region").val(window.selectedSpecInfo.regionName);
+	$("#image-os-architecture").val(window.selectedSpecInfo.osArchitecture);
 
 	var diskResp = await webconsolejs["common/api/services/disk_api"].getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
 	getCommonLookupDiskInfoSuccess(vmSpec.provider, diskResp)
 	
-	console.log("=== callbackServerRecommendation END ===");
+
 }
 
 // 이미지 선택 콜백 함수
 export function callbackImageRecommendation(selectedImage) {
-	console.log("=== callbackImageRecommendation START ===");
-	console.log("Selected image:", selectedImage);
+	// MCI 이미지 선택 콜백 함수
 	
 	// 부모 폼의 input 필드에 이미지 정보 설정
 	$("#ep_imageId_input").val(selectedImage.name || selectedImage.cspImageName || "");
 	$("#ep_imageId").val(selectedImage.id || selectedImage.name || "");
 	$("#ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
 	
-	console.log("Image info set to form:");
-	console.log("- ep_imageId_input:", $("#ep_imageId_input").val());
-	console.log("- ep_imageId:", $("#ep_imageId").val());
-	console.log("- ep_commonImageId:", $("#ep_commonImageId").val());
-	
-	console.log("=== callbackImageRecommendation END ===");
+
 }
 
 var DISK_SIZE = [];

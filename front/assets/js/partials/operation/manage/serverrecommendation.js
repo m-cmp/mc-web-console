@@ -7,32 +7,25 @@ var recommendVmSpecListObj = new Object();
 
 
 export function initServerRecommendation(callbackfunction) {
-	console.log("=== Server recommendation modal initialization START ===");
-
 	initRecommendSpecTable();
 
 	// return function 정의
 	if (callbackfunction != undefined) {
 		returnFunction = callbackfunction;
-		console.log("Callback function set:", callbackfunction);
 	}
 	
 	// 모달 열기 이벤트 리스너 등록
 	setupServerModalEvents();
-	
-	console.log("=== Server recommendation modal initialization END ===");
 }
 
 // 서버 추천 모달 이벤트 설정
 function setupServerModalEvents() {
-	console.log("Setting up server recommendation modal events...");
-	
 	// Bootstrap 5 방식
 	if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
 		var serverModal = document.getElementById('spec-search');
 		if (serverModal) {
 			serverModal.addEventListener('shown.bs.modal', function() {
-				console.log("=== Server recommendation modal shown event triggered ===");
+				// 모달이 열렸을 때의 처리
 			});
 		}
 	}
@@ -40,19 +33,9 @@ function setupServerModalEvents() {
 	// jQuery 방식
 	if (typeof $ !== 'undefined' && $.fn.modal) {
 		$("#spec-search").on('shown.bs.modal', function() {
-			console.log("=== Server recommendation modal shown event triggered (jQuery) ===");
+			// 모달이 열렸을 때의 처리
 		});
 	}
-	
-	// 직접 DOM 이벤트 방식
-	var serverModalEl = document.getElementById('spec-search');
-	if (serverModalEl) {
-		serverModalEl.addEventListener('shown.bs.modal', function() {
-			console.log("=== Server recommendation modal shown event triggered (DOM) ===");
-		});
-	}
-	
-	console.log("Server recommendation modal events setup completed");
 }
 
 function initRecommendSpecTable() {
@@ -462,7 +445,6 @@ export async function getRecommendVmInfo() {
 // apply 클릭시 데이터 SET
 // returnSpecInfo()
 export async function applySpecInfo() {
-	console.log("=== applySpecInfo START ===");
 	console.log("array", recommendSpecs)
 	var selectedSpecs = recommendSpecs[0]
 	console.log("selectedSpecs : ", selectedSpecs)
@@ -518,7 +500,7 @@ export async function applySpecInfo() {
 	console.log("returnFunction:", returnFunction);
 	eval(returnFunction)(returnObject);
 	
-	console.log("=== applySpecInfo END ===");
+
 }
 
 export function showRecommendSpecSetting(value) {
