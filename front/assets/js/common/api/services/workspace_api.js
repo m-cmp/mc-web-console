@@ -48,7 +48,7 @@ export async function getUserProjectList(workspaceId) {
 
 // 유저의 workspace 목록 조회
 async function getWorkspaceProjectListByUserToken() {
-  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/getworkspaceuserrolemappingbytoken')
+  const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/listUserWorkspaces')
   return response.data.responseData
 }
 
@@ -89,7 +89,6 @@ export async function getProjectListByWorkspaceId(workspaceId) {
       "workspaceId": workspaceId
     }
   }
-
   let projectList = [];
   const response = await webconsolejs["common/api/http"].commonAPIPost('/api/mc-iam-manager/getProjectsByWorkspaceId', requestObject)
   let data = response.data.responseData.projects
@@ -210,13 +209,13 @@ export async function createWorkspace(name, description) {
 }
 
 export async function getAllWorksaceList() {
-  const controller = '/api/mc-iam-manager/GetWorkspaceList'
+  const controller = '/api/mc-iam-manager/listWorkspaces'
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, null, null)
   return response.data.responseData
 }
 
 export async function getWorkspaceById(wsId) {
-  const controller = '/api/mc-iam-manager/GetWorkspaceById'
+  const controller = '/api/mc-iam-manager/getWorkspaceByID'
   var data = {
     pathParams: {
       workspaceId: wsId,
@@ -230,7 +229,7 @@ export async function getWorkspaceById(wsId) {
 }
 
 export async function updateWorkspaceById(wsId, desc) {
-  const controller = '/api/mc-iam-manager/UpdateWorkspaceById'
+  const controller = '/api/mc-iam-manager/updateWorkspace'
   var data = {
     request: {
       description: desc,
@@ -247,7 +246,7 @@ export async function updateWorkspaceById(wsId, desc) {
 }
 
 export async function deleteWorkspaceById(wsId) {
-  const controller = '/api/mc-iam-manager/DeleteWorkspaceById'
+  const controller = '/api/mc-iam-manager/deleteWorkspace'
   var data = {
     pathParams: {
       "workspaceId": wsId
@@ -260,7 +259,7 @@ export async function deleteWorkspaceById(wsId) {
 // handle project
 
 export async function createProject(prjName, prjDesc) {
-  const controller = '/api/mc-iam-manager/CreateProject'
+  const controller = '/api/mc-iam-manager/createProject'
   var data = {
     request: {
       "name": prjName,
@@ -277,7 +276,7 @@ export async function createProject(prjName, prjDesc) {
 }
 
 export async function getProjectList() {
-  const controller = '/api/mc-iam-manager/GetProjectList'
+  const controller = '/api/mc-iam-manager/listProjects'
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, null, null)
   return response.data.responseData
 }
@@ -285,7 +284,7 @@ export async function getProjectList() {
 // handle users
 
 export async function getUsers() {
-  const controller = '/api/mc-iam-manager/getusers'
+  const controller = '/api/mc-iam-manager/Listusers'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     null,
@@ -295,7 +294,7 @@ export async function getUsers() {
 }
 
 export async function getUsersById(userId) {
-  const controller = '/api/mc-iam-manager/getusers'
+  const controller = '/api/mc-iam-manager/getUserByID'
   var data = {
     queryParams: {
       userid: userId,
@@ -364,7 +363,7 @@ export async function deleteRoleById(reqRoleId) {
 
 // handle permissions
 export async function getPermissions() {
-  const controller = '/api/mc-iam-manager/GetPermissions'
+  const controller = '/api/mc-iam-manager/listMciamPermissions'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     null,
@@ -477,7 +476,7 @@ export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId) {
 }
 
 export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId) {
-  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListByWorkspaceId'
+  const controller = '/api/mc-iam-manager/listUsersAndRolesByWorkspaces'
   var data = {
     pathParams: {
       workspaceId: wsId,

@@ -637,6 +637,7 @@ export async function vmDetailInfo(vmId) {
     var response = await webconsolejs["common/api/services/mci_api"].getMciVm(currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var subGroupId = aVm.subGroupId
+    var cspVMID = aVm.uid
     var responseVmId = response.id;
     console.log("vm ", aVm)
     // 전체를 관리하는 obj 갱신
@@ -738,7 +739,7 @@ export async function vmDetailInfo(vmId) {
   $("#server_info_start_time").text(startTime)
   $("#server_info_private_ip").text(privateIp)
   // $("#server_info_cspVMID").text(data.cspResourceName)
-  $("#server_info_cspVMID").text("ip-10-32-4-91.ap-northeast-2.compute.internal")
+  $("#server_info_cspVMID").text(cspVMID)
 
   // ip information
   $("#server_info_public_ip").text(vmPublicIp)
@@ -960,7 +961,7 @@ export async function subGroup_vmDetailInfo(vmId) {
   $("#subgroup_server_info_start_time").text(startTime)
   $("#subgroup_server_info_private_ip").text(privateIp)
   // $("#server_info_cspVMID").text(data.cspResourceName)
-  $("#subgroup_server_info_cspVMID").text("ip-10-32-4-91.ap-northeast-2.compute.internal")
+  $("#subgroup_server_info_cspVMID").text(cspVMID)
 
   // ip information
   $("#subgroup_server_info_public_ip").text(vmPublicIp)

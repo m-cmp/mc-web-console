@@ -7,13 +7,34 @@ var recommendVmSpecListObj = new Object();
 
 
 export function initServerRecommendation(callbackfunction) {
-	console.log("initServerRecommendation ")
-
 	initRecommendSpecTable();
 
 	// return function 정의
 	if (callbackfunction != undefined) {
 		returnFunction = callbackfunction;
+	}
+	
+	// 모달 열기 이벤트 리스너 등록
+	setupServerModalEvents();
+}
+
+// 서버 추천 모달 이벤트 설정
+function setupServerModalEvents() {
+	// Bootstrap 5 방식
+	if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+		var serverModal = document.getElementById('spec-search');
+		if (serverModal) {
+			serverModal.addEventListener('shown.bs.modal', function() {
+				// 모달이 열렸을 때의 처리
+			});
+		}
+	}
+	
+	// jQuery 방식
+	if (typeof $ !== 'undefined' && $.fn.modal) {
+		$("#spec-search").on('shown.bs.modal', function() {
+			// 모달이 열렸을 때의 처리
+		});
 	}
 }
 
@@ -409,7 +430,14 @@ export async function getRecommendVmInfo() {
 		return
 	}
 	recommendVmSpecListObj = respData.responseData
-	console.log("asdasdasd",respData.responseData)
+	console.log("Spec list response data:", respData.responseData)
+	
+	// 첫 번째 spec의 구조를 자세히 로깅
+	if (respData.responseData && respData.responseData.length > 0) {
+		console.log("First spec structure:", respData.responseData[0]);
+		console.log("First spec keys:", Object.keys(respData.responseData[0]));
+	}
+	
 	recommendTable.setData(recommendVmSpecListObj)
 
 }
@@ -424,40 +452,54 @@ export async function applySpecInfo() {
 	// pre-release -> mode = express 고정
 	//caller == "express"
 
-
 	var provider = selectedSpecs.providerName
 	var connectionName = selectedSpecs.connectionName
 	var specName = selectedSpecs.cspSpecName
-	var imageName = await availableVMImageBySpec(selectedSpecs.id)
 	var commonSpecId = selectedSpecs.id // common specid for create dynamic mci
-	if (provider === "azure") {
-		imageName = "azure+koreacentral+ubuntu22.04";
-		specName = "azure+koreacentral+standard_b2ats_v2";
-	}
 	
 	console.log("commonSpecId", commonSpecId)
 	console.log("connectionName", selectedSpecs.connectionName)
 	console.log("providerName", selectedSpecs.providerName)
 	console.log("cspSpecName", selectedSpecs.cspSpecName)
-	console.log("imageName", imageName)
 
-	// $("#ep_provider").val(provider)
-	// $("#ep_connectionName").val(connectionName)
-	// $("#ep_specId").val(specName)
-	// $("#ep_imageId").val(imageName)
-	// $("#ep_commonSpecId").val(commonSpecId)
-	// commonImage는 availableVMImageBySpec에서 조회 후 설정한다 (두 개 이상일 수 있음)
+	// spec 정보에서 osArchitecture 추출
+	var osArchitecture = "x86_64"; // 기본값
+	
+	// API 응답에서 architecture 정보 추출
+	if (selectedSpecs.architecture) {
+		osArchitecture = selectedSpecs.architecture;
+		console.log("Found architecture in selectedSpecs.architecture:", osArchitecture);
+	} else if (selectedSpecs.keyValueList) {
+		// keyValueList에서 architecture 정보 찾기
+		console.log("Searching in keyValueList:", selectedSpecs.keyValueList);
+		for (var i = 0; i < selectedSpecs.keyValueList.length; i++) {
+			var kv = selectedSpecs.keyValueList[i];
+			console.log("Checking keyValue:", kv.key, "=", kv.value);
+			if (kv.key === "CpuArchitecture" || kv.key === "CpuArchitectureType" || kv.key === "Architecture") {
+				osArchitecture = kv.value;
+				console.log("Found architecture in keyValueList:", kv.key, "=", kv.value);
+				break;
+			}
+		}
+	} else {
+		console.log("No architecture information found in spec data");
+	}
+	
+	console.log("Extracted osArchitecture:", osArchitecture);
 
+	// 부모 폼에 전달할 데이터 객체 생성
 	var returnObject = {}
 	returnObject.provider = provider
 	returnObject.connectionName = connectionName
 	returnObject.specName = specName
-	returnObject.imageName = imageName
 	returnObject.commonSpecId = commonSpecId
+	returnObject.osArchitecture = osArchitecture
+	returnObject.regionName = selectedSpecs.regionName
 
-	console.log("return to parent");
-	console.log(returnFunction)
+	console.log("returnObject to parent:", returnObject);
+	console.log("returnFunction:", returnFunction);
 	eval(returnFunction)(returnObject);
+	
 
 }
 
@@ -477,6 +519,8 @@ export function showRecommendSpecSetting(value) {
 
 
 // TODO: 스펙 선택 시 사용가능한 이미지의 개수가 두개 이상일 때 선택하는 UI 추가 구현 필요
+// 이미지 추천 모달로 대체되었으므로 주석 처리
+/*
 async function availableVMImageBySpec(id) {
 
 	var imageIds = []
@@ -518,3 +562,41 @@ async function availableVMImageBySpec(id) {
 
 	return imageIds[0]
 }
+*/
+
+// 프로바이더별 필터링 기능
+export function filterByProvider(provider) {
+	console.log("Filtering by provider:", provider);
+	
+	if (!recommendVmSpecListObj || recommendVmSpecListObj.length === 0) {
+		console.log("No data to filter - no search results available");
+		return;
+	}
+	
+	if (provider === "") {
+		// 모든 프로바이더 표시
+		console.log("Showing all providers");
+		recommendTable.setData(recommendVmSpecListObj);
+	} else {
+		// 선택된 프로바이더만 필터링
+		var filteredData = recommendVmSpecListObj.filter(function(item) {
+			return item.providerName && item.providerName.toLowerCase() === provider.toLowerCase();
+		});
+		console.log("Filtered data for", provider + ":", filteredData.length, "items");
+		recommendTable.setData(filteredData);
+	}
+}
+
+// 전역 객체에 함수 등록
+if (typeof webconsolejs === 'undefined') {
+	webconsolejs = {};
+}
+if (typeof webconsolejs['partials/operation/manage/serverrecommendation'] === 'undefined') {
+	webconsolejs['partials/operation/manage/serverrecommendation'] = {};
+}
+
+webconsolejs['partials/operation/manage/serverrecommendation'].initServerRecommendation = initServerRecommendation;
+webconsolejs['partials/operation/manage/serverrecommendation'].getRecommendVmInfo = getRecommendVmInfo;
+webconsolejs['partials/operation/manage/serverrecommendation'].applySpecInfo = applySpecInfo;
+webconsolejs['partials/operation/manage/serverrecommendation'].showRecommendSpecSetting = showRecommendSpecSetting;
+webconsolejs['partials/operation/manage/serverrecommendation'].filterByProvider = filterByProvider;
