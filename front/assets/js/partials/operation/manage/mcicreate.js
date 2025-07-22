@@ -4,25 +4,58 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function initMciCreate() {
-	console.log("initMciCreate")
+	// MCI Create 초기화
 
 	// partial init functions
 
 	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mcicreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
+	
+	webconsolejs["partials/operation/manage/imagerecommendation"].initImageModal(); // 이미지 추천 모달 초기화
+	
+	// 이미지 선택 콜백 함수 설정
+	webconsolejs["partials/operation/manage/imagerecommendation"].setImageSelectionCallback(webconsolejs["partials/operation/manage/mcicreate"].callbackImageRecommendation);
 }
 
 // callback PopupData
 export async function callbackServerRecommendation(vmSpec) {
-	console.log("callbackServerRecommendation")
+	// MCI Server Recommendation 콜백 함수
 
 	$("#ep_provider").val(vmSpec.provider)
 	$("#ep_connectionName").val(vmSpec.connectionName)
 	$("#ep_specId").val(vmSpec.specName)
-	$("#ep_imageId").val(vmSpec.imageName)
 	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
+	
+	// spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
+	window.selectedSpecInfo = {
+		provider: vmSpec.provider,
+		connectionName: vmSpec.connectionName,
+		regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
+		osArchitecture: vmSpec.osArchitecture || "x86_64", // 기본값 설정
+		specName: vmSpec.specName,
+		commonSpecId: vmSpec.commonSpecId
+	};
+	
+	// 이미지 모달의 필드들을 즉시 세팅 (PMK와 동일한 방식)
+	$("#image-provider").val(window.selectedSpecInfo.provider);
+	$("#image-region").val(window.selectedSpecInfo.regionName);
+	$("#image-os-architecture").val(window.selectedSpecInfo.osArchitecture);
 
 	var diskResp = await webconsolejs["common/api/services/disk_api"].getCommonLookupDiskInfo(vmSpec.provider, vmSpec.connectionName)
 	getCommonLookupDiskInfoSuccess(vmSpec.provider, diskResp)
+	
+
+}
+
+// 이미지 선택 콜백 함수
+export function callbackImageRecommendation(selectedImage) {
+	// MCI 이미지 선택 콜백 함수
+	
+	// 부모 폼의 input 필드에 이미지 정보 설정
+	$("#ep_imageId_input").val(selectedImage.name || selectedImage.cspImageName || "");
+	$("#ep_imageId").val(selectedImage.id || selectedImage.name || "");
+	$("#ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
+	
+
 }
 
 var DISK_SIZE = [];
@@ -329,96 +362,68 @@ export async function displayNewServerForm() {
 
 
 // express모드 -> Done버튼 클릭 시
-export function expressDone_btn() {
 
+export function expressDone_btn() {
+	console.log("expressDone_btn")
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
 	$("#p_provider").val($("#ep_provider").val())
 	$("#p_connectionName").val($("#ep_connectionName").val())
 	$("#p_name").val($("#ep_name").val())
 	$("#p_description").val($("#ep_description").val())
 	$("#p_imageId").val($("#ep_imageId").val())
-
 	$("#p_commonImageId").val($("#ep_commonImageId").val())
-
+	$("#ep_imageId_input").val($("#ep_imageId").val()) // 이미지 입력 필드도 업데이트
 	$("#p_commonSpecId").val($("#ep_commonSpecId").val())
 	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
 	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
-
 	$("#p_specId").val($("#ep_specId").val())
-
 	$("#p_subGroupSize").val($("#ep_vm_add_cnt").val() + "")
 	$("#p_vm_cnt").val($("#ep_vm_add_cnt").val() + "")
 
-	//var express_form = $("#express_form").serializeObject()
 	// commonSpec 으로 set 해야하므로 재설정
 	var express_form = {}
 	express_form["name"] = $("#p_name").val();
-	express_form["connectionName"] = $("#p_connectionName").val();
 	express_form["description"] = $("#p_description").val();
 	express_form["subGroupSize"] = $("#p_subGroupSize").val();
-	// express_form["image"] = $("#p_imageId").val();
-	// express_form["spec"] = $("#p_specId").val();
 	express_form["rootDiskSize"] = $("#p_root_disk_size").val();
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
-
-	// dynamic에서 commonImage를 param으로 받기 때문에 해당 값 설정
+	express_form["rootDiskType"] = $("#p_root_disk_type").val();
+	express_form["commonSpec"] = $("#p_commonSpecId").val();
 	express_form["commonImage"] = $("#p_commonImageId").val();
-	express_form["commonSpec"] = $("#p_commonSpecId").val();//
-
+	
 	console.log("express_form form : ", express_form);
 
-	var server_name = express_form.name
-
-	var server_cnt = parseInt(express_form.subGroupSize)
-	console.log("server_cnt", server_cnt)
+	var server_name = express_form.name;
+	var server_cnt = parseInt(express_form.subGroupSize);
+	console.log("server_cnt", server_cnt);
 
 	var add_server_html = "";
 
-	Express_Server_Config_Arr.push(express_form)
+	Express_Server_Config_Arr.push(express_form);
 
-
-	var displayServerCnt = '(' + server_cnt + ')'
-
+	var displayServerCnt = '(' + server_cnt + ')';
 	add_server_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/mcicreate\'].view_express(\'' + express_data_cnt + '\')">'
-
 		+ server_name + displayServerCnt
-
 		+ '</li>';
 
-	// }
-	// $(".section").removeClass("active");
-
-	// var div = document.getElementById("server_configuration");
-	// webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-
 	var div = document.getElementById("server_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
+	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
 
-	// $("#mci_server_list").prepend(add_server_html)
-	// $("#plusVmIcon").remove();
-	// $("#mci_server_list").prepend(getPlusVm());
-
-
-	console.log("add server html");
-
-	var vmEleId = "vm"
+	var vmEleId = "vm";
 	if (!isVm) {
-		vmEleId = "mci"
+		vmEleId = "mci";
 	}
-	console.log("add vm")
 	$("#" + vmEleId + "_plusVmIcon").remove();
-	$("#" + vmEleId + "_server_list").append(add_server_html)
+	$("#" + vmEleId + "_server_list").append(add_server_html);
 	$("#" + vmEleId + "_server_list").prepend(getPlusVm(vmEleId));
 
-
-	console.log("express btn click and express form data : ", express_form)
+	console.log("express btn click and express form data : ", express_form);
 	console.log("express data array : ", Express_Server_Config_Arr);
 	express_data_cnt++;
 	$("#express_form").each(function () {
 		this.reset();
-	})
+	});
 	$("#ep_data_disk").val("");
-
 }
 
 export function view_express(cnt) {
@@ -447,13 +452,16 @@ var ROOT_DISK_MIN_VALUE = 0;
 export function changeDiskSize(type) {
 	var disk_size = DISK_SIZE;
 
-	if (disk_size) {
+	if (disk_size && Array.isArray(disk_size)) {
 		disk_size.forEach(item => {
-			var temp_size = item.split("|")
-			var temp_type = temp_size[0];
-			if (temp_type == type) {
-				ROOT_DISK_MAX_VALUE = temp_size[1]
-				ROOT_DISK_MIN_VALUE = temp_size[2]
+			// item이 문자열인지 확인 후 split 실행
+			if (typeof item === 'string' && item.includes('|')) {
+				var temp_size = item.split("|")
+				var temp_type = temp_size[0];
+				if (temp_type == type) {
+					ROOT_DISK_MAX_VALUE = temp_size[1]
+					ROOT_DISK_MIN_VALUE = temp_size[2]
+				}
 			}
 		})
 	}
@@ -589,7 +597,6 @@ export async function createMciDynamic() {
 	var projectId = $("#select-current-project").text()
 	var projectName = $('#select-current-project').find('option:selected').text();
 	var nsId = projectName;
-	console.log("create ssss nsId ", projectName)
 
 	var mciName = $("#mci_name").val()
 	var mciDesc = $("#mci_desc").val()
@@ -602,7 +609,7 @@ export async function createMciDynamic() {
 
 
 	if (!mciName) {
-		commonAlert("Please Input MCIS Name!!!!!")
+		commonAlert("Please Input MCI Name!!!!!")
 		return;
 	}
 
@@ -614,29 +621,20 @@ export async function createMciDynamic() {
 }
 
 export async function createVmDynamic() {
-	console.log("createVmDynamic")
-	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
-
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-
 	var selectedNsId = selectedWorkspaceProject.nsId;
-	console.log("selected projectId : ", selectedNsId)
+	var mciId = webconsolejs["pages/operation/manage/mci"].currentMciId
 
-	var mciid = webconsolejs["pages/operation/manage/mci"].selectedMciObj[0].id
-	console.log("selected mciId : ", mciid)
+	// for the test
+	// webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
 
-	// var commonImage = selectedMciObj[0].vm[0].
-	// var mci_name = selectedMci[0].name
+	// response가 있으면 
 
-	// var mci_name = $("#mci_name").val();
-	// var mci_id = $("#mci_id").val();
-	// if (!mci_id) {
-	// 	commonAlert("Please Select MCIS !!!!!")
-	// 	return;
-	// }
+	alert("생성요청 완료")
+	window.location = `/webconsole/operations/manage/workloads/mciworkloads`;
 
-	///
-	webconsolejs["common/api/services/mci_api"].vmDynamic(mciid, selectedNsId, Express_Server_Config_Arr)
+	await webconsolejs["pages/operation/manage/mci"].refreshRowData(mciId, checked_array);
+
 }
 
 export function addNewMci() {
@@ -649,16 +647,17 @@ export function addNewVirtualMachine() {
 	console.log("addNewVirtualMachine")
 	Express_Server_Config_Arr = new Array();
 
-	var selectedMci = webconsolejs["pages/operation/manage/mci"].selectedMciObj
+	var selectedMci = webconsolejs["pages/operation/manage/mci"].currentMciId
 	console.log("selectedMci", selectedMci)
 
-	var mci_name = selectedMci[0].name
-	var mci_desc = selectedMci[0].description
+	var mci_name = selectedMci
+	// var mci_name = selectedMci[0].name
+	// var mci_desc = selectedMci[0].description
 
 	$("#extend_mci_name").val(mci_name)
 
-	$("#extend_mci_desc").val(mci_desc)
-	console.log("extend_mci_desc", mci_desc)
+	// $("#extend_mci_desc").val(mci_desc)
+	// console.log("extend_mci_desc", mci_desc)
 
 	isVm = true
 }
@@ -808,23 +807,26 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 	commonResultAlert("VM creation request completed");
 }
 
-// server quantity 
-$(document).ready(function () {
-	$(".input-number-increment").click(function () {
-		var $input = $(this).siblings(".input-number");
-		var val = parseInt($input.val(), 10);
-		var max = parseInt($input.attr('max'), 10);
-		if (val < max) {
-			$input.val(val + 1);
-		}
+// SubGroup Size
+(function () {
+	const input = document.getElementById('ep_vm_add_cnt');
+	if (!input) return;
+
+	const container = input.parentElement; // .d-flex.align-items-center
+	const [btnDec, btnInc] = container.querySelectorAll('button');
+
+	const minValue = 1;
+	const maxValue = Number(input.getAttribute('max')) || Infinity;
+
+	btnDec.addEventListener('click', function (e) {
+		e.preventDefault();
+		let val = parseInt(input.value, 10) || minValue;
+		if (val > minValue) input.value = val - 1;
 	});
 
-	$(".input-number-decrement").click(function () {
-		var $input = $(this).siblings(".input-number");
-		var val = parseInt($input.val(), 10);
-		var min = parseInt($input.attr('min'), 10);
-		if (val > min) {
-			$input.val(val - 1);
-		}
+	btnInc.addEventListener('click', function (e) {
+		e.preventDefault();
+		let val = parseInt(input.value, 10) || minValue;
+		if (val < maxValue) input.value = val + 1;
 	});
-});  
+})();

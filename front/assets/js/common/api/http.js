@@ -89,7 +89,6 @@ function deactivePageLoader(){
     }
 }
 
-
 export async function commonAPIGet(url) {
     console.log("#### commonAPIGet")
     console.log("Request URL : ", url)
@@ -110,3 +109,4 @@ export async function commonAPIGet(url) {
 
     return response
 }
+ 

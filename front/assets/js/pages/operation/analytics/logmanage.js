@@ -355,14 +355,14 @@ export async function getCollectedLog() {
   var selectedVMId = $("#monitoring_vmlist").val();
   //GET_OpensearchLogs
 
-  // try{
+  // try{ 
   //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
   //   getLogListCallbackSuccess(response.data.responseData)
   // }catch(e){
   const dataObject = {
     data: [
       {
-        "@timestamp": "2024-10-18T08:41:22.820224306Z",
+        "@timestamp": "2024-11-06T08:41:22.820224306Z",
         measurement_name: "tail",
         tag: {
           host: "2ebc9c59f973",
@@ -376,13 +376,13 @@ export async function getCollectedLog() {
           message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
           pid: "886",
           program: "mc-o11y-influx",
-          timestamp: "Oct 18 08:41:22"
+          timestamp: "Nov 06 08:41:22"
         }
       }
     ]
   };
   getLogListCallbackSuccess(dataObject.data)
-  //}
+  // }
 
   //var respMonitoringData = response.data.responseData
   //console.log("respMonitoringData", respMonitoringData)

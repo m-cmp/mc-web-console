@@ -1,0 +1,199 @@
+<!-- PMK용 spec-search : server recommendation -->
+<div
+  class="modal modal-blur fade"
+  id="spec-search-pmk"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-info">Spec Recommendation</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group mb-2">
+            <label class="form-label">Priority Option / Limit (location)</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input type="hidden" id="latitude-pmk" />
+                <input type="hidden" id="longitude-pmk" />
+                <select
+                  class="form-select"
+                  id="assistRecommendSpecConnectionName-pmk"
+                  name="assistRecommendSpecConnectionName-pmk"
+                  onchange="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].showRecommendSpecSettingPmk(this.value)"
+                >
+                  <option value="">Select Region</option>
+                  <option value="seoul">Seoul</option>
+                  <option value="london">London</option>
+                  <option value="newyork">NewYork</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <a
+                  class="btn btn-icon"
+                  aria-label="Button"
+                  onclick="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].getRecommendVmInfoPmk()"
+                >
+                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                    <path d="M21 21l-6 -6"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading-1-pmk">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse-1-pmk"
+              aria-expanded="true"
+            >
+              Spec Config
+            </button>
+          </h2>
+          <div
+            id="collapse-1-pmk"
+            class="accordion-collapse collapse show"
+            data-bs-parent="#accordion-example"
+          >
+            <div class="accordion-body pt-0">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="form-label">Memory (GB)</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_memory-pmk"
+                      id="assist_min_memory-pmk"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_memory-pmk"
+                      id="assist_max_memory-pmk"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">vCPU</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_cpu-pmk"
+                      id="assist_min_cpu-pmk"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_cpu-pmk"
+                      id="assist_max_cpu-pmk"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">COST (Hour)</label>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_min_cost-pmk"
+                      id="assist_min_cost-pmk"
+                      placeholder="min"
+                    />
+                    <span class="input-group-text">~</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="assist_max_cost-pmk"
+                      id="assist_max_cost-pmk"
+                      placeholder="max"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="row mb-2">
+          <div class="col-md-3">
+            <label class="form-label">Cloud Provider Filter</label>
+            <select
+              class="form-select form-select-sm"
+              id="spec-provider-filter-pmk"
+              name="spec-provider-filter-pmk"
+              onchange="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].filterByProviderPmk(this.value)"
+            >
+              <option value="">All Providers</option>
+              <option value="aws">AWS</option>
+              <option value="azure">Azure</option>
+              <option value="alibaba">Alibaba</option>
+              <option value="gcp">GCP</option>
+              <option value="tencent">Tencent</option>
+              <option value="ncp">NCP</option>
+              <option value="ncpvpc">NCP VPC</option>
+              <option value="nhn">NHN</option>
+              <option value="ibm">IBM</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive" id="spec-table-pmk"></div>
+      </div>
+
+      <div class="modal-footer">
+        <div align="right">
+          <button
+            type="submit"
+            class="btn btn-info"
+            data-bs-dismiss="modal"
+            onclick="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].applySpecInfoPmk()"
+          >
+            Apply
+          </button>
+          <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- PMK용 spec-search end --> 

@@ -1,31 +1,11 @@
 <div class="card bg-secondary-lt">
   <div class="card-header">
     <h3 class="card-title">
-      Server List / Status
+      VM List / Status
       <span class="text-info" id="mci_server_info_status"> </span>
       <span class="text-secondary" id="mci_server_info_count"></span>
     </h3>
     <div class="card-actions btn-actions">
-      <a href="#addserver" class="btn btn-outline-primary" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="icon"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="currentColor"
-          fill="none"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-          <path d="M12 5l0 14"></path>
-          <path d="M5 12l14 0"></path>
-        </svg>
-        Add server
-      </a>
-
       <!-- filter -->
       <a
         class="btn-action"
@@ -253,7 +233,11 @@
 
           <div class="dropdown-divider"></div>
 
-          <a class="dropdown-item" href="#addserver" onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()">
+          <a
+            class="dropdown-item"
+            href="#addserver"
+            onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -274,9 +258,12 @@
             </svg>
             New
           </a>
-          <a class="dropdown-item" data-bs-toggle="modal"
-                      data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete VM ?', 'pages/operation/manage/mci.deleteVm')">
+          <a
+            class="dropdown-item"
+            data-bs-toggle="modal"
+            data-bs-target="#commonDefaultModal"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete VM ?', 'pages/operation/manage/mci.deleteVm')"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -322,7 +309,8 @@
       </div>
 
       <!-- refresh -->
-      <a class="btn-action"
+      <a
+        class="btn-action"
         onclick="webconsolejs['pages/operation/manage/mci'].getSelectedMciData()"
       >
         <svg
@@ -342,14 +330,41 @@
           <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
         </svg>
       </a>
+
+      <!-- add server-->
+      <a
+        href="#addserver"
+        class="btn btn-outline-primary"
+        onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M12 5l0 14"></path>
+          <path d="M5 12l14 0"></path>
+        </svg>
+        Add server
+      </a>
     </div>
   </div>
   <div class="card-body">
     <div>
       <ul class="vmStatus-list" id="mci_server_info_box"></ul>
     </div>
+    <div class="row p-2">
+      <div class="col-12">
+        <%= partial("partials/operation/manage/serverinfo.html") %>
+      </div>
+    </div>
   </div>
-
-  
-  
 </div>

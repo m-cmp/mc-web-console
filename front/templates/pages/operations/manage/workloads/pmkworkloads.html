@@ -2,36 +2,41 @@
   <div class="container-xl">
     <!-- PMK DASHBOARD -->
     <div id="index" class="section">
+      <div class="row">
+        <div class="col">
+          <div class="d-flex justify-content-end align-items-center">
+            <!-- <a
+              href="#manage"
+              class="btn btn-primary"
+              onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M12 5l0 14"></path>
+                <path d="M5 12l14 0"></path>
+              </svg>
+              Add cluster
+            </a> -->
+          </div>
+        </div>
+      </div>
       <div class="row row-cards">
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">List of Cluster</h3>
               <div class="card-actions btn-actions">
-                <a
-                  href="#manage"
-                  class="btn btn-primary"
-                  onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 5l0 14"></path>
-                    <path d="M5 12l14 0"></path>
-                  </svg>
-                  Add cluster
-                </a>
-
                 <!-- filter -->
                 <a
                   class="btn-action"
@@ -219,7 +224,8 @@
                 </div>
 
                 <!-- refresh -->
-                <a class="btn-action"
+                <a
+                  class="btn-action"
                   onclick="webconsolejs['pages/operation/manage/pmk'].refreshPmkList()"
                 >
                   <svg
@@ -332,8 +338,354 @@
       </div>
     </div>
 
-    <!-- PMK CREATE -->
-    <div id="manage" class="section">
+    <!-- PMK CREATE - NEW FORM B -->
+    <div id="createcluster" class="section">
+      <div class="row row-cards">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Create Cluster</h3>
+              <div class="card-actions">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  onclick="webconsolejs['pages/operation/manage/pmk'].toggleExpertCreation()"
+                >
+                  Expert Creation
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-2">
+                    <label class="form-label required">Cluster Name</label>
+                    <input
+                      class="form-control"
+                      name="cluster_name_dynamic"
+                      rows="1"
+                      placeholder="Input Name"
+                      id="cluster_name_dynamic"
+                    />
+                  </div>
+                  <div class="form-group mb-2">
+                    <label class="form-label required"
+                      >Cloud Provider / Region</label
+                    >
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <select
+                          name="cluster-provider-dynamic"
+                          class="form-select"
+                          id="cluster_provider_dynamic"
+                        >
+                          <option value="">Select Provider</option>
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <select
+                          name="cluster-region-dynamic"
+                          class="form-select"
+                          id="cluster_region_dynamic"
+                        >
+                          <option value="">Select Region</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-2">
+                    <label class="form-label">Description</label>
+                    <textarea
+                      class="form-control"
+                      rows="1"
+                      placeholder="Input Description"
+                      name="cluster_desc_dynamic"
+                      id="cluster_desc_dynamic"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-group mb-2">
+                    <label class="form-label required">Cloud Connection</label>
+                    <div class="row g-2">
+                      <div class="col">
+                        <select
+                          class="form-select"
+                          name="cluster-connection-dynamic"
+                          onchange="webconsolejs['pages/operation/manage/pmk'].changeCloudConnectionDynamic(this.value)"
+                          id="cluster_cloudconnection_dynamic"
+                          required
+                        >
+                          <option value="">Select Connection</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 기존 Deploy 버튼 -->
+              <div class="card-footer text-end">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  onclick="webconsolejs['pages/operation/manage/pmk'].deployPmkDynamic()"
+                >
+                  Deploy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NodeGroup 구성 폼 (별도 카드) -->
+    <div class="row row-cards mt-3">
+      <div class="col-md-12">
+        <div class="card sub_section" id="nodegroup_configuration_dynamic" style="display: none;">
+          <div class="card-header">
+            <h3 class="text-info">NodeGroup Configuration</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">NodeGroup Name</label>
+                  <input
+                    class="form-control"
+                    name="nodegroup_name_dynamic"
+                    id="nodegroup_name_dynamic"
+                    rows="1"
+                    placeholder="Input Name"
+                  />
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required">Spec</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Please Use Search"
+                        name="spec_dynamic"
+                        id="nodegroup_spec_dynamic"
+                      />
+                      
+                      <input
+                        type="hidden"
+                        name="provider"
+                        id="nodegroup_provider_dynamic"
+                        value=""
+                      />
+                      <input
+                        type="hidden"
+                        name="connectionName"
+                        id="nodegroup_connectionName_dynamic"
+                        value=""
+                      />
+                      <input
+                        type="hidden"
+                        name="commonSpecId"
+                        id="nodegroup_commonSpecId_dynamic"
+                        value=""
+                      />
+                    </div>
+                    <div class="col-auto">
+                      <a
+                        href="#"
+                        class="btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#spec-search-pmk"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="icon"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          stroke-width="2"
+                          stroke="currentColor"
+                          fill="none"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            stroke="none"
+                            d="M0 0h24v24H0z"
+                            fill="none"
+                          ></path>
+                          <path
+                            d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                          ></path>
+                          <path d="M21 21l-6 -6"></path>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label">Image</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Please Use Search"
+                        name="image_dynamic"
+                        id="nodegroup_image_dynamic"
+                      />
+                    </div>
+                    <div class="col-auto">
+                      <a
+                        href="#"
+                        class="btn"
+                        onclick="webconsolejs['pages/operation/manage/pmk'].validateAndOpenImageModalPmk(event)"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="icon"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          stroke-width="2"
+                          stroke="currentColor"
+                          fill="none"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            stroke="none"
+                            d="M0 0h24v24H0z"
+                            fill="none"
+                          ></path>
+                          <path
+                            d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                          ></path>
+                          <path d="M21 21l-6 -6"></path>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">minNodeSize / maxNodeSize</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <select
+                        class="form-select"
+                        name="nodegroup-minnodesize-dynamic"
+                        id="nodegroup_minnodesize_dynamic"
+                      >
+                        <option value="">Min</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <select
+                        class="form-select"
+                        name="nodegroup-maxnodesize-dynamic"
+                        id="nodegroup_maxnodesize_dynamic"
+                      >
+                        <option value="">Max</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group mb-2">
+                  <label class="form-label required">AutoScaling</label>
+                  <div class="row g-2">
+                    <div class="col">
+                      <select
+                        class="form-select"
+                        name="nodegroup-autoscaling-dynamic"
+                        id="nodegroup_autoscaling_dynamic"
+                        required
+                      >
+                        <option value="">Select option</option>
+                        <option value="true">On</option>
+                        <option value="false">Off</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group mb-2">
+                  <label class="form-label">Root Disk</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <select
+                        class="form-select"
+                        name="nodegroup-rootdisk-dynamic"
+                        id="nodegroup_rootdisk_dynamic"
+                      >
+                        <option value="">Select Root Disk Type</option>
+                        <option value="default">default</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <textarea
+                        class="form-control"
+                        rows="1"
+                        placeholder="Root Disk Size(GB)"
+                        name="nodegroup-rootdisksize-dynamic"
+                        id="nodegroup_rootdisksize_dynamic"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group mb-2">
+                  <label class="form-label">Desired Node Size</label>
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <div class="input-number-container">
+                        <button class="input-number-decrement">-</button>
+                        <input
+                          type="number"
+                          class="input-number"
+                          value="1"
+                          min="1"
+                          max="5"
+                          id="nodegroup_desirednodesize_dynamic"
+                        />
+                        <button class="input-number-increment">+</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="webconsolejs['pages/operation/manage/pmk'].deployPmkDynamic()"
+            >
+              Deploy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PMK CREATE - ORIGINAL FORM A (HIDDEN) -->
+    <div id="createcluster-original" class="section" style="display: none;">
       <form id="cluster_form">
         <input type="hidden" name="name" value="" id="c_name" />
         <input type="hidden" name="description" id="c_desc" />
@@ -348,7 +700,7 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Create Cluster</h3>
+              <h3 class="card-title">Create Cluster (Expert Mode)</h3>
             </div>
 
             <div class="card-body">
@@ -733,10 +1085,21 @@
 
 <!-- add server : spec-search -->
 <%= partial("partials/operation/manage/clusterrecommendation.html") %>
+<!-- add server : image-search -->
+<%= partial("partials/operation/manage/imagerecommendation.html") %>
 <!-- add server : cspimagelist -->
 <%= partial("partials/operation/manage/cspimagelist.html") %>
 <!-- add server : cspspeclist -->
-<%= partial("partials/operation/manage/cspspeclist.html") %> <%=
+<%= partial("partials/operation/manage/cspspeclist.html") %>
+
+<!-- PMK용 모달 포함 -->
+<%= partial("partials/operation/manage/pmk_serverrecommendation.html") %>
+<%= partial("partials/operation/manage/pmk_imagerecommendation.html") %> <%=
 javascriptTag("pages/operation/manage/pmk.js") %> <%=
 javascriptTag("common/api/services/pmk_api.js") %> <%=
-javascriptTag("common/api/services/vmimage_api.js") %>
+javascriptTag("common/api/services/mci_api.js") %> <%=
+javascriptTag("common/api/services/vmimage_api.js") %> <%=
+javascriptTag("partials/operation/manage/serverrecommendation.js") %> <%=
+javascriptTag("partials/operation/manage/imagerecommendation.js") %> <%=
+javascriptTag("partials/operation/manage/pmk_serverrecommendation.js") %> <%=
+javascriptTag("partials/operation/manage/pmk_imagerecommendation.js") %>

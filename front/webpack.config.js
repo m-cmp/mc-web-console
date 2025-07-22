@@ -66,6 +66,42 @@ const configurator = {
 
       entries[key].push(entry)
     })
+
+    Glob.sync("./assets/*/*/*/*/*/*.*").forEach((entry) => {
+      if (entry === './assets/css/application.scss') {
+        return
+      }
+
+      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
+      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
+        return
+      }
+
+      if( entries[key] == null) {
+        entries[key] = [entry]
+        return
+      }
+
+      entries[key].push(entry)
+    })
+
+    Glob.sync("./assets/*/*/*/*/*/*/*.*").forEach((entry) => {
+      if (entry === './assets/css/application.scss') {
+        return
+      }
+
+      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
+      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
+        return
+      }
+
+      if( entries[key] == null) {
+        entries[key] = [entry]
+        return
+      }
+
+      entries[key].push(entry)
+    })
     
     return entries
   },
@@ -112,7 +148,8 @@ const configurator = {
         { test: /\.jsx?$/,loader: "babel-loader",exclude: /node_modules/ },
         { test: /\.(woff|woff2|ttf|svg)(\?v=\d+\.\d+\.\d+)?$/,use: "url-loader"},
         { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,use: "file-loader" },
-        { test: /\.go$/, use: "gopherjs-loader"}
+        { test: /\.go$/, use: "gopherjs-loader"},
+        { test: /\.(png|jpg|gif|ico)$/, use: "file-loader" }
       ]
     }
   },
