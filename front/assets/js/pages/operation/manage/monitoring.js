@@ -182,44 +182,53 @@ async function setMonitoringMesurement() {
 }
 
 export async function startMonitoring() {
-
   var selectedMeasurement = $("#monitoring_measurement").val();
   var selectedRange = $("#monitoring_range").val();
   var selectedVMId = $("#monitoring_vmlist").val();
 
   var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
+  console.log(response);
 
-  var respMonitoringData = response.data.responseData
-
-  drawMonitoringGraph(respMonitoringData)
+  // 응답 데이터의 구조를 검증
+  if (response && response.responseData && response.responseData.data) {
+    var respMonitoringData = response.responseData.data;
+    drawMonitoringGraph(respMonitoringData);
+  } else {
+    console.error("Invalid response structure:", response);
+  }
 }
 
 async function drawMonitoringGraph(MonitoringData) {
   const chartDataList = [];
   const chartLabels = [];
 
-  // cpu0, cpu1, cpu2, cpu3 데이터만 필터링
-  MonitoringData.data.forEach(cpuData => {
-    if (["cpu0", "cpu1", "cpu2", "cpu3"].includes(cpuData.tags.cpu)) {
-      const seriesData = {
-        name: cpuData.tags.cpu,
-        data: cpuData.values
-          .map(value => ({
-            x: value[0], // timestamp
-            y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
-          }))
-          .filter(point => point.y !== null)
-      };
-      chartDataList.push(seriesData);
+  // MonitoringData.data가 존재하는지 확인
+  if (MonitoringData && Array.isArray(MonitoringData)) {
+    MonitoringData.forEach(cpuData => {
+      if (["cpu0", "cpu1", "cpu2", "cpu3"].includes(cpuData.tags.cpu)) {
+        const seriesData = {
+          name: cpuData.tags.cpu,
+          data: cpuData.values
+            .map(value => ({
+              x: value[0], // timestamp
+              y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
+            }))
+            .filter(point => point.y !== null)
+        };
+        chartDataList.push(seriesData);
 
-      cpuData.values.forEach(value => {
-        const timestamp = value[0];
-        if (!chartLabels.includes(timestamp)) {
-          chartLabels.push(timestamp);
-        }
-      });
-    }
-  });
+        cpuData.values.forEach(value => {
+          const timestamp = value[0];
+          if (!chartLabels.includes(timestamp)) {
+            chartLabels.push(timestamp);
+          }
+        });
+      }
+    });
+  } else {
+    console.error("MonitoringData is invalid or does not contain data:", MonitoringData);
+    return;
+  }
 
   const options = {
     chart: {

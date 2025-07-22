@@ -6,12 +6,21 @@
 //tabler
 @import "./inter/inter.css"; // font
 @import "./tabler_custom.scss";
-
+@import "~@tabler/icons-webfont/dist/tabler-icons.min.css";
 // tabulator Custom CSS
 @import "./tabulator_for_tabler.scss";
 
+// jstree Custom CSS
+@import "./jstree_for_tabler.scss";
+
 // tomselect Custom CSS
 @import "./tomselect_for_tabler.scss";
+
+// xtermjs
+@import "~@xterm/xterm/css/xterm.css";
+
+// dropzone
+@import "~dropzone/dist/dropzone.css";
 
 .section {
   display: none;
@@ -189,6 +198,25 @@
   cursor: pointer;
 }
 
+
+
+// NodeGroup 구성 폼 애니메이션
+#nodegroup_configuration_dynamic {
+  transition: all 0.3s ease-in-out;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+#nodegroup_configuration_dynamic.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#nodegroup_configuration_dynamic.hide {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
 .input-number-container input {
   // width: 60px;
   // height: 40px;
@@ -203,4 +231,34 @@
 .input-number-container input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+// Roles 페이지 tabulator 스타일
+.roles-table-container {
+  .tabulator {
+    .tabulator-footer {
+      .tabulator-paginator {
+        .tabulator-page {
+          margin: 0 2px;
+          padding: 6px 12px;
+          border: 1px solid #dadfe5;
+          border-radius: 4px;
+          background: #fff;
+          color: #626976;
+          cursor: pointer;
+          
+          &:hover {
+            background: #f8f9fa;
+            color: #206bc4;
+          }
+          
+          &.active {
+            background: #206bc4;
+            color: #fff;
+            border-color: #206bc4;
+          }
+        }
+      }
+    }
+  }
 }

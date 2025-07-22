@@ -637,3 +637,127 @@ export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
   );
   console.log("pmkDelete response : ", response)
 }
+
+// PMK용 Spec 추천 API
+export async function getPmkRecommendSpec(data) {
+  var controller = "/api/" + "RecommendMCISPlan(FilterAndPriority)";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  console.log("pmk recommend spec response ", response.data.responseData)
+
+  return response.data
+}
+
+// PMK용 Spec 목록 API
+export async function getPmkSpecList(connectionName, nsId) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams: {
+      filterKey: "cspResourceName",
+      filterVal: connectionName
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllVMSpec";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("pmk specList : ", response)
+  var specList = response.data.responseData;
+
+  return specList
+}
+
+// PMK용 Image 목록 API
+export async function getPmkImageList(connectionName, nsId) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  var data = {
+    pathParams: {
+      nsId: nsId,
+    },
+    queryParams: {
+      filterKey: "cspResourceName",
+      filterVal: connectionName
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllVMImage";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  console.log("pmk imageList : ", response)
+  var imageList = response.data.responseData;
+
+  return imageList
+}
+
+// 동적 클러스터 생성 사전 검증 API
+export async function checkK8sClusterDynamic(nsId, commonSpec) {
+  if (!nsId || !commonSpec) {
+    console.log("nsId 또는 commonSpec이 없습니다");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      nsId: nsId
+    },
+    Request: {
+      commonSpec: [commonSpec]
+    }
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Postk8sclusterdynamiccheckrequest";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  return response;
+}
+
+// 동적 클러스터 생성 API
+export async function createK8sClusterDynamic(nsId, clusterData) {
+  if (!nsId || !clusterData) {
+    console.log("nsId 또는 clusterData가 없습니다");
+    return;
+  }
+
+  // commonImage가 없으면 "default"로 설정
+  if (!clusterData.commonImage || clusterData.commonImage === "") {
+    clusterData.commonImage = "default";
+  }
+
+  const data = {
+    pathParams: {
+      nsId: nsId
+    },
+    Request: clusterData
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Postk8sclusterdynamic";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  return response;
+}

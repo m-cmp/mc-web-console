@@ -1,0 +1,69 @@
+// 전체 트리 기본 스타일
+.jstree {
+    font-size: 14px;
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  // 트리 노드 기본
+  .jstree-anchor {
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  
+    &:hover {
+      background-color: #f0f4f8;
+      color: #0054a6;
+    }
+  
+    &.jstree-clicked {
+      background-color: #e6f0ff;
+      color: #0054a6;
+      font-weight: 500;
+    }
+  }
+  
+  // 아이콘 스타일
+  .jstree-themeicon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  
+  // 체크박스 커스터마이징
+  .jstree-checkbox {
+    margin-right: 6px;
+    transform: scale(1.1);
+  }
+  
+  // 노드 간 간격
+  .jstree-node {
+    margin-bottom: 0px;
+  }
+  
+  // 하위 노드 들여쓰기
+  .jstree-children {
+    margin-left: 12px;
+  }
+  
+  // 전체 행 하이라이트 (wholerow plugin용)
+  .jstree-wholerow {
+    border-radius: 4px;
+    height: 28px;
+  }
+
+.jstree,
+.jstree ul,
+.jstree li {
+  list-style: none !important;
+  margin: 5;
+  padding: 0;
+}

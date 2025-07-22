@@ -1,0 +1,132 @@
+<div class="card section" id="policy_info">
+  <div class="card-header">
+    <h3 class="card-title">
+      Policy Info<span id="server_info_text" class="text-info"> </span>
+    </h3>
+  </div>
+
+  <div class="card-body">
+    <!-- MCI Info (3열) -->
+    <h1 class="card-title">MCI Info</h1>
+    <div class="datagrid row">
+      <div class="datagrid-item col-md-6">
+        <div class="datagrid-title">MCI ID</div>
+        <div class="datagrid-content" id="policy-mciId">-</div>
+      </div>
+      <div class="datagrid-item col-md-6">
+        <div class="datagrid-title">MCI Name</div>
+        <div class="datagrid-content" id="policy-mciName">-</div>
+      </div>
+      <div class="datagrid-item col-md-6">
+        <div class="datagrid-title">Action Log</div>
+        <textarea
+          id="policy-actionLog"
+          class="form-control"
+          rows="3"
+          placeholder="Action log..."
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- SubGroup Info (6개 항목 → 3열씩 두 줄) -->
+    <h1 class="card-title mt-4">SubGroup Info</h1>
+    <div class="datagrid row">
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Name</div>
+        <div class="datagrid-content" id="subgroup-name">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Label</div>
+        <div class="datagrid-content" id="subgroup-label">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Size</div>
+        <div class="datagrid-content" id="subgroup-size">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Description</div>
+        <div class="datagrid-content" id="subgroup-description">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Current VM Count</div>
+        <div class="datagrid-content" id="subgroup-currentVmCount">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Min/Max Size</div>
+        <div class="datagrid-content" id="subgroup-minMaxSize">-</div>
+      </div>
+    </div>
+
+    <!-- MCI Scale Summary (3열) -->
+    <h1 class="card-title mt-4">MCI Scale Summary</h1>
+    <div class="datagrid row">
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">SubGroup Size</div>
+        <div class="datagrid-content" id="summary-subgroupSize">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Current VM Count</div>
+        <div class="datagrid-content" id="summary-currentVmCount">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Min/Max Size</div>
+        <div class="datagrid-content" id="summary-minMaxSize">-</div>
+      </div>
+    </div>
+
+    <!-- MCI Scale Policy Info (2열) -->
+    <h1 class="card-title mt-4">MCI Scale Policy Info</h1>
+    <div class="datagrid row">
+      <div class="datagrid-item col-md-6">
+        <div class="datagrid-title">Type</div>
+        <div class="datagrid-content" id="policy-type">-</div>
+      </div>
+      <div class="datagrid-item col-md-6">
+        <div class="datagrid-title">Algorithm</div>
+        <div class="datagrid-content" id="policy-algorithm">-</div>
+      </div>
+    </div>
+
+    <!-- MCI Scale Condition Info (3열) -->
+    <h1 class="card-title mt-4">MCI Scale Condition Info</h1>
+    <div class="datagrid row">
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Metric</div>
+        <div class="datagrid-content" id="condition-metric">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Operator</div>
+        <div class="datagrid-content" id="condition-operator">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Operand</div>
+        <div class="datagrid-content" id="condition-operand">-</div>
+      </div>
+    </div>
+
+    <!-- Policy VM Item Info (5개 항목 → 3열씩 배치, 마지막 두 개는 다음 줄로) -->
+    <h1 class="card-title mt-4">Policy VM Item</h1>
+    <div class="datagrid row">
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Spec</div>
+        <div class="datagrid-content" id="vm-spec">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">OS</div>
+        <div class="datagrid-content" id="vm-os">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Disk</div>
+        <div class="datagrid-content" id="vm-disk">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">CSP</div>
+        <div class="datagrid-content" id="vm-csp">-</div>
+      </div>
+      <div class="datagrid-item col-md-4">
+        <div class="datagrid-title">Connection</div>
+        <div class="datagrid-content" id="vm-connection">-</div>
+      </div>
+    </div>
+  </div>
+</div>

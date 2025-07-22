@@ -345,7 +345,7 @@ export async function getMonitoringLog(nsId, mciId, targetId, keyword) {
   data.request = request;
 
 
-  var controller = "/api/" + "mc-observability/" + "GET_OpensearchLogs";
+  var controller = "/api/" + "mc-observability/" + "GETOpensearchLogs";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -428,13 +428,11 @@ export async function getTargetsNsMci(nsId, mciId) {
     controller,
     data
   )
-
   // target이 있다는 이야기는 agent가 설치되었다는 뜻으로 보면 되는가? maybe
   var respMeasureMent = response.data.responseData;
 
   return respMeasureMent
 }
-
 
 export async function InstallMonitoringAgent(nsId, mciId, vmId){
   var controller = "/api/" + "mc-observability/" + "PostTarget";
@@ -461,6 +459,46 @@ export async function InstallMonitoringAgent(nsId, mciId, vmId){
 
 export async function UninstallMonitoringAgent(nsId, mciId, vmId){
   var controller = "/api/" + "mc-observability/" + "DeleteTarget";
+  
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      targetId: vmId,
+    },
+  };
+
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  return response.data.responseData
+  
+}
+
+export async function GetMonitoringTarget(nsId, mciId, vmId){
+  var controller = "/api/" + "mc-observability/" + "Gettarget";
+  
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      targetId: vmId,
+    },
+  };
+
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  )
+
+  return response.data.responseData
+  
+}
+
+export async function GetMetricitems(nsId, mciId, vmId){
+  var controller = "/api/" + "mc-observability/" + "Getitems";
   
   let data = {
     pathParams: {

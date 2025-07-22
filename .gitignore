@@ -39,7 +39,14 @@ front/vendor/
 front/**/*.log
 front/**/*.sqlite
 front/.idea/
-front/bin/
+front/.yarn/*
+front/!.yarn/patches
+front/!.yarn/plugins
+front/!.yarn/releases
+front/!.yarn/sdks
+front/!.yarn/versions
+front/yarn.lock
+front/package-lock.json
 front/tmp/
 front/node_modules/
 front/.sass-cache/
@@ -81,3 +88,4 @@ conf/serverinfo
 scripts/container-volume
 conf/api.yaml
 bin/mc-web-console-front
+node_modules

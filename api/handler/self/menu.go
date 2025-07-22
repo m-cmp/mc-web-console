@@ -74,6 +74,7 @@ func createMenuResource() error {
 }
 
 func GetMenuTree(menuList Menus) (*Menus, error) {
+	// "home"을 기준으로 트리 구축
 	menuTree := buildMenuTree(menuList, "home")
 	return &menuTree, nil
 }
@@ -85,6 +86,7 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 		},
 	}, true)
 	if err != nil {
+		log.Println("GetAllMCIAMAvailableMenus error : ", err)
 		return &Menus{}, err
 	}
 	if commonResponse.Status.StatusCode != 200 {
@@ -92,20 +94,36 @@ func GetAllMCIAMAvailableMenus(c buffalo.Context) (*Menus, error) {
 	}
 	menuListResp := commonResponse.ResponseData.([]interface{})
 	menuList := &Menu{}
+
 	for _, menuResp := range menuListResp {
-		menuPart := strings.Split(menuResp.(map[string]interface{})["rsname"].(string), ":")
+		menuMap := menuResp.(map[string]interface{})
 		menu := &Menu{
-			Id:           menuPart[2],
-			DisplayName:  menuPart[3],
-			ParentMenuId: menuPart[4],
-			Priority:     menuPart[5],
-			MenuNumber:   menuPart[6],
-			IsAction:     menuPart[7],
+			Id:           getString(menuMap, "id"),
+			DisplayName:  getString(menuMap, "displayName"),
+			ParentMenuId: getString(menuMap, "parentId"),
+			Priority:     getString(menuMap, "priority"),
+			MenuNumber:   getString(menuMap, "menuNumber"),
+			IsAction:     getString(menuMap, "isAction"),
 		}
 		menuList.Menus = append(menuList.Menus, *menu)
 	}
 
 	return &menuList.Menus, nil
+}
+
+// Helper function to safely get string values from map
+func getString(m map[string]interface{}, key string) string {
+	if val, ok := m[key]; ok {
+		switch v := val.(type) {
+		case string:
+			return v
+		case float64:
+			return fmt.Sprintf("%d", int(v))
+		case bool:
+			return fmt.Sprintf("%v", v)
+		}
+	}
+	return ""
 }
 
 func CreateMCIAMMenusByLocalMenuYaml(c buffalo.Context) error {

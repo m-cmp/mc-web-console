@@ -1,0 +1,235 @@
+<!-- Group 탭 -->
+<div class="card section" id="subGroup_vm_info">
+  <div class="card-header">
+    <h3 class="card-title">
+      Server Info<span id="subgroup_server_info_text" class="text-info"> </span>
+    </h3>
+    <div class="card-actions btn-actions gap-2">
+      <!-- <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#cmdtestmodal">
+        Remote CMD
+      </a> -->
+
+      <a
+        class="btn"
+        data-bs-toggle="modal"
+        data-bs-target="#commonDefaultModal"
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Remote CMD', 'Would you like to connect?', 'pages/operation/manage/mci.initremotecmdModal')"
+      >
+        Remote CMD
+      </a>
+
+      <a
+        href="#installsw"
+        class="btn btn-outline-dark"
+        onclick="webconsolejs['common/util'].installSwtoVm()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M12 5l0 14"></path>
+          <path d="M5 12l14 0"></path>
+        </svg>
+        Install SW
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="container">
+      <div class="row align-items-start">
+        <!-- Left Column: Connection Info -->
+        <div class="col-lg-2">
+          <div class="form-group mb-2">
+            <span id="subgroup_mci_server_info_connection"></span>
+          </div>
+        </div>
+
+        <!-- Right Column: Main Info -->
+        <div class="col-lg-10">
+          <!-- Row 1: Operating System / Architecture / StartTime -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Operating System</div>
+              <div class="datagrid-content" id="subgroup_server_info_os"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Architecture</div>
+              <div class="datagrid-content" id="subgroup_server_info_archi"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">StartTime</div>
+              <div class="datagrid-content" id="subgroup_server_info_start_time"></div>
+            </div>
+          </div>
+
+          <!-- Row 2: Private IP / Public DNS (with fixed alignment) -->
+          <div class="datagrid" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Private IP</div>
+              <div class="datagrid-content" id="subgroup_server_info_private_ip"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Public DNS</div>
+              <div class="datagrid-content" id="subgroup_server_info_public_dns"></div>
+            </div>
+            <!-- Empty column to maintain alignment -->
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title"></div>
+              <div class="datagrid-content"></div>
+            </div>
+          </div>
+
+          <!-- Row 3: Public IP / Private DNS (with fixed alignment) -->
+          <div class="datagrid" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Public IP</div>
+              <div class="datagrid-content" id="subgroup_server_info_public_ip"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Private DNS</div>
+              <div class="datagrid-content" id="subgroup_server_info_private_dns"></div>
+            </div>
+            <!-- Empty column to maintain alignment -->
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title"></div>
+              <div class="datagrid-content"></div>
+            </div>
+          </div>
+
+          <!-- Row 4: VMID / VMSpec / Config Name -->
+          <div class="datagrid" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">VMID</div>
+              <div class="datagrid-content" id="subgroup_server_info_cspVMID"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">VMSpec</div>
+              <div class="datagrid-content" id="subgroup_server_info_vmspec_name"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Config Name</div>
+              <div class="datagrid-content" id="subgroup_server_info_connection_name"></div>
+            </div>
+          </div>
+
+          <!-- Row 5: Region / Zone -->
+          <div class="datagrid" style=" display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Region</div>
+              <div class="datagrid-content" id="subgroup_server_info_region"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Zone</div>
+              <div class="datagrid-content" id="subgroup_server_info_zone"></div>
+            </div>
+            <!-- Empty column to maintain alignment -->
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title"></div>
+              <div class="datagrid-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <%= partial("partials/operation/manage/subgroup_servertabcards.html") %>
+  </div>
+  <!-- body end -->
+</div>
+
+<div
+  class="modal modal-blur fade"
+  id="cmdtestmodal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cmdtestmodal-title">Remote Treminal</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body p-0" id="cmdtestmodal-content">
+        <div id="xterm-container"></div>
+      </div>
+
+      <div class="modal-body p-0" id="cmdtestmodal-content">
+        <div class="accordion" id="command-example-accordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-1">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapse-1"
+                aria-expanded="false"
+              >
+                easy command transfer
+              </button>
+            </h2>
+            <div
+              id="collapse-1"
+              class="accordion-collapse collapse"
+              data-bs-parent="#command-example-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <div class="d-grid gap-2">
+                  <button
+                    id="show-content-btn"
+                    class="btn btn-primary"
+                    type="button"
+                  >
+                    excute commnad
+                  </button>
+                </div>
+                <form
+                  class="dropzone dz-clickable"
+                  id="dropzone-custom"
+                  action="./"
+                  autocomplete="off"
+                  novalidate=""
+                >
+                  <div class="dz-message">
+                    <h3 class="dropzone-msg-title">Drop Down Script Files</h3>
+                    <span class="dropzone-msg-desc"
+                      >Only shell script files (.sh) are allowed.</span
+                    >
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          Disconnect
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<%= javascriptTag("common/api/services/remotecmd_api.js") %>
