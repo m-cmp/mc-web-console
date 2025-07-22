@@ -1,20 +1,16 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mc-web-console-api:
     container_name: mc-web-console-api
-
-    image: mc-web-console-api:latest
-    # sudo docker build -f ./api/Dockerfile.mcwebconsoleapi -t mc-web-console-api:latest .
-
-    # build:
-    #   context: ../
-    #   dockerfile: api/Dockerfile.mcwebconsoleapi
+    build:
+      context: ../
+      dockerfile: api/Dockerfile.mcwebconsoleapi
     networks:
       - mc-web-console-network
     ports:
-      - target: 3000
-        published: 3000
+      - target: 6000
+        published: 6000
         protocol: tcp
     depends_on:
       - mc-web-console-db
@@ -23,7 +19,7 @@ services:
       MCIAM_USE: "true"
       MCIAM_TICKET_USE: "false"
       API_ADDR: 0.0.0.0
-      API_PORT: 3000
+      API_PORT: 6000
     volumes:
       - ./container-volume/mc-web-console-api/conf:/conf
     env_file:
@@ -31,37 +27,29 @@ services:
 
   mc-web-console-front:
     container_name: mc-web-console-front
-
-    image: mc-web-console-front:latest
-    # sudo docker build -f ./front/Dockerfile.mcwebconsolefront -t mc-web-console-front:latest .
-
-    # build:
-    #   context: ../
-    #   dockerfile: front/Dockerfile.mcwebconsolefront
+    build:
+      context: ../
+      dockerfile: front/Dockerfile.mcwebconsolefront
     networks:
       - mc-web-console-network
     ports:
-      - target: 3001
-        published: 3001
+      - target: 6001
+        published: 6001
         protocol: tcp
     depends_on:
       - mc-web-console-db
       - mc-web-console-api
     environment:
       API_ADDR: mc-web-console-api
-      API_PORT: 3000
+      API_PORT: 6000
       FRONT_ADDR: 0.0.0.0
-      FRONT_PORT: 3001
+      FRONT_PORT: 6001
 
   mc-web-console-db:
     container_name: mc-web-console-db
     image: postgres:14-alpine
     networks:
       - mc-web-console-network
-    # ports:
-    #   - target: 5432
-    #     published: 5432
-    #     protocol: tcp
     env_file:
       - .env
     volumes:

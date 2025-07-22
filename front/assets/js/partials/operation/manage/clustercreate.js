@@ -263,14 +263,24 @@ async function updateConfigurationFilltering() {
 		var cspMatch = selectedRegion.match(cspRegex);
 		var provider = cspMatch ? cspMatch[1].toLowerCase() : null; // CSP 이름 추출 및 소문자 변환
 
+		// Region 이름 추출 (예: "[AWS] us-east-1" → "us-east-1")
+		var regionName = selectedRegion.replace(cspRegex, '').trim();
+
+		console.log("Selected Provider:", provider);
+		console.log("Selected Region Name:", regionName);
+
+		// Provider + Region으로 정확한 Connection 필터링
 		var filteredConnections = myCloudConnection.filter(connection => {
-			return connection.startsWith(`${provider}`);
+			// "provider-region" 또는 "provider-region-zone" 형태와 매칭
+			return connection.startsWith(regionName);
 		});
 
-		var html = '<option value="">Select Connection</option>'
+		console.log("Filtered Connections:", filteredConnections);
+
+		var html = '<option value="">Select Connection</option>';
 		filteredConnections.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
+			html += '<option value="' + item + '">' + item + '</option>';
+		});
 
 		$("#cluster_cloudconnection").empty();
 		$("#cluster_cloudconnection").append(html);
