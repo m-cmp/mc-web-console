@@ -201,18 +201,18 @@
 
 
 // NodeGroup 구성 폼 애니메이션
-#nodegroup_configuration_b {
+#nodegroup_configuration_dynamic {
   transition: all 0.3s ease-in-out;
   opacity: 0;
   transform: translateY(-10px);
 }
 
-#nodegroup_configuration_b.show {
+#nodegroup_configuration_dynamic.show {
   opacity: 1;
   transform: translateY(0);
 }
 
-#nodegroup_configuration_b.hide {
+#nodegroup_configuration_dynamic.hide {
   opacity: 0;
   transform: translateY(-10px);
 }

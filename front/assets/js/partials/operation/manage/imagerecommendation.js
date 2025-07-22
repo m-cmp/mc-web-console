@@ -48,6 +48,9 @@ export function selectOSType(osType) {
 			dropdownInstance.hide();
 		}
 	}
+	
+	// 이벤트 기본 동작 방지
+	return false;
 }
 
 // GPU 토글 상태 업데이트 함수
@@ -214,11 +217,11 @@ export async function getRecommendImageInfo() {
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
 			includeDeprecatedImage: false,
-			isGPUImage: isGPUImage === "true",
-			isKubernetesImage: true,
+			isGPUImage: isGPUImage === "false",
+			isKubernetesImage: false,
 			isRegisteredByAsset: false,
-			osArchitecture: osArchitecture || "x86_64",
-			osType: osType || "ubuntu 22.04",
+			osArchitecture: osArchitecture,
+			osType: osType,
 			providerName: provider.toLowerCase() || "",
 			regionName: region || ""
 		};

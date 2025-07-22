@@ -207,11 +207,11 @@ export async function getRecommendImageInfoPmk() {
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
 			includeDeprecatedImage: false,
-			isGPUImage: isGPUImage === "true",
+			isGPUImage: isGPUImage === "false",
 			isKubernetesImage: false,
 			isRegisteredByAsset: false,
-			osArchitecture: osArchitecture || "x86_64",
-			osType: osType || "ubuntu 22.04",
+			osArchitecture: osArchitecture,
+			osType: osType,
 			providerName: provider.toLowerCase() || "",
 			regionName: region || ""
 		};

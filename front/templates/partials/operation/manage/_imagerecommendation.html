@@ -67,7 +67,7 @@
                     class="form-control"
                     id="assist_os_type"
                     name="assist_os_type"
-                    value="ubuntu 22.04"
+                    value=""
                     placeholder="Enter OS type or select from list"
                     list="os-type-list"
                   />
@@ -101,15 +101,24 @@
                     <li>
                       <a
                         class="dropdown-item"
-                        href="#"
+                        href="javascript:void(0)"
                         onclick="webconsolejs['partials/operation/manage/imagerecommendation'].selectOSType('ubuntu 22.04')"
                         >Ubuntu 22.04</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="javascript:void(0)"
+                        onclick="webconsolejs['partials/operation/manage/imagerecommendation'].selectOSType('debian 11')"
+                        >Debian 11</a
                       >
                     </li>
                   </ul>
                 </div>
                 <datalist id="os-type-list">
                   <option value="ubuntu 22.04">Ubuntu 22.04</option>
+                  <option value="debian 11">Debian 11</option>
                 </datalist>
               </div>
               <div class="col-md-4">
