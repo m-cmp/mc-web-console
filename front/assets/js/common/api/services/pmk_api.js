@@ -708,3 +708,56 @@ export async function getPmkImageList(connectionName, nsId) {
 
   return imageList
 }
+
+// 동적 클러스터 생성 사전 검증 API
+export async function checkK8sClusterDynamic(nsId, commonSpec) {
+  if (!nsId || !commonSpec) {
+    console.log("nsId 또는 commonSpec이 없습니다");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      nsId: nsId
+    },
+    Request: {
+      commonSpec: [commonSpec]
+    }
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Postk8sclusterdynamiccheckrequest";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  return response;
+}
+
+// 동적 클러스터 생성 API
+export async function createK8sClusterDynamic(nsId, clusterData) {
+  if (!nsId || !clusterData) {
+    console.log("nsId 또는 clusterData가 없습니다");
+    return;
+  }
+
+  // commonImage가 없으면 "default"로 설정
+  if (!clusterData.commonImage || clusterData.commonImage === "") {
+    clusterData.commonImage = "default";
+  }
+
+  const data = {
+    pathParams: {
+      nsId: nsId
+    },
+    Request: clusterData
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "Postk8sclusterdynamic";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  return response;
+}

@@ -120,7 +120,7 @@ const AppState = {
     isLoading: false,
     error: null
   },
-  
+
   // UI 상태
   ui: {
     createMode: false,
@@ -151,14 +151,14 @@ const AppState = {
       csp: { expanded: false }
     }
   },
-  
+
   // 편집 중인 역할 정보
   editingRole: {
     originalRole: null,
     modifiedRole: null,
     hasChanges: false
   },
-  
+
   // 폼 상태
   form: {
     roleName: '',
@@ -170,13 +170,13 @@ const AppState = {
       roleName: ''
     }
   },
-  
+
   // CSP Role Mapping 상태
   cspRoleMappings: {
     create: [], // Create 모드에서 추가된 CSP Role 목록
     edit: []    // Edit 모드에서 추가된 CSP Role 목록
   },
-  
+
   // 테이블 인스턴스들
   tables: {
     rolesTable: null,
@@ -246,7 +246,7 @@ const Utils = {
   // 폼 검증
   validateRoleForm(roleName, roleDescription) {
     const errors = [];
-    
+
     if (!roleName || !roleName.trim()) {
       errors.push('Role Name은 필수 입력 항목입니다.');
     } else if (roleName.trim().length < 2) {
@@ -254,7 +254,7 @@ const Utils = {
     } else if (roleName.trim().length > 50) {
       errors.push('Role Name은 50자 이하여야 합니다.');
     }
-    
+
     return errors;
   },
 
@@ -280,8 +280,8 @@ const Utils = {
 
   // 배열 안전 접근
   safeArrayAccess(array, index, defaultValue = null) {
-    return array && Array.isArray(array) && array[index] !== undefined 
-      ? array[index] 
+    return array && Array.isArray(array) && array[index] !== undefined
+      ? array[index]
       : defaultValue;
   }
 };
@@ -367,7 +367,7 @@ const RoleManager = {
   // 역할 데이터 검증
   validateRoleData(roleData) {
     const errors = Utils.validateRoleForm(roleData.name, roleData.description);
-    
+
     // CSP 선택 검증
     if (roleData.cspSelection && roleData.cspSelection.cspRoles && roleData.cspSelection.cspRoles.length > 0) {
       // CSP Role이 있으면 검증
@@ -377,7 +377,7 @@ const RoleManager = {
         }
       });
     }
-    
+
     return errors;
   },
 
@@ -476,9 +476,9 @@ const UIManager = {
     if (!cardState) return;
 
     cardState.expanded = expand;
-    
+
     let cardBody, arrowElement;
-    
+
     switch (cardType) {
       case 'platform':
         cardBody = DOM.platformMenuEditBody;
@@ -495,7 +495,7 @@ const UIManager = {
       default:
         return;
     }
-    
+
     if (cardBody) {
       if (expand) {
         cardBody.classList.remove('collapse');
@@ -505,7 +505,7 @@ const UIManager = {
         cardBody.classList.remove('show');
       }
     }
-    
+
     if (arrowElement) {
       if (expand) {
         arrowElement.classList.remove('ti-chevron-down');
@@ -548,21 +548,21 @@ const UIManager = {
     if (DOM.editRoleDescriptionInput) {
       DOM.editRoleDescriptionInput.value = '';
     }
-    
+
     // Platform 트리 초기화
     const tree = $('#platform-menu-edit-tree').jstree(true);
     if (tree) {
       tree.uncheck_all();
     }
-    
+
     // Workspace 토글 초기화
     if (DOM.workspaceToggleEditInner) {
       DOM.workspaceToggleEditInner.checked = false;
     }
-    
+
     // CSP 선택 초기화
     this.clearEditCspSelection();
-    
+
     // Edit-mode 카드 상태 초기화
     this.initializeEditCardStates();
     this.collapseAllEditCards();
@@ -648,9 +648,9 @@ const UIManager = {
     if (!cardState) return;
 
     cardState.expanded = expand;
-    
+
     let cardBody, arrowElement;
-    
+
     switch (cardType) {
       case 'platform':
         cardBody = DOM.platformMenuBody;
@@ -667,7 +667,7 @@ const UIManager = {
       default:
         return;
     }
-    
+
     if (cardBody) {
       if (expand) {
         cardBody.classList.remove('collapse');
@@ -677,7 +677,7 @@ const UIManager = {
         cardBody.classList.remove('show');
       }
     }
-    
+
     if (arrowElement) {
       if (expand) {
         arrowElement.classList.remove('ti-chevron-down');
@@ -721,13 +721,13 @@ const UIManager = {
 
     // 토글 버튼 표시/숨김 설정
     this.setCardToggleVisibility(hasPlatform, hasWorkspace, hasCsp);
-    
+
     // 모든 카드 접기
     this.collapseAllCards();
-    
+
     // 모든 토글 버튼을 명시적으로 OFF로 설정
     this.resetAllToggles();
-    
+
     // 역할의 권한에 따라 access available 상태 설정
     this.setAccessAvailableStates(hasPlatform, hasWorkspace, hasCsp);
   },
@@ -769,13 +769,13 @@ const UIManager = {
     if (DOM.platformMenuStatus) {
       DOM.platformMenuStatus.style.display = hasPlatform ? 'inline' : 'none';
     }
-    
+
     // Workspace access available
     const workspaceStatusElement = document.getElementById('workspace-menu-status');
     if (workspaceStatusElement) {
       workspaceStatusElement.style.display = hasWorkspace ? 'inline' : 'none';
     }
-    
+
     // CSP Role access available
     const cspStatusElement = document.getElementById('csp-menu-status');
     if (cspStatusElement) {
@@ -852,27 +852,27 @@ const UIManager = {
   clearCreateForm() {
     DOM.roleNameInput.value = '';
     DOM.roleDescriptionInput.value = '';
-    
+
     // Platform 트리 초기화
     const tree = $('#platform-menu-create-tree').jstree(true);
     if (tree) {
       tree.uncheck_all();
     }
-    
+
     // Workspace 토글 초기화
     if (DOM.workspaceToggleCreateInner) {
       DOM.workspaceToggleCreateInner.checked = false;
     }
-    
+
     // CSP 선택 초기화
     UIManager.clearCspSelection();
-  
-  // CSP Role Mapping 상태 초기화
-  AppState.cspRoleMappings.create = [];
-  if (AppState.tables.createCspRoleMappingTable) {
-    AppState.tables.createCspRoleMappingTable.clearData();
-  }
-    
+
+    // CSP Role Mapping 상태 초기화
+    AppState.cspRoleMappings.create = [];
+    if (AppState.tables.createCspRoleMappingTable) {
+      AppState.tables.createCspRoleMappingTable.clearData();
+    }
+
     // Create-mode 카드 상태 초기화
     UIManager.initializeCreateCardStates();
     UIManager.collapseAllCreateCards();
@@ -906,9 +906,9 @@ const UIManager = {
     if (!cardState) return;
 
     cardState.expanded = expand;
-    
+
     let cardBody, arrowElement;
-    
+
     switch (cardType) {
       case 'platform':
         cardBody = DOM.platformMenuCreateBody;
@@ -925,7 +925,7 @@ const UIManager = {
       default:
         return;
     }
-    
+
     if (cardBody) {
       if (expand) {
         cardBody.classList.remove('collapse');
@@ -935,7 +935,7 @@ const UIManager = {
         cardBody.classList.remove('show');
       }
     }
-    
+
     if (arrowElement) {
       if (expand) {
         arrowElement.classList.remove('ti-chevron-down');
@@ -1133,18 +1133,18 @@ const TableManager = {
       // 새로운 카드 상태 설정
       UIManager.setupCardStatesForRole(selectedRole);
       UIManager.updateRoleDetail(selectedRole);
-      
+
       // Role Types 업데이트 (제거됨 - Role Detail에서 Role Types 컬럼 삭제)
       const roleSubs = selectedRole.role_subs || [];
       const hasPlatform = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.PLATFORM);
       const hasWorkspace = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.WORKSPACE);
       const hasCsp = Utils.hasRoleType(roleSubs, CONSTANTS.ROLE_TYPES.CSP);
-      
+
       // Workspace 토글 상태 업데이트 (기존 로직 유지)
       if (DOM.workspaceToggleViewInner) {
         DOM.workspaceToggleViewInner.checked = hasWorkspace;
       }
-      
+
       // Workspace 상태 표시 업데이트 (기존 로직 유지)
       if (DOM.workspaceStatusView) {
         if (hasWorkspace) {
@@ -1154,7 +1154,7 @@ const TableManager = {
           DOM.workspaceStatusView.style.display = 'none';
         }
       }
-      
+
       // 선택된 역할의 메뉴 권한 업데이트 (비동기 처리)
       if (hasPlatform) {
         // View 모드용 메뉴 트리 초기화 후 권한 업데이트
@@ -1165,7 +1165,7 @@ const TableManager = {
           // 메뉴 권한 업데이트 실패 시에도 view-mode는 계속 유지
         });
       }
-          
+
       // CSP 역할 매핑 정보 업데이트 (비동기 처리)
       if (hasCsp) {
         updateCspRoleMapping(selectedRole.id).catch(error => {
@@ -1196,7 +1196,7 @@ const TableManager = {
 };
 
 // 핸들러 함수를 먼저 전역에 등록
-window.handleAddButtonClick = function(e) {
+window.handleAddButtonClick = function (e) {
   e.preventDefault();
 
   // 현재 선택된 행이 있다면 선택 해제 (항상 먼저 실행)
@@ -1216,23 +1216,23 @@ window.handleAddButtonClick = function(e) {
   // create-mode-cards가 이미 펼쳐진 상태인지 확인 (className으로도 확인)
   const createModeCards = document.getElementById('create-mode-cards');
   const isCreateModeVisible = createModeCards && (
-    createModeCards.classList.contains('show') || 
+    createModeCards.classList.contains('show') ||
     createModeCards.className.includes('show') ||
     createModeCards.classList.contains('collapsing')
   );
-  
+
   // view-mode-cards 숨기기 (항상 실행)
   const viewModeCards = document.getElementById('view-mode-cards');
   if (viewModeCards) {
     viewModeCards.classList.remove('show');
   }
-  
+
   // edit-mode-cards 숨기기 (Edit 모드에서 Add 버튼 클릭 시)
   const editModeCards = document.getElementById('edit-mode-cards');
   if (editModeCards) {
     editModeCards.classList.remove('show');
   }
-  
+
   if (isCreateModeVisible) {
     // 이미 펼쳐진 상태라면 닫기 (Cancel 버튼과 동일한 동작)
     if (createModeCards) {
@@ -1241,28 +1241,28 @@ window.handleAddButtonClick = function(e) {
     updateAppState('ui.createMode', false);
     return;
   }
-  
+
   // 모든 카드 닫기
   toggleCards(false, false, false);
-  
+
   // 카드 상태 초기화
   UIManager.setupCardStatesForRole(null);
-  
+
   // Create-mode 카드 상태 초기화
   UIManager.initializeCreateCardStates();
   UIManager.collapseAllCreateCards();
-  
+
   // Role Detail 제목에서 역할 이름 숨기기
   const roleDetailRolenameElement = document.getElementById('role-detail-rolename');
   if (roleDetailRolenameElement) {
     roleDetailRolenameElement.style.display = 'none';
   }
-  
+
   // create-mode-cards 보이기
   if (createModeCards) {
     createModeCards.classList.add('show');
   }
-  
+
   updateAppState('ui.createMode', true);
   updateAppState('ui.viewMode', false);
   updateAppState('ui.editMode', false);
@@ -1303,7 +1303,7 @@ function initFilter() {
       if (fieldEl) fieldEl.value = "";
       if (typeEl) typeEl.value = "=";
       if (valueEl) valueEl.value = "";
-      
+
       if (AppState.tables.rolesTable) {
         AppState.tables.rolesTable.clearFilter();
       }
@@ -1327,9 +1327,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         "handleAddButtonClick(event)" // 기존 Add 버튼의 동작과 동일
       );
     }
-    
+
     await initRoles();
-    
+
     // 필터 기능 초기화
     initFilter();
   } catch (error) {
@@ -1342,12 +1342,12 @@ async function initRoles() {
   try {
     // 1. 워크스페이스/프로젝트 초기화
     await initWorkspace();
-    
+
     // 2. 카드 상태 초기화
     UIManager.initializeCardStates();
     UIManager.initializeCreateCardStates();
     UIManager.initializeEditCardStates();
-    
+
     // 3. 역할 목록 가져오기
     const roleList = await RoleManager.loadRoles();
 
@@ -1387,118 +1387,6 @@ async function initWorkspace() {
   webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
 }
 
-// 더미 역할 데이터 생성
-function getDummyRoleData() {
-  return [
-    {
-      id: 1,
-      name: "admin",
-      description: "Administrator role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.WORKSPACE },
-        { role_type: CONSTANTS.ROLE_TYPES.CSP }
-      ]
-    },
-    {
-      id: 2,
-      name: "operator",
-      description: "Operator role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.WORKSPACE }
-      ]
-    },
-    {
-      id: 3,
-      name: "viewer",
-      description: "Viewer role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM }
-      ]
-    },
-    {
-      id: 4,
-      name: "billadmin",
-      description: "Billing Administrator role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.CSP }
-      ]
-    },
-    {
-      id: 5,
-      name: "billviewer",
-      description: "Billing Viewer role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM }
-      ]
-    },
-    {
-      id: 6,
-      name: "developer",
-      description: "Developer role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.WORKSPACE }
-      ]
-    },
-    {
-      id: 7,
-      name: "tester",
-      description: "Tester role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM }
-      ]
-    },
-    {
-      id: 8,
-      name: "manager",
-      description: "Manager role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.WORKSPACE },
-        { role_type: CONSTANTS.ROLE_TYPES.CSP }
-      ]
-    },
-    {
-      id: 9,
-      name: "analyst",
-      description: "Analyst role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.WORKSPACE }
-      ]
-    },
-    {
-      id: 10,
-      name: "support",
-      description: "Support role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM }
-      ]
-    },
-    {
-      id: 11,
-      name: "guest",
-      description: "Guest role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM }
-      ]
-    },
-    {
-      id: 12,
-      name: "supervisor",
-      description: "Supervisor role",
-      role_subs: [
-        { role_type: CONSTANTS.ROLE_TYPES.PLATFORM },
-        { role_type: CONSTANTS.ROLE_TYPES.WORKSPACE },
-        { role_type: CONSTANTS.ROLE_TYPES.CSP }
-      ]
-    }
-  ];
-}
-
 var checked_array = [];
 var currentClickedRoleId = "";
 var rolesTable;
@@ -1507,11 +1395,11 @@ var rolesTable;
 function updateAppState(path, value) {
   const keys = path.split('.');
   let current = AppState;
-  
+
   for (let i = 0; i < keys.length - 1; i++) {
     current = current[keys[i]];
   }
-  
+
   current[keys[keys.length - 1]] = value;
   notifyStateChange(path, value);
 }
@@ -1522,7 +1410,7 @@ function notifyStateChange(path, value) {
   if (path.startsWith('ui.')) {
     return;
   }
-  
+
   // 상태 변경에 따른 UI 업데이트
   switch (path) {
     case 'roles.selectedRole':
@@ -1587,7 +1475,7 @@ function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
 
   // parentId가 "home"인 최상위 노드들만 먼저 처리
   const topLevelMenus = menuData.filter(menu => menu.parentId === "home");
-  
+
   topLevelMenus.forEach(menu => {
     result = result.concat(processMenuNode(menu, menuData, "#", 0));
   });
@@ -1597,10 +1485,10 @@ function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
 
 function processMenuNode(menu, allMenus, parentId, level) {
   let result = [];
-  
+
   // 계층 단계에 따라 아이콘 결정
   let icon = "ti ti-menu"; // 기본 아이콘
-  
+
   if (level === 0) {
     // 최상위 노드 (Operations, Settings)
     icon = "ti ti-folder";
@@ -1635,7 +1523,7 @@ function processMenuNode(menu, allMenus, parentId, level) {
 
   // 현재 메뉴의 하위 메뉴들 찾기
   const childMenus = allMenus.filter(m => m.parentId === menu.id);
-  
+
   // 하위 메뉴가 있으면 재귀적으로 처리
   childMenus.forEach(childMenu => {
     result = result.concat(processMenuNode(childMenu, allMenus, menu.id, level + 1));
@@ -1650,7 +1538,7 @@ async function initPlatformMenuTree() {
     if (DOM.platformMenuTree && $(DOM.platformMenuTree).jstree(true)) {
       return;
     }
-    
+
     const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
 
     if (response) {
@@ -1660,7 +1548,7 @@ async function initPlatformMenuTree() {
       if ($("#platform-menu-tree").jstree(true)) {
         $("#platform-menu-tree").jstree("destroy");
       }
-      
+
       // 트리 생성 - View 모드용 설정
       $('#platform-menu-tree').jstree({
         "core": {
@@ -1682,29 +1570,29 @@ async function initPlatformMenuTree() {
           }
         }
       });
-      
-            // View 모드 체크박스를 readonly로 만들기 위한 CSS 적용
+
+      // View 모드 체크박스를 readonly로 만들기 위한 CSS 적용
       $("#platform-menu-tree").on("ready.jstree", function () {
         // 모든 노드를 펼쳐놓기
         $('#platform-menu-tree').jstree(true).open_all();
-        
+
         // 체크박스를 readonly로 만들기
         $("#platform-menu-tree .jstree-checkbox").css({
           "pointer-events": "none",
           "opacity": "0.7"
         });
-        
+
         // 노드 텍스트도 클릭 불가능하게 만들기
         $("#platform-menu-tree .jstree-anchor").css({
           "pointer-events": "none"
         });
-        
+
         // 트리 초기화 완료 - 권한 업데이트는 handleRoleRowClick에서 처리됨
       });
 
       // 트리 외부에서 모든 상호작용 이벤트 차단
       $("#platform-menu-tree").off('click.jstree check_node.jstree uncheck_node.jstree select_node.jstree deselect_node.jstree');
-      
+
       $("#platform-menu-tree").on('click.jstree', function (e, data) {
         e.preventDefault();
         e.stopPropagation();
@@ -1763,10 +1651,10 @@ async function initPlatformMenuCreateTree() {
       $("#platform-menu-create-tree").on("ready.jstree", function () {
         // 모든 노드를 펼쳐놓기
         $('#platform-menu-create-tree').jstree(true).open_all();
-        
+
         // 펼치기/접기 아이콘 숨기기
         $('#platform-menu-create-tree .jstree-ocl').hide();
-        
+
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-create-tree').on('click.jstree', function (e, data) {
           if (data && data.event && data.event.target && data.event.target.classList.contains('jstree-ocl')) {
@@ -1792,7 +1680,7 @@ async function initPlatformMenuEditTree() {
     if (DOM.platformMenuEditTree && $(DOM.platformMenuEditTree).jstree(true)) {
       $("#platform-menu-edit-tree").jstree("destroy");
     }
-    
+
     const response = await webconsolejs["common/api/services/roles_api"].getMenusResources();
 
     // 응답 구조 고정
@@ -1805,7 +1693,7 @@ async function initPlatformMenuEditTree() {
       if ($("#platform-menu-edit-tree").jstree(true)) {
         $("#platform-menu-edit-tree").jstree("destroy");
       }
-      
+
       // 트리 생성
       $('#platform-menu-edit-tree').jstree({
         "core": {
@@ -1828,15 +1716,15 @@ async function initPlatformMenuEditTree() {
           }
         }
       });
-      
+
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-edit-tree").on("ready.jstree", function () {
         // 모든 노드를 펼쳐놓기
         $('#platform-menu-edit-tree').jstree(true).open_all();
-        
+
         // 펼치기/접기 아이콘 숨기기
         $('#platform-menu-edit-tree .jstree-ocl').hide();
-        
+
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-edit-tree').on('click.jstree', function (e, data) {
           if (data && data.event && data.event.target && data.event.target.classList.contains('jstree-ocl')) {
@@ -1845,16 +1733,16 @@ async function initPlatformMenuEditTree() {
             return false;
           }
         });
-        
+
         // 체크박스 이벤트 핸들러 추가
         $('#platform-menu-edit-tree').on('check_node.jstree uncheck_node.jstree', function (e, data) {
           // 변경사항 표시
           updateAppState('editingRole.hasChanges', true);
         });
-        
+
         // 트리 초기화 시 모든 체크박스 해제
         $('#platform-menu-edit-tree').jstree(true).uncheck_all();
-        
+
         // 권한 업데이트는 handlePlatformToggleEdit에서 명시적으로 호출
       });
 
@@ -1921,7 +1809,7 @@ function setupEventListeners() {
 
   // 새로운 카드 토글 버튼 이벤트 리스너
   setupCardToggleEventListeners();
-  
+
   // Create-mode 카드 토글 버튼 이벤트 리스너
   setupCreateCardToggleEventListeners();
 
@@ -1933,16 +1821,16 @@ function setupEventListeners() {
 
   // CSP Role Mapping 폼 초기화
   initCspRoleMappingForm();
-  
+
   // Edit CSP Role Mapping 폼 초기화
   initEditCspRoleMappingForm().catch(error => {
     console.error('Edit CSP Role Mapping 폼 초기화 실패:', error);
   });
-  
+
   // Role Name 입력 시 CSP Role Name 자동 업데이트
   const roleNameInput = DOM.roleNameInput;
   if (roleNameInput) {
-    roleNameInput.addEventListener('input', function() {
+    roleNameInput.addEventListener('input', function () {
       // CSP 카드가 열려있으면 CSP Role Name 자동 업데이트
       if (AppState.ui.createCardStates.csp.expanded) {
         updateCspRoleName();
@@ -2026,19 +1914,19 @@ function handleWorkspaceToggleCreate(e) {
 
 function handleCspToggleCreate(e) {
   const isExpanded = DOM.cspRoleMappingCreateBody.classList.contains('show');
-  
+
   if (!isExpanded) {
     // Role Name이 입력되지 않았으면 토글을 비활성화
     const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
     if (!roleName || !roleName.trim()) {
       Utils.showAlert('CSP Role Mapping을 사용하려면 먼저 Role Name을 입력해주세요.');
-    return;
-  }
-    
+      return;
+    }
+
     // CSP Role Name 자동 설정
     updateCspRoleName();
   }
-  
+
   UIManager.toggleCreateCard('csp', !isExpanded);
 }
 
@@ -2068,10 +1956,10 @@ async function updateMenuPermissions(roleId) {
     if (!$("#platform-menu-tree").jstree(true)) {
       await initPlatformMenuTree();
     }
-    
+
     // getMappedMenusByRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
-    
+
     // response가 null, undefined, 빈 배열인 경우 처리
     if (!response || (Array.isArray(response) && response.length === 0)) {
       // 메뉴 권한 상태 아이콘 숨기기
@@ -2083,7 +1971,7 @@ async function updateMenuPermissions(roleId) {
       $('#platform-menu-tree').jstree(true).uncheck_all();
       return;
     }
-    
+
     // 권한이 있는 메뉴 ID 목록 추출
     let authorizedMenuIds = [];
     if (Array.isArray(response)) {
@@ -2096,10 +1984,10 @@ async function updateMenuPermissions(roleId) {
         authorizedMenuIds = response.data.map(menu => menu.id || menu.menu_id);
       }
     }
-    
+
     // 모든 노드의 체크박스 해제
     $('#platform-menu-tree').jstree(true).uncheck_all();
-    
+
     // 권한이 있는 메뉴들만 체크
     authorizedMenuIds.forEach(menuId => {
       const node = $('#platform-menu-tree').jstree(true).get_node(menuId);
@@ -2107,7 +1995,7 @@ async function updateMenuPermissions(roleId) {
         $('#platform-menu-tree').jstree(true).check_node(node);
       }
     });
-    
+
     // 메뉴 권한 상태 아이콘 표시/숨김
     const statusElement = DOM.platformMenuStatus;
     if (statusElement) {
@@ -2117,7 +2005,7 @@ async function updateMenuPermissions(roleId) {
         statusElement.style.display = 'none';
       }
     }
-    
+
   } catch (error) {
     console.error("메뉴 권한 업데이트 중 오류 발생:", error);
     // 오류 시 메뉴 권한 상태 아이콘 숨기기
@@ -2132,22 +2020,22 @@ async function updateMenuPermissions(roleId) {
 // Edit 모드 메뉴 권한 업데이트 함수
 async function updateEditMenuPermissions(roleId) {
   try {
-    
+
     // 트리가 없으면 함수 종료 (트리 초기화는 handlePlatformToggleEdit에서 처리)
     if (!$("#platform-menu-edit-tree").jstree(true)) {
       return;
     }
-    
+
     // getMappedMenusByRoleList API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getMappedMenusByRoleList(roleId);
-    
+
     // response가 null, undefined, 빈 배열인 경우 처리
     if (!response || (Array.isArray(response) && response.length === 0)) {
       // 모든 체크박스 해제
       $('#platform-menu-edit-tree').jstree(true).uncheck_all();
       return;
     }
-    
+
     // 권한이 있는 메뉴 ID 목록 추출
     let authorizedMenuIds = [];
     if (Array.isArray(response)) {
@@ -2160,13 +2048,13 @@ async function updateEditMenuPermissions(roleId) {
         authorizedMenuIds = response.data.map(menu => menu.id || menu.menu_id);
       }
     }
-    
+
     // 모든 노드의 체크박스 해제
     $('#platform-menu-edit-tree').jstree(true).uncheck_all();
-    
+
     // 실제 체크된 노드 확인
     const uncheckedNodes = $('#platform-menu-edit-tree').jstree(true).get_checked();
-    
+
     // 권한이 있는 메뉴들만 체크
     let checkedCount = 0;
     authorizedMenuIds.forEach(menuId => {
@@ -2176,7 +2064,7 @@ async function updateEditMenuPermissions(roleId) {
         checkedCount++;
       }
     });
-    
+
   } catch (error) {
     console.error("Edit 모드 메뉴 권한 업데이트 중 오류 발생:", error);
     alert("Edit 모드 메뉴 권한 정보를 불러오는데 실패했습니다.");
@@ -2196,10 +2084,10 @@ async function updateCspRoleMapping(roleId) {
         return;
       }
     }
-    
+
     // getCSPRoleListByRoleId API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getCSPRoleListByRoleId(roleId);
-    
+
     // CSP 데이터가 있는지 확인하는 함수
     const hasCspData = (data) => {
       if (!data) return false;
@@ -2207,7 +2095,7 @@ async function updateCspRoleMapping(roleId) {
       if (data.cspRoles && Array.isArray(data.cspRoles)) return data.cspRoles.length > 0;
       return false;
     };
-    
+
     // CSP 데이터 표시/숨김 함수
     const showCspContent = (showTable, showEmpty) => {
       if (DOM.cspRoleMappingTable) {
@@ -2217,7 +2105,7 @@ async function updateCspRoleMapping(roleId) {
         DOM.cspRoleMappingEmpty.style.display = showEmpty ? 'block' : 'none';
       }
     };
-    
+
     // API 응답이 null이거나 undefined인 경우 빈 상태 메시지 표시
     if (!response) {
       if (AppState.tables.cspRoleMappingTable) {
@@ -2226,7 +2114,7 @@ async function updateCspRoleMapping(roleId) {
       showCspContent(false, true);
       return;
     }
-    
+
     // response가 배열인 경우 (직접 CSP 역할 배열이 반환되는 경우)
     if (Array.isArray(response)) {
       if (hasCspData(response)) {
@@ -2242,7 +2130,7 @@ async function updateCspRoleMapping(roleId) {
       }
       return;
     }
-    
+
     // response가 객체이고 cspRoles 속성이 있는 경우
     if (response.cspRoles) {
       if (!Array.isArray(response.cspRoles)) {
@@ -2252,17 +2140,17 @@ async function updateCspRoleMapping(roleId) {
         showCspContent(false, true);
         return;
       }
-      
+
       // CSP 역할 데이터를 테이블에 설정
       const cspRolesData = response.cspRoles;
-      
+
       if (hasCspData(cspRolesData)) {
         // auth_method를 각 CSP 역할 객체에 추가
         const processedData = cspRolesData.map(cspRole => ({
           ...cspRole,
           auth_method: response.auth_method || cspRole.auth_method
         }));
-        
+
         if (AppState.tables.cspRoleMappingTable) {
           AppState.tables.cspRoleMappingTable.setData(processedData);
         }
@@ -2280,7 +2168,7 @@ async function updateCspRoleMapping(roleId) {
       }
       showCspContent(false, true);
     }
-    
+
   } catch (error) {
     console.error("CSP 역할 매핑 업데이트 중 오류 발생:", error);
     // 오류가 발생해도 테이블을 빈 배열로 설정하고 빈 상태 메시지 표시
@@ -2430,7 +2318,7 @@ async function loadEditCspRoleMapping(roleId, table) {
   try {
     // getCSPRoleListByRoleId API 호출
     const response = await webconsolejs["common/api/services/roles_api"].getCSPRoleListByRoleId(roleId);
-    
+
     // CSP 데이터가 있는지 확인하는 함수
     const hasCspData = (data) => {
       if (!data) return false;
@@ -2438,7 +2326,7 @@ async function loadEditCspRoleMapping(roleId, table) {
       if (data.cspRoles && Array.isArray(data.cspRoles)) return data.cspRoles.length > 0;
       return false;
     };
-    
+
     // CSP 데이터 표시/숨김 함수
     const showCspContent = (showTable, showEmpty) => {
       if (DOM.cspRoleMappingEditTable) {
@@ -2448,7 +2336,7 @@ async function loadEditCspRoleMapping(roleId, table) {
         DOM.cspRoleMappingEditEmpty.style.display = showEmpty ? 'block' : 'none';
       }
     };
-    
+
     // API 응답이 null이거나 undefined인 경우 빈 테이블 표시
     if (!response) {
       if (table) {
@@ -2457,7 +2345,7 @@ async function loadEditCspRoleMapping(roleId, table) {
       showCspContent(true, false);
       return;
     }
-    
+
     // response가 배열인 경우 (직접 CSP 역할 배열이 반환되는 경우)
     if (Array.isArray(response)) {
       if (hasCspData(response)) {
@@ -2473,7 +2361,7 @@ async function loadEditCspRoleMapping(roleId, table) {
       }
       return;
     }
-    
+
     // response가 객체이고 cspRoles 속성이 있는 경우
     if (response.cspRoles) {
       if (!Array.isArray(response.cspRoles)) {
@@ -2483,17 +2371,17 @@ async function loadEditCspRoleMapping(roleId, table) {
         showCspContent(false, true);
         return;
       }
-      
+
       // CSP 역할 데이터를 테이블에 설정
       const cspRolesData = response.cspRoles;
-      
+
       if (hasCspData(cspRolesData)) {
         // auth_method를 각 CSP 역할 객체에 추가
         const processedData = cspRolesData.map(cspRole => ({
           ...cspRole,
           auth_method: response.auth_method || cspRole.auth_method
         }));
-        
+
         if (table) {
           table.setData(processedData);
         }
@@ -2511,7 +2399,7 @@ async function loadEditCspRoleMapping(roleId, table) {
       }
       showCspContent(true, false);
     }
-    
+
   } catch (error) {
     console.error("Edit CSP 역할 매핑 데이터 로드 중 오류 발생:", error);
     // 오류가 발생해도 테이블을 빈 배열로 설정하고 테이블 표시
@@ -2539,29 +2427,29 @@ let selectedEditCspRoleName = '';
 async function initCspRoleMappingForm() {
   // CSP Provider 드롭다운 초기화
   await initCspProviderDropdown();
-  
+
   // CSP Provider 선택 이벤트
   const cspProviderSelect = DOM.cspProviderSelect;
   if (cspProviderSelect) {
-    cspProviderSelect.addEventListener('change', function() {
+    cspProviderSelect.addEventListener('change', function () {
       selectedCspProvider = this.value;
     });
   }
-  
+
   // CSP Role Name 입력 이벤트
   const cspRoleNameInput = DOM.cspRoleNameInput;
   if (cspRoleNameInput) {
-    cspRoleNameInput.addEventListener('input', function() {
+    cspRoleNameInput.addEventListener('input', function () {
       selectedCspRoleName = this.value;
     });
   }
-  
+
   // Add 버튼 이벤트
   const addCspRoleBtn = DOM.addCspRoleBtn;
   if (addCspRoleBtn) {
     addCspRoleBtn.addEventListener('click', handleAddCspRole);
   }
-  
+
   // Create CSP Role Mapping 테이블 초기화
   await initCreateCspRoleMappingTable();
 }
@@ -2571,11 +2459,11 @@ async function initCspProviderDropdown() {
   try {
     const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
     const cspProviderSelect = DOM.cspProviderSelect;
-    
+
     if (cspProviderSelect && providers && Array.isArray(providers)) {
       // 기존 옵션 제거
       cspProviderSelect.innerHTML = '<option value="">Select CSP Provider</option>';
-      
+
       // 새 옵션 추가
       providers.forEach(provider => {
         const option = document.createElement('option');
@@ -2594,11 +2482,11 @@ async function initEditCspProviderDropdown() {
   try {
     const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
     const editCspProviderSelect = DOM.editCspProviderSelect;
-    
+
     if (editCspProviderSelect && providers && Array.isArray(providers)) {
       // 기존 옵션 제거
       editCspProviderSelect.innerHTML = '<option value="">Select CSP Provider</option>';
-      
+
       // 새 옵션 추가
       providers.forEach(provider => {
         const option = document.createElement('option');
@@ -2681,52 +2569,52 @@ async function initCreateCspRoleMappingTable() {
 function handleAddCspRole() {
   const cspProvider = selectedCspProvider;
   const cspRoleName = selectedCspRoleName;
-  
+
   // 입력값 검증
   if (!cspProvider) {
     Utils.showAlert('CSP Provider를 선택해주세요.');
     return;
   }
-  
+
   if (!cspRoleName || !cspRoleName.trim()) {
     Utils.showAlert('CSP Role Name을 입력해주세요.');
     return;
   }
-  
+
   // 중복 검사 - CSP Provider와 Role Name 조합으로 검증
   const existingMapping = AppState.cspRoleMappings.create.find(
     mapping => mapping.csp_type === cspProvider && mapping.name === cspRoleName.trim()
   );
-  
+
   if (existingMapping) {
     Utils.showAlert(`이미 추가된 CSP Role입니다.\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
     return;
   }
-  
+
   // CSP Provider만 중복인 경우도 검증
   const existingCspProvider = AppState.cspRoleMappings.create.find(
     mapping => mapping.csp_type === cspProvider
   );
-  
+
   if (existingCspProvider) {
     Utils.showAlert(`이미 ${cspProvider.toUpperCase()} CSP Provider가 추가되어 있습니다.\n하나의 역할에는 하나의 CSP Provider만 추가할 수 있습니다.`);
     return;
   }
-  
+
   // 새 CSP Role 추가
   const newCspRole = {
     id: Date.now(), // 임시 ID
     csp_type: cspProvider,
     name: cspRoleName.trim()
   };
-  
+
   AppState.cspRoleMappings.create.push(newCspRole);
-  
+
   // 테이블에 추가
   if (AppState.tables.createCspRoleMappingTable) {
     AppState.tables.createCspRoleMappingTable.addData(newCspRole);
   }
-  
+
   // 입력 필드 초기화
   if (DOM.cspProviderSelect) {
     DOM.cspProviderSelect.value = '';
@@ -2744,22 +2632,22 @@ function handleAddCspRole() {
     }
   }
   selectedCspProvider = '';
-  
+
   console.log('CSP Role 추가됨:', newCspRole);
 }
 
 // Create CSP Role 삭제 함수 (전역 함수)
-window.deleteCreateCspMapping = function(id) {
+window.deleteCreateCspMapping = function (id) {
   // AppState에서 제거
   AppState.cspRoleMappings.create = AppState.cspRoleMappings.create.filter(
     mapping => mapping.id !== id
   );
-  
+
   // 테이블에서 제거
   if (AppState.tables.createCspRoleMappingTable) {
     AppState.tables.createCspRoleMappingTable.deleteRow(id);
   }
-  
+
   console.log('CSP Role 삭제됨:', id);
 };
 
@@ -2767,7 +2655,7 @@ window.deleteCreateCspMapping = function(id) {
 function updateCspRoleName() {
   const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
   const cspRoleNameInput = DOM.cspRoleNameInput;
-  
+
   if (cspRoleNameInput && roleName) {
     const cspRoleName = `MCIAM_${roleName}`;
     cspRoleNameInput.value = cspRoleName;
@@ -2787,12 +2675,12 @@ async function saveRole() {
   try {
     const roleName = DOM.roleNameInput.value;
     const roleDescription = DOM.roleDescriptionInput.value;
-    
+
     // 토글 상태 확인
     const isPlatformToggleOn = AppState.ui.createCardStates.platform.expanded;
     const isWorkspaceToggleOn = AppState.ui.createCardStates.workspace.expanded;
     const isCspToggleOn = AppState.ui.createCardStates.csp.expanded;
-    
+
     // 폼 데이터 수집 (토글 상태에 따라 필터링)
     const formData = {
       name: roleName,
@@ -2801,58 +2689,58 @@ async function saveRole() {
       workspaceEnabled: isWorkspaceToggleOn ? (DOM.workspaceToggleCreateInner ? DOM.workspaceToggleCreateInner.checked : false) : false,
       cspSelection: isCspToggleOn ? getCspSelection() : null
     };
-    
+
     // 폼 검증
     const validationErrors = RoleManager.validateRoleData(formData);
     if (validationErrors.length > 0) {
       Utils.showAlert(validationErrors.join('\n'));
       return;
     }
-    
+
     // 역할 타입 결정 (토글 상태에 따라)
     const roleTypes = RoleManager.determineRoleTypes(
-      formData.platformPermissions, 
-      formData.workspaceEnabled, 
+      formData.platformPermissions,
+      formData.workspaceEnabled,
       formData.cspSelection
     );
-    
+
     // 역할 생성 데이터 구성
     const roleData = {
       name: formData.name,
       description: formData.description,
       roleTypes: roleTypes,
       menuIds: formData.platformPermissions,
-      cspRoles: formData.cspSelection && formData.cspSelection.cspRoles && formData.cspSelection.cspRoles.length > 0 ? 
+      cspRoles: formData.cspSelection && formData.cspSelection.cspRoles && formData.cspSelection.cspRoles.length > 0 ?
         formData.cspSelection.cspRoles.map(cspRole => ({
           roleName: cspRole.name,
           cspType: cspRole.csp_type,
           idpIdentifier: "", // 향후 확장 가능
           iamIdentifier: "", // 향후 확장 가능
           iamRoleId: cspRole.name,
-        tags: [{"key": "mciam-role", "value": "csp-role"}]
+          tags: [{ "key": "mciam-role", "value": "csp-role" }]
         })) : []
     };
-    
+
     // API 호출
     const response = await RoleManager.saveRole(roleData);
-    
+
     if (response) {
       // 폼 초기화
       UIManager.clearCreateForm();
-      
+
       // create-mode-cards 숨기기
       UIManager.hideAllModes();
-      
+
       // 역할 목록 새로고침
       await initRoles();
-      
+
       // 헤더 클릭 이벤트 리스너 재설정 (DOM 재생성 후 이벤트 연결)
       setupHeaderClickEvents();
-      
+
       // 페이지를 맨 위로 스크롤
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
+
   } catch (error) {
     // ErrorHandler.wrapAsync가 이미 에러를 처리하므로 여기서는 추가 처리하지 않음
     console.error('역할 저장 중 예상치 못한 오류:', error);
@@ -2865,10 +2753,10 @@ function getPlatformPermissions() {
   if (!tree) {
     return [];
   }
-  
+
   const checkedNodes = tree.get_checked();
   const filteredNodes = checkedNodes.filter(nodeId => nodeId !== '#');
-  
+
   return filteredNodes;
 }
 
@@ -2898,7 +2786,7 @@ function handlePlatformToggleEdit(e) {
   const isExpanded = DOM.platformMenuEditBody.classList.contains('show');
   console.log("Edit Platform 토글 변경:", !isExpanded);
   UIManager.toggleEditCard('platform', !isExpanded);
-  
+
   // 카드가 펼쳐질 때 Platform 메뉴 트리 초기화 및 권한 업데이트
   if (!isExpanded && AppState.roles.selectedRole) {
     // 메뉴 트리가 없으면 초기화
@@ -2926,11 +2814,11 @@ function handleCspToggleEdit(e) {
   const isExpanded = DOM.cspRoleMappingEditBody.classList.contains('show');
   console.log("Edit CSP 토글 변경:", !isExpanded);
   UIManager.toggleEditCard('csp', !isExpanded);
-  
+
   // 카드가 펼쳐질 때 CSP Role 매핑 테이블 초기화 및 CSP Role Name 자동 설정
   if (!isExpanded && AppState.roles.selectedRole) {
     initCspRoleMappingEditTable(AppState.roles.selectedRole.id);
-    
+
     // CSP Role Name 자동 설정
     if (DOM.editCspRoleNameInput && AppState.roles.selectedRole.name) {
       const cspRoleName = `MCIAM_${AppState.roles.selectedRole.name}`;
@@ -3034,9 +2922,9 @@ async function populateEditForm(role) {
       selectedEditCspRoleName = cspRoleName;
     }
   }
-  
+
   // CSP 매핑 테이블은 권한과 관계없이 항상 초기화 (Edit 모드에서 CSP Role 카드를 사용할 수 있도록)
-    initCspRoleMappingEditTable(role.id);
+  initCspRoleMappingEditTable(role.id);
 }
 
 // Edit 카드 상태 설정
@@ -3065,19 +2953,19 @@ function setupEditCardStates(role) {
 async function initEditCspRoleMappingForm() {
   // Edit CSP Provider 드롭다운 초기화
   await initEditCspProviderDropdown();
-  
+
   // Edit CSP Provider 선택 이벤트
   const editCspProviderSelect = DOM.editCspProviderSelect;
   if (editCspProviderSelect) {
-    editCspProviderSelect.addEventListener('change', function() {
+    editCspProviderSelect.addEventListener('change', function () {
       selectedEditCspProvider = this.value;
     });
   }
-  
+
   // Edit CSP Role Name 입력 이벤트
   const editCspRoleNameInput = DOM.editCspRoleNameInput;
   if (editCspRoleNameInput) {
-    editCspRoleNameInput.addEventListener('input', function() {
+    editCspRoleNameInput.addEventListener('input', function () {
       selectedEditCspRoleName = this.value;
     });
   }
@@ -3107,35 +2995,35 @@ function getEditCspSelection() {
 function handleAddCspMapping() {
   const cspProvider = selectedEditCspProvider;
   const cspRoleName = selectedEditCspRoleName;
-  
+
   // 입력값 검증
   if (!cspProvider) {
     Utils.showAlert('CSP Provider를 선택해주세요.');
     return;
   }
-  
+
   if (!cspRoleName || !cspRoleName.trim()) {
     Utils.showAlert('CSP Role Name을 입력해주세요.');
     return;
   }
-  
+
   // 중복 검사 - CSP Provider와 Role Name 조합으로 검증
   if (AppState.tables.cspRoleMappingEditTable) {
     const currentData = AppState.tables.cspRoleMappingEditTable.getData();
     const existingMapping = currentData.find(
       mapping => mapping.csp_type === cspProvider && mapping.name === cspRoleName.trim()
     );
-    
+
     if (existingMapping) {
       Utils.showAlert(`이미 추가된 CSP Role입니다.\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
       return;
     }
-    
+
     // CSP Provider만 중복인 경우도 검증
     const existingCspProvider = currentData.find(
       mapping => mapping.csp_type === cspProvider
     );
-    
+
     if (existingCspProvider) {
       Utils.showAlert(`이미 ${cspProvider.toUpperCase()} CSP Provider가 추가되어 있습니다.\n하나의 역할에는 하나의 CSP Provider만 추가할 수 있습니다.`);
       return;
@@ -3155,26 +3043,26 @@ function handleAddCspMapping() {
 
   // 폼 초기화
   UIManager.clearEditCspSelection();
-  
+
   // CSP Role Name 입력 필드에 기본값 다시 설정
   if (DOM.editCspRoleNameInput && AppState.roles.selectedRole && AppState.roles.selectedRole.name) {
     const cspRoleName = `MCIAM_${AppState.roles.selectedRole.name}`;
     DOM.editCspRoleNameInput.value = cspRoleName;
     selectedEditCspRoleName = cspRoleName;
   }
-  
+
   // 변경사항 표시
   updateAppState('editingRole.hasChanges', true);
 }
 
 // CSP 매핑 삭제 함수 (전역 함수로 등록)
-window.deleteCspMapping = function(mappingId) {
+window.deleteCspMapping = function (mappingId) {
   if (confirm('이 CSP 매핑을 삭제하시겠습니까?')) {
     if (AppState.tables.cspRoleMappingEditTable) {
       const currentData = AppState.tables.cspRoleMappingEditTable.getData();
       const filteredData = currentData.filter(item => item.id !== mappingId);
       AppState.tables.cspRoleMappingEditTable.setData(filteredData);
-      
+
       // 변경사항 표시
       updateAppState('editingRole.hasChanges', true);
     }
@@ -3187,10 +3075,10 @@ function getEditPlatformPermissions() {
   if (!tree) {
     return [];
   }
-  
+
   const checkedNodes = tree.get_checked();
   const filteredNodes = checkedNodes.filter(nodeId => nodeId !== '#');
-  
+
   return filteredNodes;
 }
 
@@ -3203,16 +3091,16 @@ async function updateRole() {
 
     // 실제 데이터만 추출
     let platformPermissions = getEditPlatformPermissions(); // 체크된 메뉴 id 배열
-    
+
     // Platform 메뉴 트리가 초기화되지 않은 경우 초기화
-    if (platformPermissions.length === 0 && AppState.roles.selectedRole && 
-        Utils.hasRoleType(AppState.roles.selectedRole.role_subs, CONSTANTS.ROLE_TYPES.PLATFORM)) {
+    if (platformPermissions.length === 0 && AppState.roles.selectedRole &&
+      Utils.hasRoleType(AppState.roles.selectedRole.role_subs, CONSTANTS.ROLE_TYPES.PLATFORM)) {
       console.log("Platform 메뉴 트리가 초기화되지 않아서 초기화합니다.");
       await initPlatformMenuEditTree();
       await updateEditMenuPermissions(AppState.roles.selectedRole.id);
       platformPermissions = getEditPlatformPermissions();
     }
-    
+
     const workspaceEnabled = DOM.workspaceToggleEditInner ? DOM.workspaceToggleEditInner.checked : false;
     const cspRolesRaw = AppState.tables.cspRoleMappingEditTable
       ? AppState.tables.cspRoleMappingEditTable.getData()
@@ -3284,21 +3172,21 @@ export async function deleteRole() {
 
     // 역할 삭제 API 호출
     const response = await RoleManager.deleteRole(roleId);
-    
+
     if (response) {
       // 성공 시 UI 상태 초기화
       UIManager.hideAllModes();
       updateAppState('roles.selectedRole', null);
-      
+
       // 역할 목록 새로고침
       await initRoles();
-      
+
       // 헤더 클릭 이벤트 리스너 재설정 (DOM 재생성 후 이벤트 연결)
       setupHeaderClickEvents();
-      
+
       // 페이지를 맨 위로 스크롤
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      
+
       Utils.showAlert(`역할 "${roleName}"이(가) 성공적으로 삭제되었습니다.`);
     }
   } catch (error) {
@@ -3312,57 +3200,57 @@ function setupHeaderClickEvents() {
   console.log('[DEBUG] setupHeaderClickEvents() 호출');
   // View 모드
   if (DOM.platformHeader) {
-    DOM.platformHeader.addEventListener('click', function(e) {
+    DOM.platformHeader.addEventListener('click', function (e) {
       if (e.target.closest('#platform-toggle-btn')) return;
       handlePlatformToggle(e);
     });
   }
   if (DOM.workspaceHeader) {
-    DOM.workspaceHeader.addEventListener('click', function(e) {
+    DOM.workspaceHeader.addEventListener('click', function (e) {
       if (e.target.closest('#workspace-toggle-btn')) return;
       handleWorkspaceToggle(e);
     });
   }
   if (DOM.cspHeader) {
-    DOM.cspHeader.addEventListener('click', function(e) {
+    DOM.cspHeader.addEventListener('click', function (e) {
       if (e.target.closest('#csp-toggle-btn')) return;
       handleCspToggle(e);
     });
   }
   // Create 모드
   if (DOM.platformHeaderCreate) {
-    DOM.platformHeaderCreate.addEventListener('click', function(e) {
+    DOM.platformHeaderCreate.addEventListener('click', function (e) {
       if (e.target.closest('#platform-toggle-btn-create')) return;
       handlePlatformToggleCreate(e);
     });
   }
   if (DOM.workspaceHeaderCreate) {
-    DOM.workspaceHeaderCreate.addEventListener('click', function(e) {
+    DOM.workspaceHeaderCreate.addEventListener('click', function (e) {
       if (e.target.closest('#workspace-toggle-btn-create')) return;
       handleWorkspaceToggleCreate(e);
     });
   }
   if (DOM.cspHeaderCreate) {
-    DOM.cspHeaderCreate.addEventListener('click', function(e) {
+    DOM.cspHeaderCreate.addEventListener('click', function (e) {
       if (e.target.closest('#csp-toggle-btn-create')) return;
       handleCspToggleCreate(e);
     });
   }
   // Edit 모드
   if (DOM.platformHeaderEdit) {
-    DOM.platformHeaderEdit.addEventListener('click', function(e) {
+    DOM.platformHeaderEdit.addEventListener('click', function (e) {
       if (e.target.closest('#platform-toggle-btn-edit')) return;
       handlePlatformToggleEdit(e);
     });
   }
   if (DOM.workspaceHeaderEdit) {
-    DOM.workspaceHeaderEdit.addEventListener('click', function(e) {
+    DOM.workspaceHeaderEdit.addEventListener('click', function (e) {
       if (e.target.closest('#workspace-toggle-btn-edit')) return;
       handleWorkspaceToggleEdit(e);
     });
   }
   if (DOM.cspHeaderEdit) {
-    DOM.cspHeaderEdit.addEventListener('click', function(e) {
+    DOM.cspHeaderEdit.addEventListener('click', function (e) {
       if (e.target.closest('#csp-toggle-btn-edit')) return;
       handleCspToggleEdit(e);
     });
