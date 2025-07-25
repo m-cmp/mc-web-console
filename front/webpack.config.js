@@ -176,6 +176,11 @@ const configurator = {
       resolve: {
         extensions: ['.ts', '.js', '.json']
       },
+      stats: {
+        errorDetails: true,
+        errors: true,
+        errorStack: true
+      }
     }
 
     if( env === "development" ){
