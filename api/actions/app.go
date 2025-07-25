@@ -41,6 +41,7 @@ func App() *buffalo.App {
 		if MCIAM_USE { // MCIAM USE True
 			app.Use(mciammanager.TokenValidMiddleware)
 			app.Use(mciammanager.SetContextMiddleware)
+			app.Middleware.Skip(mciammanager.TokenValidMiddleware, readyz)
 			app.Middleware.Skip(mciammanager.SetContextMiddleware, readyz)
 
 			app.ANY("/readyz", readyz)
