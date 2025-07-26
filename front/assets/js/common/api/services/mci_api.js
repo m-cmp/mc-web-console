@@ -6,7 +6,7 @@ export async function getMciList(nsId) {
 
   if (nsId == "") {
     console.log("Project has not set")
-    return;
+    return [];
   }
 
   var data = {
@@ -16,14 +16,26 @@ export async function getMciList(nsId) {
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+  
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    )
 
-  var mciList = response.data.responseData;
-
-  return mciList
+    var mciList = response.data.responseData;
+    return mciList || [];
+  } catch (error) {
+    // 404 에러 (데이터가 없는 경우)는 정상적인 상황이므로 빈 배열 반환
+    if (error.response && error.response.status === 404) {
+      console.log("No MCI data found for namespace:", nsId);
+      return [];
+    }
+    
+    // 다른 에러는 그대로 throw
+    console.error("Error fetching MCI list:", error);
+    throw error;
+  }
 }
 
 // 받아온 project(namespace)로 MciList Id Arr GET
@@ -58,7 +70,7 @@ export async function getMciList(nsId) {
 export async function getMci(nsId, mciId) {
   if (nsId == "" || nsId == undefined || mciId == undefined || mciId == "") {
     console.log(" undefined nsId: " + nsId + " mciId " + mciId);
-    return;
+    return null;
   }
   const data = {
     pathParams: {
@@ -68,13 +80,26 @@ export async function getMci(nsId, mciId) {
   }
 
   var controller = "/api/" + "mc-infra-manager/" + "GetMci";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  );
+  
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
 
-  // error check를 위해 response를 return
-  return response.data
+    // error check를 위해 response를 return
+    return response.data;
+  } catch (error) {
+    // 404 에러 (MCI가 없는 경우)는 정상적인 상황이므로 null 반환
+    if (error.response && error.response.status === 404) {
+      console.log("MCI not found:", mciId, "in namespace:", nsId);
+      return null;
+    }
+    
+    // 다른 에러는 그대로 throw
+    console.error("Error fetching MCI:", error);
+    throw error;
+  }
 }
 
 
@@ -82,7 +107,7 @@ export async function getMci(nsId, mciId) {
 export async function getMciVm(nsId, mciId, vmId) {
   if (nsId == "" || nsId == undefined || mciId == undefined || vmId == "" || vmId == undefined || vmId == "") {
     console.log(" undefined nsId: " + nsId, + " mciId " + mciId, ", vmId " + vmId);
-    return;
+    return null;
   }
   const data = {
     pathParams: {
@@ -93,13 +118,26 @@ export async function getMciVm(nsId, mciId, vmId) {
   }
 
   var controller = "/api/" + "mc-infra-manager/" + "GetMciVm";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  );
+  
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
 
-  // error check를 위해 response를 return
-  return response.data
+    // error check를 위해 response를 return
+    return response.data;
+  } catch (error) {
+    // 404 에러 (VM이 없는 경우)는 정상적인 상황이므로 null 반환
+    if (error.response && error.response.status === 404) {
+      console.log("VM not found:", vmId, "in MCI:", mciId, "namespace:", nsId);
+      return null;
+    }
+    
+    // 다른 에러는 그대로 throw
+    console.error("Error fetching MCI VM:", error);
+    throw error;
+  }
 }
 
 // mciLifeCycle 제어 option : reboot / suspend / resume / terminate
@@ -677,7 +715,7 @@ export async function getPolicyList(nsId) {
 
   if (nsId == "") {
     console.log("Project has not set")
-    return;
+    return [];
   }
 
   var data = {
@@ -687,14 +725,26 @@ export async function getPolicyList(nsId) {
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "Getallmcipolicy";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+  
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    )
 
-  var policyList = response.data.responseData;
-
-  return policyList
+    var policyList = response.data.responseData;
+    return policyList || [];
+  } catch (error) {
+    // 404 에러 (정책이 없는 경우)는 정상적인 상황이므로 빈 배열 반환
+    if (error.response && error.response.status === 404) {
+      console.log("No policy data found for namespace:", nsId);
+      return [];
+    }
+    
+    // 다른 에러는 그대로 throw
+    console.error("Error fetching policy list:", error);
+    throw error;
+  }
 }
 
 export async function deletePolicy(nsId, mciId) {
