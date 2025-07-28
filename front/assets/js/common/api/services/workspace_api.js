@@ -467,7 +467,7 @@ export async function createWorkspaceUserRoleMappingByName(wsId, reqRoleID, User
 }
 
 export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId) {
-  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListOrderbyWorkspace'
+  const controller = '/api/mc-iam-manager/ListUsersAndRolesByWorkspaces'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     null
@@ -524,10 +524,10 @@ export async function createWPmapping(worskspaceId, projectsArr) {
 }
 
 export async function updateWPmappings(wsId, projectsIdsArr) {
-  const controller = '/api/mc-iam-manager/UpdateWPmappings'
+  const controller = '/api/mc-iam-manager/addProjectToWorkspace'
   var data = {
     request: {
-      workspaceId: wsId,
+      workspaceId: wsId.toString(),
       projectIds: projectsIdsArr,
     },
   };
@@ -544,12 +544,13 @@ export async function updateWPmappings(wsId, projectsIdsArr) {
 }
 
 export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
-  const controller = '/api/mc-iam-manager/DeleteWorkspaceProjectMappingById'
+  const controller = '/api/mc-iam-manager/removeWorkspaceFromProject'
   var data = {
-    pathParams: {
-      workspaceId: wsId,
-      projectId: projectsId,
-    },
+
+    request: {
+      workspaceId: wsId, 
+      projectIds: projectsId
+    }
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -564,10 +565,10 @@ export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
 }
 
 export async function getWPmappingListByWorkspaceId(wsId) {
-  const controller = '/api/mc-iam-manager/GetWPmappingListByWorkspaceId'
+  const controller = '/api/mc-iam-manager/getWorkspaceProjectsByWorkspaceId'
   var data = {
     pathParams: {
-      workspaceId: wsId,
+      workspaceId: wsId.toString(),
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -578,7 +579,7 @@ export async function getWPmappingListByWorkspaceId(wsId) {
 }
 
 export async function getWPmappingListOrderbyWorkspace() {
-  const controller = '/api/mc-iam-manager/GetWPmappingListOrderbyWorkspace'
+  const controller = '/api/mc-iam-manager/listWorkspaceProjects'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     null
