@@ -831,7 +831,7 @@ serviceActions:
       description: "workspace 목록 조회"
     listMciamPermissions:
       method: post
-      resourcePath: /api/permissions/mciam
+      resourcePath: /api/permissions/mciam/list
       description: "모든 권한을 가져옵니다."
     getTempCredentialProviders:
       method: get
@@ -851,8 +851,6 @@ serviceActions:
       description: "리소스를 삭제합니다."
     Getmenuresources:
       method: post
-      # method: get
-      # resourcePath: /api/resource/menus
       resourcePath: /api/menus/list
       description: "메뉴 리소스를 검색합니다."
     Getallpermissions:
