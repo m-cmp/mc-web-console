@@ -631,7 +631,8 @@ async function getSelectedWorkspaceInfocardInit(workspacesID) {
   await setWorkspaceDetailsData(respWorkspaceInfo)
 
   // Projects Tab
-  setWokrspaceProjectsTableData(respWorkspaceInfo.projects)
+  const workspaceData = respWorkspaceInfo.responseData || respWorkspaceInfo;
+  setWokrspaceProjectsTableData(workspaceData.projects)
 
   // Users Tab
   await setWokrspaceUserTableData(workspacesID)
@@ -641,18 +642,15 @@ async function getSelectedWorkspaceInfocardInit(workspacesID) {
 }
 
 async function setWorkspaceDetailsData(respWorkspaceInfo) {
-  // document.getElementById("workspace-details-name").innerText = respWorkspaceInfo.workspace.name
-  // document.getElementById("workspace-details-description").innerText = respWorkspaceInfo.workspace.description
-  // document.getElementById("workspace-details-systemId").innerText = respWorkspaceInfo.workspace.id
-  // document.getElementById("workspace-details-created").innerText = respWorkspaceInfo.workspace.created_at
-  // document.getElementById("workspace-details-updated").innerText = respWorkspaceInfo.workspace.updated_at
-  // document.getElementById("workspace-details-presentation").innerText = respWorkspaceInfo.workspace.name + " Info"
-  document.getElementById("workspace-details-name").innerText = respWorkspaceInfo.workspace.name
-  document.getElementById("workspace-details-description").innerText = respWorkspaceInfo.description
-  document.getElementById("workspace-details-systemId").innerText = respWorkspaceInfo.id
-  document.getElementById("workspace-details-created").innerText = respWorkspaceInfo.created_at
-  document.getElementById("workspace-details-updated").innerText = respWorkspaceInfo.updated_at
-  document.getElementById("workspace-details-presentation").innerText = respWorkspaceInfo.name + " Info"
+  // API 응답 구조: { responseData: { ... } }
+  const workspaceData = respWorkspaceInfo.responseData || respWorkspaceInfo;
+  
+  document.getElementById("workspace-details-name").innerText = workspaceData.name
+  document.getElementById("workspace-details-description").innerText = workspaceData.description
+  document.getElementById("workspace-details-systemId").innerText = workspaceData.id
+  document.getElementById("workspace-details-created").innerText = workspaceData.created_at
+  document.getElementById("workspace-details-updated").innerText = workspaceData.updated_at
+  document.getElementById("workspace-details-presentation").innerText = workspaceData.name + " Info"
 }
 
 function setWokrspaceProjectsTableData(projects) {
@@ -661,8 +659,12 @@ function setWokrspaceProjectsTableData(projects) {
 
 async function setWokrspaceUserTableData(wsId) {
   var userRoleMappingList = await webconsolejs["common/api/services/workspace_api"].getWorkspaceUserRoleMappingListByWorkspaceId(wsId);
+  
+  // API 응답 구조: { responseData: { userinfo: [...] } }
+  const mappingData = userRoleMappingList.responseData || userRoleMappingList;
+  
   var userTableData = []
-  for (const userInfo of userRoleMappingList.userinfo || []) {
+  for (const userInfo of mappingData.userinfo || []) {
     var getUsersByIdresp = await webconsolejs["common/api/services/workspace_api"].getUsersById(userInfo.userid);
     const targetUserInfo = getUsersByIdresp.find(item => item.username === userInfo.userid);
     targetUserInfo.department = "department example" // TODO : 아직 부서명까지 준비되지 않음.. 
@@ -675,14 +677,18 @@ async function setWokrspaceUserTableData(wsId) {
 async function setWokrspaceRolesTableData(wsId) {
   const getRoleListresp = await webconsolejs["common/api/services/workspace_api"].getRoleList();
   const getWURMappinResp = await webconsolejs["common/api/services/workspace_api"].getWorkspaceUserRoleMappingListOrderbyWorkspace();
+  
+  // API 응답 구조: { responseData: [...] }
+  const workspaceMappings = getWURMappinResp.responseData || getWURMappinResp;
+  
   var data = [];
   getRoleListresp.forEach(async function (role) {
     data.push({
       name: role.name,
       description: role.description,
-      enable: doesRoleExistInWorkspaceById(getWURMappinResp, wsId, role.id), // TODO : role 에는 활성 비활성 개념이 없음. 현재 워크스페이스에 존재하는가로 대체
-      userCount: countRoleOccurrencesInWorkspaces(getWURMappinResp, role.id), // 전체워크스페이스에서 해당 롤이 적용된 유저 명수 
-      workspaceCount: countWorkspacesWithRole(getWURMappinResp, role.id), // 전체워크스페이스에서 해당 롤이 적용된 워크스페이스 개수
+      enable: doesRoleExistInWorkspaceById(workspaceMappings, wsId, role.id), // TODO : role 에는 활성 비활성 개념이 없음. 현재 워크스페이스에 존재하는가로 대체
+      userCount: countRoleOccurrencesInWorkspaces(workspaceMappings, role.id), // 전체워크스페이스에서 해당 롤이 적용된 유저 명수 
+      workspaceCount: countWorkspacesWithRole(workspaceMappings, role.id), // 전체워크스페이스에서 해당 롤이 적용된 워크스페이스 개수
       company: "-",// TODO : role 에는 Company 개념이 없음. 
       id: role.id,
       policy: role.policy,
@@ -845,11 +851,15 @@ export async function editeWorkspaceModalInit() {
   document.getElementById("workspace-modal-edit-name").value = checked_array[0].name
   document.getElementById("workspace-modal-edit-description").value = checked_array[0].description
   var respWorkspacesInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListOrderbyWorkspace();
+  
+  // API 응답 구조: { responseData: [...] }
+  const workspacesData = respWorkspacesInfo.responseData || respWorkspacesInfo;
+  
   initProjectModalEditSeletor()
   let otherProjectIds = [];
   let projectsids = [];
-  for (const workpaceInfo of respWorkspacesInfo) {
-    if (workpaceInfo.workspace.id !== checked_array[0].id) {
+  for (const workpaceInfo of workspacesData) {
+    if (workpaceInfo.id !== checked_array[0].id) {
       workpaceInfo.projects.forEach(project => {
         otherProjectIds.push(project.id);
       });
