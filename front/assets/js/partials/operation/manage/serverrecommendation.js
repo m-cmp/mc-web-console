@@ -102,6 +102,7 @@ function initRecommendSpecTable() {
 
 	//recommendTable = setSpecTabulator("spec-table", tableObjParams, columns);
 	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
+	window.recommendTable = recommendTable; // window 객체에 할당
 
 	recommendTable.on("rowSelectionChanged", function (data, rows) {
 		console.log("data", data)
