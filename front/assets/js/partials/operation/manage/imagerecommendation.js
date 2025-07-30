@@ -159,6 +159,7 @@ function initRecommendImageTable() {
 	];
 
 	recommendImageTable = webconsolejs["common/util"].setTabulator("image-table", tableObjParams, columns);
+	window.recommendImageTable = recommendImageTable; // window 객체에 할당
 
 	recommendImageTable.on("rowSelectionChanged", function (data, rows) {
 		updateSelectedImageRows(data)
@@ -217,7 +218,7 @@ export async function getRecommendImageInfo() {
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
 			includeDeprecatedImage: false,
-			isGPUImage: isGPUImage === "false",
+			isGPUImage: isGPUImage === "true",
 			isKubernetesImage: false,
 			isRegisteredByAsset: false,
 			osArchitecture: osArchitecture,

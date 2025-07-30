@@ -294,8 +294,20 @@ export async function displayNewServerForm() {
 	var deploymentAlgo = $("#mci_deploy_algorithm").val();
 
 	if (deploymentAlgo == "express") {
+		// 폼을 열기 전에 추가 초기화
+		$("#ep_name").val("");
+		$("#ep_description").val("");
+		$("#ep_imageId_input").val("");
+		$("#ep_root_disk_type").val("");
+		$("#ep_root_disk_size").val("");
+		$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
+		$("#ep_data_disk").val("");
+		
+		// 모달들 초기화
+		resetModals();
+		
 		var div = document.getElementById("server_configuration");
-		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
 	} else if (deploymentAlgo == "simple") {
 		// var div = document.getElementById("server_configuration");
@@ -319,7 +331,7 @@ export async function displayNewServerForm() {
 
 		// toggle expert form
 		var div = document.getElementById("expert_server_configuration");
-		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
 	} else {
 		console.error(e)
@@ -377,8 +389,13 @@ export function expressDone_btn() {
 	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
 	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
 	$("#p_specId").val($("#ep_specId").val())
-	$("#p_subGroupSize").val($("#ep_vm_add_cnt").val() + "")
-	$("#p_vm_cnt").val($("#ep_vm_add_cnt").val() + "")
+	// ep_vm_add_cnt가 비어있으면 기본값 1로 설정
+	var vmAddCnt = $("#ep_vm_add_cnt").val();
+	if (!vmAddCnt || vmAddCnt.trim() === "") {
+		vmAddCnt = "1";
+	}
+	$("#p_subGroupSize").val(vmAddCnt)
+	$("#p_vm_cnt").val(vmAddCnt)
 
 	// commonSpec 으로 set 해야하므로 재설정
 	var express_form = {}
@@ -420,10 +437,63 @@ export function expressDone_btn() {
 	console.log("express btn click and express form data : ", express_form);
 	console.log("express data array : ", Express_Server_Config_Arr);
 	express_data_cnt++;
+	
+	// 폼 초기화 - 모든 입력 필드 초기화
 	$("#express_form").each(function () {
 		this.reset();
 	});
+	
+	// 숨겨진 필드들 초기화
+	$("#ep_provider").val("");
+	$("#ep_connectionName").val("");
+	$("#ep_imageId").val("");
+	$("#ep_commonImageId").val("");
+	$("#ep_commonSpecId").val("");
+	$("#ep_specId").val("");
+	
+	// 직접 입력 필드들 초기화
+	$("#ep_name").val("");
+	$("#ep_description").val("");
+	$("#ep_imageId_input").val("");
+	$("#ep_root_disk_type").val("");
+	$("#ep_root_disk_size").val("");
+	$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
 	$("#ep_data_disk").val("");
+	
+	// 모달들 초기화
+	resetModals();
+}
+
+// 모달들 초기화 함수
+function resetModals() {
+	// Spec Search 모달 초기화
+	if (typeof webconsolejs !== 'undefined' && webconsolejs['partials/operation/manage/serverrecommendation']) {
+		// Spec 모달의 테이블 초기화
+		if (window.recommendTable) {
+			window.recommendTable.clearData();
+		}
+		// Spec 모달의 선택 상태 초기화
+		$("#spec-search input[type='checkbox']").prop('checked', false);
+		$("#spec-search .form-control").val("");
+		// Cloud Provider Filter 드롭다운 초기화
+		$("#spec-provider-filter").val("");
+		// Region 드롭다운 초기화
+		$("#assistRecommendSpecConnectionName").val("");
+	}
+	
+	// Image Search 모달 초기화
+	if (typeof webconsolejs !== 'undefined' && webconsolejs['partials/operation/manage/imagerecommendation']) {
+		// Image 모달의 테이블 초기화
+		if (window.recommendImageTable) {
+			window.recommendImageTable.clearData();
+		}
+		// Image 모달의 선택 상태 초기화
+		$("#image-search input[type='checkbox']").prop('checked', false);
+		$("#image-search .form-control").val("");
+		$("#assist_os_type").val("");
+		$("#gpu_image_value").val("false");
+		$("#assist_gpu_image").prop('checked', false);
+	}
 }
 
 export function view_express(cnt) {

@@ -270,7 +270,7 @@ export async function searchImage(nsId, searchParams) {
     request: {
       includeDeprecatedImage: searchParams.includeDeprecatedImage || false,
       isGPUImage: searchParams.isGPUImage || false,
-      isKubernetesImage: searchParams.isKubernetesImage || false,
+      isKubernetesImage: searchParams.isKubernetesImage || true,
       isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
       osArchitecture: searchParams.osArchitecture || "x86_64",
       osType: searchParams.osType || "ubuntu 22.04",
