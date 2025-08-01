@@ -121,6 +121,46 @@ const UserManager = {
     }
   },
 
+  // 폼 데이터 수집
+  collectFormData() {
+    const email = document.getElementById('create-user-email').value;
+    return {
+      username: email, // email을 username으로 사용
+      email: email,
+      firstName: document.getElementById('create-user-firstname').value,
+      lastName: document.getElementById('create-user-lastname').value,
+      enabled: document.getElementById('create-user-enabled').checked,
+      emailVerified: false // 고정값
+    };
+  },
+
+  // 유효성 검증
+  validateUserData(userData) {
+    const errors = [];
+    
+    if (!userData.email || userData.email.trim() === '') {
+      errors.push('Email is required');
+    } else if (!this.isValidEmail(userData.email)) {
+      errors.push('Invalid email format');
+    }
+    
+    if (!userData.firstName || userData.firstName.trim() === '') {
+      errors.push('First name is required');
+    }
+    
+    if (!userData.lastName || userData.lastName.trim() === '') {
+      errors.push('Last name is required');
+    }
+    
+    return errors;
+  },
+
+  // 이메일 유효성 검증
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  },
+
   // 유저 생성
   async createUser(userData) {
     try {
@@ -586,22 +626,22 @@ window.goBackToUserList = function() {
 window.deployUser = async function() {
   console.log("deployUser called");
   
-  const formData = {
-    firstName: document.getElementById('create-user-firstname').value,
-    lastName: document.getElementById('create-user-lastname').value,
-    email: document.getElementById('create-user-email').value,
-    password: document.getElementById('create-user-password').value,
-    enabled: document.getElementById('create-user-enabled').checked
-  };
-
-  // 필수 필드 검증
-  if (!formData.firstName || !formData.lastName || !formData.email) {
-    alert('Please fill in all required fields (First Name, Last Name, Email)');
+  // 폼 데이터 수집 및 검증
+  const formData = UserManager.collectFormData();
+  const errors = UserManager.validateUserData(formData);
+  
+  if (errors.length > 0) {
+    alert('Validation errors: ' + errors.join(', '));
     return;
   }
 
+
+
+  console.log("Form data to be sent:", formData);
+
   try {
-    await UserManager.createUser(formData);
+    const response = await UserManager.createUser(formData);
+    console.log("User creation response:", response);
     
     alert("User created successfully!");
     
@@ -955,6 +995,80 @@ async function initUsers() {
 }
 
 // MCI 패턴과 동일하게 webconsolejs 등록 없이 전역 함수만 사용
+
+// 전역 함수: 사용자 생성 (모달용)
+async function createUser() {
+  try {
+    const userData = UserManager.collectFormData();
+    const errors = UserManager.validateUserData(userData);
+    
+    if (errors.length > 0) {
+      alert('Validation errors: ' + errors.join(', '));
+      return;
+    }
+    
+    const response = await UserManager.createUser(userData);
+    
+    if (response.status === 200 || response.status === 201) {
+      alert('User created successfully');
+      // 모달 닫기
+      const modal = bootstrap.Modal.getInstance(document.getElementById('add-user-modal'));
+      if (modal) {
+        modal.hide();
+      }
+      // 사용자 목록 새로고침
+      await initUsers();
+    } else {
+      alert('Failed to create user: ' + (response.data?.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error creating user:', error);
+    alert('Error creating user: ' + error.message);
+  }
+}
+
+// 전역 함수: 사용자 배포 (폼용)
+async function deployUser() {
+  try {
+    const userData = UserManager.collectFormData();
+    const errors = UserManager.validateUserData(userData);
+    
+    if (errors.length > 0) {
+      alert('Validation errors: ' + errors.join(', '));
+      return;
+    }
+    
+    const response = await UserManager.createUser(userData);
+    
+    if (response.status === 200 || response.status === 201) {
+      alert('User created successfully');
+      // 사용자 목록으로 돌아가기
+      goBackToUserList();
+      // 사용자 목록 새로고침
+      await initUsers();
+    } else {
+      alert('Failed to create user: ' + (response.data?.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error creating user:', error);
+    alert('Error creating user: ' + error.message);
+  }
+}
+
+// 전역 함수: 사용자 목록으로 돌아가기
+function goBackToUserList() {
+  // usercreate 섹션 숨기기
+  const createSection = document.getElementById('usercreate');
+  if (createSection) {
+    createSection.style.display = 'none';
+  }
+  
+  // index 섹션 보이기
+  const indexSection = document.getElementById('index');
+  if (indexSection) {
+    indexSection.style.display = 'block';
+  }
+}
 
 // DOMContentLoaded 이벤트 리스너 등록
 document.addEventListener("DOMContentLoaded", async function () {

@@ -644,7 +644,6 @@ async function getSelectedWorkspaceInfocardInit(workspacesID) {
 async function setWorkspaceDetailsData(respWorkspaceInfo) {
   // API 응답 구조: { responseData: { ... } }
   const workspaceData = respWorkspaceInfo.responseData || respWorkspaceInfo;
-  
   document.getElementById("workspace-details-name").innerText = workspaceData.name
   document.getElementById("workspace-details-description").innerText = workspaceData.description
   document.getElementById("workspace-details-systemId").innerText = workspaceData.id
@@ -677,10 +676,8 @@ async function setWokrspaceUserTableData(wsId) {
 // async function setWokrspaceRolesTableData(wsId) {
 //   const getRoleListresp = await webconsolejs["common/api/services/workspace_api"].getRoleList();
 //   const getWURMappinResp = await webconsolejs["common/api/services/workspace_api"].getWorkspaceUserRoleMappingListOrderbyWorkspace();
-  
 //   // API 응답 구조: { responseData: [...] }
 //   const workspaceMappings = getWURMappinResp.responseData || getWURMappinResp;
-  
 //   var data = [];
 //   getRoleListresp.forEach(async function (role) {
 //     data.push({
@@ -851,10 +848,8 @@ export async function editeWorkspaceModalInit() {
   document.getElementById("workspace-modal-edit-name").value = checked_array[0].name
   document.getElementById("workspace-modal-edit-description").value = checked_array[0].description
   var respWorkspacesInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListOrderbyWorkspace();
-  
   // API 응답 구조: { responseData: [...] }
   const workspacesData = respWorkspacesInfo.responseData || respWorkspacesInfo;
-  
   initProjectModalEditSeletor()
   let otherProjectIds = [];
   let projectsids = [];
@@ -912,6 +907,19 @@ export function addWorkspaceProjectModalInit() {
   modal.show();
 }
 
+export async function createProject() {
+
+  var projectName = document.getElementById("project-modal-add-name").value
+  var projectDescription = document.getElementById("project-modal-add-description").value
+  const createProjectResp = await webconsolejs["common/api/services/workspace_api"].createProject(projectName, projectDescription);
+  if (!createProjectResp.success) {
+    alert(JSON.stringify(createProjectResp.message))
+    return
+  } else {
+    alert("success create project")
+    location.reload()
+  }
+}
 export async function addWorkspaceProject() {
   var targetWorkspaceId = document.getElementById("project-modal-add-workspaceId").value
   var projectName = document.getElementById("project-modal-add-name").value
