@@ -507,7 +507,7 @@ export async function deleteWorkspaceUserRoleMapping(wsId, requserId) {
 // handle workspace projects mapping
 
 export async function createWPmapping(worskspaceId, projectsArr) {
-  const controller = '/api/mc-iam-manager/CreateWPmapping'
+  const controller = '/api/mc-iam-manager/createProject'
   var data = {
     request: {
       "workspaceId": worskspaceId,

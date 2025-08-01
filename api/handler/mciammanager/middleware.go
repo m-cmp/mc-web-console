@@ -48,8 +48,13 @@ func TokenValidMiddleware(next buffalo.Handler) buffalo.Handler {
 		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 		err := iamtokenvalidator.IsTokenValid(accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), "token signature is invalid") {
+				return c.Render(http.StatusForbidden, render.JSON(map[string]interface{}{"error": err.Error()}))
+			} else if strings.Contains(err.Error(), "token is expired") {
+				return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
+			}
 			log.Println(err.Error())
-			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
+			return c.Render(http.StatusInternalServerError, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
 		return next(c)
 	}
