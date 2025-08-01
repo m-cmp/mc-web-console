@@ -574,27 +574,27 @@ export async function createCluster() {
 	console.log("Create_Cluster_Config_Arr", Create_Cluster_Config_Arr)
 
 	if (!clusterName) {
-		commonAlert("Please Input Cluster Name!!!!!")
+		alert("Please Input Cluster Name!!!!!")
 		return;
 	}
 	if (!selectedConnection) {
-		commonAlert("Please Select Connection!!!!!")
+		alert("Please Select Connection!!!!!")
 		return;
 	}
 	if (!clusterVersion) {
-		commonAlert("Please Select Cluster Version!!!!!")
+		alert("Please Select Cluster Version!!!!!")
 		return;
 	}
 	if (!selectedVpc) {
-		commonAlert("Please Select VPC!!!!!")
+		alert("Please Select VPC!!!!!")
 		return;
 	}
 	if (!selectedSubnet) {
-		commonAlert("Please Select Subnet!!!!!")
+		alert("Please Select Subnet!!!!!")
 		return;
 	}
 	if (!selectedSecurityGroup) {
-		commonAlert("Please Select Security Group!!!!!")
+		alert("Please Select Security Group!!!!!")
 		return;
 	}
 

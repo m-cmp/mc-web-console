@@ -26,19 +26,39 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("Error from : ",url, error.response ? error.response.status : error.message);
         console.log("----------------------------");
         if (!attempt || attempt === undefined) {
-            if (error.response.status === 429){
-                alert("too many request : "+ error.message);
-                return error
-            }
-            if (error.response && (error.response.status !== 200)){
-                const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
-                if (authrefreshStatus) {
-                    console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
-                    return commonAPIPost(url, data, true);
-                } else {
-                    alert("session is expired");
-                    window.location = "/auth/login"
-                    return
+            if (error.response) {
+                const status = error.response.status;
+                
+                switch (status) {
+                    case 400:
+                        alert("Bad Request: " + error.message);
+                        return error;
+                    case 401:
+                        // Authentication failed - try token refresh
+                        const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
+                        if (authrefreshStatus) {
+                            console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
+                            return commonAPIPost(url, data, true);
+                        } else {
+                            alert("Session is expired");
+                            window.location = "/auth/login";
+                            return;
+                        }
+                    case 403:
+                        alert("Access Denied: " + error.message);
+                        return error;
+                    case 404:
+                        alert("Resource Not Found: " + error.message);
+                        return error;
+                    case 429:
+                        alert("Too Many Requests: " + error.message);
+                        return error;
+                    case 500:
+                        alert("Internal Server Error: " + error.message);
+                        return error;
+                    default:
+                        alert("Request Failed: " + error.message);
+                        return error;
                 }
             }
         }

@@ -151,15 +151,20 @@ export function getCommonData(
     .catch((error) => {
       console.warn(error);
       if (callbackFailFunction == undefined || callbackFailFunction == "") {
-        mcpjs["util/util"].commonAlert(error);
+        mcpjs["util/util"].alert(error);
       } else {
         callbackFailFunction(caller, error);
       }
     });
 }
-
+// export function commonAlert(alertMessage) {
+//   console.log(alertMessage);
+//   // $('#alertText').text(alertMessage);
+//   $('#alertText').html(alertMessage);
+//   $("#alertArea").modal();
+// }
 // sw 설치화면으로 이동.
-export function installSwtoVm(){
+export function installSwtoVm() {
   // 
   window.location = "/webconsole/operations/manage/swcatalogs";
 }

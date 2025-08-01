@@ -6,6 +6,20 @@ export async function getUserList() {
     return response.data.responseData;
 }
 
+export async function createUser(userData) {
+    const controller = "/api/mc-iam-manager/Createuser";
+    
+    // 백엔드가 기대하는 데이터 구조로 래핑
+    const requestData = {
+        request: userData
+    };
+    
+    console.log("createUser API called with data:", requestData);
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, requestData);
+    console.log("createUser response", response);
+    return response;
+}
+
 // export async function getUserById(userId) {
 //     const controller = "/api/mc-iam-manager/Getuserbyid";
 //     const data = {
