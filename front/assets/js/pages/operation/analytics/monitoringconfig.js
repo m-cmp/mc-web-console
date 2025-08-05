@@ -135,15 +135,15 @@ async function initMonitorConfig() {
 
 // workload 목록 조회 ( mci + pmk )
 async function getWorkloadList(nsId){
-  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciIdList(nsId);
+  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
   console.log("respMciList" , respMciList)
-  var res_item = respMciList.output;
+  var res_item = respMciList.mci
   
   // HTML option 리스트 초기값
   var html = '<option value="">Select</option>'; 
   if (Array.isArray(res_item)) {
     res_item.forEach(item => {
-      html += '<option value="' + item + '">' + item + '</option>';
+      html += '<option value="' + item.id + '">' + item.name + '</option>';
     });
   } else {
     console.error("res_item is not an array");
@@ -302,8 +302,8 @@ function initMonitorConfigTable() {
     // 상세 정보 표시 여부
     if (tempServernodeId === currentServernodeId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("monitoring_configuration"))
-      this.dese
-      returnlectRow();
+      this.deselectRow();
+      return
     } else {
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("monitoring_configuration"))
       this.deselectRow();
