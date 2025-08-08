@@ -22,6 +22,11 @@ export function getSessionCurrentUserToken() {
     return currentUserToken
 }
 
+export function setSessionCurrentUserRefreshToken() {
+    const refreshToken = getCookie('RefreshToken');
+    sessionStorage.setItem('currentUserRefreshToken', refreshToken)
+}
+
 // user token mng END
 //////////////////////////////////////////////////////////
 
