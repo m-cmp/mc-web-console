@@ -19,6 +19,13 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("Response status : ", response.status);
         console.log("Response from : ",url, response.data);
         console.log("----------------------------");
+        // for the test
+        // const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
+        // if (authrefreshStatus) {
+        //     console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
+        //     return commonAPIPost(url, data, true);
+        // }
+        //////
         deactivePageLoader()
         return response;
     } catch (error) {
@@ -28,14 +35,15 @@ export async function commonAPIPost(url, data, attempt) {
         if (!attempt || attempt === undefined) {
             if (error.response) {
                 const status = error.response.status;
-                
                 switch (status) {
                     case 400:
                         alert("Bad Request: " + error.message);
                         return error;
                     case 401:
+                        console.log("status is 401", status)
                         // Authentication failed - try token refresh
                         const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
+                        console.log("authrefreshStatus", authrefreshStatus)
                         if (authrefreshStatus) {
                             console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
                             return commonAPIPost(url, data, true);
@@ -73,10 +81,13 @@ export async function commonAPIPostWithoutRetry(url, data) {
     console.log("Request URL :", url);
     console.log("Request Data :", JSON.stringify(data));
     console.log("-----------------------");
+  
     try {
         if( data === undefined) {
+            // var response = await axios.post(url, null, { headers });
             var response = await axios.post(url);
         }else {
+            // var response = await axios.post(url, data, { headers });
             var response = await axios.post(url, data);
         }
         console.log("#### commonAPIPost Response");

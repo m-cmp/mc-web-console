@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/self"
 	"mc_web_console_api/models"
@@ -130,30 +133,52 @@ func AuthMCIAMLogin(c buffalo.Context) error {
 }
 
 func AuthMCIAMLoginRefresh(c buffalo.Context) error {
-	commonRequest := &handler.CommonRequest{}
-	c.Bind(commonRequest)
+	bodyBytes, _ := io.ReadAll(c.Request().Body)
+	c.Request().Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	var requestData map[string]interface{}
+	if err := json.Unmarshal(bodyBytes, &requestData); err != nil {
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "JSON unmarshal error: " + err.Error()}))
+	}
+
+	commonRequest := &handler.CommonRequest{
+		Request: requestData,
+	}
 
 	tx := c.Value("tx").(*pop.Connection)
 	var refreshRes *handler.CommonResponse
+	var err error
 
 	if commonRequest.Request != nil {
-		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+		refreshRes, err = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+		if err != nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "AnyCaller error: " + err.Error()}))
+		}
 	} else {
-		sess, err := self.GetUserByUserId(tx, c.Value("UserId").(string))
+		userId := c.Value("UserId")
+		if userId == nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "UserId not found in context"}))
+		}
+
+		sess, err := self.GetUserByUserId(tx, userId.(string))
 		if err != nil {
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
 		}
 		commonRequest.Request = map[string]interface{}{"refresh_token": sess.RefreshToken}
-		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+		refreshRes, err = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+		if err != nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "AnyCaller error: " + err.Error()}))
+		}
 	}
 	if refreshRes.Status.StatusCode != 200 {
 		return c.Render(refreshRes.Status.StatusCode, r.JSON(map[string]interface{}{"error": refreshRes.Status.Message}))
 	}
 
-	_, err := self.UpdateUserSesssFromResponseData(tx, refreshRes, c.Value("UserId").(string))
-	if err != nil {
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
-	}
+	// 리프레시 토큰 요청에서는 세션 업데이트를 건너뜀 (UserId가 없을 수 있음)
+	// _, err = self.UpdateUserSesssFromResponseData(tx, refreshRes, c.Value("UserId").(string))
+	// if err != nil {
+	// 	return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
+	// }
 
 	return c.Render(refreshRes.Status.StatusCode, r.JSON(refreshRes))
 }

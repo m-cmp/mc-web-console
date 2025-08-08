@@ -12,17 +12,11 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         document.getElementById("password").value = null
     }else{
         // 로그인 성공 시에만 토큰 저장
-        localStorage.setItem('loginResponse', JSON.stringify(response.data));
-        localStorage.setItem('loginTimestamp', new Date().toISOString());
-        
-        console.log("=== Login Success Response ===");
-        console.log("Full response:", response);
-        console.log("Response data:", response.data);
-        console.log("Response data keys:", Object.keys(response.data));
         try {
             await webconsolejs["common/cookie/authcookie"].updateCookieRefreshToken(response.data.refresh_token);
             await webconsolejs["common/cookie/authcookie"].updateCookieAccessToken(response.data.access_token);
             await webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserToken();
+            await webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserRefreshToken();
         } catch (error) {
             console.error("Error saving tokens:", error);
             alert("Token save failed: " + error.message);

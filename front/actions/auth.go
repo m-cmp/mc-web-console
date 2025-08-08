@@ -14,6 +14,11 @@ func SessionInitializer(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusInternalServerError, defaultRender.JSON(map[string]interface{}{"error": err.Error()}))
 	}
+
+	// Authorization 헤더 추가
+	if authHeader := c.Request().Header.Get("Authorization"); authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -38,9 +43,15 @@ func SessionInitializer(c buffalo.Context) error {
 		return c.Render(resp.StatusCode, defaultRender.JSON(map[string]interface{}{"message": errmsg}))
 	}
 
-	accessToken := data["responseData"].(map[string]interface{})["access_token"]
+	// access_token과 refresh_token을 각각 추출
+	responseDataMap := data["responseData"].(map[string]interface{})
+	accessToken := responseDataMap["access_token"].(string)
+	refreshToken := responseDataMap["refresh_token"].(string)
 
-	return c.Render(http.StatusOK, defaultRender.JSON(map[string]interface{}{"access_token": accessToken}))
+	return c.Render(http.StatusOK, defaultRender.JSON(map[string]interface{}{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	}))
 }
 
 func UserLogin(c buffalo.Context) error {
