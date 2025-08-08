@@ -11,7 +11,23 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         document.getElementById("id").value = null
         document.getElementById("password").value = null
     }else{
-        await webconsolejs["common/cookie/authcookie"].updateCookieAccessToken(response.data.access_token);
+        // 로그인 성공 시에만 토큰 저장
+        localStorage.setItem('loginResponse', JSON.stringify(response.data));
+        localStorage.setItem('loginTimestamp', new Date().toISOString());
+        
+        console.log("=== Login Success Response ===");
+        console.log("Full response:", response);
+        console.log("Response data:", response.data);
+        console.log("Response data keys:", Object.keys(response.data));
+        try {
+            await webconsolejs["common/cookie/authcookie"].updateCookieRefreshToken(response.data.refresh_token);
+            await webconsolejs["common/cookie/authcookie"].updateCookieAccessToken(response.data.access_token);
+            await webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserToken();
+        } catch (error) {
+            console.error("Error saving tokens:", error);
+            alert("Token save failed: " + error.message);
+            return;
+        }
         const controller = "/api/mc-iam-manager/GetAllAvailableMenus";
         const getAllAvailableMenusResponse = await webconsolejs["common/api/http"].commonAPIPost(controller);
         console.log("getAllAvailableMenus response", getAllAvailableMenusResponse);
