@@ -50,7 +50,7 @@ func App() *buffalo.App {
 
 			auth := app.Group(apiPath + "/auth")
 			auth.Middleware.Skip(mciammanager.TokenValidMiddleware, AuthMCIAMLogin, AuthMCIAMLoginRefresh)
-			auth.Middleware.Skip(mciammanager.SetContextMiddleware, AuthMCIAMLogin)
+			auth.Middleware.Skip(mciammanager.SetContextMiddleware, AuthMCIAMLogin, AuthMCIAMLoginRefresh)
 			auth.POST("/login", AuthMCIAMLogin)
 			auth.POST("/refresh", AuthMCIAMLoginRefresh)
 			auth.POST("/validate", AuthMCIAMValidate)
