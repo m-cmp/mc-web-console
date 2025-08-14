@@ -57,7 +57,7 @@ func App() *buffalo.App {
 		authapi := app.Group("/api")
 		authapi.Middleware.Skip(middleware.IsTokenExistMiddleware, SessionInitializer)
 		authapi.POST("/auth/login", SessionInitializer)
-
+		authapi.POST("/auth/refresh", SessionInitializer)
 		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
 		pages := app.Group("/webconsole")
