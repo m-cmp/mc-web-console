@@ -47,14 +47,12 @@ func TokenValidMiddleware(next buffalo.Handler) buffalo.Handler {
 
 		// 토큰이 비어있는지 확인
 		if accessToken == "" {
-			log.Println("Empty access token")
 			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Access token is missing"}))
 		}
 
 		// JWT 토큰 형식 기본 검증 (3개 부분으로 구성)
 		parts := strings.Split(accessToken, ".")
 		if len(parts) != 3 {
-			log.Printf("Invalid token format: expected 3 parts, got %d", len(parts))
 			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Invalid token format"}))
 		}
 

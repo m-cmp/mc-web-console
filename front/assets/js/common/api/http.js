@@ -19,13 +19,6 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("Response status : ", response.status);
         console.log("Response from : ",url, response.data);
         console.log("----------------------------");
-        // for the test
-        // const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
-        // if (authrefreshStatus) {
-        //     console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
-        //     return commonAPIPost(url, data, true);
-        // }
-        //////
         deactivePageLoader()
         return response;
     } catch (error) {
@@ -91,49 +84,27 @@ export async function commonAPIPost(url, data, attempt) {
     }
 }
 
-export async function commonAPIPostWithoutRetry(url, data) {
-    console.log("#### commonAPIPostWithoutRetry START");
-    console.log("1. Request URL:", url);
-    console.log("2. Request Data:", JSON.stringify(data));
-    console.log("3. Request headers:", {
-        'Content-Type': 'application/json',
-        'Authorization': document.cookie.split(';').find(c => c.trim().startsWith('Authorization='))?.split('=')[1] || 'Not found'
-    });
-    console.log("-----------------------");
-  
+export async function commonAPIPostWithoutRetry(url, data) {   
     try {
-        console.log("4. Preparing axios request...");
         let response;
         if (data === undefined) {
-            console.log("4a. Sending POST request without data");
             response = await axios.post(url);
         } else {
-            console.log("4a. Sending POST request with data");
             response = await axios.post(url, data);
         }
-        
-        console.log("5. Axios request completed successfully");
         console.log("#### commonAPIPostWithoutRetry Response");
-        console.log("6. Response status:", response.status);
-        console.log("7. Response headers:", response.headers);        
-        console.log("8. Response data:", response.data);
-        console.log("9. Response data type:", typeof response.data);
-        if (response.data && typeof response.data === 'object') {
-            console.log("10. Response data keys:", Object.keys(response.data));
-        }
-        console.log("11. Response :", response);
+        console.log("Response status : ", response.status);
+        console.log("Response from : ",url, response.data);
         console.log("----------------------------");
         return response;
     } catch (error) {
         console.log("#### commonAPIPostWithoutRetry Error");
-        console.log("4. Axios request failed");
-        console.log("5. Error status:", error.response ? error.response.status : "No response");
-        console.log("6. Error message:", error.message);
-        console.log("7. Error response data:", error.response ? error.response.data : "No response data");
+        console.log("Error status:", error.response ? error.response.status : "No response");
+        console.log("Error message:", error.message);
+        console.log("Error response data:", error.response ? error.response.data : "No response data");
         if (error.response && error.response.data) {
-            console.log("8. Error response data type:", typeof error.response.data);
             if (typeof error.response.data === 'object') {
-                console.log("9. Error response data keys:", Object.keys(error.response.data));
+                console.log("Error response data keys:", Object.keys(error.response.data));
             }
         }
         console.log("----------------------------");
