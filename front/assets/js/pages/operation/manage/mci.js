@@ -2089,9 +2089,50 @@ export async function deletePolicy() {
     alert('삭제할 정책을 선택하세요.');
     return;
   }
-console.log("currentMciId", currentMciId)
-  await webconsolejs['common/api/services/mci_api'].deletePolicy(currentNsId, currentMciId);
-  // loadPolicyData();
+
+  try {
+    await webconsolejs['common/api/services/mci_api'].deletePolicy(currentNsId, currentMciId);
+    
+    alert("Policy 삭제가 완료되었습니다.");
+
+    // Policy 목록 새로고침
+    await loadPolicyData();
+
+    // 현재 선택된 MCI가 있으면 해당 MCI를 다시 선택 (Policy 탭에서 이미 선택된 상태 유지)
+    if (currentMciId && mciListTable) {
+      try {
+        const row = mciListTable.getRow(currentMciId);
+        if (row) {
+          // MCI 선택 상태 유지
+          var tempcurmciID = row.getCell("id").getValue();
+          currentMciId = tempcurmciID;
+          
+          // mci_info 요소가 이미 활성화되어 있는지 확인하고 필요시 활성화
+          const mciInfoElement = document.getElementById("mci_info");
+          if (mciInfoElement && !mciInfoElement.classList.contains('active')) {
+            // 다른 섹션들을 먼저 비활성화
+            document.querySelectorAll('.section').forEach(section => {
+              section.classList.remove('active');
+            });
+            // mci_info 섹션 활성화
+            mciInfoElement.classList.add('active');
+            // 강제로 표시되도록 스타일 설정
+            mciInfoElement.style.display = 'block';
+            mciInfoElement.style.visibility = 'visible';
+            mciInfoElement.style.opacity = '1';
+          }
+          
+          getSelectedMciData();
+        }
+      } catch (error) {
+        console.error("MCI 선택 중 오류:", error);
+      }
+    }
+
+  } catch (error) {
+    console.error("Policy 삭제 중 오류:", error);
+    alert("Policy 삭제 중 오류가 발생했습니다.");
+  }
 }
 
 
@@ -2159,12 +2200,55 @@ export async function deployPolicy() {
       // Policy 목록 새로고침
       await loadPolicyData();
 
-      // Policy 탭으로 이동
-      const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
-      if (policyTabLink) {
-        const policyTab = bootstrap.Tab.getOrCreateInstance(policyTabLink);
-        policyTab.show();
+      // Policy 생성 폼 섹션을 닫기
+      const addPolicySection = document.querySelector('#addpolicy');
+      if (addPolicySection && addPolicySection.classList.contains('active')) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(addPolicySection);
       }
+
+      // 현재 선택된 MCI가 있으면 해당 MCI를 다시 선택
+      if (currentMciId && mciListTable) {
+        try {
+          const row = mciListTable.getRow(currentMciId);
+          if (row) {
+            // 강제로 MCI 선택 상태로 만들기
+            var tempcurmciID = row.getCell("id").getValue();
+            currentMciId = tempcurmciID;
+            
+            // mci_info 요소를 직접 활성화
+            const mciInfoElement = document.getElementById("mci_info");
+            if (mciInfoElement) {
+              // 다른 섹션들을 먼저 비활성화
+              document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+              });
+              // mci_info 섹션 활성화
+              mciInfoElement.classList.add('active');
+              // 강제로 표시되도록 스타일 설정
+              mciInfoElement.style.display = 'block';
+              mciInfoElement.style.visibility = 'visible';
+              mciInfoElement.style.opacity = '1';
+            }
+            
+            getSelectedMciData();
+          }
+        } catch (error) {
+          console.error("MCI 선택 중 오류:", error);
+        }
+      }
+
+      // Policy 탭으로 이동
+      setTimeout(() => {
+        const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
+        if (policyTabLink) {
+          try {
+            const tab = new bootstrap.Tab(policyTabLink);
+            tab.show();
+          } catch (error) {
+            console.error("Policy 탭 이동 중 오류:", error);
+          }
+        }
+      }, 500);
     } else {
       console.log("응답 구조:", response);
       throw new Error("Policy 생성에 실패했습니다.");
@@ -2175,6 +2259,8 @@ export async function deployPolicy() {
     alert("Policy 생성 중 오류가 발생했습니다: " + error.message);
   }
 }
+
+
 
 // Policy 데이터 수집
 function collectPolicyData() {
