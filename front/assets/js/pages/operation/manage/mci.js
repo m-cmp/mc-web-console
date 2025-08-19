@@ -2089,7 +2089,7 @@ export async function deletePolicy() {
     alert('삭제할 정책을 선택하세요.');
     return;
   }
-
+console.log("currentMciId", currentMciId)
   await webconsolejs['common/api/services/mci_api'].deletePolicy(currentNsId, currentMciId);
   // loadPolicyData();
 }
@@ -2118,4 +2118,168 @@ export async function getKeypair(el) {
   $("#keypairModal-bodytitle").text(sshkeyId);
   var respSSHkey = await webconsolejs["common/api/services/mci_api"].getsshkey(currentNsId, sshkeyId);
   $("#keypairModal-textarea").val(respSSHkey.privateKey);
+}
+
+// Policy 배포 함수
+export async function deployPolicy() {
+  try {
+    console.log("deployPolicy 시작");
+
+    // Policy 데이터 수집
+    const policyData = collectPolicyData();
+
+    // 데이터 검증
+    if (!validatePolicyData(policyData)) {
+      return;
+    }
+
+    // API 요청 데이터 구성
+    const requestData = buildPolicyRequestData(policyData);
+
+    console.log("Policy 요청 데이터:", requestData);
+    console.log("currentmciId", currentMciId)
+    // API 호출
+    const response = await webconsolejs["common/api/services/mci_api"].createPolicy(
+      currentNsId,
+      currentMciId,
+      requestData.policy
+    );
+
+    console.log("Policy 생성 응답:", response);
+
+    // 성공 처리 - 응답 구조를 더 유연하게 확인
+    if (response && (
+      (response.status && response.status.code === 200) ||
+      (response.data && response.data.status && response.data.status.code === 200) ||
+      (response.statusCode === 200) ||
+      (response.data && response.data.statusCode === 200)
+    )) {
+      alert("Policy 생성이 완료되었습니다.");
+
+      // Policy 목록 새로고침
+      await loadPolicyData();
+
+      // Policy 탭으로 이동
+      const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
+      if (policyTabLink) {
+        const policyTab = bootstrap.Tab.getOrCreateInstance(policyTabLink);
+        policyTab.show();
+      }
+    } else {
+      console.log("응답 구조:", response);
+      throw new Error("Policy 생성에 실패했습니다.");
+    }
+
+  } catch (error) {
+    console.error("Policy 배포 중 오류:", error);
+    alert("Policy 생성 중 오류가 발생했습니다: " + error.message);
+  }
+}
+
+// Policy 데이터 수집
+function collectPolicyData() {
+  return {
+    // AutoAction 데이터
+    actionType: "ScaleOut", // 기본값
+    placementAlgo: $("#policy_ep_placementAlgo").val() || "random",
+    command: $("#policy_ep_command").val() || "",
+    userName: $("#policy_ep_username").val() || "",
+
+    // VM Dynamic Request 데이터
+    commonImage: $("#policy_ep_commonImageId").val() || "",
+    commonSpec: $("#policy_ep_commonSpecId").val() || "",
+    connectionName: $("#policy_ep_connectionName").val() || "",
+    description: $("#policy_ep_description").val() || "",
+    name: $("#policy_ep_name").val() || "",
+    rootDiskSize: $("#policy_ep_root_disk_size").val() || "",
+    rootDiskType: $("#policy_ep_root_disk_type").val() || "",
+    subGroupSize: $("#policy_ep_vm_add_cnt").val() || "1",
+
+    // AutoCondition 데이터
+    evaluationPeriod: $("#policy_ep_evaluationPeriod").val() || "10",
+    metric: $("#policy_ep_metric").val() || "",
+    operand: $("#policy_ep_operand").val() || "",
+    operator: $("#policy_ep_operator").val() || ""
+  };
+}
+
+// Operator 값 정규화 함수
+function normalizeOperator(operator) {
+  // Unicode 이스케이프된 문자들을 일반 문자로 변환
+  const operatorMap = {
+    "\\u003e": ">",
+    "\\u003c": "<",
+    "\\u003e\\u003d": ">=",
+    "\\u003c\\u003d": "<=",
+    "\\u003d\\u003d": "==",
+    "\\u0021\\u003d": "!="
+  };
+  
+  // 이미 정규화된 경우 그대로 반환
+  if (operator === ">" || operator === "<" || operator === ">=" || 
+      operator === "<=" || operator === "==" || operator === "!=") {
+    return operator;
+  }
+  
+  // Unicode 이스케이프된 경우 변환
+  return operatorMap[operator] || operator;
+}
+
+// Policy 데이터 검증
+function validatePolicyData(data) {
+  const requiredFields = [
+    { field: 'commonSpec', name: 'Spec' },
+    { field: 'commonImage', name: 'Image' },
+    { field: 'connectionName', name: 'Connection' },
+    { field: 'metric', name: 'Metric' },
+    { field: 'operator', name: 'Operator' },
+    { field: 'operand', name: 'Operand' }
+  ];
+
+  for (const required of requiredFields) {
+    if (!data[required.field] || data[required.field].trim() === "") {
+      alert(`${required.name} 필드는 필수입니다.`);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Policy API 요청 데이터 구성
+function buildPolicyRequestData(data) {
+  return {
+    policy: [{
+      autoAction: {
+        actionType: data.actionType,
+        placementAlgo: data.placementAlgo,
+        postCommand: {
+          command: data.command ? [data.command] : [],
+          userName: data.userName
+        },
+        vmDynamicReq: {
+          commonImage: data.commonImage,
+          commonSpec: data.commonSpec,
+          connectionName: data.connectionName,
+          description: data.description,
+          label: {
+            "env": "test",
+            "role": "worker"
+          },
+          name: data.name,
+          rootDiskSize: data.rootDiskSize,
+          rootDiskType: data.rootDiskType,
+          subGroupSize: data.subGroupSize,
+          vmUserPassword: ""
+        }
+      },
+      autoCondition: {
+        evaluationPeriod: data.evaluationPeriod,
+        metric: data.metric,
+        operand: data.operand,
+        operator: normalizeOperator(data.operator)
+      },
+      status: "active"
+    }]
+  };
 }

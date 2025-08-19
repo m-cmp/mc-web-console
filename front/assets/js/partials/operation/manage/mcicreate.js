@@ -25,6 +25,12 @@ export async function callbackServerRecommendation(vmSpec) {
 	$("#ep_specId").val(vmSpec.specName)
 	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
 	
+	// policy_ep_* 필드들도 함께 설정 (mciworkloads.html용)
+	$("#policy_ep_provider").val(vmSpec.provider)
+	$("#policy_ep_connectionName").val(vmSpec.connectionName)
+	$("#policy_ep_specId").val(vmSpec.specName)
+	$("#policy_ep_commonSpecId").val(vmSpec.commonSpecId)
+	
 	// spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
 	window.selectedSpecInfo = {
 		provider: vmSpec.provider,
@@ -54,6 +60,10 @@ export function callbackImageRecommendation(selectedImage) {
 	$("#ep_imageId_input").val(selectedImage.name || selectedImage.cspImageName || "");
 	$("#ep_imageId").val(selectedImage.id || selectedImage.name || "");
 	$("#ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
+	
+	// policy_ep_* 필드들도 함께 설정 (mciworkloads.html용)
+	$("#policy_ep_imageId_input").val(selectedImage.name || selectedImage.cspImageName || "");
+	$("#policy_ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
 	
 
 }
@@ -879,24 +889,47 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 
 // SubGroup Size
 (function () {
+	// ep_vm_add_cnt 처리
 	const input = document.getElementById('ep_vm_add_cnt');
-	if (!input) return;
+	if (input) {
+		const container = input.parentElement; // .d-flex.align-items-center
+		const [btnDec, btnInc] = container.querySelectorAll('button');
 
-	const container = input.parentElement; // .d-flex.align-items-center
-	const [btnDec, btnInc] = container.querySelectorAll('button');
+		const minValue = 1;
+		const maxValue = Number(input.getAttribute('max')) || Infinity;
 
-	const minValue = 1;
-	const maxValue = Number(input.getAttribute('max')) || Infinity;
+		btnDec.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(input.value, 10) || minValue;
+			if (val > minValue) input.value = val - 1;
+		});
 
-	btnDec.addEventListener('click', function (e) {
-		e.preventDefault();
-		let val = parseInt(input.value, 10) || minValue;
-		if (val > minValue) input.value = val - 1;
-	});
+		btnInc.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(input.value, 10) || minValue;
+			if (val < maxValue) input.value = val + 1;
+		});
+	}
 
-	btnInc.addEventListener('click', function (e) {
-		e.preventDefault();
-		let val = parseInt(input.value, 10) || minValue;
-		if (val < maxValue) input.value = val + 1;
-	});
+	// policy_ep_vm_add_cnt 처리 (mciworkloads.html용)
+	const policyInput = document.getElementById('policy_ep_vm_add_cnt');
+	if (policyInput) {
+		const policyContainer = policyInput.parentElement; // .d-flex.align-items-center
+		const [policyBtnDec, policyBtnInc] = policyContainer.querySelectorAll('button');
+
+		const minValue = 1;
+		const maxValue = Number(policyInput.getAttribute('max')) || Infinity;
+
+		policyBtnDec.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(policyInput.value, 10) || minValue;
+			if (val > minValue) policyInput.value = val - 1;
+		});
+
+		policyBtnInc.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(policyInput.value, 10) || minValue;
+			if (val < maxValue) policyInput.value = val + 1;
+		});
+	}
 })();

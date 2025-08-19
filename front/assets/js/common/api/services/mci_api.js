@@ -706,7 +706,7 @@ export async function deletePolicy(nsId, mciId) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: currentMciId,
+      mciId: mciId,
     },
     queryParams: {
       option: "force"
@@ -718,4 +718,28 @@ export async function deletePolicy(nsId, mciId) {
     data
   );
   console.log("delete policy response : ", response)
+}
+
+export async function createPolicy(nsId, mciId, policy) {
+  if (nsId == "") {
+    console.log("Project has not set")
+    return;
+  }
+
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+    },
+    Request: {
+      policy: policy
+    }
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Postmcipolicy";
+  let response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  console.log("create policy response : ", response)
+  return response
 }
