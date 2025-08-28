@@ -1280,7 +1280,14 @@ export async function deployPmkDynamic() {
             $("#createcluster .card-footer").show();
             
             // PMK 목록 새로고침
-            refreshPmkList();
+            await refreshPmkList();
+            
+            // 클러스터 생성 폼 섹션을 닫기 (NodeGroup이 표시되어 있든 없든 항상 실행)
+            const createClusterSection = document.querySelector('#createcluster');
+            if (createClusterSection && createClusterSection.classList.contains('active')) {
+                webconsolejs["partials/layout/navigatePages"].toggleElement(createClusterSection);
+            }
+            
         } else {
             alert("클러스터 생성에 실패했습니다.");
         }

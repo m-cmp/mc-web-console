@@ -515,6 +515,24 @@
                 </select>
               </div>
 
+              <div class="mb-3">
+                <label class="form-label required">Policy on Partial Failure</label>
+                <select
+                  class="form-select"
+                  name="mci_policy_on_partial_failure"
+                  id="mci_policy_on_partial_failure"
+                >
+                  <option value="continue" selected>Continue</option>
+                  <option value="rollback">Rollback</option>
+                  <option value="refine">Refine</option>
+                </select>
+                <div class="form-hint">
+                  <strong>Continue:</strong> Create MCI with successful VMs, failed VMs remain for manual refinement<br>
+                  <strong>Rollback:</strong> Delete entire MCI if any VM fails (all-or-nothing deployment)<br>
+                  <strong>Refine:</strong> Automatically clean up failed VMs, keep successful ones (recommended for large deployments)
+                </div>
+              </div>
+
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
