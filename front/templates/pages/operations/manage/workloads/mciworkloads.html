@@ -515,6 +515,24 @@
                 </select>
               </div>
 
+              <div class="mb-3">
+                <label class="form-label required">Policy on Partial Failure</label>
+                <select
+                  class="form-select"
+                  name="mci_policy_on_partial_failure"
+                  id="mci_policy_on_partial_failure"
+                >
+                  <option value="continue" selected>Continue</option>
+                  <option value="rollback">Rollback</option>
+                  <option value="refine">Refine</option>
+                </select>
+                <div class="form-hint">
+                  <strong>Continue:</strong> Create MCI with successful VMs, failed VMs remain for manual refinement<br>
+                  <strong>Rollback:</strong> Delete entire MCI if any VM fails (all-or-nothing deployment)<br>
+                  <strong>Refine:</strong> Automatically clean up failed VMs, keep successful ones (recommended for large deployments)
+                </div>
+              </div>
+
               <div class="card">
                 <div class="card-body">
                   <div class="row row-cards">
@@ -782,6 +800,53 @@
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group mb-2">
+                <label class="form-label required">Metric</label>
+                <select
+                  class="form-select"
+                  name="policy_metric"
+                  id="policy_ep_metric"
+                >
+                  <option value="">Select Metric</option>
+                  <option value="cpu">CPU Usage</option>
+                  <option value="memory">Memory Usage</option>
+                  <option value="disk">Disk Usage</option>
+                  <option value="network">Network Usage</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-2">
+                <label class="form-label required">Operator</label>
+                <select
+                  class="form-select"
+                  name="policy_operator"
+                  id="policy_ep_operator"
+                >
+                  <option value="">Select Operator</option>
+                  <option value=">">Greater than (>)</option>
+                  <option value=">=">Greater than or equal (>=)</option>
+                  <option value="<">Less than (<)</option>
+                  <option value="<=">Less than or equal (<=)</option>
+                  <option value="==">Equal (==)</option>
+                  <option value="!=">Not equal (!=)</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-2">
+                <label class="form-label required">Operand</label>
+                <input
+                  class="form-control"
+                  name="policy_operand"
+                  id="policy_ep_operand"
+                  placeholder="ex: 80 (for 80%)"
+                />
+              </div>
+            </div>
+          </div>
           <div class="card">
             <div class="card-header">
               <h3 class="text-info">Server Configuration</h3>
@@ -824,12 +889,7 @@
                             id="policy_ep_connectionName"
                             value=""
                           />
-                          <input
-                            type="hidden"
-                            name="imageId"
-                            id="policy_ep_imageId"
-                            value=""
-                          />
+                   
                           <input
                             type="hidden"
                             name="commonImageId"
@@ -842,6 +902,7 @@
                             id="policy_ep_commonSpecId"
                             value=""
                           />
+                   
                         </div>
                         <div class="col-auto">
                           <a
@@ -876,7 +937,56 @@
                         </div>
                       </div>
                     </div>
-
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Image</label>
+                      <div class="row g-2">
+                        <div class="col">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Please Use Search"
+                            name="image"
+                            id="policy_ep_imageId_input"
+                          />
+                          <input
+                            type="hidden"
+                            name="commonImageId"
+                            id="policy_ep_commonImageId"
+                            value=""
+                          />
+                        </div>
+                        <div class="col-auto">
+                          <a
+                            href="#"
+                            class="btn"
+                            onclick="webconsolejs['partials/operation/manage/imagerecommendation'].validateAndOpenImageModal(event)"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="icon"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              fill="none"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              ></path>
+                              <path
+                                d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                              ></path>
+                              <path d="M21 21l-6 -6"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                     <div class="form-group mb-2">
                       <label class="form-label">Root Disk</label>
                       <div class="row g-2">
@@ -953,7 +1063,7 @@
           <button
             type=""
             class="btn btn-primary"
-            onclick="webconsolejs['partials/operation/manage/mcicreate'].deployMci()"
+            onclick="webconsolejs['pages/operation/manage/mci'].deployPolicy()"
           >
             Deploy
           </button>
