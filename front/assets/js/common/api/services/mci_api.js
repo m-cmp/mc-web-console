@@ -185,22 +185,81 @@ export function vmLifeCycle(type, mciId, nsId, vmid) {
 
 }
 
-export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, nsId) {
+export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_Arr, nsId) {
 
-  var obj = {}
-  obj['name'] = mciName
-  obj['description'] = mciDesc
-  obj['vm'] = Express_Server_Config_Arr
+  // 새로운 인터페이스에 맞게 데이터 변환 (mciDynamic과 동일)
+  const subGroups = Express_Server_Config_Arr.map(config => ({
+    specId: config.commonSpec,
+    imageId: config.commonImage,
+    name: config.name,
+    subGroupSize: config.subGroupSize,
+    connectionName: config.connectionName,
+    description: config.description,
+    rootDiskSize: config.rootDiskSize,
+    rootDiskType: config.rootDiskType,
+    label: config.label || {},
+    vmUserPassword: config.vmUserPassword || ""
+  }));
+
   const data = {
     pathParams: {
       "nsId": nsId
     },
     Request: {
-      "name": obj['name'],
-      "description": obj['description'],
-      "vm": obj['vm'],
+      "name": mciName,
+      "description": mciDesc,
+      "installMonAgent": "no",
+      "label": {},
+      "policyOnPartialFailure": "continue",
+      "postCommand": {
+        "command": [],
+        "userName": "cb-user"
+      },
+      "subGroups": subGroups,
+      "systemLabel": ""
     }
   }
+
+  console.log("MCI Dynamic Review API 요청 데이터:", data);
+
+  var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamicReview";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  console.log("mciDynamicReview response : ", response);
+
+  return response;
+}
+
+export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, nsId, policyOnPartialFailure) {
+
+  // 새로운 인터페이스에 맞게 데이터 변환
+  const subGroups = Express_Server_Config_Arr.map(config => ({
+    specId: config.commonSpec,
+    imageId: config.commonImage,
+    name: config.name,
+    subGroupSize: config.subGroupSize,
+    connectionName: config.connectionName,
+    description: config.description,
+    rootDiskSize: config.rootDiskSize,
+    rootDiskType: config.rootDiskType
+  }));
+
+  const data = {
+    pathParams: {
+      "nsId": nsId
+    },
+    Request: {
+      "name": mciName,
+      "description": mciDesc,
+      "subGroups": subGroups,
+      "policyOnPartialFailure": policyOnPartialFailure
+    }
+  }
+
+  console.log("MCI Dynamic API 요청 데이터:", data);
 
   var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamic";
   const response = webconsolejs["common/api/http"].commonAPIPost(
@@ -270,7 +329,7 @@ export async function searchImage(nsId, searchParams) {
     request: {
       includeDeprecatedImage: searchParams.includeDeprecatedImage || false,
       isGPUImage: searchParams.isGPUImage || false,
-      isKubernetesImage: searchParams.isKubernetesImage || true,
+      isKubernetesImage: searchParams.isKubernetesImage || false,
       isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
       osArchitecture: searchParams.osArchitecture || "x86_64",
       osType: searchParams.osType || "ubuntu 22.04",

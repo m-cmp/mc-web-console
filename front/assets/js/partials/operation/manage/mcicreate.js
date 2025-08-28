@@ -2,6 +2,20 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 //import { selectedMciObj } from "./mci";
 //document.addEventListener("DOMContentLoaded", initMciCreate) // page가 아닌 partials에서는 제거
 
+// 새로운 MCI API 인터페이스에 맞는 데이터 변환 헬퍼 함수
+function transformServerConfigToSubGroups(serverConfigArr) {
+  return serverConfigArr.map(config => ({
+    specId: config.commonSpec,
+    imageId: config.commonImage,
+    name: config.name,
+    subGroupSize: config.subGroupSize,
+    connectionName: config.connectionName,
+    description: config.description,
+    rootDiskSize: config.rootDiskSize,
+    rootDiskType: config.rootDiskType
+  }));
+}
+
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function initMciCreate() {
 	// MCI Create 초기화
@@ -680,10 +694,12 @@ export async function createMciDynamic() {
 
 	var mciName = $("#mci_name").val()
 	var mciDesc = $("#mci_desc").val()
+	var policyOnPartialFailure = $("#mci_policy_on_partial_failure").val()
 
 
 	console.log("mciName", mciName)
 	console.log("mciDesc", mciDesc)
+	console.log("policyOnPartialFailure", policyOnPartialFailure)
 	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
 
 
@@ -697,7 +713,50 @@ export async function createMciDynamic() {
 		mciDesc = "Made in CB-TB"
 	}
 
-	webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId)
+	// MCI 생성 전 검증 API 호출
+	try {
+		console.log("MCI 생성 검증 시작...");
+		const validationResult = await webconsolejs["common/api/services/mci_api"].mciDynamicReview(
+			mciName, mciDesc, Express_Server_Config_Arr, selectedNsId
+		);
+		
+		console.log("검증 결과:", validationResult);
+		
+		if (validationResult && validationResult.status === 200) {
+			const reviewData = validationResult.data.responseData;
+			
+			// 검증 결과에 따른 처리
+			if (reviewData.creationViable) {
+				if (reviewData.overallStatus === "Ready") {
+					// 검증 성공 - 실제 MCI 생성 진행
+					console.log("검증 성공 - MCI 생성 진행");
+					console.log("예상 비용:", reviewData.estimatedCost);
+					console.log("전체 메시지:", reviewData.overallMessage);
+					
+					webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure);
+				} else if (reviewData.overallStatus === "Warning") {
+					// 경고가 있지만 생성 가능 - 사용자 확인 후 진행
+					const confirmMessage = `경고가 있습니다:\n${reviewData.overallMessage}\n\n예상 비용: ${reviewData.estimatedCost}\n\n계속 진행하시겠습니까?`;
+					if (confirm(confirmMessage)) {
+						webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure);
+					}
+				} else {
+					// Error 상태
+					alert(`MCI 생성 검증 실패:\n${reviewData.overallMessage}`);
+				}
+			} else {
+				// 생성 불가능
+				alert(`MCI 생성이 불가능합니다:\n${reviewData.overallMessage}`);
+			}
+		} else {
+			// API 호출 실패
+			console.error("검증 API 호출 실패:", validationResult);
+			alert("MCI 생성 검증 중 오류가 발생했습니다.");
+		}
+	} catch (error) {
+		console.error("MCI 검증 중 오류:", error);
+		alert("MCI 검증 중 오류가 발생했습니다: " + error.message);
+	}
 }
 
 export async function createVmDynamic() {
@@ -933,3 +992,4 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 		});
 	}
 })();
+
