@@ -1517,7 +1517,7 @@ serviceActions:
     Postsqldb:
       method: post
       resourcePath: /ns/{nsId}/resources/sqlDb
-      description: "Create a SQL Databases\n\nSupported CSPs: AWS, Azure, GCP, NCP\n- Note - `connectionName` example: aws-ap-northeast-2, azure-koreacentral, gcp-asia-northeast3, ncpvpc-kr\n\n- Note - Please check the `requiredCSPResource` property which includes CSP specific values.\n\n- Note - You can find the API usage examples on this link, https://github.com/cloud-barista/mc-terrarium/discussions/110\n"
+      description: "Create a SQL Databases\n\nSupported CSPs: AWS, Azure, GCP, NCP\n- Note - `connectionName` example: aws-ap-northeast-2, azure-koreacentral, gcp-asia-northeast3, ncp-kr\n\n- Note - Please check the `requiredCSPResource` property which includes CSP specific values.\n\n- Note - You can find the API usage examples on this link, https://github.com/cloud-barista/mc-terrarium/discussions/110\n"
     Postk8sclusterdynamic:
       method: post
       resourcePath: /ns/{nsId}/k8sClusterDynamic
@@ -1592,8 +1592,12 @@ serviceActions:
       description: "Lookup image list"
     Recommendvm:
       method: post
-      resourcePath: /mciRecommendVm
+      resourcePath: /recommendSpec
       description: "Recommend MCI plan (filter and priority) Find details from https://github.com/cloud-barista/cb-tumblebug/discussions/1234"
+    Postmcidynamicreview:
+      method: post
+      resourcePath: /ns/{nsId}/mciDynamicReview
+      description: "Create MCI Dynamically from common spec and image"
     Getallns:
       method: get
       resourcePath: /ns
@@ -1760,10 +1764,10 @@ serviceActions:
       method: post
       resourcePath: /api/auth/login
       description: webLogin
-    Webloginrefresh:
-      method: post
-      resourcePath: /api/auth/refresh
-      description: webLoginRefresh
+    # Webloginrefresh:
+    #   method: post
+    #   resourcePath: /api/auth/refresh
+    #   description: webLoginRefresh
     Weblogout:
       method: post
       resourcePath: /api/auth/logout

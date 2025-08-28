@@ -301,6 +301,20 @@ export async function getRecommendVmInfo() {
 		policyArr.push(filterPolicy)
 	}
 
+	// Architecture 필터링 추가
+	var architectureVal = $("#assist_architecture").val()
+	if (architectureVal != "") {
+		var filterPolicy = {
+			"condition": [
+				{
+					"operand": architectureVal
+				}
+			],
+			"metric": "architecture"
+		}
+		policyArr.push(filterPolicy)
+	}
+
 	if (cpuMinVal != "" || cpuMaxVal != "") {
 
 		if (cpuMaxVal != "" && cpuMaxVal < cpuMinVal) {
