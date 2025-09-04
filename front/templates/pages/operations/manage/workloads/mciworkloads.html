@@ -347,6 +347,16 @@
                     <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
                   </svg>
                 </a>
+
+                <!-- MCI Remote CMD -->
+                <a
+                  class="btn btn-outline-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonDefaultModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Remote CMD', 'Would you like to connect to MCI?', 'pages/operation/manage/mci.initMciRemoteCmdModal')"
+                >
+                  Remote CMD
+                </a>
               </div>
             </div>
 
@@ -1078,6 +1088,88 @@
 
 <!-- remote commnad -->
 <%= javascriptTag("common/api/services/remotecmd_api.js") %>
+
+<!-- MCI Remote CMD Modal -->
+<div
+  class="modal modal-blur fade"
+  id="mci-cmdtestmodal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mci-cmdtestmodal-title">Remote Terminal</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body p-0" id="mci-cmdtestmodal-content">
+        <div id="mci-xterm-container"></div>
+      </div>
+
+      <div class="modal-body p-0" id="mci-cmdtestmodal-content">
+        <div class="accordion" id="mci-command-example-accordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="mci-heading-1">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mci-collapse-1"
+                aria-expanded="false"
+              >
+                easy command transfer
+              </button>
+            </h2>
+            <div
+              id="mci-collapse-1"
+              class="accordion-collapse collapse"
+              data-bs-parent="#mci-command-example-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <div class="d-grid gap-2">
+                  <button
+                    id="mci-show-content-btn"
+                    class="btn btn-primary"
+                    type="button"
+                  >
+                    excute commnad
+                  </button>
+                </div>
+                <form
+                  class="dropzone dz-clickable"
+                  id="mci-dropzone-custom"
+                  action="./"
+                  autocomplete="off"
+                  novalidate=""
+                >
+                  <div class="dz-message">
+                    <h3 class="dropzone-msg-title">Drop Down Script Files</h3>
+                    <span class="dropzone-msg-desc"
+                      >Only shell script files (.sh) are allowed.</span
+                    >
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          Disconnect
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- add server : server configuration -->
 <%= partial("partials/operation/manage/mcicreate.html") %>

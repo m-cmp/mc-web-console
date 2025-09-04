@@ -721,7 +721,7 @@ export async function checkK8sClusterDynamic(nsId, commonSpec) {
       nsId: nsId
     },
     Request: {
-      commonSpec: [commonSpec]
+      specId: [commonSpec]
     }
   };
 
@@ -742,8 +742,8 @@ export async function createK8sClusterDynamic(nsId, clusterData) {
   }
 
   // commonImage가 없으면 "default"로 설정
-  if (!clusterData.commonImage || clusterData.commonImage === "") {
-    clusterData.commonImage = "default";
+  if (!clusterData.imageId || clusterData.imageId === "") {
+    clusterData.imageId = "default";
   }
 
   const data = {

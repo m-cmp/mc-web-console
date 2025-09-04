@@ -5,7 +5,7 @@ import { Dropzone } from 'dropzone';
 let terminalInstance = null;
 let dropzoneInstance = null;
 
-export async function initTerminal(id, nsId, mciId, vmid) {
+export async function initTerminal(id, nsId, mciId, targetId, targetType = 'vm') {
     let fileContents = [];
 
     if (terminalInstance) {
@@ -39,9 +39,9 @@ export async function initTerminal(id, nsId, mciId, vmid) {
     }
 
     const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
-    await processCommand(nsId, mciId, vmid, [ipcmd], term, () => {
+    await processCommand(nsId, mciId, targetId, [ipcmd], term, () => {
         prompt();
-    });
+    }, targetType);
 
     let userInput = '';
     term.onData(async (data) => {
@@ -49,9 +49,9 @@ export async function initTerminal(id, nsId, mciId, vmid) {
             const command = userInput;
             userInput = '';
             term.write(`\r\n`);
-            await processCommand(nsId, mciId, vmid, [command], term, () => {
+            await processCommand(nsId, mciId, targetId, [command], term, () => {
                 prompt();
-            });
+            }, targetType);
         } else if (data === '\u007f') {
             if (userInput.length > 0) {
                 term.write('\b \b');
@@ -96,9 +96,9 @@ export async function initTerminal(id, nsId, mciId, vmid) {
         if (fileContents.length > 0) {
             for (const cmdarr of fileContents) {
                 try {
-                    await processCommand(nsId, mciId, vmid, cmdarr, terminalInstance, () => {
+                    await processCommand(nsId, mciId, targetId, cmdarr, terminalInstance, () => {
                         prompt();
-                    });
+                    }, targetType);
                 } catch (error) {
                     alert("An error occurred while processing the command.");
                     console.error(error);
@@ -110,7 +110,7 @@ export async function initTerminal(id, nsId, mciId, vmid) {
     });
 }
 
-async function processCommand(nsid, mciid, vmid, command, term, callback) {
+async function processCommand(nsid, mciid, targetId, command, term, callback, targetType = 'vm') {
     const loadingSymbols = ['|', '/', '-', '\\'];
     let loadingIndex = 0;
 
@@ -120,7 +120,7 @@ async function processCommand(nsid, mciid, vmid, command, term, callback) {
     }, 250);
 
     try {
-        const result = await postcmdmci(nsid, mciid, vmid, command);
+        const result = await postcmdmci(nsid, mciid, targetId, command, targetType);
         clearInterval(loadingInterval);
         term.write('\r                          \r');
 
@@ -184,20 +184,53 @@ function writeAutoWrap(term, text) {
     }
 }
 
-export async function postcmdmci(nsid, mciid, vmid, cmdarr) {
-    const data = {
-        pathParams: {
-            nsId: nsid,
-            mciId: mciid
-        },
-        queryParams: {
-            vmId: vmid
-        },
-        Request: {
-            command: cmdarr,
-            userName: "cb-user"
-        }
-    };
+export async function postcmdmci(nsid, mciid, targetId, cmdarr, targetType = 'vm') {
+    let data;
+    
+    if (targetType === 'vm') {
+        // 기존 VM 로직
+        data = {
+            pathParams: {
+                nsId: nsid,
+                mciId: mciid
+            },
+            queryParams: {
+                vmId: targetId
+            },
+            Request: {
+                command: cmdarr,
+                userName: "cb-user"
+            }
+        };
+    } else if (targetType === 'subgroup') {
+        // SubGroup 로직
+        data = {
+            pathParams: {
+                nsId: nsid,
+                mciId: mciid
+            },
+            queryParams: {
+                subGroupId: targetId
+            },
+            Request: {
+                command: cmdarr,
+                userName: "cb-user"
+            }
+        };
+    } else if (targetType === 'mci') {
+        // MCI 로직 - queryParams 불필요 (pathParams에 이미 mciId 포함)
+        data = {
+            pathParams: {
+                nsId: nsid,
+                mciId: mciid
+            },
+            Request: {
+                command: cmdarr,
+                userName: "cb-user"
+            }
+        };
+    }
+    
     const controller = "/api/" + "mc-infra-manager/" + "Postcmdmci";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     const responseData = response.data.responseData;
