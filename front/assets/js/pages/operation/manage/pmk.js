@@ -1219,8 +1219,8 @@ export async function deployPmkDynamic() {
         
         // 실제 클러스터 생성 데이터 준비
         const createData = {
-            commonImage: commonImage,
-            commonSpec: commonSpec,
+            imageId: commonImage,
+            specId: commonSpec,
             connectionName: clusterData.connection,
             name: clusterData.name,
             nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""

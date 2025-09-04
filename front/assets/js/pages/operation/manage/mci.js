@@ -194,6 +194,12 @@ export async function getSelectedMciData() {
     // SET MCIS Info page
     setMciInfoData(mciData)
 
+    // SubGroup Remote CMD 버튼 초기 상태 설정
+    updateSubGroupRemoteCmdButtonState();
+    
+    // MCI Remote CMD 버튼 상태 설정
+    updateMciRemoteCmdButtonState();
+
     // // Toggle MCIS Info
     // var div = document.getElementById("mci_info");
     // console.log("mciInfo ", div)
@@ -523,6 +529,9 @@ export function handleCheck(type, id) {
   }
   // 마지막 선택된 VM 강조 표시
   highlightSelected(type);
+  
+  // SubGroup Remote CMD 버튼 상태 업데이트
+  updateSubGroupRemoteCmdButtonState();
 }
 
 
@@ -2147,10 +2156,62 @@ export async function deletePolicy() {
 
 export async function initremotecmdModal() {
   const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
-  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container', nsId, currentMciId, currentVmId) // vmStatus 별로 상태 색상 set
+  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container', nsId, currentMciId, currentVmId, 'vm') // vmStatus 별로 상태 색상 set
   const modalElement = document.getElementById('cmdtestmodal');
   const modalInstance = new bootstrap.Modal(modalElement);
   modalInstance.show();
+}
+
+export async function initSubGroupRemoteCmdModal() {
+  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  
+  // 현재 선택된 SubGroup이 있는지 확인
+  if (!currentSubGroupId) {
+    if (selectedVmGroupIds && selectedVmGroupIds.length > 0) {
+      currentSubGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
+    } else {
+      alert("Please select a SubGroup first.");
+      return;
+    }
+  }
+  
+  try {
+    await webconsolejs["common/api/services/remotecmd_api"].initTerminal('subgroup-xterm-container', nsId, currentMciId, currentSubGroupId, 'subgroup');
+    
+    const modalElement = document.getElementById('subgroup-cmdtestmodal');
+    if (modalElement) {
+      const modalInstance = new bootstrap.Modal(modalElement);
+      modalInstance.show();
+    } else {
+      alert("Modal element not found");
+    }
+  } catch (error) {
+    alert("Error initializing terminal: " + error.message);
+  }
+}
+
+export async function initMciRemoteCmdModal() {
+  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  
+  // 현재 선택된 MCI가 있는지 확인
+  if (!currentMciId) {
+    alert("Please select an MCI first.");
+    return;
+  }
+  
+  try {
+    await webconsolejs["common/api/services/remotecmd_api"].initTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
+    
+    const modalElement = document.getElementById('mci-cmdtestmodal');
+    if (modalElement) {
+      const modalInstance = new bootstrap.Modal(modalElement);
+      modalInstance.show();
+    } else {
+      alert("Modal element not found");
+    }
+  } catch (error) {
+    alert("Error initializing terminal: " + error.message);
+  }
 }
 
 
@@ -2368,4 +2429,37 @@ function buildPolicyRequestData(data) {
       status: "active"
     }]
   };
+}
+
+// SubGroup Remote CMD 버튼 상태 업데이트
+function updateSubGroupRemoteCmdButtonState() {
+  // _subgroupvm_status.html에 있는 SubGroup Remote CMD 버튼 찾기
+  const subGroupRemoteCmdBtn = document.querySelector('#subgroup_vm .card-actions a[onclick*="initSubGroupRemoteCmdModal"]');
+  if (subGroupRemoteCmdBtn) {
+    if (selectedVmGroupIds && selectedVmGroupIds.length > 0) {
+      subGroupRemoteCmdBtn.classList.remove('disabled');
+      subGroupRemoteCmdBtn.style.pointerEvents = 'auto';
+      subGroupRemoteCmdBtn.title = 'Connect to selected SubGroup';
+    } else {
+      subGroupRemoteCmdBtn.classList.add('disabled');
+      subGroupRemoteCmdBtn.style.pointerEvents = 'none';
+      subGroupRemoteCmdBtn.title = 'Please select a SubGroup first';
+    }
+  }
+}
+
+// MCI Remote CMD 버튼 상태 업데이트
+function updateMciRemoteCmdButtonState() {
+  const mciRemoteCmdBtn = document.querySelector('a[onclick*="initMciRemoteCmdModal"]');
+  if (mciRemoteCmdBtn) {
+    if (currentMciId) {
+      mciRemoteCmdBtn.classList.remove('disabled');
+      mciRemoteCmdBtn.style.pointerEvents = 'auto';
+      mciRemoteCmdBtn.title = 'Connect to selected MCI';
+    } else {
+      mciRemoteCmdBtn.classList.add('disabled');
+      mciRemoteCmdBtn.style.pointerEvents = 'none';
+      mciRemoteCmdBtn.title = 'Please select an MCI first';
+    }
+  }
 }
