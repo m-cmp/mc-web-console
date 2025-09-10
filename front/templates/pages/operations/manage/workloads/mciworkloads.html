@@ -15,7 +15,10 @@
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">List of MCI</h3>
-              <div class="card-actions btn-actions">
+              <div
+                class="card-actions btn-actions"
+                style="justify-content: center"
+              >
                 <!-- filter -->
                 <a
                   class="btn-action"
@@ -347,94 +350,173 @@
                     <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
                   </svg>
                 </a>
-
-                <!-- MCI Remote CMD -->
-                <a
-                  class="btn btn-outline-secondary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#commonDefaultModal"
-                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Remote CMD', 'Would you like to connect to MCI?', 'pages/operation/manage/mci.initMciRemoteCmdModal')"
-                >
-                  Remote CMD
-                </a>
               </div>
             </div>
 
             <div id="filterbody" class="accordion-collapse collapse">
-              <div class="accordion-body p-3 row">
-                <div class="col-sm-12 col-md-2 row mb-1">
-                  <div
-                    class="col-4 col-form-label required d-flex justify-content-end"
-                  >
-                    Field
-                  </div>
-                  <select class="col form-select" id="filter-field">
-                    <option value="name">Name</option>
-                    <option value="provider">Provider</option>
-                    <option value="statusCount.countTotal">
-                      Total Servers
-                    </option>
-                    <option value="statusCount.countRunning">Running</option>
-                    <option value="statusCount.countSuspended">
-                      Suspended
-                    </option>
-                    <option value="statusCount.countTerminated">
-                      Terminated
-                    </option>
-                  </select>
-                </div>
+              <div class="accordion-body p-3">
+                <!-- 기존 필터 영역 -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <h6 class="text-muted mb-2">General Filter</h6>
+                    <div class="row">
+                      <div class="col-sm-12 col-md-4 row mb-1">
+                        <div
+                          class="col-4 col-form-label required d-flex justify-content-end"
+                        >
+                          Field
+                        </div>
+                        <select class="col form-select" id="filter-field">
+                          <option value="name">Name</option>
+                          <option value="provider">Provider</option>
+                          <option value="statusCount.countTotal">
+                            Total Servers
+                          </option>
+                          <option value="statusCount.countRunning">
+                            Running
+                          </option>
+                          <option value="statusCount.countSuspended">
+                            Suspended
+                          </option>
+                          <option value="statusCount.countTerminated">
+                            Terminated
+                          </option>
+                        </select>
+                      </div>
 
-                <div class="col-sm-12 col-md-2 row mb-1">
-                  <div class="col-4 col-form-label d-flex justify-content-end">
-                    Type
-                  </div>
-                  <select class="col form-select" id="filter-type">
-                    <option value="like">like</option>
-                    <option value="=">=</option>
-                    <option value="<"><</option>
-                    <option value="<="><=</option>
-                    <option value=">">></option>
-                    <option value=">=">>=</option>
-                    <option value="!=">!=</option>
-                  </select>
-                </div>
+                      <div class="col-sm-12 col-md-3 row mb-1">
+                        <div
+                          class="col-4 col-form-label d-flex justify-content-end"
+                        >
+                          Type
+                        </div>
+                        <select class="col form-select" id="filter-type">
+                          <option value="like">like</option>
+                          <option value="=">=</option>
+                          <option value="<"><</option>
+                          <option value="<="><=</option>
+                          <option value=">">></option>
+                          <option value=">=">>=</option>
+                          <option value="!=">!=</option>
+                        </select>
+                      </div>
 
-                <div class="col-sm-12 col-md-8 row mb-1">
-                  <div
-                    class="col-sm-4 col-md-1 col-form-label required d-flex justify-content-end"
-                  >
-                    Filter
+                      <div class="col-sm-12 col-md-5 row mb-1">
+                        <div
+                          class="col-sm-4 col-md-3 col-form-label required d-flex justify-content-end"
+                        >
+                          Filter
+                        </div>
+                        <input
+                          class="col form-control"
+                          id="filter-value"
+                          type="text"
+                          placeholder="value to filter"
+                        />
+                        <div class="col-auto">
+                          <a
+                            id="filter-clear"
+                            class="btn btn-icon"
+                            type="button"
+                            aria-label="Button"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="icon icon-tabler icons-tabler-outline icon-tabler-x"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
+                              <path d="M18 6l-12 12" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <input
-                    class="col form-control"
-                    id="filter-value"
-                    type="text"
-                    placeholder="value to filter"
-                  />
-                  <div class="col-auto">
-                    <a
-                      id="filter-clear"
-                      class="btn btn-icon"
-                      type="button"
-                      aria-label="Button"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="icon icon-tabler icons-tabler-outline icon-tabler-x"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M18 6l-12 12" />
-                        <path d="M6 6l12 12" />
-                      </svg>
-                    </a>
+
+                  <!-- Label 필터 영역 -->
+                  <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Label Filter</h6>
+                    <div class="row">
+                      <div class="col-sm-12 col-md-4 row mb-1">
+                        <div
+                          class="col-4 col-form-label d-flex justify-content-end"
+                        >
+                          Key
+                        </div>
+                        <select class="col form-select" id="label-filter-key">
+                          <option value="">Select key...</option>
+                        </select>
+                      </div>
+
+                      <div class="col-sm-12 col-md-3 row mb-1">
+                        <div
+                          class="col-4 col-form-label d-flex justify-content-end"
+                        >
+                          Type
+                        </div>
+                        <select class="col form-select" id="label-filter-type">
+                          <option value="like">like</option>
+                          <option value="=">=</option>
+                          <option value="!=">!=</option>
+                        </select>
+                      </div>
+
+                      <div class="col-sm-12 col-md-5 row mb-1">
+                        <div
+                          class="col-sm-4 col-md-3 col-form-label d-flex justify-content-end"
+                        >
+                          Value
+                        </div>
+                        <input
+                          class="col form-control"
+                          id="label-filter-value"
+                          type="text"
+                          placeholder="label value"
+                        />
+                        <div class="col-auto">
+                          <a
+                            id="label-filter-clear"
+                            class="btn btn-icon"
+                            type="button"
+                            aria-label="Button"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="icon icon-tabler icons-tabler-outline icon-tabler-x"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
+                              <path d="M18 6l-12 12" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -526,7 +608,9 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label required">Policy on Partial Failure</label>
+                <label class="form-label required"
+                  >Policy on Partial Failure</label
+                >
                 <select
                   class="form-select"
                   name="mci_policy_on_partial_failure"
@@ -537,9 +621,12 @@
                   <option value="refine">Refine</option>
                 </select>
                 <div class="form-hint">
-                  <strong>Continue:</strong> Create MCI with successful VMs, failed VMs remain for manual refinement<br>
-                  <strong>Rollback:</strong> Delete entire MCI if any VM fails (all-or-nothing deployment)<br>
-                  <strong>Refine:</strong> Automatically clean up failed VMs, keep successful ones (recommended for large deployments)
+                  <strong>Continue:</strong> Create MCI with successful VMs,
+                  failed VMs remain for manual refinement<br />
+                  <strong>Rollback:</strong> Delete entire MCI if any VM fails
+                  (all-or-nothing deployment)<br />
+                  <strong>Refine:</strong> Automatically clean up failed VMs,
+                  keep successful ones (recommended for large deployments)
                 </div>
               </div>
 
@@ -575,26 +662,24 @@
         <div class="col-md-3">
           <div class="card">
             <div class="card-body">
-              <h3 class="card-title">Steps</h3>
+              <h3 class="card-title">MCI Creation Steps</h3>
               <ul class="steps steps-vertical">
-                <li class="step-item active">
-                  <div class="h4 m-0">MCI Name</div>
-                  <div class="text-secondary">MCI Name input ex) mci01</div>
+                <li class="step-item">
+                  <div class="h4 m-0">1. MCI Basic Info</div>
+                  <div class="text-secondary">Enter MCI name and description</div>
                 </li>
                 <li class="step-item">
-                  <div class="h4 m-0">Order received</div>
-                  <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                  <div class="h4 m-0">2. VM Configuration</div>
+                  <div class="text-secondary">Click +VM button to configure VM/subGroup</div>
                 </li>
-              </ul>
-            </div>
-
-            <div class="card-body">
-              <ul class="steps steps-counter steps-vertical">
-                <li class="step-item active">Step one</li>
-                <li class="step-item">Step two</li>
-                <li class="step-item">Step three</li>
-                <li class="step-item">Step four</li>
-                <li class="step-item">Step five</li>
+                <li class="step-item">
+                  <div class="h4 m-0">3. Add Configuration</div>
+                  <div class="text-secondary">Click Done button to add configuration</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">4. Deploy MCI</div>
+                  <div class="text-secondary">Click Deploy button to execute deployment</div>
+                </li>
               </ul>
             </div>
           </div>
@@ -703,26 +788,24 @@
         <div class="col-md-3">
           <div class="card">
             <div class="card-body">
-              <h3 class="card-title">Steps</h3>
+              <h3 class="card-title">VM Configuration Steps</h3>
               <ul class="steps steps-vertical">
-                <li class="step-item active">
-                  <div class="h4 m-0">MCI Name</div>
-                  <div class="text-secondary">MCI Name input ex) mci01</div>
+                <li class="step-item">
+                  <div class="h4 m-0">1. Server Name & Description</div>
+                  <div class="text-secondary">Enter server name and description</div>
                 </li>
                 <li class="step-item">
-                  <div class="h4 m-0">Order received</div>
-                  <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                  <div class="h4 m-0">2. Server Spec</div>
+                  <div class="text-secondary">Select provider and server specification</div>
                 </li>
-              </ul>
-            </div>
-
-            <div class="card-body">
-              <ul class="steps steps-counter steps-vertical">
-                <li class="step-item active">Step one</li>
-                <li class="step-item">Step two</li>
-                <li class="step-item">Step three</li>
-                <li class="step-item">Step four</li>
-                <li class="step-item">Step five</li>
+                <li class="step-item">
+                  <div class="h4 m-0">3. Image & Disk</div>
+                  <div class="text-secondary">Choose OS image and configure disk</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">4. Network & Labels</div>
+                  <div class="text-secondary">Set connection and labels</div>
+                </li>
               </ul>
             </div>
           </div>
@@ -899,7 +982,7 @@
                             id="policy_ep_connectionName"
                             value=""
                           />
-                   
+
                           <input
                             type="hidden"
                             name="commonImageId"
@@ -912,7 +995,6 @@
                             id="policy_ep_commonSpecId"
                             value=""
                           />
-                   
                         </div>
                         <div class="col-auto">
                           <a
@@ -1011,18 +1093,18 @@
                           </select>
                         </div>
                         <div class="col-6">
-                          <textarea
+                          <input
                             class="form-control"
                             name="policy_rootDiskSize"
                             rows="1"
                             placeholder="Root Disk Size(GB)"
                             id="policy_ep_root_disk_size"
-                          ></textarea>
+                          />
                         </div>
                       </div>
                     </div>
                     <div class="form-group mb-2">
-                      <label class="form-label">SubGroup Size</label>
+                      <label class="form-label">SGroup Size</label>
                       <div class="row g-2">
                         <div class="col-md-6">
                           <div class="d-flex align-items-center">
@@ -1089,7 +1171,7 @@
 <!-- remote commnad -->
 <%= javascriptTag("common/api/services/remotecmd_api.js") %>
 
-<!-- MCI Remote CMD Modal -->
+<!-- MCI Terminal Modal -->
 <div
   class="modal modal-blur fade"
   id="mci-cmdtestmodal"
@@ -1182,6 +1264,92 @@
 <%= partial("partials/operation/manage/cspimagelist.html") %>
 <!-- add server : cspspeclist -->
 <%= partial("partials/operation/manage/cspspeclist.html") %>
+
+<!-- Label Editor Modal -->
+<div
+  class="modal modal-blur fade"
+  id="label-editor-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  style="display: none"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="label-editor-title">Label Edit</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Label Management</h3>
+            <div
+              class="card-actions btn-actions"
+              style="justify-content: center"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                onclick="addNewLabelRow()"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M12 5l0 14"></path>
+                  <path d="M5 12l14 0"></path>
+                </svg>
+                Add Label
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-md-4">
+                <label class="form-label">Key</label>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Value</label>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Action</label>
+              </div>
+            </div>
+            <div id="label-editor-content">
+              <!-- Label 행들이 여기에 동적으로 추가됩니다 -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="webconsolejs['pages/operation/manage/mci'].saveLabels()"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- pageloader-->
 <%= partial("partials/layout/pageloader.html") %> <%=

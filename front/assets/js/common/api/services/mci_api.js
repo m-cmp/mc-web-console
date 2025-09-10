@@ -201,6 +201,11 @@ export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_A
     vmUserPassword: config.vmUserPassword || ""
   }));
 
+  // command 처리 - 첫 번째 서버의 command를 사용 (모든 서버가 동일한 command를 사용한다고 가정)
+  const command = Express_Server_Config_Arr.length > 0 && Express_Server_Config_Arr[0].command 
+    ? Express_Server_Config_Arr[0].command.split('\n').filter(cmd => cmd.trim() !== '')
+    : [];
+
   const data = {
     pathParams: {
       "nsId": nsId
@@ -212,7 +217,7 @@ export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_A
       "label": {},
       "policyOnPartialFailure": "continue",
       "postCommand": {
-        "command": [],
+        "command": command,
         "userName": "cb-user"
       },
       "subGroups": subGroups,
@@ -247,6 +252,11 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     rootDiskType: config.rootDiskType
   }));
 
+  // command 처리 - 첫 번째 서버의 command를 사용 (모든 서버가 동일한 command를 사용한다고 가정)
+  const command = Express_Server_Config_Arr.length > 0 && Express_Server_Config_Arr[0].command 
+    ? Express_Server_Config_Arr[0].command.split('\n').filter(cmd => cmd.trim() !== '')
+    : [];
+
   const data = {
     pathParams: {
       "nsId": nsId
@@ -255,7 +265,11 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
       "name": mciName,
       "description": mciDesc,
       "subGroups": subGroups,
-      "policyOnPartialFailure": policyOnPartialFailure
+      "policyOnPartialFailure": policyOnPartialFailure,
+      "postCommand": {
+        "command": command,
+        "userName": "cb-user"
+      }
     }
   }
 
@@ -801,4 +815,82 @@ export async function createPolicy(nsId, mciId, policy) {
   );
   console.log("create policy response : ", response)
   return response
+}
+
+// Label 관련 API 함수들
+
+// Label 생성/수정
+export async function createOrUpdateLabel(labelType, uid, labels) {
+  if (!labelType || !uid || !labels) {
+    console.log("Missing required parameters for createOrUpdateLabel");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      labelType: labelType,
+      uid: uid
+    },
+    Request: {
+      labels: labels
+    }
+  };
+
+  const controller = "/api/" + "mc-infra-manager/" + "Createorupdatelabel";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  console.log("createOrUpdateLabel response:", response);
+  return response;
+}
+
+// Label 조회
+export async function getLabels(labelType, uid) {
+  if (!labelType || !uid) {
+    console.log("Missing required parameters for getLabels");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      labelType: labelType,
+      uid: uid
+    }
+  };
+
+  const controller = "/api/" + "mc-infra-manager/" + "Getlabels";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  console.log("getLabels response:", response);
+  return response;
+}
+
+// Label 삭제
+export async function removeLabel(labelType, uid, key) {
+  if (!labelType || !uid || !key) {
+    console.log("Missing required parameters for removeLabel");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      labelType: labelType,
+      uid: uid,
+      key: key
+    }
+  };
+
+  const controller = "/api/" + "mc-infra-manager/" + "Removelabel";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  console.log("removeLabel response:", response);
+  return response;
 }

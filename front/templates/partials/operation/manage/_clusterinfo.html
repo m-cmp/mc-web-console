@@ -2,10 +2,39 @@
 
 <div class="card section" id="cluster_info">
     <input type="hidden" id="selected_mci_id">
-  <div class="card-header">
+  <div class="card-header d-flex justify-content-between align-items-center">
     <h3 class="card-title">
       Cluster Info<span id="cluster_info_text" class="text-info" value=""> </span>
     </h3>
+    <!-- Input fields and Terminal Button -->
+    <div class="d-flex align-items-center gap-3">
+      <div class="form-group mb-0">
+        <input
+          type="text"
+          class="form-control"
+          id="k8sClusterNamespace"
+          placeholder="Namespace"
+          style="height: 38px; width: 120px;"
+        />
+      </div>
+      <div class="form-group mb-0">
+        <input
+          type="text"
+          class="form-control"
+          id="k8sClusterPodName"
+          placeholder="Pod Name"
+          style="height: 38px; width: 120px;"
+        />
+      </div>
+      <a
+        class="btn btn-outline-secondary"
+        data-bs-toggle="modal"
+        data-bs-target="#commonDefaultModal"
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Terminal', 'Would you like to connect to Cluster?', 'pages/operation/manage/pmk.initClusterRemoteCmdModal')"
+      >
+        Terminal
+      </a>
+    </div>
   </div>
   <div class="card-body">
     <div class="row p-4">
