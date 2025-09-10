@@ -10,7 +10,6 @@ let projectListselectBox = document.getElementById("select-current-project");
 let workspaceRefreshBtn = document.getElementById("refresh-user-ws-prj")// ws prj refresh 버튼
 
 document.addEventListener('DOMContentLoaded', async function () {
-    console.log("navbar init")
     await workspaceProjectInit() // workspace select box, project select box 초기화 from local storage
     if (workspaceListselectBox.value === ""){
         workspaceListselectBox.classList.add('is-invalid');
@@ -58,7 +57,6 @@ workspaceRefreshBtn.addEventListener('click', async function () {
 
 export async function setPrjSelectBox(workspaceId) {
     let projectList = await webconsolejs["common/api/services/workspace_api"].getProjectListByWorkspaceId(workspaceId)
-    console.log("projectList ", projectList)
     while (projectListselectBox.options.length > 0) {
         projectListselectBox.remove(0);
     }
@@ -100,7 +98,6 @@ export async function workspaceProjectInit() {
     let curNsId = "";
     if (curWorkspaceId == "" || curWorkspaceId == undefined) {
         webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(null, "")
-        console.log("curWorkspaceId is not set ")
     } else {
         let userProjectList = await webconsolejs["common/api/services/workspace_api"].getUserProjectList(curWorkspaceId)
         let curProject = await webconsolejs["common/api/services/workspace_api"].getCurrentProject();

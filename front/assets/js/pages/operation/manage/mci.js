@@ -2,12 +2,10 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   // TODO : 왜 NsId를 select의 text값을 쓸까??
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   if (this.value == "") return;
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project)
 
   window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
 
@@ -51,7 +49,6 @@ document.addEventListener("DOMContentLoaded", initMci);
 //로드 시 prj 값 받아와 getMciList 호출
 async function initMci() {
   initMciTable(); // init tabulator
-  console.log("initMci");
 
   try {
     webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();
@@ -75,7 +72,6 @@ async function initMci() {
   // mciID 파라미터 값 추출
   var selectedMciID = params.get('mciID');
 
-  console.log('selectedMciID:', selectedMciID);  // 출력: mciID의 값 (예: com)
   //if (selectedMciID != undefined) {
   if (selectedMciID) {
     window.currentMciId = selectedMciID
@@ -93,8 +89,6 @@ async function initMci() {
 // Mci 전체 목록 조회
 export async function refreshMciList() {
   if (selectedWorkspaceProject.projectId != "") {
-    console.log("workspaceProject ", selectedWorkspaceProject)
-
     //getMciList();// project가 선택되어 있으면 mci목록을 조회한다.
     var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(window.currentNsId);
 
@@ -108,7 +102,6 @@ export async function refreshMciList() {
 async function getMciListCallbackSuccess(caller, mciList) {
 
   window.totalMciListObj = mciList.mci;
-  console.log("total mci : ", window.totalMciListObj);
 
   // Update label key dropdown with actual keys from MCI data
   updateLabelKeyDropdown();
@@ -116,7 +109,6 @@ async function getMciListCallbackSuccess(caller, mciList) {
   // displayMciDashboard();
 
   if (window.currentMciId) {
-    console.log("getMciListCallbackSuccess current mci ", window.currentMciId)
     getSelectedMciData();//선택한 mci가 있으면 처리
   }
   refreshDisplay();
@@ -160,14 +152,11 @@ function refreshDisplay() {
 // table의 특정 row만 갱신
 function refreshRowData(rowId, newData) {
   const selectedRows = mciListTable.getSelectedData().map(row => row.id);
-  console.log("selectedRows ", selectedRows)
-  console.log("rowId ", rowId)
   //TODO: providerIMG
   // newData.getData().vm[0].providerName = "aws";
   //mciListTable.updateData(totalMciListObj);
   mciListTable.updateData([{ id: rowId, ...newData }])
     .then(() => {
-      console.log("table updateData ", newData)
       // 갱신 후 선택 상태 복원
       mciListTable.deselectRow(); // 기존 선택 해제
       mciListTable.selectRow(selectedRows); // 이전 선택 상태 복원
@@ -185,13 +174,10 @@ function refreshRowData(rowId, newData) {
 // 표에서 선택된 MciId 받아옴
 export async function getSelectedMciData() {
 
-  console.log('getSelectedMciData currentMciId:', window.currentMciId);  // 출력: mciID의 값 (예: com)
   if (window.currentMciId != undefined && window.currentMciId != "") {
 
     var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, window.currentMciId)
-    console.log("mciResp ", mciResp)
     if (mciResp.status.code != 200) {
-      console.log("resp status ", mciResp.status)
       // failed.  // TODO : Error Popup 처리
       return;
     }
@@ -226,7 +212,6 @@ export async function getSelectedMciData() {
 
 // 클릭한 mci의 info값 세팅
 function setMciInfoData(mciData) {
-  console.log("setMciInfoData", mciData)
   try {
 
     // window.totalMciListObj에서 최신 데이터(Label 포함) 가져오기
@@ -271,7 +256,6 @@ function setMciInfoData(mciData) {
         '  <span class="text-muted-lt" style="font-size: 12px;">' + mciStatus + '</span>' +
         '</div>';
     }
-    console.log("totalvmCount", totalvmCount)
 
     $("#mci_info_text").text(" [ " + mciName + " ]")
     $("#mci_server_info_status").empty();
@@ -298,15 +282,9 @@ function setMciInfoData(mciData) {
 
 // MCI Labels 탭 업데이트
 function updateMciLabelsTab(mciData) {
-  console.log("updateMciLabelsTab - mciData:", mciData);
-  console.log("updateMciLabelsTab - labels:", mciData.labels);
-  
   if (typeof window.displayMciLabels === 'function') {
     const labels = mciData.labels || {};
-    console.log("updateMciLabelsTab - final labels:", labels);
     window.displayMciLabels(labels);
-  } else {
-    console.log("updateMciLabelsTab - displayMciLabels function not found");
   }
 }
 
@@ -336,8 +314,6 @@ export function changeVmLifeCycle(type) {
   selectedVmIds.forEach(vmId => {
     webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, window.currentMciId, window.currentNsId, vmId);
   });
-
-  console.log(`Lifecycle action '${type}' applied to selected VMs:`, selectedVmIds);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -455,8 +431,6 @@ function groupBySubGroup(vmList) {
 }
 
 function displayServerGroupStatusList(mciID, vmList) {
-  console.log("displayServerGroupStatusList");
-
   var vmListGroupedBySubGroup = groupBySubGroup(vmList);
   var mciName = mciID;
   var vmGroupLi = "";
@@ -671,14 +645,9 @@ export async function vmDetailInfo(vmId) {
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
   const hasActiveClass = div.classList.contains("active");
-  console.log("vmDetailInfo hasActiveClass", hasActiveClass)
   if (!hasActiveClass) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   }
-
-  console.log("vmDetailInfo")
-  console.log("mciID : ", currentMciId)
-  console.log("vmID : ", currentVmId)
 
   // get mci vm  
   try {
@@ -687,7 +656,6 @@ export async function vmDetailInfo(vmId) {
     var subGroupId = aVm.subGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
-    console.log("vm ", aVm)
     // 전체를 관리하는 obj 갱신
     var aMci = {};
     for (var mciIndex in totalMciListObj) {
@@ -709,7 +677,6 @@ export async function vmDetailInfo(vmId) {
     }
     clearServerInfo();
 
-    console.log("aMci", aMci);
 
     if (!aMci || !aMci.vm) {
       console.log("aMci or vmList is not defined");
@@ -718,7 +685,6 @@ export async function vmDetailInfo(vmId) {
 
     var mciName = aMci.name;
     var vmList = aMci.vm;
-    console.log("vmList:", vmList);
 
     var vmExist = false;
     var data = new Object();
@@ -728,7 +694,6 @@ export async function vmDetailInfo(vmId) {
       if (currentVmId == aVm.id) {
         data = aVm;
         vmExist = true;
-        console.log("aVm", aVm);
         break;
       }
     }
@@ -739,15 +704,14 @@ export async function vmDetailInfo(vmId) {
   } catch (error) {
     console.error("Error occurred: ", error);
   }
-  console.log("selected Vm");
-  console.log("selected vm data : ", data);
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
-  console.log("vmPublicIp", vmPublicIp)
   var vmSshKeyID = data.sshKeyId;
+  var imageId = data.imageId;
+  var operatingSystem = "Ubuntu";
 
   // Architecture 정보만 추출
   var architecture = ""
@@ -862,7 +826,6 @@ export async function vmDetailInfo(vmId) {
   var vmDetail = data.cspViewVmDetail;
   // var vmDetailKeyValueList = vmDetail.KeyValueList
   var addtionalDetails = data.addtionalDetails
-  console.log("addtionalDetails", addtionalDetails)
   var architecture = "";
   var vpcId = ""
   var subnetId = ""
@@ -904,27 +867,20 @@ export async function vmDetailInfo(vmId) {
 }
 
 export async function subGroup_vmDetailInfo(vmId) {
-  console.log("subGroup_vmDetailInfo")
-
   currentSubGroupVmId = vmId
   // Toggle MCIS Info
   var div = document.getElementById("subGroup_vm_info");
 
   const hasActiveClass = div.classList.contains("active");
-  console.log("vmDetailInfo hasActiveClass", hasActiveClass)
   if (!hasActiveClass) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   }
-
-  console.log("mciID : ", currentMciId)
-  console.log("vmID : ", currentSubGroupVmId)
 
   // get mci vm  
   try {
     var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var responseVmId = response.id;
-    console.log("vm ", aVm)
     // 전체를 관리하는 obj 갱신
     var aMci = {};
     for (var mciIndex in totalMciListObj) {
@@ -946,7 +902,6 @@ export async function subGroup_vmDetailInfo(vmId) {
     }
     clearServerInfo();
 
-    console.log("aMci", aMci);
 
     if (!aMci || !aMci.vm) {
       console.log("aMci or vmList is not defined");
@@ -955,7 +910,6 @@ export async function subGroup_vmDetailInfo(vmId) {
 
     var mciName = aMci.name;
     var vmList = aMci.vm;
-    console.log("vmList:", vmList);
 
     var vmExist = false;
     var data = new Object();
@@ -965,7 +919,6 @@ export async function subGroup_vmDetailInfo(vmId) {
       if (currentSubGroupVmId == aVm.id) {
         data = aVm;
         vmExist = true;
-        console.log("aVm", aVm);
         break;
       }
     }
@@ -976,14 +929,11 @@ export async function subGroup_vmDetailInfo(vmId) {
   } catch (error) {
     console.error("Error occurred: ", error);
   }
-  console.log("selected Vm");
-  console.log("selected vm data : ", data);
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
-  console.log("vmPublicIp", vmPublicIp)
   var vmSshKeyID = data.sshKeyId;
 
   try {
@@ -993,7 +943,7 @@ export async function subGroup_vmDetailInfo(vmId) {
     var operatingSystem = "Ubuntu"
     $("#subgroup_server_info_os").text(operatingSystem)
   } catch (e) {
-    console.log("e", e)
+    console.log("error", e)
   }
   var startTime = data.createdTime
   var privateIp = data.privateIP;
@@ -1084,7 +1034,6 @@ export async function subGroup_vmDetailInfo(vmId) {
   var vmDetail = data.cspViewVmDetail;
   // var vmDetailKeyValueList = vmDetail.KeyValueList
   var addtionalDetails = data.addtionalDetails
-  console.log("addtionalDetails", addtionalDetails)
   var architecture = "";
   var vpcId = ""
   var subnetId = ""
@@ -1127,8 +1076,6 @@ export async function subGroup_vmDetailInfo(vmId) {
 
 // vm 세부 정보 초기화
 function clearServerInfo() {
-  console.log("clearServerInfo")
-
   $("#server_info_text").text("")
   $("#server_detail_info_text").text("")
   $("#server_detail_view_server_status").val("");
@@ -1225,7 +1172,6 @@ function clearServerInfo() {
 
 // mci 상태 표시
 function setToTalMciStatus() {
-  console.log("setToTalMciStatus");
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
@@ -1236,7 +1182,6 @@ function setToTalMciStatus() {
       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
     }
   } catch (e) {
-    console.log("mci status error", e);
   }
   displayMciStatusArea();
 }
@@ -1244,7 +1189,6 @@ function setToTalMciStatus() {
 // Mci 목록에서 vmStatus만 처리 : 화면표시는 display function에서
 // vm 상태 표시
 function setTotalVmStatus() {
-  console.log("setTotalVmstatus")
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
@@ -1253,13 +1197,11 @@ function setTotalVmStatus() {
       totalVmStatusMap.set(aMci.id, vmStatusCountMap);
     }
   } catch (e) {
-    console.log("mci status error");
   }
   displayVmStatusArea();
 }
 // mci status display
 function displayMciStatusArea() {
-  console.log("displayMciStatusArea");
   var sumMciCnt = 0;
   var sumMciRunningCnt = 0;
   var sumMciRunningIngCnt = 0;
@@ -1269,8 +1211,6 @@ function displayMciStatusArea() {
   var sumMciTerminateIngCnt = 0;
   var sumMciFailedCnt = 0;
   var sumMciEtcCnt = 0;
-
-  console.log("totalMciStatusMap", totalMciStatusMap);
 
   // 각 상태 합산
   totalMciStatusMap.forEach((value, key) => {
@@ -1327,13 +1267,10 @@ function displayMciStatusArea() {
   $("#mci_status_failed").text(sumMciFailedCnt);
   $("#mci_status_etc").text(sumMciEtcCnt);
 
-  console.log("displayMciStatusArea");
-  console.log("running status count ", $("#mci_status_running").text());
 }
 
 // vm 상태값 표시
 function displayVmStatusArea() {
-  console.log("displayVmStatusArea");
 
   let sumVmCnt = 0;
   let sumVmRunningCnt = 0;
@@ -1397,7 +1334,6 @@ function displayVmStatusArea() {
   );
   $("#vm_status_etc").text(sumVmEtcCnt);
 
-  console.log("Updated result: ", sumVmCnt, sumVmRunningCnt, sumVmStoppedCnt);
 }
 
 
@@ -2131,7 +2067,6 @@ function initPolicyTable() {
 }
 
 function setPolicyInfoData(selectedPolicyData) {
-  console.log("setPolicyInfoData", selectedPolicyData)
   var policy = selectedPolicyData;
   // --- MCI Info ---
   document.getElementById('policy-mciId').textContent = policy.mciId || '-';
@@ -2295,8 +2230,6 @@ export function showPolicyDetail(policy) {
   // TODO: 폼 요소에 policy 객체 내용을 채워넣기
   document.getElementById('policy-form-mciId').value = policy.mciId;
   document.getElementById('policy-form-metric').value = policy.metric;
-  console.log("policy.mciId", policy.mciId)
-  console.log("policy.mciId", policy.metric)
   // ...
 }
 
@@ -2433,7 +2366,6 @@ export async function getKeypair(el) {
 // Policy 배포 함수
 export async function deployPolicy() {
   try {
-    console.log("deployPolicy 시작");
 
     // Policy 데이터 수집
     const policyData = collectPolicyData();
@@ -2446,8 +2378,6 @@ export async function deployPolicy() {
     // API 요청 데이터 구성
     const requestData = buildPolicyRequestData(policyData);
 
-    console.log("Policy 요청 데이터:", requestData);
-    console.log("currentmciId", currentMciId)
     // API 호출
     const response = await webconsolejs["common/api/services/mci_api"].createPolicy(
       window.currentNsId,
@@ -2455,7 +2385,6 @@ export async function deployPolicy() {
       requestData.policy
     );
 
-    console.log("Policy 생성 응답:", response);
 
     // 성공 처리 - 응답 구조를 더 유연하게 확인
     if (response && (
@@ -2519,7 +2448,6 @@ export async function deployPolicy() {
         }
       }, 500);
     } else {
-      console.log("응답 구조:", response);
       throw new Error("Policy 생성에 실패했습니다.");
     }
 
@@ -2676,7 +2604,6 @@ function updateMciRemoteCmdButtonState() {
 
 // Label Editor 모달 열기
 export function openLabelEditorModal(resourceType, resourceId, resourceName) {
-  console.log("openLabelEditorModal called with:", resourceType, resourceId, resourceName);
   
   // 현재 MCI의 uid 찾기
   const currentMci = window.totalMciListObj.find(mci => mci.id === resourceId);
@@ -2721,14 +2648,11 @@ async function loadLabelsForEditor(labelType, uid) {
 
 // 모달 내에서 System 라벨 토글 함수
 function toggleSystemLabelsInEditor() {
-  console.log("toggleSystemLabelsInEditor called");
   
   // 현재 저장된 라벨 데이터가 있는지 확인
   if (window.editorLabels) {
-    console.log("Re-rendering editor labels with new filter");
     displayLabelsInEditor(window.editorLabels);
   } else {
-    console.log("No cached editor labels, reloading...");
     // 현재 선택된 리소스 정보로 다시 로드
     const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
     const uid = currentMci ? currentMci.uid : null;
@@ -2881,11 +2805,9 @@ export async function saveLabels() {
     // 삭제된 Label들을 먼저 삭제
     for (const key of deletedLabels) {
       try {
-        console.log(`Deleting label: ${key}`);
         const deleteResponse = await webconsolejs["common/api/services/mci_api"].removeLabel(labelType, uid, key);
         
         if (deleteResponse && deleteResponse.data && deleteResponse.data.status && deleteResponse.data.status.code === 200) {
-          console.log(`Successfully deleted label: ${key}`);
         } else {
           console.warn(`Failed to delete label: ${key}`, deleteResponse);
         }
@@ -2909,7 +2831,6 @@ export async function saveLabels() {
       const response = await webconsolejs["common/api/services/mci_api"].createOrUpdateLabel(labelType, uid, finalLabels);
       
       if (response && response.data && response.data.status && response.data.status.code === 200) {
-        console.log('Successfully saved labels:', labels);
       } else {
         console.error('Failed to save labels:', response);
         alert('Label 저장에 실패했습니다.');

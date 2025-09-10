@@ -86,12 +86,10 @@ export function callbackImageRecommendation(selectedImage) {
 var DISK_SIZE = [];
 function getCommonLookupDiskInfoSuccess(provider, data) {
 
-	console.log("getCommonLookupDiskInfoSuccess", data);
 	var providerId = provider.toUpperCase()
 	var root_disk_type = [];
 	var res_item = data;
 	res_item.forEach(item => {
-		console.log("item provider: ", item.providerId);
 		var temp_provider = item.providerId
 		if (temp_provider == providerId) {
 			root_disk_type = item.rootdisktype
@@ -104,9 +102,7 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	// 	DISK_SIZE = res_item.disksize
 	// }
 
-	console.log("DISK_SIZE", DISK_SIZE)
 	var html = '<option value="">Select Root Disk Type</option>'
-	console.log("root_disk_type : ", root_disk_type);
 	root_disk_type.forEach(item => {
 		html += '<option value="' + item + '">' + item + '</option>'
 	})
@@ -120,7 +116,6 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	// $("#tab_others_root_disk_type").empty()
 	// $("#tab_others_root_disk_type").append(html)
 	//}
-	console.log("const valie DISK_SIZE : ", DISK_SIZE)
 
 	webconsolejs["partials/layout/modal"].modalHide('spec-search')
 
@@ -134,7 +129,6 @@ export async function setProviderList(providerList) {
 	myProviderList = providerList.map(str => str.toUpperCase());
 	// 알파벳 순으로 정렬
 	myProviderList.sort()
-	console.log("myProviderList", myProviderList); // 변환된 배열 출력
 
 	var html = '<option value="">Select Provider</option>'
 	myProviderList.forEach(item => {
@@ -189,7 +183,6 @@ export async function setCloudConnection(cloudConnection) {
 
 		// 알파벳 순으로 정렬
 		cloudConnection.sort();
-		console.log("cloudConnection", cloudConnection); // 변환된 배열 출력
 
 		var html = '<option value="">Select Connection</option>';
 		cloudConnection.forEach(item => {
@@ -205,7 +198,6 @@ export async function setCloudConnection(cloudConnection) {
 		myCloudConnection = cloudConnection.map(item => item.configName);
 		// 알파벳 순으로 정렬
 		myCloudConnection.sort()
-		console.log("myCloudConnection", myCloudConnection); // 변환된 배열 출력
 
 		var html = '<option value="">Select Connection</option>'
 		myCloudConnection.forEach(item => {
@@ -402,7 +394,6 @@ export async function displayNewServerForm() {
 // express모드 -> Done버튼 클릭 시
 
 export function expressDone_btn() {
-	console.log("expressDone_btn")
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
 	$("#p_provider").val($("#ep_provider").val())
 	$("#p_connectionName").val($("#ep_connectionName").val())
@@ -436,11 +427,8 @@ export function expressDone_btn() {
 	express_form["commonImage"] = $("#p_commonImageId").val();
 	express_form["command"] = $("#p_command").val();
 	
-	console.log("express_form form : ", express_form);
-
 	var server_name = express_form.name;
 	var server_cnt = parseInt(express_form.subGroupSize);
-	console.log("server_cnt", server_cnt);
 
 	var add_server_html = "";
 
@@ -462,8 +450,6 @@ export function expressDone_btn() {
 	$("#" + vmEleId + "_server_list").append(add_server_html);
 	$("#" + vmEleId + "_server_list").prepend(getPlusVm(vmEleId));
 
-	console.log("express btn click and express form data : ", express_form);
-	console.log("express data array : ", Express_Server_Config_Arr);
 	express_data_cnt++;
 	
 	// 폼 초기화 - 모든 입력 필드 초기화
@@ -526,9 +512,7 @@ function resetModals() {
 }
 
 export function view_express(cnt) {
-	console.log('view simple cnt : ', cnt);
 	// var select_form_data = Simple_Server_Config_Arr[cnt]
-	// console.log('select_form_data : ', select_form_data);
 	// $(".express_servers_config").addClass("active")
 	// $(".simple_servers_config").removeClass("active")
 	// $(".expert_servers_config").removeClass("active")
