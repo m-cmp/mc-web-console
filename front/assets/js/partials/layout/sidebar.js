@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function updatemenu(){
     var  menuData = webconsolejs["common/storage/localstorage"].getMenuLocalStorage()
-    console.log("menuData", menuData);
     const menuHTML = generateMenuHTML(menuData);
     document.getElementById("sidebar-menu-inner").innerHTML = menuHTML;
 }
@@ -95,7 +94,6 @@ function setActiveMenu() {
             }
         }
         if (depth4&&depth5) {
-            console.log("depth4&&depth5")
             var pretitle = document.getElementById("page-pretitle");
             var title = document.getElementById("page-title");
             if (pretitle && title) {
@@ -110,7 +108,6 @@ function setActiveMenu() {
                 }
             }
         } else if (depth3&&depth4) {
-            console.log("depth3&&depth4")
             var pretitle = document.getElementById("page-pretitle");
             var title = document.getElementById("page-title");
             if (pretitle && title) {

@@ -72,8 +72,6 @@ export function changePage(target, urlParamMap) {
   // pathParam을 뒤에 붙인다.
   var keyIndex = 0;
   for (let key of urlParamMap.keys()) {
-    console.log("urlParamMap " + key + " : " + urlParamMap.get(key));
-
     var urlParamValue = urlParamMap.get(key)
 
     if (keyIndex == 0) {
@@ -137,13 +135,12 @@ export function getCommonData(
       },
     })
     .then((result) => {
-      console.log(result);
+      console.log("result", result)
       if (
         callbackSuccessFunction == undefined ||
         callbackSuccessFunction == ""
       ) {
         var data = result.data;
-        console.log("callbackSuccessFunction undefined get data : ", data);
       } else {
         callbackSuccessFunction(caller, result);
       }
