@@ -12,7 +12,8 @@ function transformServerConfigToSubGroups(serverConfigArr) {
     connectionName: config.connectionName,
     description: config.description,
     rootDiskSize: config.rootDiskSize,
-    rootDiskType: config.rootDiskType
+    rootDiskType: config.rootDiskType,
+    command: config.command
   }));
 }
 
@@ -326,6 +327,7 @@ export async function displayNewServerForm() {
 		$("#ep_root_disk_size").val("");
 		$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
 		$("#ep_data_disk").val("");
+		$("#ep_command").val("");
 		
 		// 모달들 초기화
 		resetModals();
@@ -413,6 +415,7 @@ export function expressDone_btn() {
 	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
 	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
 	$("#p_specId").val($("#ep_specId").val())
+	$("#p_command").val($("#ep_command").val())
 	// ep_vm_add_cnt가 비어있으면 기본값 1로 설정
 	var vmAddCnt = $("#ep_vm_add_cnt").val();
 	if (!vmAddCnt || vmAddCnt.trim() === "") {
@@ -431,6 +434,7 @@ export function expressDone_btn() {
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
 	express_form["commonSpec"] = $("#p_commonSpecId").val();
 	express_form["commonImage"] = $("#p_commonImageId").val();
+	express_form["command"] = $("#p_command").val();
 	
 	console.log("express_form form : ", express_form);
 
@@ -483,6 +487,7 @@ export function expressDone_btn() {
 	$("#ep_root_disk_size").val("");
 	$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
 	$("#ep_data_disk").val("");
+	$("#ep_command").val("");
 	
 	// 모달들 초기화
 	resetModals();
@@ -948,14 +953,14 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 
 // SubGroup Size
 (function () {
-	// ep_vm_add_cnt 처리
+	// ep_vm_add_cnt 처리 (PMK 스타일 input-number-container)
 	const input = document.getElementById('ep_vm_add_cnt');
 	if (input) {
-		const container = input.parentElement; // .d-flex.align-items-center
-		const [btnDec, btnInc] = container.querySelectorAll('button');
+		const container = input.parentElement; // .input-number-container
+		const btnDec = container.querySelector('.input-number-decrement');
+		const btnInc = container.querySelector('.input-number-increment');
 
 		const minValue = 1;
-		const maxValue = Number(input.getAttribute('max')) || Infinity;
 
 		btnDec.addEventListener('click', function (e) {
 			e.preventDefault();
@@ -966,7 +971,7 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 		btnInc.addEventListener('click', function (e) {
 			e.preventDefault();
 			let val = parseInt(input.value, 10) || minValue;
-			if (val < maxValue) input.value = val + 1;
+			input.value = val + 1; // maxValue 제한 제거
 		});
 	}
 

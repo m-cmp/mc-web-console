@@ -129,6 +129,9 @@ function getPmkListCallbackSuccess(caller, pmkList) {
     setTotalClusterStatus(); // pmk 의 vm들 상태표시
     //     setTotalConnection();// Pmk의 provider별 connection 표시
 
+    // Cluster Terminal 버튼 상태 설정
+    updateClusterRemoteCmdButtonState();
+
     // displayPmkDashboard();
 
 }
@@ -285,7 +288,7 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
 
     nodeGroupList.forEach((aNodeGroup) => {
         var nodeID = aNodeGroup.IId.SystemId;
-        var nodeName = aNodeGroup.IId.NameId;
+        var nodeName = aNodeGroup.IId.name;
         var nodeStatus = aNodeGroup.Status;
 
         if (clusterProvider === "azure") {
@@ -297,7 +300,8 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
         nodeLi += `
         <li id="nodeGroup_status_icon_${nodeID}" 
             class="card ${nodeStatusClass} d-flex align-items-center" 
-            style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
+            style="display: flex; flex-direction: row; alig
+            n-items: center; justify-content: center; padding: 5px;" 
             onclick="webconsolejs['pages/operation/manage/pmk'].toggleNodeCheck('${pmkID}', '${nodeID}')">
           
           <input type="checkbox" 
@@ -306,7 +310,7 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
                  style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
                  onchange="webconsolejs['pages/operation/manage/pmk'].handleNodeCheck('${pmkID}', '${nodeID}')">
           
-          <span class="text-dark-fg">${nodeName}</span>
+          <span class="text-dark-fg">${nodeID}</span>
         </li>
       `;
 
@@ -339,8 +343,8 @@ export function handleNodeCheck(pmkID, nodeID) {
         var lastSelectedNodeID = selectedNodeIds[selectedNodeIds.length - 1];
 
         // Azure인 경우 SystemId에서 마지막 부분 추출
-        var nodeList = selectedClusterData.CspViewK8sClusterDetail.NodeGroupList.map(node => {
-            var systemId = node.IId.SystemId;
+        var nodeList = selectedClusterData.k8sNodeGroupList.map(node => {
+            var systemId = node.cspResourceId;
             if (currentProvider === "azure") {
                 var systemIdParts = systemId.split("/");
                 systemId = systemIdParts[systemIdParts.length - 1];
@@ -388,22 +392,25 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
 
     clearServerInfo();
     var aNode = JSON.parse(aNodeObject);
+    console.log("aNode", aNode)
+    
+    // spiderViewK8sNodeGroupDetail에서 실제 데이터 가져오기
+    var nodeGroupDetail = aNode.spiderViewK8sNodeGroupDetail;
+    displayNodeStatusList(nodeGroupDetail)
 
-    displayNodeStatusList(aNode)
-
-    var ngName = aNode.IId.NameId
+    var ngName = nodeGroupDetail.IId.NameId || nodeGroupDetail.IId.SystemId || aNode.cspResourceId
     currentNodeGroupName = ngName
-    var ngImage = aNode.ImageIID.NameId
-    var ngSpec = aNode.VMSpecName
+    var ngImage = nodeGroupDetail.ImageIID.NameId || "AL2023_x86_64_STANDARD"
+    var ngSpec = nodeGroupDetail.VMSpecName || "t3.medium"
 
-    var ngKeyPair = aNode.KeyPairIID.NameId
-    var ngDesiredNodeSize = aNode.DesiredNodeSize
-    var ngMinNodeSize = aNode.MinNodeSize
-    var ngMaxNodeSize = aNode.MaxNodeSize
+    var ngKeyPair = nodeGroupDetail.KeyPairIID.NameId || "d2rpbhedf1f12d7uev2g"
+    var ngDesiredNodeSize = nodeGroupDetail.DesiredNodeSize || aNode.desiredNodeSize
+    var ngMinNodeSize = nodeGroupDetail.MinNodeSize || aNode.minNodeSize
+    var ngMaxNodeSize = nodeGroupDetail.MaxNodeSize || aNode.maxNodeSize
 
-    var ngAutoScaling = aNode.OnAutoScaling
-    var ngRootDiskType = aNode.RootDiskType
-    var ngRootDiskSize = aNode.RootDiskSize
+    var ngAutoScaling = nodeGroupDetail.OnAutoScaling || aNode.onAutoScaling
+    var ngRootDiskType = nodeGroupDetail.RootDiskType || ""
+    var ngRootDiskSize = nodeGroupDetail.RootDiskSize || aNode.rootDiskSize
 
     // Info SET
     $("#ng_info_name").text(ngName)
@@ -744,6 +751,9 @@ function initPmkTable() {
         currentPmkId = row.getCell("id").getValue();
         // 표에서 선택된 PmkInfo 
         getSelectedPmkData()
+        
+        // Cluster Terminal 버튼 상태 업데이트
+        updateClusterRemoteCmdButtonState();
 
     });
 
@@ -1457,8 +1467,15 @@ export function validateAndOpenImageModalPmk(event) {
 
 // Desired Node Size +/- 버튼 이벤트 리스너 설정
 function setupDesiredNodeSizeButtons() {
-    // NodeGroup Configuration 카드가 표시될 때마다 이벤트 리스너 재설정
-    $(document).on('click', '#nodegroup_configuration_b .input-number-decrement', function() {
+    // 기존 이벤트 핸들러 제거
+    $(document).off('click', '#nodegroup_configuration_dynamic .input-number-decrement');
+    $(document).off('click', '#nodegroup_configuration_dynamic .input-number-increment');
+    
+    // 새로운 이벤트 핸들러 등록
+    $(document).on('click', '#nodegroup_configuration_dynamic .input-number-decrement', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const input = $(this).siblings('.input-number');
         const currentValue = parseInt(input.val()) || 1;
         const minValue = parseInt(input.attr('min')) || 1;
@@ -1468,14 +1485,15 @@ function setupDesiredNodeSizeButtons() {
         }
     });
     
-    $(document).on('click', '#nodegroup_configuration_b .input-number-increment', function() {
+    $(document).on('click', '#nodegroup_configuration_dynamic .input-number-increment', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const input = $(this).siblings('.input-number');
         const currentValue = parseInt(input.val()) || 1;
-        const maxValue = parseInt(input.attr('max')) || 5;
         
-        if (currentValue < maxValue) {
-            input.val(currentValue + 1);
-        }
+        // maxValue 제한 제거
+        input.val(currentValue + 1);
     });
 }
 
@@ -1595,3 +1613,102 @@ document.addEventListener("DOMContentLoaded", function() {
     
     pmkInitialized = true;
 });
+
+// Cluster Terminal 모달 초기화 함수
+export async function initClusterRemoteCmdModal() {
+  console.log('initClusterRemoteCmdModal called');
+  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  console.log('nsId:', nsId, 'currentPmkId:', currentPmkId);
+  
+  // 현재 선택된 Cluster가 있는지 확인
+  if (!currentPmkId) {
+    alert("Please select a Cluster first.");
+    return;
+  }
+  
+  // 인풋박스에서 값 가져오기
+  const namespaceInput = document.getElementById('k8sClusterNamespace');
+  const podNameInput = document.getElementById('k8sClusterPodName');
+  
+  const userNamespace = namespaceInput ? namespaceInput.value.trim() : '';
+  const userPodName = podNameInput ? podNameInput.value.trim() : '';
+  
+  // 사용자가 입력한 값이 있으면 사용, 없으면 기본값 사용
+  const namespace = userNamespace || 'default';
+  const podName = userPodName || 'cluster-pod';
+  
+  console.log('User input values:', {
+    userNamespace: userNamespace,
+    userPodName: userPodName,
+    finalNamespace: namespace,
+    finalPodName: podName
+  });
+  
+  try {
+    // 클러스터 데이터에서 실제 정보 가져오기
+    const clusterData = selectedClusterData || totalPmkListObj.find(cluster => cluster.id === currentPmkId);
+    
+    if (!clusterData) {
+      alert("Cluster data not found.");
+      return;
+    }
+    
+    console.log('Cluster info:', {
+      id: clusterData.id,
+      name: clusterData.name,
+      cspResourceName: clusterData.cspResourceName,
+      status: clusterData.status,
+      version: clusterData.version
+    });
+    
+    console.log('Cluster Terminal params:', {
+      nsId: nsId,
+      clusterId: currentPmkId,
+      namespace: namespace,
+      podName: podName,
+      containerName: null // 선택사항
+    });
+    
+    await webconsolejs["common/api/services/remotecmd_api"].initClusterTerminal(
+      'cluster-xterm-container', 
+      nsId, 
+      currentPmkId, 
+      namespace, 
+      podName,
+      null // containerName은 선택사항
+    );
+    
+    const modalElement = document.getElementById('cluster-cmdtestmodal');
+    if (modalElement) {
+      const modalInstance = new bootstrap.Modal(modalElement);
+      modalInstance.show();
+    } else {
+      alert("Modal element not found");
+    }
+  } catch (error) {
+    alert("Error initializing terminal: " + error.message);
+  }
+}
+
+// Cluster Terminal 버튼 상태 업데이트
+function updateClusterRemoteCmdButtonState() {
+  console.log('updateClusterRemoteCmdButtonState called, currentPmkId:', currentPmkId);
+  const clusterRemoteCmdBtn = document.querySelector('a[onclick*="initClusterRemoteCmdModal"]');
+  console.log('clusterRemoteCmdBtn found:', clusterRemoteCmdBtn);
+  
+  if (clusterRemoteCmdBtn) {
+    if (currentPmkId) {
+      clusterRemoteCmdBtn.classList.remove('disabled');
+      clusterRemoteCmdBtn.style.pointerEvents = 'auto';
+      clusterRemoteCmdBtn.title = 'Connect to selected Cluster';
+      console.log('Cluster Terminal button enabled');
+    } else {
+      clusterRemoteCmdBtn.classList.add('disabled');
+      clusterRemoteCmdBtn.style.pointerEvents = 'none';
+      clusterRemoteCmdBtn.title = 'Please select a Cluster first';
+      console.log('Cluster Terminal button disabled');
+    }
+  } else {
+    console.log('Cluster Terminal button not found');
+  }
+}

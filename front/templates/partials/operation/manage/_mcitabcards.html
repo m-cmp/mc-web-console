@@ -15,6 +15,9 @@
                         <li class="nav-item" role="presentation">
                             <a href="#tabs-mci-policy" class="nav-link" data-bs-toggle="tab">Policy</a>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#tabs-mci-labels" class="nav-link" data-bs-toggle="tab">Labels</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
@@ -29,6 +32,9 @@
                             
                             <div class="tab-pane fade" id="tabs-mci-policy" role="tabpanel">
                                 <%= partial("partials/operation/manage/mcipolicy.html") %>            
+                            </div>
+                            <div class="tab-pane fade" id="tabs-mci-labels" role="tabpanel">
+                                <%= partial("partials/operation/manage/mcilabels.html") %>            
                             </div>
                         </div>
                     </div>
