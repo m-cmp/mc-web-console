@@ -392,7 +392,6 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
 
     clearServerInfo();
     var aNode = JSON.parse(aNodeObject);
-    console.log("aNode", aNode)
     
     // spiderViewK8sNodeGroupDetail에서 실제 데이터 가져오기
     var nodeGroupDetail = aNode.spiderViewK8sNodeGroupDetail;
@@ -546,7 +545,7 @@ function setToTalPmkStatus() {
             totalPmkStatusMap.set(aPmk.id, aPmkStatusCountMap);
         }
     } catch (e) {
-        console.log("pmk status error", e);
+        console.error("pmk status error", e);
     }
     displayPmkStatusArea();
 }
@@ -554,16 +553,13 @@ function setToTalPmkStatus() {
 // Pmk 목록에서 vmStatus만 처리 : 화면표시는 display function에서
 // vm 상태 표시
 function setTotalClusterStatus() {
-    console.log("setTotalClusterStatus")
     try {
         for (var pmkIndex in totalPmkListObj) {
             var aPmk = totalPmkListObj[pmkIndex];
-            console.log("aPmk : ", aPmk);
             var vmStatusCountMap = webconsolejs["common/api/services/pmk_api"].calculateVmStatusCount(aPmk);
             totalVmStatusMap.set(aPmk.id, vmStatusCountMap);
         }
     } catch (e) {
-        console.log("pmk status error");
     }
     // displayVmStatusArea();
 }
@@ -895,8 +891,6 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 
 // Expert Creation 토글 함수
 export function toggleExpertCreation() {
-    console.log("Expert Creation 버튼 클릭됨");
-    
     const newFormDynamic = document.getElementById("createcluster");
     const originalForm = document.getElementById("createcluster-original");
     const expertBtn = document.querySelector('button[onclick*="toggleExpertCreation"]');
@@ -1095,41 +1089,30 @@ async function updateFormDynamicConfigurationFiltering() {
 
 // 폼 Dynamic 용 Cloud Connection 변경 이벤트
 export async function changeCloudConnectionDynamic(connectionName) {
-    console.log("폼 Dynamic Cloud Connection 변경:", connectionName);
-    
     // 동적 생성에서는 VPC, Subnet, Security Group 선택이 필요 없음
     // Cloud Connection만 설정하고 추가 API 호출 없이 처리
     if (!connectionName) {
-        console.log("Cloud Connection이 선택되지 않음");
         return;
     }
-    
-    console.log("Cloud Connection 설정 완료:", connectionName);
 }
 
 // Dynamic 폼용 Provider 변경 이벤트
 export function onProviderChangeDynamic(providerValue) {
-    console.log("Dynamic 폼 Provider 변경:", providerValue);
-    
     // Azure, GCP, IBM, NHN 중 하나가 선택되었는지 확인
     const supportedProviders = ['azure', 'gcp', 'ibm', 'nhn'];
     const selectedProvider = providerValue.toLowerCase();
     
     if (supportedProviders.includes(selectedProvider)) {
         // 지원되는 CSP가 선택된 경우 NodeGroup 구성 폼 표시
-        console.log("지원되는 CSP 선택됨 - NodeGroup 폼 표시");
         showNodeGroupFormDynamic();
     } else {
         // 지원되지 않는 CSP이거나 선택되지 않은 경우 NodeGroup 구성 폼 숨기기
-        console.log("지원되지 않는 CSP 또는 미선택 - NodeGroup 폼 숨김");
         hideNodeGroupFormDynamic();
     }
 }
 
 // Dynamic 폼용 NodeGroup 폼 표시
 export function showNodeGroupFormDynamic() {
-    console.log("Dynamic 폼 NodeGroup 폼 표시");
-    
     // NodeGroup 구성 폼 표시 (애니메이션 효과)
     $("#nodegroup_configuration_dynamic").removeClass('hide').addClass('show').show();
     
@@ -1139,8 +1122,6 @@ export function showNodeGroupFormDynamic() {
 
 // B폼용 NodeGroup 폼 숨기기
 export function hideNodeGroupFormDynamic() {
-    console.log("B폼 NodeGroup 폼 숨기기");
-    
     // NodeGroup 구성 폼 숨기기 (애니메이션 효과)
     $("#nodegroup_configuration_dynamic").removeClass('show').addClass('hide').hide();
     
@@ -1150,8 +1131,6 @@ export function hideNodeGroupFormDynamic() {
 
 // 폼 Dynamic 용 Deploy 함수
 export async function deployPmkDynamic() {
-    console.log("Dynamic Deploy 실행");
-    
     // 기본 클러스터 정보 수집
     const clusterData = {
         name: $("#cluster_name_dynamic").val(),
@@ -1214,7 +1193,6 @@ export async function deployPmkDynamic() {
         }
         
         // 사전 검증 API 호출
-        console.log("사전 검증 시작:", commonSpec);
         const checkResult = await webconsolejs["common/api/services/pmk_api"].checkK8sClusterDynamic(
             selectedWorkspaceProject.nsId, 
             commonSpec
@@ -1224,8 +1202,6 @@ export async function deployPmkDynamic() {
             alert("사전 검증에 실패했습니다. 설정을 확인해주세요.");
             return;
         }
-        
-        console.log("사전 검증 성공");
         
         // 실제 클러스터 생성 데이터 준비
         const createData = {
@@ -1251,7 +1227,6 @@ export async function deployPmkDynamic() {
         }
         
         // 동적 클러스터 생성 API 호출
-        console.log("클러스터 생성 시작:", createData);
         const result = await webconsolejs["common/api/services/pmk_api"].createK8sClusterDynamic(
             selectedWorkspaceProject.nsId,
             createData
@@ -1605,10 +1580,8 @@ document.addEventListener("DOMContentLoaded", function() {
     	// PMK용 이미지 추천 모달 초기화
 	if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
 		webconsolejs["partials/operation/manage/pmk_imagerecommendation"].initImageModalPmk();
-	} else {
+    } else {
         console.error("PMK Image recommendation module not found");
-        console.log("webconsolejs keys:", Object.keys(webconsolejs));
-        console.log("webconsolejs['partials/operation/manage'] keys:", Object.keys(webconsolejs['partials/operation/manage'] || {}));
     }
     
     pmkInitialized = true;
@@ -1616,9 +1589,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // Cluster Terminal 모달 초기화 함수
 export async function initClusterRemoteCmdModal() {
-  console.log('initClusterRemoteCmdModal called');
   const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
-  console.log('nsId:', nsId, 'currentPmkId:', currentPmkId);
   
   // 현재 선택된 Cluster가 있는지 확인
   if (!currentPmkId) {
@@ -1637,12 +1608,6 @@ export async function initClusterRemoteCmdModal() {
   const namespace = userNamespace || 'default';
   const podName = userPodName || 'cluster-pod';
   
-  console.log('User input values:', {
-    userNamespace: userNamespace,
-    userPodName: userPodName,
-    finalNamespace: namespace,
-    finalPodName: podName
-  });
   
   try {
     // 클러스터 데이터에서 실제 정보 가져오기
@@ -1652,22 +1617,6 @@ export async function initClusterRemoteCmdModal() {
       alert("Cluster data not found.");
       return;
     }
-    
-    console.log('Cluster info:', {
-      id: clusterData.id,
-      name: clusterData.name,
-      cspResourceName: clusterData.cspResourceName,
-      status: clusterData.status,
-      version: clusterData.version
-    });
-    
-    console.log('Cluster Terminal params:', {
-      nsId: nsId,
-      clusterId: currentPmkId,
-      namespace: namespace,
-      podName: podName,
-      containerName: null // 선택사항
-    });
     
     await webconsolejs["common/api/services/remotecmd_api"].initClusterTerminal(
       'cluster-xterm-container', 
@@ -1692,23 +1641,17 @@ export async function initClusterRemoteCmdModal() {
 
 // Cluster Terminal 버튼 상태 업데이트
 function updateClusterRemoteCmdButtonState() {
-  console.log('updateClusterRemoteCmdButtonState called, currentPmkId:', currentPmkId);
   const clusterRemoteCmdBtn = document.querySelector('a[onclick*="initClusterRemoteCmdModal"]');
-  console.log('clusterRemoteCmdBtn found:', clusterRemoteCmdBtn);
   
   if (clusterRemoteCmdBtn) {
     if (currentPmkId) {
       clusterRemoteCmdBtn.classList.remove('disabled');
       clusterRemoteCmdBtn.style.pointerEvents = 'auto';
       clusterRemoteCmdBtn.title = 'Connect to selected Cluster';
-      console.log('Cluster Terminal button enabled');
     } else {
       clusterRemoteCmdBtn.classList.add('disabled');
       clusterRemoteCmdBtn.style.pointerEvents = 'none';
       clusterRemoteCmdBtn.title = 'Please select a Cluster first';
-      console.log('Cluster Terminal button disabled');
     }
-  } else {
-    console.log('Cluster Terminal button not found');
   }
 }

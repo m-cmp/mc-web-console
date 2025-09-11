@@ -2,10 +2,8 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project)
 })
 
 
@@ -46,7 +44,6 @@ document.addEventListener("DOMContentLoaded", initLog);
 
 // 해당 화면에서 최초 설정하는 function
 async function initLog() {
-  console.log("initLog")
   ////////////////////// partials init functions///////////////////////////////////////
 
   ////////////////////// partials init functions end ///////////////////////////////////////
@@ -60,7 +57,6 @@ async function initLog() {
   ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
   if (selectedWorkspaceProject.projectId != "") {
-    console.log("workspaceProject ", selectedWorkspaceProject)
     //var selectedProjectId = selectedWorkspaceProject.projectId;
     //var selectedNsId = selectedWorkspaceProject.nsId;
     //console.log('in initMci selectedNsId:', selectedNsId);
@@ -241,7 +237,6 @@ function initLogTable() {
   logListTable.on("rowClick", function (e, row) {
 
     var selectedLogData = row.getData()
-    console.log("selectedLogData", selectedLogData)
     // 표에서 선택된 selectedLogData
     getSelectedLogData(selectedLogData)
 
@@ -294,14 +289,10 @@ function tailMessageFormatter(cell) {
 // toggleSelectBox of table row
 function toggleRowSelection(id) {
   // mciListTable에서 데이터 찾기
-  console.log("idid : ", id)
   var row = mciListTable.getRow(id);
-  console.log("rowrow", row)
   if (row) {
     row.select();
-    console.log("Row with ID " + id + " is selected.");
   } else {
-    console.log("Row with ID " + id + " not found.");
   }
 }
 
@@ -390,8 +381,6 @@ export async function getCollectedLog() {
 }
 
 function getLogListCallbackSuccess(logList) {
-  console.log("getLogListCallbackSuccess");
-  console.log("logList : ", logList);
   logListTable.setData(logList);
 
 }

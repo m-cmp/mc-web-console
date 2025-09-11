@@ -54,8 +54,8 @@ window.displayMciLabels = function(labels) {
     
     return `
       <tr class="${rowClass}">
-        <td class="${keyClass}">${key}</td>
-        <td>${value}</td>
+        <td class="${keyClass}" style="width: 40%; word-break: break-word;">${key}</td>
+        <td style="width: 60%; word-break: break-word;">${value}</td>
       </tr>
     `;
   }).join('');
@@ -65,8 +65,8 @@ window.displayMciLabels = function(labels) {
       <table class="table table-vcenter">
         <thead>
           <tr>
-            <th class="text-muted">Key</th>
-            <th class="text-muted">Value</th>
+            <th class="text-muted" style="width: 40%;">Key</th>
+            <th class="text-muted" style="width: 60%;">Value</th>
           </tr>
         </thead>
         <tbody>

@@ -57,7 +57,7 @@ async function initMci() {
     const createBtnName = "Add Mci";
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
@@ -679,7 +679,6 @@ export async function vmDetailInfo(vmId) {
 
 
     if (!aMci || !aMci.vm) {
-      console.log("aMci or vmList is not defined");
       return;
     }
 
@@ -699,7 +698,7 @@ export async function vmDetailInfo(vmId) {
     }
 
     if (!vmExist) {
-      console.log("vm is not exist");
+      console.error("vm is not exist");
     }
   } catch (error) {
     console.error("Error occurred: ", error);
@@ -904,7 +903,7 @@ export async function subGroup_vmDetailInfo(vmId) {
 
 
     if (!aMci || !aMci.vm) {
-      console.log("aMci or vmList is not defined");
+      console.error("aMci or vmList is not defined");
       return;
     }
 
@@ -924,7 +923,7 @@ export async function subGroup_vmDetailInfo(vmId) {
     }
 
     if (!vmExist) {
-      console.log("vm is not exist");
+      console.error("vm is not exist");
     }
   } catch (error) {
     console.error("Error occurred: ", error);
@@ -943,7 +942,7 @@ export async function subGroup_vmDetailInfo(vmId) {
     var operatingSystem = "Ubuntu"
     $("#subgroup_server_info_os").text(operatingSystem)
   } catch (e) {
-    console.log("error", e)
+    console.error(e)
   }
   var startTime = data.createdTime
   var privateIp = data.privateIP;
@@ -1554,9 +1553,7 @@ function toggleRowSelection(id) {
   var row = mciListTable.getRow(id);
   if (row) {
     row.select();
-    console.log("Row with ID " + id + " is selected.");
   } else {
-    console.log("Row with ID " + id + " not found.");
   }
 }
 
@@ -2610,7 +2607,7 @@ export function openLabelEditorModal(resourceType, resourceId, resourceName) {
   const uid = currentMci ? currentMci.uid : resourceId;
   
   // 모달 제목 설정
-  document.getElementById('label-editor-title').innerText = `${resourceName} - Label 편집`;
+  document.getElementById('label-editor-title').innerText = `${resourceName} - Edit Labels`;
   
   // 현재 Label 조회 (uid 사용)
   loadLabelsForEditor(resourceType, uid);

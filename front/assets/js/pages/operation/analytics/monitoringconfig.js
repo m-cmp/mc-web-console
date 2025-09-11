@@ -69,11 +69,9 @@ function setTabulator(
 
 // navBar에 있는 object인데 직접 handling(onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   if (this.value == "") return;
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)
-  console.log("select-current-project on change ", project)
   
 })
 
@@ -104,7 +102,6 @@ document.addEventListener("DOMContentLoaded", initMonitorConfig);
 // 해당 화면에서 최초 설정하는 function
 //로드 시 prj 값 받아와 getMciList 호출
 async function initMonitorConfig() {
-  console.log("initMonitorConfig")
   ////////////////////// partials init functions start ///////////////////////////////////////
   
   ////////////////////// partials init functions end   ///////////////////////////////////////
@@ -136,7 +133,6 @@ async function initMonitorConfig() {
 // workload 목록 조회 ( mci + pmk )
 async function getWorkloadList(nsId){
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
-  console.log("respMciList" , respMciList)
   var res_item = respMciList.mci
   
   // HTML option 리스트 초기값
@@ -166,7 +162,6 @@ $("#workloadlist").on('change', async function () {
   try {
     var response = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentWorkloadId);
     var aMci = response.responseData
-    console.log("aMci ", aMci)
     for (var vmIndex in aMci.vm) {
       var aVm = aMci.vm[vmIndex]
       aVm.workloadType = "MCI"; // [MCI/PMK]
@@ -176,9 +171,7 @@ $("#workloadlist").on('change', async function () {
     }
     // 2. mci에 agent 설치된 목록 조회
     var monitorTargetList = await webconsolejs["common/api/services/monitoring_api"].getTargetsNsMci(currentNsId, currentWorkloadId)
-    console.log("monitorTargetList :",monitorTargetList)
     for (var i in monitorTargetList.data) {
-      console.log("monitorTargetList.data[i].id", i, monitorTargetList.data[i].id)
       //   [
       //     {
       //         "alias_name": null,
@@ -193,16 +186,14 @@ $("#workloadlist").on('change', async function () {
       var findVm = vmMap.get(monitorTargetList.data[i].id)
       if(findVm){
         findVm.monAgentStatus = monitorTargetList.data[i].state; // [ACTIVE/INACTIVE]
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ monitorTargetList.data[i].state", monitorTargetList.data[i])
         vmMap.set(findVm.id, findVm);
       }
     }
   }catch(e){
-    console.log(e)
+    console.error(e)
   }
 
   // 3. mci에 log 설정??
-  console.log("vmMap", Array.from(vmMap.values()))
 
   // 4. table에 필요한 data set
   monitorConfigListTable.setData(Array.from(vmMap.values()));
@@ -318,10 +309,7 @@ function initMonitorConfigTable() {
     var field = cell.getField();
     if(field == "monAgentStatus"){
       var agentStatus = cell.getValue();
-      console.log("agentStatus", agentStatus)
       if(agentStatus != "ACTIVE" && agentStatus != "INACTIVE"){
-        console.log("Row data:", cell.getRow().getData());
-        console.log("id data:", cell.getRow().getData().id);
         var targetVmId = cell.getRow().getData().id;
         var targetModal = "commonDefaultModal";
         var modalTitle = "MonitoringAgentInstall"
@@ -343,9 +331,7 @@ function initMonitorConfigTable() {
 // cell click 시 실행됨
 export function installMonitoringAgent(vmId){
   var currentNsId = selectedWorkspaceProject.nsId;
-  console.log("(currentNsId, currentWorkloadId, vmId)=", currentNsId, currentWorkloadId, vmId);
   var response = webconsolejs["common/api/services/monitoring_api"].InstallMonitoringAgent(currentNsId, currentWorkloadId, vmId);
-  console.log(response);
 }
 
 
@@ -400,11 +386,9 @@ function initMonitorMetricsTable() {
 
   // 행 클릭 시
   monitorMetricsTable.on("rowClick", function (e, row) {
-    console.log("rowClick", row.getData())
   });
 
   monitorMetricsTable.on("cellClick", function(e, cell){
-    console.log("cellClick", cell.getValue())
   });
 
   // TODO : 선택된 여러개 row에 대해 처리
@@ -463,7 +447,6 @@ function initEditMetricsModalTable() {
 
   // 행 클릭 시
   editMetricsModalTable.on("rowClick", function (e, row) {
-    console.log("rowClick", row.getData())
     // selectedServerNode = row.getData(); 
     // var tempServernodeId = currentServernodeId;    
     // currentServernodeId = row.getCell("id").getValue();
@@ -472,7 +455,6 @@ function initEditMetricsModalTable() {
   });
 
   editMetricsModalTable.on("cellClick", function(e, cell){
-    console.log("cellClick", cell.getValue())
     // var field = cell.getField();
     // if(field == "monAgentStatus"){
     //   var agentStatus = cell.getValue();
@@ -551,11 +533,9 @@ function initmonitorLogTraceTable() {
 
   // 행 클릭 시
   monitorLogTraceTable.on("rowClick", function (e, row) {
-    console.log("rowClick", row.getData())
   });
 
   monitorLogTraceTable.on("cellClick", function(e, cell){
-    console.log("cellClick", cell.getValue())
   });
 
   // TODO : 선택된 여러개 row에 대해 처리
@@ -598,11 +578,9 @@ function initEditLogCollectorModalTable() {
 
   // 행 클릭 시
   editLogCollectorModalTable.on("rowClick", function (e, row) {
-    console.log("rowClick", row.getData())
   });
 
   editLogCollectorModalTable.on("cellClick", function(e, cell){
-    console.log("cellClick", cell.getValue())
   });
 
   // TODO : 선택된 여러개 row에 대해 처리
@@ -659,11 +637,9 @@ function initMonitorStoragesTable() {
 
   // 행 클릭 시
   monitorStoragesTable.on("rowClick", function (e, row) {
-    console.log("rowClick", row.getData())
   });
 
   monitorStoragesTable.on("cellClick", function(e, cell){
-    console.log("cellClick", cell.getValue())
   });
 
   // TODO : 선택된 여러개 row에 대해 처리
@@ -706,11 +682,9 @@ function initEditStorageModalTable() {
 
   // 행 클릭 시
   editStorageModalTable.on("rowClick", function (e, row) {
-    console.log("rowClick", row.getData())
   });
 
   editStorageModalTable.on("cellClick", function(e, cell){
-    console.log("cellClick", cell.getValue())
   });
 
   // TODO : 선택된 여러개 row에 대해 처리
@@ -724,12 +698,9 @@ function initEditStorageModalTable() {
 // 클릭한 monitor config info 가져오기
 // 표에서 선택된 MonitorConfigId 받아옴
 function getSelectedMonitorConfigData(servernodeId) {
-  console.log('selectedMonitorConfigID:', servernodeId);
   if (servernodeId == undefined || servernodeId == "") {
-    console.log("return ", servernodeId)
     return;
   }
-  console.log("selectedServerNode.id", selectedServerNode.id)
   setMonitorConfigInfoData();
   setMonitorMetricsTable();
 }
@@ -743,7 +714,6 @@ async function setMonitorConfigInfoData() {
       </label>
     `;
     const generateStatusIndicator = (result, status) => `<span class="badge bg-${result} me-1"></span>${status}`;
-    console.log("selectedServerNode.label", selectedServerNode.label)
     $('span[name="selectedMonTargetVM"]').each(function() {
         $(this).html(selectedServerNode.label["sys.id"]);
     });
@@ -770,7 +740,6 @@ async function setMonitorMetricsTable() {
   try {
     var currentNsId = selectedWorkspaceProject.nsId;
     var response = await webconsolejs["common/api/services/monitoring_api"].GetMetricitems(currentNsId, selectedServerNode.workloadName, selectedServerNode.id);
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@ ########### ",response)
     monitorMetricsTable.setData(response.data);
   } catch (e) {
     console.error(e);
