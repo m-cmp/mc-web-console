@@ -3,7 +3,6 @@
 // common에 있는 이미지 사용 (system-purpose-common-ns)
 // TODO: custom 일 때 처리
 export async function getCommonVmImageInfo(imageId) {
-    console.log("getCommonVmImageInfo ", imageId)
     // endPoint := "/ns/{nsId}/resources/image/{imageId}"
   
     // "/ns/system-purpose-common-ns/resources/image/{imageId}"
@@ -23,6 +22,5 @@ export async function getCommonVmImageInfo(imageId) {
     );
   
     var operatingSystem = response.data.responseData.guestOS
-    console.log("OperatingSystem : ", operatingSystem)
     return operatingSystem
   }

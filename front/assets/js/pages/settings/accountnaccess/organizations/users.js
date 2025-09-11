@@ -94,9 +94,7 @@ const UserManager = {
   // 유저 목록 로드
   async loadUsers() {
     try {
-      console.log("Calling getUserList API...");
       const userList = await webconsolejs["common/api/services/users_api"].getUserList();
-      console.log("API response:", userList);
       return userList || [];
     } catch (error) {
       console.error("Error loading users:", error);
@@ -165,7 +163,6 @@ const UserManager = {
   async createUser(userData) {
     try {
       const response = await webconsolejs["common/api/services/users_api"].createUser(userData);
-      console.log("User created:", response);
       return response;
     } catch (error) {
       console.error("Error creating user:", error);
@@ -177,7 +174,6 @@ const UserManager = {
   async updateUser(userId, userData) {
     try {
       const response = await webconsolejs["common/api/services/users_api"].updateUser(userId, userData);
-      console.log("User updated:", response);
       return response;
     } catch (error) {
       console.error("Error updating user:", error);
@@ -189,7 +185,6 @@ const UserManager = {
   async deleteUser(userId) {
     try {
       const response = await webconsolejs["common/api/services/users_api"].deleteUser(userId);
-      console.log("User deleted:", response);
       return response;
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -201,7 +196,6 @@ const UserManager = {
   async addUserRole(userId, roleData) {
     try {
       const response = await webconsolejs["common/api/services/users_api"].addUserRole(userId, roleData);
-      console.log("User role added:", response);
       return response;
     } catch (error) {
       console.error("Error adding user role:", error);
@@ -304,7 +298,6 @@ const UIManager = {
   // 역할 제거 함수
   removeUserRole(roleId) {
     if (confirm('Are you sure you want to remove this role?')) {
-      console.log('Removing role:', roleId);
       // TODO: API 호출로 역할 제거 구현
       // users_api.removeUserRole(currentUserId, roleId).then(() => {
       //   loadUserDetails(currentUserId);
@@ -400,7 +393,6 @@ const TableManager = {
   // 유저 테이블 초기화
   async initUsersTable() {
     return new Promise((resolve, reject) => {
-      console.log("Users 테이블 초기화 시작");
 
       // 테이블이 이미 존재하는 경우 제거
       if (AppState.tables.usersTable) {
@@ -432,15 +424,12 @@ const TableManager = {
 
         // 테이블 초기화 완료 후 이벤트 리스너 설정
         table.on("tableBuilt", function () {
-          console.log("테이블 초기화 완료");
           resolve();
         });
 
         // 행 클릭 이벤트 추가 (체크박스 선택과 함께 동작)
         table.on("rowClick", function (e, row) {
-          console.log("row clicked", row);
           var userID = row.getCell("id").getValue();
-          console.log("userID", userID);
           
           // 행 클릭 시 체크박스도 함께 선택/해제
           row.toggleSelect();
@@ -452,8 +441,6 @@ const TableManager = {
         // 행 선택 변경 이벤트 추가 (roles.js와 동일한 패턴)
         table.on("rowSelectionChanged", function (data, rows) {
           checked_array = data;
-          console.log("checked_array", checked_array);
-          console.log("rows", data);
         });
 
       } catch (error) {
@@ -565,8 +552,6 @@ const ModalManager = {
   // 역할 타입별 역할 목록 로드
   async loadRolesByType(roleType) {
     try {
-      console.log("Loading roles for type:", roleType);
-      console.log("roles_api object:", webconsolejs["common/api/services/roles_api"]);
       
       let roles = [];
       if (webconsolejs["common/api/services/roles_api"]) {
@@ -585,7 +570,6 @@ const ModalManager = {
         console.error("roles_api service not found");
       }
       
-      console.log("Loaded roles:", roles);
       this.populateRoleSelect(roles);
     } catch (error) {
       console.error("역할 목록 로드 실패:", error);
@@ -613,18 +597,15 @@ window.setRoleType = function(roleType) {
 
 // 새로운 User 생성 관련 함수들 (MCI 패턴과 동일하게)
 window.addNewUser = function() {
-  console.log("addNewUser called");
   // MCI 패턴과 동일하게 단순히 초기화만 수행
   // 실제 폼 초기화는 DOMContentLoaded에서 처리
 };
 
 window.goBackToUserList = function() {
-  console.log("goBackToUserList called");
   window.location.hash = "#index";
 };
 
 window.deployUser = async function() {
-  console.log("deployUser called");
   
   // 폼 데이터 수집 및 검증
   const formData = UserManager.collectFormData();
@@ -634,14 +615,8 @@ window.deployUser = async function() {
     alert('Validation errors: ' + errors.join(', '));
     return;
   }
-
-
-
-  console.log("Form data to be sent:", formData);
-
   try {
     const response = await UserManager.createUser(formData);
-    console.log("User creation response:", response);
     
     alert("User created successfully!");
     
@@ -803,7 +778,6 @@ window.removeUserWorkspace = async function(workspaceId) {
 
 // 선택된 유저들 삭제 (roles.js의 deleteRole과 동일한 패턴)
 window.deleteUsers = async function() {
-  console.log("deleteUsers", checked_array);
   
   if (checked_array.length === 0) {
     alert("삭제할 유저를 선택해주세요.");
@@ -831,7 +805,6 @@ window.deleteUsers = async function() {
 
 // 클릭한 유저 정보 가져오기 (리스트 데이터에서 직접 추출)
 async function getSelectedUserData(userID) {
-  console.log("getSelectedUserData called with userID:", userID);
   
   try {
     // 리스트에서 해당 유저 정보 찾기
@@ -840,9 +813,6 @@ async function getSelectedUserData(userID) {
       console.error("User not found in list");
       return;
     }
-    
-    console.log("Selected user details:", user);
-    
     // 선택된 유저 정보 설정
     setUserInfoData(user);
     
@@ -860,7 +830,6 @@ async function getSelectedUserData(userID) {
     // Workspace 정보 로드 (getUserWorkspacesByUserID API 호출)
     try {
       const workspaceData = await webconsolejs["common/api/services/users_api"].getUserWorkspacesByUserID(userID);
-      console.log("Workspace data:", workspaceData);
       
       // Workspace 정보를 테이블에 업데이트
       updateWorkspaceInfo(workspaceData);
@@ -876,12 +845,9 @@ async function getSelectedUserData(userID) {
 
 // 클릭한 유저의 info값 세팅 (roles.js의 setRoleInfoData와 동일한 패턴)
 function setUserInfoData(userData) {
-  console.log("setUserInfoData", userData);
   try {
     // 선택된 유저를 AppState에 저장
     AppState.users.selectedUser = userData;
-    
-    console.log("Selected user set:", userData);
   } catch (e) {
     console.error(e);
   }
@@ -889,8 +855,6 @@ function setUserInfoData(userData) {
 
 // Workspace 정보를 테이블에 업데이트하는 함수
 function updateWorkspaceInfo(workspaceData) {
-  console.log("updateWorkspaceInfo called with:", workspaceData);
-  
   const namesElement = document.getElementById('workspace-roles-names');
   const descriptionsElement = document.getElementById('workspace-roles-descriptions');
   const actionsElement = document.getElementById('workspace-roles-actions');
@@ -973,7 +937,6 @@ async function initUsers() {
 
     // 2. 유저 목록 가져오기
     const userList = await UserManager.loadUsers();
-    console.log("Loaded user list:", userList);
 
     // 3. 테이블에 데이터 설정
     if (userList && userList.length > 0) {
@@ -983,7 +946,6 @@ async function initUsers() {
       // 데이터가 없는 경우 빈 배열로 설정
       AppState.users.list = [];
       TableManager.setTableData(AppState.tables.usersTable, []);
-      console.log("No users found or empty response");
     }
 
     // 4. 이벤트 리스너 설정
@@ -1072,7 +1034,6 @@ function goBackToUserList() {
 
 // DOMContentLoaded 이벤트 리스너 등록
 document.addEventListener("DOMContentLoaded", async function () {
-  console.log("Users DOM 로드됨");
   
   try {
     // 페이지 헤더에 Add User 버튼 추가 (MCI 패턴과 동일하게)

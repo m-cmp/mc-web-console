@@ -2,7 +2,6 @@
 export async function getUserList() {
     const controller = "/api/mc-iam-manager/Listusers";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
-    console.log("Listusers response", response);
     return response.data.responseData;
 }
 
@@ -14,9 +13,7 @@ export async function createUser(userData) {
         request: userData
     };
     
-    console.log("createUser API called with data:", requestData);
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, requestData);
-    console.log("createUser response", response);
     return response;
 }
 
@@ -40,7 +37,6 @@ export async function getUserByName(username) {
         }
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("getUserByName response", response);
     return response.data.responseData;
 }
 
@@ -54,6 +50,5 @@ export async function getUserWorkspacesByUserID(userId) {
         },
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("getUserWorkspacesByUserID response", response);
     return response.data.responseData;
 }

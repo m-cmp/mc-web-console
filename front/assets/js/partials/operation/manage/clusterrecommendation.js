@@ -7,8 +7,6 @@ var recommendVmSpecListObj = new Object();
 
 
 export function initClusterRecommendation(callbackfunction) {
-	console.log("initClusterRecommendation ")
-
 	initRecommendSpecTable();
 
 	// return function 정의
@@ -83,8 +81,6 @@ function initRecommendSpecTable() {
 	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
 
 	recommendTable.on("rowSelectionChanged", function (data, rows) {
-		console.log("data", data)
-
 		updateSelectedRows(data)
 	});
 
@@ -98,14 +94,10 @@ function updateSelectedRows(data) {
 	data.forEach(function (rowData) {
 		recommendSpecs.push(rowData);
 	});
-
-	console.log("선택된 행 데이터:", recommendSpecs);
 }
 
 // recommened Vm 조회
 export async function getRecommendVmInfo() {
-	console.log("in getRecommendVmInfo")
-
 	// var max_cpu = $("#num_vCPU_max").val()
 	// var min_cpu = $("#num_vCPU_min").val()
 	// var max_mem = $("#num_memory_max").val()
@@ -134,9 +126,6 @@ export async function getRecommendVmInfo() {
 	var acceleratorCountMax = $("#assist_gpu_count_max").val()
 	var acceleratorMemoryMin = $("#assist_gpu_memory_min").val()
 	var acceleratorMemoryMax = $("#assist_gpu_memory_max").val()
-	console.log("acceleratorType", acceleratorType)
-	console.log("acceleratorType", lon)
-
 	var policyArr = new Array();
 	//TODO type이 추가 정의되면 type별 분기 추가
 	if (acceleratorType != "") {
@@ -229,7 +218,6 @@ export async function getRecommendVmInfo() {
 	if (cpuMinVal != "" || cpuMaxVal != "") {
 
 		if (cpuMaxVal != "" && cpuMaxVal < cpuMinVal) {
-			console.log("cpuMaxVal", cpuMaxVal)
 			alert("최대값이 최소값보다 작습니다.")
 		}
 
@@ -334,7 +322,6 @@ export async function getRecommendVmInfo() {
 		"weight": "0.3"
 	}
 	priorityArr.push(priorityPolicy)
-	console.log("policyArr", priorityArr)
 	const data = {
 		request: {
 			"filter": {
@@ -348,9 +335,8 @@ export async function getRecommendVmInfo() {
 	}
 
 	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
-	console.log("respData ", respData)
 	if (respData.status.code != 200) {
-		console.log(" e ", respData.status)
+		console.error(respData.status)
 		// TODO : Error 표시
 		return
 	}
@@ -368,24 +354,14 @@ export async function applySpecInfoNode() {
 // apply 클릭시 데이터 SET
 // returnSpecInfo()
 export async function applySpecInfo() {
-	console.log("array", recommendSpecs)
 	var selectedSpecs = recommendSpecs[0]
-
 	// pre-release -> mode = express 고정
 	//caller == "express"
-
 	var provider = selectedSpecs.providerName
 	var connectionName = selectedSpecs.connectionName
 	var specName = selectedSpecs.cspSpecName
 	var imageName = await availableVMImageBySpec(selectedSpecs.id)
 	var commonSpecId = selectedSpecs.id // common specid for create dynamic mci
-
-	console.log("commonSpecId", commonSpecId)
-	console.log("connectionName", selectedSpecs.connectionName)
-	console.log("providerName", selectedSpecs.providerName)
-	console.log("cspSpecName", selectedSpecs.cspSpecName)
-	console.log("imageName", imageName)
-
 	var returnObject = {}
 	returnObject.provider = provider
 	returnObject.connectionName = connectionName
@@ -393,14 +369,11 @@ export async function applySpecInfo() {
 	returnObject.imageName = imageName
 	returnObject.commonSpecId = commonSpecId
 
-	console.log("return to parent");
-	console.log(returnFunction)
 	eval(returnFunction)(returnObject);
 
 }
 
 export function showRecommendSpecSetting(value) {
-	console.log("Selected coordinate : ", value)
 	if (value === "seoul") {
 		$("#latitude").val("37.532600")
 		$("#longitude").val("127.024612")
@@ -444,10 +417,6 @@ async function availableVMImageBySpec(id) {
 		});
 	});
 	$("#ep_commonImageId").val(commonimageId[0])
-
-	console.log("Image IDs:", imageIds);
-	console.log("firstImageId", imageIds[0])
-	console.log("commonImageid : ", commonimageId[0])
 
 	return imageIds[0]
 }

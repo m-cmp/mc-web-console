@@ -185,11 +185,9 @@ export function setImageSelectionCallback(callback) {
 
 // recommened Image 조회
 export async function getRecommendImageInfo() {
-	console.log("=== getRecommendImageInfo START ===");
 
 	// 전역 변수에서 spec 정보 확인
 	if (!window.selectedSpecInfo) {
-		console.log("No spec info available");
 		alert("Please select a server specification first.");
 		return;
 	}
@@ -202,18 +200,10 @@ export async function getRecommendImageInfo() {
 	var region = window.selectedSpecInfo.regionName;
 	var connectionName = window.selectedSpecInfo.connectionName;
 	var osArchitecture = window.selectedSpecInfo.osArchitecture;
-	
-	console.log("OS Type:", osType)
-	console.log("GPU Image:", isGPUImage)
-	console.log("Provider:", provider)
-	console.log("Region:", region)
-	console.log("OS Architecture:", osArchitecture)
-
 	// 현재 workspace/project 정보 가져오기
 	try {
 		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		var nsId = selectedWorkspaceProject.nsId;
-		console.log("Current nsId:", nsId);
 
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
@@ -227,11 +217,8 @@ export async function getRecommendImageInfo() {
 			regionName: region || ""
 		};
 
-		console.log("Search parameters:", searchParams);
-
 		// 이미지 검색 API 호출
 		var response = await webconsolejs["common/api/services/mci_api"].searchImage(nsId, searchParams);
-		console.log("Image search API response:", response);
 
 		if (response.status && response.status.code === 200) {
 			var imageList = response.responseData.imageList || [];

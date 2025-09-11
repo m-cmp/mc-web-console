@@ -2,10 +2,8 @@ import ApexCharts from "apexcharts"
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project)
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
   getMciListCallbackSuccess(project.NsId, respMciList);
 })
@@ -25,7 +23,6 @@ document.addEventListener("DOMContentLoaded", initMonitoring);
 // 해당 화면에서 최초 설정하는 function
 //로드 시 prj 값 받아와 getPmkList 호출
 async function initMonitoring() {
-  console.log("initMonitoring")
   ////////////////////// partials init functions///////////////////////////////////////
   // try {
   //     webconsolejs["partials/operation/manage/pmkcreate"].initPmkCreate();//PmkCreate을 Partial로 가지고 있음. 
@@ -187,7 +184,6 @@ export async function startMonitoring() {
   var selectedVMId = $("#monitoring_vmlist").val();
 
   var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
-  console.log(response);
 
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
@@ -306,7 +302,6 @@ async function drawMonitoringGraph(MonitoringData) {
     try {
       // API 호출 시도
       var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction();
-      console.log("Prediction Data:", response);
 
       if (response.data && response.data.responseData && response.data.responseData.data.values.length > 0) {
         const predictionData = response.data.responseData.data.values.map(value => ({
@@ -323,11 +318,9 @@ async function drawMonitoringGraph(MonitoringData) {
         // 기존 데이터와 함께 업데이트
         chart.updateSeries([...chartDataList, predictionSeries]);
       } else {
-        console.log("No prediction data available");
       }
     } catch (error) {
       console.error("Prediction API failed:", error);
-      console.log("Using existing data without prediction.");
     }
   }
 
@@ -339,16 +332,13 @@ async function drawMonitoringGraph(MonitoringData) {
     drawDetectionGraph()
 
   } else {
-    console.log('Detection Switch is OFF');
   }
 
 }
 
 async function drawDetectionGraph() {
   var respDetection = await webconsolejs["common/api/services/monitoring_api"].getDetectionHistory();
-  console.log("Detection Data:", respDetection);
   var detectionData = respDetection.data.values;
-  console.log("detectionData:", detectionData);
 
   const anomalyData = detectionData.map(item => ({
     x: item.timestamp,  

@@ -351,7 +351,6 @@ export async function getMonitoringLog(nsId, mciId, targetId, keyword) {
     data
   );
 
-  console.log("response ", response)
   return response
 }
 
@@ -376,7 +375,6 @@ export async function getDetectionHistory() {
   )
 
   var respDetectionData = response.data.responseData;
-  console.log("respDetectionData", respDetectionData)
   if (!respDetectionData) {
     return {
       "data": {

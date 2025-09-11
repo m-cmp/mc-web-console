@@ -67,6 +67,35 @@
           </div>
         </div>
       </div>
+      
+      <style>
+        /* MCI Labels 테이블 일관된 레이아웃 유지 */
+        #mci-labels-content .table th,
+        #mci-labels-content .table td {
+          width: 50%;
+          word-break: break-word;
+        }
+        
+        #mci-labels-content .table th:first-child,
+        #mci-labels-content .table td:first-child {
+          width: 40%;
+        }
+        
+        #mci-labels-content .table th:last-child,
+        #mci-labels-content .table td:last-child {
+          width: 60%;
+        }
+        
+        /* System 라벨 스타일링 개선 */
+        #mci-labels-content .table-secondary td {
+          background-color: #f8f9fa !important;
+        }
+        
+        #mci-labels-content .text-muted.fst-italic {
+          font-style: italic;
+          color: #6c757d !important;
+        }
+      </style>
     </div>
   </div>
 </div>

@@ -686,7 +686,7 @@ export function calculateVmStatusCount(aMci) {
 // ScaleOut API 관련
 export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -716,7 +716,7 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
 export async function getPolicyList(nsId) {
 
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -739,7 +739,7 @@ export async function getPolicyList(nsId) {
 
 export async function deletePolicy(nsId, mciId) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -757,12 +757,11 @@ export async function deletePolicy(nsId, mciId) {
     controller,
     data
   );
-  console.log("delete policy response : ", response)
 }
 
 export async function createPolicy(nsId, mciId, policy) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -780,7 +779,6 @@ export async function createPolicy(nsId, mciId, policy) {
     controller,
     data
   );
-  console.log("create policy response : ", response)
   return response
 }
 
@@ -789,7 +787,7 @@ export async function createPolicy(nsId, mciId, policy) {
 // Label 생성/수정
 export async function createOrUpdateLabel(labelType, uid, labels) {
   if (!labelType || !uid || !labels) {
-    console.log("Missing required parameters for createOrUpdateLabel");
+    alert("Missing required parameters for createOrUpdateLabel");
     return;
   }
 
@@ -809,14 +807,13 @@ export async function createOrUpdateLabel(labelType, uid, labels) {
     data
   );
   
-  console.log("createOrUpdateLabel response:", response);
   return response;
 }
 
 // Label 조회
 export async function getLabels(labelType, uid) {
   if (!labelType || !uid) {
-    console.log("Missing required parameters for getLabels");
+    alert("Missing required parameters for getLabels");
     return;
   }
 
@@ -833,14 +830,13 @@ export async function getLabels(labelType, uid) {
     data
   );
   
-  console.log("getLabels response:", response);
   return response;
 }
 
 // Label 삭제
 export async function removeLabel(labelType, uid, key) {
   if (!labelType || !uid || !key) {
-    console.log("Missing required parameters for removeLabel");
+    alert("Missing required parameters for removeLabel");
     return;
   }
 
@@ -858,6 +854,5 @@ export async function removeLabel(labelType, uid, key) {
     data
   );
   
-  console.log("removeLabel response:", response);
   return response;
 }

@@ -8,7 +8,6 @@ async function initDashboardNs() {
 
   ////////////////////// set workspace list, project list at Navbar///////////////////////////////////////
   var curWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  console.log("workspaceIdProjectId = ", curWorkspaceProject)
 
   // workspace selection check
   webconsolejs["partials/layout/modal"].checkWorkspaceSelection(curWorkspaceProject)
@@ -17,15 +16,13 @@ async function initDashboardNs() {
   try {
     webconsolejs["partials/operation/dashboard/mci_dashboard"].initMciDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 
 }
 
 // partial에서 변경내용을 page로 알려줄 때,
 export function callbackStatusChanged(caller, respData) {
-  console.log("=== callback from ", caller);
-  console.log("=== respData ", respData);
   
   if (caller == "mcichanged") {// mci 목록 조회 뒤 status 표시를 위해 호출함
 
@@ -37,9 +34,7 @@ export function callbackStatusChanged(caller, respData) {
 }
 
 function calculateMciStatusCount(mciData) {
-  console.log("calculateMciStatusCount");
 
-  console.log("mciData : ", mciData);
   var mciStatusCountMap = new Map();
   mciStatusCountMap.set("running", 0);
   mciStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
@@ -58,7 +53,6 @@ function calculateMciStatusCount(mciData) {
       }
     }
   } catch (e) {
-    console.log("mci status error", e);
   }
 
   return mciStatusCountMap;

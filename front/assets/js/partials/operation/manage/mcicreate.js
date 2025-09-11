@@ -548,8 +548,6 @@ export function changeDiskSize(type) {
 			}
 		})
 	}
-	console.log("ROOT_DISK_MAX_VALUE : ", ROOT_DISK_MAX_VALUE)
-	console.log("ROOT_DISK_MIN_VALUE : ", ROOT_DISK_MIN_VALUE)
 	$("#s_rootDiskType").val(type);
 	$("#e_rootDiskType").val(type);
 
@@ -574,7 +572,6 @@ var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
 export function deployMci() {
-	console.log("deployMci")
 	createMciDynamic()
 	// express 는 express 만, simple + expert + import 는 합쳐서
 	// 두개의 mci는 만들어 질 수 없으므로 
@@ -671,7 +668,6 @@ export function deployMci() {
 	// }    
 }
 export async function createMciDynamic() {
-	console.log("createMciDynamic")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
@@ -686,15 +682,9 @@ export async function createMciDynamic() {
 	var policyOnPartialFailure = $("#mci_policy_on_partial_failure").val()
 
 
-	console.log("mciName", mciName)
-	console.log("mciDesc", mciDesc)
-	console.log("policyOnPartialFailure", policyOnPartialFailure)
-	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
-
-
-
+	
 	if (!mciName) {
-		commonAlert("Please Input MCI Name!!!!!")
+		alert("Please Input MCI Name!!!!!")
 		return;
 	}
 
@@ -704,12 +694,10 @@ export async function createMciDynamic() {
 
 	// MCI 생성 전 검증 API 호출
 	try {
-		console.log("MCI 생성 검증 시작...");
 		const validationResult = await webconsolejs["common/api/services/mci_api"].mciDynamicReview(
 			mciName, mciDesc, Express_Server_Config_Arr, selectedNsId
 		);
 		
-		console.log("검증 결과:", validationResult);
 		
 		if (validationResult && validationResult.status === 200) {
 			const reviewData = validationResult.data.responseData;
@@ -718,10 +706,6 @@ export async function createMciDynamic() {
 			if (reviewData.creationViable) {
 				if (reviewData.overallStatus === "Ready") {
 					// 검증 성공 - 실제 MCI 생성 진행
-					console.log("검증 성공 - MCI 생성 진행");
-					console.log("예상 비용:", reviewData.estimatedCost);
-					console.log("전체 메시지:", reviewData.overallMessage);
-					
 					webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure);
 				} else if (reviewData.overallStatus === "Warning") {
 					// 경고가 있지만 생성 가능 - 사용자 확인 후 진행
@@ -772,11 +756,9 @@ export function addNewMci() {
 
 // ////////////// VM Handling ///////////
 export function addNewVirtualMachine() {
-	console.log("addNewVirtualMachine")
 	Express_Server_Config_Arr = new Array();
 
 	var selectedMci = webconsolejs["pages/operation/manage/mci"].currentMciId
-	console.log("selectedMci", selectedMci)
 
 	var mci_name = selectedMci
 	// var mci_name = selectedMci[0].name
@@ -901,7 +883,6 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 	var resultText = "";
 	var createdServer = 0;
 	for (let key of resultVmCreateMap.keys()) {
-		console.log("vmCreateresult " + key + " : " + resultVmCreateMap.get(resultVmKey));
 		resultText += key + " = " + resultVmCreateMap.get(resultVmKey) + ","
 		//totalDeployServerCount--
 		createdServer++;
