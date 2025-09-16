@@ -311,9 +311,9 @@ export function changeVmLifeCycle(type) {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a VM')
     return;
   }
-  selectedVmIds.forEach(vmId => {
-    webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, window.currentMciId, window.currentNsId, vmId);
-  });
+  if (selectedVmId) {
+    webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, window.currentMciId, window.currentNsId, selectedVmId);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -469,10 +469,10 @@ function displayServerGroupStatusList(mciID, vmList) {
   // }
 }
 
-// 체크박스를 선택하면 선택된 VM ID 업데이트
-var selectedVmIds = [];
-var selectedVmGroupIds = [];
-var selectedSubGroupVmIds = [];
+// 체크박스를 선택하면 선택된 VM ID 업데이트 (단일 선택)
+var selectedVmId = null;
+var selectedVmGroupId = null;
+var selectedSubGroupVmId = null;
 // 체크박스를 클릭했을 때 선택 상태를 반전시킴
 export function toggleCheck(type, id) {
 
@@ -486,15 +486,15 @@ export function handleCheck(type, id) {
 
   if (type === 'vm') {
     if (checkbox.prop("checked")) {
-      if (!selectedVmIds.includes(id)) selectedVmIds.push(id);
-    } else {
-      selectedVmIds = selectedVmIds.filter(id => id !== id);
-    }
-    // 마지막 선택된 VM ID로 설정 및 테두리 업데이트
-    if (selectedVmIds.length > 0) {
-      currentVmId = selectedVmIds[selectedVmIds.length - 1];
+      // 기존 선택된 VM이 있다면 해제
+      if (selectedVmId && selectedVmId !== id) {
+        $(`#checkbox_vm_${selectedVmId}`).prop("checked", false);
+      }
+      selectedVmId = id;
+      currentVmId = id;
       webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
     } else {
+      selectedVmId = null;
       // 선택된 VM이 없다면 ServerInfo를 접음
       clearServerInfo();
       const div = document.getElementById("server_info");
@@ -505,38 +505,46 @@ export function handleCheck(type, id) {
   } else if (type === 'vmGroup') { // subgroup
 
     if (checkbox.prop("checked")) {
-      if (!selectedVmGroupIds.includes(id)) selectedVmGroupIds.push(id);
+      // 같은 항목 재선택인지 확인
+      if (selectedVmGroupId === id) {
+        // 같은 항목 재선택 - 토글 닫기
+        selectedVmGroupId = null;
+        currentSubGroupId = null;
+        clearServerInfo();
+        const div = document.getElementById("subgroup_vm");
+        if (div.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
+      } else {
+        // 다른 항목 선택 - 기존 선택 해제 후 새 항목 선택
+        if (selectedVmGroupId && selectedVmGroupId !== id) {
+          $(`#checkbox_vmGroup_${selectedVmGroupId}`).prop("checked", false);
+        }
+        selectedVmGroupId = id;
+        currentSubGroupId = id;
+        vmListInSubGroup(currentSubGroupId);
+      }
     } else {
-      selectedVmGroupIds = selectedVmGroupIds.filter(id => id !== id);
-    }
-
-    if (selectedVmGroupIds.length > 0) {
-      // 창 열기
-      currentSubGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
-      vmListInSubGroup(currentSubGroupId);
-    } else {
+      selectedVmGroupId = null;
+      currentSubGroupId = null;
       clearServerInfo();
-
+      // 체크 해제 시 토글 닫기
       const div = document.getElementById("subgroup_vm");
       if (div.classList.contains("active")) {
         webconsolejs["partials/layout/navigatePages"].toggleElement(div);
       }
-
     }
   } else if (type === 'subgroup_vm') {
     if (checkbox.prop("checked")) {
-      if (!selectedSubGroupVmIds.includes(id)) selectedSubGroupVmIds.push(id);
-    } else {
-      selectedSubGroupVmIds = selectedSubGroupVmIds.filter(id => id !== id);
-    }
-
-    if (selectedSubGroupVmIds.length > 0) {
-      // 창 열기
-      currentSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
+      // 기존 선택된 SubGroup VM이 있다면 해제
+      if (selectedSubGroupVmId && selectedSubGroupVmId !== id) {
+        $(`#checkbox_subgroup_vm_${selectedSubGroupVmId}`).prop("checked", false);
+      }
+      selectedSubGroupVmId = id;
+      currentSubGroupVmId = id;
       webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
-
-      // vmListInSubGroup(currentSubGroupVmId);
     } else {
+      selectedSubGroupVmId = null;
       clearServerInfo();
     }
   }
@@ -552,29 +560,23 @@ function highlightSelected(type) {
   // 모든 li 요소의 테두리 제거
 
   if (type === 'vm') {
-
     $("#mci_server_info_box li").css("border", "none");
-    if (selectedVmIds.length > 0) {
-      const lastVmId = selectedVmIds[selectedVmIds.length - 1];
-      $(`#server_status_icon_${lastVmId}`)
+    if (selectedVmId) {
+      $(`#server_status_icon_${selectedVmId}`)
         .css("border", "2px solid blue");
     }
   }
   else if (type === 'vmGroup') {
-
     $("#subgroup_info_box li").css("border", "none");
-    if (selectedVmGroupIds.length > 0) {
-      const lastGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
-      $(`#serverGroup_status_icon_${lastGroupId}`)
+    if (selectedVmGroupId) {
+      $(`#serverGroup_status_icon_${selectedVmGroupId}`)
         .css("border", "2px solid blue");
     }
   }
   else if (type === 'subgroup_vm') {
-
     $("#subgroup_vm_info_box li").css("border", "none");
-    if (selectedSubGroupVmIds.length > 0) {
-      const lastSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
-      $(`#subgroup_vm_status_icon_${lastSubGroupVmId}`)
+    if (selectedSubGroupVmId) {
+      $(`#subgroup_vm_status_icon_${selectedSubGroupVmId}`)
         .css("border", "2px solid blue");
     }
   }
@@ -593,7 +595,11 @@ function highlightSelected(type) {
 
 function vmListInSubGroup(subGroupId) {
   var div = document.getElementById("subgroup_vm");
-  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  
+  // 토글이 닫혀있을 때만 열기
+  if (!div.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+  }
 
   // subGroupId의 vmList 정렬
   var groupedVm = vmListGroupedBySubGroup.find(item => item.subGroupId === subGroupId);
@@ -1776,10 +1782,18 @@ var fieldEl = document.getElementById("filter-field");
 var typeEl = document.getElementById("filter-type");
 var valueEl = document.getElementById("filter-value");
 
-// Label filter elements
-var labelKeyEl = document.getElementById("label-filter-key");
+// Label filter elements (label-filter-key는 제거됨)
+var labelKeyEl = null; // 제거된 요소
 var labelTypeEl = document.getElementById("label-filter-type");
 var labelValueEl = document.getElementById("label-filter-value");
+
+// 요소가 존재하지 않을 경우를 대비한 안전성 검사
+if (!labelTypeEl) {
+  console.warn('label-filter-type element not found');
+}
+if (!labelValueEl) {
+  console.warn('label-filter-value element not found');
+}
 
 // Update label key dropdown with actual keys from MCI data
 function updateLabelKeyDropdown() {
@@ -1797,25 +1811,25 @@ function updateLabelKeyDropdown() {
     }
   });
   
-  // Update dropdown options
-  const select = document.getElementById('label-filter-key');
-  select.innerHTML = '<option value="">Select key...</option>';
+  // Label key dropdown이 제거되었으므로 이 기능은 비활성화
+  // const select = document.getElementById('label-filter-key');
+  // select.innerHTML = '<option value="">Select key...</option>';
   
   // Sort keys alphabetically and add to dropdown
-  Array.from(keys).sort().forEach(key => {
-    const option = document.createElement('option');
-    option.value = key;
-    option.textContent = key;
-    select.appendChild(option);
-  });
+  // Array.from(keys).sort().forEach(key => {
+  //   const option = document.createElement('option');
+  //   option.value = key;
+  //   option.textContent = key;
+  //   select.appendChild(option);
+  // });
   
 }
 
 // Label filtering function
 function labelFilter(data) {
-  const labelKey = labelKeyEl.value.trim();
-  const labelType = labelTypeEl.value;
-  const labelValue = labelValueEl.value.trim();
+  const labelKey = labelKeyEl ? labelKeyEl.value.trim() : '';
+  const labelType = labelTypeEl ? labelTypeEl.value : '';
+  const labelValue = labelValueEl ? labelValueEl.value.trim() : '';
   
   
   // 둘 다 비어있으면 필터링하지 않음
@@ -1938,8 +1952,8 @@ function updateFilter() {
 
 // Label filter update function
 function updateLabelFilter() {
-  const labelKey = labelKeyEl.value.trim();
-  const labelValue = labelValueEl.value.trim();
+  const labelKey = labelKeyEl ? labelKeyEl.value.trim() : '';
+  const labelValue = labelValueEl ? labelValueEl.value.trim() : '';
   
   
   // Label 필터가 설정되어 있으면 적용
@@ -1952,32 +1966,78 @@ function updateLabelFilter() {
 }
 
 // Update filters on value change
-document.getElementById("filter-field").addEventListener("change", updateFilter);
-document.getElementById("filter-type").addEventListener("change", updateFilter);
-document.getElementById("filter-value").addEventListener("keyup", updateFilter);
+const filterField = document.getElementById("filter-field");
+const filterType = document.getElementById("filter-type");
+const filterValue = document.getElementById("filter-value");
 
-// Update label filters on value change
-document.getElementById("label-filter-key").addEventListener("change", updateLabelFilter);
-document.getElementById("label-filter-type").addEventListener("change", updateLabelFilter);
-document.getElementById("label-filter-value").addEventListener("keyup", updateLabelFilter);
+if (filterField) {
+  filterField.addEventListener("change", updateFilter);
+} else {
+  console.warn('filter-field element not found');
+}
+
+if (filterType) {
+  filterType.addEventListener("change", updateFilter);
+} else {
+  console.warn('filter-type element not found');
+}
+
+if (filterValue) {
+  filterValue.addEventListener("keyup", updateFilter);
+} else {
+  console.warn('filter-value element not found');
+}
+
+// Update label filters on value change (label-filter-key는 제거됨)
+const labelFilterKey = document.getElementById("label-filter-key");
+const labelFilterType = document.getElementById("label-filter-type");
+const labelFilterValue = document.getElementById("label-filter-value");
+
+if (labelFilterKey) {
+  labelFilterKey.addEventListener("change", updateLabelFilter);
+} else {
+  console.warn('label-filter-key element not found (removed)');
+}
+
+// 기존 Tabulator 필터 이벤트 리스너 제거 (새로운 Label Filter 시스템과 충돌 방지)
+// if (labelFilterType) {
+//   labelFilterType.addEventListener("change", updateLabelFilter);
+// } else {
+//   console.warn('label-filter-type element not found');
+// }
+
+// Label 필터는 keyup 이벤트 제거 - keypress만 사용 (Enter 키만 허용)
+// if (labelFilterValue) {
+//   labelFilterValue.addEventListener("keyup", updateLabelFilter);
+// } else {
+//   console.warn('label-filter-value element not found');
+// }
 
 // Clear filters on "Clear Filters" button click
-document.getElementById("filter-clear").addEventListener("click", function () {
-  fieldEl.value = "name";
-  typeEl.value = "like";
-  valueEl.value = "";
-
-  mciListTable.clearFilter();
-
-});
+const filterClearBtn = document.getElementById("filter-clear");
+if (filterClearBtn) {
+  filterClearBtn.addEventListener("click", function () {
+    if (fieldEl) fieldEl.value = "name";
+    if (typeEl) typeEl.value = "like";
+    if (valueEl) valueEl.value = "";
+    if (mciListTable) mciListTable.clearFilter();
+  });
+} else {
+  console.warn('filter-clear button not found');
+}
 
 // Clear label filters on "Clear Label Filters" button click
-document.getElementById("label-filter-clear").addEventListener("click", function () {
-  labelKeyEl.value = "";
-  labelTypeEl.value = "like";
-  labelValueEl.value = "";
-  mciListTable.removeFilter(labelFilter);
-});
+const clearBtn = document.getElementById("label-filter-clear");
+if (clearBtn) {
+  clearBtn.addEventListener("click", function () {
+    if (labelKeyEl) labelKeyEl.value = "";
+    if (labelTypeEl) labelTypeEl.value = "like";
+    if (labelValueEl) labelValueEl.value = "";
+    if (mciListTable) mciListTable.removeFilter(labelFilter);
+  });
+} else {
+  console.warn('label-filter-clear button not found');
+}
 /////////////////////////Tabulator Filter END/////////////////////////
 
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
@@ -2305,8 +2365,8 @@ export async function initSubGroupRemoteCmdModal() {
   
   // 현재 선택된 SubGroup이 있는지 확인
   if (!currentSubGroupId) {
-    if (selectedVmGroupIds && selectedVmGroupIds.length > 0) {
-      currentSubGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
+    if (selectedVmGroupId) {
+      currentSubGroupId = selectedVmGroupId;
     } else {
       alert("Please select a SubGroup first.");
       return;
@@ -2569,7 +2629,7 @@ function updateSubGroupRemoteCmdButtonState() {
   // _subgroupvm_status.html에 있는 SubGroup Terminal 버튼 찾기
   const subGroupRemoteCmdBtn = document.querySelector('#subgroup_vm .card-actions a[onclick*="initSubGroupRemoteCmdModal"]');
   if (subGroupRemoteCmdBtn) {
-    if (selectedVmGroupIds && selectedVmGroupIds.length > 0) {
+    if (selectedVmGroupId) {
       subGroupRemoteCmdBtn.classList.remove('disabled');
       subGroupRemoteCmdBtn.style.pointerEvents = 'auto';
       subGroupRemoteCmdBtn.title = 'Connect to selected SubGroup';
@@ -2938,4 +2998,229 @@ async function handleLabelSaveNavigation() {
 // Label Editor 초기화
 document.addEventListener('DOMContentLoaded', function() {
   setupLabelEditorEvents();
+  setupLabelFilterEvents();
 });
+
+// Label Filter 이벤트 설정
+function setupLabelFilterEvents() {
+  // Type 변경 시 placeholder 업데이트
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (typeSelect && valueInput) {
+    typeSelect.addEventListener('change', function() {
+      updateValuePlaceholder();
+    });
+    
+    // Enter 키로 필터 적용 (다른 키 입력 시 즉시 필터링 방지)
+    valueInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyLabelFilter();
+      }
+    });
+  } else {
+    console.warn('Label filter elements not found. Type select:', !!typeSelect, 'Value input:', !!valueInput);
+  }
+  
+  // Clear 버튼
+  const clearBtn = document.getElementById('label-filter-clear');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      clearLabelFilter();
+    });
+  } else {
+    console.warn('Label filter clear button not found');
+  }
+  
+  // Apply 버튼 (Enter 키 대신 사용)
+  const applyBtn = document.getElementById('label-filter-apply');
+  if (applyBtn) {
+    applyBtn.addEventListener('click', function() {
+      applyLabelFilter();
+    });
+  } else {
+    console.warn('Label filter apply button not found');
+  }
+}
+
+// Value placeholder 업데이트
+function updateValuePlaceholder() {
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (!typeSelect || !valueInput) {
+    console.warn('Label filter elements not found for placeholder update');
+    return;
+  }
+  
+  const type = typeSelect.value;
+  let placeholder = '';
+  
+  switch (type) {
+    case '=':
+    case '!=':
+      placeholder = 'env (e.g., env=production)';
+      break;
+    case 'in':
+    case 'notin':
+      placeholder = 'region (e.g., region in (us-west, us-east))';
+      break;
+    case 'exists':
+    case '!exists':
+      placeholder = 'env (e.g., env exists)';
+      break;
+    default:
+      placeholder = 'env (e.g., env=production)';
+  }
+  
+  valueInput.placeholder = placeholder;
+  valueInput.disabled = false;
+}
+
+// Label Selector 생성
+function createLabelSelector() {
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (!typeSelect || !valueInput) {
+    console.warn('Label filter elements not found');
+    return '';
+  }
+  
+  const type = typeSelect.value;
+  const value = valueInput.value.trim();
+  
+  if (!value) return '';
+  
+  // Type과 Value를 조합하여 labelSelector 생성
+  switch (type) {
+    case '=':
+    case '!=':
+      // =, != 연산자는 값이 필요하므로 값이 없으면 빈 문자열 반환
+      return value ? `${value}${type}` : '';
+    case 'in':
+    case 'notin':
+      // in, notin 연산자는 값이 필요하므로 값이 없으면 빈 문자열 반환
+      return value ? `${value} ${type}` : '';
+    case 'exists':
+    case '!exists':
+      // exists, !exists 연산자는 값이 없어도 됨
+      return `${value} ${type}`;
+    default:
+      return value;
+  }
+}
+
+// Label Filter 적용 (ID 매칭 방식)
+async function applyLabelFilter() {
+  try {
+    const labelSelector = createLabelSelector();
+    
+    if (!labelSelector) {
+      alert('Please enter a valid label filter');
+      return;
+    }
+    
+    console.log('Applying label filter:', labelSelector);
+    
+    // 1. API 호출로 필터링된 MCI 목록 받기
+    const response = await webconsolejs["common/api/services/mci_api"].getResourcesByLabelSelector(labelSelector);
+    
+    console.log('Full response:', response);
+    console.log('Response data:', response?.data?.responseData);
+    
+    if (response && response.data && response.data.responseData) {
+      let filteredMciResults = response.data.responseData;
+      
+      // responseData가 객체이고 그 안에 배열이 있는 경우 처리
+      if (filteredMciResults && typeof filteredMciResults === 'object' && !Array.isArray(filteredMciResults)) {
+        if (filteredMciResults.results) {
+          filteredMciResults = filteredMciResults.results;
+        } else if (filteredMciResults.data) {
+          filteredMciResults = filteredMciResults.data;
+        } else if (filteredMciResults.mcis) {
+          filteredMciResults = filteredMciResults.mcis;
+        } else {
+          const possibleArrays = Object.values(filteredMciResults).filter(val => Array.isArray(val));
+          if (possibleArrays.length > 0) {
+            filteredMciResults = possibleArrays[0];
+          }
+        }
+      }
+      
+      console.log('Filtered MCI results:', filteredMciResults);
+      
+      if (Array.isArray(filteredMciResults)) {
+        // 2. 필터링된 MCI ID 목록 추출
+        const filteredMciIds = filteredMciResults.map(mci => mci.id);
+        console.log('Filtered MCI IDs:', filteredMciIds);
+        
+        // 3. 기존 MCI 목록에서 ID 매칭
+        const allMcis = Object.values(window.totalMciListObj || {});
+        const matchedMcis = allMcis.filter(mci => filteredMciIds.includes(mci.id));
+        
+        console.log('Total MCIs:', allMcis.length);
+        console.log('Matched MCIs:', matchedMcis.length);
+        console.log('Matched MCIs:', matchedMcis);
+        
+        // 4. 테이블 업데이트
+        if (mciListTable) {
+          mciListTable.setData(matchedMcis);
+        }
+        
+        // 현재 선택된 MCI 초기화
+        window.currentMciId = '';
+      } else {
+        console.log('Response data is not an array:', filteredMciResults);
+        if (mciListTable) {
+          mciListTable.setData([]);
+        }
+        // 데이터 형식 오류 - 빈 테이블 표시
+      }
+    } else {
+      console.log('No response data found');
+      if (mciListTable) {
+        mciListTable.setData([]);
+      }
+      // 응답 데이터 없음 - 빈 테이블 표시
+    }
+    
+  } catch (error) {
+    console.error('Label filter error:', error);
+    // 에러 발생 시 빈 테이블 표시
+    if (mciListTable) {
+      mciListTable.setData([]);
+    }
+  }
+}
+
+// 사용하지 않는 클라이언트 필터링 함수들 제거됨
+// 이제 서버 API 결과의 ID 매칭 방식 사용
+
+// Label Filter 초기화
+function clearLabelFilter() {
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (typeSelect) {
+    typeSelect.value = '=';
+  } else {
+    console.warn('Label filter type select not found');
+  }
+  
+  if (valueInput) {
+    valueInput.value = '';
+    valueInput.disabled = false;
+    valueInput.placeholder = 'env=production,tier=backend';
+  } else {
+    console.warn('Label filter value input not found');
+  }
+  
+  // 원래 MCI 목록 복원
+  if (window.totalMciListObj && mciListTable) {
+    mciListTable.setData(Object.values(window.totalMciListObj));
+  }
+  
+  console.log('Label filter cleared');
+}
