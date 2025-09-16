@@ -856,3 +856,23 @@ export async function removeLabel(labelType, uid, key) {
   
   return response;
 }
+
+// Label Selector로 MCI 리소스 조회 (기존 API 패턴 따름)
+export async function getResourcesByLabelSelector(labelSelector) {
+  const data = {
+    pathParams: {
+      labelType: "mci"
+    },
+    queryParams: {
+      labelSelector: labelSelector
+    }
+  };
+
+  const controller = "/api/mc-infra-manager/Getresourcesbylabelselector";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  return response;
+}
