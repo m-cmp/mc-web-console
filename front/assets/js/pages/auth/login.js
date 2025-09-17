@@ -24,7 +24,6 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
         }
         const controller = "/api/mc-iam-manager/GetAllAvailableMenus";
         const getAllAvailableMenusResponse = await webconsolejs["common/api/http"].commonAPIPost(controller);
-        console.log("getAllAvailableMenus response", getAllAvailableMenusResponse);
         const menuListresponse = getAllAvailableMenusResponse.data.responseData;
         
         try{
@@ -33,7 +32,7 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
             webconsolejs["common/storage/localstorage"].setMenuLocalStorage(menuTree)
             window.location = "/"
         } catch(error){
-            console.log(error)
+            console.error(error)
             alert("dynamic menu error : " + error)
             window.location = "/"
         }

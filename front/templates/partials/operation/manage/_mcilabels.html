@@ -1,0 +1,102 @@
+<!-- MCI Labels Tab Content -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">MCI Labels</h3>
+        <div class="card-actions btn-actions d-flex align-items-center">
+          <div
+            class="form-check form-switch me-3"
+            style="
+              display: flex;
+              align-items: center;
+              transform: translateY(2px);
+            "
+          >
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="showSystemLabels"
+              onchange="toggleSystemLabels()"
+              style="margin-top: 0"
+            />
+            <label
+              class="form-check-label"
+              for="showSystemLabels"
+              style="margin-left: 0.5rem"
+            >
+              Show System Labels
+            </label>
+          </div>
+          <a
+            href="#edit_labels"
+            class="btn btn-outline-warning"
+            onclick="openMciLabelEditor(); return false;"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
+              ></path>
+              <path
+                d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"
+              ></path>
+              <path d="M16 5l3 3"></path>
+            </svg>
+            Edit Labels
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="mci-labels-content">
+          <div class="text-center text-muted">
+            <p>
+              No labels found. Click "Edit Labels" to add labels to this MCI.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <style>
+        /* MCI Labels 테이블 일관된 레이아웃 유지 */
+        #mci-labels-content .table th,
+        #mci-labels-content .table td {
+          width: 50%;
+          word-break: break-word;
+        }
+        
+        #mci-labels-content .table th:first-child,
+        #mci-labels-content .table td:first-child {
+          width: 40%;
+        }
+        
+        #mci-labels-content .table th:last-child,
+        #mci-labels-content .table td:last-child {
+          width: 60%;
+        }
+        
+        /* System 라벨 스타일링 개선 */
+        #mci-labels-content .table-secondary td {
+          background-color: #f8f9fa !important;
+        }
+        
+        #mci-labels-content .text-muted.fst-italic {
+          font-style: italic;
+          color: #6c757d !important;
+        }
+      </style>
+    </div>
+  </div>
+</div>
+<%= javascriptTag("partials/operation/manage/mcilabels.js") %>

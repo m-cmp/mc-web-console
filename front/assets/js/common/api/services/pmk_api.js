@@ -4,7 +4,7 @@
 export async function getClusterList(nsId) {
 
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -26,7 +26,7 @@ export async function getClusterList(nsId) {
 
 export async function getCluster(nsId, clusterId) {
   if (nsId == "" || nsId == undefined || clusterId == undefined || clusterId == "") {
-    console.log(" undefined nsId: " + nsId + " clusterId " + clusterId);
+    alert(" undefined nsId: " + nsId + " clusterId " + clusterId);
     return;
   }
   const data = {
@@ -58,7 +58,6 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
-  console.log("Create_Cluster_Config_Arr", Create_Cluster_Config_Arr)
   // NodeGroupList가 있으면 추가 (조건부로 추가)
   if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
     obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => ({
@@ -108,7 +107,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
 export async function getVpcList(connectionName, nsId) {
 
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -128,7 +127,6 @@ export async function getVpcList(connectionName, nsId) {
     data
   )
 
-  console.log("vpcList : ", response)
   var vpcList = response.data.responseData;
 
   return vpcList
@@ -139,7 +137,7 @@ export async function getSubnetList(vNetId, nsId) {
   // TODO : getSubnet api로 변경
   // 현재 subnet관련 api 안됨
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -156,7 +154,6 @@ export async function getSubnetList(vNetId, nsId) {
     data
   )
 
-  console.log("subnetList : ", response.data.responseData.subnetInfoList)
   var subnetList = response.data.responseData.subnetInfoList
 
   return subnetList
@@ -184,7 +181,7 @@ export async function getSubnetList(vNetId, nsId) {
 export async function getSecurityGroupList(vNetId, nsId) {
 
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -204,7 +201,6 @@ export async function getSecurityGroupList(vNetId, nsId) {
     data
   )
 
-  console.log("securityGroupList : ", response.data.responseData)
   var securityGroupList = response.data.responseData;
 
   return securityGroupList
@@ -225,7 +221,6 @@ export async function getAvailableK8sClusterVersion(providerName, regionName) {
     data
   )
 
-  console.log("availablek8sclusterversion : ", response)
   var availablek8sclusterversionList = response.data.responseData;
 
   return availablek8sclusterversionList
@@ -260,7 +255,6 @@ export async function vmDynamic(pmkId, nsId, Express_Server_Config_Arr) {
     controller,
     data
   )
-  console.log("create VMdynamic : ", response)
 }
 
 // export async function pmkRecommendVm(data) {
@@ -283,7 +277,6 @@ export async function getProviderList() {
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
   );
-  console.log("getProviderList response : ", response)
 
   return response.data.responseData.output
 }
@@ -302,7 +295,6 @@ export async function getRegionList() {
     controller,
 
   );
-  console.log("getRegionList response : ", response)
 
   return response.data.responseData.region
 }
@@ -332,7 +324,6 @@ export function calculateConnectionCount(clusterList) {
 
   for (var clusterIndex in clusterList) {
     var aCluster = clusterList[clusterIndex];
-    // console.log("aCluster",clusterList)
     var location = aCluster.connectionConfig;
     var location = aCluster.provider;
     if (!webconsolejs["common/util"].isEmpty(location)) {
@@ -356,7 +347,6 @@ export function calculateConnectionCount(clusterList) {
 export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
 
   var obj = {}
-  console.log("Create_Node_Config_ArrCreate_Node_Config_Arr", Create_Node_Config_Arr[0])
 
   obj = Create_Node_Config_Arr[0]
   const data = {
@@ -384,13 +374,12 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
     controller,
     data
   )
-  console.log("create Node : ", response)
 }
 
 export async function getSshKey(nsId) {
 
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -475,7 +464,6 @@ export function getPmkInfoProviderNames(pmkData) {
   var vmCloudConnectionMap = calculateConnectionCount(
     pmkData.vm
   );
-  console.log("vmCloudConnectionMap", vmCloudConnectionMap)
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
       pmkProviderNames +=
@@ -513,9 +501,6 @@ export function getVmStatusStyleClass(nodeStatus) {
 // 해당 pmk에서 상태값들을 count : 1개 pmk의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, pmk 에서 사용
 export function calculatePmkStatusCount(pmkData) {
-  console.log("calculatePmkStatusCount");
-
-  console.log("pmkData : ", pmkData);
   var pmkStatusCountMap = new Map();
   pmkStatusCountMap.set("running", 0);
   pmkStatusCountMap.set("stop", 0); // partial 도 stop으로 보고있음.
@@ -536,15 +521,12 @@ export function calculatePmkStatusCount(pmkData) {
   } catch (e) {
     console.error("pmk status error", e);
   }
-  // console.log(pmkStatusCountMap);
   return pmkStatusCountMap;
 }
 
 
 // vm의 상태별 count
 export function calculateVmStatusCount(aPmk) {
-  // console.log("calculateVmStatusCount")
-  // console.log(vmList)
   var sumVmCnt = 0;
   var vmStatusCountMap = new Map();
   vmStatusCountMap.set("running", 0);
@@ -553,9 +535,7 @@ export function calculateVmStatusCount(aPmk) {
 
   try {
     if (aPmk.statusCount) {
-      console.log("statusCount part", aPmk);
       var statusCountObj = aPmk.statusCount;
-      console.log(statusCountObj);
       var countCreating = statusCountObj.countCreating;
       var countFailed = statusCountObj.countFailed;
       var countRebooting = statusCountObj.countRebooting;
@@ -582,7 +562,6 @@ export function calculateVmStatusCount(aPmk) {
       vmStatusCountMap.set("stop", Number(countSuspended)); // partial 도 stop으로 보고있음.
       vmStatusCountMap.set("terminate", sumEtc);
     } else if (aPmk.vm) {
-      console.log("statusCount part list part");
       vmList = aPmk.vm;
       for (var vmIndex in vmList) {
         var aVm = vmList[vmIndex];
@@ -618,7 +597,6 @@ export function pmkDelete(nsId, k8sClusterId) {
     controller,
     data
   );
-  console.log("pmkDelete response : ", response)
 }
 
 export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
@@ -635,7 +613,6 @@ export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
     controller,
     data
   );
-  console.log("pmkDelete response : ", response)
 }
 
 // PMK용 Spec 추천 API
@@ -646,15 +623,13 @@ export async function getPmkRecommendSpec(data) {
     data
   );
 
-  console.log("pmk recommend spec response ", response.data.responseData)
-
   return response.data
 }
 
 // PMK용 Spec 목록 API
 export async function getPmkSpecList(connectionName, nsId) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -674,7 +649,6 @@ export async function getPmkSpecList(connectionName, nsId) {
     data
   )
 
-  console.log("pmk specList : ", response)
   var specList = response.data.responseData;
 
   return specList
@@ -683,7 +657,7 @@ export async function getPmkSpecList(connectionName, nsId) {
 // PMK용 Image 목록 API
 export async function getPmkImageList(connectionName, nsId) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -703,7 +677,6 @@ export async function getPmkImageList(connectionName, nsId) {
     data
   )
 
-  console.log("pmk imageList : ", response)
   var imageList = response.data.responseData;
 
   return imageList
@@ -712,7 +685,6 @@ export async function getPmkImageList(connectionName, nsId) {
 // 동적 클러스터 생성 사전 검증 API
 export async function checkK8sClusterDynamic(nsId, commonSpec) {
   if (!nsId || !commonSpec) {
-    console.log("nsId 또는 commonSpec이 없습니다");
     return;
   }
 
@@ -721,7 +693,7 @@ export async function checkK8sClusterDynamic(nsId, commonSpec) {
       nsId: nsId
     },
     Request: {
-      commonSpec: [commonSpec]
+      specId: [commonSpec]
     }
   };
 
@@ -737,13 +709,12 @@ export async function checkK8sClusterDynamic(nsId, commonSpec) {
 // 동적 클러스터 생성 API
 export async function createK8sClusterDynamic(nsId, clusterData) {
   if (!nsId || !clusterData) {
-    console.log("nsId 또는 clusterData가 없습니다");
     return;
   }
 
   // commonImage가 없으면 "default"로 설정
-  if (!clusterData.commonImage || clusterData.commonImage === "") {
-    clusterData.commonImage = "default";
+  if (!clusterData.imageId || clusterData.imageId === "") {
+    clusterData.imageId = "default";
   }
 
   const data = {

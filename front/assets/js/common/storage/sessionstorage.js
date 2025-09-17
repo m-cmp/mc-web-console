@@ -60,7 +60,6 @@ export function setSessionWorkspaceProjectList(userWorkspaceProjectList) {
     var workspaceList = userWorkspaceProjectList;
     // const jsonData = JSON.parse(userWorkspaceProjectList);
     userWorkspaceProjectList.forEach(item => {
-        console.log(item)
         // var wsItem = item.workspaceProject.workspace;
         // workspaceList.push(wsItem);
         // console.log("setSessionWorkspaceProjectList wsItem", wsItem)
@@ -112,9 +111,7 @@ export async function setSessionWorkspaceList(v) {
 }
 
 export async function getSessionProjectList(workspaceId) {
-    console.log("getSessionProjectList ", workspaceId)
     let projectList = JSON.parse(await sessionStorage.getItem("projectList_" + workspaceId))
-    console.log(projectList);
     return projectList
 }
 

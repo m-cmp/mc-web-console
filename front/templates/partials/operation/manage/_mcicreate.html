@@ -154,32 +154,30 @@
                     </select>
                   </div>
                   <div class="col-6">
-                    <textarea
+                    <input
                       class="form-control"
                       name="rootDiskSize"
                       rows="1"
                       placeholder="Root Disk Size(GB)"
                       id="ep_root_disk_size"
-                    ></textarea>
+                    />
                   </div>
                 </div>
               </div>
               <div class="form-group mb-2">
-                <label class="fo
-                rm-label">SubGroup Size</label>
+                <label class="form-label">SubGroup Size</label>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <div class="d-flex align-items-center">
-                      <button type="button" class="btn btn-outline-secondary-lt btn-sm">–</button>
+                    <div class="input-number-container">
+                      <button class="input-number-decrement" style="height: calc(1.5em + 0.75rem + 2px); border: 1px solid #ced4da;">-</button>
                       <input
-                        type="text"
-                        id="ep_vm_add_cnt"
-                        class="form-control mx-2 text-center"
-                        style="width: 60px;"
+                        type="number"
+                        class="input-number form-control"
                         value="1"
-                        readonly
+                        min="1"
+                        id="ep_vm_add_cnt"
                       />
-                      <button type="button" class="btn btn-outline-secondary-lt btn-sm">+</button>
+                      <button class="input-number-increment" style="height: calc(1.5em + 0.75rem + 2px); border: 1px solid #ced4da;">+</button>
                     </div>
                   </div>
                 </div>
@@ -194,6 +192,16 @@
                   id="ep_description"
                   rows="3"
                   placeholder="type Description"
+                ></textarea>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label">Command</label>
+                <textarea
+                  class="form-control"
+                  name="command"
+                  id="ep_command"
+                  rows="3"
+                  placeholder="client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH client IP is: $client_ip"
                 ></textarea>
               </div>
             </div>
@@ -391,7 +399,20 @@
   </div>
 </div>
 
-
+<!-- Hidden fields for processing -->
+<input type="hidden" id="p_provider" value="" />
+<input type="hidden" id="p_connectionName" value="" />
+<input type="hidden" id="p_name" value="" />
+<input type="hidden" id="p_description" value="" />
+<input type="hidden" id="p_imageId" value="" />
+<input type="hidden" id="p_commonImageId" value="" />
+<input type="hidden" id="p_commonSpecId" value="" />
+<input type="hidden" id="p_root_disk_type" value="" />
+<input type="hidden" id="p_root_disk_size" value="" />
+<input type="hidden" id="p_specId" value="" />
+<input type="hidden" id="p_subGroupSize" value="" />
+<input type="hidden" id="p_vm_cnt" value="" />
+<input type="hidden" id="p_command" value="" />
 
 <%= partial("partials/operation/manage/imagerecommendation.html") %>
 

@@ -15,7 +15,6 @@ export async function getCommonLookupDiskInfo(provider, connectionName) {
 		controller,
 		data
 	);
-	console.log("lookup disk info response : ", response)
 	var responseData = response.data.responseData
     
     return responseData

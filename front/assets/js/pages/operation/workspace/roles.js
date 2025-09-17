@@ -1903,7 +1903,6 @@ function setupCreateCardToggleEventListeners() {
 // Create-mode 카드 토글 핸들러들
 function handlePlatformToggleCreate(e) {
   const isExpanded = DOM.platformMenuCreateBody.classList.contains('show');
-  console.log("Create Platform 토글 변경:", !isExpanded);
   UIManager.toggleCreateCard('platform', !isExpanded);
 }
 
@@ -2297,7 +2296,6 @@ function initCspRoleMappingEditTable(roleId) {
 
       // 테이블 초기화 완료 후 이벤트 리스너 설정
       cspRoleMappingEditTable.on("tableBuilt", function () {
-        console.log("Edit CSP Role Mapping 테이블 초기화 완료");
         // CSP 데이터 로드
         loadEditCspRoleMapping(roleId, cspRoleMappingEditTable);
         resolve();
@@ -2503,7 +2501,6 @@ async function initEditCspProviderDropdown() {
 // Create CSP Role Mapping 테이블 초기화
 async function initCreateCspRoleMappingTable() {
   return new Promise((resolve, reject) => {
-    console.log("Create CSP Role Mapping 테이블 초기화 시작");
 
     // 테이블 요소 확인
     const tableElement = DOM.createCspRoleMappingTable;
@@ -2551,7 +2548,6 @@ async function initCreateCspRoleMappingTable() {
 
       // 테이블 초기화 완료 후 이벤트 리스너 설정
       createCspRoleMappingTable.on("tableBuilt", function () {
-        console.log("Create CSP Role Mapping 테이블 초기화 완료");
         resolve();
       });
 
@@ -2633,7 +2629,6 @@ function handleAddCspRole() {
   }
   selectedCspProvider = '';
 
-  console.log('CSP Role 추가됨:', newCspRole);
 }
 
 // Create CSP Role 삭제 함수 (전역 함수)
@@ -2648,7 +2643,6 @@ window.deleteCreateCspMapping = function (id) {
     AppState.tables.createCspRoleMappingTable.deleteRow(id);
   }
 
-  console.log('CSP Role 삭제됨:', id);
 };
 
 // CSP Role Name 자동 설정 함수
@@ -2784,7 +2778,6 @@ function setupEditCardToggleEventListeners() {
 // Edit-mode 카드 토글 핸들러들
 function handlePlatformToggleEdit(e) {
   const isExpanded = DOM.platformMenuEditBody.classList.contains('show');
-  console.log("Edit Platform 토글 변경:", !isExpanded);
   UIManager.toggleEditCard('platform', !isExpanded);
 
   // 카드가 펼쳐질 때 Platform 메뉴 트리 초기화 및 권한 업데이트
@@ -2806,13 +2799,11 @@ function handlePlatformToggleEdit(e) {
 
 function handleWorkspaceToggleEdit(e) {
   const isExpanded = DOM.workspaceMenuEditBody.classList.contains('show');
-  console.log("Edit Workspace 토글 변경:", !isExpanded);
   UIManager.toggleEditCard('workspace', !isExpanded);
 }
 
 function handleCspToggleEdit(e) {
   const isExpanded = DOM.cspRoleMappingEditBody.classList.contains('show');
-  console.log("Edit CSP 토글 변경:", !isExpanded);
   UIManager.toggleEditCard('csp', !isExpanded);
 
   // 카드가 펼쳐질 때 CSP Role 매핑 테이블 초기화 및 CSP Role Name 자동 설정
@@ -3085,7 +3076,6 @@ function getEditPlatformPermissions() {
 // 역할 업데이트 함수
 async function updateRole() {
   try {
-    console.log("=== Edit Role Update 시작 ===");
     const roleName = DOM.editRoleNameInput.value;
     const roleDescription = DOM.editRoleDescriptionInput.value;
 
@@ -3095,7 +3085,6 @@ async function updateRole() {
     // Platform 메뉴 트리가 초기화되지 않은 경우 초기화
     if (platformPermissions.length === 0 && AppState.roles.selectedRole &&
       Utils.hasRoleType(AppState.roles.selectedRole.role_subs, CONSTANTS.ROLE_TYPES.PLATFORM)) {
-      console.log("Platform 메뉴 트리가 초기화되지 않아서 초기화합니다.");
       await initPlatformMenuEditTree();
       await updateEditMenuPermissions(AppState.roles.selectedRole.id);
       platformPermissions = getEditPlatformPermissions();
@@ -3130,8 +3119,6 @@ async function updateRole() {
       menuIds: platformPermissions,
       cspRoles
     };
-
-    console.log("[REQ] Updaterole 파라미터:", roleData);
 
     // API 호출
     const response = await RoleManager.updateRole(AppState.roles.selectedRole.id, roleData);
@@ -3197,7 +3184,6 @@ export async function deleteRole() {
 
 // 카드 헤더 전체 클릭 이벤트 연결
 function setupHeaderClickEvents() {
-  console.log('[DEBUG] setupHeaderClickEvents() 호출');
   // View 모드
   if (DOM.platformHeader) {
     DOM.platformHeader.addEventListener('click', function (e) {
