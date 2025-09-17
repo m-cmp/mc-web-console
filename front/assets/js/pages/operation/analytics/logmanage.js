@@ -343,7 +343,7 @@ export async function getCollectedLog() {
 
   var selectedMeasurement = $("#monitoring_measurement").val();
   var selectedRange = $("#monitoring_range").val();
-  var selectedVMId = $("#monitoring_vmlist").val();
+  var selectedVMId = $("#monitoring_serverlist").val();
   //GET_OpensearchLogs
 
   // try{ 

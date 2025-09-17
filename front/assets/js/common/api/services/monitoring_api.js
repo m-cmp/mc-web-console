@@ -21,7 +21,7 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
       // "range": "1h",
       "group_time": "3h",
       "group_by": [
-        measurement
+        "target_id"
         // "cpu"
       ],
       "limit": 10,
@@ -34,8 +34,7 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
       "conditions": [
         {
           "key": "target_id",
-          "value": "vm-1"
-          // "value": "g1-1-1"
+          "value": vmId
         }
       ]
     }

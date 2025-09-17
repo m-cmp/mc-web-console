@@ -132,9 +132,9 @@ function displayServerStatusList(mciId, vmList) {
       html += '<option value="' + item.id + '">' + item.name + '</option>';
     });
 
-    // monitoring_mcilist 셀렉트 박스에 옵션 추가
-    $("#monitoring_vmlist").empty();
-    $("#monitoring_vmlist").append(html);
+    // monitoring_serverlist 셀렉트 박스에 옵션 추가
+    $("#monitoring_serverlist").empty();
+    $("#monitoring_serverlist").append(html);
   } else {
     console.error("res_item is not an array");
   }
@@ -142,9 +142,9 @@ function displayServerStatusList(mciId, vmList) {
 }
 
 // vm 선택했을 때 displayMonitoringMci 
-$("#monitoring_vmlist").on('change', async function () {
+$("#monitoring_serverlist").on('change', async function () {
 
-  var selectedVm = $("#monitoring_vmlist").val()
+  var selectedVm = $("#monitoring_serverlist").val()
 
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
   var selectedNsId = selectedWorkspaceProject.nsId;
@@ -181,7 +181,7 @@ async function setMonitoringMesurement() {
 export async function startMonitoring() {
   var selectedMeasurement = $("#monitoring_measurement").val();
   var selectedRange = $("#monitoring_range").val();
-  var selectedVMId = $("#monitoring_vmlist").val();
+  var selectedVMId = $("#monitoring_serverlist").val();
 
   var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
 
