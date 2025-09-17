@@ -4,7 +4,6 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function iniClusterkCreate() {
-	console.log("initClusterCreate")
 
 	// partial init functions
 
@@ -13,7 +12,6 @@ export function iniClusterkCreate() {
 
 // callback PopupData
 export async function callbackClusterRecommendation(vmSpec) {
-	console.log("callbackClusterRecommendation")
 
 	$("#ep_provider").val(vmSpec.provider)
 	$("#ep_connectionName").val(vmSpec.connectionName)
@@ -28,12 +26,10 @@ export async function callbackClusterRecommendation(vmSpec) {
 var DISK_SIZE = [];
 function getCommonLookupDiskInfoSuccess(provider, data) {
 
-	console.log("getCommonLookupDiskInfoSuccess", data);
 	var providerId = provider.toUpperCase()
 	var root_disk_type = [];
 	var res_item = data;
 	res_item.forEach(item => {
-		console.log("item provider: ", item.providerId);
 		var temp_provider = item.providerId
 		if (temp_provider == providerId) {
 			root_disk_type = item.rootdisktype
@@ -46,9 +42,7 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	// 	DISK_SIZE = res_item.disksize
 	// }
 
-	console.log("DISK_SIZE", DISK_SIZE)
 	var html = '<option value="">Select Root Disk Type</option>'
-	console.log("root_disk_type : ", root_disk_type);
 	root_disk_type.forEach(item => {
 		html += '<option value="' + item + '">' + item + '</option>'
 	})
@@ -62,7 +56,6 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	// $("#tab_others_root_disk_type").empty()
 	// $("#tab_others_root_disk_type").append(html)
 	//}
-	console.log("const valie DISK_SIZE : ", DISK_SIZE)
 
 	webconsolejs["partials/layout/modal"].modalHide('spec-search')
 
@@ -76,7 +69,6 @@ export async function setProviderList(providerList) {
 	myProviderList = providerList.map(str => str.toUpperCase());
 	// 알파벳 순으로 정렬
 	myProviderList.sort()
-	console.log("myProviderList", myProviderList); // 변환된 배열 출력
 
 	var html = '<option value="">Select Provider</option>'
 	myProviderList.forEach(item => {
@@ -131,7 +123,6 @@ export async function setCloudConnection(cloudConnection) {
 
 		// 알파벳 순으로 정렬
 		cloudConnection.sort();
-		console.log("cloudConnection", cloudConnection); // 변환된 배열 출력
 
 		var html = '<option value="">Select Connection</option>';
 		cloudConnection.forEach(item => {
@@ -147,7 +138,6 @@ export async function setCloudConnection(cloudConnection) {
 		myCloudConnection = cloudConnection.map(item => item.configName);
 		// 알파벳 순으로 정렬
 		myCloudConnection.sort()
-		console.log("myCloudConnection", myCloudConnection); // 변환된 배열 출력
 
 		var html = '<option value="">Select Connection</option>'
 		myCloudConnection.forEach(item => {
@@ -266,16 +256,11 @@ async function updateConfigurationFilltering() {
 		// Region 이름 추출 (예: "[AWS] us-east-1" → "us-east-1")
 		var regionName = selectedRegion.replace(cspRegex, '').trim();
 
-		console.log("Selected Provider:", provider);
-		console.log("Selected Region Name:", regionName);
-
 		// Provider + Region으로 정확한 Connection 필터링
 		var filteredConnections = myCloudConnection.filter(connection => {
 			// "provider-region" 또는 "provider-region-zone" 형태와 매칭
 			return connection.startsWith(regionName);
 		});
-
-		console.log("Filtered Connections:", filteredConnections);
 
 		var html = '<option value="">Select Connection</option>';
 		filteredConnections.forEach(item => {
@@ -307,9 +292,7 @@ export async function displayNewNodeForm() {
 	
 	// getSSHKEY
 	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId)
-	console.log("sshKeyList",sshKeyList)
 	var mysshKeyList = sshKeyList.data.responseData.sshKey
-	console.log("mysshKeyList",mysshKeyList)
 	if (mysshKeyList && mysshKeyList.length > 0) {
         var html = '<option value="">Select sshKey</option>';
         mysshKeyList.forEach(item => {
@@ -319,7 +302,6 @@ export async function displayNewNodeForm() {
         $("#node_sshkey").empty();
         $("#node_sshkey").append(html);
     } else {
-        console.log("No SSH keys available");
 	}
 
 	//recommendVm으로 k8s spec
@@ -375,28 +357,19 @@ var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
 export function deployPmk() {
-	console.log("deployPmk")
 	createCluster()
 }
 
 export async function deployNode() {
-	console.log("deployNode")
 	await createNode()
 }
 
 export async function createNode() {
-	console.log("createNode")
-	console.log("Create_Node_Config_Arr", Create_Node_Config_Arr)
 
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 	var selectedNsId = selectedWorkspaceProject.nsId;
-	console.log("selected projectId : ", selectedNsId)
-
 	var k8sClusterId = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj[0].id
-	console.log("selected clusterId : ", k8sClusterId)
-
 	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Node_Config_Arr)
-
 }
 
 export async function addNewNodeGroup() {
@@ -416,14 +389,10 @@ export async function addNewNodeGroup() {
 	// // cloudconnection set
 	// await setCloudConnection(connectionList)
 
-
-	console.log("addNewNodeGroup")
 	Create_Cluster_Config_Arr = new Array();
 	Create_Node_Config_Arr = new Array();
 
 	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
-	console.log("selectedPmk", selectedCluster)
-
 	var cluster_name = selectedCluster[0].name
 	var cluster_desc = selectedCluster[0].description
 	var cluster_connection = selectedCluster[0].provider// 임시
@@ -431,7 +400,6 @@ export async function addNewNodeGroup() {
 	var cluster_subnet = selectedCluster[0].subnet
 	var cluster_securitygroup = selectedCluster[0].securitygroup
 	var cluster_version = selectedCluster[0].version
-	console.log("cluster_provider", selectedCluster[0])
 
 	$("#node_cluster_name").val(cluster_name)
 	$("#node_cluster_desc").val(cluster_desc)
@@ -466,17 +434,13 @@ export async function addNewPmk() {
 
 	Create_Cluster_Config_Arr = new Array();
 
-	console.log("addNewPmk")
 	
 	// isNodeGroup = true
 }
 
 export async function changeCloudConnection(connectionName) {
-	console.log("selected connection : ", connectionName)
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-
 	var selectedNsId = selectedWorkspaceProject.nsId;
-	console.log("selected projectId : ", selectedNsId)
 	await setVpcList(connectionName, selectedNsId)
 
 }
@@ -491,7 +455,6 @@ export async function setVpcList(connectionName, nsId) {
 	var res_item = vpcList.vNet
 
 	res_item.forEach(item => {
-		console.log("VPC connectionName: ", item.connectionName);
 		if (item.connectionName == connectionName) {
 			vNetList.push(item); 
 		}
@@ -534,7 +497,6 @@ export async function setSubnetList(subnetList) {
 }
 
 export async function setSecurityGroupList(securityGroupList) {
-	console.log("securityGroupList",securityGroupList)
 	var html = '<option value="">Select Security Group</option>';
 	var securityGroups = securityGroupList.securityGroup
 	securityGroups.forEach(securitygroup => {
@@ -547,7 +509,6 @@ export async function setSecurityGroupList(securityGroupList) {
 }
 
 export async function createCluster() {
-	console.log("createCluster")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
@@ -563,15 +524,6 @@ export async function createCluster() {
 	var selectedVpc = $("#cluster_vpc").val()
 	var selectedSubnet = $("#cluster_subnet").val()
 	var selectedSecurityGroup = $("#cluster_sg").val()
-
-	console.log("clusterName", clusterName)
-	console.log("selectedConnection", selectedConnection)
-	console.log("clusterVersion", clusterVersion)
-	console.log("selectedVpc", selectedVpc)
-	console.log("selectedSubnet", selectedSubnet)
-	console.log("selectedSecurityGroup", selectedSecurityGroup)
-
-	console.log("Create_Cluster_Config_Arr", Create_Cluster_Config_Arr)
 
 	if (!clusterName) {
 		alert("Please Input Cluster Name!!!!!")
@@ -657,14 +609,6 @@ export function clusterFormDone_btn() {
     const version = $("#cluster_version").val();
     const description = $("#cluster_desc").val();
 
-    console.log("Connection Name:", connectionName);
-    console.log("Cluster Name:", clusterName);
-    console.log("VNet ID:", vNetId);
-    console.log("Subnet ID:", subnetId);
-    console.log("Security Group ID:", securityGroupId);
-    console.log("Version:", version);
-    console.log("Description:", description);
-
     var cluster_form = {
         connectionName: connectionName || "", 
         name: clusterName || "",
@@ -686,17 +630,6 @@ export function clusterFormDone_btn() {
     const rootDiskType = $("#node_rootdisk").val();
     const specId = $("#node_specid").val();
     const sshKeyId = $("#node_sshkey").val();
-
-    console.log("Node Group Name:", nodeGroupName);
-    console.log("Desired Node Size:", desiredNodeSize);
-    console.log("Image ID:", imageId);
-    console.log("Max Node Size:", maxNodeSize);
-    console.log("Min Node Size:", minNodeSize);
-    console.log("Auto Scaling:", onAutoScaling);
-    console.log("Root Disk Size:", rootDiskSize);
-    console.log("Root Disk Type:", rootDiskType);
-    console.log("Spec ID:", specId);
-    console.log("SSH Key ID:", sshKeyId);
 
     if (nodeGroupName) {
         cluster_form["k8sNodeGroupList"] = [
@@ -721,10 +654,8 @@ export function clusterFormDone_btn() {
     Create_Cluster_Config_Arr.push(cluster_form);
 	if (isNodeGroup) {
 		Create_Node_Config_Arr.push(cluster_form["k8sNodeGroupList"][0]);
-        console.log("Final node Config:", Create_Node_Config_Arr);
 	
 	}
-    console.log("Final Cluster Config:", Create_Cluster_Config_Arr);
 	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
 
 	add_nodegroup_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
@@ -741,12 +672,10 @@ export function clusterFormDone_btn() {
 
 	
 	var element = $("#" + ngEleId + "_plusIcon");
-	console.log("Element to remove:", element);  // 선택된 요소 확인
 	if (element.length) {
 		element.remove();
-		console.log("Element removed successfully");
 	} else {
-		console.log("Element not found");
+		console.error("Element not found");
 	}
 	
 	$("#" + ngEleId + "_plusIcon").remove();
@@ -789,7 +718,6 @@ export function addNodeFormDone_btn() {
 	var add_nodegroup_html = ""
 
     Create_Node_Config_Arr.push(node_form)
-	console.log("express btn click and express form data : ", node_form)
 	
 	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
 
@@ -810,7 +738,6 @@ export function addNodeFormDone_btn() {
 }
 
 export function view_ngForm(cnt){
-	console.log('view simple cnt : ', cnt);
 	var div = document.getElementById("nodegroup_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 }
