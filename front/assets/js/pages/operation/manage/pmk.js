@@ -1587,8 +1587,37 @@ document.addEventListener("DOMContentLoaded", function() {
     pmkInitialized = true;
 });
 
-// Cluster Terminal 모달 초기화 함수
-export async function initClusterRemoteCmdModal() {
+// Cluster Terminal 모달 표시 함수
+export function showClusterTerminalModal() {
+  // 현재 선택된 Cluster가 있는지 확인
+  if (!currentPmkId) {
+    alert("Please select a Cluster first.");
+    return;
+  }
+  
+  // 입력 필드 초기화
+  const namespaceInput = document.getElementById('modalNamespace');
+  const podNameInput = document.getElementById('modalPodName');
+  
+  if (namespaceInput) {
+    namespaceInput.value = '';
+  }
+  if (podNameInput) {
+    podNameInput.value = '';
+  }
+  
+  // 모달 표시
+  const modalElement = document.getElementById('clusterTerminalModal');
+  if (modalElement) {
+    const modalInstance = new bootstrap.Modal(modalElement);
+    modalInstance.show();
+  } else {
+    alert("Terminal modal not found");
+  }
+}
+
+// Cluster Terminal 연결 함수
+export async function connectToClusterTerminal() {
   const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
   
   // 현재 선택된 Cluster가 있는지 확인
@@ -1597,9 +1626,9 @@ export async function initClusterRemoteCmdModal() {
     return;
   }
   
-  // 인풋박스에서 값 가져오기
-  const namespaceInput = document.getElementById('k8sClusterNamespace');
-  const podNameInput = document.getElementById('k8sClusterPodName');
+  // 모달에서 값 가져오기
+  const namespaceInput = document.getElementById('modalNamespace');
+  const podNameInput = document.getElementById('modalPodName');
   
   const userNamespace = namespaceInput ? namespaceInput.value.trim() : '';
   const userPodName = podNameInput ? podNameInput.value.trim() : '';
@@ -1608,6 +1637,11 @@ export async function initClusterRemoteCmdModal() {
   const namespace = userNamespace || 'default';
   const podName = userPodName || 'cluster-pod';
   
+  console.log('Connecting to Cluster Terminal:', {
+    clusterId: currentPmkId,
+    namespace: namespace,
+    podName: podName
+  });
   
   try {
     // 클러스터 데이터에서 실제 정보 가져오기
@@ -1616,6 +1650,15 @@ export async function initClusterRemoteCmdModal() {
     if (!clusterData) {
       alert("Cluster data not found.");
       return;
+    }
+    
+    // 연결 모달 닫기
+    const terminalModal = document.getElementById('clusterTerminalModal');
+    if (terminalModal) {
+      const modalInstance = bootstrap.Modal.getInstance(terminalModal);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
     }
     
     await webconsolejs["common/api/services/remotecmd_api"].initClusterTerminal(
@@ -1632,7 +1675,7 @@ export async function initClusterRemoteCmdModal() {
       const modalInstance = new bootstrap.Modal(modalElement);
       modalInstance.show();
     } else {
-      alert("Modal element not found");
+      alert("Terminal modal element not found");
     }
   } catch (error) {
     alert("Error initializing terminal: " + error.message);
@@ -1641,7 +1684,7 @@ export async function initClusterRemoteCmdModal() {
 
 // Cluster Terminal 버튼 상태 업데이트
 function updateClusterRemoteCmdButtonState() {
-  const clusterRemoteCmdBtn = document.querySelector('a[onclick*="initClusterRemoteCmdModal"]');
+  const clusterRemoteCmdBtn = document.querySelector('a[onclick*="showClusterTerminalModal"]');
   
   if (clusterRemoteCmdBtn) {
     if (currentPmkId) {

@@ -247,7 +247,7 @@ function initMonitorConfigTable() {
     //   visible: true
     // },
     {
-      title: "Agent Statue",
+      title: "Agent Status",
       field: "monAgentStatus",
       vertAlign: "middle",
       hozAlign: "center",
@@ -332,6 +332,29 @@ function initMonitorConfigTable() {
 export function installMonitoringAgent(vmId){
   var currentNsId = selectedWorkspaceProject.nsId;
   var response = webconsolejs["common/api/services/monitoring_api"].InstallMonitoringAgent(currentNsId, currentWorkloadId, vmId);
+  
+  // 설치 완료 후 토글 상태 업데이트
+  response.then(() => {
+    // 선택된 서버 노드의 상태 업데이트
+    if (selectedServerNode && selectedServerNode.id === vmId) {
+      selectedServerNode.monAgentStatus = "ACTIVE";
+      
+      // UI 업데이트
+      setMonitorConfigInfoData();
+      
+      // 테이블 데이터도 업데이트
+      var tableData = monitorConfigListTable.getData();
+      var updatedData = tableData.map(row => {
+        if (row.id === vmId) {
+          row.monAgentStatus = "ACTIVE";
+        }
+        return row;
+      });
+      monitorConfigListTable.setData(updatedData);
+    }
+  }).catch(error => {
+    console.error("Failed to install monitoring agent:", error);
+  });
 }
 
 
@@ -728,6 +751,30 @@ async function setMonitorConfigInfoData() {
     $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? true : false))
     $(htmlCardIdPrefix+"agent_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
     $(htmlCardIdPrefix+"collect_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
+
+    // 토글 박스 이벤트 리스너 추가
+    $(htmlCardIdPrefix+"monitor input[type='checkbox']").off('change').on('change', function() {
+      var isChecked = $(this).is(':checked');
+      var currentAgentStatus = selectedServerNode.monAgentStatus;
+      
+      // 토글 ON 시: 에이전트가 설치되지 않은 경우 설치 모달 표시
+      if (isChecked && currentAgentStatus !== "ACTIVE" && currentAgentStatus !== "INACTIVE") {
+        var targetVmId = selectedServerNode.id;
+        var targetModal = "commonDefaultModal";
+        var modalTitle = "MonitoringAgentInstall";
+        var modalContent = "Would you like to install the monitoring agent?";
+        var modalFunc = "pages/operation/analytics/monitoringconfig.installMonitoringAgent";
+        webconsolejs['partials/layout/modal'].commonConfirmModal(targetModal, modalTitle, modalContent, modalFunc, targetVmId);
+        
+        // 모달 확인 후 토글 상태를 원래대로 되돌림 (설치 완료 후 다시 토글)
+        $(this).prop('checked', false);
+      }
+      // 토글 OFF 시: 에이전트가 활성화된 경우 비활성화 확인 (선택사항)
+      else if (!isChecked && currentAgentStatus === "ACTIVE") {
+        // 필요시 에이전트 비활성화 로직 추가 가능
+        console.log("Monitor agent deactivation requested");
+      }
+    });
 
   } catch (e) {
     console.error(e);
