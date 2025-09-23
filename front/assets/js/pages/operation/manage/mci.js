@@ -515,6 +515,11 @@ export function handleCheck(type, id) {
         if (div.classList.contains("active")) {
           webconsolejs["partials/layout/navigatePages"].toggleElement(div);
         }
+        // Server Info도 닫기
+        const serverInfoDiv = document.getElementById("subGroup_vm_info");
+        if (serverInfoDiv && serverInfoDiv.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(serverInfoDiv);
+        }
       } else {
         // 다른 항목 선택 - 기존 선택 해제 후 새 항목 선택
         if (selectedVmGroupId && selectedVmGroupId !== id) {
@@ -522,6 +527,11 @@ export function handleCheck(type, id) {
         }
         selectedVmGroupId = id;
         currentSubGroupId = id;
+        // Server Info 닫기 (다른 항목 선택 시)
+        const serverInfoDiv = document.getElementById("subGroup_vm_info");
+        if (serverInfoDiv && serverInfoDiv.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(serverInfoDiv);
+        }
         vmListInSubGroup(currentSubGroupId);
       }
     } else {
@@ -533,19 +543,47 @@ export function handleCheck(type, id) {
       if (div.classList.contains("active")) {
         webconsolejs["partials/layout/navigatePages"].toggleElement(div);
       }
+      // Server Info도 닫기
+      const serverInfoDiv = document.getElementById("subGroup_vm_info");
+      if (serverInfoDiv && serverInfoDiv.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(serverInfoDiv);
+      }
     }
   } else if (type === 'subgroup_vm') {
     if (checkbox.prop("checked")) {
-      // 기존 선택된 SubGroup VM이 있다면 해제
-      if (selectedSubGroupVmId && selectedSubGroupVmId !== id) {
-        $(`#checkbox_subgroup_vm_${selectedSubGroupVmId}`).prop("checked", false);
+      // 같은 항목 재선택인지 확인
+      if (selectedSubGroupVmId === id) {
+        // 같은 항목 재선택 - 토글 닫기
+        selectedSubGroupVmId = null;
+        currentSubGroupVmId = null;
+        clearServerInfo();
+        const div = document.getElementById("subGroup_vm_info");
+        if (div && div.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
+      } else {
+        // 다른 항목 선택 - 기존 선택 해제 후 새 항목 선택
+        if (selectedSubGroupVmId && selectedSubGroupVmId !== id) {
+          $(`#checkbox_subgroup_vm_${selectedSubGroupVmId}`).prop("checked", false);
+        }
+        selectedSubGroupVmId = id;
+        currentSubGroupVmId = id;
+        webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
+        // Server Info 토글 (c 버튼 역할)
+        const div = document.getElementById("subGroup_vm_info");
+        if (div && !div.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
       }
-      selectedSubGroupVmId = id;
-      currentSubGroupVmId = id;
-      webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
     } else {
       selectedSubGroupVmId = null;
+      currentSubGroupVmId = null;
       clearServerInfo();
+      // 체크 해제 시 토글 닫기
+      const div = document.getElementById("subGroup_vm_info");
+      if (div && div.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+      }
     }
   }
   // 마지막 선택된 VM 강조 표시
@@ -873,13 +911,12 @@ export async function vmDetailInfo(vmId) {
 
 export async function subGroup_vmDetailInfo(vmId) {
   currentSubGroupVmId = vmId
-  // Toggle MCIS Info
-  var div = document.getElementById("subGroup_vm_info");
-
-  const hasActiveClass = div.classList.contains("active");
-  if (!hasActiveClass) {
-    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-  }
+  // Server Info는 c 버튼으로만 제어되므로 자동 토글 제거
+  // var div = document.getElementById("subGroup_vm_info");
+  // const hasActiveClass = div.classList.contains("active");
+  // if (!hasActiveClass) {
+  //   webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  // }
 
   // get mci vm  
   try {
@@ -940,6 +977,7 @@ export async function subGroup_vmDetailInfo(vmId) {
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
   var vmSshKeyID = data.sshKeyId;
+  var cspVMID = data.uid;
 
   try {
     var imageId = data.imageId
@@ -969,6 +1007,9 @@ export async function subGroup_vmDetailInfo(vmId) {
   $("#subgroup_mci_server_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
   $("#subgroup_mci_server_info_connection").empty()
   $("#subgroup_mci_server_info_connection").append(vmProviderIcon)
+
+  // CSP 정보 설정
+  $("#subgroup_server_info_csp").text(providerName)
 
 
   $("#subgroup_server_info_text").text(' [ ' + currentSubGroupId + ' / ' + vmName + ' ]')
@@ -1097,6 +1138,21 @@ function clearServerInfo() {
   $("#server_info_os_arch").text("")
   $("#server_info_public_ip").text("")
   $("#server_info_private_ip").text("")
+
+  // subgroup 필드들 초기화
+  $("#subgroup_server_info_csp").text("")
+  $("#subgroup_server_info_region").text("")
+  $("#subgroup_server_info_zone").text("")
+  $("#subgroup_server_info_connection_name").text("")
+  $("#subgroup_server_info_cspVMID").text("")
+  $("#subgroup_server_info_vmspec_name").text("")
+  $("#subgroup_server_info_archi").text("")
+  $("#subgroup_server_info_public_ip").text("")
+  $("#subgroup_server_info_private_ip").text("")
+  $("#subgroup_server_info_os").text("")
+  $("#subgroup_server_info_start_time").text("")
+  $("#subgroup_server_info_public_dns").text("")
+  $("#subgroup_server_info_private_dns").text("")
 
   // ip information
   $("#server_detail_info_public_ip_text").text("")
@@ -2306,13 +2362,13 @@ export async function deletePolicy() {
     await loadPolicyData();
 
     // 현재 선택된 MCI가 있으면 해당 MCI를 다시 선택 (Policy 탭에서 이미 선택된 상태 유지)
-    if (currentMciId && mciListTable) {
+    if (window.currentMciId && mciListTable) {
       try {
-        const row = mciListTable.getRow(currentMciId);
+        const row = mciListTable.getRow(window.currentMciId);
         if (row) {
           // MCI 선택 상태 유지
           var tempcurmciID = row.getCell("id").getValue();
-          currentMciId = tempcurmciID;
+          window.currentMciId = tempcurmciID;
           
           // mci_info 요소가 이미 활성화되어 있는지 확인하고 필요시 활성화
           const mciInfoElement = document.getElementById("mci_info");
@@ -2438,7 +2494,7 @@ export async function deployPolicy() {
     // API 호출
     const response = await webconsolejs["common/api/services/mci_api"].createPolicy(
       window.currentNsId,
-      currentMciId,
+      window.currentMciId,
       requestData.policy
     );
 
@@ -2462,13 +2518,13 @@ export async function deployPolicy() {
       }
 
       // 현재 선택된 MCI가 있으면 해당 MCI를 다시 선택
-      if (currentMciId && mciListTable) {
+      if (window.currentMciId && mciListTable) {
         try {
-          const row = mciListTable.getRow(currentMciId);
+          const row = mciListTable.getRow(window.currentMciId);
           if (row) {
             // 강제로 MCI 선택 상태로 만들기
             var tempcurmciID = row.getCell("id").getValue();
-            currentMciId = tempcurmciID;
+            window.currentMciId = tempcurmciID;
             
             // mci_info 요소를 직접 활성화
             const mciInfoElement = document.getElementById("mci_info");
@@ -2597,9 +2653,9 @@ function buildPolicyRequestData(data) {
           command: data.command ? [data.command] : [],
           userName: data.userName
         },
-        vmDynamicReq: {
-          commonImage: data.commonImage,
-          commonSpec: data.commonSpec,
+        subGroupDynamicReq: {
+          imageId: data.commonImage,
+          specId: data.commonSpec,
           connectionName: data.connectionName,
           description: data.description,
           label: {

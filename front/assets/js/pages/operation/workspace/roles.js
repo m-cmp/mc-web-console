@@ -1,6 +1,14 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import 'jstree';
 
+// webconsolejs 네임스페이스 초기화
+if (typeof webconsolejs === 'undefined') {
+  window.webconsolejs = {};
+}
+if (typeof webconsolejs['pages/operation/workspace/roles'] === 'undefined') {
+  webconsolejs['pages/operation/workspace/roles'] = {};
+}
+
 // CSS 스타일 추가
 const style = document.createElement('style');
 style.textContent = `
@@ -3242,4 +3250,192 @@ function setupHeaderClickEvents() {
     });
   }
 }
+
+// Assign User 관련 함수들
+let assignUserModalTable = null;
+let currentSelectedRole = null;
+
+// Assign User 모달 초기화
+function initAssignUserModal(roleData) {
+  currentSelectedRole = roleData;
+  
+  // 역할 정보 표시
+  const roleDisplay = document.getElementById('assign-user-modal-role-display');
+  if (roleDisplay) {
+    roleDisplay.value = roleData ? `${roleData.name} (${roleData.id})` : '';
+  }
+  
+  // 사용자 목록 로드 및 테이블 초기화
+  loadUsersForAssignment();
+}
+
+// 사용자 목록 로드
+async function loadUsersForAssignment() {
+  try {
+    // 사용자 목록 API 호출 (users.js와 동일한 API 사용)
+    const users = await webconsolejs['common/api/services/users_api'].getUserList();
+    initUserTable(users);
+  } catch (error) {
+    console.error('사용자 목록 로드 실패:', error);
+    // 에러 시 빈 배열로 초기화
+    initUserTable([]);
+  }
+}
+
+// 사용자 테이블 초기화
+function initUserTable(users) {
+  const tableElement = document.getElementById('assign-user-modal-userselector');
+  if (!tableElement) return;
+  
+  // 기존 테이블 제거
+  if (assignUserModalTable) {
+    assignUserModalTable.destroy();
+  }
+  
+  try {
+    // Tabulator 테이블 초기화
+    assignUserModalTable = new Tabulator("#assign-user-modal-userselector", {
+      data: users,
+      layout: "fitColumns",
+      height: 280,
+      pagination: true,
+      paginationSize: 10,
+      paginationSizeSelector: [10, 20, 30],
+      reactiveData: true,
+      selectable: true,
+      selectableCheck: function(row) {
+        return true; // 모든 행 선택 가능
+      },
+      columns: [
+        {
+          formatter: "rowSelection",
+          titleFormatter: "rowSelection",
+          vertAlign: "middle",
+          hozAlign: "center",
+          headerHozAlign: "center",
+          headerSort: false,
+          width: 60,
+        },
+        {
+          title: "Name",
+          field: "name",
+          sorter: "string",
+          formatter: function(cell) {
+            const user = cell.getRow().getData();
+            const firstName = user.firstName || user.first_name || user.FirstName || '';
+            const lastName = user.lastName || user.last_name || user.LastName || '';
+            const email = user.email || user.Email || '';
+            return `${firstName} ${lastName}`.trim() || email;
+          }
+        },
+        {
+          title: "Email",
+          field: "email",
+          sorter: "string",
+          formatter: function(cell) {
+            const user = cell.getRow().getData();
+            return user.email || user.Email || '';
+          }
+        },
+        {
+          title: "Status",
+          field: "enabled",
+          sorter: "boolean",
+          formatter: function(cell) {
+            const user = cell.getRow().getData();
+            const enabled = user.enabled !== undefined ? user.enabled : 
+                           user.Enabled !== undefined ? user.Enabled : 
+                           user.status === 'active' || user.Status === 'active';
+            return enabled ? 'Enabled' : 'Disabled';
+          }
+        }
+      ]
+    });
+    
+  } catch (error) {
+    console.error('사용자 테이블 초기화 실패:', error);
+  }
+}
+
+// 사용자 할당 실행
+function assignUser() {
+  if (!currentSelectedRole) {
+    console.error('선택된 역할이 없습니다.');
+    return;
+  }
+  
+  if (!assignUserModalTable) {
+    console.error('사용자 테이블이 초기화되지 않았습니다.');
+    return;
+  }
+  
+  const selectedRows = assignUserModalTable.getSelectedRows();
+  if (!selectedRows || selectedRows.length === 0) {
+    alert('할당할 사용자를 선택해주세요.');
+    return;
+  }
+  
+  // 선택된 사용자들의 ID 추출
+  const selectedUserIds = selectedRows.map(row => {
+    const user = row.getData();
+    return user.id || user.Id || user.username || user.Username;
+  });
+  
+  // 사용자 할당 API 호출
+  assignUsersToRole(currentSelectedRole.id, selectedUserIds);
+}
+
+// 실제 사용자 할당 API 호출
+async function assignUsersToRole(roleId, userIds) {
+  try {
+    // 각 사용자에 대해 역할 할당 API 호출
+    const promises = userIds.map(userId => 
+      webconsolejs['common/api/services/roles_api'].assignUserToRole(roleId, userId)
+    );
+    
+    await Promise.all(promises);
+    
+    // 성공 메시지 표시
+    alert('사용자가 성공적으로 할당되었습니다.');
+    
+    // 모달 닫기
+    const modal = bootstrap.Modal.getInstance(document.getElementById('assign-user-modal'));
+    if (modal) modal.hide();
+    
+    // 테이블 새로고침
+    if (typeof refreshRolesList === 'function') {
+      refreshRolesList();
+    }
+    
+  } catch (error) {
+    console.error('사용자 할당 실패:', error);
+    alert('사용자 할당 중 오류가 발생했습니다: ' + error.message);
+  }
+}
+
+// 모달이 열릴 때 호출되는 함수 (드롭다운에서 호출)
+window.openAssignUserModal = function() {
+  // 현재 선택된 역할 정보 가져오기
+  const selectedRole = AppState.roles.selectedRole;
+  
+  if (!selectedRole) {
+    alert('먼저 역할을 선택해주세요.');
+    return;
+  }
+  
+  initAssignUserModal(selectedRole);
+  const modal = new bootstrap.Modal(document.getElementById('assign-user-modal'));
+  modal.show();
+};
+
+// webconsolejs 네임스페이스에 함수 등록 (DOM 로드 후)
+document.addEventListener('DOMContentLoaded', function() {
+  webconsolejs['pages/operation/workspace/roles'].openAssignUserModal = window.openAssignUserModal;
+  webconsolejs['pages/operation/workspace/roles'].assignUser = assignUser;
+});
+
+// 즉시 실행도 추가 (DOM 로드 전에도 사용 가능하도록)
+webconsolejs['pages/operation/workspace/roles'].openAssignUserModal = window.openAssignUserModal;
+webconsolejs['pages/operation/workspace/roles'].assignUser = assignUser;
+
 

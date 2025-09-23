@@ -190,3 +190,46 @@ export async function getCspProviders() {
     return response.data.responseData;
 }
 
+// ===== 동기화 API Functions =====
+
+// CSP Role 동기화
+export async function syncCspRoles(provider = null) {
+    const controller = "/api/mc-iam-manager/SyncCspRoles";
+    const data = {
+        Request: {
+            provider: provider
+        }
+    };
+    const response = await mockAPIPost(controller, data);
+    return response.data.responseData;
+}
+
+// 정책 동기화
+export async function syncPolicies(roleId = null) {
+    const controller = "/api/mc-iam-manager/SyncPolicies";
+    const data = {
+        Request: {
+            roleId: roleId
+        }
+    };
+    const response = await mockAPIPost(controller, data);
+    return response.data.responseData;
+}
+
+// CSP Policy 업데이트
+export async function updateCspPolicy(policyId, policyData) {
+    const controller = "/api/mc-iam-manager/UpdateCspPolicy";
+    const data = {
+        pathParams: {
+            policyId: policyId.toString()
+        },
+        Request: {
+            name: policyData.name,
+            description: policyData.description,
+            document: policyData.document
+        }
+    };
+    const response = await mockAPIPost(controller, data);
+    return response.data.responseData;
+}
+

@@ -210,6 +210,20 @@ export async function getRecommendVmInfoPmk() {
 
 		}
 		
+		// Architecture 필터링 추가
+		var architectureVal = $("#assist_architecture-pmk").val()
+		if (architectureVal != "") {
+			var filterPolicy = {
+				"condition": [
+					{
+						"operand": architectureVal
+					}
+				],
+				"metric": "architecture"
+			}
+			policyArr.push(filterPolicy)
+		}
+		
 		// 우선순위 정책 설정
 		const priorityArr = [];
 		if (lat && lon) {

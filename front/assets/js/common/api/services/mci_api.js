@@ -325,8 +325,8 @@ export async function searchImage(nsId, searchParams) {
     request: {
       includeDeprecatedImage: searchParams.includeDeprecatedImage || false,
       isGPUImage: searchParams.isGPUImage || false,
-      isKubernetesImage: searchParams.isKubernetesImage || false,
-      isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
+      // isKubernetesImage: searchParams.isKubernetesImage || false,
+      // isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
       osArchitecture: searchParams.osArchitecture || "x86_64",
       osType: searchParams.osType || "ubuntu 22.04",
       providerName: searchParams.providerName || "",
@@ -764,7 +764,7 @@ export async function createPolicy(nsId, mciId, policy) {
     alert("Project has not set")
     return;
   }
-
+console.log("policy", policy)
   let data = {
     pathParams: {
       nsId: nsId,

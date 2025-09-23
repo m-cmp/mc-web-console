@@ -207,7 +207,7 @@ export async function getRecommendImageInfoPmk() {
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
 			includeDeprecatedImage: false,
-			isGPUImage: isGPUImage === "false",
+			isGPUImage: isGPUImage === "true",
 			isKubernetesImage: false,
 			isRegisteredByAsset: false,
 			osArchitecture: osArchitecture,
