@@ -133,7 +133,7 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
         const stdout = response.stdout;
         const stderr = response.stderr;
 
-        if (callErr) {
+        if (callErr && Object.keys(callErr).length > 0) {
             const formattedError = JSON.stringify(callErr, null, 2);
             writeAutoWrap(term, " > connect Error: \x1b[1m\x1b[31m" + formattedError + "\x1b[0m");
             callback({ error: callErr });

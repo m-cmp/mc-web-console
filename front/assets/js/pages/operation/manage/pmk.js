@@ -1204,13 +1204,26 @@ export async function deployPmkDynamic() {
         }
         
         // 실제 클러스터 생성 데이터 준비
-        const createData = {
-            imageId: commonImage,
-            specId: commonSpec,
-            connectionName: clusterData.connection,
-            name: clusterData.name,
-            nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""
-        };
+        let createData;
+        
+        // Azure provider인 경우 테스트용 하드코딩된 값 사용
+        if (clusterData.provider.toLowerCase() === 'azure') {
+            createData = {
+                imageId: "default",
+                specId: "azure+koreacentral+standard_b4ms",
+                name: clusterData.name, // 폼에서 입력한 값 사용
+                nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : "k8sng01" // 폼에서 입력한 값이 있으면 사용, 없으면 기본값
+            };
+        } else {
+            // 다른 provider는 기존 로직 사용
+            createData = {
+                imageId: commonImage,
+                specId: commonSpec,
+                connectionName: clusterData.connection,
+                name: clusterData.name,
+                nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""
+            };
+        }
         
         // commonImage가 없으면 "default"로 설정
         if (!createData.commonImage || createData.commonImage === "") {
