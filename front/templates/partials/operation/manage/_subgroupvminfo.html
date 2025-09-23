@@ -9,14 +9,6 @@
         Terminal
       </a> -->
 
-      <a
-        class="btn"
-        data-bs-toggle="modal"
-        data-bs-target="#commonDefaultModal"
-        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Terminal', 'Would you like to connect?', 'pages/operation/manage/mci.initremotecmdModal')"
-      >
-        Terminal
-      </a>
 
       <a
         href="#installsw"
@@ -55,7 +47,22 @@
 
         <!-- Right Column: Main Info -->
         <div class="col-lg-10">
-          <!-- Row 1: Operating System / Architecture / StartTime -->
+          <!-- Row 1: CSP -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: 1fr;
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">CSP</div>
+              <div class="datagrid-content" id="subgroup_server_info_csp"></div>
+            </div>
+          </div>
+
+          <!-- Row 2: Region / Zone / Config Name -->
           <div
             class="datagrid"
             style="
@@ -65,62 +72,12 @@
             "
           >
             <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Operating System</div>
-              <div class="datagrid-content" id="subgroup_server_info_os"></div>
+              <div class="datagrid-title">Region</div>
+              <div class="datagrid-content" id="subgroup_server_info_region"></div>
             </div>
             <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Architecture</div>
-              <div class="datagrid-content" id="subgroup_server_info_archi"></div>
-            </div>
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">StartTime</div>
-              <div class="datagrid-content" id="subgroup_server_info_start_time"></div>
-            </div>
-          </div>
-
-          <!-- Row 2: Private IP / Public DNS (with fixed alignment) -->
-          <div class="datagrid" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Private IP</div>
-              <div class="datagrid-content" id="subgroup_server_info_private_ip"></div>
-            </div>
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Public DNS</div>
-              <div class="datagrid-content" id="subgroup_server_info_public_dns"></div>
-            </div>
-            <!-- Empty column to maintain alignment -->
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title"></div>
-              <div class="datagrid-content"></div>
-            </div>
-          </div>
-
-          <!-- Row 3: Public IP / Private DNS (with fixed alignment) -->
-          <div class="datagrid" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Public IP</div>
-              <div class="datagrid-content" id="subgroup_server_info_public_ip"></div>
-            </div>
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Private DNS</div>
-              <div class="datagrid-content" id="subgroup_server_info_private_dns"></div>
-            </div>
-            <!-- Empty column to maintain alignment -->
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title"></div>
-              <div class="datagrid-content"></div>
-            </div>
-          </div>
-
-          <!-- Row 4: VMID / VMSpec / Config Name -->
-          <div class="datagrid" style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">VMID</div>
-              <div class="datagrid-content" id="subgroup_server_info_cspVMID"></div>
-            </div>
-            <div class="datagrid-item mb-3">
-              <div class="datagrid-title">VMSpec</div>
-              <div class="datagrid-content" id="subgroup_server_info_vmspec_name"></div>
+              <div class="datagrid-title">Zone</div>
+              <div class="datagrid-content" id="subgroup_server_info_zone"></div>
             </div>
             <div class="datagrid-item mb-3">
               <div class="datagrid-title">Config Name</div>
@@ -128,15 +85,55 @@
             </div>
           </div>
 
-          <!-- Row 5: Region / Zone -->
-          <div class="datagrid" style=" display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 1.5rem;">
+          <!-- Row 3: VMID / VM Spec / Operating System/Architecture -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-gap: 1.5rem;
+            "
+          >
             <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Region</div>
-              <div class="datagrid-content" id="subgroup_server_info_region"></div>
+              <div class="datagrid-title">VMID</div>
+              <div class="datagrid-content" id="subgroup_server_info_cspVMID"></div>
             </div>
             <div class="datagrid-item mb-3">
-              <div class="datagrid-title">Zone</div>
-              <div class="datagrid-content" id="subgroup_server_info_zone"></div>
+              <div class="datagrid-title">VM Spec</div>
+              <div class="datagrid-content" id="subgroup_server_info_vmspec_name"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Architecture</div>
+              <div class="datagrid-content" id="subgroup_server_info_archi"></div>
+            </div>
+          </div>
+
+          <!-- Row 4: Public IP + Terminal Button / Private IP / (Empty) -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Public IP</div>
+              <div class="datagrid-content d-flex align-items-center">
+                <span id="subgroup_server_info_public_ip" class="me-2"></span>
+                <a
+                  class="btn btn-sm btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonDefaultModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Terminal', 'Would you like to connect?', 'pages/operation/manage/mci.initremotecmdModal')"
+                >
+                  Terminal
+                </a>
+              </div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Private IP</div>
+              <div class="datagrid-content" id="subgroup_server_info_private_ip"></div>
             </div>
             <!-- Empty column to maintain alignment -->
             <div class="datagrid-item mb-3">

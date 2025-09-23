@@ -308,6 +308,15 @@ export function handleMockAPIRequest(controller, data = null) {
                 case "/api/mc-iam-manager/GetCspProviders":
                     result = handleGetCspProviders();
                     break;
+                case "/api/mc-iam-manager/SyncCspRoles":
+                    result = handleSyncCspRoles(data);
+                    break;
+                case "/api/mc-iam-manager/SyncPolicies":
+                    result = handleSyncPolicies(data);
+                    break;
+                case "/api/mc-iam-manager/UpdateCspPolicy":
+                    result = handleUpdateCspPolicy(data);
+                    break;
                 default:
                     result = { error: "Unknown controller" };
             }
@@ -556,6 +565,105 @@ function handleGetCspProviders() {
         description: `${provider.toUpperCase()} Cloud Service Provider`,
         status: 'available'
     }));
+}
+
+// CSP Role 동기화
+function handleSyncCspRoles(data) {
+    const request = data?.Request || {};
+    const provider = request.provider;
+    
+    // 동기화 시뮬레이션 - 실제로는 외부 CSP에서 최신 역할 목록을 가져옴
+    const syncRoles = generateMockCspRoles();
+    
+    if (provider) {
+        const filteredRoles = syncRoles.filter(role => role.provider === provider);
+        // 기존 역할과 병합 (중복 제거)
+        const existingRoleIds = mockData.roles.map(r => r.id);
+        const newRoles = filteredRoles.filter(role => !existingRoleIds.includes(role.id));
+        mockData.roles.push(...newRoles);
+        
+        return {
+            success: true,
+            message: `Synced ${newRoles.length} new roles for ${provider}`,
+            syncedRoles: newRoles.length,
+            totalRoles: mockData.roles.filter(r => r.provider === provider).length
+        };
+    } else {
+        // 모든 Provider 동기화
+        const existingRoleIds = mockData.roles.map(r => r.id);
+        const newRoles = syncRoles.filter(role => !existingRoleIds.includes(role.id));
+        mockData.roles.push(...newRoles);
+        
+        return {
+            success: true,
+            message: `Synced ${newRoles.length} new roles across all providers`,
+            syncedRoles: newRoles.length,
+            totalRoles: mockData.roles.length
+        };
+    }
+}
+
+// 정책 동기화
+function handleSyncPolicies(data) {
+    const request = data?.Request || {};
+    const roleId = request.roleId;
+    
+    // 동기화 시뮬레이션 - 실제로는 외부 CSP에서 최신 정책 목록을 가져옴
+    const syncPolicies = generateMockCspPolicies();
+    
+    if (roleId) {
+        // 특정 역할의 정책 동기화
+        const role = mockData.roles.find(r => r.id === roleId);
+        if (!role) {
+            throw new Error(`CSP Role with ID ${roleId} not found`);
+        }
+        
+        const rolePolicies = syncPolicies.filter(policy => policy.provider === role.provider);
+        const existingPolicyIds = mockData.policies.map(p => p.id);
+        const newPolicies = rolePolicies.filter(policy => !existingPolicyIds.includes(policy.id));
+        mockData.policies.push(...newPolicies);
+        
+        return {
+            success: true,
+            message: `Synced ${newPolicies.length} new policies for role ${roleId}`,
+            syncedPolicies: newPolicies.length,
+            roleId: roleId
+        };
+    } else {
+        // 모든 정책 동기화
+        const existingPolicyIds = mockData.policies.map(p => p.id);
+        const newPolicies = syncPolicies.filter(policy => !existingPolicyIds.includes(policy.id));
+        mockData.policies.push(...newPolicies);
+        
+        return {
+            success: true,
+            message: `Synced ${newPolicies.length} new policies`,
+            syncedPolicies: newPolicies.length,
+            totalPolicies: mockData.policies.length
+        };
+    }
+}
+
+// CSP Policy 업데이트
+function handleUpdateCspPolicy(data) {
+    const policyId = data?.pathParams?.policyId;
+    const request = data?.Request || {};
+    
+    const policyIndex = mockData.policies.findIndex(p => p.id === policyId);
+    if (policyIndex === -1) {
+        throw new Error(`CSP Policy with ID ${policyId} not found`);
+    }
+    
+    const updatedPolicy = {
+        ...mockData.policies[policyIndex],
+        name: request.name || mockData.policies[policyIndex].name,
+        description: request.description || mockData.policies[policyIndex].description,
+        document: request.document || mockData.policies[policyIndex].document,
+        last_modified: new Date().toISOString()
+    };
+    
+    mockData.policies[policyIndex] = updatedPolicy;
+    return { success: true, policy: updatedPolicy };
 }
 
 // ===== Utility Functions =====
