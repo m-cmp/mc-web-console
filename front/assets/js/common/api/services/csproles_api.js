@@ -61,7 +61,6 @@ export async function createCspRole(roleData) {
         Request: {
             name: roleData.name,
             description: roleData.description,
-            provider: roleData.provider,
             trust_policy: roleData.trust_policy
         }
     };
@@ -133,7 +132,6 @@ export async function createCspPolicy(policyData) {
         Request: {
             name: policyData.name,
             description: policyData.description,
-            provider: policyData.provider,
             document: policyData.document
         }
     };
@@ -227,6 +225,18 @@ export async function updateCspPolicy(policyId, policyData) {
             name: policyData.name,
             description: policyData.description,
             document: policyData.document
+        }
+    };
+    const response = await mockAPIPost(controller, data);
+    return response.data.responseData;
+}
+
+// CSP Policy 삭제
+export async function deleteCspPolicy(policyId) {
+    const controller = "/api/mc-iam-manager/DeleteCspPolicy";
+    const data = {
+        pathParams: {
+            policyId: policyId.toString()
         }
     };
     const response = await mockAPIPost(controller, data);

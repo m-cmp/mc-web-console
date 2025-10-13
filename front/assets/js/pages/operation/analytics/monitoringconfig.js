@@ -185,7 +185,12 @@ $("#workloadlist").on('change', async function () {
       // ]
       var findVm = vmMap.get(monitorTargetList.data[i].id)
       if(findVm){
-        findVm.monAgentStatus = monitorTargetList.data[i].state; // [ACTIVE/INACTIVE]
+        // state가 null인 경우 ACTIVE로 처리
+        var agentState = monitorTargetList.data[i].state;
+        if(agentState === null || agentState === undefined) {
+          agentState = "ACTIVE";
+        }
+        findVm.monAgentStatus = agentState; // [ACTIVE/INACTIVE]
         vmMap.set(findVm.id, findVm);
       }
     }

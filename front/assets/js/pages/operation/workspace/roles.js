@@ -58,7 +58,7 @@ const DOM = {
   roleNameInput: document.getElementById('role-name-input'),
   roleDescriptionInput: document.getElementById('role-description-input'),
   cspProviderSelect: document.getElementById('csp-provider-select'),
-  cspRoleNameInput: document.getElementById('csp-role-name-input'),
+  cspRoleNameSelect: document.getElementById('csp-role-name-select'),
   addCspRoleBtn: document.getElementById('add-csp-role-btn'),
   createCspRoleMappingTable: document.getElementById('create-csp-role-mapping-table'),
   // View-mode 토글 버튼들
@@ -103,7 +103,7 @@ const DOM = {
   cspRoleMappingEditTable: document.getElementById('csp-role-mapping-edit-table'),
   cspRoleMappingEditEmpty: document.getElementById('csp-role-mapping-edit-empty'),
   editCspProviderSelect: document.getElementById('edit-csp-provider-select'),
-  editCspRoleNameInput: document.getElementById('edit-csp-role-name-input'),
+  editCspRoleNameSelect: document.getElementById('edit-csp-role-name-select'),
   addCspMappingBtn: document.getElementById('add-csp-mapping-btn'),
   // Edit-mode 버튼들
   saveEditRoleBtn: document.getElementById('save-edit-role-btn'),
@@ -581,8 +581,9 @@ const UIManager = {
     if (DOM.editCspProviderSelect) {
       DOM.editCspProviderSelect.value = '';
     }
-    if (DOM.editCspRoleNameInput) {
-      DOM.editCspRoleNameInput.value = '';
+    if (DOM.editCspRoleNameSelect) {
+      DOM.editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+      DOM.editCspRoleNameSelect.disabled = true;
     }
     selectedEditCspProvider = '';
     selectedEditCspRoleName = '';
@@ -1392,7 +1393,10 @@ async function initWorkspace() {
     projectName: "Default",
     nsId: "Default"
   };
-  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
+  // checkWorkspaceSelection 함수가 존재하는 경우에만 호출
+  if (webconsolejs["partials/layout/modal"] && webconsolejs["partials/layout/modal"].checkWorkspaceSelection) {
+    webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
+  }
 }
 
 var checked_array = [];
@@ -2294,9 +2298,11 @@ function initCspRoleMappingEditTable(roleId) {
           {
             title: "Actions",
             headerSort: false,
-            width: "20%",
+            width: "30%",
             formatter: function (cell) {
-              return '<button class="btn btn-sm btn-outline-danger" onclick="deleteCspMapping(' + cell.getRow().getData().id + ')">Delete</button>';
+              const rowData = cell.getRow().getData();
+              return '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewEditCspRolePolicies(' + rowData.id + ', \'' + rowData.csp_type + '\', \'' + rowData.name + '\')">View</button>' +
+                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCspMapping(' + rowData.id + ')">Delete</button>';
             }
           }
         ]
@@ -2433,19 +2439,35 @@ let selectedEditCspRoleName = '';
 async function initCspRoleMappingForm() {
   // CSP Provider 드롭다운 초기화
   await initCspProviderDropdown();
+  
+  // CSP Role 드롭다운 초기 상태 설정
+  if (DOM.cspRoleNameSelect) {
+    DOM.cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+    DOM.cspRoleNameSelect.disabled = true;
+  }
 
   // CSP Provider 선택 이벤트
   const cspProviderSelect = DOM.cspProviderSelect;
   if (cspProviderSelect) {
     cspProviderSelect.addEventListener('change', function () {
       selectedCspProvider = this.value;
+      // Provider 선택 시 해당 Provider의 Role 목록 로드
+      if (this.value) {
+        initCspRoleDropdown(this.value);
+      } else {
+        // Provider가 선택되지 않으면 Role 드롭다운 초기화
+        const cspRoleNameSelect = DOM.cspRoleNameSelect;
+        if (cspRoleNameSelect) {
+          cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+          cspRoleNameSelect.disabled = true;
+        }
+      }
     });
   }
 
-  // CSP Role Name 입력 이벤트
-  const cspRoleNameInput = DOM.cspRoleNameInput;
-  if (cspRoleNameInput) {
-    cspRoleNameInput.addEventListener('input', function () {
+  // CSP Role Name 선택 이벤트
+  if (DOM.cspRoleNameSelect) {
+    DOM.cspRoleNameSelect.addEventListener('change', function () {
       selectedCspRoleName = this.value;
     });
   }
@@ -2483,6 +2505,33 @@ async function initCspProviderDropdown() {
   }
 }
 
+// CSP Role 드롭다운 초기화
+async function initCspRoleDropdown(provider) {
+  try {
+    const cspRoles = await window.webconsolejs["common/api/services/csproles_api"].getCspRoleList(provider);
+    const cspRoleNameSelect = DOM.cspRoleNameSelect;
+
+    if (cspRoleNameSelect && cspRoles && Array.isArray(cspRoles)) {
+      // 기존 옵션 제거
+      cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+
+      // 해당 Provider의 Role만 필터링하여 옵션 추가
+      const filteredRoles = cspRoles.filter(role => role.provider === provider);
+      filteredRoles.forEach(role => {
+        const option = document.createElement('option');
+        option.value = role.name;
+        option.textContent = role.name;
+        cspRoleNameSelect.appendChild(option);
+      });
+
+      // 드롭다운 활성화
+      cspRoleNameSelect.disabled = false;
+    }
+  } catch (error) {
+    console.error('CSP Role 드롭다운 초기화 실패:', error);
+  }
+}
+
 // Edit CSP Provider 드롭다운 초기화
 async function initEditCspProviderDropdown() {
   try {
@@ -2503,6 +2552,33 @@ async function initEditCspProviderDropdown() {
     }
   } catch (error) {
     console.error('Edit CSP Provider 드롭다운 초기화 실패:', error);
+  }
+}
+
+// Edit CSP Role 드롭다운 초기화
+async function initEditCspRoleDropdown(provider) {
+  try {
+    const cspRoles = await window.webconsolejs["common/api/services/csproles_api"].getCspRoleList(provider);
+    const editCspRoleNameSelect = DOM.editCspRoleNameSelect;
+
+    if (editCspRoleNameSelect && cspRoles && Array.isArray(cspRoles)) {
+      // 기존 옵션 제거
+      editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+
+      // 해당 Provider의 Role만 필터링하여 옵션 추가
+      const filteredRoles = cspRoles.filter(role => role.provider === provider);
+      filteredRoles.forEach(role => {
+        const option = document.createElement('option');
+        option.value = role.name;
+        option.textContent = role.name;
+        editCspRoleNameSelect.appendChild(option);
+      });
+
+      // 드롭다운 활성화
+      editCspRoleNameSelect.disabled = false;
+    }
+  } catch (error) {
+    console.error('Edit CSP Role 드롭다운 초기화 실패:', error);
   }
 }
 
@@ -2546,9 +2622,11 @@ async function initCreateCspRoleMappingTable() {
           {
             title: "Actions",
             headerSort: false,
-            width: "20%",
+            width: "30%",
             formatter: function (cell) {
-              return '<button class="btn btn-sm btn-outline-danger" onclick="deleteCreateCspMapping(' + cell.getRow().getData().id + ')">Delete</button>';
+              const rowData = cell.getRow().getData();
+              return '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewCreateCspRolePolicies(' + rowData.id + ', \'' + rowData.csp_type + '\', \'' + rowData.name + '\')">View</button>' +
+                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCreateCspMapping(' + rowData.id + ')">Delete</button>';
             }
           }
         ]
@@ -2623,17 +2701,10 @@ function handleAddCspRole() {
   if (DOM.cspProviderSelect) {
     DOM.cspProviderSelect.value = '';
   }
-  if (DOM.cspRoleNameInput) {
-    // Role Name이 있으면 MCIAM_ 접두사로 초기화, 없으면 빈 값
-    const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
-    if (roleName && roleName.trim()) {
-      const cspRoleName = `MCIAM_${roleName.trim()}`;
-      DOM.cspRoleNameInput.value = cspRoleName;
-      selectedCspRoleName = cspRoleName;
-    } else {
-      DOM.cspRoleNameInput.value = '';
-      selectedCspRoleName = '';
-    }
+  if (DOM.cspRoleNameSelect) {
+    DOM.cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+    DOM.cspRoleNameSelect.disabled = true;
+    selectedCspRoleName = '';
   }
   selectedCspProvider = '';
 
@@ -2818,12 +2889,7 @@ function handleCspToggleEdit(e) {
   if (!isExpanded && AppState.roles.selectedRole) {
     initCspRoleMappingEditTable(AppState.roles.selectedRole.id);
 
-    // CSP Role Name 자동 설정
-    if (DOM.editCspRoleNameInput && AppState.roles.selectedRole.name) {
-      const cspRoleName = `MCIAM_${AppState.roles.selectedRole.name}`;
-      DOM.editCspRoleNameInput.value = cspRoleName;
-      selectedEditCspRoleName = cspRoleName;
-    }
+    // CSP Role Name 자동 설정은 드롭다운에서 제거 (사용자가 직접 선택하도록)
   }
 }
 
@@ -2914,12 +2980,7 @@ async function populateEditForm(role) {
   // CSP 권한 설정
   if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.CSP)) {
     UIManager.toggleEditCard('csp', true);
-    // CSP Role Name 입력 박스에 기본값 설정
-    if (DOM.editCspRoleNameInput && role.name) {
-      const cspRoleName = `MCIAM_${role.name}`;
-      DOM.editCspRoleNameInput.value = cspRoleName;
-      selectedEditCspRoleName = cspRoleName;
-    }
+    // CSP Role Name 드롭다운은 사용자가 직접 선택하도록 초기화
   }
 
   // CSP 매핑 테이블은 권한과 관계없이 항상 초기화 (Edit 모드에서 CSP Role 카드를 사용할 수 있도록)
@@ -2952,19 +3013,35 @@ function setupEditCardStates(role) {
 async function initEditCspRoleMappingForm() {
   // Edit CSP Provider 드롭다운 초기화
   await initEditCspProviderDropdown();
+  
+  // Edit CSP Role 드롭다운 초기 상태 설정
+  if (DOM.editCspRoleNameSelect) {
+    DOM.editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+    DOM.editCspRoleNameSelect.disabled = true;
+  }
 
   // Edit CSP Provider 선택 이벤트
   const editCspProviderSelect = DOM.editCspProviderSelect;
   if (editCspProviderSelect) {
     editCspProviderSelect.addEventListener('change', function () {
       selectedEditCspProvider = this.value;
+      // Provider 선택 시 해당 Provider의 Role 목록 로드
+      if (this.value) {
+        initEditCspRoleDropdown(this.value);
+      } else {
+        // Provider가 선택되지 않으면 Role 드롭다운 초기화
+        const editCspRoleNameSelect = DOM.editCspRoleNameSelect;
+        if (editCspRoleNameSelect) {
+          editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
+          editCspRoleNameSelect.disabled = true;
+        }
+      }
     });
   }
 
-  // Edit CSP Role Name 입력 이벤트
-  const editCspRoleNameInput = DOM.editCspRoleNameInput;
-  if (editCspRoleNameInput) {
-    editCspRoleNameInput.addEventListener('input', function () {
+  // Edit CSP Role Name 선택 이벤트
+  if (DOM.editCspRoleNameSelect) {
+    DOM.editCspRoleNameSelect.addEventListener('change', function () {
       selectedEditCspRoleName = this.value;
     });
   }
@@ -3043,12 +3120,7 @@ function handleAddCspMapping() {
   // 폼 초기화
   UIManager.clearEditCspSelection();
 
-  // CSP Role Name 입력 필드에 기본값 다시 설정
-  if (DOM.editCspRoleNameInput && AppState.roles.selectedRole && AppState.roles.selectedRole.name) {
-    const cspRoleName = `MCIAM_${AppState.roles.selectedRole.name}`;
-    DOM.editCspRoleNameInput.value = cspRoleName;
-    selectedEditCspRoleName = cspRoleName;
-  }
+  // CSP Role Name 드롭다운은 사용자가 직접 선택하도록 초기화
 
   // 변경사항 표시
   updateAppState('editingRole.hasChanges', true);
@@ -3437,5 +3509,226 @@ document.addEventListener('DOMContentLoaded', function() {
 // 즉시 실행도 추가 (DOM 로드 전에도 사용 가능하도록)
 webconsolejs['pages/operation/workspace/roles'].openAssignUserModal = window.openAssignUserModal;
 webconsolejs['pages/operation/workspace/roles'].assignUser = assignUser;
+
+// ===== CSP Role Policy View Functions =====
+
+// Create 모드에서 CSP Role의 Policy 목록 보기
+async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
+  try {
+    console.log('Viewing policies for CSP Role:', { roleId, cspType, roleName });
+    
+    // Policy 목록 조회
+    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
+    
+    // Policy 목록을 표시할 컨테이너 찾기 또는 생성
+    let policyContainer = document.getElementById('create-csp-role-policies-container');
+    if (!policyContainer) {
+      // CSP Role 테이블 아래에 Policy 컨테이너 생성
+      const cspTableContainer = document.getElementById('create-csp-role-mapping-table').parentElement;
+      policyContainer = document.createElement('div');
+      policyContainer.id = 'create-csp-role-policies-container';
+      policyContainer.className = 'mt-3';
+      cspTableContainer.appendChild(policyContainer);
+    }
+    
+    // Policy 목록 HTML 생성
+    const policyHtml = generatePolicyListHtml(policies, cspType, roleName, 'create');
+    policyContainer.innerHTML = policyHtml;
+    
+    // Policy 목록 표시
+    policyContainer.style.display = 'block';
+    
+  } catch (error) {
+    console.error('CSP Role Policy 목록 조회 실패:', error);
+    alert('Policy 목록을 불러오는데 실패했습니다: ' + error.message);
+  }
+}
+
+// Edit 모드에서 CSP Role의 Policy 목록 보기
+async function viewEditCspRolePolicies(roleId, cspType, roleName) {
+  try {
+    console.log('Viewing policies for CSP Role:', { roleId, cspType, roleName });
+    
+    // Policy 목록 조회
+    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
+    
+    // Policy 목록을 표시할 컨테이너 찾기 또는 생성
+    let policyContainer = document.getElementById('edit-csp-role-policies-container');
+    if (!policyContainer) {
+      // CSP Role 테이블 아래에 Policy 컨테이너 생성
+      const cspTableContainer = document.getElementById('csp-role-mapping-edit-table').parentElement;
+      policyContainer = document.createElement('div');
+      policyContainer.id = 'edit-csp-role-policies-container';
+      policyContainer.className = 'mt-3';
+      cspTableContainer.appendChild(policyContainer);
+    }
+    
+    // Policy 목록 HTML 생성
+    const policyHtml = generatePolicyListHtml(policies, cspType, roleName, 'edit');
+    policyContainer.innerHTML = policyHtml;
+    
+    // Policy 목록 표시
+    policyContainer.style.display = 'block';
+    
+  } catch (error) {
+    console.error('CSP Role Policy 목록 조회 실패:', error);
+    alert('Policy 목록을 불러오는데 실패했습니다: ' + error.message);
+  }
+}
+
+// Policy 목록 HTML 생성 함수
+function generatePolicyListHtml(policies, cspType, roleName, mode) {
+  const containerId = mode === 'create' ? 'create-csp-role-policies-container' : 'edit-csp-role-policies-container';
+  const closeFunction = mode === 'create' ? 'closeCreateCspRolePolicies' : 'closeEditCspRolePolicies';
+  
+  let html = `
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">
+          CSP Role Policies: ${cspType.toUpperCase()} - ${roleName}
+        </h4>
+        <div class="card-actions">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="${closeFunction}()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"></path>
+            </svg>
+            Close
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Policy Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+  `;
+  
+  if (policies && policies.length > 0) {
+    policies.forEach(policy => {
+      html += `
+        <tr>
+          <td>${policy.name || 'N/A'}</td>
+          <td>${policy.description || 'N/A'}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-info" onclick="viewPolicyDetails('${policy.id}', '${policy.name}')">
+              View Details
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  } else {
+    html += `
+      <tr>
+        <td colspan="3" class="text-center text-muted">No policies found for this role</td>
+      </tr>
+    `;
+  }
+  
+  html += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  return html;
+}
+
+// Create 모드 Policy 목록 닫기
+function closeCreateCspRolePolicies() {
+  const container = document.getElementById('create-csp-role-policies-container');
+  if (container) {
+    container.style.display = 'none';
+  }
+}
+
+// Edit 모드 Policy 목록 닫기
+function closeEditCspRolePolicies() {
+  const container = document.getElementById('edit-csp-role-policies-container');
+  if (container) {
+    container.style.display = 'none';
+  }
+}
+
+// Policy 상세 정보 보기
+async function viewPolicyDetails(policyId, policyName) {
+  try {
+    const policy = await window.webconsolejs["common/api/services/csproles_api"].getCspPolicyById(policyId);
+    
+    // Policy 상세 정보를 모달로 표시
+    const modalHtml = `
+      <div class="modal fade" id="policyDetailModal" tabindex="-1" aria-labelledby="policyDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="policyDetailModalLabel">Policy Details: ${policyName}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <strong>Name:</strong> ${policy.name || 'N/A'}
+                </div>
+                <div class="col-md-6">
+                  <strong>Description:</strong> ${policy.description || 'N/A'}
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <strong>Context JSON:</strong>
+                  <textarea
+                    class="form-control mt-2"
+                    rows="15"
+                    style="
+                      font-family: 'Courier New', monospace;
+                      max-height: 400px;
+                      overflow-y: auto;
+                    "
+                    readonly
+                  >${JSON.stringify(policy.document, null, 2)}</textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 기존 모달 제거
+    const existingModal = document.getElementById('policyDetailModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // 새 모달 추가
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 모달 표시
+    const modal = new bootstrap.Modal(document.getElementById('policyDetailModal'));
+    modal.show();
+    
+  } catch (error) {
+    console.error('Policy 상세 정보 조회 실패:', error);
+    alert('Policy 상세 정보를 불러오는데 실패했습니다: ' + error.message);
+  }
+}
+
+// 전역 함수로 등록
+window.viewCreateCspRolePolicies = viewCreateCspRolePolicies;
+window.viewEditCspRolePolicies = viewEditCspRolePolicies;
+window.closeCreateCspRolePolicies = closeCreateCspRolePolicies;
+window.closeEditCspRolePolicies = closeEditCspRolePolicies;
+window.viewPolicyDetails = viewPolicyDetails;
 
 
