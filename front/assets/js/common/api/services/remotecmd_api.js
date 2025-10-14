@@ -65,47 +65,158 @@ export async function initTerminal(id, nsId, mciId, targetId, targetType) {
         }
     });
 
-    dropzoneInstance = new Dropzone("#dropzone-custom", {
-        autoProcessQueue: false,
-        addRemoveLinks: true,
-        acceptedFiles: ".sh",
-        init: function () {
-            this.on("addedfile", function (file) {
-                if (file.name.endsWith(".sh")) {
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        const fileText = event.target.result;
-                        const modifiedContent = fileText
-                            .split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line.length > 0);
-                        fileContents.push(modifiedContent);
-                    };
-                    reader.onerror = function () {
-                        alert("Failed to read file");
-                    };
-                    reader.readAsText(file);
-                } else {
-                    alert("Only shell script files (.sh) are allowed.");
+    // targetType에 따라 다른 ID 사용
+    let dropzoneId, buttonId, pathInputId;
+    
+    if (targetType === 'mci') {
+        dropzoneId = '#mci-dropzone-custom';
+        buttonId = 'mci-show-content-btn';
+        pathInputId = 'mci-file-path-input';
+    } else if (targetType === 'subgroup') {
+        dropzoneId = '#subgroup-dropzone-custom';
+        buttonId = 'subgroup-show-content-btn';
+        pathInputId = 'subgroup-file-path-input';
+    } else {
+        // vm 타입
+        dropzoneId = '#dropzone-custom';
+        buttonId = 'show-content-btn';
+        pathInputId = 'file-path-input';
+    }
+
+    // VM과 동일한 방식: 간단한 Dropzone 초기화
+    setTimeout(() => {
+        console.log('Initializing dropzone for targetType:', targetType);
+        console.log('Looking for dropzone element:', dropzoneId);
+        const dropzoneElement = document.querySelector(dropzoneId);
+        console.log('Dropzone element found:', dropzoneElement);
+        
+        if (dropzoneElement && !dropzoneElement.dropzone) {
+            console.log('Creating new Dropzone instance...');
+            dropzoneInstance = new Dropzone(dropzoneId, {
+                autoProcessQueue: false,
+                addRemoveLinks: true,
+                acceptedFiles: ".txt,.json,.yaml,.yml,.conf,.log,.sh",
+                maxFilesize: 10, // 10MB
+                clickable: true, // 클릭 가능하도록 명시적 설정
+                init: function () {
+                    this.on("addedfile", function (file) {
+                        if (file instanceof File) {
+                            // 중복 파일 체크
+                            const isDuplicate = fileContents.some(existingFile => 
+                                existingFile.name === file.name && existingFile.size === file.size
+                            );
+                            
+                            if (!isDuplicate) {
+                                fileContents.push(file);
+                            }
+                        }
+                    });
+                    
+                    // 강제로 클릭 이벤트 추가
+                    const dropzoneElement = this.element;
+                    
+                    // 더 강력한 클릭 이벤트 추가
+                    dropzoneElement.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // 파일 입력 요소 생성
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.multiple = true;
+                        fileInput.accept = '.txt,.json,.yaml,.yml,.conf,.log,.sh';
+                        fileInput.style.display = 'none';
+                        
+                        fileInput.addEventListener('change', function(e) {
+                            const files = Array.from(e.target.files);
+                            
+                            files.forEach(file => {
+                                if (file instanceof File) {
+                                    // 중복 파일 체크
+                                    const isDuplicate = fileContents.some(existingFile => 
+                                        existingFile.name === file.name && existingFile.size === file.size
+                                    );
+                                    
+                                    if (!isDuplicate) {
+                                        fileContents.push(file);
+                                        
+                                        // Dropzone에 파일 추가
+                                        dropzoneInstance.addFile(file);
+                                    }
+                                }
+                            });
+                        });
+                        
+                        document.body.appendChild(fileInput);
+                        fileInput.click();
+                        document.body.removeChild(fileInput);
+                    }, true); // capture phase에서 실행
+                    
+                    // 추가적인 클릭 이벤트 (dz-message 영역)
+                    const dzMessage = dropzoneElement.querySelector('.dz-message');
+                    if (dzMessage) {
+                        dzMessage.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // 파일 입력 요소 생성
+                            const fileInput = document.createElement('input');
+                            fileInput.type = 'file';
+                            fileInput.multiple = true;
+                            fileInput.accept = '.txt,.json,.yaml,.yml,.conf,.log,.sh';
+                            fileInput.style.display = 'none';
+                            
+                            fileInput.addEventListener('change', function(e) {
+                                const files = Array.from(e.target.files);
+                                
+                                files.forEach(file => {
+                                    if (file instanceof File) {
+                                        // 중복 파일 체크
+                                        const isDuplicate = fileContents.some(existingFile => 
+                                            existingFile.name === file.name && existingFile.size === file.size
+                                        );
+                                        
+                                        if (!isDuplicate) {
+                                            fileContents.push(file);
+                                            
+                                            // Dropzone에 파일 추가
+                                            dropzoneInstance.addFile(file);
+                                        }
+                                    }
+                                });
+                            });
+                            
+                            document.body.appendChild(fileInput);
+                            fileInput.click();
+                            document.body.removeChild(fileInput);
+                        }, true);
+                    }
                 }
             });
+        } else if (dropzoneElement && dropzoneElement.dropzone) {
+            // Dropzone already initialized
         }
-    });
+    }, 100);
 
-    document.getElementById("show-content-btn").addEventListener("click", async function () {
+    document.getElementById(buttonId).addEventListener("click", async function () {
         if (fileContents.length > 0) {
-            for (const cmdarr of fileContents) {
-                try {
-                    await processCommand(nsId, mciId, targetId, cmdarr, terminalInstance, () => {
-                        prompt();
-                    }, targetType);
-                } catch (error) {
-                    alert("An error occurred while processing the command.");
-                    console.error(error);
+            const targetPath = document.getElementById(pathInputId).value;
+            
+            // 모든 파일을 한 번에 처리
+            try {
+                await transferFilesToMci(fileContents, targetPath, nsId, mciId, targetType, targetId);
+                
+                // 전송 완료 후 파일 목록 초기화
+                fileContents = [];
+                if (dropzoneInstance) {
+                    dropzoneInstance.removeAllFiles(true);
                 }
+            } catch (error) {
+                alert("File transfer failed: " + error.message);
+                console.error(error);
             }
         } else {
-            alert("No file content available or file not loaded.");
+            alert("No file available or file not loaded.");
         }
     });
 }
@@ -384,4 +495,480 @@ export async function initClusterTerminal(id, nsId, clusterId, namespace, podNam
             alert("No file content available or file not loaded.");
         }
     });
+}
+
+// PostFileToMci API 호출 함수
+export async function postFileToMci(nsId, mciId, file, targetPath, targetType, targetId = null) {
+    // 파일을 base64로 인코딩
+    const fileBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+    
+    let data = {
+        pathParams: {
+            nsId: nsId,
+            mciId: mciId
+        },
+        request: {
+            path: targetPath,
+            file: {
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: fileBase64
+            }
+        }
+    };
+    
+    // targetType에 따른 query parameter 추가
+    if (targetType === 'subgroup' && targetId) {
+        data.queryParams = { subGroupId: targetId };
+    } else if (targetType === 'vm' && targetId) {
+        data.queryParams = { vmId: targetId };
+    }
+    // 'mci' 타입은 query parameter 없음
+    
+    const controller = "/api/mc-infra-manager/Postfiletomci";
+    
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    
+    // 에러 응답 처리
+    if (response.status && response.status >= 400) {
+        throw new Error(`API Error: ${response.status} - ${response.message || 'Unknown error'}`);
+    }
+    
+    // 정상 응답 처리
+    if (response.data && response.data.responseData) {
+        return response.data.responseData;
+    } else if (response.data) {
+        return response.data;
+    } else {
+        return response;
+    }
+}
+
+// 여러 파일 전송 함수 (새로 추가)
+async function transferFilesToMci(files, targetPath, nsId, mciId, targetType, targetId) {
+    // VM 타입인 경우 기존 방식 사용 (파일별로 개별 처리)
+    if (targetType === 'vm') {
+        const results = [];
+        
+        for (const file of files) {
+            try {
+                // 1. 로딩 상태 표시
+                showTransferProgress(file.name, 'uploading');
+                
+                // 2. PostFileToMci API 호출
+                const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
+                
+                // 3. 진행 상태 토스트 숨기기
+                hideProgressToast();
+                
+                // 4. 결과 저장 (모달 표시하지 않음)
+                results.push({ fileName: file.name, result: result });
+                
+            } catch (error) {
+                // 5. 진행 상태 토스트 숨기기
+                hideProgressToast();
+                
+                // 6. 에러 저장
+                results.push({ fileName: file.name, error: error });
+            }
+        }
+        
+        // 7. VM 타입용 결과 표시 (한 번만)
+        showTransferResultsForVM(results);
+        return;
+    }
+    
+    // SubGroup이나 MCI 타입인 경우 새로운 방식 사용
+    const results = [];
+    
+    for (const file of files) {
+        try {
+            // 1. 로딩 상태 표시
+            showTransferProgress(file.name, 'uploading');
+            
+            // 2. PostFileToMci API 호출
+            const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
+            
+            // 3. 진행 상태 토스트 숨기기
+            hideProgressToast();
+            
+            // 4. 결과 저장
+            results.push({ fileName: file.name, result: result });
+            
+        } catch (error) {
+            // 5. 진행 상태 토스트 숨기기
+            hideProgressToast();
+            
+            // 6. 에러 저장
+            results.push({ fileName: file.name, error: error });
+        }
+    }
+    
+    // 7. 전체 결과 표시 (한 번만)
+    showTransferResults(results);
+}
+
+// 파일 전송 함수 (단일 파일용)
+async function transferFileToMci(file, targetPath, nsId, mciId, targetType, targetId) {
+    // 1. 로딩 상태 표시
+    showTransferProgress(file.name, 'uploading');
+    
+    try {
+        // 2. PostFileToMci API 호출
+        const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
+        
+        // 3. 진행 상태 토스트 숨기기
+        hideProgressToast();
+        
+        // 4. 결과 표시
+        showTransferResult(file.name, result);
+        
+    } catch (error) {
+        // 5. 진행 상태 토스트 숨기기
+        hideProgressToast();
+        
+        // 6. 에러 표시
+        showTransferError(file.name, error);
+    }
+}
+
+// 전송 진행 상태 표시
+function showTransferProgress(fileName, status) {
+    // 진행 상태 토스트 표시
+    showProgressToast(fileName, status);
+}
+
+// 진행 상태 토스트 표시
+function showProgressToast(fileName, status) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-primary border-0" id="transferProgressToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>${fileName} processing...</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    // 기존 토스트 제거
+    const existingToast = document.getElementById('transferProgressToast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 토스트 컨테이너 확인/생성
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // 새 토스트 추가
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // 토스트 표시
+    const toastElement = document.getElementById('transferProgressToast');
+    const toast = new bootstrap.Toast(toastElement, { autohide: false });
+    toast.show();
+    
+    // 전역 변수에 토스트 저장 (나중에 숨기기 위해)
+    window.currentTransferToast = toast;
+}
+
+// 진행 상태 토스트 숨기기
+function hideProgressToast() {
+    if (window.currentTransferToast) {
+        window.currentTransferToast.hide();
+        window.currentTransferToast = null;
+    }
+}
+
+// VM 타입용 전송 결과 표시 (새로 추가)
+function showTransferResultsForVM(results) {
+    // VM 타입에서는 첫 번째 파일의 결과만 사용 (VM은 1개이므로)
+    if (results.length > 0 && results[0].result) {
+        const firstResult = results[0];
+        const result = firstResult.result;
+        const successCount = result.filter(r => r.err === null).length;
+        const totalCount = result.length;
+        
+        // VM 타입용 모달 표시
+        showTransferResultModal(firstResult.fileName, result, successCount, totalCount);
+    } else if (results.length > 0 && results[0].error) {
+        // 에러가 있는 경우
+        const firstResult = results[0];
+        console.error(`Transfer failed: ${firstResult.fileName}`, firstResult.error);
+    }
+}
+
+// 여러 파일 전송 결과 표시 (SubGroup/MCI용)
+function showTransferResults(results) {
+    const successFiles = results.filter(r => !r.error).length;
+    const totalFiles = results.length;
+    
+    // 전체 결과 모달 표시
+    showTransferResultsModal(results, successFiles, totalFiles);
+}
+
+// 전송 결과 표시 (단일 파일용)
+function showTransferResult(fileName, result) {
+    const successCount = result.filter(r => r.err === null).length;
+    const totalCount = result.length;
+    
+    // 상세 결과를 모달로 표시
+    showTransferResultModal(fileName, result, successCount, totalCount);
+}
+
+// 전송 결과 상세 모달 표시
+function showTransferResultModal(fileName, result, successCount, totalCount) {
+    // 기존 모달들 모두 제거
+    const existingModal = document.getElementById('transferResultModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 기존 모달 인스턴스도 제거
+    const existingModalInstance = bootstrap.Modal.getInstance(existingModal);
+    if (existingModalInstance) {
+        existingModalInstance.dispose();
+    }
+    
+    // 모달 HTML 생성
+    const modalHtml = `
+        <div class="modal fade" id="transferResultModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            File Transfer Result: ${fileName}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card ${successCount === totalCount ? 'border-success' : 'border-warning'}">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Transfer Result</h6>
+                                        <h4 class="${successCount === totalCount ? 'text-success' : 'text-warning'}">
+                                            ${successCount}/${totalCount}
+                                        </h4>
+                                        <small class="text-muted">VM Transfer Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Target Path</h6>
+                                        <code>${result[0]?.command?.['0']?.split(' to ')[1] || 'N/A'}</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6>VM Transfer Details:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>VM ID</th>
+                                        <th>VM IP</th>
+                                        <th>Status</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${result.map(r => `
+                                        <tr class="${r.err === null ? 'table-success' : 'table-danger'}">
+                                            <td><code>${r.vmId}</code></td>
+                                            <td><code>${r.vmIp}</code></td>
+                                            <td>
+                                                ${r.err === null ? 
+                                                    '<span class="badge bg-success">Success</span>' : 
+                                                    '<span class="badge bg-danger">Failed</span>'
+                                                }
+                                            </td>
+                                            <td>
+                                                ${r.err === null ? 
+                                                    `<small class="text-success">${r.stdout?.['0'] || 'Transfer Complete'}</small>` :
+                                                    `<small class="text-danger">${r.err}</small>`
+                                                }
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="copyTransferResult()">Copy Result</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 기존 모달 제거 (이미 위에서 처리됨)
+    
+    // 새 모달 추가
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 모달 표시
+    const modal = new bootstrap.Modal(document.getElementById('transferResultModal'));
+    modal.show();
+    
+    // 전역 변수에 결과 저장 (복사 기능용)
+    window.lastTransferResult = {
+        fileName: fileName,
+        result: result,
+        successCount: successCount,
+        totalCount: totalCount
+    };
+}
+
+// 여러 파일 전송 결과 모달 표시 (새로 추가)
+function showTransferResultsModal(results, successFiles, totalFiles) {
+    // 기존 모달 제거
+    const existingModal = document.getElementById('transferResultsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 모달 HTML 생성
+    const modalHtml = `
+        <div class="modal fade" id="transferResultsModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            File Transfer Results Summary
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card ${successFiles === totalFiles ? 'border-success' : 'border-warning'}">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Transfer Result</h6>
+                                        <h4 class="${successFiles === totalFiles ? 'text-success' : 'text-warning'}">
+                                            ${successFiles}/${totalFiles}
+                                        </h4>
+                                        <small class="text-muted">File Transfer Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Transferred Files</h6>
+                                        <h4 class="text-info">${totalFiles}</h4>
+                                        <small class="text-muted">Files</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6>File Transfer Details:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>File Name</th>
+                                        <th>Status</th>
+                                        <th>VM Count</th>
+                                        <th>Success/Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${results.map(r => {
+                                        if (r.error) {
+                                            return `
+                                                <tr>
+                                                    <td>${r.fileName}</td>
+                                                    <td><span class="badge bg-danger">Failed</span></td>
+                                                    <td>-</td>
+                                                    <td>0/0</td>
+                                                </tr>
+                                            `;
+                                        } else {
+                                            const successCount = r.result.filter(vm => vm.err === null).length;
+                                            const totalCount = r.result.length;
+                                            return `
+                                                <tr>
+                                                    <td>${r.fileName}</td>
+                                                    <td><span class="badge ${successCount === totalCount ? 'bg-success' : 'bg-warning'}">${successCount === totalCount ? 'Success' : 'Partial Failure'}</span></td>
+                                                    <td>${totalCount}</td>
+                                                    <td>${successCount}/${totalCount}</td>
+                                                </tr>
+                                            `;
+                                        }
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 모달을 body에 추가
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 모달 표시
+    const modalElement = document.getElementById('transferResultsModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+// 전송 결과 복사 함수
+function copyTransferResult() {
+    if (!window.lastTransferResult) return;
+    
+    const { fileName, result, successCount, totalCount } = window.lastTransferResult;
+    
+    const copyText = `File Transfer Result: ${fileName}
+Transfer Complete: ${successCount}/${totalCount} VM
+
+Details:
+${result.map(r => `
+VM ID: ${r.vmId}
+VM IP: ${r.vmIp}
+Status: ${r.err === null ? 'Success' : 'Failed'}
+Result: ${r.err === null ? (r.stdout?.['0'] || 'Transfer Complete') : r.err}
+`).join('')}`;
+    
+    navigator.clipboard.writeText(copyText).then(() => {
+        alert('Transfer result copied to clipboard.');
+    }).catch(err => {
+        console.error('Copy failed:', err);
+        alert('Copy failed.');
+    });
+}
+
+// 전송 에러 표시
+function showTransferError(fileName, error) {
+    alert(`Transfer failed: ${fileName} - ${error.message}`);
+    console.error(`Transfer failed: ${fileName}`, error);
 }
