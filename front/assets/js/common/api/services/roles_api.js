@@ -113,3 +113,18 @@ export async function getCspProviderList() {
     
     return [];
 }
+
+
+export async function assignUserToRole(roleId, userId) {
+    const controller = "/api/mc-iam-manager/assignPlatformRole";
+    const data = {
+        Request: 
+            {
+                "roleId": roleId.toString(),
+                "userId": userId.toString(),
+                "workspaceId": "1"
+              }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response.data.responseData;
+}

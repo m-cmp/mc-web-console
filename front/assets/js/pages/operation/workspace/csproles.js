@@ -2,6 +2,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // 전역 변수
 var cspRolesListTable;
+var currentCspRoleId = null; // 현재 선택된 CSP Role ID
 var cspRolePoliciesTable;
 var checked_array = [];
 var currentClickedCspRoleId = "";
@@ -85,6 +86,8 @@ function initCspRolesTable() {
       // 같은 행 클릭 - 정보 영역 숨김
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("csp_role_info"));
       currentClickedCspRoleId = "";
+      // 정책 상세 패널도 숨김
+      hidePolicyDetailPanel();
       this.deselectRow();
       return;
     } else {
@@ -197,6 +200,12 @@ function providerFormatterString(data) {
 
 // 선택된 CSP Role 데이터 로드
 function getSelectedCspRoleData(roleData) {
+  // 현재 선택된 CSP Role ID 저장
+  currentCspRoleId = roleData.id;
+  
+  // 정책 상세 패널 숨김 (새로운 CSP Role 선택 시)
+  hidePolicyDetailPanel();
+  
   // 제목 업데이트
   const titleElement = document.getElementById('csp_role_info_text');
   if (titleElement) {
@@ -542,8 +551,15 @@ function unbindPolicies() {
   }
 }
 
-// 정책 가져오기 (Import)
+// 정책 가져오기 (Import) - 현재 선택된 정책의 Context JSON에 추가
 function importPolicy() {
+  console.log('Import Policy called, selectedPolicyId:', selectedPolicyId);
+  
+  if (!selectedPolicyId) {
+    alert('정책을 먼저 선택해주세요.');
+    return;
+  }
+  
   // 파일 입력 요소 생성
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -556,23 +572,66 @@ function importPolicy() {
     
     try {
       const fileContent = await readFileContent(file);
-      const policyData = JSON.parse(fileContent);
+      const importedPolicy = JSON.parse(fileContent);
       
-      // 정책 데이터 검증
-      if (!policyData.name || !policyData.document) {
-        throw new Error('정책 파일에 필수 필드(name, document)가 없습니다.');
+      console.log('Imported Policy:', importedPolicy);
+      
+      // 가져온 정책 데이터 검증
+      // AWS IAM 정책 형식 (Version, Statement) 또는 전체 정책 객체 형식 지원
+      if (!importedPolicy.Statement && !importedPolicy.document?.Statement) {
+        throw new Error('가져올 정책 파일에 Statement가 없습니다. AWS IAM 정책 형식이어야 합니다.');
       }
       
-      // 정책 생성
-      const result = await window.webconsolejs["common/api/services/csproles_api"].createCspPolicy(policyData);
-      
-      if (result.success) {
-        alert('정책이 성공적으로 가져왔습니다.');
-        // 정책 목록 새로고침
-        refreshPoliciesList();
-      } else {
-        throw new Error(result.message || 'Failed to import policy');
+      // 현재 선택된 정책의 Context JSON 가져오기
+      const contextTextarea = document.getElementById('policy-detail-context');
+      if (!contextTextarea) {
+        throw new Error('정책 Context를 찾을 수 없습니다.');
       }
+      
+      let currentContext = {};
+      try {
+        currentContext = JSON.parse(contextTextarea.value || '{}');
+        console.log('Current Context:', currentContext);
+      } catch (parseError) {
+        throw new Error('현재 정책 Context JSON 형식이 올바르지 않습니다.');
+      }
+      
+      // Context JSON에 가져온 정책의 Statement 추가
+      if (!currentContext.Statement) {
+        currentContext.Statement = [];
+      }
+      
+      // 가져온 정책의 Statement를 현재 Context에 추가
+      let statementsToAdd = [];
+      
+      if (importedPolicy.document && importedPolicy.document.Statement) {
+        // 전체 정책 객체 형식 (name, document 포함)
+        statementsToAdd = importedPolicy.document.Statement;
+        console.log('Using document.Statement:', statementsToAdd);
+      } else if (importedPolicy.Statement) {
+        // AWS IAM 정책 형식 (Version, Statement)
+        statementsToAdd = importedPolicy.Statement;
+        console.log('Using direct Statement:', statementsToAdd);
+      }
+      
+      console.log('Statements to add:', statementsToAdd);
+      
+      // 각 Statement에 고유한 Sid 추가 (중복 방지)
+      statementsToAdd.forEach((statement, index) => {
+        if (!statement.Sid) {
+          statement.Sid = `ImportedPolicy_${Date.now()}_${index + 1}`;
+        }
+        currentContext.Statement.push(statement);
+      });
+      
+      console.log('Updated Context:', currentContext);
+      
+      // Context JSON 업데이트
+      contextTextarea.value = JSON.stringify(currentContext, null, 2);
+      updatePolicyContextPreview();
+      
+      alert('정책이 성공적으로 가져왔습니다.');
+      
     } catch (error) {
       console.error("정책 가져오기 중 오류:", error);
       alert('정책 가져오기 중 오류가 발생했습니다: ' + error.message);
@@ -614,12 +673,36 @@ async function showPolicyEditor(bindingId) {
     document.getElementById('policyEditorDescription').value = policy.description || '';
     document.getElementById('policyEditorDocument').value = JSON.stringify(policy.document || {}, null, 2);
     
+    // JSON 에디터를 바로 편집 모드로 설정
+    const documentTextarea = document.getElementById('policyEditorDocument');
+    documentTextarea.readOnly = false;
+    
+    // JSON 에디터 컨테이너 초기 상태 설정
+    const container = document.getElementById('policyDocumentContainer');
+    const preview = document.getElementById('policyDocumentPreview');
+    
+    if (container && preview) {
+      // 기본 상태: JSON 편집모드 표시
+      container.style.display = 'block';
+      preview.style.display = 'none';
+    }
+    
     // 미리보기 업데이트
     updatePolicyDocumentPreview();
     
     // 모달 표시
     const modal = new bootstrap.Modal(document.getElementById('policyEditorModal'));
     modal.show();
+    
+    // 모달이 닫힐 때 상세페이지 상태 복원
+    const modalElement = document.getElementById('policyEditorModal');
+    modalElement.addEventListener('hidden.bs.modal', function() {
+      // 상세페이지가 숨겨져 있다면 다시 표시
+      const detailPanel = document.getElementById('policy-detail-panel');
+      if (detailPanel && detailPanel.style.display === 'none') {
+        detailPanel.style.display = 'block';
+      }
+    });
     
     // 이벤트 리스너 추가
     addPolicyDocumentListeners();
@@ -630,30 +713,37 @@ async function showPolicyEditor(bindingId) {
   }
 }
 
-// 정책 문서 토글
+// 정책 문서 토글 (Expand/Collapse)
 function togglePolicyDocument() {
-  const container = document.getElementById('policyDocumentContainer');
-  const preview = document.getElementById('policyDocumentPreview');
+  const documentTextarea = document.getElementById('policyEditorDocument');
   const toggleText = document.getElementById('policyDocumentToggleText');
   
-  if (container.style.display === 'none') {
-    container.style.display = 'block';
-    preview.style.display = 'none';
-    toggleText.textContent = 'Collapse';
-  } else {
-    container.style.display = 'none';
-    preview.style.display = 'block';
-    toggleText.textContent = 'Expand';
+  if (documentTextarea && toggleText) {
+    const currentRows = parseInt(documentTextarea.getAttribute('rows')) || 25;
+    
+    if (currentRows === 25) {
+      // Expand: 25줄 → 40줄로 확장
+      documentTextarea.setAttribute('rows', 40);
+      documentTextarea.style.height = 'auto';
+      documentTextarea.style.minHeight = '800px';
+      toggleText.textContent = 'Collapse';
+    } else {
+      // Collapse: 40줄 → 25줄로 축소
+      documentTextarea.setAttribute('rows', 25);
+      documentTextarea.style.height = 'auto';
+      documentTextarea.style.minHeight = '500px';
+      toggleText.textContent = 'Expand';
+    }
   }
 }
 
 // 정책 문서 미리보기 업데이트
 function updatePolicyDocumentPreview() {
-  const document = document.getElementById('policyEditorDocument').value;
+  const documentText = document.getElementById('policyEditorDocument').value;
   const preview = document.getElementById('policyDocumentPreview');
   
   try {
-    const parsed = JSON.parse(document);
+    const parsed = JSON.parse(documentText);
     preview.innerHTML = `<pre class="mb-0">${JSON.stringify(parsed, null, 2)}</pre>`;
   } catch (error) {
     preview.innerHTML = '<div class="text-danger">Invalid JSON format</div>';
@@ -676,55 +766,101 @@ function clearPolicyDocument() {
   }
 }
 
-// 정책 문서 편집 모드
-function editPolicyDocument() {
-  const editBtn = document.querySelector('button[onclick="editPolicyDocument()"]');
-  const saveBtn = document.querySelector('button[onclick="savePolicyDocument()"]');
-  const documentTextarea = document.getElementById('policyEditorDocument');
-  
-  editBtn.style.display = 'none';
-  saveBtn.style.display = 'inline-block';
-  documentTextarea.readOnly = false;
-  documentTextarea.focus();
+// CSP Role 선택 상태 복원
+async function restoreCspRoleSelection() {
+  if (currentCspRoleId && cspRolesListTable) {
+    try {
+      const row = cspRolesListTable.getRow(currentCspRoleId);
+      if (row) {
+        // CSP Role 정보 섹션 활성화
+        const cspRoleInfoElement = document.getElementById('csp_role_info');
+        if (cspRoleInfoElement) {
+          // 다른 섹션들을 먼저 비활성화
+          document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+          });
+          // csp_role_info 섹션 활성화
+          cspRoleInfoElement.classList.add('active');
+          // 강제로 표시되도록 스타일 설정
+          cspRoleInfoElement.style.display = 'block';
+          cspRoleInfoElement.style.visibility = 'visible';
+          cspRoleInfoElement.style.opacity = '1';
+        }
+        
+        // 선택된 CSP Role 데이터 다시 로드
+        const roleData = row.getData();
+        getSelectedCspRoleData(roleData);
+      }
+    } catch (error) {
+      console.error("CSP Role 선택 복원 중 오류:", error);
+    }
+  }
 }
+
 
 // 정책 문서 저장
 async function savePolicyDocument() {
   const policyId = document.getElementById('policyEditorId').value;
-  const document = document.getElementById('policyEditorDocument').value;
+  const policyName = document.getElementById('policyEditorName').value;
+  const policyDescription = document.getElementById('policyEditorDescription').value;
+  const documentText = document.getElementById('policyEditorDocument').value;
   
   try {
     // JSON 유효성 검사
-    JSON.parse(document);
+    JSON.parse(documentText);
     
     const result = await window.webconsolejs["common/api/services/csproles_api"].updateCspPolicy(policyId, {
-      document: JSON.parse(document)
+      name: policyName,
+      description: policyDescription,
+      document: JSON.parse(documentText)
     });
     
-    if (result.success) {
+    // API 응답 성공 확인 (다양한 응답 구조 지원)
+    if (result && (
+      (result.success === true) ||
+      (result.status && result.status.code === 200) ||
+      (result.data && result.data.status && result.data.status.code === 200) ||
+      (result.statusCode === 200) ||
+      (result.data && result.data.statusCode === 200)
+    )) {
       alert('정책이 성공적으로 업데이트되었습니다.');
       
-      // 편집 모드 해제
-      const editBtn = document.querySelector('button[onclick="editPolicyDocument()"]');
-      const saveBtn = document.querySelector('button[onclick="savePolicyDocument()"]');
-      const documentTextarea = document.getElementById('policyEditorDocument');
+      // 1. 정책 목록 새로고침
+      if (currentCspRoleId) {
+        await loadCspRolePolicies(currentCspRoleId);
+      }
       
-      editBtn.style.display = 'inline-block';
-      saveBtn.style.display = 'none';
-      documentTextarea.readOnly = true;
+      // 2. 모달 닫기
+      const modal = bootstrap.Modal.getInstance(document.getElementById('policyEditorModal'));
+      if (modal) {
+        modal.hide();
+      }
       
-      // 미리보기 업데이트
-      updatePolicyDocumentPreview();
+      // 3. 현재 선택된 CSP Role 상태 복원
+      await restoreCspRoleSelection();
+      
+      // 4. 정책 상세 패널 새로고침 (선택된 정책이 있다면)
+      if (selectedPolicyId) {
+        await showPolicyDetailPanel(selectedPolicyId);
+      }
+      
+      // 5. 정책 목록 새로고침
+      refreshPoliciesList();
     } else {
-      throw new Error(result.message || 'Failed to update policy');
+      throw new Error(result?.message || result?.data?.message || 'Failed to update policy');
     }
   } catch (error) {
+    console.error("정책 업데이트 중 오류:", error);
+    
     if (error instanceof SyntaxError) {
       alert('Invalid JSON format. Please check your syntax.');
+    } else if (error.message.includes('Failed to update policy')) {
+      alert('정책 업데이트에 실패했습니다. 다시 시도해주세요.');
     } else {
-      console.error("정책 업데이트 중 오류:", error);
-      alert('Error updating policy: ' + error.message);
+      alert('정책 업데이트 중 오류가 발생했습니다: ' + error.message);
     }
+    
+    // 에러 발생 시 모달은 열린 상태로 유지
   }
 }
 
@@ -757,6 +893,9 @@ async function syncPolicies() {
 
 // 정책 상세 패널 표시
 function showPolicyDetailPanel(policyData) {
+  // 이전 패널이 열려있다면 먼저 숨김
+  hidePolicyDetailPanel();
+  
   selectedPolicyId = policyData.id;
   
   // 헤더 업데이트
@@ -773,17 +912,45 @@ function showPolicyDetailPanel(policyData) {
   document.getElementById('policy-detail-context').value = JSON.stringify(contextJson, null, 2);
   updatePolicyContextPreview();
   
-  // 패널 표시
-  document.getElementById('policy-detail-panel').style.display = 'block';
+  // 패널 표시 (애니메이션 효과)
+  const panel = document.getElementById('policy-detail-panel');
+  panel.style.display = 'block';
+  panel.style.opacity = '0';
+  panel.style.transform = 'translateY(20px)';
+  
+  // 애니메이션 적용
+  setTimeout(() => {
+    panel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    panel.style.opacity = '1';
+    panel.style.transform = 'translateY(0)';
+  }, 10);
   
   // Context JSON 이벤트 리스너 추가
   const contextTextarea = document.getElementById('policy-detail-context');
   if (contextTextarea) {
     contextTextarea.addEventListener('input', updatePolicyContextPreview);
   }
-  
-  // 스크롤을 패널로 이동
-  document.getElementById('policy-detail-panel').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 정책 상세 패널 숨김
+function hidePolicyDetailPanel() {
+  const panel = document.getElementById('policy-detail-panel');
+  if (panel && panel.style.display !== 'none') {
+    // 애니메이션 효과로 숨김
+    panel.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    panel.style.opacity = '0';
+    panel.style.transform = 'translateY(-10px)';
+    
+    // 애니메이션 완료 후 완전히 숨김
+    setTimeout(() => {
+      panel.style.display = 'none';
+      panel.style.transition = '';
+      panel.style.opacity = '';
+      panel.style.transform = '';
+    }, 200);
+    
+    selectedPolicyId = '';
+  }
 }
 
 
@@ -807,33 +974,6 @@ function clearPolicyContextJson() {
   }
 }
 
-// JSON 에디터 모달 내부 함수들
-function clearJsonEditor() {
-  if (confirm('JSON 내용을 클리어하시겠습니까?')) {
-    document.getElementById('jsonEditorContent').value = '';
-  }
-}
-
-function saveJsonEditor() {
-  const jsonContent = document.getElementById('jsonEditorContent').value;
-  
-  try {
-    // JSON 유효성 검사
-    JSON.parse(jsonContent);
-    
-    // 원래 위치에 내용 저장
-    document.getElementById('policy-detail-context').value = jsonContent;
-    updatePolicyContextPreview();
-    
-    // 모달 닫기
-    const modal = bootstrap.Modal.getInstance(document.getElementById('jsonEditorModal'));
-    modal.hide();
-    
-    alert('JSON이 성공적으로 저장되었습니다.');
-  } catch (error) {
-    alert('유효하지 않은 JSON 형식입니다: ' + error.message);
-  }
-}
 
 // 정책 Context 미리보기 업데이트
 function updatePolicyContextPreview() {
@@ -855,8 +995,19 @@ function editSelectedPolicy() {
     return;
   }
   
+  // 상세페이지 상태 저장
+  const detailPanel = document.getElementById('policy-detail-panel');
+  const isDetailPanelVisible = detailPanel && detailPanel.style.display !== 'none';
+  
   // 정책 에디터 모달로 이동
   showPolicyEditor(selectedPolicyId);
+  
+  // 모달이 표시된 후 상세페이지 상태 복원
+  setTimeout(() => {
+    if (isDetailPanelVisible && detailPanel) {
+      detailPanel.style.display = 'block';
+    }
+  }, 100);
 }
 
 
@@ -918,21 +1069,23 @@ window.sortPolicies = sortPolicies;
 window.exportPolicies = exportPolicies;
 window.clearPoliciesFilter = clearPoliciesFilter;
 
-// CSP Role 삭제 (모달에서 호출)
-export async function deleteCspRole(roleId) {
+
+// CSP Role 삭제 (모달에서 호출) - MCI 패턴과 일치
+export async function deleteCspRole() {
   try {
-    if (!roleId) {
-      throw new Error("삭제할 CSP Role ID가 없습니다.");
+    if (!currentClickedCspRoleId) {
+      alert("삭제할 CSP Role을 선택해주세요.");
+      return;
     }
 
-    const result = await window.webconsolejs["common/api/services/csproles_api"].deleteCspRole(roleId);
+    const result = await window.webconsolejs["common/api/services/csproles_api"].deleteCspRole(currentClickedCspRoleId);
     
     if (result.success) {
       console.log("CSP Role 삭제 성공:", result.deletedRole);
       
       // 테이블에서 해당 행 제거
       if (cspRolesListTable) {
-        cspRolesListTable.deleteRow(roleId);
+        cspRolesListTable.deleteRow(currentClickedCspRoleId);
       }
       
       // 정보 영역 숨기기
@@ -946,6 +1099,38 @@ export async function deleteCspRole(roleId) {
   } catch (error) {
     console.error("CSP Role 삭제 중 오류:", error);
     alert("CSP Role 삭제 중 오류가 발생했습니다.");
+  }
+}
+
+// 정책 삭제 (모달에서 호출)
+export async function deletePolicy() {
+  try {
+    if (!selectedPolicyId) {
+      alert("삭제할 정책을 선택해주세요.");
+      return;
+    }
+
+    const result = await window.webconsolejs["common/api/services/csproles_api"].deleteCspPolicy(selectedPolicyId);
+    
+    if (result.success) {
+      console.log("정책 삭제 성공:", result.deletedPolicy);
+      
+      // 정책 테이블에서 해당 행 제거
+      if (cspRolePoliciesTable) {
+        cspRolePoliciesTable.deleteRow(selectedPolicyId);
+      }
+      
+      // 정책 상세 패널 숨기기
+      hidePolicyDetailPanel();
+      selectedPolicyId = "";
+      
+      alert("정책이 성공적으로 삭제되었습니다.");
+    } else {
+      throw new Error("정책 삭제에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("정책 삭제 중 오류:", error);
+    alert("정책 삭제 중 오류가 발생했습니다.");
   }
 }
 
@@ -1092,22 +1277,88 @@ function filterAvailableCspRoles() {
   });
 }
 
-// 선택된 CSP Role 추가
-async function addSelectedCspRole() {
-  const selectedRole = document.querySelector('input[name="selectedCspRole"]:checked');
+
+// 새 정책 생성
+async function createNewPolicy() {
+  const name = document.getElementById('createPolicyName').value.trim();
+  const description = document.getElementById('createPolicyDescription').value.trim();
+  const provider = document.getElementById('createPolicyProvider').value;
+  const documentText = document.getElementById('createPolicyDocument').value.trim();
   
-  if (!selectedRole) {
-    alert('Please select a CSP Role to add');
+  // 필수 필드 검증
+  if (!name || !documentText) {
+    alert('Please fill in all required fields (Name and Document)');
     return;
   }
   
   try {
-    const roleId = selectedRole.value;
+    // Policy Document JSON 파싱 검증
+    let document;
+    try {
+      document = JSON.parse(documentText);
+    } catch (error) {
+      alert('Invalid JSON format in Policy Document. Please check your JSON syntax.');
+      return;
+    }
+    
+    // API 스펙에 맞는 데이터 구조
+    const policyData = {
+      name: name,
+      description: description,
+      provider: provider,
+      document: document
+    };
+    
+    const result = await window.webconsolejs["common/api/services/csproles_api"].createCspPolicy(policyData);
+    
+    if (result.success) {
+      alert('Policy created successfully');
+      
+      // 모달 닫기
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addPolicyModal'));
+      modal.hide();
+      
+      // 폼 초기화
+      document.getElementById('addPolicyForm').reset();
+      
+      // 정책 목록 새로고침
+      await refreshPoliciesList();
+    } else {
+      throw new Error(result.message || 'Failed to create policy');
+    }
+  } catch (error) {
+    console.error("Policy 생성 중 오류:", error);
+    alert('Error creating policy: ' + error.message);
+  }
+}
+
+// 선택된 CSP Role 추가
+async function addSelectedCspRole() {
+  const name = document.getElementById('addCspRoleName').value.trim();
+  const description = document.getElementById('addCspRoleDescription').value.trim();
+  const trustPolicyText = document.getElementById('addCspRoleTrustPolicy').value.trim();
+  
+  // 필수 필드 검증
+  if (!name || !description || !trustPolicyText) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
+  try {
+    // Trust Policy JSON 파싱 검증
+    let trustPolicy;
+    try {
+      trustPolicy = JSON.parse(trustPolicyText);
+    } catch (error) {
+      alert('Invalid JSON format in Trust Policy. Please check your JSON syntax.');
+      return;
+    }
+    
+    // 기획서 요구사항에 맞는 데이터 구조
     const roleData = {
-      id: roleId,
-      name: selectedRole.closest('.csp-role-item').querySelector('h6').textContent,
-      description: selectedRole.closest('.csp-role-item').querySelectorAll('small')[1].textContent.replace('No description', ''),
-      provider: document.getElementById('addCspRoleProvider').value
+      name: name,
+      description: description,
+      trust_policy: trustPolicy
     };
     
     const result = await window.webconsolejs["common/api/services/csproles_api"].createCspRole(roleData);
@@ -1119,6 +1370,9 @@ async function addSelectedCspRole() {
       const modal = bootstrap.Modal.getInstance(document.getElementById('addCspRoleModal'));
       modal.hide();
       
+      // 폼 초기화
+      document.getElementById('addCspRoleForm').reset();
+      
       // CSP Role 목록 새로고침
       await refreshCspRolesList();
     } else {
@@ -1129,6 +1383,7 @@ async function addSelectedCspRole() {
     alert('Error adding CSP Role: ' + error.message);
   }
 }
+
 
 // CSP Role 동기화
 async function syncCspRoles() {
@@ -1153,6 +1408,7 @@ async function syncCspRoles() {
 // 전역 함수로 노출 (HTML에서 호출용)
 window.refreshCspRolesList = refreshCspRolesList;
 window.deleteCspRole = deleteCspRole;
+window.deletePolicy = deletePolicy;
 window.applyFilter = applyFilter;
 window.clearFilter = clearFilter;
 window.showAddCspRoleModal = showAddCspRoleModal;
@@ -1163,13 +1419,11 @@ window.addSelectedPolicy = addSelectedPolicy;
 window.syncPolicies = syncPolicies;
 window.togglePolicyDocument = togglePolicyDocument;
 window.clearPolicyDocument = clearPolicyDocument;
-window.editPolicyDocument = editPolicyDocument;
 window.savePolicyDocument = savePolicyDocument;
 window.addPolicyDocumentListeners = addPolicyDocumentListeners;
 window.showPolicyDetailPanel = showPolicyDetailPanel;
 window.togglePolicyContextJson = togglePolicyContextJson;
 window.clearPolicyContextJson = clearPolicyContextJson;
 window.updatePolicyContextPreview = updatePolicyContextPreview;
-window.clearJsonEditor = clearJsonEditor;
-window.saveJsonEditor = saveJsonEditor;
 window.editSelectedPolicy = editSelectedPolicy;
+window.createNewPolicy = createNewPolicy;

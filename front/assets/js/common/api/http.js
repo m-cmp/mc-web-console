@@ -12,7 +12,30 @@ export async function commonAPIPost(url, data, attempt) {
     try {
         if( data === undefined) {
             var response = await axios.post(url);
-        }else {
+        } else if (data.formData instanceof FormData) {
+            // FormData 처리 분기 - axios 사용
+            console.log("FormData detected, sending with axios");
+            
+            // pathParams가 있으면 FormData에 추가
+            if (data.pathParams) {
+                for (const [key, value] of Object.entries(data.pathParams)) {
+                    data.formData.append(key, value);
+                }
+                console.log("Added pathParams to FormData:", data.pathParams);
+            }
+            
+            // queryParams가 있으면 FormData에 추가
+            if (data.queryParams) {
+                for (const [key, value] of Object.entries(data.queryParams)) {
+                    data.formData.append(key, value);
+                }
+                console.log("Added queryParams to FormData:", data.queryParams);
+            }
+            
+            // FormData 사용 시 Content-Type 헤더를 설정하지 않음
+            // 브라우저가 자동으로 boundary 정보와 함께 올바른 헤더를 설정
+            var response = await axios.post(url, data.formData);
+        } else {
             var response = await axios.post(url, data);
         }
         console.log("#### commonAPIPost Response");

@@ -457,7 +457,9 @@
                           <div class="col-md-6">
                             <div class="mb-3">
                               <label class="form-label required">CSP Role Name</label>
-                              <input type="text" class="form-control" id="csp-role-name-input" name="csp-role-name" placeholder="e.g., MCIAM_MyRole" required>
+                              <select class="form-select" id="csp-role-name-select" name="csp-role-name" required>
+                                <option value="">Select CSP Role</option>
+                              </select>
                             </div>
                           </div>
                           <div class="col-md-2">
@@ -611,7 +613,9 @@
                           <div class="col-md-6">
                               <div class="mb-3">
                               <label class="form-label required">CSP Role Name</label>
-                              <input type="text" class="form-control" id="edit-csp-role-name-input" name="edit-csp-role-name" placeholder="e.g., MCIAM_MyRole" required>
+                              <select class="form-select" id="edit-csp-role-name-select" name="edit-csp-role-name" required>
+                                <option value="">Select CSP Role</option>
+                              </select>
                             </div>
                           </div>
                           <div class="col-md-2">
@@ -724,3 +728,4 @@
 <%= javascriptTag("common/api/services/roles_api.js") %> <%=
 javascriptTag("pages/operation/workspace/roles.js") %>
 <%= javascriptTag("common/api/services/users_api.js") %>
+<%= javascriptTag("common/api/services/csproles_api.js") %>

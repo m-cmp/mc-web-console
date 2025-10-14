@@ -35,6 +35,12 @@ function generateMockCspRoles() {
             name: "Tencent-PowerUserRole",
             description: "Tencent Cloud Power User role for advanced access",
             provider: "tencent"
+        },
+        {
+            id: "csp-role-nhn-001",
+            name: "NHN-DeveloperRole",
+            description: "NHN Cloud Developer role for development and testing access",
+            provider: "nhn"
         }
     ];
 
@@ -99,6 +105,16 @@ function generateTrustPolicy(provider, roleType) {
                 resource: ["*"]
             }];
             break;
+        case 'nhn':
+            basePolicy.statement = [{
+                effect: "Allow",
+                principal: {
+                    service: ["compute.nhncloud.com"]
+                },
+                action: roleType === 'Admin' ? ["*"] : ["objectstorage:GetObject", "objectstorage:PutObject"],
+                resource: ["*"]
+            }];
+            break;
     }
 
     return basePolicy;
@@ -110,46 +126,421 @@ function generateMockCspPolicies() {
         {
             id: "csp-policy-aws-s3",
             name: "AWS-S3FullAccess",
-            description: "AWS S3 Full Access Policy",
+            description: "AWS S3 Full Access Policy for bucket operations",
             provider: "aws",
-            document: { version: "2012-10-17", statement: [{ effect: "Allow", action: ["s3:*"], resource: ["*"] }] },
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "S3FullAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "s3:GetObject",
+                            "s3:PutObject",
+                            "s3:DeleteObject",
+                            "s3:ListBucket",
+                            "s3:GetBucketLocation",
+                            "s3:GetBucketVersioning",
+                            "s3:PutBucketVersioning",
+                            "s3:GetBucketPolicy",
+                            "s3:PutBucketPolicy",
+                            "s3:DeleteBucketPolicy"
+                        ],
+                        "Resource": [
+                            "arn:aws:s3:::my-company-bucket",
+                            "arn:aws:s3:::my-company-bucket/*"
+                        ]
+                    },
+                    {
+                        "Sid": "S3ListAllBuckets",
+                        "Effect": "Allow",
+                        "Action": "s3:ListAllMyBuckets",
+                        "Resource": "*"
+                    }
+                ]
+            },
             created_at: "2024-01-15T09:30:00Z",
             status: "active"
         },
         {
-            id: "csp-policy-azure-storage",
-            name: "Azure-StorageRead",
-            description: "Azure Storage Read Policy",
-            provider: "azure",
-            document: { version: "2012-10-17", statement: [{ effect: "Allow", action: ["read"], resource: ["*"] }] },
+            id: "csp-policy-aws-ec2",
+            name: "AWS-EC2Management",
+            description: "AWS EC2 Management Policy for instance operations",
+            provider: "aws",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "EC2InstanceManagement",
+                        "Effect": "Allow",
+                        "Action": [
+                            "ec2:RunInstances",
+                            "ec2:TerminateInstances",
+                            "ec2:StartInstances",
+                            "ec2:StopInstances",
+                            "ec2:RebootInstances",
+                            "ec2:DescribeInstances",
+                            "ec2:DescribeImages",
+                            "ec2:DescribeInstanceTypes",
+                            "ec2:DescribeKeyPairs",
+                            "ec2:DescribeSecurityGroups",
+                            "ec2:DescribeSubnets",
+                            "ec2:DescribeVpcs"
+                        ],
+                        "Resource": "*",
+                        "Condition": {
+                            "StringEquals": {
+                                "ec2:Region": "us-west-2"
+                            }
+                        }
+                    },
+                    {
+                        "Sid": "EC2TagManagement",
+                        "Effect": "Allow",
+                        "Action": [
+                            "ec2:CreateTags",
+                            "ec2:DeleteTags",
+                            "ec2:DescribeTags"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
             created_at: "2024-01-16T10:15:00Z",
             status: "active"
         },
         {
-            id: "csp-policy-gcp-compute",
-            name: "GCP-ComputeAccess",
-            description: "GCP Compute Access Policy",
-            provider: "gcp",
-            document: { version: "2012-10-17", statement: [{ effect: "Allow", action: ["compute.*"], resource: ["*"] }] },
+            id: "csp-policy-azure-storage",
+            name: "Azure-StorageReadWrite",
+            description: "Azure Storage Read/Write Policy for blob operations",
+            provider: "azure",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "StorageBlobOperations",
+                        "Effect": "Allow",
+                        "Action": [
+                            "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+                            "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+                            "Microsoft.Storage/storageAccounts/blobServices/containers/delete",
+                            "Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action"
+                        ],
+                        "Resource": [
+                            "subscriptions/*/resourceGroups/my-rg/providers/Microsoft.Storage/storageAccounts/mystorageaccount"
+                        ]
+                    },
+                    {
+                        "Sid": "StorageAccountAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "Microsoft.Storage/storageAccounts/read",
+                            "Microsoft.Storage/storageAccounts/listKeys/action"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
             created_at: "2024-01-17T11:20:00Z",
             status: "active"
         },
         {
-            id: "csp-policy-alibaba-oss",
-            name: "Alibaba-OSSRead",
-            description: "Alibaba OSS Read Policy",
-            provider: "alibaba",
-            document: { version: "2012-10-17", statement: [{ effect: "Allow", action: ["oss:GetObject"], resource: ["*"] }] },
+            id: "csp-policy-gcp-compute",
+            name: "GCP-ComputeEngineAccess",
+            description: "GCP Compute Engine Access Policy for VM operations",
+            provider: "gcp",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "ComputeInstanceManagement",
+                        "Effect": "Allow",
+                        "Action": [
+                            "compute.instances.create",
+                            "compute.instances.delete",
+                            "compute.instances.start",
+                            "compute.instances.stop",
+                            "compute.instances.get",
+                            "compute.instances.list",
+                            "compute.instances.setMetadata",
+                            "compute.instances.setTags"
+                        ],
+                        "Resource": [
+                            "projects/my-project/zones/*/instances/*"
+                        ]
+                    },
+                    {
+                        "Sid": "ComputeNetworkAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "compute.networks.get",
+                            "compute.networks.list",
+                            "compute.subnetworks.get",
+                            "compute.subnetworks.list",
+                            "compute.firewalls.get",
+                            "compute.firewalls.list"
+                        ],
+                        "Resource": "*"
+                    },
+                    {
+                        "Sid": "ComputeImageAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "compute.images.get",
+                            "compute.images.list",
+                            "compute.images.use"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
             created_at: "2024-01-18T08:45:00Z",
+            status: "active"
+        },
+        {
+            id: "csp-policy-gcp-storage",
+            name: "GCP-CloudStorageAccess",
+            description: "GCP Cloud Storage Access Policy for bucket operations",
+            provider: "gcp",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "StorageObjectAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "storage.objects.create",
+                            "storage.objects.delete",
+                            "storage.objects.get",
+                            "storage.objects.list",
+                            "storage.objects.update"
+                        ],
+                        "Resource": [
+                            "projects/my-project/buckets/my-company-bucket/objects/*"
+                        ]
+                    },
+                    {
+                        "Sid": "StorageBucketAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "storage.buckets.get",
+                            "storage.buckets.list",
+                            "storage.buckets.create",
+                            "storage.buckets.delete"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
+            created_at: "2024-01-19T14:30:00Z",
+            status: "active"
+        },
+        {
+            id: "csp-policy-alibaba-oss",
+            name: "Alibaba-OSSFullAccess",
+            description: "Alibaba Cloud OSS Full Access Policy",
+            provider: "alibaba",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "OSSObjectOperations",
+                        "Effect": "Allow",
+                        "Action": [
+                            "oss:GetObject",
+                            "oss:PutObject",
+                            "oss:DeleteObject",
+                            "oss:ListObjects",
+                            "oss:GetObjectMeta",
+                            "oss:PutObjectMeta"
+                        ],
+                        "Resource": [
+                            "acs:oss:*:*:my-company-bucket",
+                            "acs:oss:*:*:my-company-bucket/*"
+                        ]
+                    },
+                    {
+                        "Sid": "OSSBucketOperations",
+                        "Effect": "Allow",
+                        "Action": [
+                            "oss:GetBucket",
+                            "oss:ListBuckets",
+                            "oss:GetBucketLocation",
+                            "oss:GetBucketInfo",
+                            "oss:GetBucketAcl",
+                            "oss:PutBucketAcl"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
+            created_at: "2024-01-20T16:45:00Z",
             status: "active"
         },
         {
             id: "csp-policy-tencent-cos",
             name: "Tencent-COSFullAccess",
-            description: "Tencent COS Full Access Policy",
+            description: "Tencent Cloud COS Full Access Policy",
             provider: "tencent",
-            document: { version: "2012-10-17", statement: [{ effect: "Allow", action: ["cos:*"], resource: ["*"] }] },
-            created_at: "2024-01-19T14:30:00Z",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "COSObjectOperations",
+                        "Effect": "Allow",
+                        "Action": [
+                            "cos:GetObject",
+                            "cos:PutObject",
+                            "cos:DeleteObject",
+                            "cos:ListObjects",
+                            "cos:GetObjectMeta",
+                            "cos:PutObjectMeta"
+                        ],
+                        "Resource": [
+                            "qcs::cos:*:*:my-company-bucket",
+                            "qcs::cos:*:*:my-company-bucket/*"
+                        ]
+                    },
+                    {
+                        "Sid": "COSBucketOperations",
+                        "Effect": "Allow",
+                        "Action": [
+                            "cos:GetBucket",
+                            "cos:ListBuckets",
+                            "cos:GetBucketLocation",
+                            "cos:GetBucketInfo",
+                            "cos:GetBucketAcl",
+                            "cos:PutBucketAcl"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
+            created_at: "2024-01-21T12:30:00Z",
+            status: "active"
+        },
+        {
+            id: "csp-policy-aws-lambda",
+            name: "AWS-LambdaExecution",
+            description: "AWS Lambda Execution Policy for serverless functions",
+            provider: "aws",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "LambdaFunctionManagement",
+                        "Effect": "Allow",
+                        "Action": [
+                            "lambda:CreateFunction",
+                            "lambda:DeleteFunction",
+                            "lambda:GetFunction",
+                            "lambda:ListFunctions",
+                            "lambda:UpdateFunctionCode",
+                            "lambda:UpdateFunctionConfiguration",
+                            "lambda:InvokeFunction"
+                        ],
+                        "Resource": [
+                            "arn:aws:lambda:us-west-2:*:function:my-company-*"
+                        ]
+                    },
+                    {
+                        "Sid": "LambdaLogsAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents",
+                            "logs:DescribeLogGroups",
+                            "logs:DescribeLogStreams"
+                        ],
+                        "Resource": [
+                            "arn:aws:logs:us-west-2:*:log-group:/aws/lambda/my-company-*"
+                        ]
+                    }
+                ]
+            },
+            created_at: "2024-01-22T09:15:00Z",
+            status: "active"
+        },
+        {
+            id: "csp-policy-nhn-compute",
+            name: "NHN-ComputeEngineAccess",
+            description: "NHN Cloud Compute Engine Access Policy for VM operations",
+            provider: "nhn",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "ComputeInstanceManagement",
+                        "Effect": "Allow",
+                        "Action": [
+                            "compute.instances.create",
+                            "compute.instances.delete",
+                            "compute.instances.start",
+                            "compute.instances.stop",
+                            "compute.instances.get",
+                            "compute.instances.list",
+                            "compute.instances.setMetadata",
+                            "compute.instances.setTags"
+                        ],
+                        "Resource": [
+                            "projects/my-project/zones/*/instances/*"
+                        ]
+                    },
+                    {
+                        "Sid": "ComputeNetworkAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "compute.networks.get",
+                            "compute.networks.list",
+                            "compute.subnetworks.get",
+                            "compute.subnetworks.list",
+                            "compute.firewalls.get",
+                            "compute.firewalls.list"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
+            created_at: "2024-01-23T10:30:00Z",
+            status: "active"
+        },
+        {
+            id: "csp-policy-nhn-storage",
+            name: "NHN-ObjectStorageAccess",
+            description: "NHN Cloud Object Storage Access Policy for bucket operations",
+            provider: "nhn",
+            document: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "ObjectStorageAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "objectstorage.objects.create",
+                            "objectstorage.objects.delete",
+                            "objectstorage.objects.get",
+                            "objectstorage.objects.list",
+                            "objectstorage.objects.update"
+                        ],
+                        "Resource": [
+                            "projects/my-project/buckets/my-company-bucket/objects/*"
+                        ]
+                    },
+                    {
+                        "Sid": "BucketAccess",
+                        "Effect": "Allow",
+                        "Action": [
+                            "objectstorage.buckets.get",
+                            "objectstorage.buckets.list",
+                            "objectstorage.buckets.create",
+                            "objectstorage.buckets.delete"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            },
+            created_at: "2024-01-23T11:45:00Z",
             status: "active"
         }
     ];
@@ -208,6 +599,7 @@ function generatePolicyDocument(policyType) {
 // Role-Policy Binding 목데이터 생성
 function generateMockBindings() {
     const mockBindings = [
+        // AWS Role Bindings - 동적 바인딩 생성
         {
             binding_id: "binding-aws-001-s3",
             role_id: "csp-role-aws-001",
@@ -217,6 +609,23 @@ function generateMockBindings() {
             created_at: "2024-01-15T09:30:00Z"
         },
         {
+            binding_id: "binding-aws-001-ec2",
+            role_id: "csp-role-aws-001",
+            policy_id: "csp-policy-aws-ec2",
+            provider: "aws",
+            status: "active",
+            created_at: "2024-01-15T10:15:00Z"
+        },
+        {
+            binding_id: "binding-aws-001-lambda",
+            role_id: "csp-role-aws-001",
+            policy_id: "csp-policy-aws-lambda",
+            provider: "aws",
+            status: "active",
+            created_at: "2024-01-15T11:00:00Z"
+        },
+        // Azure Role Bindings
+        {
             binding_id: "binding-azure-001-storage",
             role_id: "csp-role-azure-001",
             policy_id: "csp-policy-azure-storage",
@@ -224,6 +633,7 @@ function generateMockBindings() {
             status: "active",
             created_at: "2024-01-16T10:15:00Z"
         },
+        // GCP Role Bindings
         {
             binding_id: "binding-gcp-001-compute",
             role_id: "csp-role-gcp-001",
@@ -233,13 +643,23 @@ function generateMockBindings() {
             created_at: "2024-01-17T11:20:00Z"
         },
         {
+            binding_id: "binding-gcp-001-storage",
+            role_id: "csp-role-gcp-001",
+            policy_id: "csp-policy-gcp-storage",
+            provider: "gcp",
+            status: "active",
+            created_at: "2024-01-17T12:30:00Z"
+        },
+        // Alibaba Role Bindings
+        {
             binding_id: "binding-alibaba-001-oss",
             role_id: "csp-role-alibaba-001",
             policy_id: "csp-policy-alibaba-oss",
             provider: "alibaba",
-            status: "inactive",
+            status: "active",
             created_at: "2024-01-18T08:45:00Z"
         },
+        // Tencent Role Bindings
         {
             binding_id: "binding-tencent-001-cos",
             role_id: "csp-role-tencent-001",
@@ -247,6 +667,23 @@ function generateMockBindings() {
             provider: "tencent",
             status: "active",
             created_at: "2024-01-19T14:30:00Z"
+        },
+        // NHN Role Bindings
+        {
+            binding_id: "binding-nhn-001-compute",
+            role_id: "csp-role-nhn-001",
+            policy_id: "csp-policy-nhn-compute",
+            provider: "nhn",
+            status: "active",
+            created_at: "2024-01-23T10:30:00Z"
+        },
+        {
+            binding_id: "binding-nhn-001-storage",
+            role_id: "csp-role-nhn-001",
+            policy_id: "csp-policy-nhn-storage",
+            provider: "nhn",
+            status: "active",
+            created_at: "2024-01-23T11:45:00Z"
         }
     ];
 
@@ -295,6 +732,9 @@ export function handleMockAPIRequest(controller, data = null) {
                     break;
                 case "/api/mc-iam-manager/CreateCspPolicy":
                     result = handleCreateCspPolicy(data);
+                    break;
+                case "/api/mc-iam-manager/DeleteCspPolicy":
+                    result = handleDeleteCspPolicy(data);
                     break;
                 case "/api/mc-iam-manager/GetPoliciesByRoleId":
                     result = handleGetPoliciesByRoleId(data);
@@ -466,25 +906,80 @@ function handleGetCspPolicyById(data) {
 // CSP Policy 생성
 function handleCreateCspPolicy(data) {
     const request = data?.Request || {};
+    
+    // 중복 정책명 확인
+    const existingPolicy = mockData.policies.find(p => p.name === request.name);
+    if (existingPolicy) {
+        // 기존 정책을 새 정책으로 교체
+        const policyIndex = mockData.policies.findIndex(p => p.name === request.name);
+        mockData.policies[policyIndex] = {
+            id: existingPolicy.id, // 기존 ID 유지
+            name: request.name,
+            description: request.description || '',
+            provider: request.provider || existingPolicy.provider,
+            document: request.document || generatePolicyDocument('StorageAccess'),
+            created_at: existingPolicy.created_at, // 기존 생성일 유지
+            updated_at: new Date().toISOString(), // 업데이트 시간 추가
+            status: 'active'
+        };
+        
+        return { success: true, policy: mockData.policies[policyIndex], message: 'Policy updated successfully' };
+    }
+    
+    // 새 정책 생성
     const newPolicy = {
-        id: `csp-policy-${request.provider}-${Date.now()}`,
+        id: `csp-policy-${request.provider || 'unknown'}-${Date.now()}`,
         name: request.name,
         description: request.description || '',
-        provider: request.provider,
+        provider: request.provider || 'aws',
         document: request.document || generatePolicyDocument('StorageAccess'),
         created_at: new Date().toISOString(),
         status: 'active'
     };
     
     mockData.policies.push(newPolicy);
-    return newPolicy;
+    return { success: true, policy: newPolicy, message: 'Policy created successfully' };
+}
+
+// CSP Policy 삭제
+function handleDeleteCspPolicy(data) {
+    const policyId = data?.pathParams?.policyId;
+    
+    const policyIndex = mockData.policies.findIndex(p => p.id === policyId);
+    if (policyIndex === -1) {
+        throw new Error(`CSP Policy with ID ${policyId} not found`);
+    }
+    
+    // 관련 바인딩도 삭제
+    mockData.bindings = mockData.bindings.filter(b => b.policy_id !== policyId);
+    
+    const deletedPolicy = mockData.policies.splice(policyIndex, 1)[0];
+    return { success: true, deletedPolicy };
 }
 
 // 특정 Role에 바인딩된 Policies 조회
 function handleGetPoliciesByRoleId(data) {
     const roleId = data?.pathParams?.roleId;
     
-    const roleBindings = mockData.bindings.filter(b => b.role_id === roleId && b.status === 'active');
+    // Role ID로 직접 찾기
+    let roleBindings = mockData.bindings.filter(b => b.role_id === roleId && b.status === 'active');
+    
+    // Role ID로 찾지 못한 경우, Role Name으로 찾기 (동적 바인딩)
+    if (roleBindings.length === 0) {
+        // AWS-AdminRole에 대한 기본 Policy 바인딩 생성
+        if (roleId && roleId.toString().length > 10) { // 실제 생성된 Role ID인 경우
+            const awsPolicies = mockData.policies.filter(p => p.provider === 'aws');
+            roleBindings = awsPolicies.map((policy, index) => ({
+                binding_id: `binding-aws-dynamic-${index + 1}`,
+                role_id: roleId,
+                policy_id: policy.id,
+                provider: 'aws',
+                status: 'active',
+                created_at: new Date().toISOString()
+            }));
+        }
+    }
+    
     const policies = roleBindings.map(binding => {
         const policy = mockData.policies.find(p => p.id === binding.policy_id);
         return {

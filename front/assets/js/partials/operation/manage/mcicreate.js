@@ -561,7 +561,7 @@ function getPlusVm(vmElementId) {
 
 	var append = "";
 	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
-	append = append + "+ VM"
+	append = append + "+ SubGroup"
 	append = append + '</li>';
 	return append;
 }
