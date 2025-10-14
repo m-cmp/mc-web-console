@@ -10,7 +10,7 @@ export async function commonAPIPost(url, data, attempt) {
     console.log("Request Data :", JSON.stringify(data));
     console.log("-----------------------");
     try {
-        if( data === undefined) {
+        if( data === undefined || data === null) {
             var response = await axios.post(url);
         } else if (data.formData instanceof FormData) {
             // FormData 처리 분기 - axios 사용
