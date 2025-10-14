@@ -701,14 +701,39 @@ function hideProgressToast() {
 // VM 타입용 전송 결과 표시 (새로 추가)
 function showTransferResultsForVM(results) {
     // VM 타입에서는 첫 번째 파일의 결과만 사용 (VM은 1개이므로)
-    if (results.length > 0 && results[0].result) {
+    if (results.length > 0) {
         const firstResult = results[0];
-        const result = firstResult.result;
-        const successCount = result.filter(r => r.err === null).length;
-        const totalCount = result.length;
+        
+        // API 응답 구조에 맞게 데이터 추출
+        let resultArray = [];
+        let fileName = 'Unknown File';
+        
+        // 다양한 가능한 구조 확인
+        if (firstResult.responseData && firstResult.responseData.results) {
+            resultArray = Array.isArray(firstResult.responseData.results) ? firstResult.responseData.results : [];
+            fileName = firstResult.fileName || 'Unknown File';
+        } else if (firstResult.result && firstResult.result.results) {
+            resultArray = Array.isArray(firstResult.result.results) ? firstResult.result.results : [];
+            fileName = firstResult.fileName || 'Unknown File';
+        } else if (firstResult.result && Array.isArray(firstResult.result)) {
+            resultArray = firstResult.result;
+            fileName = firstResult.fileName || 'Unknown File';
+        } else if (Array.isArray(firstResult)) {
+            resultArray = firstResult;
+            fileName = 'Unknown File';
+        } else {
+            // 직접 데이터가 있는지 확인
+            if (firstResult.vmId || firstResult.vmIp) {
+                resultArray = [firstResult];
+                fileName = firstResult.fileName || 'Unknown File';
+            }
+        }
+        
+        const successCount = resultArray.filter(r => !r.error || r.error === '').length;
+        const totalCount = resultArray.length;
         
         // VM 타입용 모달 표시
-        showTransferResultModal(firstResult.fileName, result, successCount, totalCount);
+        showTransferResultModal(fileName, resultArray, successCount, totalCount);
     } else if (results.length > 0 && results[0].error) {
         // 에러가 있는 경우
         const firstResult = results[0];
@@ -776,7 +801,8 @@ function showTransferResultModal(fileName, result, successCount, totalCount) {
                                 <div class="card border-info">
                                     <div class="card-body text-center">
                                         <h6 class="card-title">Target Path</h6>
-                                        <code>${result[0]?.command?.['0']?.split(' to ')[1] || 'N/A'}</code>
+                                        <code>${(Array.isArray(result) && result.length > 0 && result[0]?.command?.['0']) ? 
+                                            result[0].command['0'].split(' to ')[1] || 'N/A' : 'N/A'}</code>
                                     </div>
                                 </div>
                             </div>
@@ -794,31 +820,33 @@ function showTransferResultModal(fileName, result, successCount, totalCount) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${result.map(r => `
-                                        <tr class="${r.err === null ? 'table-success' : 'table-danger'}">
-                                            <td><code>${r.vmId}</code></td>
-                                            <td><code>${r.vmIp}</code></td>
+                                    ${(Array.isArray(result) ? result : []).map(r => {
+                                        const isSuccess = !r.error || r.error === '';
+                                        return `
+                                        <tr class="${isSuccess ? 'table-success' : 'table-danger'}">
+                                            <td><code>${r.vmId || 'N/A'}</code></td>
+                                            <td><code>${r.vmIp || 'N/A'}</code></td>
                                             <td>
-                                                ${r.err === null ? 
+                                                ${isSuccess ? 
                                                     '<span class="badge bg-success">Success</span>' : 
                                                     '<span class="badge bg-danger">Failed</span>'
                                                 }
                                             </td>
                                             <td>
-                                                ${r.err === null ? 
+                                                ${isSuccess ? 
                                                     `<small class="text-success">${r.stdout?.['0'] || 'Transfer Complete'}</small>` :
-                                                    `<small class="text-danger">${r.err}</small>`
+                                                    `<small class="text-danger">${r.error || 'Unknown Error'}</small>`
                                                 }
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="copyTransferResult()">Copy Result</button>
                     </div>
                 </div>
             </div>
@@ -909,8 +937,19 @@ function showTransferResultsModal(results, successFiles, totalFiles) {
                                                 </tr>
                                             `;
                                         } else {
-                                            const successCount = r.result.filter(vm => vm.err === null).length;
-                                            const totalCount = r.result.length;
+                                            let resultArray = [];
+                                            
+                                            // API 응답 구조에 맞게 데이터 추출
+                                            if (r.result && r.result.results) {
+                                                resultArray = Array.isArray(r.result.results) ? r.result.results : [];
+                                            } else if (r.result && Array.isArray(r.result)) {
+                                                resultArray = r.result;
+                                            } else if (r.responseData && r.responseData.results) {
+                                                resultArray = Array.isArray(r.responseData.results) ? r.responseData.results : [];
+                                            }
+                                            
+                                            const successCount = resultArray.filter(vm => !vm.error || vm.error === '').length;
+                                            const totalCount = resultArray.length;
                                             return `
                                                 <tr>
                                                     <td>${r.fileName}</td>
@@ -952,7 +991,7 @@ function copyTransferResult() {
 Transfer Complete: ${successCount}/${totalCount} VM
 
 Details:
-${result.map(r => `
+${(Array.isArray(result) ? result : []).map(r => `
 VM ID: ${r.vmId}
 VM IP: ${r.vmIp}
 Status: ${r.err === null ? 'Success' : 'Failed'}
