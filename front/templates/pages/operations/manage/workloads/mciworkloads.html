@@ -1225,7 +1225,7 @@
                 data-bs-target="#mci-collapse-1"
                 aria-expanded="false"
               >
-                easy command transfer
+                Transfer a file
               </button>
             </h2>
             <div
@@ -1234,13 +1234,26 @@
               data-bs-parent="#mci-command-example-accordion"
             >
               <div class="accordion-body pt-0">
+                <!-- Path 입력 필드 추가 -->
+                <div class="mb-3">
+                  <label for="mci-file-path-input" class="form-label">Target Path</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="mci-file-path-input" 
+                    placeholder="/tmp/" 
+                    value="/tmp/"
+                  >
+                  <div class="form-text">Directory path where the file will be stored</div>
+                </div>
+                
                 <div class="d-grid gap-2">
                   <button
                     id="mci-show-content-btn"
                     class="btn btn-primary"
                     type="button"
                   >
-                    excute commnad
+                    Transfer File
                   </button>
                 </div>
                 <form
@@ -1251,9 +1264,9 @@
                   novalidate=""
                 >
                   <div class="dz-message">
-                    <h3 class="dropzone-msg-title">Drop Down Script Files</h3>
+                    <h3 class="dropzone-msg-title">Drop Down Files</h3>
                     <span class="dropzone-msg-desc"
-                      >Only shell script files (.sh) are allowed.</span
+                      >Upload files (Max 10MB): .txt, .json, .yaml, .conf, .log, .sh</span
                     >
                   </div>
                 </form>

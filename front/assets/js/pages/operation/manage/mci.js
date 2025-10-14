@@ -2261,23 +2261,25 @@ function transformPolicyResponse(resp) {
       } = postCommand;
 
       const {
-        commonImage = '',
-        commonSpec = '',
-        connectionName = '',
+        imageId: commonImage = '',
+        specId: commonSpec = '',
         description: vmDescription = '',
         label = {},
         name: vmName = '',
-        rootDiskSize = '',
-        rootDiskType = '',
         subGroupSize = ''
       } = vmDynamicReq;
+      
+      // API 응답에 없는 필드들은 기본값으로 설정
+      const connectionName = '';
+      const rootDiskSize = '';
+      const rootDiskType = '';
 
       const {
         metric = '',
         operator = '',
         operand = '',
-        evaluationPeriod = ''
-        // evaluationValue 는 제외
+        evaluationPeriod = '',
+        evaluationValue = ''
       } = autoCondition;
 
       const condition = `${metric} ${operator} ${operand}`.trim();
@@ -2312,6 +2314,7 @@ function transformPolicyResponse(resp) {
         operator,
         operand,
         evaluationPeriod,
+        evaluationValue,
 
         // 정책 상태
         status
@@ -2454,6 +2457,7 @@ export async function initMciRemoteCmdModal() {
   }
   
   try {
+    // VM과 동일한 방식: 터미널을 먼저 초기화한 후 모달 표시
     await webconsolejs["common/api/services/remotecmd_api"].initTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
     
     const modalElement = document.getElementById('mci-cmdtestmodal');
