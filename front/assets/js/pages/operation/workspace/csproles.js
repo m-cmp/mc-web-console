@@ -760,10 +760,8 @@ function addPolicyDocumentListeners() {
 
 // 정책 문서 클리어
 function clearPolicyDocument() {
-  if (confirm('정책 문서를 클리어하시겠습니까?')) {
-    document.getElementById('policyEditorDocument').value = '';
-    updatePolicyDocumentPreview();
-  }
+  document.getElementById('policyEditorDocument').value = '';
+  updatePolicyDocumentPreview();
 }
 
 // CSP Role 선택 상태 복원
