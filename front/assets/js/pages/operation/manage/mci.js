@@ -2457,6 +2457,7 @@ export async function initMciRemoteCmdModal() {
   }
   
   try {
+    // VM과 동일한 방식: 터미널을 먼저 초기화한 후 모달 표시
     await webconsolejs["common/api/services/remotecmd_api"].initTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
     
     const modalElement = document.getElementById('mci-cmdtestmodal');
