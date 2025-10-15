@@ -10,37 +10,109 @@ function generateMockCspRoles() {
             id: "csp-role-aws-001",
             name: "AWS-AdminRole",
             description: "AWS Administrator role for full access",
-            provider: "aws"
+            provider: "aws",
+            trust_policy: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": ["ec2.amazonaws.com"]
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }
         },
         {
             id: "csp-role-azure-001",
             name: "Azure-ReaderRole",
             description: "Azure Reader role for read-only access",
-            provider: "azure"
+            provider: "azure",
+            trust_policy: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": ["azure.microsoft.com"]
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }
         },
         {
             id: "csp-role-gcp-001",
             name: "GCP-DeveloperRole",
             description: "GCP Developer role for development access",
-            provider: "gcp"
+            provider: "gcp",
+            trust_policy: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": ["compute.googleapis.com"]
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }
         },
         {
             id: "csp-role-alibaba-001",
             name: "Alibaba-UserRole",
             description: "Alibaba Cloud User role for basic access",
-            provider: "alibaba"
+            provider: "alibaba",
+            trust_policy: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": ["ecs.aliyuncs.com"]
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }
         },
         {
             id: "csp-role-tencent-001",
             name: "Tencent-PowerUserRole",
             description: "Tencent Cloud Power User role for advanced access",
-            provider: "tencent"
+            provider: "tencent",
+            trust_policy: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": ["cvm.tencentcloudapi.com"]
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }
         },
         {
             id: "csp-role-nhn-001",
             name: "NHN-DeveloperRole",
             description: "NHN Cloud Developer role for development and testing access",
-            provider: "nhn"
+            provider: "nhn",
+            trust_policy: {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": ["compute.nhncloud.com"]
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }
         }
     ];
 
