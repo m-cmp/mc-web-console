@@ -76,7 +76,6 @@ export async function updateCspRole(roleId, roleData) {
             roleId: roleId.toString()
         },
         Request: {
-            name: roleData.name,
             description: roleData.description,
             trust_policy: roleData.trust_policy
         }

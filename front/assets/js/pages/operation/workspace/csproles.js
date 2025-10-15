@@ -1330,6 +1330,105 @@ async function createNewPolicy() {
   }
 }
 
+// CSP Role 편집 모달 열기
+async function editCSPRole() {
+  // 현재 선택된 CSP Role이 있는지 확인
+  if (!currentCspRoleId) {
+    alert('Please select a CSP Role to edit');
+    return;
+  }
+  
+  try {
+    // 현재 CSP Role 정보 가져오기
+    const cspRole = await window.webconsolejs["common/api/services/csproles_api"].getCspRoleById(currentCspRoleId);
+    
+    if (!cspRole) {
+      alert('CSP Role not found');
+      return;
+    }
+    
+    // 편집 모달의 폼에 현재 데이터 채우기
+    document.getElementById('editCspRoleName').value = cspRole.name || '';
+    document.getElementById('editCspRoleDescription').value = cspRole.description || '';
+    
+    // Trust Policy를 JSON 문자열로 변환하여 표시
+    if (cspRole.trust_policy) {
+      const trustPolicyText = typeof cspRole.trust_policy === 'string' 
+        ? cspRole.trust_policy 
+        : JSON.stringify(cspRole.trust_policy, null, 2);
+      document.getElementById('editCspRoleTrustPolicy').value = trustPolicyText;
+    } else {
+      document.getElementById('editCspRoleTrustPolicy').value = '';
+    }
+    
+    // 편집 모달 열기
+    const editModal = new bootstrap.Modal(document.getElementById('editCspRoleModal'));
+    editModal.show();
+    
+  } catch (error) {
+    console.error("CSP Role 정보 로드 중 오류:", error);
+    alert('Error loading CSP Role information: ' + error.message);
+  }
+}
+
+// 편집된 CSP Role 저장
+async function saveEditedCspRole() {
+  const description = document.getElementById('editCspRoleDescription').value.trim();
+  const trustPolicyText = document.getElementById('editCspRoleTrustPolicy').value.trim();
+  
+  // 필수 필드 검증
+  if (!description || !trustPolicyText) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
+  try {
+    // Trust Policy JSON 파싱 검증
+    let trustPolicy;
+    try {
+      trustPolicy = JSON.parse(trustPolicyText);
+    } catch (error) {
+      alert('Invalid JSON format in Trust Policy. Please check your JSON syntax.');
+      return;
+    }
+    
+    // API 요구사항에 맞는 데이터 구조 (name 제외)
+    const roleData = {
+      description: description,
+      trust_policy: trustPolicy
+    };
+    
+    const result = await window.webconsolejs["common/api/services/csproles_api"].updateCspRole(currentCspRoleId, roleData);
+    
+    if (result) {
+      alert('CSP Role updated successfully');
+      
+      // 모달 닫기
+      const modal = bootstrap.Modal.getInstance(document.getElementById('editCspRoleModal'));
+      modal.hide();
+      
+      // 폼 초기화
+      document.getElementById('editCspRoleForm').reset();
+      
+      // CSP Role 목록 새로고침
+      await refreshCspRolesList();
+      
+      // 현재 선택된 CSP Role의 상세 정보도 새로고침
+      if (currentCspRoleId) {
+        const updatedRole = await window.webconsolejs["common/api/services/csproles_api"].getCspRoleById(currentCspRoleId);
+        if (updatedRole) {
+          getSelectedCspRoleData(updatedRole);
+        }
+      }
+    } else {
+      throw new Error('Failed to update CSP Role');
+    }
+  } catch (error) {
+    console.error("CSP Role 업데이트 중 오류:", error);
+    alert('Error updating CSP Role: ' + error.message);
+  }
+}
+
 // 선택된 CSP Role 추가
 async function addSelectedCspRole() {
   const name = document.getElementById('addCspRoleName').value.trim();
@@ -1425,3 +1524,5 @@ window.clearPolicyContextJson = clearPolicyContextJson;
 window.updatePolicyContextPreview = updatePolicyContextPreview;
 window.editSelectedPolicy = editSelectedPolicy;
 window.createNewPolicy = createNewPolicy;
+window.editCSPRole = editCSPRole;
+window.saveEditedCspRole = saveEditedCspRole;
