@@ -1232,8 +1232,40 @@
               aria-labelledby="mci-terminal-heading"
               data-bs-parent="#mci-terminal-accordion"
             >
-              <div class="accordion-body p-0">
-                <div id="mci-xterm-container"></div>
+              <div class="accordion-body pt-0">
+                <!-- Command Input Section -->
+                <div id="mci-command-input-section">
+                  <div class="mb-3">
+                    <label for="mci-command-input" class="form-label">Command</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      id="mci-command-input" 
+                      placeholder="Enter command to execute on all VMs..."
+                    >
+                    <div class="form-text">Command will be executed on all VMs in this MCI</div>
+                  </div>
+                  
+                  <div class="d-grid gap-2">
+                    <button
+                      id="mci-execute-command-btn"
+                      class="btn btn-primary"
+                      type="button"
+                    >
+                      Execute Command
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Command Results Section (initially hidden) -->
+                <div id="mci-command-results-section" style="display: none;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Command Execution Results</h6>
+                  </div>
+                  <div id="mci-command-results-content">
+                    <!-- Results will be populated here -->
+                  </div>
+                </div>
               </div>
             </div>
           </div>

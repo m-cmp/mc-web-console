@@ -701,6 +701,10 @@ function hideProgressToast() {
         window.currentTransferToast.hide();
         window.currentTransferToast = null;
     }
+    if (window.currentCommandToast) {
+        window.currentCommandToast.hide();
+        window.currentCommandToast = null;
+    }
 }
 
 // VM 타입용 전송 결과 표시 (새로 추가)
@@ -1015,4 +1019,421 @@ Result: ${r.err === null ? (r.stdout?.['0'] || 'Transfer Complete') : r.err}
 function showTransferError(fileName, error) {
     alert(`Transfer failed: ${fileName} - ${error.message}`);
     console.error(`Transfer failed: ${fileName}`, error);
+}
+
+// 단발성 명령어 실행 함수
+export async function executeBatchCommand(command, nsId, mciId, targetId, targetType) {
+    try {
+        // 1. 진행 상태 표시
+        showCommandProgressToast(command, 'executing');
+        
+        // 2. 명령어 실행
+        const result = await postRemoteCmd(nsId, mciId, targetId, [command], targetType);
+        
+        // 3. 진행 상태 토스트 숨기기
+        hideProgressToast();
+        
+        // 4. 결과 표시
+        showCommandResults(command, result, targetType);
+        
+    } catch (error) {
+        // 5. 진행 상태 토스트 숨기기
+        hideProgressToast();
+        
+        // 6. 에러 표시
+        showCommandError(command, error);
+    }
+}
+
+// 명령어 실행 진행 상태 토스트 표시
+function showCommandProgressToast(command, status) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-primary border-0" id="commandProgressToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>Executing command: ${command}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    // 기존 토스트 제거
+    const existingToast = document.getElementById('commandProgressToast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 토스트 컨테이너 확인/생성
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // 새 토스트 추가
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // 토스트 표시
+    const toastElement = document.getElementById('commandProgressToast');
+    const toast = new bootstrap.Toast(toastElement, { autohide: false });
+    toast.show();
+    
+    // 전역 변수에 토스트 저장 (나중에 숨기기 위해)
+    window.currentCommandToast = toast;
+}
+
+// 명령어 실행 결과 표시
+function showCommandResults(command, result, targetType) {
+    // API 응답 구조에 맞게 results 배열 추출
+    let resultArray = [];
+    
+    if (result && result.responseData && result.responseData.results) {
+        // API 응답에서 results 배열 추출
+        resultArray = result.responseData.results;
+    } else if (Array.isArray(result)) {
+        // 이미 배열인 경우 - 이중 배열인지 확인
+        if (result.length > 0 && Array.isArray(result[0])) {
+            // 이중 배열인 경우 첫 번째 배열 사용
+            resultArray = result[0];
+        } else {
+            resultArray = result;
+        }
+    } else if (result && typeof result === 'object') {
+        // 객체인 경우 배열로 변환
+        resultArray = Object.values(result);
+    } else {
+        // 예상치 못한 형태인 경우 빈 배열로 처리
+        console.error('Unexpected result format:', result);
+        resultArray = [];
+    }
+    
+    // 추가 검증: 여전히 이중 배열인지 확인하고 평탄화
+    if (Array.isArray(resultArray) && resultArray.length > 0 && Array.isArray(resultArray[0])) {
+        console.log('Detected nested array, flattening...');
+        resultArray = resultArray[0];
+    }
+    
+    // error 필드가 빈 문자열이면 성공으로 처리
+    const successCount = resultArray.filter(r => r && (!r.error || r.error === '')).length;
+    const totalCount = resultArray.length;
+    
+    // 결과를 화면에 표시
+    showCommandResultsInModal(command, resultArray, successCount, totalCount, targetType);
+}
+
+// 명령어 실행 결과를 모달에 표시
+function showCommandResultsInModal(command, result, successCount, totalCount, targetType) {
+    // 기존 모달 제거
+    const existingModal = document.getElementById('commandResultModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 모달 HTML 생성
+    const modalHtml = `
+        <div class="modal fade" id="commandResultModal" tabindex="-1" role="dialog" aria-labelledby="commandResultModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            Command Execution Result: ${command}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card ${successCount === totalCount ? 'border-success' : 'border-warning'}">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Execution Result</h6>
+                                        <h4 class="${successCount === totalCount ? 'text-success' : 'text-warning'}">
+                                            ${successCount}/${totalCount}
+                                        </h4>
+                                        <small class="text-muted">VM Execution Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Command</h6>
+                                        <code class="text-info">
+                                            ${command}
+                                        </code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>VM ID</th>
+                                        <th>VM IP</th>
+                                        <th>Status</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${Array.isArray(result) ? result.map(r => {
+                                        const isSuccess = r && (!r.error || r.error === '');
+                                        return `
+                                        <tr class="${isSuccess ? 'table-success' : 'table-danger'}">
+                                            <td>${r && r.vmId ? r.vmId : 'N/A'}</td>
+                                            <td>${r && r.vmIp ? r.vmIp : 'N/A'}</td>
+                                            <td>
+                                                <span class="badge ${isSuccess ? 'bg-success' : 'bg-danger'}">
+                                                    ${isSuccess ? 'Success' : 'Failed'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    ${isSuccess ? (r.stdout?.['0'] || 'Command executed successfully') : (r.error || 'Unknown error')}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    `}).join('') : '<tr><td colspan="4" class="text-center">No results available</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="executeCommandAgain()">Execute Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 모달을 body에 추가
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 모달 표시
+    const modalElement = document.getElementById('commandResultModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    
+    // 전역 변수에 결과 저장 (다시 실행 기능용)
+    window.lastCommandResult = {
+        command: command,
+        result: result,
+        successCount: successCount,
+        totalCount: totalCount,
+        targetType: targetType
+    };
+}
+
+// 명령어 실행 에러 표시
+function showCommandError(command, error) {
+    alert(`Command execution failed: ${command} - ${error.message}`);
+    console.error(`Command execution failed: ${command}`, error);
+}
+
+// 명령어 다시 실행 함수 (전역 함수로 등록)
+window.executeCommandAgain = function() {
+    if (!window.lastCommandResult) return;
+    
+    const { command, targetType } = window.lastCommandResult;
+    
+    // 결과 모달 닫기
+    const modalElement = document.getElementById('commandResultModal');
+    if (modalElement) {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    }
+    
+    // targetType에 따라 다른 ID 사용
+    let commandInputId, inputSectionId, resultsSectionId;
+    
+    if (targetType === 'mci') {
+        commandInputId = 'mci-command-input';
+        inputSectionId = 'mci-command-input-section';
+        resultsSectionId = 'mci-command-results-section';
+    } else if (targetType === 'subgroup') {
+        commandInputId = 'subgroup-command-input';
+        inputSectionId = 'subgroup-command-input-section';
+        resultsSectionId = 'subgroup-command-results-section';
+    } else {
+        console.error('executeCommandAgain: Invalid targetType:', targetType);
+        return;
+    }
+    
+    // 결과 섹션 숨기고 입력 섹션 표시
+    document.getElementById(resultsSectionId).style.display = 'none';
+    document.getElementById(inputSectionId).style.display = 'block';
+    
+    // 명령어 입력 필드에 이전 명령어 설정하고 포커스
+    const commandInput = document.getElementById(commandInputId);
+    if (commandInput) {
+        commandInput.value = command;
+        commandInput.focus();
+        commandInput.select(); // 텍스트 선택
+    }
+};
+
+// MCI/SubGroup용 단발성 명령어 실행 초기화 함수
+export async function initBatchCommandTerminal(id, nsId, mciId, targetId, targetType) {
+    // 기존 터미널 인스턴스 정리
+    if (terminalInstance) {
+        terminalInstance.dispose();
+        terminalInstance = null;
+    }
+
+    if (dropzoneInstance) {
+        dropzoneInstance.destroy();
+        dropzoneInstance = null;
+    }
+
+    // targetType에 따라 다른 ID 사용
+    let commandInputId, executeButtonId, executeAgainButtonId, inputSectionId, resultsSectionId;
+    
+    if (targetType === 'mci') {
+        commandInputId = 'mci-command-input';
+        executeButtonId = 'mci-execute-command-btn';
+        executeAgainButtonId = 'mci-execute-again-btn';
+        inputSectionId = 'mci-command-input-section';
+        resultsSectionId = 'mci-command-results-section';
+    } else if (targetType === 'subgroup') {
+        commandInputId = 'subgroup-command-input';
+        executeButtonId = 'subgroup-execute-command-btn';
+        executeAgainButtonId = 'subgroup-execute-again-btn';
+        inputSectionId = 'subgroup-command-input-section';
+        resultsSectionId = 'subgroup-command-results-section';
+    } else {
+        console.error('initBatchCommandTerminal: Invalid targetType:', targetType);
+        return;
+    }
+
+    // 명령어 실행 버튼 이벤트 리스너 설정
+    const executeButton = document.getElementById(executeButtonId);
+    if (executeButton) {
+        // 기존 이벤트 리스너 제거
+        executeButton.replaceWith(executeButton.cloneNode(true));
+        const newExecuteButton = document.getElementById(executeButtonId);
+        
+        newExecuteButton.addEventListener("click", async function () {
+            const command = document.getElementById(commandInputId).value.trim();
+            if (!command) {
+                alert("Please enter a command to execute.");
+                return;
+            }
+            
+            // 입력 섹션 숨기고 결과 섹션 표시
+            document.getElementById(inputSectionId).style.display = 'none';
+            document.getElementById(resultsSectionId).style.display = 'block';
+            
+            // 명령어 실행
+            await executeBatchCommand(command, nsId, mciId, targetId, targetType);
+        });
+    }
+
+    // Execute Again 버튼은 이제 결과 모달에서 처리됨
+
+    // 파일 전송 기능 초기화 (기존 로직 유지)
+    initFileTransfer(targetType, nsId, mciId, targetId);
+}
+
+// 파일 전송 기능 초기화
+function initFileTransfer(targetType, nsId, mciId, targetId) {
+    let fileContents = [];
+    
+    // targetType에 따라 다른 ID 사용
+    let dropzoneId, buttonId, pathInputId;
+    
+    if (targetType === 'mci') {
+        dropzoneId = '#mci-dropzone-custom';
+        buttonId = 'mci-show-content-btn';
+        pathInputId = 'mci-file-path-input';
+    } else if (targetType === 'subgroup') {
+        dropzoneId = '#subgroup-dropzone-custom';
+        buttonId = 'subgroup-show-content-btn';
+        pathInputId = 'subgroup-file-path-input';
+    } else {
+        // vm 타입
+        dropzoneId = '#dropzone-custom';
+        buttonId = 'show-content-btn';
+        pathInputId = 'file-path-input';
+    }
+
+    // Dropzone 초기화
+    setTimeout(() => {
+        console.log('Initializing dropzone for targetType:', targetType);
+        console.log('Looking for dropzone element:', dropzoneId);
+        const dropzoneElement = document.querySelector(dropzoneId);
+        console.log('Dropzone element found:', dropzoneElement);
+        
+        if (dropzoneElement && !dropzoneElement.dropzone) {
+            dropzoneInstance = new Dropzone(dropzoneId, {
+                autoProcessQueue: false,
+                addRemoveLinks: true,
+                acceptedFiles: ".sh",
+                init: function () {
+                    this.on("addedfile", function (file) {
+                        if (file.name.endsWith(".sh")) {
+                            const reader = new FileReader();
+                            reader.onload = function (event) {
+                                const fileText = event.target.result;
+                                const modifiedContent = fileText
+                                    .split('\n')
+                                    .map(line => line.trim())
+                                    .filter(line => line.length > 0);
+                                fileContents.push(modifiedContent);
+                            };
+                            reader.onerror = function () {
+                                alert("Failed to read file");
+                            };
+                            reader.readAsText(file);
+                        } else {
+                            alert("Only shell script files (.sh) are allowed.");
+                        }
+                    });
+                }
+            });
+        } else if (dropzoneElement && dropzoneElement.dropzone) {
+            // Dropzone already initialized
+        }
+    }, 100);
+
+    // 파일 전송 버튼 이벤트 리스너
+    const transferButton = document.getElementById(buttonId);
+    if (transferButton) {
+        // 기존 이벤트 리스너 제거
+        transferButton.replaceWith(transferButton.cloneNode(true));
+        const newTransferButton = document.getElementById(buttonId);
+        
+        newTransferButton.addEventListener("click", async function () {
+            if (fileContents.length > 0) {
+                const targetPath = document.getElementById(pathInputId).value;
+                
+                // 모든 파일을 한 번에 처리
+                try {
+                    await transferFilesToMci(fileContents, targetPath, nsId, mciId, targetType, targetId);
+                    
+                    // 전송 완료 후 파일 목록 초기화
+                    fileContents = [];
+                    if (dropzoneInstance) {
+                        dropzoneInstance.removeAllFiles(true);
+                    }
+                } catch (error) {
+                    alert("File transfer failed: " + error.message);
+                    console.error(error);
+                }
+            } else {
+                alert("No file available or file not loaded.");
+            }
+        });
+    }
 }
