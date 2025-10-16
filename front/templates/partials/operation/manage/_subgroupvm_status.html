@@ -64,7 +64,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cmdtestmodal-title">Remote Terminal</h5>
+        <h5 class="modal-title" id="cmdtestmodal-title"></h5>
         <button
           type="button"
           class="btn-close"
@@ -73,28 +73,53 @@
         ></button>
       </div>
 
-      <div class="modal-body p-0" id="subgroup-cmdtestmodal-content">
-        <div id="subgroup-xterm-container"></div>
-      </div>
-
-      <div class="modal-body p-0" id="subgroup-cmdtestmodal-content">
-        <div class="accordion" id="subgroup-command-example-accordion">
+      <div class="modal-body p-0">
+        <div class="accordion" id="subgroup-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
           <div class="accordion-item">
-            <h2 class="accordion-header" id="subgroup-heading-1">
+            <h2 class="accordion-header" id="subgroup-terminal-heading">
               <button
-                class="accordion-button collapsed modal-title"
+                class="accordion-button"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#subgroup-collapse-1"
+                data-bs-target="#subgroup-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="subgroup-terminal-collapse"
+              >
+                Remote Terminal
+              </button>
+            </h2>
+            <div
+              id="subgroup-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="subgroup-terminal-heading"
+              data-bs-parent="#subgroup-terminal-accordion"
+            >
+              <div class="accordion-body p-0">
+                <div id="subgroup-xterm-container"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="subgroup-transfer-heading">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#subgroup-transfer-collapse"
                 aria-expanded="false"
+                aria-controls="subgroup-transfer-collapse"
               >
                 Transfer a file
               </button>
             </h2>
             <div
-              id="subgroup-collapse-1"
+              id="subgroup-transfer-collapse"
               class="accordion-collapse collapse"
-              data-bs-parent="#subgroup-command-example-accordion"
+              aria-labelledby="subgroup-transfer-heading"
+              data-bs-parent="#subgroup-terminal-accordion"
             >
               <div class="accordion-body pt-0">
                 <!-- Path 입력 필드 추가 -->
@@ -140,8 +165,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          Disconnect
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
         </button>
       </div>
     </div>
