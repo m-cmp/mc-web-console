@@ -784,8 +784,8 @@ function showTransferResultModal(fileName, result, successCount, totalCount) {
     
     // 모달 HTML 생성
     const modalHtml = `
-        <div class="modal fade" id="transferResultModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg" role="document">
+        <div class="modal fade" id="transferResultModal" tabindex="-1" role="dialog" aria-labelledby="transferResultModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
@@ -890,8 +890,8 @@ function showTransferResultsModal(results, successFiles, totalFiles) {
     
     // 모달 HTML 생성
     const modalHtml = `
-        <div class="modal fade" id="transferResultsModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg" role="document">
+        <div class="modal fade" id="transferResultsModal" tabindex="-1" role="dialog" aria-labelledby="transferResultsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
@@ -1184,28 +1184,18 @@ function showCommandResultsInModal(command, result, successCount, totalCount, ta
                                         <th>Result</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    ${Array.isArray(result) ? result.map(r => {
-                                        const isSuccess = r && (!r.error || r.error === '');
-                                        return `
-                                        <tr class="${isSuccess ? 'table-success' : 'table-danger'}">
-                                            <td>${r && r.vmId ? r.vmId : 'N/A'}</td>
-                                            <td>${r && r.vmIp ? r.vmIp : 'N/A'}</td>
-                                            <td>
-                                                <span class="badge ${isSuccess ? 'bg-success' : 'bg-danger'}">
-                                                    ${isSuccess ? 'Success' : 'Failed'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <small class="text-muted">
-                                                    ${isSuccess ? (r.stdout?.['0'] || 'Command executed successfully') : (r.error || 'Unknown error')}
-                                                </small>
-                                            </td>
-                                        </tr>
-                                    `}).join('') : '<tr><td colspan="4" class="text-center">No results available</td></tr>'}
+                                <tbody id="commandResultTableBody">
+                                    <!-- Results will be populated by JavaScript -->
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Pagination -->
+                        <nav aria-label="Command results pagination" id="commandResultPagination">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                <!-- Pagination will be populated by JavaScript -->
+                            </ul>
+                        </nav>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1224,6 +1214,9 @@ function showCommandResultsInModal(command, result, successCount, totalCount, ta
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
     
+    // 페이지네이션 초기화
+    initCommandResultPagination(result);
+    
     // 전역 변수에 결과 저장 (다시 실행 기능용)
     window.lastCommandResult = {
         command: command,
@@ -1239,6 +1232,101 @@ function showCommandError(command, error) {
     alert(`Command execution failed: ${command} - ${error.message}`);
     console.error(`Command execution failed: ${command}`, error);
 }
+
+// 명령어 결과 페이지네이션 초기화
+function initCommandResultPagination(results) {
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(results.length / itemsPerPage);
+    
+    // 현재 페이지를 전역 변수로 저장
+    window.currentCommandResultPage = 1;
+    window.commandResultData = results;
+    window.commandResultItemsPerPage = itemsPerPage;
+    
+    // 첫 페이지 표시
+    showCommandResultPage(1);
+    
+    // 페이지네이션 버튼 생성
+    generateCommandResultPagination(totalPages);
+}
+
+// 명령어 결과 페이지 표시
+function showCommandResultPage(page) {
+    const results = window.commandResultData;
+    const itemsPerPage = window.commandResultItemsPerPage;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageResults = results.slice(startIndex, endIndex);
+    
+    const tbody = document.getElementById('commandResultTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = pageResults.map(r => {
+        const isSuccess = r && (!r.error || r.error === '');
+        return `
+        <tr class="${isSuccess ? 'table-success' : 'table-danger'}">
+            <td>${r && r.vmId ? r.vmId : 'N/A'}</td>
+            <td>${r && r.vmIp ? r.vmIp : 'N/A'}</td>
+            <td>
+                <span class="badge ${isSuccess ? 'bg-success' : 'bg-danger'}">
+                    ${isSuccess ? 'Success' : 'Failed'}
+                </span>
+            </td>
+            <td>
+                <small class="text-muted">
+                    ${isSuccess ? (r.stdout?.['0'] || 'Command executed successfully') : (r.error || 'Unknown error')}
+                </small>
+            </td>
+        </tr>
+        `;
+    }).join('');
+    
+    // 현재 페이지 업데이트
+    window.currentCommandResultPage = page;
+}
+
+// 명령어 결과 페이지네이션 버튼 생성
+function generateCommandResultPagination(totalPages) {
+    const pagination = document.getElementById('commandResultPagination');
+    if (!pagination || totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+    }
+    
+    pagination.style.display = 'block';
+    const ul = pagination.querySelector('ul');
+    ul.innerHTML = '';
+    
+    // 이전 버튼
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${window.currentCommandResultPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" onclick="changeCommandResultPage(${window.currentCommandResultPage - 1})">Previous</a>`;
+    ul.appendChild(prevLi);
+    
+    // 페이지 번호 버튼들
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.className = `page-item ${i === window.currentCommandResultPage ? 'active' : ''}`;
+        li.innerHTML = `<a class="page-link" href="#" onclick="changeCommandResultPage(${i})">${i}</a>`;
+        ul.appendChild(li);
+    }
+    
+    // 다음 버튼
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${window.currentCommandResultPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" onclick="changeCommandResultPage(${window.currentCommandResultPage + 1})">Next</a>`;
+    ul.appendChild(nextLi);
+}
+
+// 명령어 결과 페이지 변경 (전역 함수로 등록)
+window.changeCommandResultPage = function(page) {
+    const totalPages = Math.ceil(window.commandResultData.length / window.commandResultItemsPerPage);
+    
+    if (page < 1 || page > totalPages) return;
+    
+    showCommandResultPage(page);
+    generateCommandResultPagination(totalPages);
+};
 
 // 명령어 다시 실행 함수 (전역 함수로 등록)
 window.executeCommandAgain = function() {
@@ -1379,25 +1467,20 @@ function initFileTransfer(targetType, nsId, mciId, targetId) {
             dropzoneInstance = new Dropzone(dropzoneId, {
                 autoProcessQueue: false,
                 addRemoveLinks: true,
-                acceptedFiles: ".sh",
+                acceptedFiles: ".txt,.json,.yaml,.yml,.conf,.log,.sh",
+                maxFilesize: 10, // 10MB
+                clickable: true,
                 init: function () {
                     this.on("addedfile", function (file) {
-                        if (file.name.endsWith(".sh")) {
-                            const reader = new FileReader();
-                            reader.onload = function (event) {
-                                const fileText = event.target.result;
-                                const modifiedContent = fileText
-                                    .split('\n')
-                                    .map(line => line.trim())
-                                    .filter(line => line.length > 0);
-                                fileContents.push(modifiedContent);
-                            };
-                            reader.onerror = function () {
-                                alert("Failed to read file");
-                            };
-                            reader.readAsText(file);
-                        } else {
-                            alert("Only shell script files (.sh) are allowed.");
+                        if (file instanceof File) {
+                            // 중복 파일 체크
+                            const isDuplicate = fileContents.some(existingFile => 
+                                existingFile.name === file.name && existingFile.size === file.size
+                            );
+                            
+                            if (!isDuplicate) {
+                                fileContents.push(file);
+                            }
                         }
                     });
                 }

@@ -2302,7 +2302,7 @@ function initCspRoleMappingEditTable(roleId) {
             formatter: function (cell) {
               const rowData = cell.getRow().getData();
               return '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewEditCspRolePolicies(' + rowData.id + ', \'' + rowData.csp_type + '\', \'' + rowData.name + '\')">View</button>' +
-                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCspMapping(' + rowData.id + ')">Delete</button>';
+                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCspMapping(' + rowData.id + ')">Deallocate</button>';
             }
           }
         ]
@@ -2606,7 +2606,7 @@ async function initCreateCspRoleMappingTable() {
             title: "CSP",
             field: "csp_type",
             headerSort: false,
-            width: "30%",
+            width: "25%",
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -2622,11 +2622,11 @@ async function initCreateCspRoleMappingTable() {
           {
             title: "Actions",
             headerSort: false,
-            width: "30%",
+            width: "25%",
             formatter: function (cell) {
               const rowData = cell.getRow().getData();
               return '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewCreateCspRolePolicies(' + rowData.id + ', \'' + rowData.csp_type + '\', \'' + rowData.name + '\')">View</button>' +
-                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCreateCspMapping(' + rowData.id + ')">Delete</button>';
+                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCreateCspMapping(' + rowData.id + ')">Deallocate</button>';
             }
           }
         ]
