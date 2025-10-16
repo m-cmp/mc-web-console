@@ -160,7 +160,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cmdtestmodal-title">Remote Treminal</h5>
+        <h5 class="modal-title" id="cmdtestmodal-title"></h5>
         <button
           type="button"
           class="btn-close"
@@ -169,28 +169,53 @@
         ></button>
       </div>
 
-      <div class="modal-body p-0" id="cmdtestmodal-content">
-        <div id="xterm-container"></div>
-      </div>
-
-      <div class="modal-body p-0" id="cmdtestmodal-content">
-        <div class="accordion" id="command-example-accordion">
+      <div class="modal-body p-0">
+        <div class="accordion" id="server-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
           <div class="accordion-item">
-            <h2 class="accordion-header" id="heading-1">
+            <h2 class="accordion-header" id="server-terminal-heading">
               <button
-                class="accordion-button collapsed modal-title"
+                class="accordion-button"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#collapse-1"
+                data-bs-target="#server-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="server-terminal-collapse"
+              >
+                Remote Terminal
+              </button>
+            </h2>
+            <div
+              id="server-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="server-terminal-heading"
+              data-bs-parent="#server-terminal-accordion"
+            >
+              <div class="accordion-body p-0">
+                <div id="xterm-container"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="server-transfer-heading">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#server-transfer-collapse"
                 aria-expanded="false"
+                aria-controls="server-transfer-collapse"
               >
                 Transfer a file
               </button>
             </h2>
             <div
-              id="collapse-1"
+              id="server-transfer-collapse"
               class="accordion-collapse collapse"
-              data-bs-parent="#command-example-accordion"
+              aria-labelledby="server-transfer-heading"
+              data-bs-parent="#server-terminal-accordion"
             >
               <div class="accordion-body pt-0">
                 <!-- Path 입력 필드 추가 -->
@@ -236,8 +261,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          Disconnect
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
         </button>
       </div>
     </div>
