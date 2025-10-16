@@ -2440,7 +2440,8 @@ export async function initSubGroupRemoteCmdModal() {
   }
   
   try {
-    await webconsolejs["common/api/services/remotecmd_api"].initTerminal('subgroup-xterm-container', nsId, currentMciId, currentSubGroupId, 'subgroup');
+    // 새로운 단발성 명령어 실행 방식으로 초기화
+    await webconsolejs["common/api/services/remotecmd_api"].initBatchCommandTerminal('subgroup-xterm-container', nsId, currentMciId, currentSubGroupId, 'subgroup');
     
     const modalElement = document.getElementById('subgroup-cmdtestmodal');
     if (modalElement) {
@@ -2464,8 +2465,8 @@ export async function initMciRemoteCmdModal() {
   }
   
   try {
-    // VM과 동일한 방식: 터미널을 먼저 초기화한 후 모달 표시
-    await webconsolejs["common/api/services/remotecmd_api"].initTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
+    // 새로운 단발성 명령어 실행 방식으로 초기화
+    await webconsolejs["common/api/services/remotecmd_api"].initBatchCommandTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
     
     const modalElement = document.getElementById('mci-cmdtestmodal');
     if (modalElement) {
