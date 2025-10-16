@@ -421,7 +421,9 @@ export async function initClusterTerminal(id, nsId, clusterId, namespace, podNam
         term.write('\r\n\r\n $ ');
     }
 
+    // SSH Private IP 메시지 제거 - 기존 로직은 유지하되 화면에 표시하지 않음
     const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
+    // const ipcmd = "";
     console.log('initClusterTerminal calling processCommand with:', {
         nsId, clusterId, namespace, podName, containerName, targetType: 'cluster'
     });
@@ -429,6 +431,9 @@ export async function initClusterTerminal(id, nsId, clusterId, namespace, podNam
     await processCommand(nsId, clusterId, {namespace, podName, containerName}, [ipcmd], term, () => {
         prompt();
     }, 'cluster');
+    
+    // 터미널 초기화 후 바로 프롬프트 표시
+    // prompt();
 
     let userInput = '';
     term.onData(async (data) => {

@@ -2411,8 +2411,15 @@ export async function deletePolicy() {
 
 /////////////////// TEST TERMINAL MODAL /////////////////////////
 
-export async function initremotecmdModal() {
+export async function initremotecmdModal(target) {
   const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  
+  if (target === 'vm'){
+    currentVmId = currentVmId;
+  }else if (target === 'subgroupvm'){
+    currentVmId = currentSubGroupVmId;
+  }
+  
   await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container', nsId, currentMciId, currentVmId, 'vm') // vmStatus 별로 상태 색상 set
   const modalElement = document.getElementById('cmdtestmodal');
   const modalInstance = new bootstrap.Modal(modalElement);
