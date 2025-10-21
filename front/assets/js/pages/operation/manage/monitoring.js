@@ -154,28 +154,47 @@ $("#monitoring_serverlist").on('change', async function () {
 })
 
 async function setMonitoringMesurement() {
-  var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
-  var data = respMeasurement.data;
-
-  var measurementSelect = document.getElementById("monitoring_measurement");
-
-  measurementSelect.innerHTML = "";
-
-  var defaultOption = document.createElement("option");
-  defaultOption.value = "";
-  defaultOption.text = "Select";
-  measurementSelect.appendChild(defaultOption);
-
-  data.forEach(function (item) {
-    if (item.plugin_type === "INPUT") {
-      var option = document.createElement("option");
-      // option.value = item.plugin_id;
-      option.value = item.name;
-      option.text = item.name;
-
-      measurementSelect.appendChild(option);
+  try {
+    var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
+    
+    // API 응답 구조 확인 및 데이터 추출
+    var data;
+    if (respMeasurement && respMeasurement.data) {
+      data = respMeasurement.data;
+    } else if (respMeasurement && Array.isArray(respMeasurement)) {
+      data = respMeasurement;
+    } else {
+      console.error("예상치 못한 API 응답 구조:", respMeasurement);
+      data = [];
     }
-  });
+
+    var measurementSelect = document.getElementById("monitoring_measurement");
+    
+    if (!measurementSelect) {
+      console.error("monitoring_measurement 요소를 찾을 수 없습니다.");
+      return;
+    }
+
+    measurementSelect.innerHTML = "";
+
+    var defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.text = "Select";
+    measurementSelect.appendChild(defaultOption);
+
+    if (Array.isArray(data) && data.length > 0) {
+      data.forEach(function (item) {
+        if (item.pluginType === "INPUT") {
+          var option = document.createElement("option");
+          option.value = item.name || item.pluginId;
+          option.text = item.name || item.pluginId;
+          measurementSelect.appendChild(option);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("setMonitoringMesurement 오류:", error);
+  }
 }
 
 export async function startMonitoring() {
@@ -183,7 +202,7 @@ export async function startMonitoring() {
   var selectedRange = $("#monitoring_range").val();
   var selectedVMId = $("#monitoring_serverlist").val();
 
-  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
+  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedNsId, selectedMciId, selectedVMId, selectedMeasurement, selectedRange);
 
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
