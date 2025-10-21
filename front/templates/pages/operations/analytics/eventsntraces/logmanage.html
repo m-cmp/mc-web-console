@@ -12,7 +12,7 @@
               <div class="row">
                 <div class="col d-flex justify-content-end">
                     <div class="mb-3 d-flex align-items-center me-3">
-                        <label for="radios-inline" class="form-label me-2 mt-1">Workload</label> <!-- mt-1로 텍스트 살짝 내림 -->
+                        <label for="radios-inline" class="form-label me-2 mt-1 required">Workload Type</label> <!-- mt-1로 텍스트 살짝 내림 -->
                         <input class="form-check-input me-2" type="radio" name="radios-inline" id="radio-mci">
                         <label class="form-check-label me-4" for="radio-mci">MCI</label>
 
@@ -27,11 +27,11 @@
                 <div class="mb-3 d-flex align-items-center me-3">
 
                   <select class="form-select" id="log_mcilist">
-                    <option value="">Choose a Target Workload for Monitoring</option>
+                    <option value="">Select Workload</option>
                     <option value="mci01">mci01</option>
                   </select>
                   <select class="form-select" name="" id="log_targetlist">
-                    <option value="">Choose a Target</option>      
+                    <option value="">Select Target</option>      
                     <option value="vm01">vm01</option>      
                   </select>
                 </div>

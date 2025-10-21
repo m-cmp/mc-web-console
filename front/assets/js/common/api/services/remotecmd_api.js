@@ -1501,6 +1501,9 @@ function initFileTransfer(targetType, nsId, mciId, targetId) {
             if (fileContents.length > 0) {
                 const targetPath = document.getElementById(pathInputId).value;
                 
+                // 아코디언 접기 (Bootstrap 자동 처리)
+                // data-bs-toggle="collapse" 속성으로 자동 처리됨
+                
                 // 모든 파일을 한 번에 처리
                 try {
                     await transferFilesToMci(fileContents, targetPath, nsId, mciId, targetType, targetId);

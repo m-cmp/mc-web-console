@@ -754,8 +754,12 @@ async function setMonitorConfigInfoData() {
     $(htmlCardIdPrefix+"desc").text(selectedServerNode.description)
     $(htmlCardIdPrefix+"workload").text(selectedServerNode.workloadType+" / "+selectedServerNode.workloadName)
     $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? true : false))
-    $(htmlCardIdPrefix+"agent_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
-    $(htmlCardIdPrefix+"collect_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus === "ACTIVE" ? "Running" : "Stopped"))
+    $(htmlCardIdPrefix+"agent_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus))
+    if (selectedServerNode.collectStatus) {
+      $(htmlCardIdPrefix+"collect_status").html(generateStatusIndicator(selectedServerNode.collectStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.collectStatus))
+    } else {
+      $(htmlCardIdPrefix+"collect_status").html("");
+    }
 
     // 토글 박스 이벤트 리스너 추가
     $(htmlCardIdPrefix+"monitor input[type='checkbox']").off('change').on('change', function() {
