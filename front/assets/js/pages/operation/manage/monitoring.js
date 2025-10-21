@@ -153,6 +153,15 @@ $("#monitoring_serverlist").on('change', async function () {
 
 })
 
+// Extend Detection 토글 이벤트 리스너
+$("#detectionSwitch").on('change', function() {
+  if ($(this).is(':checked')) {
+    $("#detection_graph").show();
+  } else {
+    $("#detection_graph").hide();
+  }
+})
+
 async function setMonitoringMesurement() {
   try {
     var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
@@ -201,8 +210,20 @@ export async function startMonitoring() {
   var selectedMeasurement = $("#monitoring_measurement").val();
   var selectedRange = $("#monitoring_range").val();
   var selectedVMId = $("#monitoring_serverlist").val();
+  
+  // VM이 선택되지 않은 경우 처리
+  if (!selectedVMId) {
+    alert("Please select a VM first.");
+    return;
+  }
+  
+  // 선택된 VM의 이름을 가져와서 타이틀에 표시
+  var selectedVMName = $("#monitoring_serverlist option:selected").text();
+  if (selectedVMName && selectedVMName !== "Select") {
+    $("#selected_vm_name").text("(" + selectedVMName + ")");
+  }
 
-  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedNsId, selectedMciId, selectedVMId, selectedMeasurement, selectedRange);
+  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
 
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
@@ -345,12 +366,12 @@ async function drawMonitoringGraph(MonitoringData) {
 
   // Detection Switch 체크 여부 확인
   if ($('#detectionSwitch').is(':checked')) {
-    // 토글 후 호출
-    var div = document.getElementById("detection_graph");
-    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-    drawDetectionGraph()
-
+    // Detection Graph 영역 표시
+    $("#detection_graph").show();
+    drawDetectionGraph();
   } else {
+    // Detection Graph 영역 숨김
+    $("#detection_graph").hide();
   }
 
 }
