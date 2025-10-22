@@ -650,7 +650,15 @@ function showTransferProgress(fileName, status) {
 }
 
 // 진행 상태 토스트 표시
-function showProgressToast(fileName, status) {
+export function showProgressToast(fileName, status) {
+    // ScaleOut 작업에 맞는 메시지 생성
+    let displayMessage = `${fileName} processing...`;
+    if (fileName === "ScaleOut") {
+        displayMessage = "ScaleOut 작업 중...";
+    } else if (fileName && fileName !== "ScaleOut") {
+        displayMessage = `${fileName} processing...`;
+    }
+    
     const toastHtml = `
         <div class="toast align-items-center text-white bg-primary border-0" id="transferProgressToast" role="alert">
             <div class="d-flex">
@@ -659,7 +667,7 @@ function showProgressToast(fileName, status) {
                         <div class="spinner-border spinner-border-sm me-2" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        <span>${fileName} processing...</span>
+                        <span>${displayMessage}</span>
                     </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
@@ -1027,21 +1035,52 @@ export async function executeBatchCommand(command, nsId, mciId, targetId, target
         // 1. 진행 상태 표시
         showCommandProgressToast(command, 'executing');
         
-        // 2. 명령어 실행
-        const result = await postRemoteCmd(nsId, mciId, targetId, [command], targetType);
+        // 2. 여러 줄 명령어를 배열로 분리 (줄바꿈과 세미콜론 모두 지원)
+        const commands = command
+            .split(/[\n;]/)  // 줄바꿈과 세미콜론으로 분리
+            .map(cmd => cmd.trim())  // 공백 제거
+            .filter(cmd => cmd !== '');  // 빈 문자열 제거
         
-        // 3. 진행 상태 토스트 숨기기
+        // 3. 명령어 실행
+        const result = await postRemoteCmd(nsId, mciId, targetId, commands, targetType);
+        
+        // 4. 진행 상태 토스트 숨기기
         hideProgressToast();
         
-        // 4. 결과 표시
+        // 5. 결과 표시
         showCommandResults(command, result, targetType);
         
     } catch (error) {
-        // 5. 진행 상태 토스트 숨기기
+        // 6. 진행 상태 토스트 숨기기
         hideProgressToast();
         
-        // 6. 에러 표시
+        // 7. 에러 표시
         showCommandError(command, error);
+    }
+}
+
+// 단건 VM 명령어 실행 함수 (retry용)
+export async function executeSingleVMCommand(command, nsId, mciId, vmId) {
+    try {
+        // 1. 여러 줄 명령어를 배열로 분리
+        const commands = command
+            .split(/[\n;]/)
+            .map(cmd => cmd.trim())
+            .filter(cmd => cmd !== '');
+        
+        // 2. 단건 VM 명령어 실행
+        const result = await postRemoteCmd(nsId, mciId, vmId, commands, 'vm');
+        
+        // 3. 결과 반환 (배치 실행과 동일한 구조로 변환)
+        return {
+            responseData: {
+                results: result.results || [result]
+            }
+        };
+        
+    } catch (error) {
+        console.error('Single VM command execution failed:', error);
+        throw error;
     }
 }
 
@@ -1138,6 +1177,11 @@ function showCommandResultsInModal(command, result, successCount, totalCount, ta
         existingModal.remove();
     }
     
+    // 컨텍스트 정보 저장 (retry용)
+    window.currentCommand = command;
+    window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId;
+    window.currentMciId = window.currentMciId || window.currentSubGroupId; // MCI ID 저장
+    
     // 모달 HTML 생성
     const modalHtml = `
         <div class="modal fade" id="commandResultModal" tabindex="-1" role="dialog" aria-labelledby="commandResultModalLabel" aria-hidden="true">
@@ -1145,38 +1189,37 @@ function showCommandResultsInModal(command, result, successCount, totalCount, ta
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            Command Execution Result: ${command}
+                            Remote Terminal
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
+                        <h5 class="mb-3">Execution Result/Output</h5>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="card ${successCount === totalCount ? 'border-success' : 'border-warning'}">
                                     <div class="card-body text-center">
-                                        <h6 class="card-title">Execution Result</h6>
+                                        <h6 class="card-title">Execution Result Summary</h6>
                                         <h4 class="${successCount === totalCount ? 'text-success' : 'text-warning'}">
                                             ${successCount}/${totalCount}
                                         </h4>
-                                        <small class="text-muted">VM Execution Complete</small>
+                                        <small class="text-muted">Execution Complete</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="card border-info">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Command</h6>
-                                        <code class="text-info">
-                                            ${command}
-                                        </code>
+                                <div class="card border-info" style="min-height: 8rem;">
+                                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                                        <h6 class="card-title">Commands</h6>
+                                        <textarea class="form-control text-info" readonly style="height: 3.5rem; font-family: monospace; font-size: 0.875rem; resize: none; text-align: left; overflow-y: auto;">${command}</textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
                             <table class="table table-sm">
-                                <thead>
+                                <thead class="table-light sticky-top">
                                     <tr>
                                         <th>VM ID</th>
                                         <th>VM IP</th>
@@ -1190,6 +1233,14 @@ function showCommandResultsInModal(command, result, successCount, totalCount, ta
                             </table>
                         </div>
                         
+                        <!-- Result Detail Area -->
+                        <div class="mt-3">
+                            <h6 class="mb-2">Result Detail</h6>
+                            <div id="resultDetailArea" class="bg-dark text-light p-3 rounded" style="height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.875rem; text-align: left;">
+                                Click on a table row to view detailed result...
+                            </div>
+                        </div>
+                        
                         <!-- Pagination -->
                         <nav aria-label="Command results pagination" id="commandResultPagination">
                             <ul class="pagination pagination-sm justify-content-center">
@@ -1199,7 +1250,10 @@ function showCommandResultsInModal(command, result, successCount, totalCount, ta
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="executeCommandAgain()">Execute Again</button>
+                        <button type="button" class="btn btn-primary btn-sm rounded" onclick="executeCommandAgain()">
+                          <span>Return<br>
+                          <small>(Execute Commands)</small></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1235,7 +1289,7 @@ function showCommandError(command, error) {
 
 // 명령어 결과 페이지네이션 초기화
 function initCommandResultPagination(results) {
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
     const totalPages = Math.ceil(results.length / itemsPerPage);
     
     // 현재 페이지를 전역 변수로 저장
@@ -1261,10 +1315,11 @@ function showCommandResultPage(page) {
     const tbody = document.getElementById('commandResultTableBody');
     if (!tbody) return;
     
-    tbody.innerHTML = pageResults.map(r => {
+    tbody.innerHTML = pageResults.map((r, index) => {
         const isSuccess = r && (!r.error || r.error === '');
+        const globalIndex = (page - 1) * itemsPerPage + index;
         return `
-        <tr class="${isSuccess ? 'table-success' : 'table-danger'}">
+        <tr class="${isSuccess ? 'table-success' : 'table-danger'}" style="cursor: pointer;" onclick="showResultDetail(${globalIndex})">
             <td>${r && r.vmId ? r.vmId : 'N/A'}</td>
             <td>${r && r.vmIp ? r.vmIp : 'N/A'}</td>
             <td>
@@ -1273,9 +1328,14 @@ function showCommandResultPage(page) {
                 </span>
             </td>
             <td>
-                <small class="text-muted">
-                    ${isSuccess ? (r.stdout?.['0'] || 'Command executed successfully') : (r.error || 'Unknown error')}
-                </small>
+                ${isSuccess ? 
+                    `<small class="text-muted">${r.stdout?.['0'] || 'Command executed successfully'}</small>` :
+                    `<div class="d-flex align-items-center justify-content-start">
+                        <button class="btn btn-outline-primary btn-sm" onclick="event.stopPropagation(); retryVMCommand('${r.vmId}', ${globalIndex})" title="Retry command for this VM">
+                            <i class="ti ti-refresh"></i> Retry
+                        </button>
+                    </div>`
+                }
             </td>
         </tr>
         `;
@@ -1326,6 +1386,50 @@ window.changeCommandResultPage = function(page) {
     
     showCommandResultPage(page);
     generateCommandResultPagination(totalPages);
+};
+
+// 결과 상세 표시 함수 (전역 함수로 등록)
+window.showResultDetail = function(index) {
+    const results = window.commandResultData;
+    if (!results || index < 0 || index >= results.length) return;
+    
+    const result = results[index];
+    const detailArea = document.getElementById('resultDetailArea');
+    if (!detailArea) return;
+    
+    // VM ID 가져오기
+    const vmId = result && result.vmId ? result.vmId : 'Unknown';
+    
+    let detailText = '';
+    if (result.error && result.error !== '') {
+        detailText = `[output console: ${vmId}]\n---------------------------\n${result.error}`;
+    } else if (result.stdout) {
+        const stdoutContent = Object.values(result.stdout).join('\n');
+        detailText = `[output console: ${vmId}]\n---------------------------\n${stdoutContent}`;
+    } else if (result.stderr) {
+        const stderrContent = Object.values(result.stderr).join('\n');
+        detailText = `[output console: ${vmId}]\n---------------------------\n${stderrContent}`;
+    } else {
+        detailText = `[output console: ${vmId}]\n---------------------------\nNo detailed output available`;
+    }
+    
+    detailArea.textContent = detailText;
+    detailArea.style.whiteSpace = 'pre-wrap';
+    
+    // 선택된 행 하이라이트
+    const tbody = document.getElementById('commandResultTableBody');
+    if (tbody) {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => row.classList.remove('table-active'));
+        
+        const currentPage = window.currentCommandResultPage;
+        const itemsPerPage = window.commandResultItemsPerPage;
+        const localIndex = index - (currentPage - 1) * itemsPerPage;
+        
+        if (localIndex >= 0 && localIndex < rows.length) {
+            rows[localIndex].classList.add('table-active');
+        }
+    }
 };
 
 // 명령어 다시 실행 함수 (전역 함수로 등록)
@@ -1523,3 +1627,145 @@ function initFileTransfer(targetType, nsId, mciId, targetId) {
         });
     }
 }
+
+// VM 명령어 retry 함수
+export async function retryVMCommand(vmId, resultIndex) {
+    try {
+        // 1. 현재 명령어와 컨텍스트 정보 가져오기
+        const command = window.currentCommand;
+        const nsId = window.currentNsId;
+        const mciId = window.currentMciId;
+        
+        if (!command || !nsId || !mciId) {
+            alert('Command context not found. Please try again.');
+            return;
+        }
+        
+        // 2. retry 진행 상태 표시
+        showRetryProgressToast(vmId);
+        
+        // 3. 단건 VM 명령어 실행
+        const result = await executeSingleVMCommand(command, nsId, mciId, vmId);
+        
+        // 4. 진행 상태 토스트 숨기기
+        hideProgressToast();
+        
+        // 5. 결과 업데이트
+        if (result && result.responseData && result.responseData.results && result.responseData.results.length > 0) {
+            const newResult = result.responseData.results[0];
+            
+            // 6. 기존 결과 데이터 업데이트
+            if (window.commandResultData && window.commandResultData[resultIndex]) {
+                window.commandResultData[resultIndex] = newResult;
+                
+                // 7. 현재 페이지 다시 렌더링
+                showCommandResultPage(window.currentCommandResultPage);
+                
+                // 8. 성공/실패 토스트 표시
+                const isSuccess = !newResult.error || newResult.error === '';
+                if (isSuccess) {
+                    showRetrySuccessToast(vmId);
+                } else {
+                    showRetryErrorToast(vmId, newResult.error);
+                }
+            }
+        } else {
+            throw new Error('Invalid response format');
+        }
+        
+    } catch (error) {
+        // 9. 진행 상태 토스트 숨기기
+        hideProgressToast();
+        
+        // 10. 에러 토스트 표시
+        showRetryErrorToast(vmId, error.message);
+        console.error('Retry failed:', error);
+    }
+}
+
+// retry 진행 상태 토스트 표시
+function showRetryProgressToast(vmId) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-warning border-0" id="retryProgressToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>Retrying command for VM: <strong>${vmId}</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 기존 토스트 제거
+    const existingToast = document.getElementById('retryProgressToast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 새 토스트 추가
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // 토스트 표시
+    const toast = new bootstrap.Toast(document.getElementById('retryProgressToast'));
+    toast.show();
+    
+    window.currentRetryToast = toast;
+}
+
+// retry 성공 토스트 표시
+function showRetrySuccessToast(vmId) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-success border-0" id="retrySuccessToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="ti ti-check-circle me-2"></i>
+                    Command retry successful for VM: <strong>${vmId}</strong>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toast = new bootstrap.Toast(document.getElementById('retrySuccessToast'));
+    toast.show();
+    
+    // 3초 후 자동 제거
+    setTimeout(() => {
+        const element = document.getElementById('retrySuccessToast');
+        if (element) element.remove();
+    }, 3000);
+}
+
+// retry 실패 토스트 표시
+function showRetryErrorToast(vmId, errorMessage) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-danger border-0" id="retryErrorToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="ti ti-x-circle me-2"></i>
+                    Command retry failed for VM: <strong>${vmId}</strong><br>
+                    <small>${errorMessage}</small>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toast = new bootstrap.Toast(document.getElementById('retryErrorToast'));
+    toast.show();
+    
+    // 5초 후 자동 제거
+    setTimeout(() => {
+        const element = document.getElementById('retryErrorToast');
+        if (element) element.remove();
+    }, 5000);
+}
+
+// VM 명령어 retry 함수 (전역 함수로 등록)
+window.retryVMCommand = retryVMCommand;
