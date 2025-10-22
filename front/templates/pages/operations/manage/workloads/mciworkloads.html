@@ -1201,7 +1201,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="mci-cmdtestmodal-title"></h5>
+        <h5 class="modal-title" id="mci-cmdtestmodal-title">Remote Terminal</h5>
         <button
           type="button"
           class="btn-close"
@@ -1223,7 +1223,7 @@
                 aria-expanded="true"
                 aria-controls="mci-terminal-collapse"
               >
-                Remote Terminal
+              Execute Commands
               </button>
             </h2>
             <div
@@ -1236,13 +1236,13 @@
                 <!-- Command Input Section -->
                 <div id="mci-command-input-section">
                   <div class="mb-3">
-                    <label for="mci-command-input" class="form-label">Command</label>
-                    <input 
-                      type="text" 
+                    <label for="mci-command-input" class="form-label"></label>
+                    <textarea 
                       class="form-control" 
                       id="mci-command-input" 
                       placeholder="Enter command to execute on all VMs..."
-                    >
+                      rows="3"
+                    ></textarea>
                     <div class="form-text">Command will be executed on all VMs in this MCI</div>
                   </div>
                   
@@ -1252,7 +1252,7 @@
                       class="btn btn-primary"
                       type="button"
                     >
-                      Execute Command
+                      Execute
                     </button>
                   </div>
                 </div>
@@ -1260,10 +1260,7 @@
                 <!-- Command Results Section (initially hidden) -->
                 <div id="mci-command-results-section" style="display: none;">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0">Command Execution Results</h6>
-                  </div>
-                  <div id="mci-command-results-content">
-                    <!-- Results will be populated here -->
+                    <h6 class="mb-0">Execution Result/Output</h6>
                   </div>
                 </div>
               </div>
@@ -1453,7 +1450,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cmdtestmodal-title"></h5>
+        <h5 class="modal-title" id="cmdtestmodal-title">Remote Terminal</h5>
         <button
           type="button"
           class="btn-close"
@@ -1475,7 +1472,7 @@
                 aria-expanded="true"
                 aria-controls="server-terminal-collapse"
               >
-                Remote Terminal
+                Command
               </button>
             </h2>
             <div

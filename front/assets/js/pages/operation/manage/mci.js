@@ -83,6 +83,17 @@ async function initMci() {
   policyTabEl.addEventListener('shown.bs.tab', function (event) {
     initPolicyPage();
   });
+  
+  // 모든 탭 전환 시 Policy Info 초기화
+  const allTabElements = document.querySelectorAll('a[data-bs-toggle="tab"]');
+  allTabElements.forEach(tabEl => {
+    tabEl.addEventListener('shown.bs.tab', function (event) {
+      // Policy 탭이 아닌 다른 탭으로 전환 시 Policy Info 초기화
+      if (event.target.getAttribute('href') !== '#tabs-mci-policy') {
+        resetPolicyInfoState();
+      }
+    });
+  });
 }
 
 
@@ -168,6 +179,71 @@ function refreshRowData(rowId, newData) {
 
   displayServerStatusList(rowId, newData.vm)
   displayServerGroupStatusList(rowId, newData.vm)
+}
+
+// Policy Info 상태 초기화 함수
+function resetPolicyInfoState() {
+  // Policy Info 숨기기
+  const policyInfoElement = document.getElementById("policy_info");
+  if (policyInfoElement) {
+    webconsolejs["partials/layout/navigatePages"].deactiveElement(policyInfoElement);
+  }
+  
+  // Policy 관련 전역 변수 초기화
+  currentClickedmciIdInPolicyTable = "";
+  
+  // Policy 테이블 선택 해제
+  if (policyListTable) {
+    policyListTable.deselectRow();
+  }
+  
+  // Policy Info 내용 초기화
+  const policyInfoFields = [
+    'policy-mciId', 'policy-mciName', 'policy-actionLog',
+    'subgroup-name', 'subgroup-label', 'subgroup-size', 'subgroup-description', 
+    'subgroup-currentVmCount', 'subgroup-minMaxSize',
+    'summary-subgroupSize', 'summary-currentVmCount', 'summary-minMaxSize',
+    'policy-type', 'policy-algorithm',
+    'condition-metric', 'condition-operator', 'condition-operand',
+    'vm-spec', 'vm-os', 'vm-csp', 'vm-disk', 'vm-connection'
+  ];
+  
+  policyInfoFields.forEach(fieldId => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.textContent = '-';
+    }
+  });
+  
+  // Action Log는 textarea이므로 별도 처리
+  const actionLogElement = document.getElementById('policy-actionLog');
+  if (actionLogElement) {
+    actionLogElement.value = '';
+  }
+}
+
+// MCI 탭 상태 초기화 함수
+function resetMciTabState() {
+  // 모든 탭에서 active 클래스 제거
+  const allTabLinks = document.querySelectorAll('#mci_info .nav-link');
+  allTabLinks.forEach(tabLink => {
+    tabLink.classList.remove('active');
+  });
+  
+  // 모든 탭 패널에서 active, show 클래스 제거
+  const allTabPanes = document.querySelectorAll('#mci_info .tab-pane');
+  allTabPanes.forEach(tabPane => {
+    tabPane.classList.remove('active', 'show');
+  });
+  
+  // 첫 번째 탭(Default)을 활성화
+  const firstTabLink = document.querySelector('#mci_info .nav-link[href="#tabs-mci-default"]');
+  const firstTabPane = document.getElementById('tabs-mci-default');
+  
+  if (firstTabLink && firstTabPane) {
+    firstTabLink.classList.add('active');
+    firstTabPane.classList.add('active', 'show');
+  }
 }
 
 // 클릭한 mci info 가져오기
@@ -1564,7 +1640,7 @@ function initMciTable() {
   ];
 
   //mciListTable = webconsolejs["common/util"].setTabulator("mcilist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
-  mciListTable = setMciTabulator("mcilist-table", tableObjParams, columns, true);
+  mciListTable = setMciTabulator("mcilist-table", tableObjParams, columns, false);
   // 행 클릭 시
   mciListTable.on("rowClick", function (e, row) {
     // var tempcurmciID = row.getCell("id").getValue();
@@ -1573,13 +1649,20 @@ function initMciTable() {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
       window.currentMciId = ""
       this.deselectRow();
+      // MCI 선택 해제 시 Policy Info도 초기화
+      resetPolicyInfoState();
       return
     } else {
+      // 기존 선택 해제 후 새 행 선택
+      this.deselectRow();
+      this.selectRow(tempcurmciID);
+      
       window.currentMciId = tempcurmciID;
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
-      //this.deselectRow();
-      //this.selectRow(window.currentMciId);
       // 표에서 선택된 MCISInfo 
+      // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
+      resetPolicyInfoState();
+      resetMciTabState();
       getSelectedMciData()
       return
     }
@@ -1750,7 +1833,7 @@ function providerFormatterString(data) {
     const chk = checkedBoxes[0];
     const groupId = chk.value;
     const vmCount = currentGroupedVmList.length
-    let targetCount = vmCount;  // 숫자박스 초기값
+    let targetCount = 1;  // 숫자박스 초기값
     formListUl.innerHTML = '';
 
     // 컨트롤용 li 생성
@@ -1763,7 +1846,7 @@ function providerFormatterString(data) {
     btnMinus.className = 'btn btn-outline-secondary btn-sm';
     btnMinus.textContent = '–';
     btnMinus.addEventListener('click', () => {
-      if (targetCount > 0) {
+      if (targetCount > 1) {
         targetCount--;
         inputBox.value = targetCount;
       }
@@ -1796,12 +1879,11 @@ function providerFormatterString(data) {
     btnOk.className = 'btn btn-primary btn-sm ms-3';
     btnOk.textContent = 'Apply';
     btnOk.addEventListener('click', () => {
-      const desired = parseInt(inputBox.value, 10);
-      if (desired <= vmCount) {
-        alert(`Please select a number greater than current VM count (${vmCount})`);
-        return;
-      }
       var numVMsToAdd = inputBox.value
+      
+      // 로딩 프로그레스 토스트 표시
+      webconsolejs["common/api/services/remotecmd_api"].showProgressToast("ScaleOut", "processing");
+      
       // API 호출
       var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(window.currentNsId, currentMciId, currentSubGroupId, numVMsToAdd)
         .then(async response => {
@@ -1821,10 +1903,24 @@ function providerFormatterString(data) {
             bsCollapse.show();
             toggleBtn.setAttribute('aria-expanded', 'true');
           }
+          
+          // API 성공 시 토스트 제거
+          webconsolejs["common/api/services/remotecmd_api"].hideProgressToast();
+        })
+        .catch(error => {
+          console.error('ScaleOut API 호출 실패:', error);
+          // API 실패 시 토스트 제거
+          webconsolejs["common/api/services/remotecmd_api"].hideProgressToast();
         });
 
     });
     li.appendChild(btnOk);
+    
+    // 설명 텍스트 추가
+    const explanationText = document.createElement('span');
+    explanationText.className = 'ms-2 text-muted small';
+    explanationText.textContent = '(VMs to add)';
+    li.appendChild(explanationText);
 
     formListUl.appendChild(li);
     bsCollapse.show();
