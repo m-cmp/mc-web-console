@@ -246,6 +246,30 @@ function resetMciTabState() {
   }
 }
 
+// Server Info 탭 상태 초기화 함수
+function resetServerTabState() {
+  // Server Info 탭에서 모든 탭 링크의 active 클래스 제거
+  const serverTabLinks = document.querySelectorAll('#server_info .nav-link');
+  serverTabLinks.forEach(tabLink => {
+    tabLink.classList.remove('active');
+  });
+  
+  // Server Info 탭에서 모든 탭 패널의 active, show 클래스 제거
+  const serverTabPanes = document.querySelectorAll('#server_info .tab-pane');
+  serverTabPanes.forEach(tabPane => {
+    tabPane.classList.remove('active', 'show');
+  });
+  
+  // 첫 번째 탭(Detail)을 활성화
+  const detailTabLink = document.querySelector('#server_info .nav-link[href="#tabs-vm-details"]');
+  const detailTabPane = document.getElementById('tabs-vm-details');
+  
+  if (detailTabLink && detailTabPane) {
+    detailTabLink.classList.add('active');
+    detailTabPane.classList.add('active', 'show');
+  }
+}
+
 // 클릭한 mci info 가져오기
 // 표에서 선택된 MciId 받아옴
 export async function getSelectedMciData() {
@@ -768,6 +792,9 @@ export async function vmDetailInfo(vmId) {
   if (!hasActiveClass) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   }
+  
+  // Server Info 탭 상태 초기화 (Detail 탭으로 리셋)
+  resetServerTabState();
 
   // get mci vm  
   try {
@@ -1658,6 +1685,16 @@ function initMciTable() {
       this.selectRow(tempcurmciID);
       
       window.currentMciId = tempcurmciID;
+      // MCI 변경 시 이전 VM 선택 상태 초기화
+      currentVmId = "";
+      selectedVmId = null;
+      
+      // Server Info 숨기기 (이전 MCI의 VM 정보가 표시되지 않도록)
+      const serverInfoElement = document.getElementById("server_info");
+      if (serverInfoElement && serverInfoElement.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
+      }
+      
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
       // 표에서 선택된 MCISInfo 
       // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
