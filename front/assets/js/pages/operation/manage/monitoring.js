@@ -168,7 +168,9 @@ async function setMonitoringMesurement() {
     
     // API 응답 구조 확인 및 데이터 추출
     var data;
-    if (respMeasurement && respMeasurement.data) {
+    if (respMeasurement && respMeasurement.responseData && respMeasurement.responseData.data) {
+      data = respMeasurement.responseData.data;
+    } else if (respMeasurement && respMeasurement.data) {
       data = respMeasurement.data;
     } else if (respMeasurement && Array.isArray(respMeasurement)) {
       data = respMeasurement;
@@ -193,7 +195,7 @@ async function setMonitoringMesurement() {
 
     if (Array.isArray(data) && data.length > 0) {
       data.forEach(function (item) {
-        if (item.pluginType === "INPUT") {
+        if (item.plugin_type === "INPUT") {
           var option = document.createElement("option");
           option.value = item.name || item.pluginId;
           option.text = item.name || item.pluginId;

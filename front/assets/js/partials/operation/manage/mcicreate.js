@@ -758,16 +758,25 @@ export function addNewMci() {
 export function addNewVirtualMachine() {
 	Express_Server_Config_Arr = new Array();
 
-	var selectedMci = webconsolejs["pages/operation/manage/mci"].currentMciId
-
-	var mci_name = selectedMci
-	// var mci_name = selectedMci[0].name
-	// var mci_desc = selectedMci[0].description
+	// window.currentMciId로 직접 접근
+	var selectedMciId = window.currentMciId;
+	console.log("selectedMciId", selectedMciId);
+	
+	// MCI 데이터에서 실제 name과 description 가져오기
+	var mci_name = selectedMciId; // 기본값으로 ID 사용
+	var mci_desc = "";
+	
+	if (selectedMciId && window.totalMciListObj) {
+		var mciData = window.totalMciListObj.find(mci => mci.id === selectedMciId);
+		if (mciData) {
+			mci_name = mciData.name || selectedMciId;
+			mci_desc = mciData.description || "";
+		}
+	}
 
 	$("#extend_mci_name").val(mci_name)
-
-	// $("#extend_mci_desc").val(mci_desc)
-	// console.log("extend_mci_desc", mci_desc)
+	$("#extend_mci_desc").val(mci_desc)
+	console.log("mci_name:", mci_name, "mci_desc:", mci_desc)
 
 	isVm = true
 }
