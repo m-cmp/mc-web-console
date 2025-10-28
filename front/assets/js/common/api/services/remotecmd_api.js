@@ -85,13 +85,9 @@ export async function initTerminal(id, nsId, mciId, targetId, targetType) {
 
     // VM과 동일한 방식: 간단한 Dropzone 초기화
     setTimeout(() => {
-        console.log('Initializing dropzone for targetType:', targetType);
-        console.log('Looking for dropzone element:', dropzoneId);
         const dropzoneElement = document.querySelector(dropzoneId);
-        console.log('Dropzone element found:', dropzoneElement);
         
         if (dropzoneElement && !dropzoneElement.dropzone) {
-            console.log('Creating new Dropzone instance...');
             dropzoneInstance = new Dropzone(dropzoneId, {
                 autoProcessQueue: false,
                 addRemoveLinks: true,
@@ -231,9 +227,6 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
     }, 250);
 
     try {
-        console.log('processCommand calling postRemoteCmd with:', {
-            nsid, resourceId, targetId, command, targetType
-        });
         
         const result = await postRemoteCmd(nsid, resourceId, targetId, command, targetType);
         clearInterval(loadingInterval);
@@ -376,12 +369,6 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
         controller = "/api/" + "mc-infra-manager/" + "Postcmdmci";
     }
     
-    console.log('postRemoteCmd API call:', {
-        controller: controller,
-        data: data,
-        targetType: targetType
-    });
-    
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     const responseData = response.data.responseData;
     return responseData;
@@ -423,10 +410,6 @@ export async function initClusterTerminal(id, nsId, clusterId, namespace, podNam
 
     // SSH Private IP 메시지 제거 - 기존 로직은 유지하되 화면에 표시하지 않음
     const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
-    // const ipcmd = "";
-    console.log('initClusterTerminal calling processCommand with:', {
-        nsId, clusterId, namespace, podName, containerName, targetType: 'cluster'
-    });
     
     await processCommand(nsId, clusterId, {namespace, podName, containerName}, [ipcmd], term, () => {
         prompt();
@@ -570,14 +553,14 @@ async function transferFilesToMci(files, targetPath, nsId, mciId, targetType, ta
                 const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
                 
                 // 3. 진행 상태 토스트 숨기기
-                hideProgressToast();
+                webconsolejs['common/utils/toast'].hideProgressToast();
                 
                 // 4. 결과 저장 (모달 표시하지 않음)
                 results.push({ fileName: file.name, result: result });
                 
             } catch (error) {
                 // 5. 진행 상태 토스트 숨기기
-                hideProgressToast();
+                webconsolejs['common/utils/toast'].hideProgressToast();
                 
                 // 6. 에러 저장
                 results.push({ fileName: file.name, error: error });
@@ -601,14 +584,14 @@ async function transferFilesToMci(files, targetPath, nsId, mciId, targetType, ta
             const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
             
             // 3. 진행 상태 토스트 숨기기
-            hideProgressToast();
+            webconsolejs['common/utils/toast'].hideProgressToast();
             
             // 4. 결과 저장
             results.push({ fileName: file.name, result: result });
             
         } catch (error) {
             // 5. 진행 상태 토스트 숨기기
-            hideProgressToast();
+            webconsolejs['common/utils/toast'].hideProgressToast();
             
             // 6. 에러 저장
             results.push({ fileName: file.name, error: error });
@@ -629,14 +612,14 @@ async function transferFileToMci(file, targetPath, nsId, mciId, targetType, targ
         const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
         
         // 3. 진행 상태 토스트 숨기기
-        hideProgressToast();
+        webconsolejs['common/utils/toast'].webconsolejs['common/utils/toast'].hideProgressToast();
         
         // 4. 결과 표시
         showTransferResult(file.name, result);
         
     } catch (error) {
         // 5. 진행 상태 토스트 숨기기
-        hideProgressToast();
+        webconsolejs['common/utils/toast'].webconsolejs['common/utils/toast'].hideProgressToast();
         
         // 6. 에러 표시
         showTransferError(file.name, error);
@@ -646,74 +629,10 @@ async function transferFileToMci(file, targetPath, nsId, mciId, targetType, targ
 // 전송 진행 상태 표시
 function showTransferProgress(fileName, status) {
     // 진행 상태 토스트 표시
-    showProgressToast(fileName, status);
+    webconsolejs['common/utils/toast'].showProgressToast(fileName, status);
 }
 
-// 진행 상태 토스트 표시
-export function showProgressToast(fileName, status) {
-    // ScaleOut 작업에 맞는 메시지 생성
-    let displayMessage = `${fileName} processing...`;
-    if (fileName === "ScaleOut") {
-        displayMessage = "ScaleOut 작업 중...";
-    } else if (fileName && fileName !== "ScaleOut") {
-        displayMessage = `${fileName} processing...`;
-    }
-    
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-primary border-0" id="transferProgressToast" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>${displayMessage}</span>
-                    </div>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `;
-    
-    // 기존 토스트 제거
-    const existingToast = document.getElementById('transferProgressToast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // 토스트 컨테이너 확인/생성
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // 새 토스트 추가
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    // 토스트 표시
-    const toastElement = document.getElementById('transferProgressToast');
-    const toast = new bootstrap.Toast(toastElement, { autohide: false });
-    toast.show();
-    
-    // 전역 변수에 토스트 저장 (나중에 숨기기 위해)
-    window.currentTransferToast = toast;
-}
-
-// 진행 상태 토스트 숨기기
-function hideProgressToast() {
-    if (window.currentTransferToast) {
-        window.currentTransferToast.hide();
-        window.currentTransferToast = null;
-    }
-    if (window.currentCommandToast) {
-        window.currentCommandToast.hide();
-        window.currentCommandToast = null;
-    }
-}
+// Toast 함수들은 이제 공통 유틸리티에서 import하여 사용
 
 // VM 타입용 전송 결과 표시 (새로 추가)
 function showTransferResultsForVM(results) {
@@ -1033,7 +952,7 @@ function showTransferError(fileName, error) {
 export async function executeBatchCommand(command, nsId, mciId, targetId, targetType) {
     try {
         // 1. 진행 상태 표시
-        showCommandProgressToast(command, 'executing');
+        webconsolejs['common/utils/toast'].showCommandProgressToast(command, 'executing');
         
         // 2. 여러 줄 명령어를 배열로 분리 (줄바꿈과 세미콜론 모두 지원)
         const commands = command
@@ -1045,14 +964,14 @@ export async function executeBatchCommand(command, nsId, mciId, targetId, target
         const result = await postRemoteCmd(nsId, mciId, targetId, commands, targetType);
         
         // 4. 진행 상태 토스트 숨기기
-        hideProgressToast();
+        webconsolejs['common/utils/toast'].hideProgressToast();
         
         // 5. 결과 표시
         showCommandResults(command, result, targetType);
         
     } catch (error) {
         // 6. 진행 상태 토스트 숨기기
-        hideProgressToast();
+        webconsolejs['common/utils/toast'].hideProgressToast();
         
         // 7. 에러 표시
         showCommandError(command, error);
@@ -1084,51 +1003,7 @@ export async function executeSingleVMCommand(command, nsId, mciId, vmId) {
     }
 }
 
-// 명령어 실행 진행 상태 토스트 표시
-function showCommandProgressToast(command, status) {
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-primary border-0" id="commandProgressToast" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>Executing command: ${command}</span>
-                    </div>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `;
-    
-    // 기존 토스트 제거
-    const existingToast = document.getElementById('commandProgressToast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // 토스트 컨테이너 확인/생성
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // 새 토스트 추가
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    // 토스트 표시
-    const toastElement = document.getElementById('commandProgressToast');
-    const toast = new bootstrap.Toast(toastElement, { autohide: false });
-    toast.show();
-    
-    // 전역 변수에 토스트 저장 (나중에 숨기기 위해)
-    window.currentCommandToast = toast;
-}
+// 명령어 실행 진행 상태 토스트 표시는 공통 유틸리티 사용
 
 // 명령어 실행 결과 표시
 function showCommandResults(command, result, targetType) {
@@ -1157,7 +1032,6 @@ function showCommandResults(command, result, targetType) {
     
     // 추가 검증: 여전히 이중 배열인지 확인하고 평탄화
     if (Array.isArray(resultArray) && resultArray.length > 0 && Array.isArray(resultArray[0])) {
-        console.log('Detected nested array, flattening...');
         resultArray = resultArray[0];
     }
     
@@ -1562,10 +1436,7 @@ function initFileTransfer(targetType, nsId, mciId, targetId) {
 
     // Dropzone 초기화
     setTimeout(() => {
-        console.log('Initializing dropzone for targetType:', targetType);
-        console.log('Looking for dropzone element:', dropzoneId);
         const dropzoneElement = document.querySelector(dropzoneId);
-        console.log('Dropzone element found:', dropzoneElement);
         
         if (dropzoneElement && !dropzoneElement.dropzone) {
             dropzoneInstance = new Dropzone(dropzoneId, {
@@ -1642,13 +1513,13 @@ export async function retryVMCommand(vmId, resultIndex) {
         }
         
         // 2. retry 진행 상태 표시
-        showRetryProgressToast(vmId);
+        webconsolejs['common/utils/toast'].showRetryProgressToast(vmId);
         
         // 3. 단건 VM 명령어 실행
         const result = await executeSingleVMCommand(command, nsId, mciId, vmId);
         
         // 4. 진행 상태 토스트 숨기기
-        hideProgressToast();
+        webconsolejs['common/utils/toast'].hideProgressToast();
         
         // 5. 결과 업데이트
         if (result && result.responseData && result.responseData.results && result.responseData.results.length > 0) {
@@ -1664,9 +1535,9 @@ export async function retryVMCommand(vmId, resultIndex) {
                 // 8. 성공/실패 토스트 표시
                 const isSuccess = !newResult.error || newResult.error === '';
                 if (isSuccess) {
-                    showRetrySuccessToast(vmId);
+                    webconsolejs['common/utils/toast'].showRetrySuccessToast(vmId);
                 } else {
-                    showRetryErrorToast(vmId, newResult.error);
+                    webconsolejs['common/utils/toast'].showRetryErrorToast(vmId, newResult.error);
                 }
             }
         } else {
@@ -1675,97 +1546,15 @@ export async function retryVMCommand(vmId, resultIndex) {
         
     } catch (error) {
         // 9. 진행 상태 토스트 숨기기
-        hideProgressToast();
+        webconsolejs['common/utils/toast'].hideProgressToast();
         
         // 10. 에러 토스트 표시
-        showRetryErrorToast(vmId, error.message);
+        webconsolejs['common/utils/toast'].showRetryErrorToast(vmId, error.message);
         console.error('Retry failed:', error);
     }
 }
 
-// retry 진행 상태 토스트 표시
-function showRetryProgressToast(vmId) {
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-warning border-0" id="retryProgressToast" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>Retrying command for VM: <strong>${vmId}</strong></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // 기존 토스트 제거
-    const existingToast = document.getElementById('retryProgressToast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // 새 토스트 추가
-    document.body.insertAdjacentHTML('beforeend', toastHtml);
-    
-    // 토스트 표시
-    const toast = new bootstrap.Toast(document.getElementById('retryProgressToast'));
-    toast.show();
-    
-    window.currentRetryToast = toast;
-}
-
-// retry 성공 토스트 표시
-function showRetrySuccessToast(vmId) {
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-success border-0" id="retrySuccessToast" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="ti ti-check-circle me-2"></i>
-                    Command retry successful for VM: <strong>${vmId}</strong>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', toastHtml);
-    
-    const toast = new bootstrap.Toast(document.getElementById('retrySuccessToast'));
-    toast.show();
-    
-    // 3초 후 자동 제거
-    setTimeout(() => {
-        const element = document.getElementById('retrySuccessToast');
-        if (element) element.remove();
-    }, 3000);
-}
-
-// retry 실패 토스트 표시
-function showRetryErrorToast(vmId, errorMessage) {
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-danger border-0" id="retryErrorToast" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="ti ti-x-circle me-2"></i>
-                    Command retry failed for VM: <strong>${vmId}</strong><br>
-                    <small>${errorMessage}</small>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', toastHtml);
-    
-    const toast = new bootstrap.Toast(document.getElementById('retryErrorToast'));
-    toast.show();
-    
-    // 5초 후 자동 제거
-    setTimeout(() => {
-        const element = document.getElementById('retryErrorToast');
-        if (element) element.remove();
-    }, 5000);
-}
+// retry 관련 토스트 함수들은 공통 유틸리티 사용
 
 // VM 명령어 retry 함수 (전역 함수로 등록)
 window.retryVMCommand = retryVMCommand;

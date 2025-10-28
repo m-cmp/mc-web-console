@@ -21,7 +21,7 @@ export function initImageModal() {
 	// 모달 요소 확인
 	var imageModal = document.getElementById('image-search');
 	if (!imageModal) {
-		console.error("MCI Image 모달 요소를 찾을 수 없습니다!");
+		console.error("MCI Image modal element not found!");
 		return;
 	}
 	
@@ -384,8 +384,8 @@ export function validateAndOpenImageModal(event) {
 					throw new Error("MCI Image modal element not found");
 				}
 			} else {
-				console.error("Bootstrap이 로드되지 않았습니다.");
-				alert("Bootstrap이 로드되지 않아 모달을 열 수 없습니다.");
+				console.error("Bootstrap is not loaded.");
+				alert("Bootstrap is not loaded. Cannot open modal.");
 			}
 			
 		} catch (error) {

@@ -105,7 +105,7 @@ function initRecommendSpecTablePmk() {
 	const tableElement = document.getElementById("spec-table-pmk");
 	
 	if (!tableElement) {
-		console.error("spec-table-pmk DOM 요소를 찾을 수 없습니다!");
+		console.error("Could not find spec-table-pmk element!");
 		return;
 	}
 	
@@ -150,8 +150,7 @@ export async function getRecommendVmInfoPmk() {
 		// CPU 필터
 		if (cpuMinVal !== "" || cpuMaxVal !== "") {
 			if (cpuMaxVal !== "" && cpuMaxVal < cpuMinVal) {
-				console.warn("CPU 최대값이 최소값보다 작음");
-				alert("최대값이 최소값보다 작습니다.");
+				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
@@ -171,8 +170,7 @@ export async function getRecommendVmInfoPmk() {
 		// Memory 필터
 		if (memoryMinVal !== "" || memoryMaxVal !== "") {
 			if (memoryMaxVal !== "" && memoryMaxVal < memoryMinVal) {
-				console.warn("Memory 최대값이 최소값보다 작음");
-				alert("최대값이 최소값보다 작습니다.");
+				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
@@ -192,8 +190,7 @@ export async function getRecommendVmInfoPmk() {
 		// Cost 필터
 		if (costMinVal !== "" || costMaxVal !== "") {
 			if (costMaxVal !== "" && costMaxVal < costMinVal) {
-				console.warn("Cost 최대값이 최소값보다 작음");
-				alert("최대값이 최소값보다 작습니다.");
+				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
@@ -272,7 +269,7 @@ export async function getRecommendVmInfoPmk() {
 				}
 			}
 		} else {
-			console.error("PMK Spec 추천 API 호출 실패:", result);
+			console.error("Failed to call PMK Spec recommendation API:", result);
 			recommendVmSpecListObjPmk = [];
 			if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
 				recommendTablePmk.setData([]);
@@ -280,7 +277,7 @@ export async function getRecommendVmInfoPmk() {
 		}
 		
 	} catch (error) {
-		console.error("PMK Spec 추천 실패:", error);
+		console.error("Failed to recommend PMK spec:", error);
 		recommendVmSpecListObjPmk = [];
 		if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
 			recommendTablePmk.setData([]);
@@ -354,7 +351,7 @@ export function filterByProviderPmk(provider) {
 	}
 	
 	if (!recommendTablePmk || typeof recommendTablePmk.setData !== 'function') {
-		console.error("PMK Spec 테이블이 초기화되지 않았습니다.");
+		console.error("PMK spec table is not initialized.");
 		return;
 	}
 	

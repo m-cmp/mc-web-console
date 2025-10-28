@@ -394,6 +394,30 @@ export async function displayNewServerForm() {
 // express모드 -> Done버튼 클릭 시
 
 export function expressDone_btn() {
+	// 1. 필수 필드 검증
+	var requiredFields = [
+		{ id: '#ep_name', message: 'SubGroup name is required' },
+		{ id: '#ep_vm_add_cnt', message: 'VM count is required' },
+		{ id: '#ep_commonSpecId', message: 'Spec is required' },
+		{ id: '#ep_commonImageId', message: 'Image is required' }
+	];
+	
+	for (var field of requiredFields) {
+		if (!$(field.id).val() || $(field.id).val().trim() === '') {
+			alert(field.message);
+			$(field.id).focus();
+			return;
+		}
+	}
+	
+	// 2. VM 개수 숫자 검증
+	var vmAddCnt = $("#ep_vm_add_cnt").val();
+	if (isNaN(vmAddCnt) || parseInt(vmAddCnt) < 1) {
+		alert('VM count must be a positive number');
+		$("#ep_vm_add_cnt").focus();
+		return;
+	}
+	
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
 	$("#p_provider").val($("#ep_provider").val())
 	$("#p_connectionName").val($("#ep_connectionName").val())
@@ -971,4 +995,33 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 		});
 	}
 })();
+
+// Clear 버튼 함수 추가
+export function clearExpressForm() {
+	// 1. 모든 입력 필드 초기화
+	$("#express_form")[0].reset();
+	
+	// 2. 숨겨진 필드들 초기화
+	$("#ep_provider").val("");
+	$("#ep_connectionName").val("");
+	$("#ep_imageId").val("");
+	$("#ep_commonImageId").val("");
+	$("#ep_commonSpecId").val("");
+	$("#ep_specId").val("");
+	
+	// 3. 직접 입력 필드들 초기화
+	$("#ep_name").val("");
+	$("#ep_description").val("");
+	$("#ep_imageId_input").val("");
+	$("#ep_root_disk_type").val("");
+	$("#ep_root_disk_size").val("");
+	$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
+	$("#ep_data_disk").val("");
+	$("#ep_command").val("");
+	
+	// 4. 수정 모드 플래그 초기화
+	window.currentEditIndex = undefined;
+	
+	// 5. 폼은 그대로 유지 (토글하지 않음)
+}
 

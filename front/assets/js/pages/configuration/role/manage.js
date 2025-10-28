@@ -190,7 +190,7 @@ function getRoleListCallbackSuccess(roleList) {
 export async function deleteRole() {
 
   if (checked_array.length == 0 || checked_array.length > 1) {
-    alert(" 1개만 선택 하세요 ")
+    alert("please select only one role");
     return;
   }
 

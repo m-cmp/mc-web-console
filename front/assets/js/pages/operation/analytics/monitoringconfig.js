@@ -781,7 +781,6 @@ async function setMonitorConfigInfoData() {
       // 토글 OFF 시: 에이전트가 활성화된 경우 비활성화 확인 (선택사항)
       else if (!isChecked && currentAgentStatus === "ACTIVE") {
         // 필요시 에이전트 비활성화 로직 추가 가능
-        console.log("Monitor agent deactivation requested");
       }
     });
 
