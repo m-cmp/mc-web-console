@@ -43,23 +43,23 @@ async function initPmk() {
     try {
         webconsolejs["partials/operation/manage/clustercreate"].iniClusterkCreate();//PmkCreate을 Partial로 가지고 있음. 
         webconsolejs["partials/operation/manage/clustercreate"].addNewPmk();
-        
+
         // 새로운 폼 Dynamic 초기화
         await initFormDynamic();
-        
+
         // 이미지 추천 모달 초기화
         if (webconsolejs["partials/operation/manage/imagerecommendation"]) {
             webconsolejs["partials/operation/manage/imagerecommendation"].initImageModal();
         } else {
-            console.warn("이미지 추천 모듈을 찾을 수 없음");
+            console.warn("Image recommendation module not found");
         }
-        
+
         // PMK Spec 모달 이벤트 리스너 설정
         setupPmkSpecModalEvents();
 
     } catch (e) {
-        console.error("initPmk 중 오류 발생:", e);
-        console.error("오류 스택:", e.stack);
+        console.error("Error initializing PMK:", e);
+        console.error("Error stack:", e.stack);
     }
     ////////////////////// partials init functions end ///////////////////////////////////////
 
@@ -74,7 +74,7 @@ async function initPmk() {
     var targetSection = "createcluster"
     var createBtnName = "Add cluster"
     var onclickEvent = "webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()";
-    
+
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
 
     // workspace selection check
@@ -172,7 +172,7 @@ export async function getSelectedPmkData() {
         var selectedNsId = selectedWorkspaceProject.nsId;
 
         var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId)
-        
+
         if (pmkResp.status != 200) {
             // failed.  // TODO : Error Popup 처리
             return;
@@ -392,7 +392,7 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
 
     clearServerInfo();
     var aNode = JSON.parse(aNodeObject);
-    
+
     // spiderViewK8sNodeGroupDetail에서 실제 데이터 가져오기
     var nodeGroupDetail = aNode.spiderViewK8sNodeGroupDetail;
     displayNodeStatusList(nodeGroupDetail)
@@ -747,7 +747,7 @@ function initPmkTable() {
         currentPmkId = row.getCell("id").getValue();
         // 표에서 선택된 PmkInfo 
         getSelectedPmkData()
-        
+
         // Cluster Terminal 버튼 상태 업데이트
         updateClusterRemoteCmdButtonState();
 
@@ -894,12 +894,12 @@ export function toggleExpertCreation() {
     const newFormDynamic = document.getElementById("createcluster");
     const originalForm = document.getElementById("createcluster-original");
     const expertBtn = document.querySelector('button[onclick*="toggleExpertCreation"]');
-    
+
     if (originalForm.style.display === "none") {
         // Expert Creation 모드 활성화
         newFormDynamic.style.display = "none";
         originalForm.style.display = "block";
-        
+
         // 버튼 상태 변경
         if (expertBtn) {
             expertBtn.classList.add("btn-primary");
@@ -910,7 +910,7 @@ export function toggleExpertCreation() {
         // Simple Creation 모드로 복귀
         newFormDynamic.style.display = "block";
         originalForm.style.display = "none";
-        
+
         // 버튼 상태 변경
         if (expertBtn) {
             expertBtn.classList.remove("btn-primary");
@@ -924,10 +924,10 @@ export function toggleExpertCreation() {
 export async function initFormDynamic() {
     // Dynamic 폼용 데이터 직접 로드
     await loadFormDynamicData();
-    
+
     // Dynamic 폼용 필터 이벤트 리스너 추가
     setupFormDynamicFiltering();
-    
+
     // Desired Node Size +/- 버튼 이벤트 리스너 추가
     setupDesiredNodeSizeButtons();
 }
@@ -939,15 +939,15 @@ async function loadFormDynamicData() {
         const providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList();
         if (providerList && Array.isArray(providerList)) {
             const sortedProviders = providerList.map(str => str.toUpperCase()).sort();
-            
+
             let html = '<option value="">Select Provider</option>';
             sortedProviders.forEach(item => {
                 html += `<option value="${item}">${item}</option>`;
             });
-            
+
             $("#cluster_provider_dynamic").empty().append(html);
         }
-        
+
         // Region 목록 로드
         const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList();
         if (regionList && Array.isArray(regionList)) {
@@ -958,25 +958,25 @@ async function loadFormDynamicData() {
                 const displayName = `[${providerName}] ${regionName}`;
                 html += `<option value="${displayName}">${displayName}</option>`;
             });
-            
+
             $("#cluster_region_dynamic").empty().append(html);
         }
-        
+
         // Cloud Connection 목록 로드
         const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
         if (cloudConnection && Array.isArray(cloudConnection)) {
             const connectionNames = cloudConnection.map(item => item.configName).sort();
-            
+
             let html = '<option value="">Select Connection</option>';
             connectionNames.forEach(item => {
                 html += `<option value="${item}">${item}</option>`;
             });
-            
+
             $("#cluster_cloudconnection_dynamic").empty().append(html);
         }
-        
+
     } catch (error) {
-        console.error("Dynamic 폼 데이터 로드 실패:", error);
+        console.error("Failed to load dynamic form data:", error);
     }
 }
 
@@ -985,7 +985,7 @@ function setupFormDynamicFiltering() {
     const providerSelectDynamic = document.getElementById('cluster_provider_dynamic');
     const regionSelectDynamic = document.getElementById('cluster_region_dynamic');
     const connectionSelectDynamic = document.getElementById('cluster_cloudconnection_dynamic');
-    
+
     if (providerSelectDynamic) {
         providerSelectDynamic.addEventListener('change', updateFormDynamicConfigurationFiltering);
     }
@@ -998,7 +998,7 @@ function setupFormDynamicFiltering() {
 async function updateFormDynamicConfigurationFiltering() {
     const selectedProvider = document.getElementById('cluster_provider_dynamic').value;
     const selectedRegion = document.getElementById('cluster_region_dynamic').value;
-    
+
     // 초기화했을 시
     if (selectedProvider === "") {
         // Dynamic 폼의 전체 데이터를 다시 로드
@@ -1007,17 +1007,17 @@ async function updateFormDynamicConfigurationFiltering() {
         hideNodeGroupFormDynamic();
         return;
     }
-    
+
     // provider 선택시 region, connection filtering
     if (selectedProvider !== "" && selectedRegion === "") {
         try {
             // Region 필터링 - 선택된 Provider의 Region만 표시
             const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList();
             if (regionList && Array.isArray(regionList)) {
-                const filteredRegions = regionList.filter(region => 
+                const filteredRegions = regionList.filter(region =>
                     region.ProviderName && region.ProviderName.toUpperCase() === selectedProvider
                 );
-                
+
                 let html = '<option value="">Select Region</option>';
                 filteredRegions.forEach(region => {
                     const providerName = region.ProviderName || '';
@@ -1025,43 +1025,43 @@ async function updateFormDynamicConfigurationFiltering() {
                     const displayName = `[${providerName}] ${regionName}`;
                     html += `<option value="${displayName}">${displayName}</option>`;
                 });
-                
+
                 $("#cluster_region_dynamic").empty().append(html);
             }
-            
+
             // Connection 필터링 - 선택된 Provider의 Connection만 표시
             const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
             if (cloudConnection && Array.isArray(cloudConnection)) {
                 const lowerSelectedProvider = selectedProvider.toLowerCase();
-                const filteredConnections = cloudConnection.filter(connection => 
+                const filteredConnections = cloudConnection.filter(connection =>
                     connection.configName && connection.configName.toLowerCase().startsWith(lowerSelectedProvider)
                 );
-                
+
                 let html = '<option value="">Select Connection</option>';
                 filteredConnections.forEach(connection => {
                     html += `<option value="${connection.configName}">${connection.configName}</option>`;
                 });
-                
+
                 $("#cluster_cloudconnection_dynamic").empty().append(html);
             }
-            
+
             // NodeGroup 폼 표시/숨김 처리
             onProviderChangeDynamic(selectedProvider);
         } catch (error) {
-            console.error("Dynamic 폼 필터링 실패:", error);
+            console.error("Failed to filter dynamic form:", error);
         }
     }
-    
+
     // region 선택시 connection filtering
     if (selectedRegion !== "") {
         try {
             const cspRegex = /^\[(.*?)\]/;
             const cspMatch = selectedRegion.match(cspRegex);
             const provider = cspMatch ? cspMatch[1] : null;
-            
+
             // Region 이름 추출 (예: "[AWS] us-east-1" → "us-east-1")
             const regionName = selectedRegion.replace(cspRegex, '').trim();
-            
+
             if (provider && regionName) {
                 const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
                 if (cloudConnection && Array.isArray(cloudConnection)) {
@@ -1070,17 +1070,17 @@ async function updateFormDynamicConfigurationFiltering() {
                         // "provider-region" 또는 "provider-region-zone" 형태와 매칭
                         return connection.configName && connection.configName.startsWith(regionName);
                     });
-                    
+
                     let html = '<option value="">Select Connection</option>';
                     filteredConnections.forEach(connection => {
                         html += `<option value="${connection.configName}">${connection.configName}</option>`;
                     });
-                    
+
                     $("#cluster_cloudconnection_dynamic").empty().append(html);
                 }
             }
         } catch (error) {
-            console.error("Dynamic 폼 Region 필터링 실패:", error);
+            console.error("Failed to filter dynamic form region:", error);
         }
     }
 }
@@ -1101,7 +1101,7 @@ export function onProviderChangeDynamic(providerValue) {
     // Azure, GCP, IBM, NHN 중 하나가 선택되었는지 확인
     const supportedProviders = ['azure', 'gcp', 'ibm', 'nhn'];
     const selectedProvider = providerValue.toLowerCase();
-    
+
     if (supportedProviders.includes(selectedProvider)) {
         // 지원되는 CSP가 선택된 경우 NodeGroup 구성 폼 표시
         showNodeGroupFormDynamic();
@@ -1115,7 +1115,7 @@ export function onProviderChangeDynamic(providerValue) {
 export function showNodeGroupFormDynamic() {
     // NodeGroup 구성 폼 표시 (애니메이션 효과)
     $("#nodegroup_configuration_dynamic").removeClass('hide').addClass('show').show();
-    
+
     // Create Cluster 카드의 Deploy 버튼 숨기기
     $("#createcluster .card-footer").hide();
 }
@@ -1124,7 +1124,7 @@ export function showNodeGroupFormDynamic() {
 export function hideNodeGroupFormDynamic() {
     // NodeGroup 구성 폼 숨기기 (애니메이션 효과)
     $("#nodegroup_configuration_dynamic").removeClass('show').addClass('hide').hide();
-    
+
     // Create Cluster 카드의 Deploy 버튼 표시
     $("#createcluster .card-footer").show();
 }
@@ -1139,34 +1139,34 @@ export async function deployPmkDynamic() {
         region: $("#cluster_region_dynamic").val(),
         connection: $("#cluster_cloudconnection_dynamic").val()
     };
-    
+
     // 필수 필드 검증
     if (!clusterData.name || !clusterData.provider || !clusterData.region || !clusterData.connection) {
-        alert("필수 필드를 모두 입력해주세요.");
+        alert("please fill in all required fields");
         return;
     }
-    
+
     // NodeGroup Configuration 폼이 표시되어 있는지 확인
     const nodeGroupForm = document.getElementById("nodegroup_configuration_dynamic");
     const isNodeGroupVisible = nodeGroupForm && nodeGroupForm.style.display !== "none";
-    
+
     try {
         // 사전 검증을 위한 commonSpec 결정
         let commonSpec = "";
         let commonImage = "";
-        
+
         if (isNodeGroupVisible) {
             // NodeGroup이 있는 경우: 선택된 spec 사용
             commonSpec = $("#nodegroup_commonSpecId_dynamic").val();
             commonImage = $("#nodegroup_image_dynamic").val();
             if (!commonSpec) {
-                alert("NodeGroup의 Spec을 선택해주세요.");
+                alert("please select NodeGroup spec");
                 return;
             }
         } else {
             // NodeGroup이 없는 경우: CSP별 하드코딩된 값 사용
             const selectedProvider = clusterData.provider.toLowerCase();
-            
+
             switch (selectedProvider) {
                 case 'aws':
                     commonSpec = "aws+ap-northeast-2+t3a.xlarge";
@@ -1191,21 +1191,21 @@ export async function deployPmkDynamic() {
                     break;
             }
         }
-        
+
         // 사전 검증 API 호출
         const checkResult = await webconsolejs["common/api/services/pmk_api"].checkK8sClusterDynamic(
-            selectedWorkspaceProject.nsId, 
+            selectedWorkspaceProject.nsId,
             commonSpec
         );
-        
+
         if (!checkResult || checkResult.status !== 200) {
-            alert("사전 검증에 실패했습니다. 설정을 확인해주세요.");
+            alert("failed to pre-validate. please check the settings");
             return;
         }
-        
+
         // 실제 클러스터 생성 데이터 준비
         let createData;
-        
+
         // Azure provider인 경우 테스트용 하드코딩된 값 사용
         if (clusterData.provider.toLowerCase() === 'azure') {
             createData = {
@@ -1224,37 +1224,37 @@ export async function deployPmkDynamic() {
                 nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""
             };
         }
-        
+
         // commonImage가 없으면 "default"로 설정
         if (!createData.commonImage || createData.commonImage === "") {
             createData.commonImage = "default";
         }
-        
+
         // NodeGroup이 있는 경우 추가 정보 설정
         if (isNodeGroupVisible) {
             // NodeGroup 필수 필드 검증
             if (!createData.nodeGroupName) {
-                alert("NodeGroup 이름을 입력해주세요.");
+                alert("please input NodeGroup name");
                 return;
             }
         }
-        
+
         // 동적 클러스터 생성 API 호출
         const result = await webconsolejs["common/api/services/pmk_api"].createK8sClusterDynamic(
             selectedWorkspaceProject.nsId,
             createData
         );
-        
+
         if (result && result.status === 200) {
-            alert("클러스터가 성공적으로 생성되었습니다.");
-            
+            alert("Cluster created successfully");
+
             // 폼 초기화
             $("#cluster_name_dynamic").val("");
             $("#cluster_desc_dynamic").val("");
             $("#cluster_provider_dynamic").val("");
             $("#cluster_region_dynamic").val("");
             $("#cluster_cloudconnection_dynamic").val("");
-            
+
             // NodeGroup 폼이 표시되어 있었다면 초기화
             if (isNodeGroupVisible) {
                 $("#nodegroup_name_dynamic").val("");
@@ -1269,29 +1269,29 @@ export async function deployPmkDynamic() {
                 $("#nodegroup_rootdisk_dynamic").val("");
                 $("#nodegroup_rootdisksize_dynamic").val("");
                 $("#nodegroup_desirednodesize_dynamic").val("1");
-                
+
                 // NodeGroup 폼 숨기기
                 hideNodeGroupFormDynamic();
             }
-            
+
             // Create Cluster 카드의 Deploy 버튼 표시
             $("#createcluster .card-footer").show();
-            
+
             // PMK 목록 새로고침
             await refreshPmkList();
-            
+
             // 클러스터 생성 폼 섹션을 닫기 (NodeGroup이 표시되어 있든 없든 항상 실행)
             const createClusterSection = document.querySelector('#createcluster');
             if (createClusterSection && createClusterSection.classList.contains('active')) {
                 webconsolejs["partials/layout/navigatePages"].toggleElement(createClusterSection);
             }
-            
+
         } else {
-            alert("클러스터 생성에 실패했습니다.");
+            alert("failed to create cluster");
         }
     } catch (error) {
-        console.error("클러스터 생성 실패:", error);
-        alert("클러스터 생성 중 오류가 발생했습니다.");
+        console.error("failed to create cluster:", error);
+        alert("failed to create cluster");
     }
 }
 
@@ -1320,11 +1320,11 @@ export async function getRecommendVmInfoPmk() {
             await webconsolejs["partials/operation/manage/pmk_serverrecommendation"].getRecommendVmInfoPmk();
         } else {
             console.error("PMK Server recommendation module not found");
-            alert("PMK Server recommendation module을 찾을 수 없습니다.");
+            alert("PMK Server recommendation module not found");
         }
     } catch (error) {
-        console.error("PMK Spec 추천 실패:", error);
-        alert("PMK Spec 추천 중 오류가 발생했습니다.");
+        console.error("failed to recommend PMK spec:", error);
+        alert("failed to recommend PMK spec");
     }
 }
 
@@ -1339,29 +1339,29 @@ function setupPmkSpecModalEvents() {
     if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
         var specModal = document.getElementById('spec-search-pmk');
         if (specModal) {
-            specModal.addEventListener('shown.bs.modal', function() {
+            specModal.addEventListener('shown.bs.modal', function () {
                 // 모달이 열렸을 때의 처리
             });
         } else {
-            console.error("spec-search-pmk 모달 요소를 찾을 수 없음");
+            console.error("spec-search-pmk modal element not found");
         }
     } else {
-        console.warn("Bootstrap 5를 사용할 수 없음");
+        console.warn("Bootstrap 5 not found");
     }
-    
+
     // jQuery 방식 (fallback)
     if (typeof $ !== 'undefined' && $.fn.modal) {
-        $("#spec-search-pmk").on('shown.bs.modal', function() {
+        $("#spec-search-pmk").on('shown.bs.modal', function () {
             // 모달이 열렸을 때의 처리
         });
     } else {
-        console.warn("jQuery modal을 사용할 수 없음");
+        console.warn("jQuery modal not found");
     }
-    
+
     // 직접 DOM 이벤트 방식 (추가 fallback)
     var specModalEl = document.getElementById('spec-search-pmk');
     if (specModalEl) {
-        specModalEl.addEventListener('shown.bs.modal', function() {
+        specModalEl.addEventListener('shown.bs.modal', function () {
             // 모달이 열렸을 때의 처리
         });
     }
@@ -1378,10 +1378,10 @@ function setupPmkSpecModalEvents() {
 
 // PMK용 Image 모달 검증 및 열기
 export function validateAndOpenImageModalPmk(event) {
-    
+
     // 스펙 입력 필드 값 확인 (MCI와 동일한 검증 로직)
     var specValue = $("#nodegroup_spec_dynamic").val();
-    
+
     if (!specValue || specValue.trim() === "") {
         console.warn("No PMK spec selected - validation failed");
         alert("Please select a server specification first before opening the image recommendation modal.");
@@ -1392,7 +1392,7 @@ export function validateAndOpenImageModalPmk(event) {
         }
         return false;
     }
-    
+
     // 전역 변수에서 spec 정보 확인 (MCI와 동일한 검증 로직)
     if (!window.selectedPmkSpecInfo) {
         console.warn("No PMK spec info in global variable - validation failed");
@@ -1404,52 +1404,52 @@ export function validateAndOpenImageModalPmk(event) {
         }
         return false;
     }
-    
+
     // 이벤트 전파 중단 및 기본 동작 방지 (모달 열기 전에 먼저 실행)
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
-    
-    		try {
-			// PMK용 이미지 선택 콜백 함수 설정
-			if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
-				webconsolejs["partials/operation/manage/pmk_imagerecommendation"].setImageSelectionCallbackPmk(function(selectedImage) {
-					// PMK 폼의 이미지 필드에 설정
-					                $("#nodegroup_image_dynamic").val(selectedImage.name || selectedImage.cspImageName || "");
-				});
-			} else {
-				console.error("PMK 이미지 추천 모듈을 찾을 수 없습니다.");
-			}
-        
+
+    try {
+        // PMK용 이미지 선택 콜백 함수 설정
+        if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
+            webconsolejs["partials/operation/manage/pmk_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
+                // PMK 폼의 이미지 필드에 설정
+                $("#nodegroup_image_dynamic").val(selectedImage.name || selectedImage.cspImageName || "");
+            });
+        } else {
+            console.error("PMK Image recommendation module not found.");
+        }
+
         // 비동기적으로 모달 열기 (MCI와 동일한 패턴)
-        setTimeout(function() {
+        setTimeout(function () {
             try {
                 // Bootstrap 5 방식으로 모달 열기
                 if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                     const imageModalEl = document.getElementById('image-search-pmk');
-                    				if (imageModalEl) {
-					const imageModal = new bootstrap.Modal(imageModalEl);
-					imageModal.show();
-				} else {
+                    if (imageModalEl) {
+                        const imageModal = new bootstrap.Modal(imageModalEl);
+                        imageModal.show();
+                    } else {
                         throw new Error("PMK Image modal element not found");
                     }
                 } else {
-                    console.error("Bootstrap이 로드되지 않았습니다.");
-                    alert("Bootstrap이 로드되지 않아 모달을 열 수 없습니다.");
+                    console.error("Bootstrap is not loaded");
+                    alert("could not open modal because Bootstrap is not loaded");
                 }
             } catch (error) {
-                console.error("Error opening PMK image modal:", error);
+                console.error("failed to open PMK image modal:", error);
                 alert("Error opening PMK image recommendation modal. Please try again.");
             }
         }, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
-        
+
     } catch (error) {
-        console.error("PMK Image 모달 열기 실패:", error);
-        alert("PMK Image 모달을 여는 중 오류가 발생했습니다.");
+        console.error("failed to open PMK image modal:", error);
+        alert("failed to open PMK image modal");
     }
-    
-    
+
+
     return true;
 }
 
@@ -1458,28 +1458,28 @@ function setupDesiredNodeSizeButtons() {
     // 기존 이벤트 핸들러 제거
     $(document).off('click', '#nodegroup_configuration_dynamic .input-number-decrement');
     $(document).off('click', '#nodegroup_configuration_dynamic .input-number-increment');
-    
+
     // 새로운 이벤트 핸들러 등록
-    $(document).on('click', '#nodegroup_configuration_dynamic .input-number-decrement', function(e) {
+    $(document).on('click', '#nodegroup_configuration_dynamic .input-number-decrement', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const input = $(this).siblings('.input-number');
         const currentValue = parseInt(input.val()) || 1;
         const minValue = parseInt(input.attr('min')) || 1;
-        
+
         if (currentValue > minValue) {
             input.val(currentValue - 1);
         }
     });
-    
-    $(document).on('click', '#nodegroup_configuration_dynamic .input-number-increment', function(e) {
+
+    $(document).on('click', '#nodegroup_configuration_dynamic .input-number-increment', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const input = $(this).siblings('.input-number');
         const currentValue = parseInt(input.val()) || 1;
-        
+
         // maxValue 제한 제거
         input.val(currentValue + 1);
     });
@@ -1495,39 +1495,39 @@ export function filterByProviderPmk(provider) {
             console.error("PMK Server recommendation module not found");
         }
     } catch (error) {
-        console.error("PMK Provider 필터링 실패:", error);
+        console.error("Failed to filter PMK provider:", error);
     }
 }
 
 // PMK용 Server Recommendation 콜백 함수 (MCI 패턴과 동일)
 export async function callbackPmkServerRecommendation(vmSpec) {
-	// PMK Server Recommendation 콜백 함수
-	
-	// PMK NodeGroup 폼의 필드들에 spec 정보 설정
-	$("#nodegroup_provider_dynamic").val(vmSpec.provider);
-	$("#nodegroup_connectionName_dynamic").val(vmSpec.connectionName);
-	$("#nodegroup_spec_dynamic").val(vmSpec.specName);
-	$("#nodegroup_commonSpecId_dynamic").val(vmSpec.commonSpecId);
-	
-	// spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
-	if (vmSpec.osArchitecture) {
-		window.selectedPmkSpecInfo = {
-			provider: vmSpec.provider,
-			connectionName: vmSpec.connectionName,
-			regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
-			osArchitecture: vmSpec.osArchitecture,
-			specName: vmSpec.specName,
-			commonSpecId: vmSpec.commonSpecId
-		};
-		
-		// PMK Image 모달 필드 미리 설정 (성능 최적화)
-		$("#image-provider-pmk").val(vmSpec.provider);
-		$("#image-region-pmk").val(vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""));
-		$("#image-os-architecture-pmk").val(vmSpec.osArchitecture);
-	} else {
-		console.warn("vmSpec에 osArchitecture 정보가 없습니다.");
-	}
-	
+    // PMK Server Recommendation 콜백 함수
+
+    // PMK NodeGroup 폼의 필드들에 spec 정보 설정
+    $("#nodegroup_provider_dynamic").val(vmSpec.provider);
+    $("#nodegroup_connectionName_dynamic").val(vmSpec.connectionName);
+    $("#nodegroup_spec_dynamic").val(vmSpec.specName);
+    $("#nodegroup_commonSpecId_dynamic").val(vmSpec.commonSpecId);
+
+    // spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
+    if (vmSpec.osArchitecture) {
+        window.selectedPmkSpecInfo = {
+            provider: vmSpec.provider,
+            connectionName: vmSpec.connectionName,
+            regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
+            osArchitecture: vmSpec.osArchitecture,
+            specName: vmSpec.specName,
+            commonSpecId: vmSpec.commonSpecId
+        };
+
+        // PMK Image 모달 필드 미리 설정 (성능 최적화)
+        $("#image-provider-pmk").val(vmSpec.provider);
+        $("#image-region-pmk").val(vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""));
+        $("#image-os-architecture-pmk").val(vmSpec.osArchitecture);
+    } else {
+        console.warn("vmSpec does not have osArchitecture information");
+    }
+
 
 }
 
@@ -1567,21 +1567,21 @@ webconsolejs['pages/operation/manage/pmk'].callbackPmkServerRecommendation = cal
 
 // 페이지 로드 시 초기화 (중복 방지)
 let pmkInitialized = false;
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     if (pmkInitialized) {
         return;
     }
-    
+
     // 기존 Add cluster 버튼 제거 (중복 방지)
     const existingButtons = $("#page-header-btn-list").find('a[href="#createcluster"]');
     existingButtons.remove();
-    
+
     // PMK 초기화
     initPmk();
-    
+
     // Desired Node Size 버튼 설정
     setupDesiredNodeSizeButtons();
-    
+
     // PMK용 모달 초기화
     // PMK용 Spec 추천 모달 초기화
     if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
@@ -1589,125 +1589,119 @@ document.addEventListener("DOMContentLoaded", function() {
     } else {
         console.error("PMK Server recommendation module not found");
     }
-    
-    	// PMK용 이미지 추천 모달 초기화
-	if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
-		webconsolejs["partials/operation/manage/pmk_imagerecommendation"].initImageModalPmk();
+
+    // PMK용 이미지 추천 모달 초기화
+    if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
+        webconsolejs["partials/operation/manage/pmk_imagerecommendation"].initImageModalPmk();
     } else {
         console.error("PMK Image recommendation module not found");
     }
-    
+
     pmkInitialized = true;
 });
 
 // Cluster Terminal 모달 표시 함수
 export function showClusterTerminalModal() {
-  // 현재 선택된 Cluster가 있는지 확인
-  if (!currentPmkId) {
-    alert("Please select a Cluster first.");
-    return;
-  }
-  
-  // 입력 필드 초기화
-  const namespaceInput = document.getElementById('modalNamespace');
-  const podNameInput = document.getElementById('modalPodName');
-  
-  if (namespaceInput) {
-    namespaceInput.value = '';
-  }
-  if (podNameInput) {
-    podNameInput.value = '';
-  }
-  
-  // 모달 표시
-  const modalElement = document.getElementById('clusterTerminalModal');
-  if (modalElement) {
-    const modalInstance = new bootstrap.Modal(modalElement);
-    modalInstance.show();
-  } else {
-    alert("Terminal modal not found");
-  }
+    // 현재 선택된 Cluster가 있는지 확인
+    if (!currentPmkId) {
+        alert("Please select a Cluster first.");
+        return;
+    }
+
+    // 입력 필드 초기화
+    const namespaceInput = document.getElementById('modalNamespace');
+    const podNameInput = document.getElementById('modalPodName');
+
+    if (namespaceInput) {
+        namespaceInput.value = '';
+    }
+    if (podNameInput) {
+        podNameInput.value = '';
+    }
+
+    // 모달 표시
+    const modalElement = document.getElementById('clusterTerminalModal');
+    if (modalElement) {
+        const modalInstance = new bootstrap.Modal(modalElement);
+        modalInstance.show();
+    } else {
+        alert("Terminal modal not found");
+    }
 }
 
 // Cluster Terminal 연결 함수
 export async function connectToClusterTerminal() {
-  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
-  
-  // 현재 선택된 Cluster가 있는지 확인
-  if (!currentPmkId) {
-    alert("Please select a Cluster first.");
-    return;
-  }
-  
-  // 모달에서 값 가져오기
-  const namespaceInput = document.getElementById('modalNamespace');
-  const podNameInput = document.getElementById('modalPodName');
-  
-  const userNamespace = namespaceInput ? namespaceInput.value.trim() : '';
-  const userPodName = podNameInput ? podNameInput.value.trim() : '';
-  
-  // 사용자가 입력한 값이 있으면 사용, 없으면 기본값 사용
-  const namespace = userNamespace || 'default';
-  const podName = userPodName || 'cluster-pod';
-  
-  console.log('Connecting to Cluster Terminal:', {
-    clusterId: currentPmkId,
-    namespace: namespace,
-    podName: podName
-  });
-  
-  try {
-    // 클러스터 데이터에서 실제 정보 가져오기
-    const clusterData = selectedClusterData || totalPmkListObj.find(cluster => cluster.id === currentPmkId);
-    
-    if (!clusterData) {
-      alert("Cluster data not found.");
-      return;
+    const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+
+    // 현재 선택된 Cluster가 있는지 확인
+    if (!currentPmkId) {
+        alert("Please select a Cluster first.");
+        return;
     }
-    
-    // 연결 모달 닫기
-    const terminalModal = document.getElementById('clusterTerminalModal');
-    if (terminalModal) {
-      const modalInstance = bootstrap.Modal.getInstance(terminalModal);
-      if (modalInstance) {
-        modalInstance.hide();
-      }
+
+    // 모달에서 값 가져오기
+    const namespaceInput = document.getElementById('modalNamespace');
+    const podNameInput = document.getElementById('modalPodName');
+
+    const userNamespace = namespaceInput ? namespaceInput.value.trim() : '';
+    const userPodName = podNameInput ? podNameInput.value.trim() : '';
+
+    // 사용자가 입력한 값이 있으면 사용, 없으면 기본값 사용
+    const namespace = userNamespace || 'default';
+    const podName = userPodName || 'cluster-pod';
+
+    try {
+        // 클러스터 데이터에서 실제 정보 가져오기
+        const clusterData = selectedClusterData || totalPmkListObj.find(cluster => cluster.id === currentPmkId);
+
+        if (!clusterData) {
+            alert("Cluster data not found.");
+            return;
+        }
+
+        // 연결 모달 닫기
+        const terminalModal = document.getElementById('clusterTerminalModal');
+        if (terminalModal) {
+            const modalInstance = bootstrap.Modal.getInstance(terminalModal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+
+        await webconsolejs["common/api/services/remotecmd_api"].initClusterTerminal(
+            'cluster-xterm-container',
+            nsId,
+            currentPmkId,
+            namespace,
+            podName,
+            null // containerName은 선택사항
+        );
+
+        const modalElement = document.getElementById('cluster-cmdtestmodal');
+        if (modalElement) {
+            const modalInstance = new bootstrap.Modal(modalElement);
+            modalInstance.show();
+        } else {
+            alert("Terminal modal element not found");
+        }
+    } catch (error) {
+        alert("Error initializing terminal: " + error.message);
     }
-    
-    await webconsolejs["common/api/services/remotecmd_api"].initClusterTerminal(
-      'cluster-xterm-container', 
-      nsId, 
-      currentPmkId, 
-      namespace, 
-      podName,
-      null // containerName은 선택사항
-    );
-    
-    const modalElement = document.getElementById('cluster-cmdtestmodal');
-    if (modalElement) {
-      const modalInstance = new bootstrap.Modal(modalElement);
-      modalInstance.show();
-    } else {
-      alert("Terminal modal element not found");
-    }
-  } catch (error) {
-    alert("Error initializing terminal: " + error.message);
-  }
 }
 
 // Cluster Terminal 버튼 상태 업데이트
 function updateClusterRemoteCmdButtonState() {
-  const clusterRemoteCmdBtn = document.querySelector('a[onclick*="showClusterTerminalModal"]');
-  
-  if (clusterRemoteCmdBtn) {
-    if (currentPmkId) {
-      clusterRemoteCmdBtn.classList.remove('disabled');
-      clusterRemoteCmdBtn.style.pointerEvents = 'auto';
-      clusterRemoteCmdBtn.title = 'Connect to selected Cluster';
-    } else {
-      clusterRemoteCmdBtn.classList.add('disabled');
-      clusterRemoteCmdBtn.style.pointerEvents = 'none';
-      clusterRemoteCmdBtn.title = 'Please select a Cluster first';
+    const clusterRemoteCmdBtn = document.querySelector('a[onclick*="showClusterTerminalModal"]');
+
+    if (clusterRemoteCmdBtn) {
+        if (currentPmkId) {
+            clusterRemoteCmdBtn.classList.remove('disabled');
+            clusterRemoteCmdBtn.style.pointerEvents = 'auto';
+            clusterRemoteCmdBtn.title = 'Connect to selected Cluster';
+        } else {
+            clusterRemoteCmdBtn.classList.add('disabled');
+            clusterRemoteCmdBtn.style.pointerEvents = 'none';
+            clusterRemoteCmdBtn.title = 'Please select a Cluster first';
+        }
     }
-  }
 }

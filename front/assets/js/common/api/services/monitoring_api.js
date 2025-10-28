@@ -9,7 +9,7 @@ export async function getPlugIns() {
 
     return respMeasureMent
   } catch (error) {
-    console.error("getPlugIns API 오류:", error);
+    console.error("Error occurred while getting plugins:", error);
     throw error;
   }
 }

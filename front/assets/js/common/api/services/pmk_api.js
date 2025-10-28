@@ -96,7 +96,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
     data
   );
 
-  alert("생성요청 완료");
+  alert("Creation request completed");
   var urlParamMap = new Map();
 
   // 생성요청했으므로 결과를 기다리지 않고 pmkList로 보냄

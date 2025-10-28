@@ -2,10 +2,8 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-    console.log("select-current-project changed ")
     let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-    console.log("select-current-project on change ", project)
     var respPolicyList = await webconsolejs["common/api/services/eventalarm_api"].getAllPolicy();
     var policyList = respPolicyList.data
     getPolicyListCallbackSuccess(project.NsId, policyList);
@@ -31,7 +29,6 @@ var currentPolicySeq = "";
 
 document.addEventListener("DOMContentLoaded", initEventAlarm);
 async function initEventAlarm() {
-    console.log("initEventAlarm")
     ////////////////////// partials init functions///////////////////////////////////////
     // try {
     //     webconsolejs["partials/operation/manage/pmkcreate"].initPmkCreate();//PmkCreate을 Partial로 가지고 있음. 
@@ -261,20 +258,6 @@ async function getSelectedPolicySeqData(policySeq) {
         // webconsolejs["partials/layout/navigatePages"].toggleElement(div)
     }
 }
-
-
-// toggleSelectBox of table row
-function toggleRowSelection(id) {
-    // policyListTable 데이터 찾기
-    var row = policyListTable.getRow(id);
-    if (row) {
-        row.select();
-        console.log("Row with ID " + id + " is selected.");
-    } else {
-        console.log("Row with ID " + id + " not found.");
-    }
-}
-
 
 // 클릭한 policy의 info값 세팅
 function setPolicyInfoData(policyData) {

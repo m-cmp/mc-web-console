@@ -196,9 +196,9 @@ const AppState = {
 
 // 상수 정의
 const CONSTANTS = {
-  PAGINATION_SIZE: 7,
-  PAGINATION_SIZES: [7, 14, 21],
-  TABLE_HEIGHT: '350px',
+  PAGINATION_SIZE: 5,
+  PAGINATION_SIZES: [5, 10, 15],
+  TABLE_HEIGHT: '180px',
   CSP_TABLE_HEIGHT: '300px',
   TREE_MAX_HEIGHT: '300px',
   ANIMATION_DURATION: 200,
@@ -256,11 +256,11 @@ const Utils = {
     const errors = [];
 
     if (!roleName || !roleName.trim()) {
-      errors.push('Role Name은 필수 입력 항목입니다.');
+      errors.push('Role Name is required');
     } else if (roleName.trim().length < 2) {
-      errors.push('Role Name은 2자 이상이어야 합니다.');
+      errors.push('Role Name must be at least 2 characters');
     } else if (roleName.trim().length > 50) {
-      errors.push('Role Name은 50자 이하여야 합니다.');
+      errors.push('Role Name must be at most 50 characters');
     }
 
     return errors;
@@ -298,7 +298,7 @@ const Utils = {
 const ErrorHandler = {
   handle(error, context) {
     console.error(`Error in ${context}:`, error);
-    Utils.showAlert(`오류가 발생했습니다: ${context}`);
+    Utils.showAlert(`Error occurred: ${context}`);
   },
 
   async wrapAsync(fn, context) {
@@ -320,7 +320,7 @@ const RoleManager = {
         const roleList = await webconsolejs["common/api/services/roles_api"].getRoleList();
         return roleList || [];
       },
-      '역할 목록 로드'
+      'load role list'
     );
   },
 
@@ -330,13 +330,13 @@ const RoleManager = {
       async () => {
         const response = await webconsolejs["common/api/services/roles_api"].createRole(roleData);
         if (response) {
-          Utils.showAlert('역할이 성공적으로 생성되었습니다.');
+          Utils.showAlert('role created successfully');
           return response;
         } else {
-          throw new Error('역할 생성에 실패했습니다.');
+          throw new Error('failed to create role');
         }
       },
-      '역할 생성'
+      'create role'
     );
   },
 
@@ -346,13 +346,13 @@ const RoleManager = {
       async () => {
         const response = await webconsolejs["common/api/services/roles_api"].updateRole(roleId, roleData);
         if (response) {
-          Utils.showAlert('역할이 성공적으로 수정되었습니다.');
+          Utils.showAlert('role updated successfully');
           return response;
         } else {
-          throw new Error('역할 수정에 실패했습니다.');
+          throw new Error('failed to update role');
         }
       },
-      '역할 수정'
+      'update role'
     );
   },
 
@@ -362,13 +362,13 @@ const RoleManager = {
       async () => {
         const response = await webconsolejs["common/api/services/roles_api"].deleteRole(roleId);
         if (response) {
-          Utils.showAlert('역할이 성공적으로 삭제되었습니다.');
+          Utils.showAlert('role deleted successfully');
           return response;
         } else {
-          throw new Error('역할 삭제에 실패했습니다.');
+          throw new Error('failed to delete role');
         }
       },
-      '역할 삭제'
+      'delete role'
     );
   },
 
@@ -381,7 +381,7 @@ const RoleManager = {
       // CSP Role이 있으면 검증
       roleData.cspSelection.cspRoles.forEach((cspRole, index) => {
         if (!cspRole.csp_type || !cspRole.name) {
-          errors.push(`CSP Role ${index + 1}: CSP Provider와 Role Name이 모두 필요합니다.`);
+          errors.push(`CSP Role ${index + 1}: CSP Provider and Role Name are required`);
         }
       });
     }
@@ -994,7 +994,7 @@ const TableManager = {
       // 테이블 요소 확인
       const tableElement = DOM.rolesTable;
       if (!tableElement) {
-        console.error("roles-table 요소를 찾을 수 없습니다.");
+        console.error("could not find roles-table element");
         reject(new Error("Table element not found"));
         return;
       }
@@ -1003,7 +1003,7 @@ const TableManager = {
         const table = new Tabulator("#roles-table", {
           data: [],
           layout: CONFIG.TABLE.LAYOUT,
-          height: CONFIG.TABLE.HEIGHT,
+          height: "fitData",
           pagination: true,
           paginationSize: CONFIG.TABLE.PAGINATION_SIZE,
           paginationSizeSelector: CONFIG.TABLE.PAGINATION_SIZES,
@@ -1028,7 +1028,7 @@ const TableManager = {
         });
 
       } catch (error) {
-        console.error("테이블 초기화 중 오류 발생:", error);
+        console.error("Error while initializing table:", error);
         reject(error);
       }
     });
@@ -1170,7 +1170,7 @@ const TableManager = {
         initPlatformMenuTree().then(() => {
           return updateMenuPermissions(selectedRole.id);
         }).catch(error => {
-          console.error("메뉴 권한 업데이트 실패:", error);
+          console.error("failed to update menu permissions:", error);
           // 메뉴 권한 업데이트 실패 시에도 view-mode는 계속 유지
         });
       }
@@ -1178,7 +1178,7 @@ const TableManager = {
       // CSP 역할 매핑 정보 업데이트 (비동기 처리)
       if (hasCsp) {
         updateCspRoleMapping(selectedRole.id).catch(error => {
-          console.error("CSP 역할 매핑 업데이트 실패:", error);
+          console.error("failed to update CSP Role Mapping:", error);
           // CSP 역할 매핑 업데이트 실패 시에도 view-mode는 계속 유지
           // 테이블을 빈 배열로 설정하여 UI가 깨지지 않도록 함
           if (AppState.tables.cspRoleMappingTable) {
@@ -1342,7 +1342,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // 필터 기능 초기화
     initFilter();
   } catch (error) {
-    console.error("초기화 중 오류 발생:", error);
+    console.error("Error while initializing:", error);
   }
 });
 
@@ -1379,7 +1379,7 @@ async function initRoles() {
     setupEventListeners();
 
   } catch (error) {
-    ErrorHandler.handle(error, "시스템 초기화");
+    ErrorHandler.handle(error, "System initialization");
     throw error;
   }
 }
@@ -1612,11 +1612,11 @@ async function initPlatformMenuTree() {
       });
 
     } else {
-      console.error("메뉴 트리 데이터가 없습니다.");
+      console.error("menu tree data is not found");
     }
   } catch (error) {
-    console.error("Platform 메뉴 트리 초기화 중 오류 발생:", error);
-    alert("플랫폼 메뉴 트리를 불러오는데 실패했습니다.");
+    console.error("failed to initialize platform menu tree:", error);
+    alert("failed to load platform menu tree");
   }
 }
 
@@ -1678,11 +1678,11 @@ async function initPlatformMenuCreateTree() {
       });
 
     } else {
-      console.error("Create 메뉴 트리 데이터가 없습니다.");
+      console.error("create menu tree data is not found");
     }
   } catch (error) {
-    console.error("Create Platform 메뉴 트리 초기화 중 오류 발생:", error);
-    alert("플랫폼 메뉴 트리를 불러오는데 실패했습니다.");
+    console.error("failed to initialize create platform menu tree:", error);
+    alert("failed to load platform menu tree");
   }
 }
 
@@ -1759,11 +1759,11 @@ async function initPlatformMenuEditTree() {
       });
 
     } else {
-      console.error("Edit 메뉴 트리 데이터가 없습니다.");
+      console.error("edit menu tree data is not found");
     }
   } catch (error) {
-    console.error("Edit Platform 메뉴 트리 초기화 중 오류 발생:", error);
-    alert("플랫폼 메뉴 트리를 불러오는데 실패했습니다.");
+    console.error("failed to initialize edit platform menu tree:", error);
+    alert("failed to load platform menu tree");
   }
 }
 
@@ -1836,7 +1836,7 @@ function setupEventListeners() {
 
   // Edit CSP Role Mapping 폼 초기화
   initEditCspRoleMappingForm().catch(error => {
-    console.error('Edit CSP Role Mapping 폼 초기화 실패:', error);
+    console.error('Failed to initialize Edit CSP Role Mapping form:', error);
   });
 
   // Role Name 입력 시 CSP Role Name 자동 업데이트
@@ -1930,7 +1930,7 @@ function handleCspToggleCreate(e) {
     // Role Name이 입력되지 않았으면 토글을 비활성화
     const roleName = DOM.roleNameInput ? DOM.roleNameInput.value : '';
     if (!roleName || !roleName.trim()) {
-      Utils.showAlert('CSP Role Mapping을 사용하려면 먼저 Role Name을 입력해주세요.');
+      Utils.showAlert('please input Role Name before using CSP Role Mapping');
       return;
     }
 
@@ -2018,13 +2018,13 @@ async function updateMenuPermissions(roleId) {
     }
 
   } catch (error) {
-    console.error("메뉴 권한 업데이트 중 오류 발생:", error);
+    console.error("failed to update menu permissions:", error);
     // 오류 시 메뉴 권한 상태 아이콘 숨기기
     const statusElement = DOM.platformMenuStatus;
     if (statusElement) {
       statusElement.style.display = 'none';
     }
-    alert("메뉴 권한 정보를 불러오는데 실패했습니다.");
+    alert("failed to load menu permissions");
   }
 }
 
@@ -2077,8 +2077,8 @@ async function updateEditMenuPermissions(roleId) {
     });
 
   } catch (error) {
-    console.error("Edit 모드 메뉴 권한 업데이트 중 오류 발생:", error);
-    alert("Edit 모드 메뉴 권한 정보를 불러오는데 실패했습니다.");
+    console.error("failed to update edit mode menu permissions:", error);
+    alert("failed to load edit mode menu permissions");
   }
 }
 
@@ -2090,7 +2090,7 @@ async function updateCspRoleMapping(roleId) {
       try {
         await initCspRoleMappingTable();
       } catch (tableError) {
-        console.error("CSP Role Mapping 테이블 초기화 실패:", tableError);
+        console.error("failed to initialize CSP Role Mapping table:", tableError);
         // 테이블 초기화 실패 시에도 계속 진행
         return;
       }
@@ -2181,7 +2181,7 @@ async function updateCspRoleMapping(roleId) {
     }
 
   } catch (error) {
-    console.error("CSP 역할 매핑 업데이트 중 오류 발생:", error);
+    console.error("failed to update CSP Role Mapping:", error);
     // 오류가 발생해도 테이블을 빈 배열로 설정하고 빈 상태 메시지 표시
     if (AppState.tables.cspRoleMappingTable) {
       AppState.tables.cspRoleMappingTable.setData([]);
@@ -2206,7 +2206,7 @@ function initCspRoleMappingTable() {
     // 테이블 요소 확인
     const tableElement = DOM.cspRoleMappingTable;
     if (!tableElement) {
-      console.error("csp-role-mapping-table 요소를 찾을 수 없습니다.");
+      console.error("csp-role-mapping-table is not found");
       reject(new Error("Table element not found"));
       return;
     }
@@ -2251,7 +2251,7 @@ function initCspRoleMappingTable() {
       AppState.tables.cspRoleMappingTable = cspRoleMappingTable;
 
     } catch (error) {
-      console.error("CSP Role Mapping 테이블 초기화 중 오류 발생:", error);
+      console.error("failed to initialize CSP Role Mapping table:", error);
       reject(error);
     }
   });
@@ -2263,7 +2263,7 @@ function initCspRoleMappingEditTable(roleId) {
     // 테이블 요소 확인
     const tableElement = DOM.cspRoleMappingEditTable;
     if (!tableElement) {
-      console.error("csp-role-mapping-edit-table 요소를 찾을 수 없습니다.");
+      console.error("csp-role-mapping-edit-table is not found");
       reject(new Error("Table element not found"));
       return;
     }
@@ -2319,7 +2319,7 @@ function initCspRoleMappingEditTable(roleId) {
       AppState.tables.cspRoleMappingEditTable = cspRoleMappingEditTable;
 
     } catch (error) {
-      console.error("Edit CSP Role Mapping 테이블 초기화 중 오류 발생:", error);
+      console.error("failed to initialize Edit CSP Role Mapping table:", error);
       reject(error);
     }
   });
@@ -2413,7 +2413,7 @@ async function loadEditCspRoleMapping(roleId, table) {
     }
 
   } catch (error) {
-    console.error("Edit CSP 역할 매핑 데이터 로드 중 오류 발생:", error);
+    console.error("failed to load Edit CSP Role Mapping data:", error);
     // 오류가 발생해도 테이블을 빈 배열로 설정하고 테이블 표시
     if (table) {
       table.setData([]);
@@ -2434,6 +2434,21 @@ let selectedCspRoleName = '';
 // Edit CSP Role Mapping 관련 변수
 let selectedEditCspProvider = '';
 let selectedEditCspRoleName = '';
+
+// CSP Provider 목록 캐싱 (Promise 기반)
+let cspProvidersPromise = null;
+
+// CSP Provider 목록을 한 번만 로드하는 공통 함수
+async function loadCspProviders() {
+  if (cspProvidersPromise === null) {
+    cspProvidersPromise = webconsolejs["common/api/services/roles_api"].getCspProviderList()
+      .catch(error => {
+        console.error('failed to load CSP Provider list:', error);
+        return [];
+      });
+  }
+  return await cspProvidersPromise;
+}
 
 // CSP Role Mapping 폼 초기화
 async function initCspRoleMappingForm() {
@@ -2485,7 +2500,7 @@ async function initCspRoleMappingForm() {
 // CSP Provider 드롭다운 초기화
 async function initCspProviderDropdown() {
   try {
-    const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
+    const providers = await loadCspProviders();
     const cspProviderSelect = DOM.cspProviderSelect;
 
     if (cspProviderSelect && providers && Array.isArray(providers)) {
@@ -2501,7 +2516,7 @@ async function initCspProviderDropdown() {
       });
     }
   } catch (error) {
-    console.error('CSP Provider 드롭다운 초기화 실패:', error);
+    console.error('failed to initialize CSP Provider dropdown:', error);
   }
 }
 
@@ -2528,14 +2543,14 @@ async function initCspRoleDropdown(provider) {
       cspRoleNameSelect.disabled = false;
     }
   } catch (error) {
-    console.error('CSP Role 드롭다운 초기화 실패:', error);
+    console.error('failed to initialize CSP Role dropdown:', error);
   }
 }
 
 // Edit CSP Provider 드롭다운 초기화
 async function initEditCspProviderDropdown() {
   try {
-    const providers = await webconsolejs["common/api/services/roles_api"].getCspProviderList();
+    const providers = await loadCspProviders();
     const editCspProviderSelect = DOM.editCspProviderSelect;
 
     if (editCspProviderSelect && providers && Array.isArray(providers)) {
@@ -2551,7 +2566,7 @@ async function initEditCspProviderDropdown() {
       });
     }
   } catch (error) {
-    console.error('Edit CSP Provider 드롭다운 초기화 실패:', error);
+    console.error('failed to initialize Edit CSP Provider dropdown:', error);
   }
 }
 
@@ -2578,7 +2593,7 @@ async function initEditCspRoleDropdown(provider) {
       editCspRoleNameSelect.disabled = false;
     }
   } catch (error) {
-    console.error('Edit CSP Role 드롭다운 초기화 실패:', error);
+    console.error('failed to initialize Edit CSP Role dropdown:', error);
   }
 }
 
@@ -2589,7 +2604,7 @@ async function initCreateCspRoleMappingTable() {
     // 테이블 요소 확인
     const tableElement = DOM.createCspRoleMappingTable;
     if (!tableElement) {
-      console.error("create-csp-role-mapping-table 요소를 찾을 수 없습니다.");
+      console.error("create-csp-role-mapping-table is not found");
       reject(new Error("Table element not found"));
       return;
     }
@@ -2641,7 +2656,7 @@ async function initCreateCspRoleMappingTable() {
       AppState.tables.createCspRoleMappingTable = createCspRoleMappingTable;
 
     } catch (error) {
-      console.error("Create CSP Role Mapping 테이블 초기화 중 오류 발생:", error);
+      console.error("failed to initialize Create CSP Role Mapping table:", error);
       reject(error);
     }
   });
@@ -2654,12 +2669,12 @@ function handleAddCspRole() {
 
   // 입력값 검증
   if (!cspProvider) {
-    Utils.showAlert('CSP Provider를 선택해주세요.');
+    Utils.showAlert('please select CSP Provider');
     return;
   }
 
   if (!cspRoleName || !cspRoleName.trim()) {
-    Utils.showAlert('CSP Role Name을 입력해주세요.');
+    Utils.showAlert('please input CSP Role Name');
     return;
   }
 
@@ -2669,7 +2684,7 @@ function handleAddCspRole() {
   );
 
   if (existingMapping) {
-    Utils.showAlert(`이미 추가된 CSP Role입니다.\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
+    Utils.showAlert(`already added CSP Role\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
     return;
   }
 
@@ -2679,7 +2694,7 @@ function handleAddCspRole() {
   );
 
   if (existingCspProvider) {
-    Utils.showAlert(`이미 ${cspProvider.toUpperCase()} CSP Provider가 추가되어 있습니다.\n하나의 역할에는 하나의 CSP Provider만 추가할 수 있습니다.`);
+    Utils.showAlert(`already added ${cspProvider.toUpperCase()} CSP Provider.\none role can only add one CSP Provider.`);
     return;
   }
 
@@ -2816,7 +2831,7 @@ async function saveRole() {
 
   } catch (error) {
     // ErrorHandler.wrapAsync가 이미 에러를 처리하므로 여기서는 추가 처리하지 않음
-    console.error('역할 저장 중 예상치 못한 오류:', error);
+    console.error('unexpected error while saving role:', error);
   }
 }
 
@@ -2898,7 +2913,7 @@ async function handleEditButtonClick(e) {
   e.preventDefault();
 
   if (!AppState.roles.selectedRole) {
-    Utils.showAlert('편집할 역할을 선택해주세요.');
+    Utils.showAlert('please select role to edit');
     return;
   }
 
@@ -2910,7 +2925,7 @@ async function handleEditButtonClick(e) {
 function handleCancelEditButtonClick(e) {
   // 변경사항이 있으면 확인
   if (AppState.editingRole.hasChanges) {
-    if (!confirm('저장하지 않은 변경사항이 있습니다. 정말 취소하시겠습니까?')) {
+    if (!confirm('There are unsaved changes. are you sure you want to cancel?')) {
       return;
     }
   }
@@ -3074,12 +3089,12 @@ function handleAddCspMapping() {
 
   // 입력값 검증
   if (!cspProvider) {
-    Utils.showAlert('CSP Provider를 선택해주세요.');
+    Utils.showAlert('please select CSP Provider');
     return;
   }
 
   if (!cspRoleName || !cspRoleName.trim()) {
-    Utils.showAlert('CSP Role Name을 입력해주세요.');
+    Utils.showAlert('please input CSP Role Name');
     return;
   }
 
@@ -3091,7 +3106,7 @@ function handleAddCspMapping() {
     );
 
     if (existingMapping) {
-      Utils.showAlert(`이미 추가된 CSP Role입니다.\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
+      Utils.showAlert(`already added CSP Role\nCSP: ${cspProvider.toUpperCase()}, Role Name: ${cspRoleName.trim()}`);
       return;
     }
 
@@ -3101,7 +3116,7 @@ function handleAddCspMapping() {
     );
 
     if (existingCspProvider) {
-      Utils.showAlert(`이미 ${cspProvider.toUpperCase()} CSP Provider가 추가되어 있습니다.\n하나의 역할에는 하나의 CSP Provider만 추가할 수 있습니다.`);
+      Utils.showAlert(`already added ${cspProvider.toUpperCase()} CSP Provider.\none role can only add one CSP Provider.`);
       return;
     }
   }
@@ -3128,7 +3143,7 @@ function handleAddCspMapping() {
 
 // CSP 매핑 삭제 함수 (전역 함수로 등록)
 window.deleteCspMapping = function (mappingId) {
-  if (confirm('이 CSP 매핑을 삭제하시겠습니까?')) {
+  if (confirm('are you sure you want to delete this CSP mapping?')) {
     if (AppState.tables.cspRoleMappingEditTable) {
       const currentData = AppState.tables.cspRoleMappingEditTable.getData();
       const filteredData = currentData.filter(item => item.id !== mappingId);
@@ -3221,7 +3236,7 @@ async function updateRole() {
 
   } catch (error) {
     // ErrorHandler.wrapAsync가 이미 에러를 처리하므로 여기서는 추가 처리하지 않음
-    console.error('역할 수정 중 예상치 못한 오류:', error);
+    console.error('unexpected error while updating role:', error);
   }
 }
 
@@ -3230,7 +3245,7 @@ export async function deleteRole() {
   try {
     // 선택된 역할이 있는지 확인
     if (!AppState.roles.selectedRole) {
-      Utils.showAlert('삭제할 역할을 선택해주세요.');
+      Utils.showAlert('please select role to delete');
       return;
     }
 
@@ -3254,11 +3269,11 @@ export async function deleteRole() {
       // 페이지를 맨 위로 스크롤
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      Utils.showAlert(`역할 "${roleName}"이(가) 성공적으로 삭제되었습니다.`);
+      Utils.showAlert(`role "${roleName}" deleted successfully`);
     }
   } catch (error) {
-    console.error('역할 삭제 중 오류 발생:', error);
-    Utils.showAlert('역할 삭제 중 오류가 발생했습니다.');
+    console.error('failed to delete role:', error);
+    Utils.showAlert('failed to delete role');
   }
 }
 
@@ -3348,7 +3363,7 @@ async function loadUsersForAssignment() {
     const users = await webconsolejs['common/api/services/users_api'].getUserList();
     initUserTable(users);
   } catch (error) {
-    console.error('사용자 목록 로드 실패:', error);
+    console.error('failed to load user list:', error);
     // 에러 시 빈 배열로 초기화
     initUserTable([]);
   }
@@ -3425,25 +3440,25 @@ function initUserTable(users) {
     });
     
   } catch (error) {
-    console.error('사용자 테이블 초기화 실패:', error);
+    console.error('failed to initialize user table:', error);
   }
 }
 
 // 사용자 할당 실행
 function assignUser() {
   if (!currentSelectedRole) {
-    console.error('선택된 역할이 없습니다.');
+    console.error('no selected role');
     return;
   }
   
   if (!assignUserModalTable) {
-    console.error('사용자 테이블이 초기화되지 않았습니다.');
+    console.error('user table is not initialized');
     return;
   }
   
   const selectedRows = assignUserModalTable.getSelectedRows();
   if (!selectedRows || selectedRows.length === 0) {
-    alert('할당할 사용자를 선택해주세요.');
+    alert('please select users to assign');
     return;
   }
   
@@ -3468,7 +3483,7 @@ async function assignUsersToRole(roleId, userIds) {
     await Promise.all(promises);
     
     // 성공 메시지 표시
-    alert('사용자가 성공적으로 할당되었습니다.');
+    alert('users assigned successfully');
     
     // 모달 닫기
     const modal = bootstrap.Modal.getInstance(document.getElementById('assign-user-modal'));
@@ -3480,8 +3495,8 @@ async function assignUsersToRole(roleId, userIds) {
     }
     
   } catch (error) {
-    console.error('사용자 할당 실패:', error);
-    alert('사용자 할당 중 오류가 발생했습니다: ' + error.message);
+    console.error('failed to assign users:', error);
+    alert('failed to assign users: ' + error.message);
   }
 }
 
@@ -3491,7 +3506,7 @@ window.openAssignUserModal = function() {
   const selectedRole = AppState.roles.selectedRole;
   
   if (!selectedRole) {
-    alert('먼저 역할을 선택해주세요.');
+    alert('please select role first');
     return;
   }
   
@@ -3515,7 +3530,6 @@ webconsolejs['pages/operation/workspace/roles'].assignUser = assignUser;
 // Create 모드에서 CSP Role의 Policy 목록 보기
 async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
   try {
-    console.log('Viewing policies for CSP Role:', { roleId, cspType, roleName });
     
     // Policy 목록 조회
     const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
@@ -3539,15 +3553,14 @@ async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
     policyContainer.style.display = 'block';
     
   } catch (error) {
-    console.error('CSP Role Policy 목록 조회 실패:', error);
-    alert('Policy 목록을 불러오는데 실패했습니다: ' + error.message);
+    console.error('failed to load CSP Role Policy list:', error);
+    alert('failed to load Policy list: ' + error.message);
   }
 }
 
 // Edit 모드에서 CSP Role의 Policy 목록 보기
 async function viewEditCspRolePolicies(roleId, cspType, roleName) {
   try {
-    console.log('Viewing policies for CSP Role:', { roleId, cspType, roleName });
     
     // Policy 목록 조회
     const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
@@ -3571,8 +3584,8 @@ async function viewEditCspRolePolicies(roleId, cspType, roleName) {
     policyContainer.style.display = 'block';
     
   } catch (error) {
-    console.error('CSP Role Policy 목록 조회 실패:', error);
-    alert('Policy 목록을 불러오는데 실패했습니다: ' + error.message);
+    console.error('failed to load CSP Role Policy list:', error);
+    alert('failed to load Policy list: ' + error.message);
   }
 }
 
@@ -3719,8 +3732,8 @@ async function viewPolicyDetails(policyId, policyName) {
     modal.show();
     
   } catch (error) {
-    console.error('Policy 상세 정보 조회 실패:', error);
-    alert('Policy 상세 정보를 불러오는데 실패했습니다: ' + error.message);
+    console.error('failed to load Policy details:', error);
+    alert('failed to load Policy details: ' + error.message);
   }
 }
 

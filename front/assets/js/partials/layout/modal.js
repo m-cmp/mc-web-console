@@ -313,7 +313,7 @@ function commonConfirmOk() {
     } else if (targetAction == "MciLifeCycleTerminate") {
         callMciLifeCycle('terminate')
     } else if (targetAction == "MciManagement") {
-        alert("수행할 function 정의되지 않음");
+        alert("Undefined function to perform");
     } else if (targetAction == "MoveToMciManagementFromDashboard") {
         var mciID = $("#mci_id").val();
         var targetUrl = "/operation/manages/mcimng/mngform?mciid=" + mciID;
@@ -339,7 +339,7 @@ function commonConfirmOk() {
         var targetUrl = "/operation/monitorings/mcimonitoring/mngform?mciId=" + mciID;
         changePage(targetUrl)
     } else if (targetAction == "VmLifeCycle") {
-        alert("수행할 function 정의되지 않음");
+        alert("Undefined function to perform");
     } else if (targetAction == "VmLifeCycleReboot") {
         vmLifeCycle('reboot')
     } else if (targetAction == "VmLifeCycleSuspend") {
@@ -349,7 +349,7 @@ function commonConfirmOk() {
     } else if (targetAction == "VmLifeCycleTerminate") {
         vmLifeCycle('terminate')
     } else if (targetAction == "VmManagement") {
-        alert("수행할 function 정의되지 않음");
+        alert("Undefined function to perform");
     } else if (targetAction == "AddNewVm") {
         addNewVirtualMachine()
     } else if (targetAction == "AddNewVmOfMci") {
@@ -409,7 +409,7 @@ function commonConfirmOk() {
     } else if (targetAction == "DeleteNodeGroupOfPmks") {
         deleteNodeGroupOfPmks();
     } else {
-        alert("수행할 function 정의되지 않음 " + targetAction);
+        alert("Undefined function to perform: " + targetAction);
     }
     commonConfirmClose();
 }

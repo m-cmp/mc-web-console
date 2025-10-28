@@ -175,14 +175,14 @@ async function setMonitoringMesurement() {
     } else if (respMeasurement && Array.isArray(respMeasurement)) {
       data = respMeasurement;
     } else {
-      console.error("예상치 못한 API 응답 구조:", respMeasurement);
+      console.error("Unexpected API response structure:", respMeasurement);
       data = [];
     }
-
+  
     var measurementSelect = document.getElementById("monitoring_measurement");
     
     if (!measurementSelect) {
-      console.error("monitoring_measurement 요소를 찾을 수 없습니다.");
+      console.error("monitoring_measurement element not found.");
       return;
     }
 
