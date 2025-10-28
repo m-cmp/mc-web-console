@@ -309,7 +309,7 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
 }
 
 export async function mciRecommendVm(data) {
-  var controller = "/api/" + "mc-infra-manager/" + "Recommendspec";
+  var controller = "/api/" + "mc-infra-manager/" + "recommendSpec";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
