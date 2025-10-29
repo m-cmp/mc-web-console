@@ -57,11 +57,92 @@ async function initLog() {
   ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
   if (selectedWorkspaceProject.projectId != "") {
-    //var selectedProjectId = selectedWorkspaceProject.projectId;
-    //var selectedNsId = selectedWorkspaceProject.nsId;
-    //console.log('in initMci selectedNsId:', selectedNsId);
-
+    var selectedProjectId = selectedWorkspaceProject.projectId;
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    
+    // MCI 목록 로드
+    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    getMciListCallbackSuccess(selectedProjectId, respMciList);
   }
+  
+  // 이벤트 리스너 설정
+  setupEventListeners();
+}
+
+// MCI 목록 로드 성공 시 콜백
+function getMciListCallbackSuccess(nsId, mciList) {
+  setMciList(mciList);
+}
+
+// MCI 목록을 셀렉트 박스에 설정
+function setMciList(mciList) {
+  var res_item = mciList.mci;
+
+  // res_item이 배열인지 확인
+  if (Array.isArray(res_item)) {
+    // HTML option 리스트 초기값
+    var html = '<option value="">Select</option>';
+
+    // res_item 배열을 순회하면서 각 MCI의 name을 option 태그로 변환
+    res_item.forEach(item => {
+      html += '<option value="' + item.id + '">' + item.name + '</option>';
+    });
+
+    // log_mcilist 셀렉트 박스에 옵션 추가
+    $("#log_mcilist").empty();
+    $("#log_mcilist").append(html);
+  } else {
+    console.error("res_item is not an array");
+  }
+}
+
+// MCI 선택 시 서버 목록 업데이트
+async function displayLogMci(nsId, mciId) {
+  var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+
+  var vmList = respMci.responseData.vm;
+  if (Array.isArray(vmList) && vmList.length > 0) {
+    displayServerStatusList(mciId, respMci.responseData.vm);
+  } else {
+    alert("There is no VM List !!");
+  }
+}
+
+// 서버 목록을 셀렉트 박스에 설정
+function displayServerStatusList(mciId, vmList) {
+  var res_item = vmList;
+
+  if (Array.isArray(res_item)) {
+    var html = '<option value="">Select</option>';
+
+    res_item.forEach(item => {
+      html += '<option value="' + item.id + '">' + item.name + '</option>';
+    });
+
+    // log_targetlist 셀렉트 박스에 옵션 추가
+    $("#log_targetlist").empty();
+    $("#log_targetlist").append(html);
+  } else {
+    console.error("res_item is not an array");
+  }
+}
+
+// 이벤트 리스너 설정
+function setupEventListeners() {
+  // MCI 선택 시 서버 목록 업데이트
+  $("#log_mcilist").on('change', async function () {
+    var selectedMci = $("#log_mcilist").val();
+    
+    if (selectedMci) {
+      selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+      var selectedNsId = selectedWorkspaceProject.nsId;
+      
+      displayLogMci(selectedNsId, selectedMci);
+    } else {
+      // MCI가 선택되지 않으면 서버 목록 초기화
+      $("#log_targetlist").empty().append('<option value="">Select</option>');
+    }
+  });
 }
 
 // // getLogList 호출 성공 시
@@ -340,16 +421,32 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 
 // Log 조회
 export async function getCollectedLog() {
+  var selectedMciId = $("#log_mcilist").val();
+  var selectedVmId = $("#log_targetlist").val();
+  var keyword = $("#keyword").val();
+  
+  // 선택 검증
+  if (!selectedMciId) {
+    alert("Please select a Workload");
+    return;
+  }
+  
+  if (!selectedVmId) {
+    alert("Please select a Server");
+    return;
+  }
 
-  var selectedMeasurement = $("#monitoring_measurement").val();
-  var selectedRange = $("#monitoring_range").val();
-  var selectedVMId = $("#monitoring_serverlist").val();
-  //GET_OpensearchLogs
+  // 선택된 워크스페이스 정보 가져오기
+  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  var selectedNsId = selectedWorkspaceProject.nsId;
 
+  // 실제 API 호출 (현재는 주석 처리되어 있음)
   // try{ 
-  //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
+  //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog(selectedNsId, selectedMciId, selectedVmId, keyword);
   //   getLogListCallbackSuccess(response.data.responseData)
   // }catch(e){
+  
+  // 임시 데이터 (실제 API 연동 시 제거)
   const dataObject = {
     data: [
       {
@@ -357,14 +454,14 @@ export async function getCollectedLog() {
         measurement_name: "tail",
         tag: {
           host: "2ebc9c59f973",
-          mci_id: "mc-o11y",
-          ns_id: "ns01",
+          mci_id: selectedMciId,
+          ns_id: selectedNsId,
           path: "/var/log/syslog",
-          target_id: "mc-o11y"
+          target_id: selectedVmId
         },
         tail: {
           host: "o11y",
-          message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
+          message: keyword ? `[Filtered by keyword: ${keyword}] [httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] "POST /write?db=mc-observability&rp=autogen HTTP/1.1 " 204 0 "-" "Telegraf/1.29.5 Go/1.22.0" c103937f-8d2c-11ef-8867-0242ac130009 11023` : "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
           pid: "886",
           program: "mc-o11y-influx",
           timestamp: "Nov 06 08:41:22"
@@ -374,10 +471,6 @@ export async function getCollectedLog() {
   };
   getLogListCallbackSuccess(dataObject.data)
   // }
-
-  //var respMonitoringData = response.data.responseData
-  //console.log("respMonitoringData", respMonitoringData)
-
 }
 
 function getLogListCallbackSuccess(logList) {

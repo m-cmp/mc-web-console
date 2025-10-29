@@ -65,6 +65,14 @@ async function getPolicyListCallbackSuccess(nsId, policyList) {
 
 }
 
+// Alarm 전체 목록 조회 (새로고침 기능)
+export async function refreshAlarmList() {
+    if (selectedWorkspaceProject.projectId != "") {
+        var respPolicyList = await webconsolejs["common/api/services/eventalarm_api"].getAllPolicy();
+        getPolicyListCallbackSuccess(selectedWorkspaceProject.projectId, respPolicyList);
+    }
+}
+
 function mapPolicyData(data) {
     return data.map(item => {
         // threshold 필드를 파싱하여 crit, warn, info 필드를 추출
@@ -464,3 +472,82 @@ async function getSelectedEventSeqData(selectedEventSeq) {
     $('#event_policyseq').text(selectedEventSeq["policy seq"]);
     $('#event_hostname').text(selectedEventSeq.hostname);
 }
+
+////////////////////////////////////////////////////// FILTER FUNCTIONS //////////////////////////////////////////////////////
+
+// 필터 관련 전역 변수
+var fieldEl, typeEl, valueEl;
+
+// 필터 초기화 함수
+function initFilters() {
+    fieldEl = document.getElementById("filter-field");
+    typeEl = document.getElementById("filter-type");
+    valueEl = document.getElementById("filter-value");
+}
+
+// Filter 업데이트 함수
+function updateFilter() {
+    if (!fieldEl || !typeEl || !valueEl || !policyListTable) {
+        console.warn('Filter elements or table not found');
+        return;
+    }
+    
+    var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+    var typeVal = typeEl.options[typeEl.selectedIndex].value;
+    var filterValue = valueEl.value.trim();
+    
+    if (filterValue) {
+        // Tabulator의 기본 필터 사용
+        policyListTable.setFilter(filterVal, typeVal, filterValue);
+    } else {
+        // 값이 비어있으면 필터 제거
+        policyListTable.clearFilter();
+    }
+}
+
+// Filter 초기화 함수
+function clearFilter() {
+    if (fieldEl) fieldEl.value = "name";
+    if (typeEl) typeEl.value = "like";
+    if (valueEl) valueEl.value = "";
+    if (policyListTable) policyListTable.clearFilter();
+}
+
+// 필터 이벤트 리스너 설정
+function setupFilterEventListeners() {
+    // 필터 초기화
+    initFilters();
+    
+    // Filter 이벤트 리스너
+    if (fieldEl) {
+        fieldEl.addEventListener("change", updateFilter);
+    } else {
+        console.warn('filter-field element not found');
+    }
+    
+    if (typeEl) {
+        typeEl.addEventListener("change", updateFilter);
+    } else {
+        console.warn('filter-type element not found');
+    }
+    
+    if (valueEl) {
+        valueEl.addEventListener("input", updateFilter);
+    } else {
+        console.warn('filter-value element not found');
+    }
+    
+    // Clear 버튼 이벤트 리스너
+    const filterClearBtn = document.getElementById("filter-clear");
+    if (filterClearBtn) {
+        filterClearBtn.addEventListener("click", clearFilter);
+    } else {
+        console.warn('filter-clear button not found');
+    }
+}
+
+// DOM 로드 완료 후 필터 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', function() {
+    // 약간의 지연을 두어 DOM이 완전히 로드된 후 실행
+    setTimeout(setupFilterEventListeners, 100);
+});
