@@ -1668,7 +1668,7 @@ export async function connectToClusterTerminal() {
             }
         }
 
-        await webconsolejs["common/api/services/remotecmd_api"].initClusterTerminal(
+        await webconsolejs["partials/operation/manage/remotecmd"].initClusterTerminal(
             'cluster-xterm-container',
             nsId,
             currentPmkId,
