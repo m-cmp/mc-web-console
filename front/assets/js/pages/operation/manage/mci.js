@@ -2780,7 +2780,7 @@ export async function initremotecmdModal(target) {
     currentVmId = currentSubGroupVmId;
   }
   
-  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container', nsId, currentMciId, currentVmId, 'vm') // vmStatus 별로 상태 색상 set
+  await webconsolejs["partials/operation/manage/remotecmd"].initTerminal('xterm-container', nsId, currentMciId, currentVmId, 'vm') // vmStatus 별로 상태 색상 set
   const modalElement = document.getElementById('cmdtestmodal');
   const modalInstance = new bootstrap.Modal(modalElement);
   modalInstance.show();
@@ -2801,7 +2801,7 @@ export async function initSubGroupRemoteCmdModal() {
   
   try {
     // 새로운 단발성 명령어 실행 방식으로 초기화
-    await webconsolejs["common/api/services/remotecmd_api"].initBatchCommandTerminal('subgroup-xterm-container', nsId, currentMciId, currentSubGroupId, 'subgroup');
+    await webconsolejs["partials/operation/manage/remotecmd"].initBatchCommandTerminal('subgroup-xterm-container', nsId, currentMciId, currentSubGroupId, 'subgroup');
     
     const modalElement = document.getElementById('subgroup-cmdtestmodal');
     if (modalElement) {
@@ -2826,7 +2826,7 @@ export async function initMciRemoteCmdModal() {
   
   try {
     // 새로운 단발성 명령어 실행 방식으로 초기화
-    await webconsolejs["common/api/services/remotecmd_api"].initBatchCommandTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
+    await webconsolejs["partials/operation/manage/remotecmd"].initBatchCommandTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
     
     const modalElement = document.getElementById('mci-cmdtestmodal');
     if (modalElement) {
