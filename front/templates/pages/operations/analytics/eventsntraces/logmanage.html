@@ -9,53 +9,52 @@
             </div>
   
             <div class="card-body">
-              <div class="row">
-                <div class="col d-flex justify-content-end">
-                    <div class="mb-3 d-flex align-items-center me-3">
-                        <label for="radios-inline" class="form-label me-2 mt-1">Workload</label> <!-- mt-1로 텍스트 살짝 내림 -->
-                        <input class="form-check-input me-2" type="radio" name="radios-inline" id="radio-mci">
-                        <label class="form-check-label me-4" for="radio-mci">MCI</label>
+              <div class="row g-3">
+                  <!-- Workload -->
+                  <div class="col-md-3 offset-md-6">
+                    <label for="log_mcilist" class="form-label required">Workload</label>
+                    <select class="form-select" id="log_mcilist">
+                      <option value="">Select</option>
+                    </select>
+                  </div>
 
-                        <input class="form-check-input me-2" type="radio" name="radios-inline" id="radio-pmk">
-                        <label class="form-check-label" for="radio-pmk">PMK</label>
+                  <!-- Server -->
+                  <div class="col-md-3">
+                    <label for="log_targetlist" class="form-label required">Server</label>
+                    <select class="form-select" id="log_targetlist">
+                      <option value="">Select</option>
+                    </select>
+                  </div>
+
+                <!-- Keyword and Search -->
+                <div class="col-md-12 d-flex justify-content-end">
+                    <div class="d-flex align-items-end">
+                      <div class="me-3">
+                        <label for="keyword" class="form-label">Keyword</label>
+                        <input class="form-control" id="keyword" placeholder="Enter keyword to search" />
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          onclick="webconsolejs['pages/operation/analytics/logmanage'].getCollectedLog()"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                            <path d="M21 21l-6 -6"></path>
+                          </svg>
+                          Search
+                        </button>
+                      </div>
                     </div>
                 </div>
-             </div>
 
-              <div class="col d-flex justify-content-end">
-                <!-- Workload -->
-                <div class="mb-3 d-flex align-items-center me-3">
-
-                  <select class="form-select" id="log_mcilist">
-                    <option value="">Choose a Target Workload for Monitoring</option>
-                    <option value="mci01">mci01</option>
-                  </select>
-                  <select class="form-select" name="" id="log_targetlist">
-                    <option value="">Choose a Target</option>      
-                    <option value="vm01">vm01</option>      
-                  </select>
-                </div>
+                
               </div>
 
-              <div class="col d-flex justify-content-end">
-                <!-- Keyword -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                    <label class="col-3 col-form-label text-end me-2">Keyword</label> <!-- me-2로 간격 추가 -->
-                    <div class="col">
-                        <input class="form-control" name="" id="keyword" />
-                    </div>
-                    <div class="col-auto">
-                        <a class="btn btn-icon" aria-label="Button" onclick="webconsolejs['pages/operation/analytics/logmanage'].getCollectedLog()">
-                            <!-- Download SVG icon from http://tabler-icons.io/i/search -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                <path d="M21 21l-6 -6"></path>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-              </div>
+
+
 
             </div>
             <div class="card-body">
@@ -337,4 +336,5 @@ Timestamp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
   
   <%= javascriptTag("pages/operation/analytics/logmanage.js") %> 
   <%= javascriptTag("common/api/services/monitoring_api.js") %>
+  <%= javascriptTag("common/api/services/mci_api.js") %>
   

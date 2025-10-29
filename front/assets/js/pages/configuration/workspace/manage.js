@@ -244,7 +244,7 @@ function getWorkspaceListCallbackSuccess(workspaceList) {
 export async function deleteWorkspace() {
 
   if (checked_array.length == 0 || checked_array.length > 1) {
-    alert(" 1개만 선택 하세요 ")
+    alert("please select only one workspace");
     return;
   }
 

@@ -1161,7 +1161,7 @@
 </div>
 
 <!-- remote command -->
-<%= javascriptTag("common/api/services/remotecmd_api.js") %>
+<%= javascriptTag("partials/operation/manage/remotecmd.js") %>
 
 <!-- Cluster Terminal Modal -->
 <div
@@ -1183,28 +1183,53 @@
         ></button>
       </div>
 
-      <div class="modal-body p-0" id="cluster-cmdtestmodal-content">
-        <div id="cluster-xterm-container"></div>
-      </div>
-
-      <div class="modal-body p-0" id="cluster-cmdtestmodal-content">
-        <div class="accordion" id="cluster-command-example-accordion">
+      <div class="modal-body p-0">
+        <div class="accordion" id="cluster-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
           <div class="accordion-item">
-            <h2 class="accordion-header" id="cluster-heading-1">
+            <h2 class="accordion-header" id="cluster-terminal-heading">
+              <button
+                class="accordion-button"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#cluster-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="cluster-terminal-collapse"
+              >
+                Command
+              </button>
+            </h2>
+            <div
+              id="cluster-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="cluster-terminal-heading"
+              data-bs-parent="#cluster-terminal-accordion"
+            >
+              <div class="accordion-body p-0">
+                <div id="cluster-xterm-container"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cluster-transfer-heading">
               <button
                 class="accordion-button collapsed"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#cluster-collapse-1"
+                data-bs-target="#cluster-transfer-collapse"
                 aria-expanded="false"
+                aria-controls="cluster-transfer-collapse"
               >
-              Transfer a file
+                Transfer a file
               </button>
             </h2>
             <div
-              id="cluster-collapse-1"
+              id="cluster-transfer-collapse"
               class="accordion-collapse collapse"
-              data-bs-parent="#cluster-command-example-accordion"
+              aria-labelledby="cluster-transfer-heading"
+              data-bs-parent="#cluster-terminal-accordion"
             >
               <div class="accordion-body pt-0">
                 <div class="d-grid gap-2">

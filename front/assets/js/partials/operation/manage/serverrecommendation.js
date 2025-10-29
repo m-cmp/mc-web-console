@@ -226,7 +226,7 @@ export async function getRecommendVmInfo() {
 		if (acceleratorCountMin != "" || acceleratorCountMax != "") {
 
 			if (acceleratorCountMax != "" && acceleratorCountMax < acceleratorCountMin) {
-				alert("최대값이 최소값보다 작습니다.")
+				alert("Maximum value is less than minimum value.")
 			}
 
 			if (acceleratorCountMin === "") {
@@ -257,7 +257,7 @@ export async function getRecommendVmInfo() {
 		if (acceleratorMemoryMin != "" || acceleratorMemoryMax != "") {
 
 			if (acceleratorMemoryMax != "" && acceleratorMemoryMax < acceleratorMemoryMin) {
-				alert("최대값이 최소값보다 작습니다.")
+				alert("Maximum value is less than minimum value.")
 			}
 
 			if (acceleratorMemoryMin === "") {
@@ -315,7 +315,7 @@ export async function getRecommendVmInfo() {
 	if (cpuMinVal != "" || cpuMaxVal != "") {
 
 		if (cpuMaxVal != "" && cpuMaxVal < cpuMinVal) {
-			alert("최대값이 최소값보다 작습니다.")
+			alert("Maximum value is less than minimum value.")
 		}
 
 		if (cpuMinVal === "") {
@@ -345,7 +345,7 @@ export async function getRecommendVmInfo() {
 	if (memoryMinVal != "" || memoryMaxVal != "") {
 
 		if (memoryMaxVal != "" && memoryMaxVal < memoryMinVal) {
-			alert("최대값이 최소값보다 작습니다.")
+			alert("Maximum value is less than minimum value.")
 		}
 
 		if (memoryMinVal === "") {
@@ -375,7 +375,7 @@ export async function getRecommendVmInfo() {
 	if (costMinVal != "" || costMaxVal != "") {
 
 		if (costMaxVal != "" && costMaxVal < costMinVal) {
-			alert("최대값이 최소값보다 작습니다.")
+			alert("Maximum value is less than minimum value.")
 		}
 
 		if (costMinVal === "") {
@@ -438,13 +438,7 @@ export async function getRecommendVmInfo() {
 		// TODO : Error 표시
 		return
 	}
-	recommendVmSpecListObj = respData.responseData
-	
-	// 첫 번째 spec의 구조를 자세히 로깅
-	if (respData.responseData && respData.responseData.length > 0) {
-		console.log("First spec keys:", Object.keys(respData.responseData[0]));
-	}
-	
+	recommendVmSpecListObj = respData.responseData	
 	recommendTable.setData(recommendVmSpecListObj)
 
 }

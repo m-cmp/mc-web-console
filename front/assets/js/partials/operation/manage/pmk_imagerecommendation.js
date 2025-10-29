@@ -21,7 +21,7 @@ export function initImageModalPmk() {
 	// 모달 요소 확인
 	var imageModal = document.getElementById('image-search-pmk');
 	if (!imageModal) {
-		console.error("PMK Image 모달 요소를 찾을 수 없습니다!");
+		console.error("Could not find PMK Image modal element!");
 		return;
 	}
 	
@@ -279,7 +279,7 @@ export async function applyImageInfoPmk() {
 
 		imageSelectionCallbackPmk(selectedImage);
 	} else {
-		console.warn("PMK 이미지 선택 콜백 함수가 설정되지 않음");
+		console.warn("Image selection callback function not set");
 	}
 	
 
