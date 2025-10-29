@@ -50,7 +50,6 @@ var checked_array = [];
 const Utils = {
   showAlert(message, type = 'info') {
     // Bootstrap alert 또는 toast 메시지 표시
-    console.log(`${type.toUpperCase()}: ${message}`);
   },
   
   formatDate(dateString) {
@@ -402,7 +401,7 @@ const TableManager = {
       // 테이블 요소 확인
       const tableElement = DOM.usersTable;
       if (!tableElement) {
-        console.error("users-table 요소를 찾을 수 없습니다.");
+        console.error("users-table element not found");
         reject(new Error("Table element not found"));
         return;
       }
@@ -444,7 +443,7 @@ const TableManager = {
         });
 
       } catch (error) {
-        console.error("테이블 초기화 중 오류 발생:", error);
+        console.error("Error occurred while initializing table:", error);
         reject(error);
       }
     });
@@ -572,7 +571,7 @@ const ModalManager = {
       
       this.populateRoleSelect(roles);
     } catch (error) {
-      console.error("역할 목록 로드 실패:", error);
+      console.error("Failed to load role list:", error);
     }
   },
 
@@ -655,13 +654,13 @@ window.createUser = async function() {
     await initUsers();
     
   } catch (error) {
-    console.error('유저 생성 중 오류:', error);
+    console.error('Error creating user:', error);
   }
 };
 
 window.addUserRole = async function() {
   if (!AppState.users.selectedUser) {
-    Utils.showAlert('유저를 선택해주세요.');
+    Utils.showAlert('Please select a user.');
     return;
   }
 
@@ -669,7 +668,7 @@ window.addUserRole = async function() {
   const roleId = DOM.roleMappingRole.value;
 
   if (!roleType || !roleId) {
-    Utils.showAlert('역할 타입과 역할을 선택해주세요.');
+    Utils.showAlert('Please select role type and role.');
     return;
   }
 
@@ -699,13 +698,13 @@ window.addUserRole = async function() {
     }
     
   } catch (error) {
-    console.error('역할 추가 중 오류:', error);
+    console.error('Error adding role:', error);
   }
 };
 
 window.addUserRole = async function(roleType) {
   if (!AppState.users.selectedUser) {
-    Utils.showAlert('유저를 선택해주세요.');
+    Utils.showAlert('Please select a user.');
     return;
   }
 
@@ -719,18 +718,18 @@ window.addUserRole = async function(roleType) {
 
 window.removeUserRole = async function(roleId) {
   if (!AppState.users.selectedUser) {
-    Utils.showAlert('유저를 선택해주세요.');
+    Utils.showAlert('Please select a user.');
     return;
   }
 
-  if (confirm('이 역할을 제거하시겠습니까?')) {
+  if (confirm('Are you sure you want to remove this role?')) {
     try {
       await webconsolejs["common/api/services/users_api"].removeUserRole(
         AppState.users.selectedUser.id, 
         roleId
       );
       
-      Utils.showAlert('역할이 성공적으로 제거되었습니다.');
+      Utils.showAlert('Role removed successfully.');
       
       // 유저 상세 정보 새로고침
       const userDetails = await UserManager.loadUserDetails(AppState.users.selectedUser.id);
@@ -743,7 +742,7 @@ window.removeUserRole = async function(roleId) {
       }
       
     } catch (error) {
-      console.error('역할 제거 중 오류:', error);
+      console.error('Error removing role:', error);
     }
   }
 };
@@ -751,11 +750,11 @@ window.removeUserRole = async function(roleId) {
 // Workspace 제거 함수
 window.removeUserWorkspace = async function(workspaceId) {
   if (!AppState.users.selectedUser) {
-    Utils.showAlert('유저를 선택해주세요.');
+    Utils.showAlert('Please select a user.');
     return;
   }
 
-  if (confirm('이 워크스페이스를 제거하시겠습니까?')) {
+  if (confirm('Are you sure you want to remove this workspace?')) {
     try {
       // TODO: Workspace 제거 API 호출 (API가 구현되면 추가)
       // await webconsolejs["common/api/services/users_api"].removeUserWorkspace(
@@ -763,15 +762,15 @@ window.removeUserWorkspace = async function(workspaceId) {
       //   workspaceId
       // );
       
-      Utils.showAlert('워크스페이스가 성공적으로 제거되었습니다.');
+      Utils.showAlert('Workspace removed successfully.');
       
       // Workspace 정보 새로고침
       const workspaceData = await webconsolejs["common/api/services/users_api"].getUserWorkspacesByUserID(AppState.users.selectedUser.id);
       updateWorkspaceInfo(workspaceData);
       
     } catch (error) {
-      console.error('워크스페이스 제거 중 오류:', error);
-      Utils.showAlert('워크스페이스 제거 중 오류가 발생했습니다.');
+      console.error('Error removing workspace:', error);
+      Utils.showAlert('An error occurred while removing workspace.');
     }
   }
 };
@@ -780,25 +779,25 @@ window.removeUserWorkspace = async function(workspaceId) {
 window.deleteUsers = async function() {
   
   if (checked_array.length === 0) {
-    alert("삭제할 유저를 선택해주세요.");
+    alert("Please select users to delete.");
     return;
   }
 
-  if (confirm(`선택된 ${checked_array.length}명의 유저를 삭제하시겠습니까?`)) {
+  if (confirm(`Are you sure you want to delete ${checked_array.length} selected users?`)) {
     try {
       // 선택된 모든 유저 삭제
       for (const user of checked_array) {
         await UserManager.deleteUser(user.id);
       }
       
-      alert("선택된 유저들이 성공적으로 삭제되었습니다.");
+      alert("Selected users deleted successfully.");
       
       // 유저 목록 새로고침
       await initUsers();
       
     } catch (error) {
-      console.error('유저 삭제 중 오류:', error);
-      alert('유저 삭제 중 오류가 발생했습니다: ' + error.message);
+      console.error('Error deleting users:', error);
+      alert('An error occurred while deleting users: ' + error.message);
     }
   }
 };
@@ -834,12 +833,12 @@ async function getSelectedUserData(userID) {
       // Workspace 정보를 테이블에 업데이트
       updateWorkspaceInfo(workspaceData);
     } catch (workspaceError) {
-      console.error("Workspace 정보 로드 실패:", workspaceError);
+      console.error("Failed to load workspace information:", workspaceError);
       // Workspace 정보 로드 실패 시 빈 배열로 설정
       updateWorkspaceInfo([]);
     }
   } catch (error) {
-    console.error("유저 정보 로드 실패:", error);
+    console.error("Failed to load user information:", error);
   }
 }
 
@@ -1046,6 +1045,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     await initUsers();
   } catch (error) {
-    console.error("초기화 중 오류 발생:", error);
+    console.error("Error occurred during initialization:", error);
   }
 });

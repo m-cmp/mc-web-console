@@ -118,6 +118,7 @@ export function mciLifeCycle(type, currentMciId, nsId) {
     controller,
     data
   );
+  return response;
 }
 
 export function mciDelete(currentMciId, nsId) {
@@ -136,6 +137,7 @@ export function mciDelete(currentMciId, nsId) {
     controller,
     data
   );
+  return response;
 }
 
 export function vmDelete(mciId, nsId, vmId) {
@@ -154,7 +156,7 @@ export function vmDelete(mciId, nsId, vmId) {
     controller,
     data
   );
-
+  return response;
 }
 
 // vmLifeCycle 제어 option : reboot / suspend / resume / terminate
@@ -175,7 +177,7 @@ export function vmLifeCycle(type, mciId, nsId, vmid) {
     controller,
     data
   );
-
+  return response;
 }
 
 export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_Arr, nsId) {
@@ -268,7 +270,7 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     data
   );
 
-  alert("생성요청 완료");
+  alert("Creation request completed");
   var urlParamMap = new Map();
 
   // 생성요청했으므로 결과를 기다리지 않고 mciList로 보냄
@@ -307,7 +309,6 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
 }
 
 export async function mciRecommendVm(data) {
-  //var controller = "/api/" + "mc-infra-manager/" + "RecommendVm";
   var controller = "/api/" + "mc-infra-manager/" + "recommendSpec";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -708,7 +709,7 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
     data
   )
 
-  alert("생성요청 완료")
+  alert("Creation request completed");
   window.location = "/webconsole/operations/manage/workloads/mciworkloads"
 
 }
@@ -765,7 +766,6 @@ export async function createPolicy(nsId, mciId, policy) {
     alert("Project has not set")
     return;
   }
-console.log("policy", policy)
   let data = {
     pathParams: {
       nsId: nsId,

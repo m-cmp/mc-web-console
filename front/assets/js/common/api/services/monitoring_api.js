@@ -1,13 +1,17 @@
 export async function getPlugIns() {
+  try {
+    var controller = "/api/" + "mc-observability/" + "Getplugins";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+    )
+    
+    var respMeasureMent = response.data.responseData;
 
-  var controller = "/api/" + "mc-observability/" + "Getplugins";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-  )
-
-  var respMeasureMent = response.data.responseData;
-
-  return respMeasureMent
+    return respMeasureMent
+  } catch (error) {
+    console.error("Error occurred while getting plugins:", error);
+    throw error;
+  }
 }
 
 export async function getInfluxDBMetrics(measurement, range, vmId) {
@@ -40,6 +44,7 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
     }
   }
 
+  // var controller = "/api/" + "mc-observability/" + "GETInfluxDBMetrics";
   var controller = "/api/" + "mc-observability/" + "GETInfluxDBMetrics";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,

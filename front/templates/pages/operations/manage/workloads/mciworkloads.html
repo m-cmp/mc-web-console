@@ -748,6 +748,7 @@
                   name="extend_mci_name"
                   id="extend_mci_name"
                   value=""
+                  readonly
                 />
               </div>
 
@@ -759,6 +760,7 @@
                   name="extend_mci_desc"
                   id="extend_mci_desc"
                   placeholder="type Description"
+                  readonly
                 ></textarea>
               </div>
 
@@ -1188,7 +1190,7 @@
 <!-- end of page-body -->
 
 <!-- remote commnad -->
-<%= javascriptTag("common/api/services/remotecmd_api.js") %>
+<%= javascriptTag("partials/operation/manage/remotecmd.js") %>
 
 <!-- MCI Terminal Modal -->
 <div
@@ -1210,28 +1212,82 @@
         ></button>
       </div>
 
-      <div class="modal-body p-0" id="mci-cmdtestmodal-content">
-        <div id="mci-xterm-container"></div>
-      </div>
-
-      <div class="modal-body p-0" id="mci-cmdtestmodal-content">
-        <div class="accordion" id="mci-command-example-accordion">
+      <div class="modal-body p-0">
+        <div class="accordion" id="mci-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
           <div class="accordion-item">
-            <h2 class="accordion-header" id="mci-heading-1">
+            <h2 class="accordion-header" id="mci-terminal-heading">
               <button
-                class="accordion-button collapsed modal-title"
+                class="accordion-button"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#mci-collapse-1"
+                data-bs-target="#mci-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="mci-terminal-collapse"
+              >
+              Execute Commands
+              </button>
+            </h2>
+            <div
+              id="mci-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="mci-terminal-heading"
+              data-bs-parent="#mci-terminal-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <!-- Command Input Section -->
+                <div id="mci-command-input-section">
+                  <div class="mb-3">
+                    <label for="mci-command-input" class="form-label"></label>
+                    <textarea 
+                      class="form-control" 
+                      id="mci-command-input" 
+                      placeholder="Enter command to execute on all VMs..."
+                      rows="3"
+                    ></textarea>
+                    <div class="form-text">Command will be executed on all VMs in this MCI</div>
+                  </div>
+                  
+                  <div class="d-grid gap-2">
+                    <button
+                      id="mci-execute-command-btn"
+                      class="btn btn-primary"
+                      type="button"
+                    >
+                      Execute
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Command Results Section (initially hidden) -->
+                <div id="mci-command-results-section" style="display: none;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Execution Result/Output</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="mci-transfer-heading">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mci-transfer-collapse"
                 aria-expanded="false"
+                aria-controls="mci-transfer-collapse"
               >
                 Transfer a file
               </button>
             </h2>
             <div
-              id="mci-collapse-1"
+              id="mci-transfer-collapse"
               class="accordion-collapse collapse"
-              data-bs-parent="#mci-command-example-accordion"
+              aria-labelledby="mci-transfer-heading"
+              data-bs-parent="#mci-terminal-accordion"
             >
               <div class="accordion-body pt-0">
                 <!-- Path 입력 필드 추가 -->
@@ -1252,6 +1308,8 @@
                     id="mci-show-content-btn"
                     class="btn btn-primary"
                     type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mci-transfer-collapse"
                   >
                     Transfer File
                   </button>
@@ -1277,8 +1335,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          Disconnect
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
         </button>
       </div>
     </div>
@@ -1377,6 +1435,128 @@
           onclick="webconsolejs['pages/operation/manage/mci'].saveLabels()"
         >
           Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VM Terminal Modal -->
+<div
+  class="modal modal-blur fade"
+  id="cmdtestmodal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cmdtestmodal-title">Remote Terminal</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="accordion" id="server-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="server-terminal-heading">
+              <button
+                class="accordion-button"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#server-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="server-terminal-collapse"
+              >
+                Command
+              </button>
+            </h2>
+            <div
+              id="server-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="server-terminal-heading"
+              data-bs-parent="#server-terminal-accordion"
+            >
+              <div class="accordion-body p-0">
+                <div id="xterm-container"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="server-transfer-heading">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#server-transfer-collapse"
+                aria-expanded="false"
+                aria-controls="server-transfer-collapse"
+              >
+                Transfer a file
+              </button>
+            </h2>
+            <div
+              id="server-transfer-collapse"
+              class="accordion-collapse collapse"
+              aria-labelledby="server-transfer-heading"
+              data-bs-parent="#server-terminal-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <!-- Path 입력 필드 추가 -->
+                <div class="mb-3">
+                  <label for="file-path-input" class="form-label">Target Path</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="file-path-input" 
+                    placeholder="/tmp/" 
+                    value="/tmp/"
+                  >
+                  <div class="form-text">Directory path where the file will be stored</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button
+                    id="show-content-btn"
+                    class="btn btn-primary"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#server-transfer-collapse"
+                  >
+                    Transfer File
+                  </button>
+                </div>
+                <form
+                  class="dropzone dz-clickable"
+                  id="dropzone-custom"
+                  action="./"
+                  autocomplete="off"
+                  novalidate=""
+                >
+                  <div class="dz-message">
+                    <h3 class="dropzone-msg-title">Drop Down Files</h3>
+                    <span class="dropzone-msg-desc"
+                      >Upload files (Max 10MB): .txt, .json, .yaml, .conf, .log, .sh</span
+                    >
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
         </button>
       </div>
     </div>
