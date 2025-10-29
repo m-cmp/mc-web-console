@@ -246,72 +246,53 @@ function initLogTable() {
     },
     {
       title: "NS",
-      field: "tag",
-      formatter: tagNsIdFormatter,
+      field: "labels",
+      formatter: labelsNsIdFormatter,
       vertAlign: "middle"
     },
     {
       title: "MCI",
-      field: "tag",
-      formatter: tagMciIdFormatter,
+      field: "labels",
+      formatter: labelsMciIdFormatter,
       vertAlign: "middle"
     },
     {
-      title: "Target",
-      field: "tag",
-      formatter: tagTargetIdFormatter,
+      title: "VM",
+      field: "labels",
+      formatter: labelsVMIdFormatter,
       vertAlign: "middle"
     },
     {
       title: "Host",
-      field: "tail",
-      formatter: tailHostFormatter,
-      vertAlign: "middle"
-    },
-    {
-      title: "PID",
-      field: "tail",
-      formatter: tailPidFormatter,
-      vertAlign: "middle"
-    },
-    {
-      title: "Program",
-      field: "tail",
-      formatter: tailprogramFormatter,
+      field: "labels",
+      formatter: labelsHostFormatter,
       vertAlign: "middle"
     },
     {
       title: "Timestamp",
-      field: "tail",
-      formatter: tailTimestampFormatter,
+      field: "timestamp",
       vertAlign: "middle"
     },
     {
-      title: "Message",
-      field: "tail",
-      formatter: tailMessageFormatter,
+      title: "Value",
+      field: "value",
       vertAlign: "middle"
-    },
+    }
   ];
 
-  // {
-  //   "@timestamp": "2024-10-18T08:41:22.820224306Z",
-  //   measurement_name: "tail",
-  //   tag: {
-  //     host: "2ebc9c59f973",
-  //     mci_id: "mc-o11y",
-  //     ns_id: "",
-  //     path: "/var/log/syslog",
-  //     target_id: "mc-o11y"
-  //   },
-  //   tail: {
-  //     host: "o11y",
-  //     message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
-  //     pid: "886",
-  //     program: "mc-o11y-influx",
-  //     timestamp: "Oct 18 08:41:22"
-  //   }
-  // }
+  //  {
+  //    "labels": {
+  //      "MCI_ID": "mci01",
+  //      "NS_ID": "test01",
+  //      "VM_ID": "vm-1",
+  //      "host": "d4127tlb7ccc738sedbg",
+  //      "level": "UNKNOWN",
+  //      "service": "systemd",
+  //      "source": "syslog"
+  //    },
+  //    "timestamp": 1.761802223E18,
+  //    "value": "{\"level\":\"UNKNOWN\",\"pid\":\"1\",\"filename\":\"syslog\",\"source\":\"syslog\",\"host\":\"d4127tlb7ccc738sedbg\",\"time\":\"Oct 30 14:30:23\",\"message\":\"Finished system activity accounting tool.\",\"service\":\"systemd\"}"
+  //  }
   logListTable = setLogTabulator("loglist-table", tableObjParams, columns, true);
 
   // 행 클릭 시
@@ -324,47 +305,21 @@ function initLogTable() {
   });
 }
 
-// tag와 tail에 모두 host가 있어 function name에 prefix를 줌.
-function tagHostFormatter(cell) {
+function labelsHostFormatter(cell) {
   var row = cell.getData()
-  return row.tag.host;
+  return row.labels.host;
 }
-function tagNsIdFormatter(cell) {
+function labelsNsIdFormatter(cell) {
   var row = cell.getData()
-  return row.tag.ns_id;
+  return row.labels.NS_ID;
 }
-function tagMciIdFormatter(cell) {
+function labelsMciIdFormatter(cell) {
   var row = cell.getData()
-  return row.tag.mci_id;
+  return row.labels.MCI_ID;
 }
-function tagTargetIdFormatter(cell) {
+function labelsVMIdFormatter(cell) {
   var row = cell.getData()
-  return row.tag.target_id;
-}
-function tagPathFormatter(cell) {
-  var row = cell.getData()
-  return row.tag.path;
-}
-
-function tailHostFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.host;
-}
-function tailPidFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.pid;
-}
-function tailprogramFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.program;
-}
-function tailTimestampFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.timestamp;
-}
-function tailMessageFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.message;
+  return row.labels.VM_ID;
 }
 
 // toggleSelectBox of table row
@@ -424,13 +379,13 @@ export async function getCollectedLog() {
   var selectedMciId = $("#log_mcilist").val();
   var selectedVmId = $("#log_targetlist").val();
   var keyword = $("#keyword").val();
-  
+
   // 선택 검증
   if (!selectedMciId) {
     alert("Please select a Workload");
     return;
   }
-  
+
   if (!selectedVmId) {
     alert("Please select a Server");
     return;
@@ -440,42 +395,45 @@ export async function getCollectedLog() {
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
   var selectedNsId = selectedWorkspaceProject.nsId;
 
-  // 실제 API 호출 (현재는 주석 처리되어 있음)
-  // try{ 
-  //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog(selectedNsId, selectedMciId, selectedVmId, keyword);
-  //   getLogListCallbackSuccess(response.data.responseData)
-  // }catch(e){
-  
-  // 임시 데이터 (실제 API 연동 시 제거)
-  const dataObject = {
-    data: [
-      {
-        "@timestamp": "2024-11-06T08:41:22.820224306Z",
-        measurement_name: "tail",
-        tag: {
-          host: "2ebc9c59f973",
-          mci_id: selectedMciId,
-          ns_id: selectedNsId,
-          path: "/var/log/syslog",
-          target_id: selectedVmId
-        },
-        tail: {
-          host: "o11y",
-          message: keyword ? `[Filtered by keyword: ${keyword}] [httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] "POST /write?db=mc-observability&rp=autogen HTTP/1.1 " 204 0 "-" "Telegraf/1.29.5 Go/1.22.0" c103937f-8d2c-11ef-8867-0242ac130009 11023` : "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
-          pid: "886",
-          program: "mc-o11y-influx",
-          timestamp: "Nov 06 08:41:22"
-        }
-      }
-    ]
-  };
-  getLogListCallbackSuccess(dataObject.data)
-  // }
+  try{
+    console.log("Fetching log data...", { nsId: selectedNsId, mciId: selectedMciId, vmId: selectedVmId, keyword: keyword });
+    var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog(selectedNsId, selectedMciId, selectedVmId, keyword);
+
+    console.log("Full response:", response);
+    console.log("Response data:", response.data);
+    console.log("Response data.responseData:", response.data?.responseData);
+
+    if (response && response.data && response.data.responseData && response.data.responseData.data && response.data.responseData.data.data) {
+      getLogListCallbackSuccess(response.data.responseData.data.data);
+    } else {
+      console.error("Invalid response structure:", response);
+      alert("Failed to load log data: Invalid response structure");
+    }
+  }catch(e){
+    console.error("Error fetching log data:", e);
+    alert("Error fetching log data: " + e.message);
+  }
 }
 
 function getLogListCallbackSuccess(logList) {
-  logListTable.setData(logList);
+  console.log("Setting table data:", logList);
+  console.log("Is logList an array?", Array.isArray(logList));
+  console.log("logList length:", logList?.length);
 
+  if (!logList) {
+    console.error("logList is null or undefined");
+    alert("No log data available");
+    return;
+  }
+
+  if (!Array.isArray(logList)) {
+    console.error("logList is not an array:", typeof logList);
+    alert("Invalid log data format");
+    return;
+  }
+
+  logListTable.setData(logList);
+  console.log("Table data set successfully");
 }
 
 async function getSelectedLogData(selectedLogData) {

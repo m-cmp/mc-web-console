@@ -5,52 +5,67 @@ export async function getPlugIns() {
       controller,
     )
     
-    var respMeasureMent = response.data.responseData;
+    var respMeasurement = response.data.responseData;
 
-    return respMeasureMent
+    return respMeasurement
   } catch (error) {
     console.error("Error occurred while getting plugins:", error);
     throw error;
   }
 }
 
-export async function getInfluxDBMetrics(measurement, range, vmId) {
+export async function getMeasurementFields() {
+    try {
+        var controller = "/api/" + "mc-observability/" + "GetMeasurementFields";
+        const response = await webconsolejs["common/api/http"].commonAPIPost(
+            controller,
+        )
 
+        var respMeasurementFields = response.data.responseData;
+
+        return respMeasurementFields
+    } catch (error) {
+        console.error("Error occurred while getting measurement fields:", error);
+        throw error;
+    }
+}
+
+export async function getInfluxDBMetrics(measurement, metric, range, period, nsId, mciId, vmId) {
   const data = {
-
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      vmId: vmId,
+    },
     Request: {
       "measurement": measurement,
-      // "measurement": "cpu",
       "range": range,
-      // "range": "1h",
-      "group_time": "3h",
+      "group_time": period,
       "group_by": [
-        "target_id"
-        // "cpu"
+        "vm_id"
       ],
-      "limit": 10,
+      "limit": 20,
       "fields": [
         {
           "function": "mean",
-          "field": "usage_idle"
+          "field": metric
         }
       ],
       "conditions": [
-        {
-          "key": "target_id",
-          "value": vmId
-        }
+        // {
+        //   "key": "cpu",
+        //   "value": "cpu-total"
+        // }
       ]
     }
   }
 
-  // var controller = "/api/" + "mc-observability/" + "GETInfluxDBMetrics";
-  var controller = "/api/" + "mc-observability/" + "GETInfluxDBMetrics";
+  var controller = "/api/" + "mc-observability/" + "GetMetricsByVMId";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-  if (!response) {
+  if (!response) { // Return CPU dummy data if not available
     return {
       "responseData": {
         "data": [
@@ -304,52 +319,17 @@ export async function monitoringPrediction() {
 }
 
 // Log 조회.
-//      limit : 가져올 row 갯수 
-//      range : ??
-//      conditions :
-//          key:"tag.ns_id", value:""       -> value는 선택된 nsId
-//          key:"tag.mci_id", value:""      -> value는 선택된 mciId
-//          key:"tag.target_id", value:""   -> value는 선택된 vmId
-
-//          key:"tail.message", value:""    -> value는 filter하고자 하는 keyword
-export async function getMonitoringLog(nsId, mciId, targetId, keyword) {
-  //GET_OpensearchLogs
-
-  const data = {}
-  let request = {}
-  let conditions = new Array();
-  if (nsId != "") {
-    let aCondition = {}
-    aCondition.key = "tag.ns_id";
-    aCondition.value = nsId;
-    conditions.push(aCondition)
-  }
-  if (mciId != "") {
-    let aCondition = {}
-    aCondition.key = "tag.mci_id";
-    aCondition.value = mciId;
-    conditions.push(aCondition)
-  }
-  if (targetId != "") {
-    let aCondition = {}
-    aCondition.key = "tag.target_id";
-    aCondition.value = targetId;
-    conditions.push(aCondition)
-  }
-  if (keyword != "") {
-    let aCondition = {}
-    aCondition.key = "tail.message";
-    aCondition.value = keyword
-    conditions.push(aCondition)
+export async function getMonitoringLog(nsId, mciId, vmId, keyword) {
+    var query = "{NS_ID=\"" + nsId + "\", MCI_ID=\"" + mciId + "\", VM_ID=\"" + vmId + "\"} |~ \"(?i)" + keyword + "\""
+    const data = {
+    queryParams: {
+      "query": query,
+      "limit": "20",
+    },
   }
 
-  //request.range = ""
-  request.limit = 100;
-  request.conditions = conditions;
-  data.request = request;
 
-
-  var controller = "/api/" + "mc-observability/" + "GETOpensearchLogs";
+  var controller = "/api/" + "mc-observability/" + "LogRangeQuery";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -416,9 +396,9 @@ export async function getDetectionHistory() {
 }
 
 // 모니터링 Agent가 설치된 vm 목록 by ns, mci
-export async function getTargetsNsMci(nsId, mciId) {
+export async function getVMByNsMci(nsId, mciId) {
 
-  var controller = "/api/" + "mc-observability/" + "GetTargetsNSMCI";
+  var controller = "/api/" + "mc-observability/" + "GetVMByNsMci";
   let data = {
     pathParams: {
       nsId: nsId,
@@ -437,13 +417,13 @@ export async function getTargetsNsMci(nsId, mciId) {
 }
 
 export async function InstallMonitoringAgent(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "PostTarget";
+  var controller = "/api/" + "mc-observability/" + "PostVM";
   
   let data = {
     pathParams: {
       nsId: nsId,
       mciId: mciId,
-      targetId: vmId,
+      vmId: vmId,
     },
     request: {
       name:vmId
@@ -460,7 +440,7 @@ export async function InstallMonitoringAgent(nsId, mciId, vmId){
 }
 
 export async function UninstallMonitoringAgent(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "DeleteTarget";
+  var controller = "/api/" + "mc-observability/" + "DeleteVM";
   
   let data = {
     pathParams: {
@@ -479,14 +459,14 @@ export async function UninstallMonitoringAgent(nsId, mciId, vmId){
   
 }
 
-export async function GetMonitoringTarget(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "Gettarget";
+export async function GetMonitoringVM(nsId, mciId, vmId){
+  var controller = "/api/" + "mc-observability/" + "GetVM";
   
   let data = {
     pathParams: {
       nsId: nsId,
       mciId: mciId,
-      targetId: vmId,
+      vmId: vmId,
     },
   };
 
@@ -500,13 +480,13 @@ export async function GetMonitoringTarget(nsId, mciId, vmId){
 }
 
 export async function GetMetricitems(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "Getitems";
+  var controller = "/api/" + "mc-observability/" + "GetMonitoringItems";
   
   let data = {
     pathParams: {
       nsId: nsId,
       mciId: mciId,
-      targetId: vmId,
+      vmId: vmId,
     },
   };
 

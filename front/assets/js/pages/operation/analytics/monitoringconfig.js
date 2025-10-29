@@ -90,10 +90,6 @@ var currentServernodeId = "-1";
 var monitorConfigListTable;
 var monitorMetricsTable;
 var editMetricsModalTable;
-var monitorLogTraceTable;
-var editLogCollectorModalTable;
-var monitorStoragesTable;
-var editStorageModalTable;
 
 //DOMContentLoaded 는 Page에서 1개만.
 // init + 파일명 () : ex) initMci() 를 호출하도록 한다.
@@ -124,10 +120,6 @@ async function initMonitorConfig() {
   initMonitorConfigTable();
   initMonitorMetricsTable();
   initEditMetricsModalTable();
-  initmonitorLogTraceTable();
-  initEditLogCollectorModalTable();
-  initMonitorStoragesTable();
-  initEditStorageModalTable();
 }
 
 // workload 목록 조회 ( mci + pmk )
@@ -166,32 +158,39 @@ $("#workloadlist").on('change', async function () {
       var aVm = aMci.vm[vmIndex]
       aVm.workloadType = "MCI"; // [MCI/PMK]
       aVm.workloadName = currentWorkloadName;
-      aVm.monAgentStatus = "Not Installed";
+      aVm.monitoringAgentStatus = "Not Installed";
+      aVm.logAgentStatus = "Not Installed";
       vmMap.set(aVm.id, aVm);
     }
     // 2. mci에 agent 설치된 목록 조회
-    var monitorTargetList = await webconsolejs["common/api/services/monitoring_api"].getTargetsNsMci(currentNsId, currentWorkloadId)
+    var monitorTargetList = await webconsolejs["common/api/services/monitoring_api"].getVMByNsMci(currentNsId, currentWorkloadId)
     for (var i in monitorTargetList.data) {
       //   [
       //     {
-      //         "alias_name": null,
-      //         "description": "dm0x",
-      //         "id": "vm-1",
-      //         "mci_id": "mci01",
-      //         "name": null,
-      //         "ns_id": "ns01",
-      //         "state": "ACTIVE"
+      //       "description": "Created via CB-Tumblebug",
+      //       "log_agent_status": "SUCCESS",
+      //       "mci_id": "mci01",
+      //       "monitoring_agent_status": "SUCCESS",
+      //       "name": "vm-1",
+      //       "ns_id": "test01",
+      //       "vm_id": "vm-1"
       //     }
       // ]
-      var findVm = vmMap.get(monitorTargetList.data[i].id)
+      var findVm = vmMap.get(monitorTargetList.data[i].vm_id)
       if(findVm){
-        // state가 null인 경우 ACTIVE로 처리
-        var agentState = monitorTargetList.data[i].state;
-        if(agentState === null || agentState === undefined) {
-          agentState = "ACTIVE";
+        // monitoringAgentStatus가 null인 경우 FAILED로 처리
+        var monitoringAgentStatus = monitorTargetList.data[i].monitoring_agent_status;
+        if(monitoringAgentStatus === null || monitoringAgentStatus === undefined) {
+            monitoringAgentStatus = "FAILED";
         }
-        findVm.monAgentStatus = agentState; // [ACTIVE/INACTIVE]
-        vmMap.set(findVm.id, findVm);
+        findVm.monitoringAgentStatus = monitoringAgentStatus; // [INSTALLING/SERVICE_INACTIVE/SUCCESS/FAILED]
+
+        // logAgentStatus가 null인 경우 FAILED로 처리
+        var logAgentStatus = monitorTargetList.data[i].log_agent_status;
+        if(logAgentStatus === null || logAgentStatus === undefined) {
+            logAgentStatus = "FAILED";
+        }
+        findVm.logAgentStatus = logAgentStatus; // [INSTALLING/SERVICE_INACTIVE/SUCCESS/FAILED]
       }
     }
   }catch(e){
@@ -225,6 +224,7 @@ function initMonitorConfigTable() {
       vertAlign: "middle",
       hozAlign: "center",
       headerSort: false,
+      width: 80,
     },
     {
       title: "Workload",
@@ -252,36 +252,20 @@ function initMonitorConfigTable() {
     //   visible: true
     // },
     {
-      title: "Agent Status",
-      field: "monAgentStatus",
+      title: "Monitoring Agent Status",
+      field: "monitoringAgentStatus",
       vertAlign: "middle",
       hozAlign: "center",
-      width: 120,
+      width: 180,
     },
     {
-      title: "Collect Status",
-      field: "collectStatus",
+      title: "Log Agent Status",
+      field: "logAgentStatus",
       vertAlign: "middle",
       hozAlign: "center",
       headerHozAlign: "center",
-      maxWidth: 150,
-    },
-    {
-      title: "Collect datetime",
-      field: "collectDatetime",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      maxWidth: 150,
-    },
-    {
-      title: "Log/Treace",
-      field: "logTrace",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      maxWidth: 135,
-    },
+      width: 160,
+    }
   ];
 
   monitorConfigListTable = setTabulator("monitorconfiglist-table", tableObjParams, columns, true);
@@ -312,9 +296,9 @@ function initMonitorConfigTable() {
 
   monitorConfigListTable.on("cellClick", function(e, cell){
     var field = cell.getField();
-    if(field == "monAgentStatus"){
+    if(field == "monitoringAgentStatus" || field == "logAgentStatus"){
       var agentStatus = cell.getValue();
-      if(agentStatus != "ACTIVE" && agentStatus != "INACTIVE"){
+      if(agentStatus != "SUCCESS" && agentStatus != "INSTALLING"){
         var targetVmId = cell.getRow().getData().id;
         var targetModal = "commonDefaultModal";
         var modalTitle = "MonitoringAgentInstall"
@@ -342,8 +326,9 @@ export function installMonitoringAgent(vmId){
   response.then(() => {
     // 선택된 서버 노드의 상태 업데이트
     if (selectedServerNode && selectedServerNode.id === vmId) {
-      selectedServerNode.monAgentStatus = "ACTIVE";
-      
+      selectedServerNode.monitoringAgentStatus = "INSTALLING";
+      selectedServerNode.logAgentStatus = "INSTALLING";
+
       // UI 업데이트
       setMonitorConfigInfoData();
       
@@ -351,7 +336,8 @@ export function installMonitoringAgent(vmId){
       var tableData = monitorConfigListTable.getData();
       var updatedData = tableData.map(row => {
         if (row.id === vmId) {
-          row.monAgentStatus = "ACTIVE";
+          row.monitoringAgentStatus = "INSTALLING";
+          row.logAgentStatus = "INSTALLING";
         }
         return row;
       });
@@ -379,21 +365,21 @@ function initMonitorMetricsTable() {
     },
     {
       title: "Server Name/Id",
-      field: "target_id",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin name",
-      field: "plugin_name",
+      field: "vmId",
       vertAlign: "middle",
       hozAlign: "center",
       headerHozAlign: "center"
     },
     {
       title: "Plugin seq",
-      field: "plugin_seq",
+      field: "pluginSeq",
+      vertAlign: "middle",
+      hozAlign: "center",
+      headerHozAlign: "center"
+    },
+    {
+      title: "Plugin name",
+      field: "pluginName",
       vertAlign: "middle",
       hozAlign: "center",
       headerHozAlign: "center"
@@ -413,7 +399,7 @@ function initMonitorMetricsTable() {
   monitorMetricsTable = setTabulator("monitorMetricsTable", tableObjParams, columns, true);
 
   // 행 클릭 시
-  monitorMetricsTable.on("rowClick", function (e, row) {
+  monitorConfigListTable.on("rowClick", function (e, row) {
   });
 
   monitorMetricsTable.on("cellClick", function(e, cell){
@@ -439,7 +425,6 @@ function detectionFormatterToggle(data) {
 function decodeBase64(data) {
   return atob(data);
 }
-
 
 function initEditMetricsModalTable() {
 
@@ -484,10 +469,10 @@ function initEditMetricsModalTable() {
 
   editMetricsModalTable.on("cellClick", function(e, cell){
     // var field = cell.getField();
-    // if(field == "monAgentStatus"){
+    // if(field == "monitoringAgentStatus" || field == "logAgentStatus"){
     //   var agentStatus = cell.getValue();
     //   console.log("agentStatus", agentStatus)
-    //   if(agentStatus != "ACTIVE" && agentStatus != "INACTIVE"){
+    //   if(agentStatus != "SUCCESS" && agentStatus != "INSTALLING"){
     //     console.log("Row data:", cell.getRow().getData());
     //     console.log("id data:", cell.getRow().getData().id);
     //     var targetVmId = cell.getRow().getData().id;
@@ -505,223 +490,6 @@ function initEditMetricsModalTable() {
 
   });
 }
-
-function initmonitorLogTraceTable() {
-
-  var tableObjParams = {};
-
-  var columns = [
-    {
-      formatter: "rowSelection",
-      titleFormatter: "rowSelection",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      headerSort: false,
-      width: 60,
-    },
-    {
-      title: "seq",
-      field: "seq",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Server Name/Id",
-      field: "Server Name/Id",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin name",
-      field: "Plugin name",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin seq",
-      field: "Plugin seq",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin Config",
-      field: "Plugin Config",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    }
-  ];
-
-  monitorLogTraceTable = setTabulator("monitorLogTraceTable", tableObjParams, columns, true);
-
-  // 행 클릭 시
-  monitorLogTraceTable.on("rowClick", function (e, row) {
-  });
-
-  monitorLogTraceTable.on("cellClick", function(e, cell){
-  });
-
-  // TODO : 선택된 여러개 row에 대해 처리
-  monitorLogTraceTable.on("rowSelectionChanged", function (data, rows) {
-
-  });
-}
-
-function initEditLogCollectorModalTable() {
-
-  var tableObjParams = {};
-
-  var columns = [
-    {
-      formatter: "rowSelection",
-      titleFormatter: "rowSelection",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      headerSort: false,
-      width: 60,
-    },
-    {
-      title: "Target Item",
-      field: "Target Item",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Description",
-      field: "Description",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    }
-  ];
-
-  editLogCollectorModalTable = setTabulator("editLogCollectorModalTable", tableObjParams, columns, true);
-
-  // 행 클릭 시
-  editLogCollectorModalTable.on("rowClick", function (e, row) {
-  });
-
-  editLogCollectorModalTable.on("cellClick", function(e, cell){
-  });
-
-  // TODO : 선택된 여러개 row에 대해 처리
-  editLogCollectorModalTable.on("rowSelectionChanged", function (data, rows) {
-
-  });
-}
-
-function initMonitorStoragesTable() {
-
-  var tableObjParams = {};
-
-  var columns = [
-    {
-      formatter: "rowSelection",
-      titleFormatter: "rowSelection",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      headerSort: false,
-      width: 60,
-    },
-    {
-      title: "Server Name/Id",
-      field: "Server Name/Id",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin Name",
-      field: "Plugin Name",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin seq",
-      field: "Plugin seq",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Plugin Config",
-      field: "Plugin Config",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    }
-  ];
-
-  monitorStoragesTable = setTabulator("monitorStoragesTable", tableObjParams, columns, true);
-
-  // 행 클릭 시
-  monitorStoragesTable.on("rowClick", function (e, row) {
-  });
-
-  monitorStoragesTable.on("cellClick", function(e, cell){
-  });
-
-  // TODO : 선택된 여러개 row에 대해 처리
-  monitorStoragesTable.on("rowSelectionChanged", function (data, rows) {
-
-  });
-}
-
-function initEditStorageModalTable() {
-
-  var tableObjParams = {};
-
-  var columns = [
-    {
-      formatter: "rowSelection",
-      titleFormatter: "rowSelection",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center",
-      headerSort: false,
-      width: 60,
-    },
-    {
-      title: "Storage name",
-      field: "Storage name",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    },
-    {
-      title: "Description",
-      field: "Description",
-      vertAlign: "middle",
-      hozAlign: "center",
-      headerHozAlign: "center"
-    }
-  ];
-
-  editStorageModalTable = setTabulator("editStorageModalTable", tableObjParams, columns, true);
-
-  // 행 클릭 시
-  editStorageModalTable.on("rowClick", function (e, row) {
-  });
-
-  editStorageModalTable.on("cellClick", function(e, cell){
-  });
-
-  // TODO : 선택된 여러개 row에 대해 처리
-  editStorageModalTable.on("rowSelectionChanged", function (data, rows) {
-
-  });
-}
-
-
 
 // 클릭한 monitor config info 가져오기
 // 표에서 선택된 MonitorConfigId 받아옴
@@ -753,21 +521,19 @@ async function setMonitorConfigInfoData() {
     $(htmlCardIdPrefix+"name").text(selectedServerNode.name+" / "+selectedServerNode.id)
     $(htmlCardIdPrefix+"desc").text(selectedServerNode.description)
     $(htmlCardIdPrefix+"workload").text(selectedServerNode.workloadType+" / "+selectedServerNode.workloadName)
-    $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? true : false))
-    $(htmlCardIdPrefix+"agent_status").html(generateStatusIndicator(selectedServerNode.monAgentStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.monAgentStatus))
-    if (selectedServerNode.collectStatus) {
-      $(htmlCardIdPrefix+"collect_status").html(generateStatusIndicator(selectedServerNode.collectStatus === "ACTIVE" ? "success" : "danger", selectedServerNode.collectStatus))
-    } else {
-      $(htmlCardIdPrefix+"collect_status").html("");
-    }
+    $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monitoringAgentStatus === "SUCCESS" && selectedServerNode.logAgentStatus === "SUCCESS" ? true : false))
+    $(htmlCardIdPrefix+"monitoring_agent_status").html(generateStatusIndicator(selectedServerNode.logAgentStatus === "SUCCESS" ? "success" : "danger", selectedServerNode.monitoringAgentStatus))
+    $(htmlCardIdPrefix+"log_agent_status").html(generateStatusIndicator(selectedServerNode.logAgentStatus === "SUCCESS" ? "success" : "danger", selectedServerNode.monitoringAgentStatus))
 
     // 토글 박스 이벤트 리스너 추가
     $(htmlCardIdPrefix+"monitor input[type='checkbox']").off('change').on('change', function() {
       var isChecked = $(this).is(':checked');
-      var currentAgentStatus = selectedServerNode.monAgentStatus;
+      var currentMonitoringAgentStatus = selectedServerNode.monitoringAgentStatus;
+      var currentLogAgentStatus = selectedServerNode.logAgentStatus;
       
       // 토글 ON 시: 에이전트가 설치되지 않은 경우 설치 모달 표시
-      if (isChecked && currentAgentStatus !== "ACTIVE" && currentAgentStatus !== "INACTIVE") {
+      if (isChecked && currentMonitoringAgentStatus !== "SUCCESS" && currentMonitoringAgentStatus !== "INSTALLING" &&
+          currentLogAgentStatus !== "SUCCESS" && currentLogAgentStatus !== "INSTALLING") {
         var targetVmId = selectedServerNode.id;
         var targetModal = "commonDefaultModal";
         var modalTitle = "MonitoringAgentInstall";
