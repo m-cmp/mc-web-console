@@ -150,7 +150,12 @@ $("#monitoring_serverlist").on('change', async function () {
   var selectedNsId = selectedWorkspaceProject.nsId;
 
   setMonitoringMesurement()
+})
 
+$("#monitoring_measurement").on('change', async function () {
+    var selectedMeasurement = $("#monitoring_measurement").val();
+
+    setMonitoringMetric(selectedMeasurement)
 })
 
 // Extend Detection 토글 이벤트 리스너
@@ -195,7 +200,7 @@ async function setMonitoringMesurement() {
 
     if (Array.isArray(data) && data.length > 0) {
       data.forEach(function (item) {
-        if (item.plugin_type === "INPUT") {
+        if (item.pluginType === "INPUT") {
           var option = document.createElement("option");
           option.value = item.name || item.pluginId;
           option.text = item.name || item.pluginId;
@@ -208,11 +213,78 @@ async function setMonitoringMesurement() {
   }
 }
 
+async function setMonitoringMetric(selectedMeasurement) {
+    try {
+        var respMeasurementFields = await webconsolejs["common/api/services/monitoring_api"].getMeasurementFields();
+
+        // API 응답 구조 확인 및 데이터 추출
+        var data;
+        if (respMeasurementFields && respMeasurementFields.responseData && respMeasurementFields.responseData.data) {
+            data = respMeasurementFields.responseData.data;
+        } else if (respMeasurementFields && respMeasurementFields.data) {
+            data = respMeasurementFields.data;
+        } else if (respMeasurementFields && Array.isArray(respMeasurementFields)) {
+            data = respMeasurementFields;
+        } else {
+            console.error("Unexpected API response structure:", respMeasurementFields);
+            data = [];
+        }
+
+        var metricSelect = document.getElementById("monitoring_metric");
+
+        if (!metricSelect) {
+            console.error("monitoring_metric element not found.");
+            return;
+        }
+
+        metricSelect.innerHTML = "";
+
+        var defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "Select";
+        metricSelect.appendChild(defaultOption);
+
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(function (measurement) {
+                if (measurement.measurement === selectedMeasurement) {
+                    measurement.fields.forEach(function (field) {
+                        var option = document.createElement("option");
+                        option.value = field.key;
+                        option.text = field.key;
+                        metricSelect.appendChild(option);
+                    });
+                }
+            });
+        }
+    } catch (error) {
+        console.error("setMonitoringMetric 오류:", error);
+    }
+}
+
 export async function startMonitoring() {
+  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  var selectedNsId = selectedWorkspaceProject.nsId;
+
+  // NS가 선택되지 않은 경우 처리
+  if (!selectedNsId) {
+      alert("Please select a Workspace first.");
+      return;
+  }
+
+  var selectedMci = $("#monitoring_mcilist").val()
+
+  // MCI가 선택되지 않은 경우 처리
+  if (!selectedNsId) {
+      alert("Please select a Workload first.");
+      return;
+  }
+
   var selectedMeasurement = $("#monitoring_measurement").val();
+  var selectedMetric = $("#monitoring_metric").val();
   var selectedRange = $("#monitoring_range").val();
+  var selectedPeriod = $("#monitoring_period").val();
   var selectedVMId = $("#monitoring_serverlist").val();
-  
+
   // VM이 선택되지 않은 경우 처리
   if (!selectedVMId) {
     alert("Please select a VM first.");
@@ -225,7 +297,7 @@ export async function startMonitoring() {
     $("#selected_vm_name").text("(" + selectedVMName + ")");
   }
 
-  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
+  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedMetric, selectedRange, selectedPeriod, selectedNsId, selectedMci, selectedVMId);
 
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
@@ -242,26 +314,24 @@ async function drawMonitoringGraph(MonitoringData) {
 
   // MonitoringData.data가 존재하는지 확인
   if (MonitoringData && Array.isArray(MonitoringData)) {
-    MonitoringData.forEach(cpuData => {
-      if (["cpu0", "cpu1", "cpu2", "cpu3"].includes(cpuData.tags.cpu)) {
-        const seriesData = {
-          name: cpuData.tags.cpu,
-          data: cpuData.values
-            .map(value => ({
-              x: value[0], // timestamp
-              y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
-            }))
-            .filter(point => point.y !== null)
-        };
-        chartDataList.push(seriesData);
+    MonitoringData.forEach(data => {
+      const seriesData = {
+        name: data.name,
+        data: data.values
+          .map(value => ({
+            x: value[0], // timestamp
+            y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
+          }))
+          .filter(point => point.y !== null)
+      };
+      chartDataList.push(seriesData);
 
-        cpuData.values.forEach(value => {
-          const timestamp = value[0];
-          if (!chartLabels.includes(timestamp)) {
-            chartLabels.push(timestamp);
-          }
-        });
-      }
+      data.values.forEach(value => {
+        const timestamp = value[0];
+        if (!chartLabels.includes(timestamp)) {
+          chartLabels.push(timestamp);
+        }
+      });
     });
   } else {
     console.error("MonitoringData is invalid or does not contain data:", MonitoringData);

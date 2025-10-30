@@ -41,10 +41,10 @@
 
               <!-- Metric -->
               <div class="col-md-4">
-                <label for="monitoring_metriclist" class="form-label"
+                <label for="monitoring_metric" class="form-label required"
                   >Metric</label
                 >
-                <select class="form-select" id="monitoring_metriclist">
+                <select class="form-select" id="monitoring_metric">
                   <option value="">Select</option>
                 </select>
               </div>
@@ -77,11 +77,18 @@
 
               <!-- Period -->
               <div class="col-md-4">
-                <label for="monitoring_periodlist" class="form-label"
+                <label for="monitoring_period" class="form-label required"
                   >Period</label
                 >
-                <select class="form-select" id="monitoring_periodlist">
+                <select class="form-select" id="monitoring_period">
                   <option value="">Select</option>
+                  <option value="1m">1m</option>
+                  <option value="3m">3m</option>
+                  <option value="5m">5m</option>
+                  <option value="10m">10m</option>
+                  <option value="12m">12m</option>
+                  <option value="15m">15m</option>
+                  <option value="30m">30m</option>
                 </select>
               </div>
 
