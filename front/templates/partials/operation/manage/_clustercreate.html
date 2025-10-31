@@ -33,20 +33,113 @@
               </div>
               <div class="form-group mb-2">
                 <label class="form-label required">Spec</label>
-                <select class="form-select" name="node_specid" id="node_specid">
-                  <option value="">Select Spec</option>
-                </select>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please Use Search"
+                      name="node_specid"
+                      id="node_specid"
+                      readonly
+                    />
+                    <input
+                      type="hidden"
+                      name="node_provider"
+                      id="node_provider"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="node_connectionName"
+                      id="node_connectionName"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="node_commonSpecId"
+                      id="node_commonSpecId"
+                      value=""
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
+                      class="btn"
+                      data-bs-toggle="modal"
+                      data-bs-target="#spec-search-pmk"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div class="form-group mb-2">
                 <label class="form-label required">Image</label>
-                <select
-                  class="form-select"
-                  name="node_imageid"
-                  id="node_imageid"
-                >
-                  <option value="">Select Image</option>
-                </select>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please Use Search"
+                      name="node_imageid"
+                      id="node_imageid"
+                      readonly
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
+                      class="btn"
+                      onclick="webconsolejs['partials/operation/manage/clustercreate'].validateAndOpenImageModal(event)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div class="form-group mb-2">
