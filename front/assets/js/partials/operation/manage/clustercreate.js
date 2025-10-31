@@ -329,7 +329,26 @@ export async function displayNewNodeForm() {
 
 	// toggle create nodegroup form
 	var div = document.getElementById("nodegroup_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
+	
+	// Spec 모달이 열릴 때 콜백 설정 (기존 폼용)
+	// 모달 열기 전에 콜백 설정
+	if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
+		webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(
+			webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
+		);
+	}
+
+	// Spec 모달 콜백 설정 (jQuery 방식 - 중복 방지용 네임스페이스 사용)
+	if (typeof $ !== 'undefined') {
+		$("#spec-search-pmk").off('shown.bs.modal.nodegroup').on('shown.bs.modal.nodegroup', function () {
+			if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
+				webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(
+					webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
+				);
+			}
+		});
+	}
 
 }
 
@@ -600,7 +619,23 @@ export async function createCluster() {
 // 	// TODO: + 박스 추가
 // }
 export function clusterFormDone_btn() {
-    // 클러스터 기본 정보 할당
+	// 1. 필수 필드 검증
+	var requiredFields = [
+		{ id: '#node_name', message: 'NodeGroup name is required' },
+		{ id: '#node_specid', message: 'Spec is required' },
+		{ id: '#node_imageid', message: 'Image is required' },
+		{ id: '#node_autoscaling', message: 'AutoScaling option is required' }
+	];
+	
+	for (var field of requiredFields) {
+		if (!$(field.id).val() || $(field.id).val().trim() === '') {
+			alert(field.message);
+			$(field.id).focus();
+			return;
+		}
+	}
+
+    // 2. 클러스터 기본 정보 할당
     const connectionName = $("#cluster_connection").val();
     const clusterName = $("#cluster_name").val();
     const vNetId = $("#cluster_vpc").val();
@@ -619,7 +654,7 @@ export function clusterFormDone_btn() {
         description: description || ""
     };
 
-    // NodeGroupList 추가 (조건부로 추가, 있을 때만 넣음)
+    // 3. hidden 필드 업데이트
     const nodeGroupName = $("#node_name").val();
     const desiredNodeSize = $("#node_desirednodesize").val();
     const imageId = $("#node_imageid").val();
@@ -628,8 +663,21 @@ export function clusterFormDone_btn() {
     const onAutoScaling = $("#node_autoscaling").val();
     const rootDiskSize = $("#node_rootdisksize").val();
     const rootDiskType = $("#node_rootdisk").val();
-    const specId = $("#node_specid").val();
+    // specId는 commonSpecId를 사용 (search로 선택한 경우)
+    const specId = $("#node_commonSpecId").val() || $("#node_specid").val();
     const sshKeyId = $("#node_sshkey").val();
+
+	// hidden 필드에 값 설정
+	$("#n_name").val(nodeGroupName);
+	$("#n_specid").val(specId);
+	$("#n_imageid").val(imageId);
+	$("#n_minnodesize").val(minNodeSize);
+	$("#n_maxnodesize").val(maxNodeSize);
+	$("#n_sshkey").val(sshKeyId);
+	$("#n_rootdisk").val(rootDiskType);
+	$("#n_rootdisksize").val(rootDiskSize);
+	$("#n_autoscaling").val(onAutoScaling);
+	$("#n_desirednodesize").val(desiredNodeSize || "1");
 
     if (nodeGroupName) {
         cluster_form["k8sNodeGroupList"] = [
@@ -647,45 +695,67 @@ export function clusterFormDone_btn() {
             }
         ];
     }
-	var nodeGroup_name = cluster_form.name
-	// var nodeGroup_cnt = parseInt(cluster_form.k8sNodeGroupListdesiredNodeSize)
-	var nodeGroup_cnt = 1
-	var add_nodegroup_html = ""
+	// 4. 배열에 저장
+	var nodeGroup_name = nodeGroupName; // cluster_form.name이 아닌 nodeGroupName 사용
+	var nodeGroup_cnt = parseInt(desiredNodeSize) || 1;
+	var add_nodegroup_html = "";
+	
     Create_Cluster_Config_Arr.push(cluster_form);
 	if (isNodeGroup) {
 		Create_Node_Config_Arr.push(cluster_form["k8sNodeGroupList"][0]);
-	
 	}
-	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
 
+	// 5. HTML 생성 (NodeGroup 리스트 항목)
+	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')';
 	add_nodegroup_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
-
 		+ nodeGroup_name + displayNodegroupCnt
-
 		+ '</li>';
+
+	// 6. 폼 토글 (먼저 실행)
     var div = document.getElementById("nodegroup_configuration");
     webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
-	var ngEleId = "nodegroup"
-	if (isNodeGroup) {
-		ngEleId = "addnodegroup"
-	}
 
-	
-	var element = $("#" + ngEleId + "_plusIcon");
-	if (element.length) {
-		element.remove();
-	} else {
-		console.error("Element not found");
+	// 7. plusIcon 제거 및 리스트 업데이트
+	var ngEleId = "nodegroup";
+	if (isNodeGroup) {
+		ngEleId = "addnodegroup";
 	}
 	
 	$("#" + ngEleId + "_plusIcon").remove();
-	$("#" + ngEleId + "_list").append(add_nodegroup_html)
+	$("#" + ngEleId + "_list").append(add_nodegroup_html);
 	$("#" + ngEleId + "_list").prepend(getPlusVm(ngEleId));
-	nodeGroup_data_cnt++
-	$("#express_form").each(function () {
+
+	// 8. 카운터 증가
+	nodeGroup_data_cnt++;
+
+	// 9. 폼 초기화
+	$("#cluster_form").each(function () {
 		this.reset();
-	})
-	//
+	});
+	
+	// 숨겨진 필드들 초기화
+	$("#n_name").val("");
+	$("#n_specid").val("");
+	$("#n_imageid").val("");
+	$("#n_minnodesize").val("");
+	$("#n_maxnodesize").val("");
+	$("#n_sshkey").val("");
+	$("#n_rootdisk").val("");
+	$("#n_rootdisksize").val("");
+	$("#n_autoscaling").val("");
+	$("#n_desirednodesize").val("");
+
+	// 직접 입력 필드들 초기화
+	$("#node_name").val("");
+	$("#node_specid").val("");
+	$("#node_imageid").val("");
+	$("#node_minnodesize").val("");
+	$("#node_maxnodesize").val("");
+	$("#node_sshkey").val("");
+	$("#node_rootdisk").val("");
+	$("#node_rootdisksize").val("");
+	$("#node_autoscaling").val("");
+	$("#node_desirednodesize").val("1"); // 기본값 1로 설정
 }
 
 export function addNodeFormDone_btn() {
@@ -740,4 +810,110 @@ export function addNodeFormDone_btn() {
 export function view_ngForm(cnt){
 	var div = document.getElementById("nodegroup_configuration");
 	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+}
+
+// PMK용 Server Recommendation 콜백 함수 (Runtime nodegroup_configuration 폼용)
+export function callbackNodegroupServerRecommendation(vmSpec) {
+	// 기존 nodegroup_configuration 폼 필드에 spec 정보 설정
+	$("#node_specid").val(vmSpec.specName);
+	$("#node_provider").val(vmSpec.provider);
+	$("#node_connectionName").val(vmSpec.connectionName);
+	$("#node_commonSpecId").val(vmSpec.commonSpecId);
+	
+	// hidden 필드에도 설정
+	$("#n_specid").val(vmSpec.commonSpecId); // 실제 사용할 specId
+	
+	// spec 정보를 전역 변수에 저장 (이미지 검색 시 사용)
+	if (vmSpec.osArchitecture) {
+		window.selectedPmkSpecInfo = {
+			provider: vmSpec.provider,
+			connectionName: vmSpec.connectionName,
+			regionName: vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""),
+			osArchitecture: vmSpec.osArchitecture,
+			specName: vmSpec.specName,
+			commonSpecId: vmSpec.commonSpecId
+		};
+		
+		// PMK Image 모달 필드 미리 설정 (성능 최적화)
+		$("#image-provider-pmk").val(vmSpec.provider);
+		$("#image-region-pmk").val(vmSpec.regionName || vmSpec.connectionName.replace(vmSpec.provider + "-", ""));
+		$("#image-os-architecture-pmk").val(vmSpec.osArchitecture);
+	} else {
+		console.warn("vmSpec does not have osArchitecture information");
+	}
+}
+
+// PMK용 Image 모달 검증 및 열기 (기존 nodegroup_configuration 폼용)
+export function validateAndOpenImageModal(event) {
+	// Spec 입력 필드 값 확인
+	var specValue = $("#node_specid").val();
+	
+	if (!specValue || specValue.trim() === "") {
+		console.warn("No PMK spec selected - validation failed");
+		alert("Please select a server specification first before opening the image recommendation modal.");
+		if (event) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+		return false;
+	}
+	
+	// 전역 변수에서 spec 정보 확인
+	if (!window.selectedPmkSpecInfo) {
+		console.warn("No PMK spec info in global variable - validation failed");
+		alert("Please select a server specification first before opening the image recommendation modal.");
+		if (event) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+		return false;
+	}
+	
+	// 이벤트 전파 중단 및 기본 동작 방지
+	if (event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	try {
+		// PMK용 이미지 선택 콜백 함수 설정
+		if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
+			webconsolejs["partials/operation/manage/pmk_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
+				// 기존 nodegroup_configuration 폼의 이미지 필드에 설정
+				$("#node_imageid").val(selectedImage.name || selectedImage.cspImageName || "");
+				$("#n_imageid").val(selectedImage.name || selectedImage.cspImageName || "");
+			});
+		} else {
+			console.error("PMK Image recommendation module not found.");
+		}
+		
+		// 비동기적으로 모달 열기
+		setTimeout(function () {
+			try {
+				// Bootstrap 5 방식으로 모달 열기
+				if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+					const imageModalEl = document.getElementById('image-search-pmk');
+					if (imageModalEl) {
+						const imageModal = new bootstrap.Modal(imageModalEl);
+						imageModal.show();
+					} else {
+						throw new Error("PMK Image modal element not found");
+					}
+				} else {
+					console.error("Bootstrap is not loaded");
+					alert("could not open modal because Bootstrap is not loaded");
+				}
+			} catch (error) {
+				console.error("failed to open PMK image modal:", error);
+				alert("Error opening PMK image recommendation modal. Please try again.");
+			}
+		}, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
+		
+	} catch (error) {
+		console.error("failed to validate and open image modal:", error);
+		alert("Error opening image recommendation modal. Please try again.");
+		return false;
+	}
+	
+	return true;
 }
