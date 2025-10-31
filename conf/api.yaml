@@ -1442,10 +1442,10 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/control/k8sCluster/{k8sClusterId}
       description: "Control the creation of K8sCluster (continue, withdraw)"
-    Postmcivmdynamic:
+    PostMciSubGroupDynamic:
       method: post
-      resourcePath: /ns/{nsId}/mci/{mciId}/vmDynamic
-      description: "Create VM Dynamically and add it to MCI"
+      resourcePath: /ns/{nsId}/mci/{mciId}/subGroupDynamic
+      description: 'Dynamically add new virtual machines to an existing MCI using common specifications and automated resource management.
     Postutiltodesignnetwork:
       method: post
       resourcePath: /util/net/design
@@ -1824,7 +1824,8 @@ serviceActions:
       description: "Create trigger policy"
     GetMeasurementFields:
       method: get
-      resourcePath: /api/o11y/monitoring/influxdb/measurement
+      resourcePath: /api/o11y/monitoring/influxdb/measurement      
+      queryParams:
       description: "Retrieve InfluxDB measurements"
     GetMeasurementTags:
       method: get
@@ -1994,14 +1995,14 @@ serviceActions:
       method: get
       resourcePath: /api/o11y/insight/predictions/options
       description: "getPredictionOptions"
-    GetPredictionHistoryForVm:
+    GetPredictionVMHistory:
       method: get
       resourcePath: /api/o11y/insight/predictions/ns/{nsId}/mci/{mciId}/vm/{vmId}/history
-      description: "getPredictionHistoryForVm"
-    GetPredictionHistoryForMci:
+      description: "getPredictionVMHistory"
+    GetPredictionMCIHistory:
       method: get
       resourcePath: /api/o11y/insight/predictions/ns/{nsId}/mci/{mciId}/history
-      description: "getPredictionHistoryForMci"
+      description: "getPredictionMCIHistory"
     GetPredictionMeasurements:
       method: get
       resourcePath: /api/o11y/insight/predictions/measurement
@@ -2030,14 +2031,14 @@ serviceActions:
       method: get
       resourcePath: /api/o11y/insight/anomaly-detection/options
       description: "getOptions"
-    GetAnomalyHistoryForVm:
+    GetAnomalyDetectionVMHistory:
       method: get
       resourcePath: /api/o11y/insight/anomaly-detection/ns/{nsId}/mci/{mciId}/vm/{vmId}/history
-      description: "getAnomalyHistoryForVm"
-    GetAnomalyHistoryForMci:
+      description: "getAnomalyDetectionVMHistory"
+    GetAnomalyDetectionMCIHistory:
       method: get
       resourcePath: /api/o11y/insight/anomaly-detection/ns/{nsId}/mci/{mciId}/history
-      description: "getAnomalyHistoryForMci"
+      description: "getAnomalyDetectionMCIHistory"
     GetMeasurements:
       method: get
       resourcePath: /api/o11y/insight/anomaly-detection/measurement
@@ -2053,8 +2054,8 @@ serviceActions:
     DeleteLLMApiKeys:
       method: delete
       resourcePath: /api/o11y/insight/llm/api-Keys
-      description: "deleteLLMApiKeys"
-
+      description: "deleteLLMApiKeys"  
+      
   mc-application-manager:
     GetCatalogDetailUsingGET:
       method: get

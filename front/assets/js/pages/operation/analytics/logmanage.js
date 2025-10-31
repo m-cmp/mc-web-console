@@ -174,12 +174,12 @@ function setLogTabulator(
 ) {
   var placeholder = "No Data";
   var pagination = "local";
-  var paginationSize = 5;
-  var paginationSizeSelector = [5, 10, 15, 20];
+  var paginationSize = 10;
+  var paginationSizeSelector = [10, 20, 50, 100];
   var movableColumns = true;
   var columnHeaderVertAlign = "middle";
   var paginationCounter = "rows";
-  var layout = "fitColumns";
+  var layout = "fitDataStretch";
 
   if (tableObjParamMap.hasOwnProperty("placeholder")) {
     placeholder = tableObjParamMap.placeholder;
@@ -248,35 +248,43 @@ function initLogTable() {
       title: "NS",
       field: "labels",
       formatter: labelsNsIdFormatter,
-      vertAlign: "middle"
+      vertAlign: "middle",
+      width: 100
     },
     {
       title: "MCI",
       field: "labels",
       formatter: labelsMciIdFormatter,
-      vertAlign: "middle"
+      vertAlign: "middle",
+      width: 120
     },
     {
       title: "VM",
       field: "labels",
       formatter: labelsVMIdFormatter,
-      vertAlign: "middle"
+      vertAlign: "middle",
+      width: 120
     },
     {
       title: "Host",
       field: "labels",
       formatter: labelsHostFormatter,
-      vertAlign: "middle"
+      vertAlign: "middle",
+      width: 150
     },
     {
       title: "Timestamp",
       field: "timestamp",
-      vertAlign: "middle"
+      formatter: timestampFormatter,
+      vertAlign: "middle",
+      width: 200
     },
     {
-      title: "Value",
+      title: "Message",
       field: "value",
-      vertAlign: "middle"
+      formatter: valueMessageFormatter,
+      vertAlign: "middle",
+      widthGrow: 2
     }
   ];
 
@@ -320,6 +328,45 @@ function labelsMciIdFormatter(cell) {
 function labelsVMIdFormatter(cell) {
   var row = cell.getData()
   return row.labels.VM_ID;
+}
+
+// Timestamp formatter: Convert nanoseconds to readable date format
+function timestampFormatter(cell) {
+  var row = cell.getData();
+  var timestamp = row.timestamp;
+  
+  if (!timestamp) return "";
+  
+  // Convert nanoseconds to milliseconds
+  var milliseconds = timestamp / 1000000;
+  var date = new Date(milliseconds);
+  
+  // Format: YYYY-MM-DD HH:MM:SS
+  var year = date.getFullYear();
+  var month = String(date.getMonth() + 1).padStart(2, '0');
+  var day = String(date.getDate()).padStart(2, '0');
+  var hours = String(date.getHours()).padStart(2, '0');
+  var minutes = String(date.getMinutes()).padStart(2, '0');
+  var seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// Value message formatter: Extract message from JSON string
+function valueMessageFormatter(cell) {
+  var row = cell.getData();
+  var value = row.value;
+  
+  if (!value) return "";
+  
+  try {
+    // Parse JSON string to extract message
+    var parsedValue = JSON.parse(value);
+    return parsedValue.message || value;
+  } catch (e) {
+    // If parsing fails, return original value
+    return value;
+  }
 }
 
 // toggleSelectBox of table row
@@ -438,21 +485,64 @@ function getLogListCallbackSuccess(logList) {
 
 async function getSelectedLogData(selectedLogData) {
   var div = document.getElementById("log_info");
-  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-  $('#log_timestamp').text(selectedLogData["@timestamp"]);
-  $('#log_measurement_name').text(selectedLogData["measurement_name"]);
-
-  $('#log_message').text(selectedLogData.tail.message);
-
-  $('#log_tag_host').text(selectedLogData.tag.host);
-  $('#log_mci_id').text(selectedLogData.tag.mci_id);
-  $('#log_ns_id').text(selectedLogData.tag.ns_id);
-  $('#log_path').text(selectedLogData.tag.path);
-  $('#log_target_id').text(selectedLogData.tag.target_id);
-
-  $('#log_tail_host').text(selectedLogData.tag.host);
-  $('#log_pid').text(selectedLogData.tail.pid);
-  $('#log_program').text(selectedLogData.tail.program);
-  $('#log_tail_timestamp').text(selectedLogData.tail.timestamp);
-
+  
+  // Log Info 영역이 hidden이면 표시, 이미 표시되어 있으면 그대로 유지
+  if (!$('#log_info').is(':visible')) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+  }
+  
+  // 데이터 초기화
+  $('#log_timestamp').text('');
+  $('#log_measurement_name').text('');
+  $('#log_message').text('');
+  $('#log_tag_host').text('');
+  $('#log_mci_id').text('');
+  $('#log_ns_id').text('');
+  $('#log_path').text('');
+  $('#log_target_id').text('');
+  $('#log_tail_host').text('');
+  $('#log_pid').text('');
+  $('#log_program').text('');
+  $('#log_tail_timestamp').text('');
+  
+  try {
+    // Parse value JSON string
+    var parsedValue = JSON.parse(selectedLogData.value);
+    
+    // Format timestamp
+    var milliseconds = selectedLogData.timestamp / 1000000;
+    var date = new Date(milliseconds);
+    var formattedTimestamp = date.toLocaleString();
+    
+    // Set timestamp
+    $('#log_timestamp').text(formattedTimestamp);
+    $('#log_tail_timestamp').text(parsedValue.time || formattedTimestamp);
+    
+    // Set message
+    $('#log_message').text(parsedValue.message || '');
+    
+    // Set tag information (from labels)
+    $('#log_tag_host').text(selectedLogData.labels.host || '');
+    $('#log_mci_id').text(selectedLogData.labels.MCI_ID || '');
+    $('#log_ns_id').text(selectedLogData.labels.NS_ID || '');
+    $('#log_target_id').text(selectedLogData.labels.VM_ID || '');
+    
+    // Set tail information (from parsed value)
+    $('#log_tail_host').text(parsedValue.host || selectedLogData.labels.host || '');
+    $('#log_pid').text(parsedValue.pid || '');
+    $('#log_program').text(parsedValue.service || '');
+    
+    // Additional fields if available
+    if (parsedValue.level) {
+      $('#log_measurement_name').text(parsedValue.level);
+    }
+    if (parsedValue.source) {
+      $('#log_path').text(parsedValue.source);
+    }
+    
+  } catch (e) {
+    console.error("Error parsing log data:", e);
+    // Fallback to raw display
+    $('#log_message').text(selectedLogData.value || '');
+  }
 }

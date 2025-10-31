@@ -288,8 +288,8 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
       mciId: mciId,
     },
     request: {
-      "commonImage": obj.commonImage,
-      "commonSpec": obj.commonSpec,
+      "imageId": obj.commonImage,
+      "specId": obj.commonSpec,
       "connectionName": obj.connectionName,
       "description": obj.description,
       // "label": "",
@@ -301,7 +301,7 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciVmDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostMciSubGroupDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
