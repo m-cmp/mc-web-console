@@ -120,6 +120,9 @@ async function initMonitorConfig() {
   initMonitorConfigTable();
   initMonitorMetricsTable();
   initEditMetricsModalTable();
+  
+  // init modal event listeners
+  initModalEventListeners();
 }
 
 // workload 목록 조회 ( mci + pmk )
@@ -565,6 +568,126 @@ async function setMonitorMetricsTable() {
   } catch (e) {
     console.error(e);
   }
+}
+
+// ============================================
+// Modal Event Listeners
+// ============================================
+
+/**
+ * Modal 이벤트 리스너 초기화
+ * Modal이 열릴 때 필요한 데이터를 로드합니다.
+ */
+function initModalEventListeners() {
+  // Prediction Modal
+  $('#setMonitoringPredictionModal').on('show.bs.modal', async function () {
+    await loadPredictionModalData();
+  });
+
+  // Anomaly Detection Modal
+  $('#setAnormalyDetectionModal').on('show.bs.modal', async function () {
+    await loadDetectionModalData();
+  });
+
+  // Edit Metrics Modal
+  $('#editMetricsModal').on('show.bs.modal', async function () {
+    await loadEditMetricsModalData();
+  });
+}
+
+/**
+ * Prediction Modal 데이터 로드
+ * monitoring.js의 setMonitoringMesurement 함수 재사용
+ */
+async function loadPredictionModalData() {
+  try {
+    // monitoring.js의 export된 함수 재사용
+    await webconsolejs["pages/operation/manage/monitoring"].setMonitoringMesurement("prediction_measurement");
+  } catch (error) {
+    console.error("Failed to load prediction modal data:", error);
+  }
+}
+
+/**
+ * Anomaly Detection Modal 데이터 로드
+ */
+async function loadDetectionModalData() {
+  try {
+    // Measurement 로드 (monitoring.js 함수 재사용)
+    await webconsolejs["pages/operation/manage/monitoring"].setMonitoringMesurement("detection_measurement");
+    
+    // Interval 옵션 로드
+    loadIntervalOptions("detection_interval");
+  } catch (error) {
+    console.error("Failed to load detection modal data:", error);
+  }
+}
+
+/**
+ * Edit Metrics Modal 데이터 로드
+ */
+async function loadEditMetricsModalData() {
+  try {
+    // Plugin 목록 조회
+    var respPlugins = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
+    
+    // 응답 데이터 정규화
+    var data;
+    if (respPlugins && respPlugins.responseData && respPlugins.responseData.data) {
+      data = respPlugins.responseData.data;
+    } else if (respPlugins && respPlugins.data) {
+      data = respPlugins.data;
+    } else if (respPlugins && Array.isArray(respPlugins)) {
+      data = respPlugins;
+    } else {
+      console.error("Unexpected API response structure:", respPlugins);
+      data = [];
+    }
+
+    // 테이블에 데이터 설정
+    editMetricsModalTable.setData(data);
+  } catch (error) {
+    console.error("Failed to load edit metrics modal data:", error);
+  }
+}
+
+/**
+ * Interval 옵션 로드
+ * @param {string} selectId - selectbox의 ID
+ */
+function loadIntervalOptions(selectId) {
+  // Interval 옵션 (10m ~ 12h)
+  var intervals = [
+    { value: "10m", text: "10 minutes" },
+    { value: "30m", text: "30 minutes" },
+    { value: "1h", text: "1 hour" },
+    { value: "3h", text: "3 hours" },
+    { value: "6h", text: "6 hours" },
+    { value: "12h", text: "12 hours" }
+  ];
+
+  var selectElement = document.getElementById(selectId);
+  
+  if (!selectElement) {
+    console.error(`${selectId} element not found.`);
+    return;
+  }
+
+  selectElement.innerHTML = "";
+
+  // 기본 옵션 추가
+  var defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.text = "Select";
+  selectElement.appendChild(defaultOption);
+
+  // Interval 옵션 추가
+  intervals.forEach(function (item) {
+    var option = document.createElement("option");
+    option.value = item.value;
+    option.text = item.text;
+    selectElement.appendChild(option);
+  });
 }
 
 
