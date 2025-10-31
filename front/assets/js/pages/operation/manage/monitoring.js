@@ -167,7 +167,7 @@ $("#detectionSwitch").on('change', function() {
   }
 })
 
-async function setMonitoringMesurement() {
+export async function setMonitoringMesurement(selectId = "monitoring_measurement") {
   try {
     var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
     
@@ -184,10 +184,10 @@ async function setMonitoringMesurement() {
       data = [];
     }
   
-    var measurementSelect = document.getElementById("monitoring_measurement");
+    var measurementSelect = document.getElementById(selectId);
     
     if (!measurementSelect) {
-      console.error("monitoring_measurement element not found.");
+      console.error(`${selectId} element not found.`);
       return;
     }
 
@@ -213,7 +213,7 @@ async function setMonitoringMesurement() {
   }
 }
 
-async function setMonitoringMetric(selectedMeasurement) {
+export async function setMonitoringMetric(selectedMeasurement, selectId = "monitoring_metric") {
     try {
         var respMeasurementFields = await webconsolejs["common/api/services/monitoring_api"].getMeasurementFields();
 
@@ -230,10 +230,10 @@ async function setMonitoringMetric(selectedMeasurement) {
             data = [];
         }
 
-        var metricSelect = document.getElementById("monitoring_metric");
+        var metricSelect = document.getElementById(selectId);
 
         if (!metricSelect) {
-            console.error("monitoring_metric element not found.");
+            console.error(`${selectId} element not found.`);
             return;
         }
 
@@ -302,39 +302,54 @@ export async function startMonitoring() {
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
     var respMonitoringData = response.responseData.data;
-    drawMonitoringGraph(respMonitoringData);
+    drawMonitoringGraph(respMonitoringData, selectedNsId, selectedMci, selectedVMId, selectedMeasurement);
   } else {
     console.error("Invalid response structure:", response);
   }
 }
 
-async function drawMonitoringGraph(MonitoringData) {
+async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measurement) {
   const chartDataList = [];
   const chartLabels = [];
 
   // MonitoringData.data가 존재하는지 확인
   if (MonitoringData && Array.isArray(MonitoringData)) {
     MonitoringData.forEach(data => {
-      const seriesData = {
-        name: data.name,
-        data: data.values
-          .map(value => ({
-            x: value[0], // timestamp
-            y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
-          }))
-          .filter(point => point.y !== null)
-      };
-      chartDataList.push(seriesData);
+      // null 값을 skip하고 유효한 데이터만 필터링
+      const validData = data.values
+        .filter(value => value[1] !== null && value[1] !== undefined)
+        .map(value => ({
+          x: value[0], // timestamp
+          y: parseFloat(value[1]).toFixed(2)
+        }));
 
-      data.values.forEach(value => {
-        const timestamp = value[0];
-        if (!chartLabels.includes(timestamp)) {
-          chartLabels.push(timestamp);
-        }
-      });
+      // 유효한 데이터가 있을 때만 시리즈에 추가
+      if (validData.length > 0) {
+        const seriesData = {
+          name: data.name,
+          data: validData
+        };
+        chartDataList.push(seriesData);
+
+        // timestamp 레이블 수집 (null이 아닌 값만)
+        data.values.forEach(value => {
+          if (value[1] !== null && value[1] !== undefined) {
+            const timestamp = value[0];
+            if (!chartLabels.includes(timestamp)) {
+              chartLabels.push(timestamp);
+            }
+          }
+        });
+      }
     });
   } else {
     console.error("MonitoringData is invalid or does not contain data:", MonitoringData);
+    return;
+  }
+
+  // 유효한 데이터가 없으면 사용자에게 알림
+  if (chartDataList.length === 0 || chartDataList.every(series => series.data.length === 0)) {
+    alert("No valid data available for the selected metric. Please try a different time range or metric.");
     return;
   }
 
@@ -412,11 +427,15 @@ async function drawMonitoringGraph(MonitoringData) {
   // Prediction Switch 체크 여부 확인
   if ($('#monitoring_predictionSwitch').is(':checked')) {
     try {
-      // API 호출 시도
-      var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction();
+      // 시간 범위 설정 (기본값: 12시간 전부터 7일 후까지)
+      var startTime = null; // null이면 함수 내부에서 12시간 전으로 설정
+      var endTime = null;   // null이면 함수 내부에서 7일 후로 설정
+      
+      // API 호출 시도 - 화면에서 선택한 값 전달
+      var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction(nsId, mciId, vmId, measurement, startTime, endTime);
 
-      if (response.data && response.data.responseData && response.data.responseData.data.values.length > 0) {
-        const predictionData = response.data.responseData.data.values.map(value => ({
+      if (response && response.responseData && response.responseData.values && response.responseData.values.length > 0) {
+        const predictionData = response.responseData.values.map(value => ({
           x: value.timestamp,
           y: parseFloat(value.value).toFixed(2)
         }));
@@ -440,7 +459,7 @@ async function drawMonitoringGraph(MonitoringData) {
   if ($('#detectionSwitch').is(':checked')) {
     // Detection Graph 영역 표시
     $("#detection_graph").show();
-    drawDetectionGraph();
+    drawDetectionGraph(nsId, mciId, vmId, measurement);
   } else {
     // Detection Graph 영역 숨김
     $("#detection_graph").hide();
@@ -448,9 +467,19 @@ async function drawMonitoringGraph(MonitoringData) {
 
 }
 
-async function drawDetectionGraph() {
-  var respDetection = await webconsolejs["common/api/services/monitoring_api"].getDetectionHistory();
-  var detectionData = respDetection.data.values;
+async function drawDetectionGraph(nsId, mciId, vmId, measurement) {
+  // 시간 범위 설정 (기본값: 12시간 전부터 현재까지)
+  var startTime = null; // null이면 함수 내부에서 12시간 전으로 설정
+  var endTime = null;   // null이면 함수 내부에서 현재 시간으로 설정
+  
+  var respDetection = await webconsolejs["common/api/services/monitoring_api"].getDetectionHistory(nsId, mciId, vmId, measurement, startTime, endTime);
+  
+  if (!respDetection || !respDetection.responseData || !respDetection.responseData.values) {
+    console.error("Invalid detection data:", respDetection);
+    return;
+  }
+  
+  var detectionData = respDetection.responseData.values;
 
   const anomalyData = detectionData.map(item => ({
     x: item.timestamp,  
