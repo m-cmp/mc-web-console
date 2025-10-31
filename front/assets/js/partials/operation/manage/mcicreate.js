@@ -757,19 +757,18 @@ export async function createMciDynamic() {
 }
 
 export async function createVmDynamic() {
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
-	var mciId = webconsolejs["pages/operation/manage/mci"].currentMciId
+    var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    var mciId = window.currentMciId;
 
-	// for the test
-	// webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
+    webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
 
-	// response가 있으면 
+    // response가 있으면 
 
-	alert("생성요청 완료")
-	window.location = `/webconsole/operations/manage/workloads/mciworkloads`;
+    alert("VM creation request completed")
+    window.location = `/webconsole/operations/manage/workloads/mciworkloads`;
 
-	await webconsolejs["pages/operation/manage/mci"].refreshRowData(mciId, checked_array);
+    await webconsolejs["pages/operation/manage/mci"].refreshRowData(mciId, checked_array);
 
 }
 
