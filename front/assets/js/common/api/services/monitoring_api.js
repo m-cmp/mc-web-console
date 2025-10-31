@@ -61,11 +61,11 @@ export async function getInfluxDBMetrics(measurement, metric, range, period, nsI
   }
 
   var controller = "/api/" + "mc-observability/" + "GetMetricsByVMId";
-  const response = webconsolejs["common/api/http"].commonAPIPost(
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-  if (!response) { // Return CPU dummy data if not available
+  if (!response || !response.data) { // Return CPU dummy data if not available
     return {
       "responseData": {
         "data": [
@@ -180,142 +180,80 @@ export async function getInfluxDBMetrics(measurement, metric, range, period, nsI
       }
     };
   }
-  return response
+  return response.data
 
 }
 
-export async function monitoringPrediction() {
-
+export async function monitoringPrediction(nsId, mciId, vmId, measurement, startTime, endTime) {
+  // 기본값 설정: startTime은 12시간 전, endTime은 7일 후
+  const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - (12 * 60 * 60 * 1000));
+  const sevenDaysLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+  
+  // ISO 8601 형식으로 변환 (YYYY-MM-DDTHH:MM:SSZ)
+  const defaultStartTime = twelveHoursAgo.toISOString().split('.')[0] + 'Z';
+  const defaultEndTime = sevenDaysLater.toISOString().split('.')[0] + 'Z';
+  
   const data = {
     pathParams: {
-      "nsId": "ns01",
-      "targetId": "vm-1"
+      "nsId": nsId,
+      "mciId": mciId,
+      "vmId": vmId
     },
-    Request: {
-      "target_type": "vm",
-      "measurement": "cpu",
-      "prediction_range": "3h"
+    queryParams: {
+      "measurement": measurement,
+      "start_time": startTime || defaultStartTime,
+      "end_time": endTime || defaultEndTime
     }
-    // Request: {
-    //   "measurement": "cpu",
-    //   "range": "1h",
-    //   "group_time": "1h",
-    //   "group_by": [
-    //     "cpu"
-    //   ],
-    //   "limit": 10,
-    //   "fields": [
-    //     {
-    //       "function": "mean",
-    //       "field": "usage_idle"
-    //     }
-    //   ],
-    //   "conditions": [
-    //     {
-    //       "key": "target_id",
-    //       "value": "vm-1"
-    //     }
-    //   ]
-    // }
   }
 
-  var controller = "/api/" + "mc-observability/" + "Postprediction";
-  const response = webconsolejs["common/api/http"].commonAPIPost(
+  var controller = "/api/" + "mc-observability/" + "GetPredictionVMHistory";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-  if (!response) {
+  if (!response || !response.data) {
     return {
-      "data": {
-        "responseData": {
-          "data": {
-            "measurement": "cpu",
-            "ns_id": "ns01",
-            "target_id": "vm-1",
-            "target_type": "vm",
-            "values": [
-              {
-                "timestamp": "2024-10-24T07:10:00Z",
-                "value": 99.75
-              },
-              {
-                "timestamp": "2024-10-24T08:00:00Z",
-                "value": 99.7
-              },
-              {
-                "timestamp": "2024-10-24T09:00:00Z",
-                "value": 99.67
-              },
-              {
-                "timestamp": "2024-10-24T10:00:00Z",
-                "value": 99.64
-              },
-              {
-                "timestamp": "2024-10-24T11:00:00Z",
-                "value": 99.6
-              },
-              {
-                "timestamp": "2024-10-24T12:00:00Z",
-                "value": 99.57
-              },
-              {
-                "timestamp": "2024-10-24T13:00:00Z",
-                "value": 99.54
-              }
-            ]
+      "responseData": {
+        "ns_id": nsId,
+        "target_id": vmId,
+        "measurement": measurement,
+        "values": [
+          {
+            "timestamp": "2024-10-24T07:10:00Z",
+            "value": 99.75
           },
-          "rs_code": "200",
-          "rs_msg": "Success"
-        },
-        "status": {
-          "code": 200,
-          "message": "200 "
-        }
+          {
+            "timestamp": "2024-10-24T08:00:00Z",
+            "value": 99.7
+          },
+          {
+            "timestamp": "2024-10-24T09:00:00Z",
+            "value": 99.67
+          },
+          {
+            "timestamp": "2024-10-24T10:00:00Z",
+            "value": 99.64
+          },
+          {
+            "timestamp": "2024-10-24T11:00:00Z",
+            "value": 99.6
+          },
+          {
+            "timestamp": "2024-10-24T12:00:00Z",
+            "value": 99.57
+          },
+          {
+            "timestamp": "2024-10-24T13:00:00Z",
+            "value": 99.54
+          }
+        ]
       },
-      "status": 200,
-      "statusText": "OK",
-      "headers": {
-        "access-control-allow-origin": "*",
-        "content-length": "490",
-        "content-type": "application/json; charset=utf-8",
-        "date": "Thu, 24 Oct 2024 07:31:23 GMT",
-        "vary": "Origin"
-      },
-      "config": {
-        "transitional": {
-          "silentJSONParsing": true,
-          "forcedJSONParsing": true,
-          "clarifyTimeoutError": false
-        },
-        "adapter": [
-          "xhr",
-          "http"
-        ],
-        "transformRequest": [
-          null
-        ],
-        "transformResponse": [
-          null
-        ],
-        "timeout": 0,
-        "xsrfCookieName": "XSRF-TOKEN",
-        "xsrfHeaderName": "X-XSRF-TOKEN",
-        "maxContentLength": -1,
-        "maxBodyLength": -1,
-        "env": {},
-        "headers": {
-          "Accept": "application/json, text/plain, */*",
-          "Content-Type": "application/json"
-        },
-        "method": "post",
-        "url": "/api/mc-observability/Postprediction",
-        "data": "{\"pathParams\":{\"nsId\":\"ns01\",\"targetId\":\"vm-1\"},\"Request\":{\"target_type\":\"vm\",\"measurement\":\"cpu\",\"prediction_range\":\"6h\"}}"
-      },
-      "request": {}
+      "rs_code": "200",
+      "rs_msg": "Success"
     }
   }
-  return response
-  // return mock
+  return response.data
 }
 
 // Log 조회.
@@ -338,33 +276,40 @@ export async function getMonitoringLog(nsId, mciId, vmId, keyword) {
   return response
 }
 
-export async function getDetectionHistory() {
+export async function getDetectionHistory(nsId, mciId, vmId, measurement, startTime, endTime) {
+  // 기본값 설정: startTime은 12시간 전, endTime은 현재 시간
+  const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - (12 * 60 * 60 * 1000));
+  
+  // ISO 8601 형식으로 변환 (YYYY-MM-DDTHH:MM:SSZ)
+  const defaultStartTime = twelveHoursAgo.toISOString().split('.')[0] + 'Z';
+  const defaultEndTime = now.toISOString().split('.')[0] + 'Z';
+  
   const data = {
     pathParams: {
-      "nsId": "ns01",
-      "targetId": "vm-1"
+      "nsId": nsId,
+      "mciId": mciId,
+      "vmId": vmId
     },
     queryParams: {
-      "measurement": "cpu",
-      // "measurement": "mem",
-      "start_time": "2024-10-29T12:31:00Z",
-      // "end_time": "2002-07-02T06:49:28.605Z"
+      "measurement": measurement,
+      "start_time": startTime || defaultStartTime,
+      "end_time": endTime || defaultEndTime
     },
   }
 
-  var controller = "/api/" + "mc-observability/" + "Getanomalydetectionhistory";
+  var controller = "/api/" + "mc-observability/" + "GetAnomalyDetectionVMHistory";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
 
-  var respDetectionData = response.data.responseData;
-  if (!respDetectionData) {
+  if (!response || !response.data) {
     return {
-      "data": {
-        "ns_id": "ns01",
-        "target_id": "vm-1",
-        "measurement": "cpu",
+      "responseData": {
+        "ns_id": nsId,
+        "target_id": vmId,
+        "measurement": measurement,
         "values": [
           {
             "timestamp": "2024-10-24T06:20:00Z",
@@ -391,7 +336,7 @@ export async function getDetectionHistory() {
     }
   }
 
-  return respDetectionData
+  return response.data
 
 }
 
