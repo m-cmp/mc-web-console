@@ -811,7 +811,7 @@ export async function creatworkspaceProject() {
   let wsDesc = document.getElementById("workspace-modal-add-description").value
   const createdWorkspace = await webconsolejs["common/api/services/workspace_api"].createWorkspace(wsName, wsDesc);
   if (!createdWorkspace.success) {
-    alert(JSON.stringify(createdWorkspace.message))
+    webconsolejs["common/util"].showToast("Failed to create workspace: " + JSON.stringify(createdWorkspace.message), 'error');
     return
   }
   if (document.getElementById('workspace-modal-add-withprojects').checked) {
@@ -819,7 +819,7 @@ export async function creatworkspaceProject() {
     let multiprojects = Array.from(multiprojectSelect.selectedOptions, option => option.value);
     const createdWPmapping = await webconsolejs["common/api/services/workspace_api"].createWPmapping(createdWorkspace.message.id, multiprojects);
     if (!createdWPmapping.success) {
-      alert(JSON.stringify(createdWorkspace.message))
+      webconsolejs["common/util"].showToast("Failed to map projects to workspace: " + JSON.stringify(createdWPmapping.message), 'error');
       return
     }
   }
@@ -889,7 +889,7 @@ export async function deleteProjects() {
   checked_projects_array.forEach(async function (checkedProject) {
     var deleteWorkspaceProjectMappingByIdResp = await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceProjectMappingById(currentClickedWorkspaceId, checkedProject.id);
     if (!deleteWorkspaceProjectMappingByIdResp.success) {
-      alert(JSON.stringify(updateWPmappingsResp.message.error))
+      webconsolejs["common/util"].showToast("Failed to delete project mapping: " + JSON.stringify(deleteWorkspaceProjectMappingByIdResp.message.error), 'error');
     }
   })
   location.reload()
@@ -908,12 +908,12 @@ export async function addWorkspaceProject() {
   var projectDescription = document.getElementById("project-modal-add-description").value
   const createProjectResp = await webconsolejs["common/api/services/workspace_api"].createProject(projectName, projectDescription);
   if (!createProjectResp.success) {
-    alert(JSON.stringify(createProjectResp.message))
+    webconsolejs["common/util"].showToast("Failed to create project: " + JSON.stringify(createProjectResp.message), 'error');
     return
   } else {
     const createWPmappingResp = await webconsolejs["common/api/services/workspace_api"].createWPmapping(targetWorkspaceId, [createProjectResp.message.id]);
     if (!createWPmappingResp.success) {
-      alert(JSON.stringify(createWPmappingResp.message))
+      webconsolejs["common/util"].showToast("Failed to map project to workspace: " + JSON.stringify(createWPmappingResp.message), 'error');
       return
     } else {
       location.reload()
