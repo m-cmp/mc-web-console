@@ -49,61 +49,68 @@ export async function commonAPIPost(url, data, attempt) {
         console.log("Error from : ",url, error.response ? error.response.status : error.message);
         console.log("----------------------------");
         if (!attempt || attempt === undefined) {
-            if (error.response) {
-                const status = error.response.status;
-                switch (status) {
-                    case 400:
-                        alert("Bad Request: " + error.message);
-                        return error;
-                    case 401:
-                        console.log("status is 401", status)
-                        console.log("Attempting token refresh...")
-                        // Authentication failed - try token refresh
-                        try {
-                            const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
-                            console.log("authrefreshStatus", authrefreshStatus)
-                            if (authrefreshStatus) {
-                                console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
-                                return commonAPIPost(url, data, true);
-                            } else {
-                                console.error("Token refresh failed");
-                                alert("Session is expired. Please login again.");
-                                // 쿠키 정리
-                                document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                                document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                                window.location = "/auth/login";
-                                return;
-                            }
-                        } catch (refreshError) {
-                            console.error("Error during token refresh:", refreshError);
-                            alert("Failed to refresh session. Please login again.");
-                            // 쿠키 정리
-                            document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                            document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                            window.location = "/auth/login";
-                            return;
-                        }
-                    case 403:
-                        alert("Access Denied: " + error.message);
-                        return error;
-                    case 404:
-                        alert("Resource Not Found: " + error.message);
-                        return error;
-                    case 429:
-                        alert("Too Many Requests: " + error.message);
-                        return error;
-                    case 500:
-                        alert("Internal Server Error: " + error.message);
-                        return error;
-                    default:
-                        alert("Request Failed: " + error.message);
-                        return error;
+            if (error.response && error.response.status === 429) {
+                webconsolejs["common/util"].showToast("Too many requests. Please try again later.", 'warning');
+                return error;
+            }
+            // 404 에러는 데이터가 없는 정상적인 상황이므로 토큰 갱신하지 않음
+            if (error.response && error.response.status === 404) {
+                console.log("Resource not found (404) - this may be normal for empty data");
+                return error;
+            }
+            // 401 Unauthorized는 토큰 만료 또는 인증 실패
+            if (error.response && error.response.status === 401) {
+                const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
+                if (authrefreshStatus) {
+                    console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
+                    return commonAPIPost(url, data, true);
+                } else {
+                    webconsolejs["common/util"].showToast("Session has expired. Please login again.", 'error');
+                    window.location = "/auth/login";
+                    return;
+                }
+            }
+            // 403 Forbidden은 권한 부족
+            if (error.response && error.response.status === 403) {
+                webconsolejs["common/util"].showToast("Insufficient permissions. Please contact your administrator.", 'error');
+                return error;
+            }
+            // 500 Internal Server Error는 서버 오류
+            if (error.response && error.response.status === 500) {
+                webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
+                return error;
+            }
+            // 기타 HTTP 에러
+            if (error.response && (error.response.status !== 200)) {
+                const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
+                if (authrefreshStatus) {
+                    console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
+                    return commonAPIPost(url, data, true);
+                } else {
+                    // 토큰 갱신 실패 시 에러 메시지만 표시하고 로그인 페이지로 리다이렉트하지 않음
+                    webconsolejs["common/util"].showToast("An error occurred. Please try again later.", 'error');
+                    return error;
                 }
             }
         }
-        deactivePageLoader()
-        alert("request fail : "+ error.message);
-        return error
+        deactivePageLoader();
+        
+        // 네트워크 오류나 기타 예외 상황 처리
+        if (!error.response) {
+            // 네트워크 오류 (서버에 연결할 수 없음)
+            if (error.code === 'ECONNABORTED') {
+                webconsolejs["common/util"].showToast("Request timeout. Please check your network connection and try again.", 'error');
+            } else if (error.code === 'ERR_NETWORK') {
+                webconsolejs["common/util"].showToast("Network connection failed. Please check your internet connection and try again.", 'error');
+            } else {
+                webconsolejs["common/util"].showToast("An error occurred while processing the request: " + error.message, 'error');
+            }
+        } else {
+            // HTTP 에러가 있지만 위에서 처리되지 않은 경우
+            webconsolejs["common/util"].showToast("An error occurred while processing the request. (Status code: " + error.response.status + ")", 'error');
+        }
+        
+        return error;
     }
 }
 
@@ -131,6 +138,32 @@ export async function commonAPIPostWithoutRetry(url, data) {
             }
         }
         console.log("----------------------------");
+        console.log("Request failed :", error);
+        
+        // 에러 메시지 표시 (retry 없이)
+        if (error.response) {
+            if (error.response.status === 401) {
+                webconsolejs["common/util"].showToast("Authentication required. Please login again.", 'error');
+            } else if (error.response.status === 403) {
+                webconsolejs["common/util"].showToast("Insufficient permissions. Please contact your administrator.", 'error');
+            } else if (error.response.status === 404) {
+                console.log("Requested resource not found.");
+            } else if (error.response.status === 500) {
+                webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
+            } else {
+                webconsolejs["common/util"].showToast("An error occurred while processing the request. (Status code: " + error.response.status + ")", 'error');
+            }
+        } else {
+            // 네트워크 오류
+            if (error.code === 'ECONNABORTED') {
+                webconsolejs["common/util"].showToast("Request timeout. Please check your network connection and try again.", 'error');
+            } else if (error.code === 'ERR_NETWORK') {
+                webconsolejs["common/util"].showToast("Network connection failed. Please check your internet connection and try again.", 'error');
+            } else {
+                webconsolejs["common/util"].showToast("An error occurred while processing the request: " + error.message, 'error');
+            }
+        }
+        
         return error;
     }
 }
