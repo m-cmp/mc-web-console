@@ -59,9 +59,7 @@ function initWorkspaceTable() {
 
   // 행 클릭 시
   table.on("rowClick", function (e, row) {
-    console.log(row)
     var workspaceID = row.getCell("workspace_id").getValue();
-    console.log("workspaceID", workspaceID)
     getSelectedWorkspaceData(workspaceID)
 
   });
@@ -69,8 +67,6 @@ function initWorkspaceTable() {
   //  선택된 여러개 row에 대해 처리
   table.on("rowSelectionChanged", function (data, rows) {
     checked_array = data
-    console.log("checked_array", checked_array)
-    console.log("rowsrows", data)
   });
 }
 
@@ -89,9 +85,7 @@ async function getSelectedWorkspaceData(workspaceID) {
     data
   );
 
-  console.log("response", response)
   var workspaceData = response.data.responseData.responseData;
-  console.log("workspaceData", workspaceData)
 
   // SET MCIS Info 
   setWorkspaceInfoData(workspaceData)
@@ -102,16 +96,11 @@ async function getSelectedWorkspaceData(workspaceID) {
 
 // 클릭한 mci info 세팅
 function setWorkspaceInfoData(workspaceData) {
-  console.log("setWorkspaceInfoData", workspaceData)
   try {
     var workspaceId = workspaceData.workspace_id;
-    console.log("workspaceId ", workspaceId)
     var id = workspaceData.id;
-    console.log("id ", id)
     var name = workspaceData.name;
-    console.log("name ", name)
     var description = workspaceData.description;
-    console.log("description ", description)
 
     $("#info_id").val("");
     $("#info_name").val("");
@@ -220,11 +209,7 @@ document.addEventListener("DOMContentLoaded", getWorkspaceList);
 // workspace 목록조회
 async function getWorkspaceList() {
 
-  console.log("getWorkspaceList")
-  console.log($("#select-current-workspace"));
   var selectedWs = $("#select-current-workspace").val()//
-
-  console.log("~~~~~~~ ", selectedWs)
 
   const data = {
     pathParams: {
@@ -237,7 +222,6 @@ async function getWorkspaceList() {
     controller,
     data
   );
-  console.log("response ", response)
 
   var workspaceList = response.data.responseData;//response 자체가 array임.  
 
@@ -247,8 +231,6 @@ async function getWorkspaceList() {
 // MCIS 목록 조회 후 화면에 Set
 
 function getWorkspaceListCallbackSuccess(workspaceList) {
-  console.log("getWorkspaceListCallbackSuccess");
-  console.log("workspaceList : ", workspaceList);
   table.setData(workspaceList);
 }
 
@@ -260,15 +242,13 @@ function getWorkspaceListCallbackSuccess(workspaceList) {
 
 /////////////// Workspace Handling /////////////////
 export async function deleteWorkspace() {
-  console.log("deleteWorkspace ", checked_array);
 
   if (checked_array.length == 0 || checked_array.length > 1) {
-    alert(" 1개만 선택 하세요 ")
+    alert("please select only one workspace");
     return;
   }
 
   for (const workspace of checked_array) {
-    console.log(workspace.id)
     let data = {
       pathParams: {
         "workspaceId": workspace.workspace_id,
@@ -279,9 +259,7 @@ export async function deleteWorkspace() {
       controller,
       data
     );
-    console.log(response)
     if (response.data.status.code == "200" || response.data.status.code == "201") {
-      console.log("successfully deleted")
       // 저장 후 workspace 목록 조회
       getWorkspaceList()
     }
@@ -298,7 +276,6 @@ function validWorkspace() {
 
 // workspace 저장 및 Create form 닫기
 export async function saveWorkspace() {
-  console.log("add workspace")
 
   if (validWorkspace()) {
 
@@ -317,7 +294,6 @@ export async function saveWorkspace() {
       controller,
       data
     );
-    console.log(response)
     // save success 시 
     if (response.data.status.code == "200" || response.data.status.code == "201") {
       var div = document.getElementById("create_workspace");
@@ -332,7 +308,6 @@ export async function saveWorkspace() {
 
 // Info Form 닫기
 export function closeInfoForm() {
-  console.log(" close form ")
 
   var div = document.getElementById("info_workspace");
   webconsolejs["partials/layout/navigatePages"].toggleElement(div)

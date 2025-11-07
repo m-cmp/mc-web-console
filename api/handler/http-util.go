@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -246,6 +247,15 @@ func CommonHttpToCommonResponse(url string, s interface{}, httpMethod string, au
 	log.Println("CommonHttp - METHOD:" + httpMethod + " => url:" + url)
 	log.Println("isauth:", auth)
 
+	// FormData 요청인지 확인 (file 필드가 있는지 체크)
+	log.Println("Checking for file field in request data...")
+	if hasFileField(s) {
+		log.Println("File field detected, calling handleFileTransferRequest")
+		return handleFileTransferRequest(url, s, httpMethod, auth)
+	} else {
+		log.Println("No file field detected, proceeding with normal JSON processing")
+	}
+
 	jsonData, err := json.Marshal(s)
 	if err != nil {
 		log.Println("commonPostERR : json.Marshal : ", err.Error())
@@ -369,4 +379,175 @@ func CommonResponseStatusInternalServerError(responseData interface{}) *CommonRe
 		ResponseData: responseData,
 		Status:       webStatus,
 	}
+}
+
+// handleFileTransferRequest는 파일 전송 요청을 처리합니다
+func handleFileTransferRequest(url string, s interface{}, httpMethod string, auth string) (*CommonResponse, error) {
+	log.Println("handleFileTransferRequest - Processing file transfer request")
+
+	// JSON 데이터를 파싱
+	jsonData, err := json.Marshal(s)
+	if err != nil {
+		log.Println("Error marshaling request data:", err)
+		return nil, err
+	}
+
+	var requestData map[string]interface{}
+	err = json.Unmarshal(jsonData, &requestData)
+	if err != nil {
+		log.Println("Error unmarshaling request data:", err)
+		return nil, err
+	}
+
+	// FormData 생성
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+
+	// path 필드 추가 (최상위 또는 request 내부에서 찾기)
+	var path string
+	if p, ok := requestData["path"].(string); ok {
+		path = p
+	} else if request, ok := requestData["request"].(map[string]interface{}); ok {
+		if p, ok := request["path"].(string); ok {
+			path = p
+		}
+	}
+	if path != "" {
+		writer.WriteField("path", path)
+	}
+
+	// file 필드 추가 (최상위 또는 request 내부에서 찾기)
+	var fileData map[string]interface{}
+	if file, ok := requestData["file"].(map[string]interface{}); ok {
+		fileData = file
+	} else if request, ok := requestData["request"].(map[string]interface{}); ok {
+		if file, ok := request["file"].(map[string]interface{}); ok {
+			fileData = file
+		}
+	}
+
+	if fileData != nil {
+		if fileName, ok := fileData["name"].(string); ok {
+			if fileBase64, ok := fileData["data"].(string); ok {
+				// base64 데이터에서 실제 파일 데이터 추출
+				commaIndex := strings.Index(fileBase64, ",")
+				if commaIndex != -1 {
+					fileBase64 = fileBase64[commaIndex+1:]
+				}
+
+				// base64 디코딩
+				fileBytes, err := base64.StdEncoding.DecodeString(fileBase64)
+				if err != nil {
+					log.Println("Error decoding base64 file data:", err)
+					return nil, err
+				}
+
+				// 파일 파트 생성
+				part, err := writer.CreateFormFile("file", fileName)
+				if err != nil {
+					log.Println("Error creating form file:", err)
+					return nil, err
+				}
+
+				// 파일 데이터 쓰기
+				_, err = part.Write(fileBytes)
+				if err != nil {
+					log.Println("Error writing file data:", err)
+					return nil, err
+				}
+			}
+		}
+	}
+
+	writer.Close()
+
+	// HTTP 요청 생성
+	req, err := http.NewRequest(httpMethod, url, &buf)
+	if err != nil {
+		log.Println("Error creating request:", err)
+		return nil, err
+	}
+
+	// Content-Type 헤더 설정
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if auth != "" {
+		req.Header.Add("Authorization", auth)
+	}
+
+	// HTTP 클라이언트로 요청
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error making request:", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// 응답 읽기
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading response:", err)
+		return nil, err
+	}
+
+	// 응답 파싱
+	var responseData interface{}
+	err = json.Unmarshal(respBody, &responseData)
+	if err != nil {
+		// JSON이 아닌 경우 문자열로 처리
+		responseData = string(respBody)
+	}
+
+	// CommonResponse 생성
+	webStatus := WebStatus{
+		StatusCode: resp.StatusCode,
+		Message:    resp.Status,
+	}
+
+	return &CommonResponse{
+		ResponseData: responseData,
+		Status:       webStatus,
+	}, nil
+}
+
+// hasFileField는 요청 데이터에 file 필드가 있는지 확인합니다
+func hasFileField(s interface{}) bool {
+
+	// JSON 데이터를 파싱
+	jsonData, err := json.Marshal(s)
+	if err != nil {
+		log.Println("Error marshaling data for file field check:", err)
+		return false
+	}
+
+	var requestData map[string]interface{}
+	err = json.Unmarshal(jsonData, &requestData)
+	if err != nil {
+		log.Println("Error unmarshaling data for file field check:", err)
+		return false
+	}
+
+	// file 필드가 최상위에 있는지 확인
+	if requestData["file"] != nil {
+		return true
+	}
+
+	// request 필드가 있는지 확인 (기존 구조 지원)
+	if requestData["request"] != nil {
+		if request, ok := requestData["request"].(map[string]interface{}); ok {
+			// file 필드가 있는지 확인
+			if request["file"] != nil {
+				return true
+			} else {
+				log.Println("No 'file' field in request data")
+			}
+		} else {
+			log.Println("hasFileField: 'request' field is not a map")
+		}
+	} else {
+		log.Println("No 'request' field found")
+	}
+
+	log.Println("hasFileField: No file field detected, returning false")
+	return false
 }

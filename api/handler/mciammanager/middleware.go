@@ -1,7 +1,6 @@
 package mciammanager
 
 import (
-	"fmt"
 	"log"
 	"mc_web_console_api/handler"
 	"net/http"
@@ -39,17 +38,36 @@ func getCertsEndpoint() string {
 	}
 	baseUrl := viper.Get("services.mc-iam-manager.baseurl").(string)
 	certUri := viper.Get("serviceActions.mc-iam-manager.Getcerts.resourcePath").(string)
-	fmt.Println("Cert Endpoint is : ", baseUrl+certUri)
 	return baseUrl + certUri
 }
 
 func TokenValidMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		accessToken := strings.TrimPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
+
+		// 토큰이 비어있는지 확인
+		if accessToken == "" {
+			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Access token is missing"}))
+		}
+
+		// JWT 토큰 형식 기본 검증 (3개 부분으로 구성)
+		parts := strings.Split(accessToken, ".")
+		if len(parts) != 3 {
+			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Invalid token format"}))
+		}
+
 		err := iamtokenvalidator.IsTokenValid(accessToken)
 		if err != nil {
+			if strings.Contains(err.Error(), "token signature is invalid") {
+				return c.Render(http.StatusForbidden, render.JSON(map[string]interface{}{"error": err.Error()}))
+			} else if strings.Contains(err.Error(), "token is expired") {
+				return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
+			} else if strings.Contains(err.Error(), "token contains an invalid number of segments") {
+				log.Printf("Malformed token: %s", err.Error())
+				return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": "Invalid token format"}))
+			}
 			log.Println(err.Error())
-			return c.Render(http.StatusUnauthorized, render.JSON(map[string]interface{}{"error": err.Error()}))
+			return c.Render(http.StatusInternalServerError, render.JSON(map[string]interface{}{"error": err.Error()}))
 		}
 		return next(c)
 	}

@@ -40,7 +40,6 @@ export async function getUserProjectList(workspaceId) {
   //   description: "Default Project",
   //   ns_id: "Default"
   // }];
-  console.log("getUserProjectList ", projectList)
   return projectList
 }
 
@@ -58,7 +57,6 @@ export async function getWorkspaceListByUser() {
   // 세션에서 찾기
   let userWorkspaceList = await webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceProjectList();
   if (userWorkspaceList == null) {// 없으면 조회
-    console.log("not saved. get ")
     var userWorkspaceProjectList = await getWorkspaceProjectListByUserToken()// workspace 목록, project 목록 조회
     setWorkspaceProjectList(userWorkspaceProjectList)
     // userWorkspaceProjectList.forEach(item => {
@@ -137,7 +135,6 @@ export function setWorkspaceSelectBox(workspaceList, curWorkspaceId) {
   }
   var workspaceExists = false
 
-  console.log("setWorkspaceSelectbox --------------------")
   //console.log(workspaceList)
   const defaultOpt = document.createElement("option");
   defaultOpt.value = ""
@@ -148,8 +145,6 @@ export function setWorkspaceSelectBox(workspaceList, curWorkspaceId) {
     const opt = document.createElement("option");
     opt.value = workspaceList[w].id;
     opt.textContent = workspaceList[w].name;
-    console.log("curWorkspaceId", curWorkspaceId)
-    console.log("workspaceList[w]", workspaceList[w])
     if (curWorkspaceId != "" && workspaceList[w].id == curWorkspaceId) {
       opt.setAttribute("selected", "selected");
       workspaceExists = true
@@ -166,7 +161,6 @@ export function setPrjSelectBox(projectList, curProjectId) {
 
   let projectListselectBox = document.getElementById("select-current-project");
 
-  console.log("setPrjSelectBox projectList ", projectList)
   while (projectListselectBox.options.length > 0) {
     projectListselectBox.remove(0);
   }
@@ -177,7 +171,6 @@ export function setPrjSelectBox(projectList, curProjectId) {
   projectListselectBox.appendChild(defaultOpt);
 
   for (const p in projectList) {
-    console.log("p ", p)
     const opt = document.createElement("option");
     opt.value = projectList[p].id;
     opt.textContent = projectList[p].name;
@@ -203,7 +196,6 @@ export async function createWorkspace(name, description) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -270,7 +262,6 @@ export async function createProject(prjName, prjDesc) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -326,7 +317,6 @@ export async function createRole(roleName, roleDescription) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -356,7 +346,6 @@ export async function deleteRoleById(reqRoleId) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -372,7 +361,6 @@ export async function getPermissions() {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -392,7 +380,6 @@ export async function getdependentPermissionsByPolicyId(reqPolicyid) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -417,7 +404,6 @@ export async function appendResourcePermissionPolicesByOperationId(reqFramework,
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -442,7 +428,6 @@ export async function deleteResourcePermissionPolicesByOperationId(reqFramework,
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
@@ -467,7 +452,7 @@ export async function createWorkspaceUserRoleMappingByName(wsId, reqRoleID, User
 }
 
 export async function getWorkspaceUserRoleMappingListOrderbyWorkspace(wsId) {
-  const controller = '/api/mc-iam-manager/GetWorkspaceUserRoleMappingListOrderbyWorkspace'
+  const controller = '/api/mc-iam-manager/ListUsersAndRolesByWorkspaces'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     null
@@ -507,7 +492,7 @@ export async function deleteWorkspaceUserRoleMapping(wsId, requserId) {
 // handle workspace projects mapping
 
 export async function createWPmapping(worskspaceId, projectsArr) {
-  const controller = '/api/mc-iam-manager/CreateWPmapping'
+  const controller = '/api/mc-iam-manager/createProject'
   var data = {
     request: {
       "workspaceId": worskspaceId,
@@ -518,16 +503,15 @@ export async function createWPmapping(worskspaceId, projectsArr) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
 
 export async function updateWPmappings(wsId, projectsIdsArr) {
-  const controller = '/api/mc-iam-manager/UpdateWPmappings'
+  const controller = '/api/mc-iam-manager/addProjectToWorkspace'
   var data = {
     request: {
-      workspaceId: wsId,
+      workspaceId: wsId.toString(),
       projectIds: projectsIdsArr,
     },
   };
@@ -538,18 +522,18 @@ export async function updateWPmappings(wsId, projectsIdsArr) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
 
 export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
-  const controller = '/api/mc-iam-manager/DeleteWorkspaceProjectMappingById'
+  const controller = '/api/mc-iam-manager/removeWorkspaceFromProject'
   var data = {
-    pathParams: {
-      workspaceId: wsId,
-      projectId: projectsId,
-    },
+
+    request: {
+      workspaceId: wsId, 
+      projectIds: projectsId
+    }
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
@@ -558,16 +542,15 @@ export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
   try {
     return { success: true, message: response.data.responseData };
   } catch (error) {
-    console.log(error)
     return { success: false, message: response.response.data.responseData };
   }
 }
 
 export async function getWPmappingListByWorkspaceId(wsId) {
-  const controller = '/api/mc-iam-manager/GetWPmappingListByWorkspaceId'
+  const controller = '/api/mc-iam-manager/getWorkspaceProjectsByWorkspaceId'
   var data = {
     pathParams: {
-      workspaceId: wsId,
+      workspaceId: wsId.toString(),
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -578,7 +561,7 @@ export async function getWPmappingListByWorkspaceId(wsId) {
 }
 
 export async function getWPmappingListOrderbyWorkspace() {
-  const controller = '/api/mc-iam-manager/GetWPmappingListOrderbyWorkspace'
+  const controller = '/api/mc-iam-manager/listWorkspaceProjects'
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     null

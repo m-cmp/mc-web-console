@@ -17,7 +17,6 @@ function hideLoader() {
 }
 
 export function toggleElement(elem) {
-    console.log("elem",elem)
     // 자기 자신에 대한 Toggle
     if (elem.classList.contains("active")) {
         elem.classList.remove('active')
@@ -65,7 +64,6 @@ window.addEventListener('load', hideLoader);
 
 */
 export function addPageHeaderButton(targetSection, createBtnName, onclickEvent){
-    console.log("addPageHeaderButton")
     var buttonHtml = `<a
       ${targetSection ? 'href="#'+targetSection +'"' : 'href="#"'}
       class="btn btn-primary"

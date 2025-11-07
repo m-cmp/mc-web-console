@@ -1,52 +1,71 @@
 export async function getPlugIns() {
+  try {
+    var controller = "/api/" + "mc-observability/" + "Getplugins";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+    )
+    
+    var respMeasurement = response.data.responseData;
 
-  var controller = "/api/" + "mc-observability/" + "Getplugins";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-  )
-
-  var respMeasureMent = response.data.responseData;
-
-  return respMeasureMent
+    return respMeasurement
+  } catch (error) {
+    console.error("Error occurred while getting plugins:", error);
+    throw error;
+  }
 }
 
-export async function getInfluxDBMetrics(measurement, range, vmId) {
+export async function getMeasurementFields() {
+    try {
+        var controller = "/api/" + "mc-observability/" + "GetMeasurementFields";
+        const response = await webconsolejs["common/api/http"].commonAPIPost(
+            controller,
+        )
 
+        var respMeasurementFields = response.data.responseData;
+
+        return respMeasurementFields
+    } catch (error) {
+        console.error("Error occurred while getting measurement fields:", error);
+        throw error;
+    }
+}
+
+export async function getInfluxDBMetrics(measurement, metric, range, period, nsId, mciId, vmId) {
   const data = {
-
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+      vmId: vmId,
+    },
     Request: {
       "measurement": measurement,
-      // "measurement": "cpu",
       "range": range,
-      // "range": "1h",
-      "group_time": "3h",
+      "group_time": period,
       "group_by": [
-        measurement
-        // "cpu"
+        "vm_id"
       ],
-      "limit": 10,
+      "limit": 20,
       "fields": [
         {
           "function": "mean",
-          "field": "usage_idle"
+          "field": metric
         }
       ],
       "conditions": [
-        {
-          "key": "target_id",
-          "value": "vm-1"
-          // "value": "g1-1-1"
-        }
+        // {
+        //   "key": "cpu",
+        //   "value": "cpu-total"
+        // }
       ]
     }
   }
 
-  var controller = "/api/" + "mc-observability/" + "GETInfluxDBMetrics";
-  const response = webconsolejs["common/api/http"].commonAPIPost(
+  var controller = "/api/" + "mc-observability/" + "GetMetricsByVMId";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-  if (!response) {
+  if (!response || !response.data) { // Return CPU dummy data if not available
     return {
       "responseData": {
         "data": [
@@ -161,228 +180,136 @@ export async function getInfluxDBMetrics(measurement, range, vmId) {
       }
     };
   }
-  return response
+  return response.data
 
 }
 
-export async function monitoringPrediction() {
-
+export async function monitoringPrediction(nsId, mciId, vmId, measurement, startTime, endTime) {
+  // 기본값 설정: startTime은 12시간 전, endTime은 7일 후
+  const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - (12 * 60 * 60 * 1000));
+  const sevenDaysLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+  
+  // ISO 8601 형식으로 변환 (YYYY-MM-DDTHH:MM:SSZ)
+  const defaultStartTime = twelveHoursAgo.toISOString().split('.')[0] + 'Z';
+  const defaultEndTime = sevenDaysLater.toISOString().split('.')[0] + 'Z';
+  
   const data = {
     pathParams: {
-      "nsId": "ns01",
-      "targetId": "vm-1"
+      "nsId": nsId,
+      "mciId": mciId,
+      "vmId": vmId
     },
-    Request: {
-      "target_type": "vm",
-      "measurement": "cpu",
-      "prediction_range": "3h"
+    queryParams: {
+      "measurement": measurement,
+      "start_time": startTime || defaultStartTime,
+      "end_time": endTime || defaultEndTime
     }
-    // Request: {
-    //   "measurement": "cpu",
-    //   "range": "1h",
-    //   "group_time": "1h",
-    //   "group_by": [
-    //     "cpu"
-    //   ],
-    //   "limit": 10,
-    //   "fields": [
-    //     {
-    //       "function": "mean",
-    //       "field": "usage_idle"
-    //     }
-    //   ],
-    //   "conditions": [
-    //     {
-    //       "key": "target_id",
-    //       "value": "vm-1"
-    //     }
-    //   ]
-    // }
   }
 
-  var controller = "/api/" + "mc-observability/" + "Postprediction";
-  const response = webconsolejs["common/api/http"].commonAPIPost(
+  var controller = "/api/" + "mc-observability/" + "GetPredictionVMHistory";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-  if (!response) {
+  if (!response || !response.data) {
     return {
-      "data": {
-        "responseData": {
-          "data": {
-            "measurement": "cpu",
-            "ns_id": "ns01",
-            "target_id": "vm-1",
-            "target_type": "vm",
-            "values": [
-              {
-                "timestamp": "2024-10-24T07:10:00Z",
-                "value": 99.75
-              },
-              {
-                "timestamp": "2024-10-24T08:00:00Z",
-                "value": 99.7
-              },
-              {
-                "timestamp": "2024-10-24T09:00:00Z",
-                "value": 99.67
-              },
-              {
-                "timestamp": "2024-10-24T10:00:00Z",
-                "value": 99.64
-              },
-              {
-                "timestamp": "2024-10-24T11:00:00Z",
-                "value": 99.6
-              },
-              {
-                "timestamp": "2024-10-24T12:00:00Z",
-                "value": 99.57
-              },
-              {
-                "timestamp": "2024-10-24T13:00:00Z",
-                "value": 99.54
-              }
-            ]
+      "responseData": {
+        "ns_id": nsId,
+        "target_id": vmId,
+        "measurement": measurement,
+        "values": [
+          {
+            "timestamp": "2024-10-24T07:10:00Z",
+            "value": 99.75
           },
-          "rs_code": "200",
-          "rs_msg": "Success"
-        },
-        "status": {
-          "code": 200,
-          "message": "200 "
-        }
+          {
+            "timestamp": "2024-10-24T08:00:00Z",
+            "value": 99.7
+          },
+          {
+            "timestamp": "2024-10-24T09:00:00Z",
+            "value": 99.67
+          },
+          {
+            "timestamp": "2024-10-24T10:00:00Z",
+            "value": 99.64
+          },
+          {
+            "timestamp": "2024-10-24T11:00:00Z",
+            "value": 99.6
+          },
+          {
+            "timestamp": "2024-10-24T12:00:00Z",
+            "value": 99.57
+          },
+          {
+            "timestamp": "2024-10-24T13:00:00Z",
+            "value": 99.54
+          }
+        ]
       },
-      "status": 200,
-      "statusText": "OK",
-      "headers": {
-        "access-control-allow-origin": "*",
-        "content-length": "490",
-        "content-type": "application/json; charset=utf-8",
-        "date": "Thu, 24 Oct 2024 07:31:23 GMT",
-        "vary": "Origin"
-      },
-      "config": {
-        "transitional": {
-          "silentJSONParsing": true,
-          "forcedJSONParsing": true,
-          "clarifyTimeoutError": false
-        },
-        "adapter": [
-          "xhr",
-          "http"
-        ],
-        "transformRequest": [
-          null
-        ],
-        "transformResponse": [
-          null
-        ],
-        "timeout": 0,
-        "xsrfCookieName": "XSRF-TOKEN",
-        "xsrfHeaderName": "X-XSRF-TOKEN",
-        "maxContentLength": -1,
-        "maxBodyLength": -1,
-        "env": {},
-        "headers": {
-          "Accept": "application/json, text/plain, */*",
-          "Content-Type": "application/json"
-        },
-        "method": "post",
-        "url": "/api/mc-observability/Postprediction",
-        "data": "{\"pathParams\":{\"nsId\":\"ns01\",\"targetId\":\"vm-1\"},\"Request\":{\"target_type\":\"vm\",\"measurement\":\"cpu\",\"prediction_range\":\"6h\"}}"
-      },
-      "request": {}
+      "rs_code": "200",
+      "rs_msg": "Success"
     }
   }
-  return response
-  // return mock
+  return response.data
 }
 
 // Log 조회.
-//      limit : 가져올 row 갯수 
-//      range : ??
-//      conditions :
-//          key:"tag.ns_id", value:""       -> value는 선택된 nsId
-//          key:"tag.mci_id", value:""      -> value는 선택된 mciId
-//          key:"tag.target_id", value:""   -> value는 선택된 vmId
-
-//          key:"tail.message", value:""    -> value는 filter하고자 하는 keyword
-export async function getMonitoringLog(nsId, mciId, targetId, keyword) {
-  //GET_OpensearchLogs
-
-  const data = {}
-  let request = {}
-  let conditions = new Array();
-  if (nsId != "") {
-    let aCondition = {}
-    aCondition.key = "tag.ns_id";
-    aCondition.value = nsId;
-    conditions.push(aCondition)
-  }
-  if (mciId != "") {
-    let aCondition = {}
-    aCondition.key = "tag.mci_id";
-    aCondition.value = mciId;
-    conditions.push(aCondition)
-  }
-  if (targetId != "") {
-    let aCondition = {}
-    aCondition.key = "tag.target_id";
-    aCondition.value = targetId;
-    conditions.push(aCondition)
-  }
-  if (keyword != "") {
-    let aCondition = {}
-    aCondition.key = "tail.message";
-    aCondition.value = keyword
-    conditions.push(aCondition)
+export async function getMonitoringLog(nsId, mciId, vmId, keyword) {
+    var query = "{NS_ID=\"" + nsId + "\", MCI_ID=\"" + mciId + "\", VM_ID=\"" + vmId + "\"} |~ \"(?i)" + keyword + "\""
+    const data = {
+    queryParams: {
+      "query": query,
+      "limit": "20",
+    },
   }
 
-  //request.range = ""
-  request.limit = 100;
-  request.conditions = conditions;
-  data.request = request;
 
-
-  var controller = "/api/" + "mc-observability/" + "GETOpensearchLogs";
+  var controller = "/api/" + "mc-observability/" + "LogRangeQuery";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
 
-  console.log("response ", response)
   return response
 }
 
-export async function getDetectionHistory() {
+export async function getDetectionHistory(nsId, mciId, vmId, measurement, startTime, endTime) {
+  // 기본값 설정: startTime은 12시간 전, endTime은 현재 시간
+  const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - (12 * 60 * 60 * 1000));
+  
+  // ISO 8601 형식으로 변환 (YYYY-MM-DDTHH:MM:SSZ)
+  const defaultStartTime = twelveHoursAgo.toISOString().split('.')[0] + 'Z';
+  const defaultEndTime = now.toISOString().split('.')[0] + 'Z';
+  
   const data = {
     pathParams: {
-      "nsId": "ns01",
-      "targetId": "vm-1"
+      "nsId": nsId,
+      "mciId": mciId,
+      "vmId": vmId
     },
     queryParams: {
-      "measurement": "cpu",
-      // "measurement": "mem",
-      "start_time": "2024-10-29T12:31:00Z",
-      // "end_time": "2002-07-02T06:49:28.605Z"
+      "measurement": measurement,
+      "start_time": startTime || defaultStartTime,
+      "end_time": endTime || defaultEndTime
     },
   }
 
-  var controller = "/api/" + "mc-observability/" + "Getanomalydetectionhistory";
+  var controller = "/api/" + "mc-observability/" + "GetAnomalyDetectionVMHistory";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
 
-  var respDetectionData = response.data.responseData;
-  console.log("respDetectionData", respDetectionData)
-  if (!respDetectionData) {
+  if (!response || !response.data) {
     return {
-      "data": {
-        "ns_id": "ns01",
-        "target_id": "vm-1",
-        "measurement": "cpu",
+      "responseData": {
+        "ns_id": nsId,
+        "target_id": vmId,
+        "measurement": measurement,
         "values": [
           {
             "timestamp": "2024-10-24T06:20:00Z",
@@ -409,14 +336,14 @@ export async function getDetectionHistory() {
     }
   }
 
-  return respDetectionData
+  return response.data
 
 }
 
 // 모니터링 Agent가 설치된 vm 목록 by ns, mci
-export async function getTargetsNsMci(nsId, mciId) {
+export async function getVMByNsMci(nsId, mciId) {
 
-  var controller = "/api/" + "mc-observability/" + "GetTargetsNSMCI";
+  var controller = "/api/" + "mc-observability/" + "GetVMByNsMci";
   let data = {
     pathParams: {
       nsId: nsId,
@@ -435,13 +362,13 @@ export async function getTargetsNsMci(nsId, mciId) {
 }
 
 export async function InstallMonitoringAgent(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "PostTarget";
+  var controller = "/api/" + "mc-observability/" + "PostVM";
   
   let data = {
     pathParams: {
       nsId: nsId,
       mciId: mciId,
-      targetId: vmId,
+      vmId: vmId,
     },
     request: {
       name:vmId
@@ -458,7 +385,7 @@ export async function InstallMonitoringAgent(nsId, mciId, vmId){
 }
 
 export async function UninstallMonitoringAgent(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "DeleteTarget";
+  var controller = "/api/" + "mc-observability/" + "DeleteVM";
   
   let data = {
     pathParams: {
@@ -477,14 +404,14 @@ export async function UninstallMonitoringAgent(nsId, mciId, vmId){
   
 }
 
-export async function GetMonitoringTarget(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "Gettarget";
+export async function GetMonitoringVM(nsId, mciId, vmId){
+  var controller = "/api/" + "mc-observability/" + "GetVM";
   
   let data = {
     pathParams: {
       nsId: nsId,
       mciId: mciId,
-      targetId: vmId,
+      vmId: vmId,
     },
   };
 
@@ -498,13 +425,13 @@ export async function GetMonitoringTarget(nsId, mciId, vmId){
 }
 
 export async function GetMetricitems(nsId, mciId, vmId){
-  var controller = "/api/" + "mc-observability/" + "Getitems";
+  var controller = "/api/" + "mc-observability/" + "GetMonitoringItems";
   
   let data = {
     pathParams: {
       nsId: nsId,
       mciId: mciId,
-      targetId: vmId,
+      vmId: vmId,
     },
   };
 

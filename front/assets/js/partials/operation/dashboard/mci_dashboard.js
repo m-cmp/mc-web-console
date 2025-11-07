@@ -1,10 +1,8 @@
-console.log("mci_dashboard.js");
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project change project ", project)
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
 
   getMciListCallbackSuccess(respMciList);
@@ -19,8 +17,6 @@ var returnFunction;
 // 페이지 로드 시 prj 값 받아와 getMciList 호출
 // partial의 변경내용을 parent로 알려주기 위해 callbackStatusChangedFunction 정의
 export async function initMciDashboard(callbackfunction, workspaceProject) {
-  console.log("initMciDashboard ")
-  console.log("workspaceProject ", workspaceProject)
   returnFunction = callbackfunction
 
   if (workspaceProject.projectId != "") {
@@ -36,7 +32,6 @@ export async function initMciDashboard(callbackfunction, workspaceProject) {
 
 // mciList 조회 성공시 화면에 Set
 function getMciListCallbackSuccess(caller, mciList) {
-  console.log("getMciListCallbackSuccess");
   
   // totalMciListObj = mciList.mci;
   totalMciListObj = mciList.mci;
@@ -47,7 +42,6 @@ function getMciListCallbackSuccess(caller, mciList) {
   returnMciListObj.totalMciStatusMap = setToTalMciStatus(totalMciListObj);
   returnMciListObj.totalVmStatusMap = setTotalVmStatus(totalMciListObj);
 
-  console.log("before callback ", returnMciListObj)
   // 조회가 되면 parent로 변경내용을 알려 줌.
   eval(returnFunction)("mcichanged", returnMciListObj);
 
@@ -60,19 +54,16 @@ function getMciListCallbackSuccess(caller, mciList) {
 
 // 모든 mci의 상태값 map에 set
 function setToTalMciStatus(totalMciListObj) {
-  console.log("setToTalMciStatus");
   //var totalMciStatusMap = new Map();
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
 
       var aMciStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateMciStatusCount(aMci);
-      console.log("aMci.id : ", aMci.id);
-      console.log("mciStatusMap ::: ", aMciStatusCountMap);
       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
     }
   } catch (e) {
-    console.log("mci status error", e);
+    console.error(e);
   }
   //displayMciStatusArea(totalMciStatusMap);
   return totalMciStatusMap;
@@ -84,12 +75,11 @@ function setTotalVmStatus(totalMciListObj) {
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
-      console.log("aMci : ", aMci);
       var vmStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateVmStatusCount(aMci);
       totalVmStatusMap.set(aMci.id, vmStatusCountMap);
     }
   } catch (e) {
-    console.log("mci status error");
+    console.error(e);
   }
   //displayVmStatusArea(totalVmStatusMap);
   return totalVmStatusMap;
@@ -97,20 +87,17 @@ function setTotalVmStatus(totalMciListObj) {
 
 // dashboard card 표시
 function displayMciDashboard() {
-  console.log("displayMciDashboard");
   if (!webconsolejs["common/util"].isEmpty(totalMciListObj) && totalMciListObj.length > 0) {
     //totalMciCnt = mciList.length;
     var addMci = "";
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
-      console.log("aMci.id : ", aMci.id)
       if (aMci.id != "") {
         addMci += setMciListTableRow(aMci, mciIndex);
       }
     } // end of mci loop
     $("#mciList").empty();
     $("#mciList").append(addMci);
-    //console.log("after add", addMci)
   } else {
     var addMci = "";
     addMci += "<tr>";
@@ -207,8 +194,7 @@ function setMciListTableRow(aMciData, mciIndex) {
     mciTableRow += '   </div>'
 
   } catch (e) {
-    console.log("list of mci error")
-    console.log(e)
+    console.error(e)
   }
   return mciTableRow;
 }
@@ -226,15 +212,12 @@ export function selectMci(id, name, target, obj) {
   // var moveUrl = "/webconsole/operation/manage/mci";
   // window.location.href = moveUrl;
   // TODO: navbar 통합 시 선택된 MCIS INFO 열리도록
-  console.log("selectMCIS", id, name, target)
   selectedMciId = id
-  console.log("selectedMciId", selectedMciId)
   var mciId = id
   var mciName = name
 
   $("#mci_id").val(mciId)
   $("#mci_name").val(mciName)
-  console.log(" mci_id =" + mciId + ", mciName = " + mciName);
 
   // active 면 이동한다.
   var urlParamMap = new Map();
