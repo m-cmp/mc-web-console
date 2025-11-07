@@ -87,74 +87,61 @@ function initRecommendImageTable() {
 			width: 60,
 		},
 		{
-			title: "connectionName",
-			field: "connectionName",
-			headerSort: false,
-			visible: false
-		},
-		{
-			title: "PROVIDER",
-			field: "providerName",
+			title: "BASIC",
+			field: "isBasicImage",
 			vertAlign: "middle",
 			hozAlign: "center",
-			headerHozAlign: "center",
-			headerSort: true,
 			maxWidth: 100,
-		},
-		{
-			title: "REGION",
-			field: "regionList",
-			vertAlign: "middle",
-			hozAlign: "center",
+			headerSort: true,
 			formatter: function(cell) {
-				var regions = cell.getValue();
-				if (Array.isArray(regions)) {
-					return regions.join(", ");
+				var value = cell.getValue();
+				if (value === true) {
+					return '<span style="color: green; font-weight: bold;">✓</span>';
+				} else {
+					return '<span style="color: gray;">-</span>';
 				}
-				return regions;
 			}
-		},
-		{
-			title: "IMAGE NAME",
-			field: "name",
-			vertAlign: "middle",
-			hozAlign: "left",
-			maxWidth: 200,
-		},
-		{
-			title: "CSP IMAGE",
-			field: "cspImageName",
-			vertAlign: "middle",
-			hozAlign: "center",
-			maxWidth: 150,
 		},
 		{
 			title: "OS TYPE",
 			field: "osType",
 			vertAlign: "middle",
 			hozAlign: "center",
-			maxWidth: 120,
+			minWidth: 120,
+			headerSort: true,
 		},
 		{
-			title: "OS ARCH",
-			field: "osArchitecture",
+			title: "IMAGE NAME",
+			field: "name",
 			vertAlign: "middle",
-			hozAlign: "center",
-			maxWidth: 100,
+			hozAlign: "left",
+			minWidth: 180,
+			headerSort: true,
 		},
 		{
-			title: "PLATFORM",
-			field: "osPlatform",
+			title: "OS DISTRIBUTION",
+			field: "osDistribution",
 			vertAlign: "middle",
-			hozAlign: "center",
-			maxWidth: 120,
+			hozAlign: "left",
+			minWidth: 300,
+			tooltip: true,
+			headerSort: true,
 		},
 		{
-			title: "STATUS",
-			field: "imageStatus",
+			title: "GPU",
+			field: "isGPUImage",
 			vertAlign: "middle",
 			hozAlign: "center",
-			maxWidth: 100,
+			maxWidth: 80,
+			headerSort: true,
+			formatter: function(cell) {
+				var value = cell.getValue();
+				if (value === true) {
+					return '<span style="color: blue; font-weight: bold;">✓</span>';
+				} else {
+					return '<span style="color: gray;">-</span>';
+				}
+			}
 		}
 	];
 
@@ -196,32 +183,41 @@ export async function getRecommendImageInfo() {
 	var isGPUImage = $("#gpu_image_value").val()
 	
 	// 전역 변수에서 정보 가져오기
+	var specId = window.selectedSpecInfo.id; // spec의 전체 ID (예: "aws+ap-northeast-2+t2.small")
 	var provider = window.selectedSpecInfo.provider;
 	var region = window.selectedSpecInfo.regionName;
 	var connectionName = window.selectedSpecInfo.connectionName;
-	var osArchitecture = window.selectedSpecInfo.osArchitecture;
+	
 	// 현재 workspace/project 정보 가져오기
 	try {
 		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		var nsId = selectedWorkspaceProject.nsId;
 
-		// API 호출을 위한 파라미터 구성
+		// API 호출을 위한 파라미터 구성 (간단화된 방식)
 		var searchParams = {
-			includeDeprecatedImage: false,
-			isGPUImage: isGPUImage === "true",
-			isKubernetesImage: false,
-			isRegisteredByAsset: false,
-			osArchitecture: osArchitecture,
-			osType: osType,
-			providerName: provider.toLowerCase() || "",
-			regionName: region || ""
+			matchedSpecId: specId,  // spec ID를 사용하여 provider, region, architecture 자동 매칭
+			osType: osType
 		};
+		
+		// GPU 이미지가 필요한 경우에만 추가
+		if (isGPUImage === "true") {
+			searchParams.isGPUImage = true;
+		}
 
 		// 이미지 검색 API 호출
 		var response = await webconsolejs["common/api/services/mci_api"].searchImage(nsId, searchParams);
 
 		if (response.status && response.status.code === 200) {
 			var imageList = response.responseData.imageList || [];
+			
+			// 이미지가 없는 경우 안내 메시지
+			if (imageList.length === 0) {
+				console.warn("No images found for the selected spec and OS type");
+				alert("No images found for the selected specification and OS type. Please try different criteria.");
+				safeSetTableData([]);
+				return;
+			}
+			
 			// API 응답을 테이블 형식에 맞게 변환
 			var processedImageList = imageList.map(function(image) {
 				return {
@@ -235,14 +231,16 @@ export async function getRecommendImageInfo() {
 					fetchedTime: image.fetchedTime || new Date().toLocaleString(),
 					creationDate: image.creationDate || new Date().toISOString(),
 					osType: image.osType || osType,
-					osArchitecture: image.osArchitecture || osArchitecture,
+					osArchitecture: image.osArchitecture,
 					osPlatform: image.osPlatform || "Linux/UNIX",
 					osDistribution: image.osDistribution || "",
-					osDiskType: image.osDiskType || "ebs",
-					osDiskSizeGB: image.osDiskSizeGB || -1,
-					imageStatus: image.imageStatus || "Available",
-					description: image.description || image.name
-				};
+				osDiskType: image.osDiskType || "ebs",
+				osDiskSizeGB: image.osDiskSizeGB || -1,
+				imageStatus: image.imageStatus || "Available",
+				description: image.description || image.name,
+				isBasicImage: image.isBasicImage || false,
+				isGPUImage: image.isGPUImage || false
+			};
 			});
 
 			recommendImageListObj = processedImageList;
