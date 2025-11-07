@@ -105,7 +105,7 @@ function initRecommendSpecTablePmk() {
 	const tableElement = document.getElementById("spec-table-pmk");
 	
 	if (!tableElement) {
-		console.error("spec-table-pmk DOM 요소를 찾을 수 없습니다!");
+		console.error("Could not find spec-table-pmk element!");
 		return;
 	}
 	
@@ -132,7 +132,12 @@ export async function getRecommendVmInfoPmk() {
 		const selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		const selectedNsId = selectedWorkspaceProject.nsId;
 		
-		// 기본 필터링 조건 설정
+		// PMK 최소 요구사항 (Kubernetes 권장 사양)
+		// Min vCPU: 4, Min Memory: 16GB, Disk: 100GB
+		const PMK_MIN_VCPU = 4;
+		const PMK_MIN_MEMORY = 16;
+		
+		// 기본 필터링 조건 설정 (최소 요구사항 적용)
 		const memoryMinVal = $("#assist_min_memory-pmk").val() || "";
 		const memoryMaxVal = $("#assist_max_memory-pmk").val() || "";
 		const cpuMinVal = $("#assist_min_cpu-pmk").val() || "";
@@ -142,20 +147,18 @@ export async function getRecommendVmInfoPmk() {
 		const lon = $("#longitude-pmk").val() || "";
 		const lat = $("#latitude-pmk").val() || "";
 		
-
-		
 		// 필터 정책 배열 생성
 		const policyArr = [];
 		
-		// CPU 필터
+		// CPU 필터 (최소 4 vCPU 보장)
 		if (cpuMinVal !== "" || cpuMaxVal !== "") {
 			if (cpuMaxVal !== "" && cpuMaxVal < cpuMinVal) {
-				console.warn("CPU 최대값이 최소값보다 작음");
-				alert("최대값이 최소값보다 작습니다.");
+				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
-			const cpuMin = cpuMinVal === "" ? "0" : cpuMinVal;
+			// 사용자 입력값과 PMK 최소값 중 큰 값 사용
+			const cpuMin = Math.max(cpuMinVal === "" ? PMK_MIN_VCPU : parseInt(cpuMinVal), PMK_MIN_VCPU).toString();
 			const cpuMax = cpuMaxVal === "" ? "0" : cpuMaxVal;
 			
 			policyArr.push({
@@ -165,18 +168,26 @@ export async function getRecommendVmInfoPmk() {
 				],
 				metric: "vCPU"
 			});
-
+		} else {
+			// 사용자 입력이 없으면 PMK 최소 요구사항 적용
+			policyArr.push({
+				condition: [
+					{ operand: "0", operator: "<=" },
+					{ operand: PMK_MIN_VCPU.toString(), operator: ">=" }
+				],
+				metric: "vCPU"
+			});
 		}
 		
-		// Memory 필터
+		// Memory 필터 (최소 16GB 보장)
 		if (memoryMinVal !== "" || memoryMaxVal !== "") {
 			if (memoryMaxVal !== "" && memoryMaxVal < memoryMinVal) {
-				console.warn("Memory 최대값이 최소값보다 작음");
-				alert("최대값이 최소값보다 작습니다.");
+				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
-			const memoryMin = memoryMinVal === "" ? "0" : memoryMinVal;
+			// 사용자 입력값과 PMK 최소값 중 큰 값 사용
+			const memoryMin = Math.max(memoryMinVal === "" ? PMK_MIN_MEMORY : parseInt(memoryMinVal), PMK_MIN_MEMORY).toString();
 			const memoryMax = memoryMaxVal === "" ? "0" : memoryMaxVal;
 			
 			policyArr.push({
@@ -186,14 +197,21 @@ export async function getRecommendVmInfoPmk() {
 				],
 				metric: "memoryGiB"
 			});
-
+		} else {
+			// 사용자 입력이 없으면 PMK 최소 요구사항 적용
+			policyArr.push({
+				condition: [
+					{ operand: "0", operator: "<=" },
+					{ operand: PMK_MIN_MEMORY.toString(), operator: ">=" }
+				],
+				metric: "memoryGiB"
+			});
 		}
 		
 		// Cost 필터
 		if (costMinVal !== "" || costMaxVal !== "") {
 			if (costMaxVal !== "" && costMaxVal < costMinVal) {
-				console.warn("Cost 최대값이 최소값보다 작음");
-				alert("최대값이 최소값보다 작습니다.");
+				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
@@ -208,6 +226,20 @@ export async function getRecommendVmInfoPmk() {
 				metric: "costPerHour"
 			});
 
+		}
+		
+		// Architecture 필터링 추가
+		var architectureVal = $("#assist_architecture-pmk").val()
+		if (architectureVal != "") {
+			var filterPolicy = {
+				"condition": [
+					{
+						"operand": architectureVal
+					}
+				],
+				"metric": "architecture"
+			}
+			policyArr.push(filterPolicy)
 		}
 		
 		// 우선순위 정책 설정
@@ -258,7 +290,7 @@ export async function getRecommendVmInfoPmk() {
 				}
 			}
 		} else {
-			console.error("PMK Spec 추천 API 호출 실패:", result);
+			console.error("Failed to call PMK Spec recommendation API:", result);
 			recommendVmSpecListObjPmk = [];
 			if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
 				recommendTablePmk.setData([]);
@@ -266,7 +298,7 @@ export async function getRecommendVmInfoPmk() {
 		}
 		
 	} catch (error) {
-		console.error("PMK Spec 추천 실패:", error);
+		console.error("Failed to recommend PMK spec:", error);
 		recommendVmSpecListObjPmk = [];
 		if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
 			recommendTablePmk.setData([]);
@@ -340,7 +372,7 @@ export function filterByProviderPmk(provider) {
 	}
 	
 	if (!recommendTablePmk || typeof recommendTablePmk.setData !== 'function') {
-		console.error("PMK Spec 테이블이 초기화되지 않았습니다.");
+		console.error("PMK spec table is not initialized.");
 		return;
 	}
 	

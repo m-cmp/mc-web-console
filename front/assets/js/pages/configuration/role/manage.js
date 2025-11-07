@@ -43,9 +43,7 @@ function initTable() {
 
   // 행 클릭 시
   table.on("rowClick", function (e, row) {
-    console.log(row)
     var roleID = row.getCell("id").getValue();
-    console.log("roleID", roleID)
 
     getSelectedRoleData(roleID)
   });
@@ -53,8 +51,6 @@ function initTable() {
   //  선택된 여러개 row에 대해 처리
   table.on("rowSelectionChanged", function (data, rows) {
     checked_array = data
-    console.log("checked_array", checked_array)
-    console.log("rowsrows", data)
   });
 }
 
@@ -72,9 +68,7 @@ async function getSelectedRoleData(roleID) {
     data
   );
 
-  console.log("response", response)
   var roleData = response.data.responseData;
-  console.log("roleData", roleData)
 
   // SET Role Info 
   setRoleInfoData(roleData)
@@ -84,15 +78,11 @@ async function getSelectedRoleData(roleID) {
 
 // 클릭한 mci info 세팅
 function setRoleInfoData(roleData) {
-  console.log("setRoleInfoData", roleData)
   try {
     var roleId = roleData.id;
-    console.log("roleId ", roleId)
 
     var name = roleData.name;
-    console.log("name ", name)
     var description = roleData.description;
-    console.log("description ", description)
 
     $("#info_id").val("");
     $("#info_name").val("");
@@ -116,19 +106,6 @@ export async function roleDetailInfo(roleID) {
   //clearServerInfo();
 
   var data = new Object();
-
-}
-
-function clearRoleInfo() {
-  console.log("clearRoleInfo")
-
-
-  // $("#server_info_text").text("")
-  // $("#server_detail_info_text").text("")
-
-  // $("#server_detail_view_server_status").val("");
-
-  // $("#server_info_status_icon_img").attr("src", "");
 
 }
 
@@ -186,7 +163,6 @@ document.addEventListener("DOMContentLoaded", getRoleList);
 
 // workspace 목록조회
 async function getRoleList() {
-  console.log("getRoleList")
 
   const data = {
     pathParams: {},
@@ -197,7 +173,6 @@ async function getRoleList() {
     controller,
     data
   );
-  console.log("response ", response)
   var roleList = response.data.responseData;//response 자체가 array임.  
 
   getRoleListCallbackSuccess(roleList);
@@ -205,8 +180,6 @@ async function getRoleList() {
 
 // MCIS 목록 조회 후 화면에 Set
 function getRoleListCallbackSuccess(roleList) {
-  console.log("getRoleListCallbackSuccess");
-  console.log("roleList : ", roleList);
   table.setData(roleList);
 }
 
@@ -215,15 +188,13 @@ function getRoleListCallbackSuccess(roleList) {
 
 /////////////// Role Handling /////////////////
 export async function deleteRole() {
-  console.log("deleteRole ", checked_array);
 
   if (checked_array.length == 0 || checked_array.length > 1) {
-    alert(" 1개만 선택 하세요 ")
+    alert("please select only one role");
     return;
   }
 
   for (const role of checked_array) {
-    console.log(role.id)
     let data = {
       pathParams: {
         "roleId": role.id,
@@ -234,9 +205,7 @@ export async function deleteRole() {
       controller,
       data
     );
-    console.log(response)
     if (response.data.status.code == "200" || response.data.status.code == "201") {
-      console.log("successfully deleted")
       // 저장 후 role 목록 조회
       getRoleList()
     }
@@ -252,7 +221,6 @@ function validRole() {
 }
 // role 저장 및 Create form 닫기
 export async function saveRole() {
-  console.log("add workspace")
 
   if (validRole()) {
 
@@ -271,7 +239,6 @@ export async function saveRole() {
       controller,
       data
     );
-    console.log(response)
     // save success 시 
     if (response.data.status.code == "200" || response.data.status.code == "201") {
       var div = document.getElementById("create_workspace");
@@ -286,7 +253,6 @@ export async function saveRole() {
 
 // Info Form 닫기
 export function closeInfoForm() {
-  console.log(" close form ")
 
   var div = document.getElementById("info_role");
   webconsolejs["partials/layout/navigatePages"].toggleElement(div)

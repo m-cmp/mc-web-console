@@ -142,9 +142,6 @@ export async function getMciVm(nsId, mciId, vmId) {
 
 // mciLifeCycle 제어 option : reboot / suspend / resume / terminate
 export function mciLifeCycle(type, currentMciId, nsId) {
-  console.log("mciLifeCycle option : ", type)
-  console.log("selected mci : ", currentMciId)
-
   let data = {
     pathParams: {
       nsId: nsId,
@@ -159,7 +156,7 @@ export function mciLifeCycle(type, currentMciId, nsId) {
     controller,
     data
   );
-  console.log("mciLifeCycle response : ", response)
+  return response;
 }
 
 export function mciDelete(currentMciId, nsId) {
@@ -178,7 +175,7 @@ export function mciDelete(currentMciId, nsId) {
     controller,
     data
   );
-  console.log("mciLifeCycle response : ", response)
+  return response;
 }
 
 export function vmDelete(mciId, nsId, vmId) {
@@ -197,8 +194,7 @@ export function vmDelete(mciId, nsId, vmId) {
     controller,
     data
   );
-  console.log("vmLifeCycle response : ", response)
-
+  return response;
 }
 
 // vmLifeCycle 제어 option : reboot / suspend / resume / terminate
@@ -219,24 +215,90 @@ export function vmLifeCycle(type, mciId, nsId, vmid) {
     controller,
     data
   );
-  console.log("vmLifeCycle response : ", response)
-
+  return response;
 }
 
-export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, nsId) {
+export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_Arr, nsId) {
 
-  var obj = {}
-  obj['name'] = mciName
-  obj['description'] = mciDesc
-  obj['vm'] = Express_Server_Config_Arr
+  // 새로운 인터페이스에 맞게 데이터 변환 (mciDynamic과 동일)
+  const subGroups = Express_Server_Config_Arr.map(config => ({
+    specId: config.commonSpec,
+    imageId: config.commonImage,
+    name: config.name,
+    subGroupSize: config.subGroupSize,
+    connectionName: config.connectionName,
+    description: config.description,
+    rootDiskSize: config.rootDiskSize,
+    rootDiskType: config.rootDiskType,
+    label: config.label || {},
+    vmUserPassword: config.vmUserPassword || ""
+  }));
+
+  // command 처리 - 첫 번째 서버의 command를 사용 (모든 서버가 동일한 command를 사용한다고 가정)
+  const command = Express_Server_Config_Arr.length > 0 && Express_Server_Config_Arr[0].command 
+    ? Express_Server_Config_Arr[0].command.split('\n').filter(cmd => cmd.trim() !== '')
+    : [];
+
   const data = {
     pathParams: {
       "nsId": nsId
     },
     Request: {
-      "name": obj['name'],
-      "description": obj['description'],
-      "vm": obj['vm'],
+      "name": mciName,
+      "description": mciDesc,
+      "installMonAgent": "no",
+      "label": {},
+      "policyOnPartialFailure": "continue",
+      "postCommand": {
+        "command": command,
+        "userName": "cb-user"
+      },
+      "subGroups": subGroups,
+      "systemLabel": ""
+    }
+  }
+
+  var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamicReview";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+
+  return response;
+}
+
+export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, nsId, policyOnPartialFailure) {
+
+  // 새로운 인터페이스에 맞게 데이터 변환
+  const subGroups = Express_Server_Config_Arr.map(config => ({
+    specId: config.commonSpec,
+    imageId: config.commonImage,
+    name: config.name,
+    subGroupSize: config.subGroupSize,
+    connectionName: config.connectionName,
+    description: config.description,
+    rootDiskSize: config.rootDiskSize,
+    rootDiskType: config.rootDiskType
+  }));
+
+  // command 처리 - 첫 번째 서버의 command를 사용 (모든 서버가 동일한 command를 사용한다고 가정)
+  const command = Express_Server_Config_Arr.length > 0 && Express_Server_Config_Arr[0].command 
+    ? Express_Server_Config_Arr[0].command.split('\n').filter(cmd => cmd.trim() !== '')
+    : [];
+
+  const data = {
+    pathParams: {
+      "nsId": nsId
+    },
+    Request: {
+      "name": mciName,
+      "description": mciDesc,
+      "subGroups": subGroups,
+      "policyOnPartialFailure": policyOnPartialFailure,
+      "postCommand": {
+        "command": command,
+        "userName": "cb-user"
+      }
     }
   }
 
@@ -246,7 +308,7 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     data
   );
 
-  alert("생성요청 완료");
+  alert("Creation request completed");
   var urlParamMap = new Map();
 
   // 생성요청했으므로 결과를 기다리지 않고 mciList로 보냄
@@ -264,8 +326,8 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
       mciId: mciId,
     },
     request: {
-      "commonImage": obj.commonImage,
-      "commonSpec": obj.commonSpec,
+      "imageId": obj.commonImage,
+      "specId": obj.commonSpec,
       "connectionName": obj.connectionName,
       "description": obj.description,
       // "label": "",
@@ -277,30 +339,25 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciVmDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostMciSubGroupDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
-  console.log("create VMdynamic : ", response)
 }
 
 export async function mciRecommendVm(data) {
-  var controller = "/api/" + "mc-infra-manager/" + "RecommendVm";
+  var controller = "/api/" + "mc-infra-manager/" + "recommendSpec";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   );
-
-  console.log("mcirecommendvm response ", response.data.responseData)
 
   return response.data
 }
 
 // 이미지 검색 API
 export async function searchImage(nsId, searchParams) {
-  console.log("searchImage called with nsId:", nsId, "searchParams:", searchParams);
-  
   const data = {
     pathParams: {
       nsId: "system"
@@ -309,7 +366,7 @@ export async function searchImage(nsId, searchParams) {
       includeDeprecatedImage: searchParams.includeDeprecatedImage || false,
       isGPUImage: searchParams.isGPUImage || false,
       isKubernetesImage: searchParams.isKubernetesImage || false,
-      isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
+      // isRegisteredByAsset: searchParams.isRegisteredByAsset || false,
       osArchitecture: searchParams.osArchitecture || "x86_64",
       osType: searchParams.osType || "ubuntu 22.04",
       providerName: searchParams.providerName || "",
@@ -323,7 +380,6 @@ export async function searchImage(nsId, searchParams) {
     data
   );
 
-  console.log("searchImage response:", response.data);
   return response.data;
 }
 
@@ -336,7 +392,6 @@ export async function getProviderList() {
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
   );
-  console.log("getProviderList response : ", response)
 
   return response.data.responseData.output
 }
@@ -355,7 +410,6 @@ export async function getRegionList() {
     controller,
 
   );
-  console.log("getRegionList response : ", response)
 
   return response.data.responseData.region
 }
@@ -409,8 +463,6 @@ export function calculateConnectionCount(vmList) {
 
 // MCI 상태를 UI에서 표현하는 방식으로 변경
 export function getMciStatusFormatter(mciFullStatus) {
-  console.log("getMciStatusgetMciStatus", mciFullStatus);
-
   if (!mciFullStatus || typeof mciFullStatus !== "string") {
     return "etc";
   }
@@ -478,11 +530,9 @@ export function getMciStatusIconFormatter(mciDispStatus) {
 export function getMciInfoProviderNames(mciData) {
   var mciProviderNames = "";
   var vmCloudConnectionMap = calculateConnectionCount(mciData.vm);
-  console.log("vmCloudConnectionMap", vmCloudConnectionMap);
 
   if (vmCloudConnectionMap) {
     vmCloudConnectionMap.forEach((value, key) => {
-      console.log("provider ", key);
       mciProviderNames +=
         '<img class="img-fluid" width="60" src="/assets/images/common/img_logo_' +
         (key == "" ? "mcmp" : key) +
@@ -522,8 +572,6 @@ export function getVmStatusFormatter(vmFullStatus) {
 }
 
 export function getVmGroupStatusFormatter(vmGroupFullStatus) {
-  console.log("vmGroupFullStatusvmGroupFullStatus", vmGroupFullStatus)
-
   const lowers = vmGroupFullStatus.map(vm => vm.status.toLowerCase());
 
   if (lowers.some(s => s.includes("partial"))) {
@@ -600,8 +648,6 @@ export function getVmGroupStatusStyleClass(vmDispStatus) {
 // 해당 mci에서 상태값들을 count : 1개 mci의 상태는 1개만 있으므로 running, stop, terminate 중 1개만 1, 나머지는 0
 // dashboard, mci 에서 사용
 export function calculateMciStatusCount(mciData) {
-  console.log("mciDatamciData : ", mciData);
-
   // 초기 상태 카운트 맵 정의
   const mciStatusCountMap = new Map([
     ["running", 0],
@@ -623,8 +669,6 @@ export function calculateMciStatusCount(mciData) {
 
     const mciStatus = mciData.status; // 원본 상태
     const mciDispStatus = getMciStatusFormatter(mciStatus); // 화면 표시용 상태
-    console.log("mciStatusmciStatus:", mciStatus);
-    console.log("mciDispStatusmciDispStatus:", mciDispStatus);
 
     // 상태 카운트 증가
     if (mciStatusCountMap.has(mciDispStatus)) {
@@ -639,7 +683,6 @@ export function calculateMciStatusCount(mciData) {
     console.error("mci status error", e);
   }
 
-  console.log("mciStatusCountMapmciStatusCountMap:", mciStatusCountMap);
   return mciStatusCountMap;
 }
 
@@ -654,7 +697,6 @@ export function calculateVmStatusCount(aMci) {
     ["terminated-ing", 0],
     ["etc", 0],
   ]);
-  console.log("calculateVmStatusCount", aMci)
   try {
     if (aMci.statusCount) {
       const statusCountObj = aMci.statusCount;
@@ -684,7 +726,7 @@ export function calculateVmStatusCount(aMci) {
 // ScaleOut API 관련
 export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
@@ -705,7 +747,7 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
     data
   )
 
-  alert("생성요청 완료")
+  alert("Creation request completed");
   window.location = "/webconsole/operations/manage/workloads/mciworkloads"
 
 }
@@ -749,14 +791,14 @@ export async function getPolicyList(nsId) {
 
 export async function deletePolicy(nsId, mciId) {
   if (nsId == "") {
-    console.log("Project has not set")
+    alert("Project has not set")
     return;
   }
 
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: currentMciId,
+      mciId: mciId,
     },
     queryParams: {
       option: "force"
@@ -767,5 +809,121 @@ export async function deletePolicy(nsId, mciId) {
     controller,
     data
   );
-  console.log("delete policy response : ", response)
+}
+
+export async function createPolicy(nsId, mciId, policy) {
+  if (nsId == "") {
+    alert("Project has not set")
+    return;
+  }
+  let data = {
+    pathParams: {
+      nsId: nsId,
+      mciId: mciId,
+    },
+    Request: {
+      policy: policy
+    }
+  };
+  let controller = "/api/" + "mc-infra-manager/" + "Postmcipolicy";
+  let response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  return response
+}
+
+// Label 관련 API 함수들
+
+// Label 생성/수정
+export async function createOrUpdateLabel(labelType, uid, labels) {
+  if (!labelType || !uid || !labels) {
+    alert("Missing required parameters for createOrUpdateLabel");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      labelType: labelType,
+      uid: uid
+    },
+    Request: {
+      labels: labels
+    }
+  };
+
+  const controller = "/api/" + "mc-infra-manager/" + "Createorupdatelabel";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  return response;
+}
+
+// Label 조회
+export async function getLabels(labelType, uid) {
+  if (!labelType || !uid) {
+    alert("Missing required parameters for getLabels");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      labelType: labelType,
+      uid: uid
+    }
+  };
+
+  const controller = "/api/" + "mc-infra-manager/" + "Getlabels";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  return response;
+}
+
+// Label 삭제
+export async function removeLabel(labelType, uid, key) {
+  if (!labelType || !uid || !key) {
+    alert("Missing required parameters for removeLabel");
+    return;
+  }
+
+  const data = {
+    pathParams: {
+      labelType: labelType,
+      uid: uid,
+      key: key
+    }
+  };
+
+  const controller = "/api/" + "mc-infra-manager/" + "Removelabel";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  return response;
+}
+
+// Label Selector로 MCI 리소스 조회 (기존 API 패턴 따름)
+export async function getResourcesByLabelSelector(labelSelector) {
+  const data = {
+    pathParams: {
+      labelType: "mci"
+    },
+    queryParams: {
+      labelSelector: labelSelector
+    }
+  };
+
+  const controller = "/api/mc-infra-manager/Getresourcesbylabelselector";
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
+    controller,
+    data
+  );
+  
+  return response;
 }

@@ -2,10 +2,8 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project)
 })
 
 
@@ -46,7 +44,6 @@ document.addEventListener("DOMContentLoaded", initLog);
 
 // 해당 화면에서 최초 설정하는 function
 async function initLog() {
-  console.log("initLog")
   ////////////////////// partials init functions///////////////////////////////////////
 
   ////////////////////// partials init functions end ///////////////////////////////////////
@@ -60,12 +57,92 @@ async function initLog() {
   ////////////////////// set workspace list, project list at Navbar end //////////////////////////////////
 
   if (selectedWorkspaceProject.projectId != "") {
-    console.log("workspaceProject ", selectedWorkspaceProject)
-    //var selectedProjectId = selectedWorkspaceProject.projectId;
-    //var selectedNsId = selectedWorkspaceProject.nsId;
-    //console.log('in initMci selectedNsId:', selectedNsId);
-
+    var selectedProjectId = selectedWorkspaceProject.projectId;
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    
+    // MCI 목록 로드
+    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    getMciListCallbackSuccess(selectedProjectId, respMciList);
   }
+  
+  // 이벤트 리스너 설정
+  setupEventListeners();
+}
+
+// MCI 목록 로드 성공 시 콜백
+function getMciListCallbackSuccess(nsId, mciList) {
+  setMciList(mciList);
+}
+
+// MCI 목록을 셀렉트 박스에 설정
+function setMciList(mciList) {
+  var res_item = mciList.mci;
+
+  // res_item이 배열인지 확인
+  if (Array.isArray(res_item)) {
+    // HTML option 리스트 초기값
+    var html = '<option value="">Select</option>';
+
+    // res_item 배열을 순회하면서 각 MCI의 name을 option 태그로 변환
+    res_item.forEach(item => {
+      html += '<option value="' + item.id + '">' + item.name + '</option>';
+    });
+
+    // log_mcilist 셀렉트 박스에 옵션 추가
+    $("#log_mcilist").empty();
+    $("#log_mcilist").append(html);
+  } else {
+    console.error("res_item is not an array");
+  }
+}
+
+// MCI 선택 시 서버 목록 업데이트
+async function displayLogMci(nsId, mciId) {
+  var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+
+  var vmList = respMci.responseData.vm;
+  if (Array.isArray(vmList) && vmList.length > 0) {
+    displayServerStatusList(mciId, respMci.responseData.vm);
+  } else {
+    alert("There is no VM List !!");
+  }
+}
+
+// 서버 목록을 셀렉트 박스에 설정
+function displayServerStatusList(mciId, vmList) {
+  var res_item = vmList;
+
+  if (Array.isArray(res_item)) {
+    var html = '<option value="">Select</option>';
+
+    res_item.forEach(item => {
+      html += '<option value="' + item.id + '">' + item.name + '</option>';
+    });
+
+    // log_targetlist 셀렉트 박스에 옵션 추가
+    $("#log_targetlist").empty();
+    $("#log_targetlist").append(html);
+  } else {
+    console.error("res_item is not an array");
+  }
+}
+
+// 이벤트 리스너 설정
+function setupEventListeners() {
+  // MCI 선택 시 서버 목록 업데이트
+  $("#log_mcilist").on('change', async function () {
+    var selectedMci = $("#log_mcilist").val();
+    
+    if (selectedMci) {
+      selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+      var selectedNsId = selectedWorkspaceProject.nsId;
+      
+      displayLogMci(selectedNsId, selectedMci);
+    } else {
+      // MCI가 선택되지 않으면 서버 목록 초기화
+      $("#log_targetlist").empty().append('<option value="">Select</option>');
+    }
+  });
 }
 
 // // getLogList 호출 성공 시
@@ -97,12 +174,12 @@ function setLogTabulator(
 ) {
   var placeholder = "No Data";
   var pagination = "local";
-  var paginationSize = 5;
-  var paginationSizeSelector = [5, 10, 15, 20];
+  var paginationSize = 10;
+  var paginationSizeSelector = [10, 20, 50, 100];
   var movableColumns = true;
   var columnHeaderVertAlign = "middle";
   var paginationCounter = "rows";
-  var layout = "fitColumns";
+  var layout = "fitDataStretch";
 
   if (tableObjParamMap.hasOwnProperty("placeholder")) {
     placeholder = tableObjParamMap.placeholder;
@@ -169,139 +246,136 @@ function initLogTable() {
     },
     {
       title: "NS",
-      field: "tag",
-      formatter: tagNsIdFormatter,
-      vertAlign: "middle"
+      field: "labels",
+      formatter: labelsNsIdFormatter,
+      vertAlign: "middle",
+      width: 100
     },
     {
       title: "MCI",
-      field: "tag",
-      formatter: tagMciIdFormatter,
-      vertAlign: "middle"
+      field: "labels",
+      formatter: labelsMciIdFormatter,
+      vertAlign: "middle",
+      width: 120
     },
     {
-      title: "Target",
-      field: "tag",
-      formatter: tagTargetIdFormatter,
-      vertAlign: "middle"
+      title: "VM",
+      field: "labels",
+      formatter: labelsVMIdFormatter,
+      vertAlign: "middle",
+      width: 120
     },
     {
       title: "Host",
-      field: "tail",
-      formatter: tailHostFormatter,
-      vertAlign: "middle"
-    },
-    {
-      title: "PID",
-      field: "tail",
-      formatter: tailPidFormatter,
-      vertAlign: "middle"
-    },
-    {
-      title: "Program",
-      field: "tail",
-      formatter: tailprogramFormatter,
-      vertAlign: "middle"
+      field: "labels",
+      formatter: labelsHostFormatter,
+      vertAlign: "middle",
+      width: 150
     },
     {
       title: "Timestamp",
-      field: "tail",
-      formatter: tailTimestampFormatter,
-      vertAlign: "middle"
+      field: "timestamp",
+      formatter: timestampFormatter,
+      vertAlign: "middle",
+      width: 200
     },
     {
       title: "Message",
-      field: "tail",
-      formatter: tailMessageFormatter,
-      vertAlign: "middle"
-    },
+      field: "value",
+      formatter: valueMessageFormatter,
+      vertAlign: "middle",
+      widthGrow: 2
+    }
   ];
 
-  // {
-  //   "@timestamp": "2024-10-18T08:41:22.820224306Z",
-  //   measurement_name: "tail",
-  //   tag: {
-  //     host: "2ebc9c59f973",
-  //     mci_id: "mc-o11y",
-  //     ns_id: "",
-  //     path: "/var/log/syslog",
-  //     target_id: "mc-o11y"
-  //   },
-  //   tail: {
-  //     host: "o11y",
-  //     message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
-  //     pid: "886",
-  //     program: "mc-o11y-influx",
-  //     timestamp: "Oct 18 08:41:22"
-  //   }
-  // }
+  //  {
+  //    "labels": {
+  //      "MCI_ID": "mci01",
+  //      "NS_ID": "test01",
+  //      "VM_ID": "vm-1",
+  //      "host": "d4127tlb7ccc738sedbg",
+  //      "level": "UNKNOWN",
+  //      "service": "systemd",
+  //      "source": "syslog"
+  //    },
+  //    "timestamp": 1.761802223E18,
+  //    "value": "{\"level\":\"UNKNOWN\",\"pid\":\"1\",\"filename\":\"syslog\",\"source\":\"syslog\",\"host\":\"d4127tlb7ccc738sedbg\",\"time\":\"Oct 30 14:30:23\",\"message\":\"Finished system activity accounting tool.\",\"service\":\"systemd\"}"
+  //  }
   logListTable = setLogTabulator("loglist-table", tableObjParams, columns, true);
 
   // 행 클릭 시
   logListTable.on("rowClick", function (e, row) {
 
     var selectedLogData = row.getData()
-    console.log("selectedLogData", selectedLogData)
     // 표에서 선택된 selectedLogData
     getSelectedLogData(selectedLogData)
 
   });
 }
 
-// tag와 tail에 모두 host가 있어 function name에 prefix를 줌.
-function tagHostFormatter(cell) {
+function labelsHostFormatter(cell) {
   var row = cell.getData()
-  return row.tag.host;
+  return row.labels.host;
 }
-function tagNsIdFormatter(cell) {
+function labelsNsIdFormatter(cell) {
   var row = cell.getData()
-  return row.tag.ns_id;
+  return row.labels.NS_ID;
 }
-function tagMciIdFormatter(cell) {
+function labelsMciIdFormatter(cell) {
   var row = cell.getData()
-  return row.tag.mci_id;
+  return row.labels.MCI_ID;
 }
-function tagTargetIdFormatter(cell) {
+function labelsVMIdFormatter(cell) {
   var row = cell.getData()
-  return row.tag.target_id;
-}
-function tagPathFormatter(cell) {
-  var row = cell.getData()
-  return row.tag.path;
+  return row.labels.VM_ID;
 }
 
-function tailHostFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.host;
+// Timestamp formatter: Convert nanoseconds to readable date format
+function timestampFormatter(cell) {
+  var row = cell.getData();
+  var timestamp = row.timestamp;
+  
+  if (!timestamp) return "";
+  
+  // Convert nanoseconds to milliseconds
+  var milliseconds = timestamp / 1000000;
+  var date = new Date(milliseconds);
+  
+  // Format: YYYY-MM-DD HH:MM:SS
+  var year = date.getFullYear();
+  var month = String(date.getMonth() + 1).padStart(2, '0');
+  var day = String(date.getDate()).padStart(2, '0');
+  var hours = String(date.getHours()).padStart(2, '0');
+  var minutes = String(date.getMinutes()).padStart(2, '0');
+  var seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-function tailPidFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.pid;
-}
-function tailprogramFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.program;
-}
-function tailTimestampFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.timestamp;
-}
-function tailMessageFormatter(cell) {
-  var row = cell.getData()
-  return row.tail.message;
+
+// Value message formatter: Extract message from JSON string
+function valueMessageFormatter(cell) {
+  var row = cell.getData();
+  var value = row.value;
+  
+  if (!value) return "";
+  
+  try {
+    // Parse JSON string to extract message
+    var parsedValue = JSON.parse(value);
+    return parsedValue.message || value;
+  } catch (e) {
+    // If parsing fails, return original value
+    return value;
+  }
 }
 
 // toggleSelectBox of table row
 function toggleRowSelection(id) {
   // mciListTable에서 데이터 찾기
-  console.log("idid : ", id)
   var row = mciListTable.getRow(id);
-  console.log("rowrow", row)
   if (row) {
     row.select();
-    console.log("Row with ID " + id + " is selected.");
   } else {
-    console.log("Row with ID " + id + " not found.");
   }
 }
 
@@ -349,70 +423,126 @@ document.getElementById("filter-clear").addEventListener("click", function () {
 
 // Log 조회
 export async function getCollectedLog() {
+  var selectedMciId = $("#log_mcilist").val();
+  var selectedVmId = $("#log_targetlist").val();
+  var keyword = $("#keyword").val();
 
-  var selectedMeasurement = $("#monitoring_measurement").val();
-  var selectedRange = $("#monitoring_range").val();
-  var selectedVMId = $("#monitoring_vmlist").val();
-  //GET_OpensearchLogs
+  // 선택 검증
+  if (!selectedMciId) {
+    alert("Please select a Workload");
+    return;
+  }
 
-  // try{ 
-  //   var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog("", "", "", "");
-  //   getLogListCallbackSuccess(response.data.responseData)
-  // }catch(e){
-  const dataObject = {
-    data: [
-      {
-        "@timestamp": "2024-11-06T08:41:22.820224306Z",
-        measurement_name: "tail",
-        tag: {
-          host: "2ebc9c59f973",
-          mci_id: "mc-o11y",
-          ns_id: "ns01",
-          path: "/var/log/syslog",
-          target_id: "mc-o11y"
-        },
-        tail: {
-          host: "o11y",
-          message: "[httpd] 40.82.137.29 - mc-agent [18/Oct/2024:08:41:22 +0000] \"POST /write?db=mc-observability&rp=autogen HTTP/1.1 \" 204 0 \"-\" \"Telegraf/1.29.5 Go/1.22.0\" c103937f-8d2c-11ef-8867-0242ac130009 11023",
-          pid: "886",
-          program: "mc-o11y-influx",
-          timestamp: "Nov 06 08:41:22"
-        }
-      }
-    ]
-  };
-  getLogListCallbackSuccess(dataObject.data)
-  // }
+  if (!selectedVmId) {
+    alert("Please select a Server");
+    return;
+  }
 
-  //var respMonitoringData = response.data.responseData
-  //console.log("respMonitoringData", respMonitoringData)
+  // 선택된 워크스페이스 정보 가져오기
+  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  var selectedNsId = selectedWorkspaceProject.nsId;
 
+  try{
+    console.log("Fetching log data...", { nsId: selectedNsId, mciId: selectedMciId, vmId: selectedVmId, keyword: keyword });
+    var response = await webconsolejs["common/api/services/monitoring_api"].getMonitoringLog(selectedNsId, selectedMciId, selectedVmId, keyword);
+
+    console.log("Full response:", response);
+    console.log("Response data:", response.data);
+    console.log("Response data.responseData:", response.data?.responseData);
+
+    if (response && response.data && response.data.responseData && response.data.responseData.data && response.data.responseData.data.data) {
+      getLogListCallbackSuccess(response.data.responseData.data.data);
+    } else {
+      console.error("Invalid response structure:", response);
+      alert("Failed to load log data: Invalid response structure");
+    }
+  }catch(e){
+    console.error("Error fetching log data:", e);
+    alert("Error fetching log data: " + e.message);
+  }
 }
 
 function getLogListCallbackSuccess(logList) {
-  console.log("getLogListCallbackSuccess");
-  console.log("logList : ", logList);
-  logListTable.setData(logList);
+  console.log("Setting table data:", logList);
+  console.log("Is logList an array?", Array.isArray(logList));
+  console.log("logList length:", logList?.length);
 
+  if (!logList) {
+    console.error("logList is null or undefined");
+    alert("No log data available");
+    return;
+  }
+
+  if (!Array.isArray(logList)) {
+    console.error("logList is not an array:", typeof logList);
+    alert("Invalid log data format");
+    return;
+  }
+
+  logListTable.setData(logList);
+  console.log("Table data set successfully");
 }
 
 async function getSelectedLogData(selectedLogData) {
   var div = document.getElementById("log_info");
-  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-  $('#log_timestamp').text(selectedLogData["@timestamp"]);
-  $('#log_measurement_name').text(selectedLogData["measurement_name"]);
-
-  $('#log_message').text(selectedLogData.tail.message);
-
-  $('#log_tag_host').text(selectedLogData.tag.host);
-  $('#log_mci_id').text(selectedLogData.tag.mci_id);
-  $('#log_ns_id').text(selectedLogData.tag.ns_id);
-  $('#log_path').text(selectedLogData.tag.path);
-  $('#log_target_id').text(selectedLogData.tag.target_id);
-
-  $('#log_tail_host').text(selectedLogData.tag.host);
-  $('#log_pid').text(selectedLogData.tail.pid);
-  $('#log_program').text(selectedLogData.tail.program);
-  $('#log_tail_timestamp').text(selectedLogData.tail.timestamp);
-
+  
+  // Log Info 영역이 hidden이면 표시, 이미 표시되어 있으면 그대로 유지
+  if (!$('#log_info').is(':visible')) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+  }
+  
+  // 데이터 초기화
+  $('#log_timestamp').text('');
+  $('#log_measurement_name').text('');
+  $('#log_message').text('');
+  $('#log_tag_host').text('');
+  $('#log_mci_id').text('');
+  $('#log_ns_id').text('');
+  $('#log_path').text('');
+  $('#log_target_id').text('');
+  $('#log_tail_host').text('');
+  $('#log_pid').text('');
+  $('#log_program').text('');
+  $('#log_tail_timestamp').text('');
+  
+  try {
+    // Parse value JSON string
+    var parsedValue = JSON.parse(selectedLogData.value);
+    
+    // Format timestamp
+    var milliseconds = selectedLogData.timestamp / 1000000;
+    var date = new Date(milliseconds);
+    var formattedTimestamp = date.toLocaleString();
+    
+    // Set timestamp
+    $('#log_timestamp').text(formattedTimestamp);
+    $('#log_tail_timestamp').text(parsedValue.time || formattedTimestamp);
+    
+    // Set message
+    $('#log_message').text(parsedValue.message || '');
+    
+    // Set tag information (from labels)
+    $('#log_tag_host').text(selectedLogData.labels.host || '');
+    $('#log_mci_id').text(selectedLogData.labels.MCI_ID || '');
+    $('#log_ns_id').text(selectedLogData.labels.NS_ID || '');
+    $('#log_target_id').text(selectedLogData.labels.VM_ID || '');
+    
+    // Set tail information (from parsed value)
+    $('#log_tail_host').text(parsedValue.host || selectedLogData.labels.host || '');
+    $('#log_pid').text(parsedValue.pid || '');
+    $('#log_program').text(parsedValue.service || '');
+    
+    // Additional fields if available
+    if (parsedValue.level) {
+      $('#log_measurement_name').text(parsedValue.level);
+    }
+    if (parsedValue.source) {
+      $('#log_path').text(parsedValue.source);
+    }
+    
+  } catch (e) {
+    console.error("Error parsing log data:", e);
+    // Fallback to raw display
+    $('#log_message').text(selectedLogData.value || '');
+  }
 }

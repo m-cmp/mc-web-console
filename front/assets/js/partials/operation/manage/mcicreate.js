@@ -2,6 +2,21 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 //import { selectedMciObj } from "./mci";
 //document.addEventListener("DOMContentLoaded", initMciCreate) // page가 아닌 partials에서는 제거
 
+// 새로운 MCI API 인터페이스에 맞는 데이터 변환 헬퍼 함수
+function transformServerConfigToSubGroups(serverConfigArr) {
+  return serverConfigArr.map(config => ({
+    specId: config.commonSpec,
+    imageId: config.commonImage,
+    name: config.name,
+    subGroupSize: config.subGroupSize,
+    connectionName: config.connectionName,
+    description: config.description,
+    rootDiskSize: config.rootDiskSize,
+    rootDiskType: config.rootDiskType,
+    command: config.command
+  }));
+}
+
 // create page 가 load 될 때 실행해야 할 것들 정의
 export function initMciCreate() {
 	// MCI Create 초기화
@@ -24,6 +39,12 @@ export async function callbackServerRecommendation(vmSpec) {
 	$("#ep_connectionName").val(vmSpec.connectionName)
 	$("#ep_specId").val(vmSpec.specName)
 	$("#ep_commonSpecId").val(vmSpec.commonSpecId)
+	
+	// policy_ep_* 필드들도 함께 설정 (mciworkloads.html용)
+	$("#policy_ep_provider").val(vmSpec.provider)
+	$("#policy_ep_connectionName").val(vmSpec.connectionName)
+	$("#policy_ep_specId").val(vmSpec.specName)
+	$("#policy_ep_commonSpecId").val(vmSpec.commonSpecId)
 	
 	// spec 정보를 전역 변수에 저장 (이미지 선택 시 사용)
 	window.selectedSpecInfo = {
@@ -55,18 +76,20 @@ export function callbackImageRecommendation(selectedImage) {
 	$("#ep_imageId").val(selectedImage.id || selectedImage.name || "");
 	$("#ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
 	
+	// policy_ep_* 필드들도 함께 설정 (mciworkloads.html용)
+	$("#policy_ep_imageId_input").val(selectedImage.name || selectedImage.cspImageName || "");
+	$("#policy_ep_commonImageId").val(selectedImage.id || selectedImage.name || "");
+	
 
 }
 
 var DISK_SIZE = [];
 function getCommonLookupDiskInfoSuccess(provider, data) {
 
-	console.log("getCommonLookupDiskInfoSuccess", data);
 	var providerId = provider.toUpperCase()
 	var root_disk_type = [];
 	var res_item = data;
 	res_item.forEach(item => {
-		console.log("item provider: ", item.providerId);
 		var temp_provider = item.providerId
 		if (temp_provider == providerId) {
 			root_disk_type = item.rootdisktype
@@ -79,9 +102,7 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	// 	DISK_SIZE = res_item.disksize
 	// }
 
-	console.log("DISK_SIZE", DISK_SIZE)
 	var html = '<option value="">Select Root Disk Type</option>'
-	console.log("root_disk_type : ", root_disk_type);
 	root_disk_type.forEach(item => {
 		html += '<option value="' + item + '">' + item + '</option>'
 	})
@@ -95,7 +116,6 @@ function getCommonLookupDiskInfoSuccess(provider, data) {
 	// $("#tab_others_root_disk_type").empty()
 	// $("#tab_others_root_disk_type").append(html)
 	//}
-	console.log("const valie DISK_SIZE : ", DISK_SIZE)
 
 	webconsolejs["partials/layout/modal"].modalHide('spec-search')
 
@@ -109,7 +129,6 @@ export async function setProviderList(providerList) {
 	myProviderList = providerList.map(str => str.toUpperCase());
 	// 알파벳 순으로 정렬
 	myProviderList.sort()
-	console.log("myProviderList", myProviderList); // 변환된 배열 출력
 
 	var html = '<option value="">Select Provider</option>'
 	myProviderList.forEach(item => {
@@ -164,7 +183,6 @@ export async function setCloudConnection(cloudConnection) {
 
 		// 알파벳 순으로 정렬
 		cloudConnection.sort();
-		console.log("cloudConnection", cloudConnection); // 변환된 배열 출력
 
 		var html = '<option value="">Select Connection</option>';
 		cloudConnection.forEach(item => {
@@ -180,7 +198,6 @@ export async function setCloudConnection(cloudConnection) {
 		myCloudConnection = cloudConnection.map(item => item.configName);
 		// 알파벳 순으로 정렬
 		myCloudConnection.sort()
-		console.log("myCloudConnection", myCloudConnection); // 변환된 배열 출력
 
 		var html = '<option value="">Select Connection</option>'
 		myCloudConnection.forEach(item => {
@@ -294,8 +311,21 @@ export async function displayNewServerForm() {
 	var deploymentAlgo = $("#mci_deploy_algorithm").val();
 
 	if (deploymentAlgo == "express") {
+		// 폼을 열기 전에 추가 초기화
+		$("#ep_name").val("");
+		$("#ep_description").val("");
+		$("#ep_imageId_input").val("");
+		$("#ep_root_disk_type").val("");
+		$("#ep_root_disk_size").val("");
+		$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
+		$("#ep_data_disk").val("");
+		$("#ep_command").val("");
+		
+		// 모달들 초기화
+		resetModals();
+		
 		var div = document.getElementById("server_configuration");
-		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
 	} else if (deploymentAlgo == "simple") {
 		// var div = document.getElementById("server_configuration");
@@ -319,7 +349,7 @@ export async function displayNewServerForm() {
 
 		// toggle expert form
 		var div = document.getElementById("expert_server_configuration");
-		webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
 
 	} else {
 		console.error(e)
@@ -364,7 +394,30 @@ export async function displayNewServerForm() {
 // express모드 -> Done버튼 클릭 시
 
 export function expressDone_btn() {
-	console.log("expressDone_btn")
+	// 1. 필수 필드 검증
+	var requiredFields = [
+		{ id: '#ep_name', message: 'SubGroup name is required' },
+		{ id: '#ep_vm_add_cnt', message: 'VM count is required' },
+		{ id: '#ep_commonSpecId', message: 'Spec is required' },
+		{ id: '#ep_commonImageId', message: 'Image is required' }
+	];
+	
+	for (var field of requiredFields) {
+		if (!$(field.id).val() || $(field.id).val().trim() === '') {
+			alert(field.message);
+			$(field.id).focus();
+			return;
+		}
+	}
+	
+	// 2. VM 개수 숫자 검증
+	var vmAddCnt = $("#ep_vm_add_cnt").val();
+	if (isNaN(vmAddCnt) || parseInt(vmAddCnt) < 1) {
+		alert('VM count must be a positive number');
+		$("#ep_vm_add_cnt").focus();
+		return;
+	}
+	
 	// express 는 common resource를 하므로 별도로 처리(connection, spec만)
 	$("#p_provider").val($("#ep_provider").val())
 	$("#p_connectionName").val($("#ep_connectionName").val())
@@ -377,8 +430,14 @@ export function expressDone_btn() {
 	$("#p_root_disk_type").val($("#ep_root_disk_type").val())
 	$("#p_root_disk_size").val($("#ep_root_disk_size").val())
 	$("#p_specId").val($("#ep_specId").val())
-	$("#p_subGroupSize").val($("#ep_vm_add_cnt").val() + "")
-	$("#p_vm_cnt").val($("#ep_vm_add_cnt").val() + "")
+	$("#p_command").val($("#ep_command").val())
+	// ep_vm_add_cnt가 비어있으면 기본값 1로 설정
+	var vmAddCnt = $("#ep_vm_add_cnt").val();
+	if (!vmAddCnt || vmAddCnt.trim() === "") {
+		vmAddCnt = "1";
+	}
+	$("#p_subGroupSize").val(vmAddCnt)
+	$("#p_vm_cnt").val(vmAddCnt)
 
 	// commonSpec 으로 set 해야하므로 재설정
 	var express_form = {}
@@ -390,12 +449,10 @@ export function expressDone_btn() {
 	express_form["rootDiskType"] = $("#p_root_disk_type").val();
 	express_form["commonSpec"] = $("#p_commonSpecId").val();
 	express_form["commonImage"] = $("#p_commonImageId").val();
+	express_form["command"] = $("#p_command").val();
 	
-	console.log("express_form form : ", express_form);
-
 	var server_name = express_form.name;
 	var server_cnt = parseInt(express_form.subGroupSize);
-	console.log("server_cnt", server_cnt);
 
 	var add_server_html = "";
 
@@ -417,19 +474,69 @@ export function expressDone_btn() {
 	$("#" + vmEleId + "_server_list").append(add_server_html);
 	$("#" + vmEleId + "_server_list").prepend(getPlusVm(vmEleId));
 
-	console.log("express btn click and express form data : ", express_form);
-	console.log("express data array : ", Express_Server_Config_Arr);
 	express_data_cnt++;
+	
+	// 폼 초기화 - 모든 입력 필드 초기화
 	$("#express_form").each(function () {
 		this.reset();
 	});
+	
+	// 숨겨진 필드들 초기화
+	$("#ep_provider").val("");
+	$("#ep_connectionName").val("");
+	$("#ep_imageId").val("");
+	$("#ep_commonImageId").val("");
+	$("#ep_commonSpecId").val("");
+	$("#ep_specId").val("");
+	
+	// 직접 입력 필드들 초기화
+	$("#ep_name").val("");
+	$("#ep_description").val("");
+	$("#ep_imageId_input").val("");
+	$("#ep_root_disk_type").val("");
+	$("#ep_root_disk_size").val("");
+	$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
 	$("#ep_data_disk").val("");
+	$("#ep_command").val("");
+	
+	// 모달들 초기화
+	resetModals();
+}
+
+// 모달들 초기화 함수
+function resetModals() {
+	// Spec Search 모달 초기화
+	if (typeof webconsolejs !== 'undefined' && webconsolejs['partials/operation/manage/serverrecommendation']) {
+		// Spec 모달의 테이블 초기화
+		if (window.recommendTable) {
+			window.recommendTable.clearData();
+		}
+		// Spec 모달의 선택 상태 초기화
+		$("#spec-search input[type='checkbox']").prop('checked', false);
+		$("#spec-search .form-control").val("");
+		// Cloud Provider Filter 드롭다운 초기화
+		$("#spec-provider-filter").val("");
+		// Region 드롭다운 초기화
+		$("#assistRecommendSpecConnectionName").val("");
+	}
+	
+	// Image Search 모달 초기화
+	if (typeof webconsolejs !== 'undefined' && webconsolejs['partials/operation/manage/imagerecommendation']) {
+		// Image 모달의 테이블 초기화
+		if (window.recommendImageTable) {
+			window.recommendImageTable.clearData();
+		}
+		// Image 모달의 선택 상태 초기화
+		$("#image-search input[type='checkbox']").prop('checked', false);
+		$("#image-search .form-control").val("");
+		$("#assist_os_type").val("");
+		$("#gpu_image_value").val("false");
+		$("#assist_gpu_image").prop('checked', false);
+	}
 }
 
 export function view_express(cnt) {
-	console.log('view simple cnt : ', cnt);
 	// var select_form_data = Simple_Server_Config_Arr[cnt]
-	// console.log('select_form_data : ', select_form_data);
 	// $(".express_servers_config").addClass("active")
 	// $(".simple_servers_config").removeClass("active")
 	// $(".expert_servers_config").removeClass("active")
@@ -465,8 +572,6 @@ export function changeDiskSize(type) {
 			}
 		})
 	}
-	console.log("ROOT_DISK_MAX_VALUE : ", ROOT_DISK_MAX_VALUE)
-	console.log("ROOT_DISK_MIN_VALUE : ", ROOT_DISK_MIN_VALUE)
 	$("#s_rootDiskType").val(type);
 	$("#e_rootDiskType").val(type);
 
@@ -480,7 +585,7 @@ function getPlusVm(vmElementId) {
 
 	var append = "";
 	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
-	append = append + "+ VM"
+	append = append + "+ SubGroup"
 	append = append + '</li>';
 	return append;
 }
@@ -491,7 +596,6 @@ var TotalServerConfigArr = new Array();// 최종 생성할 서버 목록
 // deploy 버튼 클릭시 등록한 서버목록을 배포.
 // function btn_deploy(){
 export function deployMci() {
-	console.log("deployMci")
 	createMciDynamic()
 	// express 는 express 만, simple + expert + import 는 합쳐서
 	// 두개의 mci는 만들어 질 수 없으므로 
@@ -588,7 +692,6 @@ export function deployMci() {
 	// }    
 }
 export async function createMciDynamic() {
-	console.log("createMciDynamic")
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
@@ -600,16 +703,12 @@ export async function createMciDynamic() {
 
 	var mciName = $("#mci_name").val()
 	var mciDesc = $("#mci_desc").val()
+	var policyOnPartialFailure = $("#mci_policy_on_partial_failure").val()
 
 
-	console.log("mciName", mciName)
-	console.log("mciDesc", mciDesc)
-	console.log("Express_Server_Config_Arr", Express_Server_Config_Arr)
-
-
-
+	
 	if (!mciName) {
-		commonAlert("Please Input MCI Name!!!!!")
+		alert("Please Input MCI Name!!!!!")
 		return;
 	}
 
@@ -617,23 +716,59 @@ export async function createMciDynamic() {
 		mciDesc = "Made in CB-TB"
 	}
 
-	webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId)
+	// MCI 생성 전 검증 API 호출
+	try {
+		const validationResult = await webconsolejs["common/api/services/mci_api"].mciDynamicReview(
+			mciName, mciDesc, Express_Server_Config_Arr, selectedNsId
+		);
+		
+		
+		if (validationResult && validationResult.status === 200) {
+			const reviewData = validationResult.data.responseData;
+			
+			// 검증 결과에 따른 처리
+			if (reviewData.creationViable) {
+				if (reviewData.overallStatus === "Ready") {
+					// 검증 성공 - 실제 MCI 생성 진행
+					webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure);
+				} else if (reviewData.overallStatus === "Warning") {
+					// 경고가 있지만 생성 가능 - 사용자 확인 후 진행
+					const confirmMessage = `경고가 있습니다:\n${reviewData.overallMessage}\n\n예상 비용: ${reviewData.estimatedCost}\n\n계속 진행하시겠습니까?`;
+					if (confirm(confirmMessage)) {
+						webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure);
+					}
+				} else {
+					// Error 상태
+					alert(`MCI 생성 검증 실패:\n${reviewData.overallMessage}`);
+				}
+			} else {
+				// 생성 불가능
+				alert(`MCI 생성이 불가능합니다:\n${reviewData.overallMessage}`);
+			}
+		} else {
+			// API 호출 실패
+			console.error("검증 API 호출 실패:", validationResult);
+			alert("MCI 생성 검증 중 오류가 발생했습니다.");
+		}
+	} catch (error) {
+		console.error("MCI 검증 중 오류:", error);
+		alert("MCI 검증 중 오류가 발생했습니다: " + error.message);
+	}
 }
 
 export async function createVmDynamic() {
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
-	var mciId = webconsolejs["pages/operation/manage/mci"].currentMciId
+    var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+    var selectedNsId = selectedWorkspaceProject.nsId;
+    var mciId = window.currentMciId;
 
-	// for the test
-	// webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
+    webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
 
-	// response가 있으면 
+    // response가 있으면 
 
-	alert("생성요청 완료")
-	window.location = `/webconsole/operations/manage/workloads/mciworkloads`;
+    alert("VM creation request completed")
+    window.location = `/webconsole/operations/manage/workloads/mciworkloads`;
 
-	await webconsolejs["pages/operation/manage/mci"].refreshRowData(mciId, checked_array);
+    await webconsolejs["pages/operation/manage/mci"].refreshRowData(mciId, checked_array);
 
 }
 
@@ -644,20 +779,27 @@ export function addNewMci() {
 
 // ////////////// VM Handling ///////////
 export function addNewVirtualMachine() {
-	console.log("addNewVirtualMachine")
 	Express_Server_Config_Arr = new Array();
 
-	var selectedMci = webconsolejs["pages/operation/manage/mci"].currentMciId
-	console.log("selectedMci", selectedMci)
-
-	var mci_name = selectedMci
-	// var mci_name = selectedMci[0].name
-	// var mci_desc = selectedMci[0].description
+	// window.currentMciId로 직접 접근
+	var selectedMciId = window.currentMciId;
+	console.log("selectedMciId", selectedMciId);
+	
+	// MCI 데이터에서 실제 name과 description 가져오기
+	var mci_name = selectedMciId; // 기본값으로 ID 사용
+	var mci_desc = "";
+	
+	if (selectedMciId && window.totalMciListObj) {
+		var mciData = window.totalMciListObj.find(mci => mci.id === selectedMciId);
+		if (mciData) {
+			mci_name = mciData.name || selectedMciId;
+			mci_desc = mciData.description || "";
+		}
+	}
 
 	$("#extend_mci_name").val(mci_name)
-
-	// $("#extend_mci_desc").val(mci_desc)
-	// console.log("extend_mci_desc", mci_desc)
+	$("#extend_mci_desc").val(mci_desc)
+	console.log("mci_name:", mci_name, "mci_desc:", mci_desc)
 
 	isVm = true
 }
@@ -773,7 +915,6 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 	var resultText = "";
 	var createdServer = 0;
 	for (let key of resultVmCreateMap.keys()) {
-		console.log("vmCreateresult " + key + " : " + resultVmCreateMap.get(resultVmKey));
 		resultText += key + " = " + resultVmCreateMap.get(resultVmKey) + ","
 		//totalDeployServerCount--
 		createdServer++;
@@ -809,24 +950,77 @@ function vmCreateCallback(resultVmKey, resultStatus) {
 
 // SubGroup Size
 (function () {
+	// ep_vm_add_cnt 처리 (PMK 스타일 input-number-container)
 	const input = document.getElementById('ep_vm_add_cnt');
-	if (!input) return;
+	if (input) {
+		const container = input.parentElement; // .input-number-container
+		const btnDec = container.querySelector('.input-number-decrement');
+		const btnInc = container.querySelector('.input-number-increment');
 
-	const container = input.parentElement; // .d-flex.align-items-center
-	const [btnDec, btnInc] = container.querySelectorAll('button');
+		const minValue = 1;
 
-	const minValue = 1;
-	const maxValue = Number(input.getAttribute('max')) || Infinity;
+		btnDec.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(input.value, 10) || minValue;
+			if (val > minValue) input.value = val - 1;
+		});
 
-	btnDec.addEventListener('click', function (e) {
-		e.preventDefault();
-		let val = parseInt(input.value, 10) || minValue;
-		if (val > minValue) input.value = val - 1;
-	});
+		btnInc.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(input.value, 10) || minValue;
+			input.value = val + 1; // maxValue 제한 제거
+		});
+	}
 
-	btnInc.addEventListener('click', function (e) {
-		e.preventDefault();
-		let val = parseInt(input.value, 10) || minValue;
-		if (val < maxValue) input.value = val + 1;
-	});
+	// policy_ep_vm_add_cnt 처리 (mciworkloads.html용)
+	const policyInput = document.getElementById('policy_ep_vm_add_cnt');
+	if (policyInput) {
+		const policyContainer = policyInput.parentElement; // .d-flex.align-items-center
+		const [policyBtnDec, policyBtnInc] = policyContainer.querySelectorAll('button');
+
+		const minValue = 1;
+		const maxValue = Number(policyInput.getAttribute('max')) || Infinity;
+
+		policyBtnDec.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(policyInput.value, 10) || minValue;
+			if (val > minValue) policyInput.value = val - 1;
+		});
+
+		policyBtnInc.addEventListener('click', function (e) {
+			e.preventDefault();
+			let val = parseInt(policyInput.value, 10) || minValue;
+			if (val < maxValue) policyInput.value = val + 1;
+		});
+	}
 })();
+
+// Clear 버튼 함수 추가
+export function clearExpressForm() {
+	// 1. 모든 입력 필드 초기화
+	$("#express_form")[0].reset();
+	
+	// 2. 숨겨진 필드들 초기화
+	$("#ep_provider").val("");
+	$("#ep_connectionName").val("");
+	$("#ep_imageId").val("");
+	$("#ep_commonImageId").val("");
+	$("#ep_commonSpecId").val("");
+	$("#ep_specId").val("");
+	
+	// 3. 직접 입력 필드들 초기화
+	$("#ep_name").val("");
+	$("#ep_description").val("");
+	$("#ep_imageId_input").val("");
+	$("#ep_root_disk_type").val("");
+	$("#ep_root_disk_size").val("");
+	$("#ep_vm_add_cnt").val("1"); // 기본값 1로 설정
+	$("#ep_data_disk").val("");
+	$("#ep_command").val("");
+	
+	// 4. 수정 모드 플래그 초기화
+	window.currentEditIndex = undefined;
+	
+	// 5. 폼은 그대로 유지 (토글하지 않음)
+}
+

@@ -36,7 +36,7 @@ menus:
     parentid: organizations
     displayname: Users
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1220
 
@@ -260,9 +260,17 @@ menus:
     parentid: workspaces
     displayname: Roles
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1740
+  
+  - id: csproles
+    parentid: workspaces
+    displayname: CSP Roles
+    restype: menu
+    isaction: true
+    priority: 2
+    menunumber: 1741
 
   - id: projectboard
     parentid: workspaces

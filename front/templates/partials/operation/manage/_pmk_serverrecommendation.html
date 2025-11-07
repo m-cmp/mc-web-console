@@ -149,6 +149,22 @@
                   </div>
                 </div>
               </div>
+              <!-- Architecture 필드 추가 -->
+              <div class="row mt-2">
+                <div class="col-md-4">
+                  <label class="form-label">Architecture</label>
+                  <select
+                    class="form-select"
+                    name="assist_architecture-pmk"
+                    id="assist_architecture-pmk"
+                  >
+                    <option value="">Select Architecture</option>
+                    <option value="x86_64">x86_64</option>
+                    <option value="arm64">ARM64</option>
+                    <option value="amd64">AMD64</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -171,7 +187,6 @@
               <option value="gcp">GCP</option>
               <option value="tencent">Tencent</option>
               <option value="ncp">NCP</option>
-              <option value="ncpvpc">NCP VPC</option>
               <option value="nhn">NHN</option>
               <option value="ibm">IBM</option>
             </select>

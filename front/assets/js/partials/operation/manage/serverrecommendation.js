@@ -102,9 +102,9 @@ function initRecommendSpecTable() {
 
 	//recommendTable = setSpecTabulator("spec-table", tableObjParams, columns);
 	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
+	window.recommendTable = recommendTable; // window 객체에 할당
 
 	recommendTable.on("rowSelectionChanged", function (data, rows) {
-		console.log("data", data)
 
 		updateSelectedRows(data)
 	});
@@ -185,12 +185,10 @@ function updateSelectedRows(data) {
 		recommendSpecs.push(rowData);
 	});
 
-	console.log("선택된 행 데이터:", recommendSpecs);
 }
 
 // recommened Vm 조회
 export async function getRecommendVmInfo() {
-	console.log("in getRecommendVmInfo")
 
 	var memoryMinVal = $("#assist_min_memory").val()
 	var memoryMaxVal = $("#assist_max_memory").val()
@@ -228,7 +226,7 @@ export async function getRecommendVmInfo() {
 		if (acceleratorCountMin != "" || acceleratorCountMax != "") {
 
 			if (acceleratorCountMax != "" && acceleratorCountMax < acceleratorCountMin) {
-				alert("최대값이 최소값보다 작습니다.")
+				alert("Maximum value is less than minimum value.")
 			}
 
 			if (acceleratorCountMin === "") {
@@ -259,7 +257,7 @@ export async function getRecommendVmInfo() {
 		if (acceleratorMemoryMin != "" || acceleratorMemoryMax != "") {
 
 			if (acceleratorMemoryMax != "" && acceleratorMemoryMax < acceleratorMemoryMin) {
-				alert("최대값이 최소값보다 작습니다.")
+				alert("Maximum value is less than minimum value.")
 			}
 
 			if (acceleratorMemoryMin === "") {
@@ -300,11 +298,24 @@ export async function getRecommendVmInfo() {
 		policyArr.push(filterPolicy)
 	}
 
+	// Architecture 필터링 추가
+	var architectureVal = $("#assist_architecture").val()
+	if (architectureVal != "") {
+		var filterPolicy = {
+			"condition": [
+				{
+					"operand": architectureVal
+				}
+			],
+			"metric": "architecture"
+		}
+		policyArr.push(filterPolicy)
+	}
+
 	if (cpuMinVal != "" || cpuMaxVal != "") {
 
 		if (cpuMaxVal != "" && cpuMaxVal < cpuMinVal) {
-			console.log("cpuMaxVal",cpuMaxVal)
-			alert("최대값이 최소값보다 작습니다.")
+			alert("Maximum value is less than minimum value.")
 		}
 
 		if (cpuMinVal === "") {
@@ -334,7 +345,7 @@ export async function getRecommendVmInfo() {
 	if (memoryMinVal != "" || memoryMaxVal != "") {
 
 		if (memoryMaxVal != "" && memoryMaxVal < memoryMinVal) {
-			alert("최대값이 최소값보다 작습니다.")
+			alert("Maximum value is less than minimum value.")
 		}
 
 		if (memoryMinVal === "") {
@@ -364,7 +375,7 @@ export async function getRecommendVmInfo() {
 	if (costMinVal != "" || costMaxVal != "") {
 
 		if (costMaxVal != "" && costMaxVal < costMinVal) {
-			alert("최대값이 최소값보다 작습니다.")
+			alert("Maximum value is less than minimum value.")
 		}
 
 		if (costMinVal === "") {
@@ -408,7 +419,6 @@ export async function getRecommendVmInfo() {
 		"weight": "0.3"
 	}
 	priorityArr.push(priorityPolicy)
-	console.log("policyArr", priorityArr)
 	const data = {
 		request: {
 			"filter": {
@@ -422,22 +432,13 @@ export async function getRecommendVmInfo() {
 	}
 	
 	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
-	console.log("respData ", respData)
 	//var specList = response.data.responseData
 	if (respData.status.code != 200) {
-		console.log(" e ", respData.status)
+		console.error(e)
 		// TODO : Error 표시
 		return
 	}
-	recommendVmSpecListObj = respData.responseData
-	console.log("Spec list response data:", respData.responseData)
-	
-	// 첫 번째 spec의 구조를 자세히 로깅
-	if (respData.responseData && respData.responseData.length > 0) {
-		console.log("First spec structure:", respData.responseData[0]);
-		console.log("First spec keys:", Object.keys(respData.responseData[0]));
-	}
-	
+	recommendVmSpecListObj = respData.responseData	
 	recommendTable.setData(recommendVmSpecListObj)
 
 }
@@ -445,9 +446,7 @@ export async function getRecommendVmInfo() {
 // apply 클릭시 데이터 SET
 // returnSpecInfo()
 export async function applySpecInfo() {
-	console.log("array", recommendSpecs)
 	var selectedSpecs = recommendSpecs[0]
-	console.log("selectedSpecs : ", selectedSpecs)
 
 	// pre-release -> mode = express 고정
 	//caller == "express"
@@ -457,36 +456,25 @@ export async function applySpecInfo() {
 	var specName = selectedSpecs.cspSpecName
 	var commonSpecId = selectedSpecs.id // common specid for create dynamic mci
 	
-	console.log("commonSpecId", commonSpecId)
-	console.log("connectionName", selectedSpecs.connectionName)
-	console.log("providerName", selectedSpecs.providerName)
-	console.log("cspSpecName", selectedSpecs.cspSpecName)
-
 	// spec 정보에서 osArchitecture 추출
 	var osArchitecture = "x86_64"; // 기본값
 	
 	// API 응답에서 architecture 정보 추출
 	if (selectedSpecs.architecture) {
 		osArchitecture = selectedSpecs.architecture;
-		console.log("Found architecture in selectedSpecs.architecture:", osArchitecture);
 	} else if (selectedSpecs.keyValueList) {
 		// keyValueList에서 architecture 정보 찾기
-		console.log("Searching in keyValueList:", selectedSpecs.keyValueList);
 		for (var i = 0; i < selectedSpecs.keyValueList.length; i++) {
 			var kv = selectedSpecs.keyValueList[i];
-			console.log("Checking keyValue:", kv.key, "=", kv.value);
 			if (kv.key === "CpuArchitecture" || kv.key === "CpuArchitectureType" || kv.key === "Architecture") {
 				osArchitecture = kv.value;
-				console.log("Found architecture in keyValueList:", kv.key, "=", kv.value);
 				break;
 			}
 		}
 	} else {
-		console.log("No architecture information found in spec data");
+		console.error("No architecture information found in spec data");
 	}
 	
-	console.log("Extracted osArchitecture:", osArchitecture);
-
 	// 부모 폼에 전달할 데이터 객체 생성
 	var returnObject = {}
 	returnObject.provider = provider
@@ -496,15 +484,12 @@ export async function applySpecInfo() {
 	returnObject.osArchitecture = osArchitecture
 	returnObject.regionName = selectedSpecs.regionName
 
-	console.log("returnObject to parent:", returnObject);
-	console.log("returnFunction:", returnFunction);
 	eval(returnFunction)(returnObject);
 	
 
 }
 
 export function showRecommendSpecSetting(value) {
-	console.log("Selected coordinate : ", value)
 	if (value === "seoul") {
 		$("#latitude").val("37.532600")
 		$("#longitude").val("127.024612")
@@ -566,23 +551,20 @@ async function availableVMImageBySpec(id) {
 
 // 프로바이더별 필터링 기능
 export function filterByProvider(provider) {
-	console.log("Filtering by provider:", provider);
 	
 	if (!recommendVmSpecListObj || recommendVmSpecListObj.length === 0) {
-		console.log("No data to filter - no search results available");
+		console.error("No data to filter - no search results available");
 		return;
 	}
 	
 	if (provider === "") {
 		// 모든 프로바이더 표시
-		console.log("Showing all providers");
 		recommendTable.setData(recommendVmSpecListObj);
 	} else {
 		// 선택된 프로바이더만 필터링
 		var filteredData = recommendVmSpecListObj.filter(function(item) {
 			return item.providerName && item.providerName.toLowerCase() === provider.toLowerCase();
 		});
-		console.log("Filtered data for", provider + ":", filteredData.length, "items");
 		recommendTable.setData(filteredData);
 	}
 }

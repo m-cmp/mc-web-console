@@ -82,6 +82,16 @@
                           </svg>
                           Delete
                         </a>
+                        <a class="dropdown-item" href="#" onclick="webconsolejs['pages/operation/workspace/roles'].openAssignUserModal()">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"></path>
+                          </svg>
+                          Assign User
+                        </a>
                         <a class="dropdown-item" href="#">
                           <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -447,14 +457,16 @@
                           <div class="col-md-6">
                             <div class="mb-3">
                               <label class="form-label required">CSP Role Name</label>
-                              <input type="text" class="form-control" id="csp-role-name-input" name="csp-role-name" placeholder="e.g., MCIAM_MyRole" required>
+                              <select class="form-select" id="csp-role-name-select" name="csp-role-name" required>
+                                <option value="">Select CSP Role</option>
+                              </select>
                             </div>
                           </div>
                           <div class="col-md-2">
                             <div class="mb-3">
                               <label class="form-label">&nbsp;</label>
                               <button type="button" class="btn btn-primary w-100" id="add-csp-role-btn">
-                                Add
+                                Allocate
                               </button>
                             </div>
                           </div>
@@ -601,14 +613,16 @@
                           <div class="col-md-6">
                               <div class="mb-3">
                               <label class="form-label required">CSP Role Name</label>
-                              <input type="text" class="form-control" id="edit-csp-role-name-input" name="edit-csp-role-name" placeholder="e.g., MCIAM_MyRole" required>
+                              <select class="form-select" id="edit-csp-role-name-select" name="edit-csp-role-name" required>
+                                <option value="">Select CSP Role</option>
+                              </select>
                             </div>
                           </div>
                           <div class="col-md-2">
                               <div class="mb-3">
                                 <label class="form-label">&nbsp;</label>
                               <button type="button" class="btn btn-primary w-100" id="add-csp-mapping-btn">
-                                Add
+                                Allocate
                                 </button>
                               </div>
                             </div>
@@ -640,9 +654,78 @@
     </div>
   </div>
 </div>
+<!-- Assign User Modal -->
+<div
+  class="modal modal-blur fade"
+  id="assign-user-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  style="display: none"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="assign-user-modal-title">Assign User to Role</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-12">
+            <p class="card-subtitle">
+              사용자를 선택된 역할에 할당합니다.
+            </p>
+          </div>
+          
+          <div class="col-12">
+            <div class="mb-3">
+              <label class="form-label required">User</label>
+              <div 
+                id="assign-user-modal-userselector" 
+                style="height: 300px; border: 1px solid #e9ecef; border-radius: 4px;"
+              ></div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="assign-user-modal-role-display" 
+                readonly 
+                placeholder="Selected role will be displayed here"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="webconsolejs['pages/operation/workspace/roles'].assignUser()"
+        >
+          Assign User
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- pageloader -->
 <%= partial("partials/layout/pageloader.html") %>
 
 <!-- javascript -->
 <%= javascriptTag("common/api/services/roles_api.js") %> <%=
 javascriptTag("pages/operation/workspace/roles.js") %>
+<%= javascriptTag("common/api/services/users_api.js") %>
+<%= javascriptTag("common/api/services/csproles_api.js") %>

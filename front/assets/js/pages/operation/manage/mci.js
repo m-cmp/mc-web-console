@@ -1,15 +1,13 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-// navBar에 있는 object인데 직접 handling( onchange)
+// navBar에 있는 object인데 직접 handling(onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   // TODO : 왜 NsId를 select의 text값을 쓸까??
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   if (this.value == "") return;
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project)
 
-  currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
+  window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
 
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
   getMciListCallbackSuccess(project.NsId, respMciList);
@@ -23,16 +21,14 @@ export function commoncallbac(val) {
 //// 선택한 값이 object면 selectedXXX
 //// 선택한 값이 id면 current
 
-var totalMciListObj = new Object();
+window.totalMciListObj = new Object();
 var selectedWorkspaceProject = new Object();
 // export var selectedMciObj = new Object();
-export var currentMciId = new Object();
-
 var totalMciStatusMap = new Map();
 var totalVmStatusMap = new Map();
 
-var currentNsId = "";
-var currentMciId = "";
+window.window.currentNsId = "";
+window.currentMciId = "";
 var currentVmId = "";
 var currentSubGroupId = "";
 var currentSubGroupVmId = "";
@@ -53,7 +49,6 @@ document.addEventListener("DOMContentLoaded", initMci);
 //로드 시 prj 값 받아와 getMciList 호출
 async function initMci() {
   initMciTable(); // init tabulator
-  console.log("initMci");
 
   try {
     webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();
@@ -62,12 +57,12 @@ async function initMci() {
     const createBtnName = "Add Mci";
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
   webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
-  currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+  window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
 
   // URL 파라미터 처리
   const url = window.location.href;
@@ -77,10 +72,9 @@ async function initMci() {
   // mciID 파라미터 값 추출
   var selectedMciID = params.get('mciID');
 
-  console.log('selectedMciID:', selectedMciID);  // 출력: mciID의 값 (예: com)
   //if (selectedMciID != undefined) {
   if (selectedMciID) {
-    currentMciId = selectedMciID
+    window.currentMciId = selectedMciID
     toggleRowSelection(selectedMciID)
   }
 
@@ -89,37 +83,54 @@ async function initMci() {
   policyTabEl.addEventListener('shown.bs.tab', function (event) {
     initPolicyPage();
   });
+  
+  // 모든 탭 전환 시 선택 상태 초기화
+  const allTabElements = document.querySelectorAll('a[data-bs-toggle="tab"]');
+  allTabElements.forEach(tabEl => {
+    // 탭이 숨겨질 때 이전 탭의 선택 상태 초기화
+    tabEl.addEventListener('hidden.bs.tab', function (event) {
+      const hiddenTab = event.target.getAttribute('href');
+      
+      // 숨겨지는 탭의 선택 상태 초기화
+      resetTabSelectionStates(hiddenTab);
+      
+      // Policy 탭이 아닌 다른 탭으로 전환 시 Policy Info 초기화
+      if (hiddenTab !== '#tabs-mci-policy') {
+        resetPolicyInfoState();
+      }
+    });
+  });
 }
 
 
 // Mci 전체 목록 조회
 export async function refreshMciList() {
   if (selectedWorkspaceProject.projectId != "") {
-    console.log("workspaceProject ", selectedWorkspaceProject)
-
     //getMciList();// project가 선택되어 있으면 mci목록을 조회한다.
-    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(currentNsId);
+    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(window.currentNsId);
 
-    getMciListCallbackSuccess(selectedWorkspaceProject.projectId, respMciList);
+    await getMciListCallbackSuccess(selectedWorkspaceProject.projectId, respMciList);
 
   }
 }
 
 
 // getMciList 호출 성공 시
-function getMciListCallbackSuccess(caller, mciList) {
+async function getMciListCallbackSuccess(caller, mciList) {
 
-  totalMciListObj = mciList.mci;
-  console.log("total mci : ", totalMciListObj);
+  window.totalMciListObj = mciList.mci;
+
+  // Update label key dropdown with actual keys from MCI data
+  updateLabelKeyDropdown();
 
   // displayMciDashboard();
 
-  if (currentMciId) {
-    console.log("getMciListCallbackSuccess current mci ", currentMciId)
+  if (window.currentMciId) {
     getSelectedMciData();//선택한 mci가 있으면 처리
   }
   refreshDisplay();
 }
+
 
 // data 표시 
 
@@ -127,14 +138,29 @@ function refreshDisplay() {
   setToTalMciStatus(); // mci상태 표시
   setTotalVmStatus(); // mci 의 vm들 상태표시
 
-  mciListTable.setData(totalMciListObj);
+  // 현재 선택된 행 정보 저장
+  const selectedRows = mciListTable.getSelectedData().map(row => row.id);
+  const currentSelectedMciId = window.currentMciId;
 
-  if (currentMciId) {
-    for (var mciIndex in totalMciListObj) {
-      var aMci = totalMciListObj[mciIndex];
+  mciListTable.setData(window.totalMciListObj);
 
-      if (currentMciId == aMci.id) {
-        displayServerStatusList(currentMciId, aMci.vm)
+  // 테이블 데이터 설정 후 선택 상태 복원
+  if (currentSelectedMciId && selectedRows.includes(currentSelectedMciId)) {
+    setTimeout(() => {
+      try {
+        mciListTable.selectRow(currentSelectedMciId);
+      } catch (error) {
+        console.error("Error restoring row selection:", error);
+      }
+    }, 50);
+  }
+
+  if (window.currentMciId) {
+    for (var mciIndex in window.totalMciListObj) {
+      var aMci = window.totalMciListObj[mciIndex];
+
+      if (window.currentMciId == aMci.id) {
+        displayServerStatusList(window.currentMciId, aMci.vm)
         break;
       }
     }
@@ -143,14 +169,11 @@ function refreshDisplay() {
 // table의 특정 row만 갱신
 function refreshRowData(rowId, newData) {
   const selectedRows = mciListTable.getSelectedData().map(row => row.id);
-  console.log("selectedRows ", selectedRows)
-  console.log("rowId ", rowId)
   //TODO: providerIMG
   // newData.getData().vm[0].providerName = "aws";
   //mciListTable.updateData(totalMciListObj);
   mciListTable.updateData([{ id: rowId, ...newData }])
     .then(() => {
-      console.log("table updateData ", newData)
       // 갱신 후 선택 상태 복원
       mciListTable.deselectRow(); // 기존 선택 해제
       mciListTable.selectRow(selectedRows); // 이전 선택 상태 복원
@@ -164,17 +187,275 @@ function refreshRowData(rowId, newData) {
   displayServerGroupStatusList(rowId, newData.vm)
 }
 
+// Policy Info 상태 초기화 함수
+function resetPolicyInfoState() {
+  // Policy Info 숨기기
+  const policyInfoElement = document.getElementById("policy_info");
+  if (policyInfoElement) {
+    webconsolejs["partials/layout/navigatePages"].deactiveElement(policyInfoElement);
+  }
+  
+  // Policy 관련 전역 변수 초기화
+  currentClickedmciIdInPolicyTable = "";
+  
+  // Policy 테이블 선택 해제
+  if (policyListTable) {
+    policyListTable.deselectRow();
+  }
+  
+  // Policy Info 내용 초기화
+  const policyInfoFields = [
+    'policy-mciId', 'policy-mciName', 'policy-actionLog',
+    'subgroup-name', 'subgroup-label', 'subgroup-size', 'subgroup-description', 
+    'subgroup-currentVmCount', 'subgroup-minMaxSize',
+    'summary-subgroupSize', 'summary-currentVmCount', 'summary-minMaxSize',
+    'policy-type', 'policy-algorithm',
+    'condition-metric', 'condition-operator', 'condition-operand',
+    'vm-spec', 'vm-os', 'vm-csp', 'vm-disk', 'vm-connection'
+  ];
+  
+  policyInfoFields.forEach(fieldId => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.textContent = '-';
+    }
+  });
+  
+  // Action Log는 textarea이므로 별도 처리
+  const actionLogElement = document.getElementById('policy-actionLog');
+  if (actionLogElement) {
+    actionLogElement.value = '';
+  }
+}
+
+// MCI 탭 상태 초기화 함수
+function resetMciTabState() {
+  // 모든 탭에서 active 클래스 제거
+  const allTabLinks = document.querySelectorAll('#mci_info .nav-link');
+  allTabLinks.forEach(tabLink => {
+    tabLink.classList.remove('active');
+  });
+  
+  // 모든 탭 패널에서 active, show 클래스 제거
+  const allTabPanes = document.querySelectorAll('#mci_info .tab-pane');
+  allTabPanes.forEach(tabPane => {
+    tabPane.classList.remove('active', 'show');
+  });
+  
+  // 첫 번째 탭(Default)을 활성화
+  const firstTabLink = document.querySelector('#mci_info .nav-link[href="#tabs-mci-default"]');
+  const firstTabPane = document.getElementById('tabs-mci-default');
+  
+  if (firstTabLink && firstTabPane) {
+    firstTabLink.classList.add('active');
+    firstTabPane.classList.add('active', 'show');
+  }
+}
+
+// 탭별 선택 상태 초기화 함수
+function resetTabSelectionStates(hiddenTab) {
+  
+  // 탭 내부 테이블 선택 상태 초기화 (MCI 선택은 유지)
+  resetTabInternalTableSelections();
+  
+  // 숨겨지는 탭에 따라 해당 탭의 선택 상태 초기화
+  if (hiddenTab === '#tabs-mci-default') {
+    resetDefaultTabSelections();
+  } else if (hiddenTab === '#tabs-mci-group') {
+    resetGroupTabSelections();
+  } else if (hiddenTab === '#tabs-mci-policy') {
+    resetPolicyTabSelections();
+  } else if (hiddenTab === '#tabs-mci-labels') {
+    resetLabelsTabSelections();
+  }
+}
+
+// Default 탭 (VM List) 선택 상태 초기화
+function resetDefaultTabSelections() {
+  // VM 선택 상태 초기화
+  if (typeof currentVmId !== 'undefined') {
+    currentVmId = "";
+  }
+  if (typeof selectedVmId !== 'undefined') {
+    selectedVmId = null;
+  }
+  
+  // VM 목록에서 선택된 항목들 초기화
+  const vmListItems = document.querySelectorAll('#mci_server_info_box .vmStatus-item');
+  vmListItems.forEach(item => {
+    item.classList.remove('selected');
+  });
+  
+  // VM 체크박스 상태 초기화
+  const vmCheckboxes = document.querySelectorAll('#mci_server_info_box input[type="checkbox"]');
+  vmCheckboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  
+  // VM 테두리 초기화
+  $("#mci_server_info_box li").css("border", "none");
+  
+  // Server Info 숨기기
+  const serverInfoElement = document.getElementById("server_info");
+  if (serverInfoElement && serverInfoElement.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
+  }
+  
+  // 필터 상태 초기화
+  const filterCollapse = document.getElementById('filterbody');
+  if (filterCollapse && filterCollapse.classList.contains('show')) {
+    filterCollapse.classList.remove('show');
+  }
+  
+  // 필터 입력값 초기화
+  const filterValue = document.getElementById('filter-value');
+  if (filterValue) {
+    filterValue.value = '';
+  }
+}
+
+// Group 탭 선택 상태 초기화
+function resetGroupTabSelections() {
+  // SubGroup 선택 상태 초기화
+  const subgroupItems = document.querySelectorAll('#subgroup_info_box .vmStatus-item');
+  subgroupItems.forEach(item => {
+    item.classList.remove('selected');
+  });
+  
+  // Scale Group 설정 collapse 상태 초기화
+  const scaleGroupSettings = document.getElementById('scaleGroupSettings');
+  if (scaleGroupSettings && scaleGroupSettings.classList.contains('show')) {
+    scaleGroupSettings.classList.remove('show');
+  }
+  
+  // Scale Policy 체크 collapse 상태 초기화
+  const checkScalePolicySettings = document.getElementById('checkScalePolicySettings');
+  if (checkScalePolicySettings && checkScalePolicySettings.classList.contains('show')) {
+    checkScalePolicySettings.classList.remove('show');
+  }
+  
+  // Terminal 모달이 열려있다면 닫기
+  const terminalModal = document.getElementById('subgroup-cmdtestmodal');
+  if (terminalModal && terminalModal.classList.contains('show')) {
+    const modal = bootstrap.Modal.getInstance(terminalModal);
+    if (modal) {
+      modal.hide();
+    }
+  }
+}
+
+// Policy 탭 선택 상태 초기화
+function resetPolicyTabSelections() {
+  // Policy 테이블 선택 상태 초기화
+  if (typeof window.policyTable !== 'undefined' && window.policyTable) {
+    window.policyTable.deselectRow();
+  }
+  
+  // Policy 필터 상태 초기화
+  const policyFilterCollapse = document.querySelector('#tabs-mci-policy #filterbody');
+  if (policyFilterCollapse && policyFilterCollapse.classList.contains('show')) {
+    policyFilterCollapse.classList.remove('show');
+  }
+  
+  // Policy 필터 입력값 초기화
+  const policyFilterValue = document.querySelector('#tabs-mci-policy #filter-value');
+  if (policyFilterValue) {
+    policyFilterValue.value = '';
+  }
+}
+
+// 탭 내부 테이블 선택 상태 초기화 (MCI 선택은 유지)
+function resetTabInternalTableSelections() {
+  // Policy 테이블 선택 상태 초기화
+  if (typeof window.policyTable !== 'undefined' && window.policyTable) {
+    window.policyTable.deselectRow();
+  }
+  
+  // VM 목록 테이블 선택 상태 초기화 (만약 있다면)
+  if (typeof window.vmListTable !== 'undefined' && window.vmListTable) {
+    window.vmListTable.deselectRow();
+  }
+  
+  // SubGroup 목록 테이블 선택 상태 초기화 (만약 있다면)
+  if (typeof window.subgroupTable !== 'undefined' && window.subgroupTable) {
+    window.subgroupTable.deselectRow();
+  }
+}
+
+// Labels 탭 선택 상태 초기화
+function resetLabelsTabSelections() {
+  // System Labels 토글 상태 초기화 (기본값으로)
+  const showSystemLabels = document.getElementById('showSystemLabels');
+  if (showSystemLabels) {
+    showSystemLabels.checked = false;
+  }
+  
+  // 라벨 편집 모달이 열려있다면 닫기
+  const labelEditorModal = document.querySelector('.modal.show');
+  if (labelEditorModal) {
+    const modal = bootstrap.Modal.getInstance(labelEditorModal);
+    if (modal) {
+      modal.hide();
+    }
+  }
+}
+
+// Server Info 탭 상태 초기화 함수
+function resetServerTabState() {
+  // Server Info 탭에서 모든 탭 링크의 active 클래스 제거
+  const serverTabLinks = document.querySelectorAll('#server_info .nav-link');
+  serverTabLinks.forEach(tabLink => {
+    tabLink.classList.remove('active');
+  });
+  
+  // Server Info 탭에서 모든 탭 패널의 active, show 클래스 제거
+  const serverTabPanes = document.querySelectorAll('#server_info .tab-pane');
+  serverTabPanes.forEach(tabPane => {
+    tabPane.classList.remove('active', 'show');
+  });
+  
+  // 첫 번째 탭(Detail)을 활성화
+  const detailTabLink = document.querySelector('#server_info .nav-link[href="#tabs-vm-details"]');
+  const detailTabPane = document.getElementById('tabs-vm-details');
+  
+  if (detailTabLink && detailTabPane) {
+    detailTabLink.classList.add('active');
+    detailTabPane.classList.add('active', 'show');
+  }
+}
+
+// SubGroup VM Info 탭 상태 초기화 함수
+function resetSubGroupVmTabState() {
+  // SubGroup VM Info 탭에서 모든 탭 링크의 active 클래스 제거
+  const subGroupVmTabLinks = document.querySelectorAll('#subGroup_vm_info .nav-link');
+  subGroupVmTabLinks.forEach(tabLink => {
+    tabLink.classList.remove('active');
+  });
+  
+  // SubGroup VM Info 탭에서 모든 탭 패널의 active, show 클래스 제거
+  const subGroupVmTabPanes = document.querySelectorAll('#subGroup_vm_info .tab-pane');
+  subGroupVmTabPanes.forEach(tabPane => {
+    tabPane.classList.remove('active', 'show');
+  });
+  
+  // 첫 번째 탭(Detail)을 활성화
+  const detailTabLink = document.querySelector('#subGroup_vm_info .nav-link[href="#tabs-subgroupvm-details"]');
+  const detailTabPane = document.getElementById('tabs-subgroupvm-details');
+  
+  if (detailTabLink && detailTabPane) {
+    detailTabLink.classList.add('active');
+    detailTabPane.classList.add('active', 'show');
+  }
+}
+
 // 클릭한 mci info 가져오기
 // 표에서 선택된 MciId 받아옴
 export async function getSelectedMciData() {
 
-  console.log('getSelectedMciData currentMciId:', currentMciId);  // 출력: mciID의 값 (예: com)
-  if (currentMciId != undefined && currentMciId != "") {
+  if (window.currentMciId != undefined && window.currentMciId != "") {
 
-    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentMciId)
-    console.log("mciResp ", mciResp)
+    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, window.currentMciId)
     if (mciResp.status.code != 200) {
-      console.log("resp status ", mciResp.status)
       // failed.  // TODO : Error Popup 처리
       return;
     }
@@ -194,6 +475,12 @@ export async function getSelectedMciData() {
     // SET MCIS Info page
     setMciInfoData(mciData)
 
+    // SubGroup Terminal 버튼 초기 상태 설정
+    updateSubGroupRemoteCmdButtonState();
+    
+    // MCI Terminal 버튼 상태 설정
+    updateMciRemoteCmdButtonState();
+
     // // Toggle MCIS Info
     // var div = document.getElementById("mci_info");
     // console.log("mciInfo ", div)
@@ -203,8 +490,13 @@ export async function getSelectedMciData() {
 
 // 클릭한 mci의 info값 세팅
 function setMciInfoData(mciData) {
-  console.log("setMciInfoData", mciData)
   try {
+
+    // window.totalMciListObj에서 최신 데이터(Label 포함) 가져오기
+    const currentMci = window.totalMciListObj.find(mci => mci.id === mciData.id);
+    if (currentMci) {
+      mciData = currentMci; // Label 정보가 포함된 최신 데이터로 교체
+    }
 
     var mciID = mciData.id;
     var mciName = mciData.name;
@@ -242,7 +534,6 @@ function setMciInfoData(mciData) {
         '  <span class="text-muted-lt" style="font-size: 12px;">' + mciStatus + '</span>' +
         '</div>';
     }
-    console.log("totalvmCount", totalvmCount)
 
     $("#mci_info_text").text(" [ " + mciName + " ]")
     $("#mci_server_info_status").empty();
@@ -259,27 +550,77 @@ function setMciInfoData(mciData) {
     $("#mci_info_cloud_connection").empty()
     $("#mci_info_cloud_connection").append(mciProviderNames)
 
+    // Labels 탭 업데이트 (탭이 활성화될 때만 로드)
+    // updateMciLabelsTab(mciData);
+
   } catch (e) {
     console.error(e);
   }
+}
 
+// MCI Labels 탭 업데이트
+function updateMciLabelsTab(mciData) {
+  if (typeof window.displayMciLabels === 'function') {
+    const labels = mciData.labels || {};
+    window.displayMciLabels(labels);
+  }
 }
 
 // mci 삭제
 export function deleteMci() {
-  webconsolejs["common/api/services/mci_api"].mciDelete(currentMciId, currentNsId)
-
+  executeWithToast(
+    () => webconsolejs["common/api/services/mci_api"].mciDelete(window.currentMciId, window.currentNsId),
+    "MCI deleted successfully",
+    "MCI deletion failed"
+  ).then(() => {
+    refreshMciList();
+  });
 }
 
 // vm 삭제
 export function deleteVm() {
-  webconsolejs["common/api/services/mci_api"].vmDelete(currentMciId, currentNsId, currentVmId)
+  executeWithToast(
+    () => webconsolejs["common/api/services/mci_api"].vmDelete(window.currentMciId, window.currentNsId, currentVmId),
+    "VM deleted successfully",
+    "VM deletion failed"
+  ).then(() => {
+    refreshMciList();
+  });
+}
 
+// 공통 API 호출 래퍼 함수 (Toast 포함)
+function executeWithToast(apiCall, successMessage, errorMessage) {
+  // 진행 상태 표시
+  webconsolejs["common/utils/toast"].showProgressToast("API", "processing");
+  
+  return apiCall()
+    .then(response => {
+      webconsolejs["common/utils/toast"].hideProgressToast();
+      webconsolejs["common/utils/toast"].showToast(
+        webconsolejs["common/utils/toast"].TOAST_TYPES.SUCCESS, 
+        successMessage
+      );
+      return response;
+    })
+    .catch(error => {
+      webconsolejs["common/utils/toast"].hideProgressToast();
+      webconsolejs["common/utils/toast"].showToast(
+        webconsolejs["common/utils/toast"].TOAST_TYPES.ERROR, 
+        errorMessage
+      );
+      throw error;
+    });
 }
 
 // mci life cycle 변경
 export function changeMciLifeCycle(type) {
-  webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, currentMciId, currentNsId)
+  executeWithToast(
+    () => webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, window.currentMciId, window.currentNsId),
+    `MCI ${type} completed successfully`,
+    `MCI ${type} failed`
+  ).then(() => {
+    refreshMciList();
+  });
 }
 
 // vm life cycle 변경
@@ -288,11 +629,15 @@ export function changeVmLifeCycle(type) {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a VM')
     return;
   }
-  selectedVmIds.forEach(vmId => {
-    webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, currentMciId, currentNsId, vmId);
-  });
-
-  console.log(`Lifecycle action '${type}' applied to selected VMs:`, selectedVmIds);
+  if (selectedVmId) {
+    executeWithToast(
+      () => webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, window.currentMciId, window.currentNsId, selectedVmId),
+      `VM ${type} completed successfully`,
+      `VM ${type} failed`
+    ).then(() => {
+      refreshMciList();
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -410,8 +755,6 @@ function groupBySubGroup(vmList) {
 }
 
 function displayServerGroupStatusList(mciID, vmList) {
-  console.log("displayServerGroupStatusList");
-
   var vmListGroupedBySubGroup = groupBySubGroup(vmList);
   var mciName = mciID;
   var vmGroupLi = "";
@@ -450,10 +793,10 @@ function displayServerGroupStatusList(mciID, vmList) {
   // }
 }
 
-// 체크박스를 선택하면 선택된 VM ID 업데이트
-var selectedVmIds = [];
-var selectedVmGroupIds = [];
-var selectedSubGroupVmIds = [];
+// 체크박스를 선택하면 선택된 VM ID 업데이트 (단일 선택)
+var selectedVmId = null;
+var selectedVmGroupId = null;
+var selectedSubGroupVmId = null;
 // 체크박스를 클릭했을 때 선택 상태를 반전시킴
 export function toggleCheck(type, id) {
 
@@ -467,15 +810,15 @@ export function handleCheck(type, id) {
 
   if (type === 'vm') {
     if (checkbox.prop("checked")) {
-      if (!selectedVmIds.includes(id)) selectedVmIds.push(id);
-    } else {
-      selectedVmIds = selectedVmIds.filter(id => id !== id);
-    }
-    // 마지막 선택된 VM ID로 설정 및 테두리 업데이트
-    if (selectedVmIds.length > 0) {
-      currentVmId = selectedVmIds[selectedVmIds.length - 1];
+      // 기존 선택된 VM이 있다면 해제
+      if (selectedVmId && selectedVmId !== id) {
+        $(`#checkbox_vm_${selectedVmId}`).prop("checked", false);
+      }
+      selectedVmId = id;
+      currentVmId = id;
       webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
     } else {
+      selectedVmId = null;
       // 선택된 VM이 없다면 ServerInfo를 접음
       clearServerInfo();
       const div = document.getElementById("server_info");
@@ -486,43 +829,92 @@ export function handleCheck(type, id) {
   } else if (type === 'vmGroup') { // subgroup
 
     if (checkbox.prop("checked")) {
-      if (!selectedVmGroupIds.includes(id)) selectedVmGroupIds.push(id);
+      // 같은 항목 재선택인지 확인
+      if (selectedVmGroupId === id) {
+        // 같은 항목 재선택 - 토글 닫기
+        selectedVmGroupId = null;
+        currentSubGroupId = null;
+        clearServerInfo();
+        const div = document.getElementById("subgroup_vm");
+        if (div.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
+        // Server Info도 닫기
+        const serverInfoDiv = document.getElementById("subGroup_vm_info");
+        if (serverInfoDiv && serverInfoDiv.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(serverInfoDiv);
+        }
+      } else {
+        // 다른 항목 선택 - 기존 선택 해제 후 새 항목 선택
+        if (selectedVmGroupId && selectedVmGroupId !== id) {
+          $(`#checkbox_vmGroup_${selectedVmGroupId}`).prop("checked", false);
+        }
+        selectedVmGroupId = id;
+        currentSubGroupId = id;
+        // Server Info 닫기 (다른 항목 선택 시)
+        const serverInfoDiv = document.getElementById("subGroup_vm_info");
+        if (serverInfoDiv && serverInfoDiv.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(serverInfoDiv);
+        }
+        vmListInSubGroup(currentSubGroupId);
+      }
     } else {
-      selectedVmGroupIds = selectedVmGroupIds.filter(id => id !== id);
-    }
-
-    if (selectedVmGroupIds.length > 0) {
-      // 창 열기
-      currentSubGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
-      vmListInSubGroup(currentSubGroupId);
-    } else {
+      selectedVmGroupId = null;
+      currentSubGroupId = null;
       clearServerInfo();
-
+      // 체크 해제 시 토글 닫기
       const div = document.getElementById("subgroup_vm");
       if (div.classList.contains("active")) {
         webconsolejs["partials/layout/navigatePages"].toggleElement(div);
       }
-
+      // Server Info도 닫기
+      const serverInfoDiv = document.getElementById("subGroup_vm_info");
+      if (serverInfoDiv && serverInfoDiv.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(serverInfoDiv);
+      }
     }
   } else if (type === 'subgroup_vm') {
     if (checkbox.prop("checked")) {
-      if (!selectedSubGroupVmIds.includes(id)) selectedSubGroupVmIds.push(id);
+      // 같은 항목 재선택인지 확인
+      if (selectedSubGroupVmId === id) {
+        // 같은 항목 재선택 - 토글 닫기
+        selectedSubGroupVmId = null;
+        currentSubGroupVmId = null;
+        clearServerInfo();
+        const div = document.getElementById("subGroup_vm_info");
+        if (div && div.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
+      } else {
+        // 다른 항목 선택 - 기존 선택 해제 후 새 항목 선택
+        if (selectedSubGroupVmId && selectedSubGroupVmId !== id) {
+          $(`#checkbox_subgroup_vm_${selectedSubGroupVmId}`).prop("checked", false);
+        }
+        selectedSubGroupVmId = id;
+        currentSubGroupVmId = id;
+        webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
+        // Server Info 토글 (c 버튼 역할)
+        const div = document.getElementById("subGroup_vm_info");
+        if (div && !div.classList.contains("active")) {
+          webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+        }
+      }
     } else {
-      selectedSubGroupVmIds = selectedSubGroupVmIds.filter(id => id !== id);
-    }
-
-    if (selectedSubGroupVmIds.length > 0) {
-      // 창 열기
-      currentSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
-      webconsolejs['pages/operation/manage/mci'].subGroup_vmDetailInfo(currentSubGroupVmId);
-
-      // vmListInSubGroup(currentSubGroupVmId);
-    } else {
+      selectedSubGroupVmId = null;
+      currentSubGroupVmId = null;
       clearServerInfo();
+      // 체크 해제 시 토글 닫기
+      const div = document.getElementById("subGroup_vm_info");
+      if (div && div.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+      }
     }
   }
   // 마지막 선택된 VM 강조 표시
   highlightSelected(type);
+  
+  // SubGroup Terminal 버튼 상태 업데이트
+  updateSubGroupRemoteCmdButtonState();
 }
 
 
@@ -530,29 +922,23 @@ function highlightSelected(type) {
   // 모든 li 요소의 테두리 제거
 
   if (type === 'vm') {
-
     $("#mci_server_info_box li").css("border", "none");
-    if (selectedVmIds.length > 0) {
-      const lastVmId = selectedVmIds[selectedVmIds.length - 1];
-      $(`#server_status_icon_${lastVmId}`)
+    if (selectedVmId) {
+      $(`#server_status_icon_${selectedVmId}`)
         .css("border", "2px solid blue");
     }
   }
   else if (type === 'vmGroup') {
-
     $("#subgroup_info_box li").css("border", "none");
-    if (selectedVmGroupIds.length > 0) {
-      const lastGroupId = selectedVmGroupIds[selectedVmGroupIds.length - 1];
-      $(`#serverGroup_status_icon_${lastGroupId}`)
+    if (selectedVmGroupId) {
+      $(`#serverGroup_status_icon_${selectedVmGroupId}`)
         .css("border", "2px solid blue");
     }
   }
   else if (type === 'subgroup_vm') {
-
     $("#subgroup_vm_info_box li").css("border", "none");
-    if (selectedSubGroupVmIds.length > 0) {
-      const lastSubGroupVmId = selectedSubGroupVmIds[selectedSubGroupVmIds.length - 1];
-      $(`#subgroup_vm_status_icon_${lastSubGroupVmId}`)
+    if (selectedSubGroupVmId) {
+      $(`#subgroup_vm_status_icon_${selectedSubGroupVmId}`)
         .css("border", "2px solid blue");
     }
   }
@@ -571,7 +957,11 @@ function highlightSelected(type) {
 
 function vmListInSubGroup(subGroupId) {
   var div = document.getElementById("subgroup_vm");
-  webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  
+  // 토글이 닫혀있을 때만 열기
+  if (!div.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+  }
 
   // subGroupId의 vmList 정렬
   var groupedVm = vmListGroupedBySubGroup.find(item => item.subGroupId === subGroupId);
@@ -623,23 +1013,20 @@ export async function vmDetailInfo(vmId) {
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
   const hasActiveClass = div.classList.contains("active");
-  console.log("vmDetailInfo hasActiveClass", hasActiveClass)
   if (!hasActiveClass) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
   }
-
-  console.log("vmDetailInfo")
-  console.log("mciID : ", currentMciId)
-  console.log("vmID : ", currentVmId)
+  
+  // Server Info 탭 상태 초기화 (Detail 탭으로 리셋)
+  resetServerTabState();
 
   // get mci vm  
   try {
-    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(currentNsId, currentMciId, vmId);
+    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var subGroupId = aVm.subGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
-    console.log("vm ", aVm)
     // 전체를 관리하는 obj 갱신
     var aMci = {};
     for (var mciIndex in totalMciListObj) {
@@ -661,16 +1048,13 @@ export async function vmDetailInfo(vmId) {
     }
     clearServerInfo();
 
-    console.log("aMci", aMci);
 
     if (!aMci || !aMci.vm) {
-      console.log("aMci or vmList is not defined");
       return;
     }
 
     var mciName = aMci.name;
     var vmList = aMci.vm;
-    console.log("vmList:", vmList);
 
     var vmExist = false;
     var data = new Object();
@@ -680,35 +1064,32 @@ export async function vmDetailInfo(vmId) {
       if (currentVmId == aVm.id) {
         data = aVm;
         vmExist = true;
-        console.log("aVm", aVm);
         break;
       }
     }
 
     if (!vmExist) {
-      console.log("vm is not exist");
+      console.error("vm is not exist");
     }
   } catch (error) {
     console.error("Error occurred: ", error);
   }
-  console.log("selected Vm");
-  console.log("selected vm data : ", data);
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
-  console.log("vmPublicIp", vmPublicIp)
   var vmSshKeyID = data.sshKeyId;
+  var imageId = data.imageId;
+  var operatingSystem = "Ubuntu";
 
-  try {
-    var imageId = data.imageId
-    // var operatingSystem = await webconsolejs["common/api/services/vmimage_api"].getCommonVmImageInfo(imageId)
-    // var operatingSystem = data.imageId
-    var operatingSystem = "Ubuntu"
-    $("#server_info_os").text(operatingSystem)
-  } catch (e) {
-    console.log("e", e)
+  // Architecture 정보만 추출
+  var architecture = ""
+  if (data.addtionalDetails && Array.isArray(data.addtionalDetails)) {
+    var archDetail = data.addtionalDetails.find(detail => detail.key === "Architecture")
+    if (archDetail) {
+      architecture = archDetail.value
+    }
   }
   var startTime = data.createdTime
   var privateIp = data.privateIP;
@@ -731,21 +1112,36 @@ export async function vmDetailInfo(vmId) {
   $("#mci_server_info_connection").empty()
   $("#mci_server_info_connection").append(vmProviderIcon)
 
-
   $("#server_info_text").text(' [ ' + subGroupId + ' / ' + vmName + ' ]')
   $("#server_info_name").text(vmName + "/" + vmId)
   $("#server_info_desc").text(vmDescription)
 
-  $("#server_info_start_time").text(startTime)
-  $("#server_info_private_ip").text(privateIp)
-  // $("#server_info_cspVMID").text(data.cspResourceName)
-  $("#server_info_cspVMID").text(cspVMID)
+  // 새로운 구조에 맞게 데이터 설정
+  // Row 1: CSP
+  $("#server_info_csp").text(providerName)
 
-  // ip information
+  // Row 2: Region, Zone, Config Name
+  var region = data.region.Region
+  var zone = data.region.Zone
+  var connectionName = data.connectionName
+  $("#server_info_region").text(region)
+  $("#server_info_zone").text(zone)
+  $("#server_info_connection_name").text(connectionName)
+
+  // Row 3: VMID, VM Spec, Architecture
+  $("#server_info_cspVMID").text(cspVMID)
+  $("#server_info_vmspec_name").text(data.cspSpecName)
+  $("#server_info_os_arch").text(architecture)
+
+  // Row 4: Public IP + Terminal Button, Private IP
   $("#server_info_public_ip").text(vmPublicIp)
+  $("#server_info_private_ip").text(privateIp)
+
+  // Terminal 버튼은 HTML에서 직접 onclick으로 처리됨
+
+  // 기존 코드 유지 (다른 부분에서 사용)
   $("#server_detail_info_public_ip_text").text("Public IP : " + vmPublicIp)
   $("#server_info_public_dns").text(data.publicDNS)
-  // $("#server_info_private_ip").val(data.privateIP)
   $("#server_info_private_dns").text(data.privateDNS)
 
   $("#server_detail_view_public_ip").text(vmPublicIp)
@@ -800,7 +1196,6 @@ export async function vmDetailInfo(vmId) {
   var vmDetail = data.cspViewVmDetail;
   // var vmDetailKeyValueList = vmDetail.KeyValueList
   var addtionalDetails = data.addtionalDetails
-  console.log("addtionalDetails", addtionalDetails)
   var architecture = "";
   var vpcId = ""
   var subnetId = ""
@@ -842,27 +1237,22 @@ export async function vmDetailInfo(vmId) {
 }
 
 export async function subGroup_vmDetailInfo(vmId) {
-  console.log("subGroup_vmDetailInfo")
-
   currentSubGroupVmId = vmId
-  // Toggle MCIS Info
-  var div = document.getElementById("subGroup_vm_info");
+  // Server Info는 c 버튼으로만 제어되므로 자동 토글 제거
+  // var div = document.getElementById("subGroup_vm_info");
+  // const hasActiveClass = div.classList.contains("active");
+  // if (!hasActiveClass) {
+  //   webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+  // }
 
-  const hasActiveClass = div.classList.contains("active");
-  console.log("vmDetailInfo hasActiveClass", hasActiveClass)
-  if (!hasActiveClass) {
-    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-  }
-
-  console.log("mciID : ", currentMciId)
-  console.log("vmID : ", currentSubGroupVmId)
+  // SubGroup VM Info 탭 상태 초기화 (Detail 탭으로 리셋)
+  resetSubGroupVmTabState();
 
   // get mci vm  
   try {
-    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(currentNsId, currentMciId, vmId);
+    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var responseVmId = response.id;
-    console.log("vm ", aVm)
     // 전체를 관리하는 obj 갱신
     var aMci = {};
     for (var mciIndex in totalMciListObj) {
@@ -884,16 +1274,14 @@ export async function subGroup_vmDetailInfo(vmId) {
     }
     clearServerInfo();
 
-    console.log("aMci", aMci);
 
     if (!aMci || !aMci.vm) {
-      console.log("aMci or vmList is not defined");
+      console.error("aMci or vmList is not defined");
       return;
     }
 
     var mciName = aMci.name;
     var vmList = aMci.vm;
-    console.log("vmList:", vmList);
 
     var vmExist = false;
     var data = new Object();
@@ -903,26 +1291,23 @@ export async function subGroup_vmDetailInfo(vmId) {
       if (currentSubGroupVmId == aVm.id) {
         data = aVm;
         vmExist = true;
-        console.log("aVm", aVm);
         break;
       }
     }
 
     if (!vmExist) {
-      console.log("vm is not exist");
+      console.error("vm is not exist");
     }
   } catch (error) {
     console.error("Error occurred: ", error);
   }
-  console.log("selected Vm");
-  console.log("selected vm data : ", data);
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
-  console.log("vmPublicIp", vmPublicIp)
   var vmSshKeyID = data.sshKeyId;
+  var cspVMID = data.uid;
 
   try {
     var imageId = data.imageId
@@ -931,7 +1316,7 @@ export async function subGroup_vmDetailInfo(vmId) {
     var operatingSystem = "Ubuntu"
     $("#subgroup_server_info_os").text(operatingSystem)
   } catch (e) {
-    console.log("e", e)
+    console.error(e)
   }
   var startTime = data.createdTime
   var privateIp = data.privateIP;
@@ -952,6 +1337,9 @@ export async function subGroup_vmDetailInfo(vmId) {
   $("#subgroup_mci_server_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
   $("#subgroup_mci_server_info_connection").empty()
   $("#subgroup_mci_server_info_connection").append(vmProviderIcon)
+
+  // CSP 정보 설정
+  $("#subgroup_server_info_csp").text(providerName)
 
 
   $("#subgroup_server_info_text").text(' [ ' + currentSubGroupId + ' / ' + vmName + ' ]')
@@ -1022,7 +1410,6 @@ export async function subGroup_vmDetailInfo(vmId) {
   var vmDetail = data.cspViewVmDetail;
   // var vmDetailKeyValueList = vmDetail.KeyValueList
   var addtionalDetails = data.addtionalDetails
-  console.log("addtionalDetails", addtionalDetails)
   var architecture = "";
   var vpcId = ""
   var subnetId = ""
@@ -1065,19 +1452,41 @@ export async function subGroup_vmDetailInfo(vmId) {
 
 // vm 세부 정보 초기화
 function clearServerInfo() {
-  console.log("clearServerInfo")
-
   $("#server_info_text").text("")
   $("#server_detail_info_text").text("")
   $("#server_detail_view_server_status").val("");
   $("#server_info_name").val("")
   $("#server_info_desc").val("")
 
+  // 새로운 구조 필드들 초기화
+  $("#server_info_csp").text("")
+  $("#server_info_region").text("")
+  $("#server_info_zone").text("")
+  $("#server_info_connection_name").text("")
+  $("#server_info_cspVMID").text("")
+  $("#server_info_vmspec_name").text("")
+  $("#server_info_os_arch").text("")
+  $("#server_info_public_ip").text("")
+  $("#server_info_private_ip").text("")
+
+  // subgroup 필드들 초기화
+  $("#subgroup_server_info_csp").text("")
+  $("#subgroup_server_info_region").text("")
+  $("#subgroup_server_info_zone").text("")
+  $("#subgroup_server_info_connection_name").text("")
+  $("#subgroup_server_info_cspVMID").text("")
+  $("#subgroup_server_info_vmspec_name").text("")
+  $("#subgroup_server_info_archi").text("")
+  $("#subgroup_server_info_public_ip").text("")
+  $("#subgroup_server_info_private_ip").text("")
+  $("#subgroup_server_info_os").text("")
+  $("#subgroup_server_info_start_time").text("")
+  $("#subgroup_server_info_public_dns").text("")
+  $("#subgroup_server_info_private_dns").text("")
+
   // ip information
-  $("#server_info_public_ip").val("")
   $("#server_detail_info_public_ip_text").text("")
   $("#server_info_public_dns").val("")
-  $("#server_info_private_ip").val("")
   $("#server_info_private_dns").val("")
 
   $("#server_detail_view_public_ip").val("")
@@ -1154,7 +1563,6 @@ function clearServerInfo() {
 
 // mci 상태 표시
 function setToTalMciStatus() {
-  console.log("setToTalMciStatus");
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
@@ -1165,7 +1573,6 @@ function setToTalMciStatus() {
       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
     }
   } catch (e) {
-    console.log("mci status error", e);
   }
   displayMciStatusArea();
 }
@@ -1173,7 +1580,6 @@ function setToTalMciStatus() {
 // Mci 목록에서 vmStatus만 처리 : 화면표시는 display function에서
 // vm 상태 표시
 function setTotalVmStatus() {
-  console.log("setTotalVmstatus")
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
@@ -1182,13 +1588,11 @@ function setTotalVmStatus() {
       totalVmStatusMap.set(aMci.id, vmStatusCountMap);
     }
   } catch (e) {
-    console.log("mci status error");
   }
   displayVmStatusArea();
 }
 // mci status display
 function displayMciStatusArea() {
-  console.log("displayMciStatusArea");
   var sumMciCnt = 0;
   var sumMciRunningCnt = 0;
   var sumMciRunningIngCnt = 0;
@@ -1198,8 +1602,6 @@ function displayMciStatusArea() {
   var sumMciTerminateIngCnt = 0;
   var sumMciFailedCnt = 0;
   var sumMciEtcCnt = 0;
-
-  console.log("totalMciStatusMap", totalMciStatusMap);
 
   // 각 상태 합산
   totalMciStatusMap.forEach((value, key) => {
@@ -1256,13 +1658,10 @@ function displayMciStatusArea() {
   $("#mci_status_failed").text(sumMciFailedCnt);
   $("#mci_status_etc").text(sumMciEtcCnt);
 
-  console.log("displayMciStatusArea");
-  console.log("running status count ", $("#mci_status_running").text());
 }
 
 // vm 상태값 표시
 function displayVmStatusArea() {
-  console.log("displayVmStatusArea");
 
   let sumVmCnt = 0;
   let sumVmRunningCnt = 0;
@@ -1326,7 +1725,6 @@ function displayVmStatusArea() {
   );
   $("#vm_status_etc").text(sumVmEtcCnt);
 
-  console.log("Updated result: ", sumVmCnt, sumVmRunningCnt, sumVmStoppedCnt);
 }
 
 
@@ -1422,7 +1820,8 @@ function initMciTable() {
     {
       title: "Id",
       field: "id",
-      visible: true
+      vertAlign: "middle",
+      hozAlign: "center",
     },
     {
       title: "System Label",
@@ -1432,7 +1831,8 @@ function initMciTable() {
     {
       title: "Name",
       field: "name",
-      vertAlign: "middle"
+      vertAlign: "middle",
+      hozAlign: "center",
     },
     {
       title: "ProviderImg",
@@ -1494,22 +1894,39 @@ function initMciTable() {
   ];
 
   //mciListTable = webconsolejs["common/util"].setTabulator("mcilist-table", tableObjParams, columns);// TODO [common/util]에 정의되어 있는데 호출하면 에러남... why?
-  mciListTable = setMciTabulator("mcilist-table", tableObjParams, columns, true);
+  mciListTable = setMciTabulator("mcilist-table", tableObjParams, columns, false);
   // 행 클릭 시
   mciListTable.on("rowClick", function (e, row) {
     // var tempcurmciID = row.getCell("id").getValue();
     var tempcurmciID = row.getCell("id").getValue();
-    if (tempcurmciID === currentMciId) {
+    if (tempcurmciID === window.currentMciId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
-      currentMciId = ""
+      window.currentMciId = ""
       this.deselectRow();
+      // MCI 선택 해제 시 Policy Info도 초기화
+      resetPolicyInfoState();
       return
     } else {
-      currentMciId = tempcurmciID;
+      // 기존 선택 해제 후 새 행 선택
+      this.deselectRow();
+      this.selectRow(tempcurmciID);
+      
+      window.currentMciId = tempcurmciID;
+      // MCI 변경 시 이전 VM 선택 상태 초기화
+      currentVmId = "";
+      selectedVmId = null;
+      
+      // Server Info 숨기기 (이전 MCI의 VM 정보가 표시되지 않도록)
+      const serverInfoElement = document.getElementById("server_info");
+      if (serverInfoElement && serverInfoElement.classList.contains("active")) {
+        webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
+      }
+      
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
-      //this.deselectRow();
-      //this.selectRow(currentMciId);
       // 표에서 선택된 MCISInfo 
+      // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
+      resetPolicyInfoState();
+      resetMciTabState();
       getSelectedMciData()
       return
     }
@@ -1545,9 +1962,7 @@ function toggleRowSelection(id) {
   var row = mciListTable.getRow(id);
   if (row) {
     row.select();
-    console.log("Row with ID " + id + " is selected.");
   } else {
-    console.log("Row with ID " + id + " not found.");
   }
 }
 
@@ -1682,7 +2097,7 @@ function providerFormatterString(data) {
     const chk = checkedBoxes[0];
     const groupId = chk.value;
     const vmCount = currentGroupedVmList.length
-    let targetCount = vmCount;  // 숫자박스 초기값
+    let targetCount = 1;  // 숫자박스 초기값
     formListUl.innerHTML = '';
 
     // 컨트롤용 li 생성
@@ -1695,7 +2110,7 @@ function providerFormatterString(data) {
     btnMinus.className = 'btn btn-outline-secondary btn-sm';
     btnMinus.textContent = '–';
     btnMinus.addEventListener('click', () => {
-      if (targetCount > 0) {
+      if (targetCount > 1) {
         targetCount--;
         inputBox.value = targetCount;
       }
@@ -1728,17 +2143,16 @@ function providerFormatterString(data) {
     btnOk.className = 'btn btn-primary btn-sm ms-3';
     btnOk.textContent = 'Apply';
     btnOk.addEventListener('click', () => {
-      const desired = parseInt(inputBox.value, 10);
-      if (desired <= vmCount) {
-        alert(`Please select a number greater than current VM count (${vmCount})`);
-        return;
-      }
       var numVMsToAdd = inputBox.value
+      
+      // 로딩 프로그레스 토스트 표시
+      webconsolejs["common/utils/toast"].showProgressToast("ScaleOut", "processing");
+      
       // API 호출
-      var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(currentNsId, currentMciId, currentSubGroupId, numVMsToAdd)
+      var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(window.currentNsId, currentMciId, currentSubGroupId, numVMsToAdd)
         .then(async response => {
 
-          var mciData = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentMciId);
+          var mciData = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, currentMciId);
           refreshRowData(currentMciId, mciData.responseData);
           const groupTabLink = document.querySelector('a[href="#tabs-mci-group"]');
           if (groupTabLink) bootstrap.Tab.getOrCreateInstance(groupTabLink).show();
@@ -1753,10 +2167,24 @@ function providerFormatterString(data) {
             bsCollapse.show();
             toggleBtn.setAttribute('aria-expanded', 'true');
           }
+          
+          // API 성공 시 토스트 제거
+          webconsolejs["common/utils/toast"].hideProgressToast();
+        })
+        .catch(error => {
+          console.error('ScaleOut API call failed:', error);
+          // API 실패 시 토스트 제거
+          webconsolejs["common/utils/toast"].hideProgressToast();
         });
 
     });
     li.appendChild(btnOk);
+    
+    // 설명 텍스트 추가
+    const explanationText = document.createElement('span');
+    explanationText.className = 'ms-2 text-muted small';
+    explanationText.textContent = '(VMs to add)';
+    li.appendChild(explanationText);
 
     formListUl.appendChild(li);
     bsCollapse.show();
@@ -1769,6 +2197,130 @@ function providerFormatterString(data) {
 var fieldEl = document.getElementById("filter-field");
 var typeEl = document.getElementById("filter-type");
 var valueEl = document.getElementById("filter-value");
+
+// Label filter elements (label-filter-key는 제거됨)
+var labelKeyEl = null; // 제거된 요소
+var labelTypeEl = document.getElementById("label-filter-type");
+var labelValueEl = document.getElementById("label-filter-value");
+
+// 요소가 존재하지 않을 경우를 대비한 안전성 검사
+if (!labelTypeEl) {
+  console.warn('label-filter-type element not found');
+}
+if (!labelValueEl) {
+  console.warn('label-filter-value element not found');
+}
+
+// Update label key dropdown with actual keys from MCI data
+function updateLabelKeyDropdown() {
+  const keys = new Set();
+  
+  // Collect all unique label keys from MCI data
+  Object.values(window.totalMciListObj || {}).forEach(mci => {
+    if (mci.label && typeof mci.label === 'object') {
+      Object.keys(mci.label).forEach(key => {
+        // Exclude system labels (sys.*)
+        if (!key.startsWith('sys.')) {
+          keys.add(key);
+        }
+      });
+    }
+  });
+  
+  // Label key dropdown이 제거되었으므로 이 기능은 비활성화
+  // const select = document.getElementById('label-filter-key');
+  // select.innerHTML = '<option value="">Select key...</option>';
+  
+  // Sort keys alphabetically and add to dropdown
+  // Array.from(keys).sort().forEach(key => {
+  //   const option = document.createElement('option');
+  //   option.value = key;
+  //   option.textContent = key;
+  //   select.appendChild(option);
+  // });
+  
+}
+
+// Label filtering function
+function labelFilter(data) {
+  const labelKey = labelKeyEl ? labelKeyEl.value.trim() : '';
+  const labelType = labelTypeEl ? labelTypeEl.value : '';
+  const labelValue = labelValueEl ? labelValueEl.value.trim() : '';
+  
+  
+  // 둘 다 비어있으면 필터링하지 않음
+  if (!labelKey && !labelValue) {
+    return true;
+  }
+  
+  // MCI의 label 정보가 있는지 확인
+  if (!data.label || typeof data.label !== 'object') {
+    return false;
+  }
+  
+  // Key만 있는 경우: 해당 키가 존재하는지 확인
+  if (labelKey && !labelValue) {
+    const hasKey = data.label.hasOwnProperty(labelKey);
+    return hasKey;
+  }
+  
+  // Value만 있는 경우: 사용자 정의 label 값에서만 검사 (시스템 label 제외)
+  if (!labelKey && labelValue) {
+    const userLabelValues = Object.entries(data.label)
+      .filter(([key]) => !key.startsWith('sys.'))
+      .map(([key, value]) => value);
+    
+    const filterValue = labelValue.toLowerCase();
+    let hasMatch = false;
+    
+    switch (labelType) {
+      case 'like':
+        hasMatch = userLabelValues.some(value => 
+          value.toString().toLowerCase().includes(filterValue)
+        );
+        break;
+      case '=':
+        hasMatch = userLabelValues.some(value => 
+          value.toString().toLowerCase() === filterValue
+        );
+        break;
+      case '!=':
+        hasMatch = userLabelValues.some(value => 
+          value.toString().toLowerCase() !== filterValue
+        );
+        break;
+      default:
+        hasMatch = userLabelValues.some(value => 
+          value.toString().toLowerCase().includes(filterValue)
+        );
+    }
+    
+    return hasMatch;
+  }
+  
+  // Key와 Value 모두 있는 경우: 연산자에 따른 매치 확인
+  if (labelKey && labelValue) {
+    if (!data.label.hasOwnProperty(labelKey)) {
+      return false;
+    }
+    
+    const actualValue = data.label[labelKey].toString().toLowerCase();
+    const filterValue = labelValue.toLowerCase();
+    
+    switch (labelType) {
+      case 'like':
+        return actualValue.includes(filterValue);
+      case '=':
+        return actualValue === filterValue;
+      case '!=':
+        return actualValue !== filterValue;
+      default:
+        return actualValue.includes(filterValue);
+    }
+  }
+  
+  return true;
+}
 
 // table rovider filtering / equel 고정
 function providerFilter(data) {
@@ -1810,24 +2362,98 @@ function updateFilter() {
   }
 
   if (filterVal) {
-    table.setFilter(filter, typeVal, valueEl.value);
+    mciListTable.setFilter(filter, typeVal, valueEl.value);
+  }
+}
+
+// Label filter update function
+function updateLabelFilter() {
+  const labelKey = labelKeyEl ? labelKeyEl.value.trim() : '';
+  const labelValue = labelValueEl ? labelValueEl.value.trim() : '';
+  
+  
+  // Label 필터가 설정되어 있으면 적용
+  if (labelKey || labelValue) {
+    mciListTable.setFilter(labelFilter);
+  } else {
+    // Label 필터가 비어있으면 제거
+    mciListTable.removeFilter(labelFilter);
   }
 }
 
 // Update filters on value change
-document.getElementById("filter-field").addEventListener("change", updateFilter);
-document.getElementById("filter-type").addEventListener("change", updateFilter);
-document.getElementById("filter-value").addEventListener("keyup", updateFilter);
+const filterField = document.getElementById("filter-field");
+const filterType = document.getElementById("filter-type");
+const filterValue = document.getElementById("filter-value");
+
+if (filterField) {
+  filterField.addEventListener("change", updateFilter);
+} else {
+  console.warn('filter-field element not found');
+}
+
+if (filterType) {
+  filterType.addEventListener("change", updateFilter);
+} else {
+  console.warn('filter-type element not found');
+}
+
+if (filterValue) {
+  filterValue.addEventListener("keyup", updateFilter);
+} else {
+  console.warn('filter-value element not found');
+}
+
+// Update label filters on value change (label-filter-key는 제거됨)
+const labelFilterKey = document.getElementById("label-filter-key");
+const labelFilterType = document.getElementById("label-filter-type");
+const labelFilterValue = document.getElementById("label-filter-value");
+
+if (labelFilterKey) {
+  labelFilterKey.addEventListener("change", updateLabelFilter);
+} else {
+  console.warn('label-filter-key element not found (removed)');
+}
+
+// 기존 Tabulator 필터 이벤트 리스너 제거 (새로운 Label Filter 시스템과 충돌 방지)
+// if (labelFilterType) {
+//   labelFilterType.addEventListener("change", updateLabelFilter);
+// } else {
+//   console.warn('label-filter-type element not found');
+// }
+
+// Label 필터는 keyup 이벤트 제거 - keypress만 사용 (Enter 키만 허용)
+// if (labelFilterValue) {
+//   labelFilterValue.addEventListener("keyup", updateLabelFilter);
+// } else {
+//   console.warn('label-filter-value element not found');
+// }
 
 // Clear filters on "Clear Filters" button click
-document.getElementById("filter-clear").addEventListener("click", function () {
-  fieldEl.value = "";
-  typeEl.value = "=";
-  valueEl.value = "";
+const filterClearBtn = document.getElementById("filter-clear");
+if (filterClearBtn) {
+  filterClearBtn.addEventListener("click", function () {
+    if (fieldEl) fieldEl.value = "name";
+    if (typeEl) typeEl.value = "like";
+    if (valueEl) valueEl.value = "";
+    if (mciListTable) mciListTable.clearFilter();
+  });
+} else {
+  console.warn('filter-clear button not found');
+}
 
-  table.clearFilter();
-
-});
+// Clear label filters on "Clear Label Filters" button click
+const clearBtn = document.getElementById("label-filter-clear");
+if (clearBtn) {
+  clearBtn.addEventListener("click", function () {
+    if (labelKeyEl) labelKeyEl.value = "";
+    if (labelTypeEl) labelTypeEl.value = "like";
+    if (labelValueEl) labelValueEl.value = "";
+    if (mciListTable) mciListTable.removeFilter(labelFilter);
+  });
+} else {
+  console.warn('label-filter-clear button not found');
+}
 /////////////////////////Tabulator Filter END/////////////////////////
 
 ////////////////////////////////////////////////////// END TABULATOR ///////////////////////////////////////////////////
@@ -1914,7 +2540,6 @@ function initPolicyTable() {
 }
 
 function setPolicyInfoData(selectedPolicyData) {
-  console.log("setPolicyInfoData", selectedPolicyData)
   var policy = selectedPolicyData;
   // --- MCI Info ---
   document.getElementById('policy-mciId').textContent = policy.mciId || '-';
@@ -1962,7 +2587,7 @@ function setPolicyInfoData(selectedPolicyData) {
 // 정책 데이터 조회
 async function loadPolicyData() {
   try {
-    var responseData = await webconsolejs['common/api/services/mci_api'].getPolicyList(currentNsId);
+    var responseData = await webconsolejs['common/api/services/mci_api'].getPolicyList(window.currentNsId);
     var transformedData = transformPolicyResponse(responseData);
     setPolicyTableData(transformedData);
   } catch (err) {
@@ -1996,23 +2621,25 @@ function transformPolicyResponse(resp) {
       } = postCommand;
 
       const {
-        commonImage = '',
-        commonSpec = '',
-        connectionName = '',
+        imageId: commonImage = '',
+        specId: commonSpec = '',
         description: vmDescription = '',
         label = {},
         name: vmName = '',
-        rootDiskSize = '',
-        rootDiskType = '',
         subGroupSize = ''
       } = vmDynamicReq;
+      
+      // API 응답에 없는 필드들은 기본값으로 설정
+      const connectionName = '';
+      const rootDiskSize = '';
+      const rootDiskType = '';
 
       const {
         metric = '',
         operator = '',
         operand = '',
-        evaluationPeriod = ''
-        // evaluationValue 는 제외
+        evaluationPeriod = '',
+        evaluationValue = ''
       } = autoCondition;
 
       const condition = `${metric} ${operator} ${operand}`.trim();
@@ -2047,6 +2674,7 @@ function transformPolicyResponse(resp) {
         operator,
         operand,
         evaluationPeriod,
+        evaluationValue,
 
         // 정책 상태
         status
@@ -2078,20 +2706,59 @@ export function showPolicyDetail(policy) {
   // TODO: 폼 요소에 policy 객체 내용을 채워넣기
   document.getElementById('policy-form-mciId').value = policy.mciId;
   document.getElementById('policy-form-metric').value = policy.metric;
-  console.log("policy.mciId", policy.mciId)
-  console.log("policy.mciId", policy.metric)
   // ...
 }
 
 // 선택된 정책 삭제
 export async function deletePolicy() {
   if (selectedPolicies.length === 0) {
-    alert('삭제할 정책을 선택하세요.');
+    alert('Please select a policy to delete.');
     return;
   }
 
-  await webconsolejs['common/api/services/mci_api'].deletePolicy(currentNsId, currentMciId);
-  // loadPolicyData();
+  try {
+    await webconsolejs['common/api/services/mci_api'].deletePolicy(window.currentNsId, currentMciId);
+    
+    alert("Policy deletion completed.");
+
+    // Policy 목록 새로고침
+    await loadPolicyData();
+
+    // 현재 선택된 MCI가 있으면 해당 MCI를 다시 선택 (Policy 탭에서 이미 선택된 상태 유지)
+    if (window.currentMciId && mciListTable) {
+      try {
+        const row = mciListTable.getRow(window.currentMciId);
+        if (row) {
+          // MCI 선택 상태 유지
+          var tempcurmciID = row.getCell("id").getValue();
+          window.currentMciId = tempcurmciID;
+          
+          // mci_info 요소가 이미 활성화되어 있는지 확인하고 필요시 활성화
+          const mciInfoElement = document.getElementById("mci_info");
+          if (mciInfoElement && !mciInfoElement.classList.contains('active')) {
+            // 다른 섹션들을 먼저 비활성화
+            document.querySelectorAll('.section').forEach(section => {
+              section.classList.remove('active');
+            });
+            // mci_info 섹션 활성화
+            mciInfoElement.classList.add('active');
+            // 강제로 표시되도록 스타일 설정
+            mciInfoElement.style.display = 'block';
+            mciInfoElement.style.visibility = 'visible';
+            mciInfoElement.style.opacity = '1';
+          }
+          
+          getSelectedMciData();
+        }
+      } catch (error) {
+        console.error("Error selecting MCI:", error);
+      }
+    }
+
+  } catch (error) {
+    console.error("Error deleting policy:", error);
+    alert("Error deleting policy occurred.");
+  }
 }
 
 
@@ -2104,18 +2771,868 @@ export async function deletePolicy() {
 
 /////////////////// TEST TERMINAL MODAL /////////////////////////
 
-export async function initremotecmdModal() {
+export async function initremotecmdModal(target) {
   const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
-  await webconsolejs["common/api/services/remotecmd_api"].initTerminal('xterm-container', nsId, currentMciId, currentVmId) // vmStatus 별로 상태 색상 set
+  
+  if (target === 'vm'){
+    currentVmId = currentVmId;
+  }else if (target === 'subgroupvm'){
+    currentVmId = currentSubGroupVmId;
+  }
+  
+  await webconsolejs["partials/operation/manage/remotecmd"].initTerminal('xterm-container', nsId, currentMciId, currentVmId, 'vm') // vmStatus 별로 상태 색상 set
   const modalElement = document.getElementById('cmdtestmodal');
   const modalInstance = new bootstrap.Modal(modalElement);
   modalInstance.show();
+}
+
+export async function initSubGroupRemoteCmdModal() {
+  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  
+  // 현재 선택된 SubGroup이 있는지 확인
+  if (!currentSubGroupId) {
+    if (selectedVmGroupId) {
+      currentSubGroupId = selectedVmGroupId;
+    } else {
+      alert("Please select a SubGroup first.");
+      return;
+    }
+  }
+  
+  try {
+    // 새로운 단발성 명령어 실행 방식으로 초기화
+    await webconsolejs["partials/operation/manage/remotecmd"].initBatchCommandTerminal('subgroup-xterm-container', nsId, currentMciId, currentSubGroupId, 'subgroup');
+    
+    const modalElement = document.getElementById('subgroup-cmdtestmodal');
+    if (modalElement) {
+      const modalInstance = new bootstrap.Modal(modalElement);
+      modalInstance.show();
+    } else {
+      alert("Modal element not found");
+    }
+  } catch (error) {
+    alert("Error initializing terminal: " + error.message);
+  }
+}
+
+export async function initMciRemoteCmdModal() {
+  const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject().NsId
+  
+  // 현재 선택된 MCI가 있는지 확인
+  if (!currentMciId) {
+    alert("Please select an MCI first.");
+    return;
+  }
+  
+  try {
+    // 새로운 단발성 명령어 실행 방식으로 초기화
+    await webconsolejs["partials/operation/manage/remotecmd"].initBatchCommandTerminal('mci-xterm-container', nsId, currentMciId, currentMciId, 'mci');
+    
+    const modalElement = document.getElementById('mci-cmdtestmodal');
+    if (modalElement) {
+      const modalInstance = new bootstrap.Modal(modalElement);
+      modalInstance.show();
+    } else {
+      alert("Modal element not found");
+    }
+  } catch (error) {
+    alert("Error initializing terminal: " + error.message);
+  }
 }
 
 
 export async function getKeypair(el) {
   const sshkeyId = el.innerText
   $("#keypairModal-bodytitle").text(sshkeyId);
-  var respSSHkey = await webconsolejs["common/api/services/mci_api"].getsshkey(currentNsId, sshkeyId);
+  var respSSHkey = await webconsolejs["common/api/services/mci_api"].getsshkey(window.currentNsId, sshkeyId);
   $("#keypairModal-textarea").val(respSSHkey.privateKey);
+}
+
+// Policy 배포 함수
+export async function deployPolicy() {
+  try {
+
+    // Policy 데이터 수집
+    const policyData = collectPolicyData();
+
+    // 데이터 검증
+    if (!validatePolicyData(policyData)) {
+      return;
+    }
+
+    // API 요청 데이터 구성
+    const requestData = buildPolicyRequestData(policyData);
+
+    // API 호출
+    const response = await webconsolejs["common/api/services/mci_api"].createPolicy(
+      window.currentNsId,
+      window.currentMciId,
+      requestData.policy
+    );
+
+
+    // 성공 처리 - 응답 구조를 더 유연하게 확인
+    if (response && (
+      (response.status && response.status.code === 200) ||
+      (response.data && response.data.status && response.data.status.code === 200) ||
+      (response.statusCode === 200) ||
+      (response.data && response.data.statusCode === 200)
+    )) {
+      alert("Policy creation completed.");
+
+      // Policy 목록 새로고침
+      await loadPolicyData();
+
+      // Policy 생성 폼 섹션을 닫기
+      const addPolicySection = document.querySelector('#addpolicy');
+      if (addPolicySection && addPolicySection.classList.contains('active')) {
+        webconsolejs["partials/layout/navigatePages"].toggleElement(addPolicySection);
+      }
+
+      // 현재 선택된 MCI가 있으면 해당 MCI를 다시 선택
+      if (window.currentMciId && mciListTable) {
+        try {
+          const row = mciListTable.getRow(window.currentMciId);
+          if (row) {
+            // 강제로 MCI 선택 상태로 만들기
+            var tempcurmciID = row.getCell("id").getValue();
+            window.currentMciId = tempcurmciID;
+            
+            // mci_info 요소를 직접 활성화
+            const mciInfoElement = document.getElementById("mci_info");
+            if (mciInfoElement) {
+              // 다른 섹션들을 먼저 비활성화
+              document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+              });
+              // mci_info 섹션 활성화
+              mciInfoElement.classList.add('active');
+              // 강제로 표시되도록 스타일 설정
+              mciInfoElement.style.display = 'block';
+              mciInfoElement.style.visibility = 'visible';
+              mciInfoElement.style.opacity = '1';
+            }
+            
+            getSelectedMciData();
+          }
+        } catch (error) {
+          console.error("Error selecting MCI:", error);
+        }
+      }
+
+      // Policy 탭으로 이동
+      setTimeout(() => {
+        const policyTabLink = document.querySelector('a[href="#tabs-mci-policy"]');
+        if (policyTabLink) {
+          try {
+            const tab = new bootstrap.Tab(policyTabLink);
+            tab.show();
+          } catch (error) {
+            console.error("Error moving to policy tab:", error);
+          }
+        }
+      }, 500);
+    } else {
+      throw new Error("Failed to create policy.");
+    }
+
+  } catch (error) {
+    console.error("Error deploying policy:", error);
+    alert("Error deploying policy occurred: " + error.message);
+  }
+}
+
+
+
+// Policy 데이터 수집
+function collectPolicyData() {
+  return {
+    // AutoAction 데이터
+    actionType: "ScaleOut", // 기본값
+    placementAlgo: $("#policy_ep_placementAlgo").val() || "random",
+    command: $("#policy_ep_command").val() || "",
+    userName: $("#policy_ep_username").val() || "",
+
+    // VM Dynamic Request 데이터
+    commonImage: $("#policy_ep_commonImageId").val() || "",
+    commonSpec: $("#policy_ep_commonSpecId").val() || "",
+    connectionName: $("#policy_ep_connectionName").val() || "",
+    description: $("#policy_ep_description").val() || "",
+    name: $("#policy_ep_name").val() || "",
+    rootDiskSize: $("#policy_ep_root_disk_size").val() || "",
+    rootDiskType: $("#policy_ep_root_disk_type").val() || "",
+    subGroupSize: $("#policy_ep_vm_add_cnt").val() || "1",
+
+    // AutoCondition 데이터
+    evaluationPeriod: $("#policy_ep_evaluationPeriod").val() || "10",
+    metric: $("#policy_ep_metric").val() || "",
+    operand: $("#policy_ep_operand").val() || "",
+    operator: $("#policy_ep_operator").val() || ""
+  };
+}
+
+// Operator 값 정규화 함수
+function normalizeOperator(operator) {
+  // Unicode 이스케이프된 문자들을 일반 문자로 변환
+  const operatorMap = {
+    "\\u003e": ">",
+    "\\u003c": "<",
+    "\\u003e\\u003d": ">=",
+    "\\u003c\\u003d": "<=",
+    "\\u003d\\u003d": "==",
+    "\\u0021\\u003d": "!="
+  };
+  
+  // 이미 정규화된 경우 그대로 반환
+  if (operator === ">" || operator === "<" || operator === ">=" || 
+      operator === "<=" || operator === "==" || operator === "!=") {
+    return operator;
+  }
+  
+  // Unicode 이스케이프된 경우 변환
+  return operatorMap[operator] || operator;
+}
+
+// Policy 데이터 검증
+function validatePolicyData(data) {
+  const requiredFields = [
+    { field: 'commonSpec', name: 'Spec' },
+    { field: 'commonImage', name: 'Image' },
+    { field: 'connectionName', name: 'Connection' },
+    { field: 'metric', name: 'Metric' },
+    { field: 'operator', name: 'Operator' },
+    { field: 'operand', name: 'Operand' }
+  ];
+
+  for (const required of requiredFields) {
+    if (!data[required.field] || data[required.field].trim() === "") {
+      alert(`${required.name} field is required.`);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Policy API 요청 데이터 구성
+function buildPolicyRequestData(data) {
+  return {
+    policy: [{
+      autoAction: {
+        actionType: data.actionType,
+        placementAlgo: data.placementAlgo,
+        postCommand: {
+          command: data.command ? [data.command] : [],
+          userName: data.userName
+        },
+        subGroupDynamicReq: {
+          imageId: data.commonImage,
+          specId: data.commonSpec,
+          connectionName: data.connectionName,
+          description: data.description,
+          label: {
+            "env": "test",
+            "role": "worker"
+          },
+          name: data.name,
+          rootDiskSize: data.rootDiskSize,
+          rootDiskType: data.rootDiskType,
+          subGroupSize: data.subGroupSize,
+          vmUserPassword: ""
+        }
+      },
+      autoCondition: {
+        evaluationPeriod: data.evaluationPeriod,
+        metric: data.metric,
+        operand: data.operand,
+        operator: normalizeOperator(data.operator)
+      },
+      status: "active"
+    }]
+  };
+}
+
+// SubGroup Terminal 버튼 상태 업데이트
+function updateSubGroupRemoteCmdButtonState() {
+  // _subgroupvm_status.html에 있는 SubGroup Terminal 버튼 찾기
+  const subGroupRemoteCmdBtn = document.querySelector('#subgroup_vm .card-actions a[onclick*="initSubGroupRemoteCmdModal"]');
+  if (subGroupRemoteCmdBtn) {
+    if (selectedVmGroupId) {
+      subGroupRemoteCmdBtn.classList.remove('disabled');
+      subGroupRemoteCmdBtn.style.pointerEvents = 'auto';
+      subGroupRemoteCmdBtn.title = 'Connect to selected SubGroup';
+    } else {
+      subGroupRemoteCmdBtn.classList.add('disabled');
+      subGroupRemoteCmdBtn.style.pointerEvents = 'none';
+      subGroupRemoteCmdBtn.title = 'Please select a SubGroup first';
+    }
+  }
+}
+
+// MCI Terminal 버튼 상태 업데이트
+function updateMciRemoteCmdButtonState() {
+  const mciRemoteCmdBtn = document.querySelector('a[onclick*="initMciRemoteCmdModal"]');
+  if (mciRemoteCmdBtn) {
+    if (currentMciId) {
+      mciRemoteCmdBtn.classList.remove('disabled');
+      mciRemoteCmdBtn.style.pointerEvents = 'auto';
+      mciRemoteCmdBtn.title = 'Connect to selected MCI';
+    } else {
+      mciRemoteCmdBtn.classList.add('disabled');
+      mciRemoteCmdBtn.style.pointerEvents = 'none';
+      mciRemoteCmdBtn.title = 'Please select an MCI first';
+    }
+  }
+}
+
+// Label 관련 함수들
+
+// Label Editor 모달 열기
+export function openLabelEditorModal(resourceType, resourceId, resourceName) {
+  
+  // 현재 MCI의 uid 찾기
+  const currentMci = window.totalMciListObj.find(mci => mci.id === resourceId);
+  const uid = currentMci ? currentMci.uid : resourceId;
+  
+  // 모달 제목 설정
+  document.getElementById('label-editor-title').innerText = `${resourceName} - Edit Labels`;
+  
+  // 현재 Label 조회 (uid 사용)
+  loadLabelsForEditor(resourceType, uid);
+  
+  // 모달 표시
+  const modal = new bootstrap.Modal(document.getElementById('label-editor-modal'));
+  modal.show();
+}
+
+// Label Editor에서 Label 조회
+async function loadLabelsForEditor(labelType, uid) {
+  try {
+    const response = await webconsolejs["common/api/services/mci_api"].getLabels(labelType, uid);
+    
+    if (response && response.data && response.data.responseData) {
+      const labels = response.data.responseData.labels || {};
+      // 원본 Label 데이터를 전역 변수에 저장 (삭제 비교용)
+      window.originalLabels = { ...labels };
+      // 모달용 라벨 데이터도 저장 (토글 시 재사용)
+      window.editorLabels = { ...labels };
+      displayLabelsInEditor(labels);
+    } else {
+      // Label이 없는 경우 빈 상태로 표시
+      window.originalLabels = {};
+      window.editorLabels = {};
+      displayLabelsInEditor({});
+    }
+  } catch (error) {
+    console.error("Error loading labels:", error);
+    window.originalLabels = {};
+    window.editorLabels = {};
+    displayLabelsInEditor({});
+  }
+}
+
+// 모달 내에서 System 라벨 토글 함수
+function toggleSystemLabelsInEditor() {
+  
+  // 현재 저장된 라벨 데이터가 있는지 확인
+  if (window.editorLabels) {
+    displayLabelsInEditor(window.editorLabels);
+  } else {
+    // 현재 선택된 리소스 정보로 다시 로드
+    const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
+    const uid = currentMci ? currentMci.uid : null;
+    if (uid) {
+      loadLabelsForEditor('mci', uid);
+    }
+  }
+}
+
+// Label Editor에 Label 표시
+function displayLabelsInEditor(labels) {
+  const container = document.getElementById('label-editor-content');
+  container.innerHTML = '';
+  
+  // 라벨을 system 라벨과 사용자 라벨로 분류
+  const allLabels = Object.entries(labels);
+  const systemLabels = allLabels.filter(([key]) => key.startsWith('sys.'));
+  const userLabels = allLabels.filter(([key]) => !key.startsWith('sys.'));
+  
+  // 현재 토글 상태 확인
+  const showSystemLabels = document.getElementById('showSystemLabelsInEditor')?.checked || false;
+  
+  // 표시할 라벨 결정
+  const labelsToShow = showSystemLabels ? allLabels : userLabels;
+  
+  // 기존 Label들 표시
+  labelsToShow.forEach(([key, value], index) => {
+    const labelRow = createLabelRow(key, value, index);
+    container.appendChild(labelRow);
+  });
+  
+  // 빈 행 하나 추가 (새 Label 추가용)
+  const emptyRow = createLabelRow('', '', 'new');
+  container.appendChild(emptyRow);
+}
+
+// Label 행 생성
+function createLabelRow(key, value, index) {
+  const row = document.createElement('div');
+  row.className = 'row mb-2';
+  row.setAttribute('data-index', index);
+  
+  // system 라벨인지 확인
+  const isSystemLabel = key.startsWith('sys.');
+  const keyInputClass = isSystemLabel ? 'form-control label-key bg-light' : 'form-control label-key';
+  const valueInputClass = isSystemLabel ? 'form-control label-value bg-light' : 'form-control label-value';
+  const isReadonly = isSystemLabel ? 'readonly' : '';
+  
+  row.innerHTML = `
+    <div class="col-md-4">
+      <input type="text" class="${keyInputClass}" placeholder="Key" value="${key}" ${isReadonly}>
+    </div>
+    <div class="col-md-4">
+      <input type="text" class="${valueInputClass}" placeholder="Value" value="${value}" ${isReadonly}>
+    </div>
+    <div class="col-md-4">
+      <button type="button" class="btn btn-outline-danger remove-label" ${index === 'new' || isSystemLabel ? 'style="display:none"' : ''}>
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="10" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M4 7l16 0"></path>
+          <path d="M10 11l0 6"></path>
+          <path d="M14 11l0 6"></path>
+          <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+          <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+        </svg>
+      </button>
+    </div>
+  `;
+  
+  return row;
+}
+
+// Label Editor 이벤트 리스너 설정
+function setupLabelEditorEvents() {
+  // Label 삭제 버튼 이벤트
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-label')) {
+      const row = e.target.closest('.row');
+      row.remove();
+    }
+  });
+  
+  // 새 Label 행 추가 이벤트
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('label-key') || e.target.classList.contains('label-value')) {
+      const row = e.target.closest('.row');
+      const isNewRow = row.getAttribute('data-index') === 'new';
+      
+      if (isNewRow && (e.target.value.trim() !== '')) {
+        // 새 행이 입력되면 또 다른 빈 행 추가
+        const container = document.getElementById('label-editor-content');
+        const existingNewRow = container.querySelector('[data-index="new"]');
+        if (existingNewRow === row) {
+          const newEmptyRow = createLabelRow('', '', 'new');
+          container.appendChild(newEmptyRow);
+          row.setAttribute('data-index', Date.now()); // 고유 인덱스 부여
+        }
+      }
+    }
+  });
+}
+
+// Label 저장
+export async function saveLabels() {
+  const container = document.getElementById('label-editor-content');
+  const rows = container.querySelectorAll('.row');
+  
+  const labels = {};
+  let hasValidLabels = false;
+  
+  rows.forEach(row => {
+    const keyInput = row.querySelector('.label-key');
+    const valueInput = row.querySelector('.label-value');
+    
+    if (keyInput && valueInput) {
+      const key = keyInput.value.trim();
+      const value = valueInput.value.trim();
+      
+      if (key && value) {
+        labels[key] = value;
+        hasValidLabels = true;
+      }
+    }
+  });
+  
+  try {
+    // 현재 선택된 리소스 정보 가져오기
+    const labelType = 'mci';
+    const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
+    const uid = currentMci ? currentMci.uid : null;
+    
+    if (!uid) {
+      alert('Please select a resource.');
+      return;
+    }
+    
+    // 삭제된 Label 찾기 (원본에 있지만 현재 UI에 없는 것들)
+    const originalLabels = window.originalLabels || {};
+    const deletedLabels = [];
+    
+    for (const key in originalLabels) {
+      if (!labels.hasOwnProperty(key)) {
+        // 시스템 라벨(sys.로 시작)은 삭제하지 않음
+        if (!key.startsWith('sys.')) {
+          deletedLabels.push(key);
+        }
+      }
+    }
+    
+    // 삭제된 Label들을 먼저 삭제
+    for (const key of deletedLabels) {
+      try {
+        const deleteResponse = await webconsolejs["common/api/services/mci_api"].removeLabel(labelType, uid, key);
+        
+        if (deleteResponse && deleteResponse.data && deleteResponse.data.status && deleteResponse.data.status.code === 200) {
+        } else {
+          console.warn(`Failed to delete label: ${key}`, deleteResponse);
+        }
+      } catch (deleteError) {
+        console.error(`Error deleting label ${key}:`, deleteError);
+      }
+    }
+    
+    // 시스템 라벨을 현재 저장할 라벨에 추가 (원본에서 가져옴)
+    const finalLabels = { ...labels };
+    
+    // 시스템 라벨들을 최종 라벨에 포함
+    for (const key in originalLabels) {
+      if (key.startsWith('sys.')) {
+        finalLabels[key] = originalLabels[key];
+      }
+    }
+    
+    // 현재 Label들 저장 (추가/수정)
+    if (hasValidLabels || Object.keys(finalLabels).length > 0) {
+      const response = await webconsolejs["common/api/services/mci_api"].createOrUpdateLabel(labelType, uid, finalLabels);
+      
+      if (response && response.data && response.data.status && response.data.status.code === 200) {
+      } else {
+        console.error('Failed to save labels:', response);
+        alert('Failed to save labels.');
+        return;
+      }
+    }
+    
+    // 성공 메시지 표시
+    if (deletedLabels.length > 0 && hasValidLabels) {
+      alert(`${deletedLabels.length} labels were deleted and ${Object.keys(labels).length} labels were saved.`);
+    } else if (deletedLabels.length > 0) {
+      alert(`${deletedLabels.length} labels were deleted.`);
+    } else if (hasValidLabels) {
+      alert('Labels were successfully saved.');
+    } else {
+      alert('No changes were made.');
+      return;
+    }
+    
+    // 모달 닫기
+    const modal = bootstrap.Modal.getInstance(document.getElementById('label-editor-modal'));
+    modal.hide();
+    
+    // 목록 새로고침
+    if (typeof refreshMciList === 'function') {
+      refreshMciList();
+    }
+    
+    // 화면 전환 로직 추가 (Policy UI Navigation 패턴 참조)
+    await handleLabelSaveNavigation();
+    
+  } catch (error) {
+    console.error("Error saving labels:", error);
+    alert('Error saving labels occurred.');
+  }
+}
+
+// 새 Label 행 추가 함수 (전역 함수로 등록)
+window.addNewLabelRow = function() {
+  const container = document.getElementById('label-editor-content');
+  const newRow = createLabelRow('', '', 'new');
+  container.appendChild(newRow);
+};
+
+
+
+
+// Label 저장 후 화면 전환 처리 함수 (Policy UI Navigation 패턴 참조)
+async function handleLabelSaveNavigation() {
+  try {
+    // 1. 현재 선택된 MCI를 다시 선택하여 상태 복원
+    if (window.currentMciId && window.mciListTable) {
+      try {
+        const row = window.mciListTable.getRow(window.currentMciId);
+        if (row) {
+          var tempcurmciID = row.getCell("id").getValue();
+          window.currentMciId = tempcurmciID;
+          
+          // mci_info 요소를 직접 활성화
+          const mciInfoElement = document.getElementById("mci_info");
+          if (mciInfoElement) {
+            // 다른 섹션들을 먼저 비활성화
+            document.querySelectorAll('.section').forEach(section => {
+              section.classList.remove('active');
+            });
+            // mci_info 섹션 활성화
+            mciInfoElement.classList.add('active');
+            // 강제로 표시되도록 스타일 설정
+            mciInfoElement.style.display = 'block';
+            mciInfoElement.style.visibility = 'visible';
+            mciInfoElement.style.opacity = '1';
+          }
+          
+          // MCI 데이터 새로고침
+          if (typeof getSelectedMciData === 'function') {
+            getSelectedMciData();
+          }
+        }
+      } catch (error) {
+        console.error("MCI selection error:", error);
+      }
+    }
+
+    // 2. Labels 탭으로 이동
+    setTimeout(() => {
+      const labelsTabLink = document.querySelector('a[href="#tabs-mci-labels"]');
+      if (labelsTabLink) {
+        try {
+          const tab = new bootstrap.Tab(labelsTabLink);
+          tab.show();
+          
+          // 3. Labels 탭 내용 새로고침
+          setTimeout(() => {
+            if (typeof loadMciLabels === 'function') {
+              loadMciLabels();
+            }
+          }, 100);
+        } catch (error) {
+          console.error("Error moving to labels tab:", error);
+        }
+      }
+    }, 500);
+  } catch (error) {
+    console.error("Error saving labels and navigating to screen:", error);
+  }
+}
+
+// Label Editor 초기화
+document.addEventListener('DOMContentLoaded', function() {
+  setupLabelEditorEvents();
+  setupLabelFilterEvents();
+});
+
+// Label Filter 이벤트 설정
+function setupLabelFilterEvents() {
+  // Type 변경 시 placeholder 업데이트
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (typeSelect && valueInput) {
+    typeSelect.addEventListener('change', function() {
+      updateValuePlaceholder();
+    });
+    
+    // Enter 키로 필터 적용 (다른 키 입력 시 즉시 필터링 방지)
+    valueInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyLabelFilter();
+      }
+    });
+  } else {
+    console.warn('Label filter elements not found. Type select:', !!typeSelect, 'Value input:', !!valueInput);
+  }
+  
+  // Clear 버튼
+  const clearBtn = document.getElementById('label-filter-clear');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      clearLabelFilter();
+    });
+  } else {
+    console.warn('Label filter clear button not found');
+  }
+  
+  // Apply 버튼 (Enter 키 대신 사용)
+  const applyBtn = document.getElementById('label-filter-apply');
+  if (applyBtn) {
+    applyBtn.addEventListener('click', function() {
+      applyLabelFilter();
+    });
+  } else {
+    console.warn('Label filter apply button not found');
+  }
+}
+
+// Value placeholder 업데이트
+function updateValuePlaceholder() {
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (!typeSelect || !valueInput) {
+    console.warn('Label filter elements not found for placeholder update');
+    return;
+  }
+  
+  const type = typeSelect.value;
+  let placeholder = '';
+  
+  switch (type) {
+    case '=':
+    case '!=':
+      placeholder = 'env (e.g., env=production)';
+      break;
+    case 'in':
+    case 'notin':
+      placeholder = 'region (e.g., region in (us-west, us-east))';
+      break;
+    case 'exists':
+    case '!exists':
+      placeholder = 'env (e.g., env exists)';
+      break;
+    default:
+      placeholder = 'env (e.g., env=production)';
+  }
+  
+  valueInput.placeholder = placeholder;
+  valueInput.disabled = false;
+}
+
+// Label Selector 생성
+function createLabelSelector() {
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (!typeSelect || !valueInput) {
+    console.warn('Label filter elements not found');
+    return '';
+  }
+  
+  const type = typeSelect.value;
+  const value = valueInput.value.trim();
+  
+  if (!value) return '';
+  
+  // Type과 Value를 조합하여 labelSelector 생성
+  switch (type) {
+    case '=':
+    case '!=':
+      // =, != 연산자는 값이 필요하므로 값이 없으면 빈 문자열 반환
+      return value ? `${value}${type}` : '';
+    case 'in':
+    case 'notin':
+      // in, notin 연산자는 값이 필요하므로 값이 없으면 빈 문자열 반환
+      return value ? `${value} ${type}` : '';
+    case 'exists':
+    case '!exists':
+      // exists, !exists 연산자는 값이 없어도 됨
+      return `${value} ${type}`;
+    default:
+      return value;
+  }
+}
+
+// Label Filter 적용 (ID 매칭 방식)
+async function applyLabelFilter() {
+  try {
+    const labelSelector = createLabelSelector();
+    
+    if (!labelSelector) {
+      alert('Please enter a valid label filter');
+      return;
+    }
+        
+    // 1. API 호출로 필터링된 MCI 목록 받기
+    const response = await webconsolejs["common/api/services/mci_api"].getResourcesByLabelSelector(labelSelector);
+    
+    if (response && response.data && response.data.responseData) {
+      let filteredMciResults = response.data.responseData;
+      
+      // responseData가 객체이고 그 안에 배열이 있는 경우 처리
+      if (filteredMciResults && typeof filteredMciResults === 'object' && !Array.isArray(filteredMciResults)) {
+        if (filteredMciResults.results) {
+          filteredMciResults = filteredMciResults.results;
+        } else if (filteredMciResults.data) {
+          filteredMciResults = filteredMciResults.data;
+        } else if (filteredMciResults.mcis) {
+          filteredMciResults = filteredMciResults.mcis;
+        } else {
+          const possibleArrays = Object.values(filteredMciResults).filter(val => Array.isArray(val));
+          if (possibleArrays.length > 0) {
+            filteredMciResults = possibleArrays[0];
+          }
+        }
+      }
+            
+      if (Array.isArray(filteredMciResults)) {
+        // 2. 필터링된 MCI ID 목록 추출
+        const filteredMciIds = filteredMciResults.map(mci => mci.id);
+        
+        // 3. 기존 MCI 목록에서 ID 매칭
+        const allMcis = Object.values(window.totalMciListObj || {});
+        const matchedMcis = allMcis.filter(mci => filteredMciIds.includes(mci.id));
+
+        // 4. 테이블 업데이트
+        if (mciListTable) {
+          mciListTable.setData(matchedMcis);
+        }
+        
+        // 현재 선택된 MCI 초기화
+        window.currentMciId = '';
+      } else {
+        if (mciListTable) {
+          mciListTable.setData([]);
+        }
+        // 데이터 형식 오류 - 빈 테이블 표시
+      }
+    } else {
+      if (mciListTable) {
+        mciListTable.setData([]);
+      }
+      // 응답 데이터 없음 - 빈 테이블 표시
+    }
+    
+  } catch (error) {
+    console.error('Label filter error:', error);
+    // 에러 발생 시 빈 테이블 표시
+    if (mciListTable) {
+      mciListTable.setData([]);
+    }
+  }
+}
+
+// 사용하지 않는 클라이언트 필터링 함수들 제거됨
+// 이제 서버 API 결과의 ID 매칭 방식 사용
+
+// Label Filter 초기화
+function clearLabelFilter() {
+  const typeSelect = document.getElementById('label-filter-type');
+  const valueInput = document.getElementById('label-filter-value');
+  
+  if (typeSelect) {
+    typeSelect.value = '=';
+  } else {
+    console.warn('Label filter type select not found');
+  }
+  
+  if (valueInput) {
+    valueInput.value = '';
+    valueInput.disabled = false;
+    valueInput.placeholder = 'env=production,tier=backend';
+  } else {
+    console.warn('Label filter value input not found');
+  }
+  
+  // 원래 MCI 목록 복원
+  if (window.totalMciListObj && mciListTable) {
+    mciListTable.setData(Object.values(window.totalMciListObj));
+  }
 }

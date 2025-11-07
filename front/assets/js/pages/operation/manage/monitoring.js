@@ -2,10 +2,8 @@ import ApexCharts from "apexcharts"
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-  console.log("select-current-project changed ")
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  console.log("select-current-project on change ", project)
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
   getMciListCallbackSuccess(project.NsId, respMciList);
 })
@@ -25,7 +23,6 @@ document.addEventListener("DOMContentLoaded", initMonitoring);
 // 해당 화면에서 최초 설정하는 function
 //로드 시 prj 값 받아와 getPmkList 호출
 async function initMonitoring() {
-  console.log("initMonitoring")
   ////////////////////// partials init functions///////////////////////////////////////
   // try {
   //     webconsolejs["partials/operation/manage/pmkcreate"].initPmkCreate();//PmkCreate을 Partial로 가지고 있음. 
@@ -135,9 +132,9 @@ function displayServerStatusList(mciId, vmList) {
       html += '<option value="' + item.id + '">' + item.name + '</option>';
     });
 
-    // monitoring_mcilist 셀렉트 박스에 옵션 추가
-    $("#monitoring_vmlist").empty();
-    $("#monitoring_vmlist").append(html);
+    // monitoring_serverlist 셀렉트 박스에 옵션 추가
+    $("#monitoring_serverlist").empty();
+    $("#monitoring_serverlist").append(html);
   } else {
     console.error("res_item is not an array");
   }
@@ -145,88 +142,214 @@ function displayServerStatusList(mciId, vmList) {
 }
 
 // vm 선택했을 때 displayMonitoringMci 
-$("#monitoring_vmlist").on('change', async function () {
+$("#monitoring_serverlist").on('change', async function () {
 
-  var selectedVm = $("#monitoring_vmlist").val()
+  var selectedVm = $("#monitoring_serverlist").val()
 
   selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
   var selectedNsId = selectedWorkspaceProject.nsId;
 
   setMonitoringMesurement()
-
 })
 
-async function setMonitoringMesurement() {
-  var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
-  var data = respMeasurement.data;
+$("#monitoring_measurement").on('change', async function () {
+    var selectedMeasurement = $("#monitoring_measurement").val();
 
-  var measurementSelect = document.getElementById("monitoring_measurement");
+    setMonitoringMetric(selectedMeasurement)
+})
 
-  measurementSelect.innerHTML = "";
+// Extend Detection 토글 이벤트 리스너
+$("#detectionSwitch").on('change', function() {
+  if ($(this).is(':checked')) {
+    $("#detection_graph").show();
+  } else {
+    $("#detection_graph").hide();
+  }
+})
 
-  var defaultOption = document.createElement("option");
-  defaultOption.value = "";
-  defaultOption.text = "Select";
-  measurementSelect.appendChild(defaultOption);
-
-  data.forEach(function (item) {
-    if (item.plugin_type === "INPUT") {
-      var option = document.createElement("option");
-      // option.value = item.plugin_id;
-      option.value = item.name;
-      option.text = item.name;
-
-      measurementSelect.appendChild(option);
+export async function setMonitoringMesurement(selectId = "monitoring_measurement") {
+  try {
+    var respMeasurement = await webconsolejs["common/api/services/monitoring_api"].getPlugIns();
+    
+    // API 응답 구조 확인 및 데이터 추출
+    var data;
+    if (respMeasurement && respMeasurement.responseData && respMeasurement.responseData.data) {
+      data = respMeasurement.responseData.data;
+    } else if (respMeasurement && respMeasurement.data) {
+      data = respMeasurement.data;
+    } else if (respMeasurement && Array.isArray(respMeasurement)) {
+      data = respMeasurement;
+    } else {
+      console.error("Unexpected API response structure:", respMeasurement);
+      data = [];
     }
-  });
+  
+    var measurementSelect = document.getElementById(selectId);
+    
+    if (!measurementSelect) {
+      console.error(`${selectId} element not found.`);
+      return;
+    }
+
+    measurementSelect.innerHTML = "";
+
+    var defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.text = "Select";
+    measurementSelect.appendChild(defaultOption);
+
+    if (Array.isArray(data) && data.length > 0) {
+      data.forEach(function (item) {
+        if (item.pluginType === "INPUT") {
+          var option = document.createElement("option");
+          option.value = item.name || item.pluginId;
+          option.text = item.name || item.pluginId;
+          measurementSelect.appendChild(option);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("setMonitoringMesurement 오류:", error);
+  }
+}
+
+export async function setMonitoringMetric(selectedMeasurement, selectId = "monitoring_metric") {
+    try {
+        var respMeasurementFields = await webconsolejs["common/api/services/monitoring_api"].getMeasurementFields();
+
+        // API 응답 구조 확인 및 데이터 추출
+        var data;
+        if (respMeasurementFields && respMeasurementFields.responseData && respMeasurementFields.responseData.data) {
+            data = respMeasurementFields.responseData.data;
+        } else if (respMeasurementFields && respMeasurementFields.data) {
+            data = respMeasurementFields.data;
+        } else if (respMeasurementFields && Array.isArray(respMeasurementFields)) {
+            data = respMeasurementFields;
+        } else {
+            console.error("Unexpected API response structure:", respMeasurementFields);
+            data = [];
+        }
+
+        var metricSelect = document.getElementById(selectId);
+
+        if (!metricSelect) {
+            console.error(`${selectId} element not found.`);
+            return;
+        }
+
+        metricSelect.innerHTML = "";
+
+        var defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "Select";
+        metricSelect.appendChild(defaultOption);
+
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(function (measurement) {
+                if (measurement.measurement === selectedMeasurement) {
+                    measurement.fields.forEach(function (field) {
+                        var option = document.createElement("option");
+                        option.value = field.key;
+                        option.text = field.key;
+                        metricSelect.appendChild(option);
+                    });
+                }
+            });
+        }
+    } catch (error) {
+        console.error("setMonitoringMetric 오류:", error);
+    }
 }
 
 export async function startMonitoring() {
-  var selectedMeasurement = $("#monitoring_measurement").val();
-  var selectedRange = $("#monitoring_range").val();
-  var selectedVMId = $("#monitoring_vmlist").val();
+  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  var selectedNsId = selectedWorkspaceProject.nsId;
 
-  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedRange, selectedVMId);
-  console.log(response);
+  // NS가 선택되지 않은 경우 처리
+  if (!selectedNsId) {
+      alert("Please select a Workspace first.");
+      return;
+  }
+
+  var selectedMci = $("#monitoring_mcilist").val()
+
+  // MCI가 선택되지 않은 경우 처리
+  if (!selectedNsId) {
+      alert("Please select a Workload first.");
+      return;
+  }
+
+  var selectedMeasurement = $("#monitoring_measurement").val();
+  var selectedMetric = $("#monitoring_metric").val();
+  var selectedRange = $("#monitoring_range").val();
+  var selectedPeriod = $("#monitoring_period").val();
+  var selectedVMId = $("#monitoring_serverlist").val();
+
+  // VM이 선택되지 않은 경우 처리
+  if (!selectedVMId) {
+    alert("Please select a VM first.");
+    return;
+  }
+  
+  // 선택된 VM의 이름을 가져와서 타이틀에 표시
+  var selectedVMName = $("#monitoring_serverlist option:selected").text();
+  if (selectedVMName && selectedVMName !== "Select") {
+    $("#selected_vm_name").text("(" + selectedVMName + ")");
+  }
+
+  var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedMetric, selectedRange, selectedPeriod, selectedNsId, selectedMci, selectedVMId);
 
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
     var respMonitoringData = response.responseData.data;
-    drawMonitoringGraph(respMonitoringData);
+    drawMonitoringGraph(respMonitoringData, selectedNsId, selectedMci, selectedVMId, selectedMeasurement);
   } else {
     console.error("Invalid response structure:", response);
   }
 }
 
-async function drawMonitoringGraph(MonitoringData) {
+async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measurement) {
   const chartDataList = [];
   const chartLabels = [];
 
   // MonitoringData.data가 존재하는지 확인
   if (MonitoringData && Array.isArray(MonitoringData)) {
-    MonitoringData.forEach(cpuData => {
-      if (["cpu0", "cpu1", "cpu2", "cpu3"].includes(cpuData.tags.cpu)) {
+    MonitoringData.forEach(data => {
+      // null 값을 skip하고 유효한 데이터만 필터링
+      const validData = data.values
+        .filter(value => value[1] !== null && value[1] !== undefined)
+        .map(value => ({
+          x: value[0], // timestamp
+          y: parseFloat(value[1]).toFixed(2)
+        }));
+
+      // 유효한 데이터가 있을 때만 시리즈에 추가
+      if (validData.length > 0) {
         const seriesData = {
-          name: cpuData.tags.cpu,
-          data: cpuData.values
-            .map(value => ({
-              x: value[0], // timestamp
-              y: value[1] !== null ? parseFloat(value[1]).toFixed(2) : null
-            }))
-            .filter(point => point.y !== null)
+          name: data.name,
+          data: validData
         };
         chartDataList.push(seriesData);
 
-        cpuData.values.forEach(value => {
-          const timestamp = value[0];
-          if (!chartLabels.includes(timestamp)) {
-            chartLabels.push(timestamp);
+        // timestamp 레이블 수집 (null이 아닌 값만)
+        data.values.forEach(value => {
+          if (value[1] !== null && value[1] !== undefined) {
+            const timestamp = value[0];
+            if (!chartLabels.includes(timestamp)) {
+              chartLabels.push(timestamp);
+            }
           }
         });
       }
     });
   } else {
     console.error("MonitoringData is invalid or does not contain data:", MonitoringData);
+    return;
+  }
+
+  // 유효한 데이터가 없으면 사용자에게 알림
+  if (chartDataList.length === 0 || chartDataList.every(series => series.data.length === 0)) {
+    alert("No valid data available for the selected metric. Please try a different time range or metric.");
     return;
   }
 
@@ -304,12 +427,15 @@ async function drawMonitoringGraph(MonitoringData) {
   // Prediction Switch 체크 여부 확인
   if ($('#monitoring_predictionSwitch').is(':checked')) {
     try {
-      // API 호출 시도
-      var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction();
-      console.log("Prediction Data:", response);
+      // 시간 범위 설정 (기본값: 12시간 전부터 7일 후까지)
+      var startTime = null; // null이면 함수 내부에서 12시간 전으로 설정
+      var endTime = null;   // null이면 함수 내부에서 7일 후로 설정
+      
+      // API 호출 시도 - 화면에서 선택한 값 전달
+      var response = await webconsolejs["common/api/services/monitoring_api"].monitoringPrediction(nsId, mciId, vmId, measurement, startTime, endTime);
 
-      if (response.data && response.data.responseData && response.data.responseData.data.values.length > 0) {
-        const predictionData = response.data.responseData.data.values.map(value => ({
+      if (response && response.responseData && response.responseData.values && response.responseData.values.length > 0) {
+        const predictionData = response.responseData.values.map(value => ({
           x: value.timestamp,
           y: parseFloat(value.value).toFixed(2)
         }));
@@ -323,32 +449,37 @@ async function drawMonitoringGraph(MonitoringData) {
         // 기존 데이터와 함께 업데이트
         chart.updateSeries([...chartDataList, predictionSeries]);
       } else {
-        console.log("No prediction data available");
       }
     } catch (error) {
       console.error("Prediction API failed:", error);
-      console.log("Using existing data without prediction.");
     }
   }
 
   // Detection Switch 체크 여부 확인
   if ($('#detectionSwitch').is(':checked')) {
-    // 토글 후 호출
-    var div = document.getElementById("detection_graph");
-    webconsolejs["partials/layout/navigatePages"].toggleElement(div)
-    drawDetectionGraph()
-
+    // Detection Graph 영역 표시
+    $("#detection_graph").show();
+    drawDetectionGraph(nsId, mciId, vmId, measurement);
   } else {
-    console.log('Detection Switch is OFF');
+    // Detection Graph 영역 숨김
+    $("#detection_graph").hide();
   }
 
 }
 
-async function drawDetectionGraph() {
-  var respDetection = await webconsolejs["common/api/services/monitoring_api"].getDetectionHistory();
-  console.log("Detection Data:", respDetection);
-  var detectionData = respDetection.data.values;
-  console.log("detectionData:", detectionData);
+async function drawDetectionGraph(nsId, mciId, vmId, measurement) {
+  // 시간 범위 설정 (기본값: 12시간 전부터 현재까지)
+  var startTime = null; // null이면 함수 내부에서 12시간 전으로 설정
+  var endTime = null;   // null이면 함수 내부에서 현재 시간으로 설정
+  
+  var respDetection = await webconsolejs["common/api/services/monitoring_api"].getDetectionHistory(nsId, mciId, vmId, measurement, startTime, endTime);
+  
+  if (!respDetection || !respDetection.responseData || !respDetection.responseData.values) {
+    console.error("Invalid detection data:", respDetection);
+    return;
+  }
+  
+  var detectionData = respDetection.responseData.values;
 
   const anomalyData = detectionData.map(item => ({
     x: item.timestamp,  

@@ -2,7 +2,6 @@
 export async function getRoleList() {
     const controller = "/api/mc-iam-manager/GetRoleList";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
-    console.log("getRoles response", response);
     // const menuList = await getAllMenuTree();
     // console.log("menuList", menuList);
     return response.data.responseData;
@@ -12,7 +11,6 @@ export async function getRoleList() {
 export async function getAllAvailableMenus() {
     const controller = "/api/mc-iam-manager/GetAllAvailableMenus";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
-    console.log("getAllAvailableMenus response", response);
     return response.data.responseData;
 }
 
@@ -39,7 +37,6 @@ export async function getMenusResources() {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
         controller
     );
-    console.log("getMenusResources response", response);
     return response.data.responseData;
 }
 
@@ -56,7 +53,6 @@ export async function createRole(role) {
         }
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("createRole response", response);
     return response.data.responseData;
 }
 
@@ -76,7 +72,6 @@ export async function updateRole(roleId, role) {
         }
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("updateRole response", response);
     return response.data.responseData;
 }
 
@@ -88,7 +83,6 @@ export async function deleteRole(roleId) {
         }
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("deleteRole response", response);
     return response.data.responseData;
 }
 
@@ -101,7 +95,6 @@ export async function getCSPRoleListByRoleId(roleId) {
         }
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("getCSPRoleList response", response);
     return response.data.responseData;
 }
 
@@ -112,7 +105,6 @@ export async function getCspProviderList() {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
         controller
     );
-    console.log("getCSPProviderList response", response);
     
     // responseData에서 provider 값들만 추출하여 반환
     if (response.data && response.data.responseData) {
@@ -120,4 +112,19 @@ export async function getCspProviderList() {
     }
     
     return [];
+}
+
+
+export async function assignUserToRole(roleId, userId) {
+    const controller = "/api/mc-iam-manager/assignPlatformRole";
+    const data = {
+        Request: 
+            {
+                "roleId": roleId.toString(),
+                "userId": userId.toString(),
+                "workspaceId": "1"
+              }
+    }
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response.data.responseData;
 }

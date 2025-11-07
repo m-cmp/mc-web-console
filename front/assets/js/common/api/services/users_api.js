@@ -2,8 +2,19 @@
 export async function getUserList() {
     const controller = "/api/mc-iam-manager/Listusers";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
-    console.log("Listusers response", response);
     return response.data.responseData;
+}
+
+export async function createUser(userData) {
+    const controller = "/api/mc-iam-manager/Createuser";
+    
+    // 백엔드가 기대하는 데이터 구조로 래핑
+    const requestData = {
+        request: userData
+    };
+    
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, requestData);
+    return response;
 }
 
 // export async function getUserById(userId) {
@@ -26,7 +37,6 @@ export async function getUserByName(username) {
         }
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("getUserByName response", response);
     return response.data.responseData;
 }
 
@@ -40,6 +50,5 @@ export async function getUserWorkspacesByUserID(userId) {
         },
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    console.log("getUserWorkspacesByUserID response", response);
     return response.data.responseData;
 }

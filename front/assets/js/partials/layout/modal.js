@@ -17,9 +17,7 @@ export function commonModal(elm, title, content, func, argument) {
 
 // Modal 띄우는 function
 export function commonTargetModal(targetModalId) {    
-    console.log("commonTargetModal", targetModalId)
     const modal = new bootstrap.Modal(document.getElementById(targetModalId));
-    console.log(modal)
     modal.show();  // 모달 표시
 }
 
@@ -74,8 +72,6 @@ export function checkWorkspaceSelection(selectedWorkspaceProject) {
 
 // confirm modal창 보이기 modal창이 열릴 때 해당 창의 text 지정, close될 때 action 지정
 function commonConfirmOpen(targetAction, caller) {
-    console.log("commonConfirmOpen : " + targetAction)
-
     //  [ id , 문구]
     let confirmModalTextMap = new Map(
         [
@@ -186,13 +182,11 @@ function commonConfirmOpen(targetAction, caller) {
 
         ]
     );
-    console.log(confirmModalTextMap.get(targetAction));
     try {
         // $('#modalText').text(targetText);// text아니면 html로 해볼까? 태그있는 문구가 있어서
         //$('#modalText').text(confirmModalTextMap.get(targetAction));
         $('#confirmText').html(confirmModalTextMap.get(targetAction));
         $('#confirmOkAction').val(targetAction);
-        console.log("caller : ", caller);
         $('#confirmCaller').val(caller);
 
         if (targetAction == "Region") {
@@ -227,10 +221,8 @@ function commonConfirmOk() {
         deleteCloudConnection();
     } else if (targetAction == "Config") {
         //id="Config"
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "SDK") {
         //id="SDK"
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "DeleteCredential") {
         deleteCredential();
     } else if (targetAction == "DeleteDriver") {
@@ -240,17 +232,12 @@ function commonConfirmOk() {
 
     } else if (targetAction == "Credential") {
         //id="Credential"
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "Region") {
         //id="Region"
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "Provider") {
         //id="Provider"
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "required") {//-- IdPassRequired
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "idpwLost") {//-- 
-        console.log("commonConfirmOk " + targetAction);
     } else if (targetAction == "ManageNS") {//-- ManageNS
         var targetUrl = "/setting/namespaces/namespace/mngform"
         changePage(targetUrl)
@@ -326,7 +313,7 @@ function commonConfirmOk() {
     } else if (targetAction == "MciLifeCycleTerminate") {
         callMciLifeCycle('terminate')
     } else if (targetAction == "MciManagement") {
-        alert("수행할 function 정의되지 않음");
+        alert("Undefined function to perform");
     } else if (targetAction == "MoveToMciManagementFromDashboard") {
         var mciID = $("#mci_id").val();
         var targetUrl = "/operation/manages/mcimng/mngform?mciid=" + mciID;
@@ -352,7 +339,7 @@ function commonConfirmOk() {
         var targetUrl = "/operation/monitorings/mcimonitoring/mngform?mciId=" + mciID;
         changePage(targetUrl)
     } else if (targetAction == "VmLifeCycle") {
-        alert("수행할 function 정의되지 않음");
+        alert("Undefined function to perform");
     } else if (targetAction == "VmLifeCycleReboot") {
         vmLifeCycle('reboot')
     } else if (targetAction == "VmLifeCycleSuspend") {
@@ -362,7 +349,7 @@ function commonConfirmOk() {
     } else if (targetAction == "VmLifeCycleTerminate") {
         vmLifeCycle('terminate')
     } else if (targetAction == "VmManagement") {
-        alert("수행할 function 정의되지 않음");
+        alert("Undefined function to perform");
     } else if (targetAction == "AddNewVm") {
         addNewVirtualMachine()
     } else if (targetAction == "AddNewVmOfMci") {
@@ -422,9 +409,8 @@ function commonConfirmOk() {
     } else if (targetAction == "DeleteNodeGroupOfPmks") {
         deleteNodeGroupOfPmks();
     } else {
-        alert("수행할 function 정의되지 않음 " + targetAction);
+        alert("Undefined function to perform: " + targetAction);
     }
-    console.log("commonConfirmOk " + targetAction);
     commonConfirmClose();
 }
 
@@ -447,7 +433,6 @@ function commonPromptOk() {
     var targetObjId = $('#promptTargetObjId').val();
     var targetValue = $('#promptText').val();
 
-    console.log("promptOkAction : " + targetAction)
     if (targetAction == 'FilterName') {// Name이라는 Column을 Filtering
         if (targetValue) {
             filterTable(targetObjId, "Name", targetValue)
@@ -565,7 +550,6 @@ function commonPromptOk() {
             filterTable(targetObjId, "Description", targetValue)
         }
     } else if (targetAction == 'OprMngMcksStatus') {// Description이라는 Column을 Filtering
-        console.log("OprMngMcksStatus");
         if (targetValue) {
             filterTable(targetObjId, "Status", targetValue)
         }
@@ -617,7 +601,5 @@ function commonResultAlertClose() {
 }
 
 function guideAreaHide() {
-    console.log("hide brfore")
     $("#guideArea").modal("hide");
-    console.log("hide after")
 }

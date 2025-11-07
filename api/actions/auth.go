@@ -1,12 +1,11 @@
 package actions
 
 import (
+	"log"
 	"mc_web_console_api/handler"
 	"mc_web_console_api/handler/self"
 	"mc_web_console_api/models"
 	"net/http"
-
-	"log"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -49,6 +48,7 @@ func AuthLogin(c buffalo.Context) error {
 }
 
 func AuthLoginRefresh(c buffalo.Context) error {
+
 	tx := c.Value("tx").(*pop.Connection)
 	userId := c.Value("UserId").(string)
 	sess, err := self.GetUserByUserId(tx, userId)
@@ -131,31 +131,78 @@ func AuthMCIAMLogin(c buffalo.Context) error {
 
 func AuthMCIAMLoginRefresh(c buffalo.Context) error {
 	commonRequest := &handler.CommonRequest{}
-	c.Bind(commonRequest)
+	if err := c.Bind(commonRequest); err != nil {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{"error": "Binding error: " + err.Error()}))
+	}
+
+	if commonRequest.Request == nil {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{"error": "Request data is missing"}))
+	}
+
+	requestData, ok := commonRequest.Request.(map[string]interface{})
+	if !ok {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{"error": "Invalid request format"}))
+	}
+
+	_, hasRefreshToken := requestData["refresh_token"]
+	if !hasRefreshToken {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{"error": "refresh_token is required"}))
+	}
 
 	tx := c.Value("tx").(*pop.Connection)
+
 	var refreshRes *handler.CommonResponse
+	var err error
 
 	if commonRequest.Request != nil {
-		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+		refreshRes, err = handler.AnyCaller(c, "loginrefresh", commonRequest, false)
+
+		if err != nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "AnyCaller error: " + err.Error()}))
+		}
 	} else {
-		sess, err := self.GetUserByUserId(tx, c.Value("UserId").(string))
+		userId := c.Value("UserId")
+		if userId == nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "UserId not found in context"}))
+		}
+
+		sess, err := self.GetUserByUserId(tx, userId.(string))
 		if err != nil {
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
 		}
+
 		commonRequest.Request = map[string]interface{}{"refresh_token": sess.RefreshToken}
-		refreshRes, _ = handler.AnyCaller(c, "loginrefresh", commonRequest, true)
+
+		refreshRes, err = handler.AnyCaller(c, "loginrefresh", commonRequest, false)
+
+		if err != nil {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "AnyCaller error: " + err.Error()}))
+		}
 	}
+
+	if refreshRes == nil {
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "Response is nil from AnyCaller"}))
+	}
+
 	if refreshRes.Status.StatusCode != 200 {
-		return c.Render(refreshRes.Status.StatusCode, r.JSON(map[string]interface{}{"error": refreshRes.Status.Message}))
+		errorResponse := &handler.CommonResponse{
+			ResponseData: refreshRes.ResponseData,
+			Status: handler.WebStatus{
+				StatusCode: refreshRes.Status.StatusCode,
+				Message:    refreshRes.Status.Message,
+			},
+		}
+
+		return c.Render(refreshRes.Status.StatusCode, r.JSON(errorResponse))
 	}
 
-	_, err := self.UpdateUserSesssFromResponseData(tx, refreshRes, c.Value("UserId").(string))
-	if err != nil {
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": err.Error()}))
+	if refreshRes.ResponseData == nil {
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{"error": "ResponseData is nil from AnyCaller"}))
 	}
 
-	return c.Render(refreshRes.Status.StatusCode, r.JSON(refreshRes))
+	commonResponse := handler.CommonResponseStatusOK(refreshRes.ResponseData)
+
+	return c.Render(commonResponse.Status.StatusCode, r.JSON(commonResponse))
 }
 
 func AuthMCIAMLogout(c buffalo.Context) error {

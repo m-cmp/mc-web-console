@@ -198,8 +198,6 @@
   cursor: pointer;
 }
 
-
-
 // NodeGroup 구성 폼 애니메이션
 #nodegroup_configuration_dynamic {
   transition: all 0.3s ease-in-out;
@@ -246,12 +244,12 @@
           background: #fff;
           color: #626976;
           cursor: pointer;
-          
+
           &:hover {
             background: #f8f9fa;
             color: #206bc4;
           }
-          
+
           &.active {
             background: #206bc4;
             color: #fff;
@@ -261,4 +259,20 @@
       }
     }
   }
+}
+
+.dropzone .dz-preview .dz-progress {
+  opacity: 1;
+  z-index: 1000;
+  pointer-events: none;
+  position: absolute;
+  height: 20px;
+  top: 50%;
+  margin-top: -10px;
+  left: 15%;
+  right: 15%;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 10px;
+  overflow: hidden;
 }

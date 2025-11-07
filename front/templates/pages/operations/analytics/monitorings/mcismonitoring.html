@@ -8,182 +8,160 @@
           </div>
 
           <div class="card-body">
-            <div class="row">
-              <div class="col d-flex justify-content-end">
-                <!-- Workload -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                  <label for="monitoring_mcilist" class="form-label me-2"
-                    >Workload</label
-                  >
-                  <select class="form-select" id="monitoring_mcilist">
-                    <option value="">Select</option>
-                  </select>
-                </div>
+            <div class="row g-3">
+              <!-- Workload -->
+              <div class="col-md-6">
+                <label for="monitoring_mcilist" class="form-label required"
+                  >Workload</label
+                >
+                <select class="form-select" id="monitoring_mcilist">
+                  <option value="">Select</option>
+                </select>
+              </div>
 
-                <!-- Server -->
-                <div class="mb-3 d-flex align-items-center">
-                  <label for="monitoring_vmlist" class="form-label me-2"
-                    >Server</label
-                  >
-                  <select class="form-select" id="monitoring_vmlist">
-                    <option value="">Select</option>
-                  </select>
-                </div>
+              <!-- Server -->
+              <div class="col-md-6">
+                <label for="monitoring_serverlist" class="form-label required"
+                  >Server</label
+                >
+                <select class="form-select" id="monitoring_serverlist">
+                  <option value="">Select</option>
+                </select>
+              </div>
+
+              <!-- Measurement -->
+              <div class="col-md-4">
+                <label for="monitoring_measurement" class="form-label required"
+                  >Measurement</label
+                >
+                <select class="form-select" id="monitoring_measurement">
+                  <option value="">Select</option>
+                </select>
+              </div>
+
+              <!-- Metric -->
+              <div class="col-md-4">
+                <label for="monitoring_metric" class="form-label required"
+                  >Metric</label
+                >
+                <select class="form-select" id="monitoring_metric">
+                  <option value="">Select</option>
+                </select>
+              </div>
+
+              <!-- Aggregation -->
+              <div class="col-md-4">
+                <label for="monitoring_aggregation" class="form-label"
+                  >Aggregation</label
+                >
+                <select class="form-select" id="monitoring_aggregation">
+                  <option value="">Select</option>
+                </select>
+              </div>
+
+              <!-- Range -->
+              <div class="col-md-4">
+                <label for="monitoring_range" class="form-label required"
+                  >Range</label
+                >
+                <select class="form-select" id="monitoring_range">
+                  <option value="">Select</option>
+                  <option value="1h">1H</option>
+                  <option value="2h">2H</option>
+                  <option value="3h">3H</option>
+                  <option value="4h">4H</option>
+                  <option value="5h">5H</option>
+                  <option value="6h">6H</option>
+                </select>
+              </div>
+
+              <!-- Period -->
+              <div class="col-md-4">
+                <label for="monitoring_period" class="form-label required"
+                  >Period</label
+                >
+                <select class="form-select" id="monitoring_period">
+                  <option value="">Select</option>
+                  <option value="1m">1m</option>
+                  <option value="3m">3m</option>
+                  <option value="5m">5m</option>
+                  <option value="10m">10m</option>
+                  <option value="12m">12m</option>
+                  <option value="15m">15m</option>
+                  <option value="30m">30m</option>
+                </select>
+              </div>
+
+              <!-- Prediction -->
+              <div class="col-md-4">
+                <label for="monitoring_prediction" class="form-label"
+                  >Prediction</label
+                >
+                <select class="form-select" id="monitoring_prediction">
+                  <option value="">Select</option>
+                </select>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col d-flex justify-content-end">
-                <!-- Measurement -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                  <label for="monitoring_measurement" class="form-label me-2"
-                    >Measurement</label
-                  >
-                  <select class="form-select" id="monitoring_measurement">
-                    <option value="">Select</option>
-                  </select>
-                </div>
-
-                <!-- Metric -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                  <label for="monitoring_vmlist" class="form-label me-2"
-                    >Metric</label
-                  >
-                  <select class="form-select" id="monitoring_vmlist">
-                    <option value="">Select</option>
-                  </select>
-                </div>
-
-                <!-- Aggregation -->
-                <div class="mb-3 d-flex align-items-center">
-                  <label for="monitoring_aggregation" class="form-label me-2"
-                    >Aggregation</label
-                  >
-                  <select class="form-select" id="monitoring_aggregation">
-                    <option value="">Select</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col d-flex justify-content-end">
-                <!-- Range -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                  <label for="monitoring_range" class="form-label me-2"
-                    >Range</label
-                  >
-                  <select class="form-select" id="monitoring_range">
-                    <option value="">Select</option>
-                    <option value="1h">1H</option>
-                    <option value="2h">2H</option>
-                    <option value="3h">3H</option>
-                    <option value="4h">4H</option>
-                    <option value="5h">5H</option>
-                    <option value="6h">6H</option>
-                  </select>
-                </div>
-
-                <!-- Period -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                  <label for="monitoring_vmlist" class="form-label me-2"
-                    >Period</label
-                  >
-                  <select class="form-select" id="monitoring_vmlist">
-                    <option value="">Select</option>
-                  </select>
-                </div>
-
-                <!-- Prediction -->
-                <div class="mb-3 d-flex align-items-center">
+            <!-- Switches -->
+            <div class="row mt-4">
+              <div class="col-md-3">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="monitoring_predictionSwitch"
+                  />
                   <label
-                    for="monitoring_prediction"
-                    class="form-label me-2"
-                    >Prediction</label
+                    class="form-check-label"
+                    for="monitoring_predictionSwitch"
+                    >Extend Prediction</label
                   >
-                  <select class="form-select" id="monitoring_prediction">
-                    <option value="">Select</option>
-                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="detectionSwitch"
+                  />
+                  <label class="form-check-label" for="detectionSwitch"
+                    >Extend Detection</label
+                  >
                 </div>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col d-flex justify-content-end">
-                <!-- Prediction Switch -->
-                <div class="mb-3 d-flex align-items-center me-3">
-                  <div class="form-check form-switch">
-                    <input
-                      class="form-check-input me-2"
-                      type="checkbox"
-                      id="monitoring_predictionSwitch"
-                    />
-                    <label class="form-check-label" for="monitoring_predictionSwitch"
-                      >Prediction</label
-                    >
-                  </div>
-                </div>
-
-                <!-- Detection Switch -->
-                <div class="mb-3 d-flex align-items-center">
-                  <div class="form-check form-switch">
-                    <input
-                      class="form-check-input me-2"
-                      type="checkbox"
-                      id="detectionSwitch"
-                    />
-                    <label class="form-check-label" for="detectionSwitch"
-                      >Detection</label
-                    >
-                  </div>
-                </div>
+            <!-- Action Button -->
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  onclick="webconsolejs['pages/operation/manage/monitoring'].startMonitoring()"
+                >
+                  Start Monitoring
+                </button>
               </div>
             </div>
-
-            <div class="row">
-              <div class="col d-flex justify-content-end">
-
-                <div class="col-auto">
-                <a class="btn btn-icon" aria-label="Button" onclick="webconsolejs['pages/operation/manage/monitoring'].startMonitoring()">
-                  <!-- Download SVG icon from http://tabler-icons.io/i/search -->
-                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                    <path d="M21 21l-6 -6"></path>
-                  </svg>
-                </a>
-              </div>
-
-              </div>
-            </div>
-
           </div>
 
           <div class="card-body">
             <div class="card-header">
-              <h3 class="card-title">Selected VM</h3>
+              <h3 class="card-title">
+                Selected VM
+                <span class="text-info" id="selected_vm_name"></span>
+              </h3>
             </div>
 
             <div class="card-body">
               <div class="row">
                 <div class="col-12">
                   <div class="form-group mb-2">
-                    <label class="form-label required">Graph 1</label>
-                    
-                    <!-- <select class="form-select" name="" id="">
-                      <option value="">Select CPU term</option>
-                    </select> -->
+                    <label class="form-label">Trend Graph</label>
                   </div>
                 </div>
-                <!-- <div class="col-6">
-                  <div class="form-group mb-2">
-                    <label class="form-label required">Graph 2</label>
-                    
-                    <select class="form-select" name="" id="">
-                      <option value="">Select MEMORY term</option>
-                    </select>
-                  </div>
-                </div> -->
               </div>
               <div class="row">
                 <div class="col-md-12">
@@ -193,10 +171,14 @@
                     </div>
                   </div>
                 </div>
-              
               </div>
 
-              <div class="row" id= "detection_graph">
+              <div class="row" id="detection_graph" style="display: none;">
+                <div class="col-12">
+                  <div class="form-group mb-2">
+                    <label class="form-label">Detection Graph</label>
+                  </div>
+                </div>
                 <div class="col-md-12">
                   <div class="card">
                     <div class="card-body">
@@ -204,7 +186,6 @@
                     </div>
                   </div>
                 </div>
-              
               </div>
             </div>
           </div>
