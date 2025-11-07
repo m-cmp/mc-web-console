@@ -132,7 +132,12 @@ export async function getRecommendVmInfoPmk() {
 		const selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		const selectedNsId = selectedWorkspaceProject.nsId;
 		
-		// 기본 필터링 조건 설정
+		// PMK 최소 요구사항 (Kubernetes 권장 사양)
+		// Min vCPU: 4, Min Memory: 16GB, Disk: 100GB
+		const PMK_MIN_VCPU = 4;
+		const PMK_MIN_MEMORY = 16;
+		
+		// 기본 필터링 조건 설정 (최소 요구사항 적용)
 		const memoryMinVal = $("#assist_min_memory-pmk").val() || "";
 		const memoryMaxVal = $("#assist_max_memory-pmk").val() || "";
 		const cpuMinVal = $("#assist_min_cpu-pmk").val() || "";
@@ -142,19 +147,18 @@ export async function getRecommendVmInfoPmk() {
 		const lon = $("#longitude-pmk").val() || "";
 		const lat = $("#latitude-pmk").val() || "";
 		
-
-		
 		// 필터 정책 배열 생성
 		const policyArr = [];
 		
-		// CPU 필터
+		// CPU 필터 (최소 4 vCPU 보장)
 		if (cpuMinVal !== "" || cpuMaxVal !== "") {
 			if (cpuMaxVal !== "" && cpuMaxVal < cpuMinVal) {
 				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
-			const cpuMin = cpuMinVal === "" ? "0" : cpuMinVal;
+			// 사용자 입력값과 PMK 최소값 중 큰 값 사용
+			const cpuMin = Math.max(cpuMinVal === "" ? PMK_MIN_VCPU : parseInt(cpuMinVal), PMK_MIN_VCPU).toString();
 			const cpuMax = cpuMaxVal === "" ? "0" : cpuMaxVal;
 			
 			policyArr.push({
@@ -164,17 +168,26 @@ export async function getRecommendVmInfoPmk() {
 				],
 				metric: "vCPU"
 			});
-
+		} else {
+			// 사용자 입력이 없으면 PMK 최소 요구사항 적용
+			policyArr.push({
+				condition: [
+					{ operand: "0", operator: "<=" },
+					{ operand: PMK_MIN_VCPU.toString(), operator: ">=" }
+				],
+				metric: "vCPU"
+			});
 		}
 		
-		// Memory 필터
+		// Memory 필터 (최소 16GB 보장)
 		if (memoryMinVal !== "" || memoryMaxVal !== "") {
 			if (memoryMaxVal !== "" && memoryMaxVal < memoryMinVal) {
 				alert("Maximum value is less than the minimum value.");
 				return;
 			}
 			
-			const memoryMin = memoryMinVal === "" ? "0" : memoryMinVal;
+			// 사용자 입력값과 PMK 최소값 중 큰 값 사용
+			const memoryMin = Math.max(memoryMinVal === "" ? PMK_MIN_MEMORY : parseInt(memoryMinVal), PMK_MIN_MEMORY).toString();
 			const memoryMax = memoryMaxVal === "" ? "0" : memoryMaxVal;
 			
 			policyArr.push({
@@ -184,7 +197,15 @@ export async function getRecommendVmInfoPmk() {
 				],
 				metric: "memoryGiB"
 			});
-
+		} else {
+			// 사용자 입력이 없으면 PMK 최소 요구사항 적용
+			policyArr.push({
+				condition: [
+					{ operand: "0", operator: "<=" },
+					{ operand: PMK_MIN_MEMORY.toString(), operator: ">=" }
+				],
+				metric: "memoryGiB"
+			});
 		}
 		
 		// Cost 필터
