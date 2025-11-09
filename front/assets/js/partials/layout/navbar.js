@@ -82,8 +82,18 @@ export async function setPrjSelectBox(workspaceId) {
 // 기본은 local storage에 저장된 값 사용 -> 없으면 조회
 // navbar에 workspace 목록 selectbox와 project 목록 select box set
 export async function workspaceProjectInit() {
-    let userWorkspaceList = await webconsolejs["common/api/services/workspace_api"].getWorkspaceListByUser()
-    let curWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace()
+    let userWorkspaceList = await webconsolejs["common/api/services/workspace_api"].getWorkspaceListByUser();
+    
+    // workspace 목록이 비어있는 경우 처리
+    if (!userWorkspaceList || !Array.isArray(userWorkspaceList) || userWorkspaceList.length === 0) {
+        console.warn("No workspace data available");
+        // 빈 selectbox 설정
+        webconsolejs["common/api/services/workspace_api"].setWorkspaceSelectBox([], "");
+        webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(null, "");
+        return { workspaceId: "", workspaceName: "", projectId: "", projectName: "", nsId: "" };
+    }
+    
+    let curWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
     let curWorkspaceId = "";
     let curWorkspaceName = "";
     if (curWorkspace) {
@@ -91,22 +101,22 @@ export async function workspaceProjectInit() {
         curWorkspaceName = curWorkspace.Name;
     }
 
-    webconsolejs["common/api/services/workspace_api"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId)
+    webconsolejs["common/api/services/workspace_api"].setWorkspaceSelectBox(userWorkspaceList, curWorkspaceId);
 
     let curProjectId = "";
     let curProjectName = "";
     let curNsId = "";
     if (curWorkspaceId == "" || curWorkspaceId == undefined) {
-        webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(null, "")
+        webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(null, "");
     } else {
-        let userProjectList = await webconsolejs["common/api/services/workspace_api"].getUserProjectList(curWorkspaceId)
+        let userProjectList = await webconsolejs["common/api/services/workspace_api"].getUserProjectList(curWorkspaceId);
         let curProject = await webconsolejs["common/api/services/workspace_api"].getCurrentProject();
         if (curProject) {
             curProjectId = curProject.Id;
             curProjectName = curProject.Name;
             curNsId = curProject.NsId;
         }
-        webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(userProjectList, curProjectId)
+        webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(userProjectList, curProjectId);
     }
 
     return { workspaceId: curWorkspaceId, workspaceName: curWorkspaceName, projectId: curProjectId, projectName: curProjectName, nsId: curNsId };

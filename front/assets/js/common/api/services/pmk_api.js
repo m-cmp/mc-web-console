@@ -345,35 +345,65 @@ export function calculateConnectionCount(clusterList) {
 }
 
 export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
+  // 1. 배열 검증
+  if (!Create_Node_Config_Arr || Create_Node_Config_Arr.length === 0) {
+    console.error('No node configuration provided');
+    webconsolejs["common/util"].showToast('No node configuration to create', 'error');
+    return;
+  }
 
-  var obj = {}
+  var obj = Create_Node_Config_Arr[0];
+  
+  // 2. 필수 필드 검증
+  if (!obj.name || !obj.specId || !obj.imageId || !obj.sshKeyId || !obj.minNodeSize || !obj.maxNodeSize || !obj.onAutoScaling) {
+    console.error('Missing required fields:', obj);
+    webconsolejs["common/util"].showToast('Missing required fields for node creation', 'error');
+    return;
+  }
 
-  obj = Create_Node_Config_Arr[0]
+  // 3. 데이터 준비 (기본값 포함)
   const data = {
     pathParams: {
       nsId: nsId,
       k8sClusterId: k8sClusterId,
     },
     request: {
-      "desiredNodeSize": obj.desiredNodeSize,
+      "desiredNodeSize": obj.desiredNodeSize || "1",
       "imageId": obj.imageId,
-      "maxNodeSize": obj.maxNodeSize,
-      "minNodeSize": obj.minNodeSize,
+      "maxNodeSize": obj.maxNodeSize || obj.desiredNodeSize || "1",
+      "minNodeSize": obj.minNodeSize || obj.desiredNodeSize || "1",
       "name": obj.name,
-      "onAutoScaling": obj.onAutoScaling,
-      "rootDiskSize": obj.rootDiskSize,
-      "rootDiskType": obj.rootDiskType,
+      "onAutoScaling": obj.onAutoScaling || "false",
+      "rootDiskSize": obj.rootDiskSize || "",
+      "rootDiskType": obj.rootDiskType || "",
       "specId": obj.specId,
       "sshKeyId": obj.sshKeyId
     }
-  }
-
+  };
 
   var controller = "/api/" + "mc-infra-manager/" + "Postk8snodegroup";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
+  
+  // 4. API 호출 및 에러 처리
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+    
+    // 성공 처리
+    if (response && response.status === 200) {
+      webconsolejs["common/util"].showToast('Node group creation request completed successfully', 'success');
+      return response;
+    } else {
+      console.error('Node creation failed:', response);
+      webconsolejs["common/util"].showToast('Failed to create node group', 'error');
+      return response;
+    }
+  } catch (error) {
+    console.error('Error creating node:', error);
+    webconsolejs["common/util"].showToast('Error creating node group: ' + (error.message || 'Unknown error'), 'error');
+    throw error;
+  }
 }
 
 export async function getSshKey(nsId) {
@@ -586,20 +616,49 @@ export function calculateVmStatusCount(aPmk) {
 }
 
 export function pmkDelete(nsId, k8sClusterId) {
+  // API 레벨 Validation (추가 안전장치)
+  if (!nsId || nsId === '' || !k8sClusterId || k8sClusterId === '') {
+    console.error('Invalid parameters for PMK deletion:', {
+      nsId: nsId,
+      k8sClusterId: k8sClusterId
+    });
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Invalid Parameters',
+      'Invalid parameters for PMK deletion. Please try again.'
+    );
+    return;
+  }
+
   let data = {
     pathParams: {
       nsId: nsId,
       k8sClusterId: k8sClusterId,
     },
   };
-  let controller = "/api/" + "mc-infra-manager/" + "Deletek8scluster";
-  let response = webconsolejs["common/api/http"].commonAPIPost(
+  let controller = '/api/' + 'mc-infra-manager/' + 'Deletek8scluster';
+  let response = webconsolejs['common/api/http'].commonAPIPost(
     controller,
     data
   );
+  return response;
 }
 
 export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
+  // API 레벨 Validation (추가 안전장치)
+  if (!nsId || nsId === '' || 
+      !k8sClusterId || k8sClusterId === '' || 
+      !k8sNodeGroupName || k8sNodeGroupName === '') {
+    console.error('Invalid parameters for NodeGroup deletion:', {
+      nsId: nsId,
+      k8sClusterId: k8sClusterId,
+      k8sNodeGroupName: k8sNodeGroupName
+    });
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Invalid Parameters',
+      'Invalid parameters for NodeGroup deletion. Please try again.'
+    );
+    return;
+  }
 
   let data = {
     pathParams: {
@@ -608,11 +667,12 @@ export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
       k8sNodeGroupName: k8sNodeGroupName
     },
   };
-  let controller = "/api/" + "mc-infra-manager/" + "Deletek8snodegroup";
-  let response = webconsolejs["common/api/http"].commonAPIPost(
+  let controller = '/api/' + 'mc-infra-manager/' + 'Deletek8snodegroup';
+  let response = webconsolejs['common/api/http'].commonAPIPost(
     controller,
     data
   );
+  return response;
 }
 
 // PMK용 Spec 추천 API
