@@ -179,30 +179,64 @@ export async function getRecommendImageInfo() {
 		return;
 	}
 
-	var osType = $("#assist_os_type").val()
-	var isGPUImage = $("#gpu_image_value").val()
+	var osType = $("#assist_os_type").val();
+	var isGPUImage = $("#gpu_image_value").val();
 	
-	// 전역 변수에서 정보 가져오기
-	var specId = window.selectedSpecInfo.id; // spec의 전체 ID (예: "aws+ap-northeast-2+t2.small")
-	var provider = window.selectedSpecInfo.provider;
-	var region = window.selectedSpecInfo.regionName;
+	// UI 필드에서 값 가져오기
+	var provider = $("#image-provider").val() || window.selectedSpecInfo.provider;
+	var region = $("#image-region").val() || window.selectedSpecInfo.regionName;
+	var osArchitecture = $("#image-os-architecture").val();
 	var connectionName = window.selectedSpecInfo.connectionName;
+	
+	// 디버깅 로그 - 상세 정보
+	console.log("=== MCI Image Search Debug ===");
+	console.log("Provider:", provider);
+	console.log("Region:", region);
+	console.log("OS Architecture raw value:", osArchitecture, "| Type:", typeof osArchitecture, "| Length:", osArchitecture ? osArchitecture.length : 0);
+	console.log("OS Type raw value:", osType, "| Type:", typeof osType, "| Length:", osType ? osType.length : 0);
 	
 	// 현재 workspace/project 정보 가져오기
 	try {
 		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		var nsId = selectedWorkspaceProject.nsId;
 
-		// API 호출을 위한 파라미터 구성 (간단화된 방식)
+		// API 호출을 위한 파라미터 구성 - 필수 항목만 포함
 		var searchParams = {
-			matchedSpecId: specId,  // spec ID를 사용하여 provider, region, architecture 자동 매칭
-			osType: osType
+			providerName: provider,
+			regionName: region,
+			maxResults: 100
 		};
 		
-		// GPU 이미지가 필요한 경우에만 추가
+		// 선택적 파라미터 - 값이 있을 때만 추가
+		if (osArchitecture && typeof osArchitecture === 'string' && osArchitecture.trim() !== "") {
+			console.log("Adding osArchitecture:", osArchitecture);
+			searchParams.osArchitecture = osArchitecture.trim();
+		} else {
+			console.log("Skipping osArchitecture - empty or invalid");
+		}
+		
+		if (osType && typeof osType === 'string' && osType.trim() !== "") {
+			console.log("Adding osType:", osType);
+			searchParams.osType = osType.trim();
+		} else {
+			console.log("Skipping osType - empty or invalid");
+		}
+		
 		if (isGPUImage === "true") {
+			console.log("Adding isGPUImage: true");
 			searchParams.isGPUImage = true;
 		}
+		
+		var matchedSpecId = $("#matched_spec_id").val();
+		if (matchedSpecId && typeof matchedSpecId === 'string' && matchedSpecId.trim() !== "") {
+			console.log("Adding matchedSpecId:", matchedSpecId);
+			searchParams.matchedSpecId = matchedSpecId.trim();
+		} else {
+			console.log("Skipping matchedSpecId - empty or invalid");
+		}
+		
+		console.log("Final searchParams:", JSON.stringify(searchParams));
+		console.log("=== End Debug ===");
 
 		// 이미지 검색 API 호출
 		var response = await webconsolejs["common/api/services/mci_api"].searchImage(nsId, searchParams);
@@ -213,7 +247,7 @@ export async function getRecommendImageInfo() {
 			// 이미지가 없는 경우 안내 메시지
 			if (imageList.length === 0) {
 				console.warn("No images found for the selected spec and OS type");
-				alert("No images found for the selected specification and OS type. Please try different criteria.");
+				webconsolejs["common/util"].showToast("No images found for the selected specification and OS type. Please try different criteria.", 'warning', 5000);
 				safeSetTableData([]);
 				return;
 			}
@@ -372,6 +406,14 @@ export function validateAndOpenImageModal(event) {
 	// 비동기적으로 모달 열기 (PMK와 동일한 방식으로 단순화)
 	setTimeout(function() {
 		try {
+		// Spec Information 필드 채우기 (모달 열기 전)
+		if (window.selectedSpecInfo) {
+			$("#image-provider").val(window.selectedSpecInfo.provider || "");
+			$("#image-region").val(window.selectedSpecInfo.regionName || "");
+			$("#image-os-architecture").val(window.selectedSpecInfo.osArchitecture || "");
+			$("#matched_spec_id").val(window.selectedSpecInfo.id || "");
+		}
+			
 			// Bootstrap 5 방식으로 모달 열기
 			if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
 				var imageModalEl = document.getElementById('image-search');
