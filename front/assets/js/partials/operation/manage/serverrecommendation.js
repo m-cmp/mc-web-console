@@ -72,17 +72,26 @@ function initRecommendSpecTable() {
 			headerSort: true,
 			maxWidth: 100,
 		},
-		{
-			title: "REGION",
-			field: "regionName",
-			vertAlign: "middle"
-		},
-		{
-			title: "PRICE",
-			field: "costPerHour",
-			vertAlign: "middle",
-			hozAlign: "center",
-		},
+	{
+		title: "REGION",
+		field: "regionName",
+		vertAlign: "middle"
+	},
+	{
+		title: "SPEC NAME",
+		field: "cspSpecName",
+		vertAlign: "middle",
+		hozAlign: "left",
+		minWidth: 200,
+		headerSort: true,
+		tooltip: true
+	},
+	{
+		title: "PRICE",
+		field: "costPerHour",
+		vertAlign: "middle",
+		hozAlign: "center",
+	},
 		{
 			title: "MEMORY",
 			field: "memoryGiB",
@@ -90,14 +99,14 @@ function initRecommendSpecTable() {
 			hozAlign: "center",
 			maxWidth: 150,
 		},
-		{
-			title: "VCPU",
-			field: "vCPU",
-			vertAlign: "middle",
-			hozAlign: "center",
-			headerHozAlign: "center",
-			maxWidth: 135,
-		}
+	{
+		title: "VCPU",
+		field: "vCPU",
+		vertAlign: "middle",
+		hozAlign: "center",
+		headerHozAlign: "center",
+		maxWidth: 80,
+	}
 	];
 
 	//recommendTable = setSpecTabulator("spec-table", tableObjParams, columns);
