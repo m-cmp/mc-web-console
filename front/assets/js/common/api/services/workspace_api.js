@@ -56,22 +56,33 @@ export async function getWorkspaceListByUser() {
   var workspaceList = [];
   // 세션에서 찾기
   let userWorkspaceList = await webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceProjectList();
-  if (userWorkspaceList == null) {// 없으면 조회
-    var userWorkspaceProjectList = await getWorkspaceProjectListByUserToken()// workspace 목록, project 목록 조회
-    setWorkspaceProjectList(userWorkspaceProjectList)
-    // userWorkspaceProjectList.forEach(item => {
-    //   workspaceList.push(item.workspaceProject.workspace);
-    // });
-    userWorkspaceProjectList.forEach(item => {
-      workspaceList.push(item);
-    });
-    //console.log("workspaceList", workspaceList)
-    // 새로 조회한 경우 저장된 curworkspace, curproject 는 초기화 할까?
-    setCurrentWorkspace("")
-    setCurrentProject("")
+  
+  // sessionStorage에 데이터가 없거나 빈 배열인 경우 API 호출
+  if (userWorkspaceList == null || !Array.isArray(userWorkspaceList) || userWorkspaceList.length === 0) {
+    try {
+      // workspace 목록, project 목록 조회
+      var userWorkspaceProjectList = await getWorkspaceProjectListByUserToken();
+      
+      if (userWorkspaceProjectList && Array.isArray(userWorkspaceProjectList) && userWorkspaceProjectList.length > 0) {
+        setWorkspaceProjectList(userWorkspaceProjectList);
+        userWorkspaceProjectList.forEach(item => {
+          workspaceList.push(item);
+        });
+        // 새로 조회한 경우 저장된 curworkspace, curproject 는 초기화
+        setCurrentWorkspace("");
+        setCurrentProject("");
+      } else {
+        console.warn("No workspace data available for user");
+        // 빈 배열 반환 (에러는 아니므로 조용히 처리)
+        return [];
+      }
+    } catch (error) {
+      console.error("Failed to fetch workspace list:", error);
+      // 에러 발생 시 빈 배열 반환
+      return [];
+    }
   } else {
     userWorkspaceList.forEach(item => {
-      //workspaceList.push(item.workspaceProject.workspace);
       workspaceList.push(item);
     });
   }

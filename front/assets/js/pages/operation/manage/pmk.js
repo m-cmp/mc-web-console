@@ -192,17 +192,65 @@ export async function getSelectedPmkData() {
 
 // pmk 삭제
 export function deletePmk() {
+  // Validation 1: PMK가 선택되었는지 확인
+  if (!currentPmkId || currentPmkId === '') {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'PMK Selection Check',
+      'Please select a PMK to delete.'
+    );
+    return;
+  }
 
-    var selectedNsId = selectedWorkspaceProject.nsId;
-    webconsolejs["common/api/services/pmk_api"].pmkDelete(selectedNsId, currentPmkId)
+  // Validation 2: Workspace/Project가 선택되었는지 확인
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  if (!selectedNsId || selectedNsId === '') {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Workspace Selection Check',
+      'Please select a workspace and project first.'
+    );
+    return;
+  }
+
+  // Validation 통과 후 API 호출
+  webconsolejs['common/api/services/pmk_api'].pmkDelete(selectedNsId, currentPmkId);
 }
 
 // nodegroup 삭제
 export function deleteNodeGroup() {
+  // Validation 1: NodeGroup이 선택되었는지 확인
+  if (!currentNodeGroupName || currentNodeGroupName === '') {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'NodeGroup Selection Check',
+      'Please select a NodeGroup to delete.'
+    );
+    return;
+  }
 
-    var selectedNsId = selectedWorkspaceProject.nsId;
-    webconsolejs["common/api/services/pmk_api"].nodeGroupDelete(selectedNsId, currentPmkId, currentNodeGroupName)
+  // Validation 2: PMK가 선택되었는지 확인
+  if (!currentPmkId || currentPmkId === '') {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'PMK Selection Check',
+      'Please select a PMK first.'
+    );
+    return;
+  }
 
+  // Validation 3: Workspace/Project가 선택되었는지 확인
+  var selectedNsId = selectedWorkspaceProject.nsId;
+  if (!selectedNsId || selectedNsId === '') {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Workspace Selection Check',
+      'Please select a workspace and project first.'
+    );
+    return;
+  }
+
+  // Validation 통과 후 API 호출
+  webconsolejs['common/api/services/pmk_api'].nodeGroupDelete(
+    selectedNsId,
+    currentPmkId,
+    currentNodeGroupName
+  );
 }
 
 // 클릭한 pmk의 info값 세팅
@@ -1422,27 +1470,34 @@ export function validateAndOpenImageModalPmk(event) {
             console.error("PMK Image recommendation module not found.");
         }
 
-        // 비동기적으로 모달 열기 (MCI와 동일한 패턴)
-        setTimeout(function () {
-            try {
-                // Bootstrap 5 방식으로 모달 열기
-                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                    const imageModalEl = document.getElementById('image-search-pmk');
-                    if (imageModalEl) {
-                        const imageModal = new bootstrap.Modal(imageModalEl);
-                        imageModal.show();
-                    } else {
-                        throw new Error("PMK Image modal element not found");
-                    }
-                } else {
-                    console.error("Bootstrap is not loaded");
-                    alert("could not open modal because Bootstrap is not loaded");
-                }
-            } catch (error) {
-                console.error("failed to open PMK image modal:", error);
-                alert("Error opening PMK image recommendation modal. Please try again.");
+    // 비동기적으로 모달 열기 (MCI와 동일한 패턴)
+    setTimeout(function () {
+        try {
+            // Spec Information 필드 채우기 (모달 열기 전)
+            if (window.selectedPmkSpecInfo) {
+                $("#image-provider-pmk").val(window.selectedPmkSpecInfo.provider || "");
+                $("#image-region-pmk").val(window.selectedPmkSpecInfo.regionName || "");
+                $("#image-os-architecture-pmk").val(window.selectedPmkSpecInfo.osArchitecture || "");
             }
-        }, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
+            
+            // Bootstrap 5 방식으로 모달 열기
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const imageModalEl = document.getElementById('image-search-pmk');
+                if (imageModalEl) {
+                    const imageModal = new bootstrap.Modal(imageModalEl);
+                    imageModal.show();
+                } else {
+                    throw new Error("PMK Image modal element not found");
+                }
+            } else {
+                console.error("Bootstrap is not loaded");
+                alert("could not open modal because Bootstrap is not loaded");
+            }
+        } catch (error) {
+            console.error("failed to open PMK image modal:", error);
+            alert("Error opening PMK image recommendation modal. Please try again.");
+        }
+    }, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
 
     } catch (error) {
         console.error("failed to open PMK image modal:", error);
