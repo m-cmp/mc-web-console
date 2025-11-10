@@ -759,7 +759,26 @@ export function clusterFormDone_btn() {
 }
 
 export function addNodeFormDone_btn() {
+	// 1. 필수 필드 검증
+	var requiredFields = [
+		{ id: '#node_name', message: 'NodeGroup name is required' },
+		{ id: '#node_specid', message: 'Spec is required' },
+		{ id: '#node_imageid', message: 'Image is required' },
+		{ id: '#node_sshkey', message: 'SSH Key is required' },
+		{ id: '#node_autoscaling', message: 'AutoScaling option is required' },
+		{ id: '#node_minnodesize', message: 'Min Node Size is required' },
+		{ id: '#node_maxnodesize', message: 'Max Node Size is required' }
+	];
+	
+	for (var field of requiredFields) {
+		if (!$(field.id).val() || $(field.id).val().trim() === '') {
+			alert(field.message);
+			$(field.id).focus();
+			return;
+		}
+	}
 
+	// 2. hidden 필드에 값 설정
 	$("#n_name").val($("#node_name").val())
 	$("#n_specid").val($("#node_specid").val())
 	$("#n_imageid").val($("#node_imageid").val())
