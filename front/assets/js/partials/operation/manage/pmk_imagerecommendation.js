@@ -204,12 +204,19 @@ export async function getRecommendImageInfoPmk() {
 		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		var nsId = selectedWorkspaceProject.nsId;
 
-		// API 호출을 위한 파라미터 구성 (간단화된 방식)
+		// API 호출을 위한 파라미터 구성
 		var searchParams = {
-			matchedSpecId: specId,  // spec ID를 사용하여 provider, region, architecture 자동 매칭
-			osType: osType,
-			isKubernetesImage: true  // PMK는 Kubernetes 이미지 필수
+			providerName: provider,              // 개별 전달
+			regionName: region,                  // 개별 전달
+			matchedSpecId: specId,               // 유지
+			isKubernetesImage: true,             // PMK 필수
+			maxResults: 100
 		};
+		
+		// 선택적 파라미터
+		if (osType && osType.trim() !== "") {
+			searchParams.osType = osType.trim();
+		}
 		
 		// GPU 이미지가 필요한 경우에만 추가
 		if (isGPUImage === "true") {
