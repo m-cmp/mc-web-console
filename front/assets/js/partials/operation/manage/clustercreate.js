@@ -411,7 +411,53 @@ export async function addNewNodeGroup() {
 	Create_Cluster_Config_Arr = new Array();
 	Create_Node_Config_Arr = new Array();
 
-	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
+	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
+
+	// Validation: Check if cluster is selected
+	if (!selectedCluster || selectedCluster.length === 0) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Cluster Selection Required',
+			'Please select a cluster first before adding a NodeGroup.'
+		);
+		return;
+	}
+
+	// Get workspace and cluster information
+	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+	var selectedNsId = selectedWorkspaceProject.nsId;
+	var clusterId = selectedCluster[0].id;
+
+	// Validation: Check cluster status via API
+	try {
+		var clusterResponse = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, clusterId);
+		
+		if (clusterResponse.status !== 200) {
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+				'Cluster Status Check Failed',
+				'Failed to retrieve cluster status. Please try again.'
+			);
+			return;
+		}
+
+		var clusterStatus = clusterResponse.data.responseData.spiderViewK8sClusterDetail?.Status;
+
+		// Check if cluster is in Active status
+		if (clusterStatus !== 'Active') {
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+				'Cluster Status Check',
+				'NodeGroup can only be added when the cluster is in Active status. Current status is: ' + clusterStatus
+			);
+			return;
+		}
+	} catch (error) {
+		console.error('Error checking cluster status:', error);
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Error',
+			'An error occurred while checking cluster status. Please try again.'
+		);
+		return;
+	}
+
 	var cluster_name = selectedCluster[0].name
 	var cluster_desc = selectedCluster[0].description
 	var cluster_connection = selectedCluster[0].provider// 임시
