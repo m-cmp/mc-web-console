@@ -171,21 +171,46 @@ export async function getSelectedPmkData() {
     if (currentPmkId != undefined && currentPmkId != "") {
         var selectedNsId = selectedWorkspaceProject.nsId;
 
-        var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId)
+        try {
+            var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId);
 
-        if (pmkResp.status != 200) {
-            // failed.  // TODO : Error Popup 처리
-            return;
-        }
-        // SET PMK Info page
-        setPmkInfoData(pmkResp.data)
+            // Check if pmkResp exists
+            if (!pmkResp) {
+                webconsolejs["common/util"].showToast(
+                    'Failed to retrieve cluster information. The cluster may not exist or the API is not responding.',
+                    'error',
+                    5000
+                );
+                return;
+            }
 
-        // Toggle PMK Info
-        var div = document.getElementById("cluster_info");
-        const hasActiveClass = div.classList.contains("active");
-        if (!hasActiveClass) {
-            // cluster_info 가 active면 toggle 필요 없음
-            webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+            // Check response status
+            if (pmkResp.status != 200) {
+                webconsolejs["common/util"].showToast(
+                    'Failed to load cluster information. Status: ' + (pmkResp.status || 'Unknown'),
+                    'error',
+                    5000
+                );
+                return;
+            }
+
+            // SET PMK Info page
+            setPmkInfoData(pmkResp.data);
+
+            // Toggle PMK Info
+            var div = document.getElementById("cluster_info");
+            const hasActiveClass = div.classList.contains("active");
+            if (!hasActiveClass) {
+                // cluster_info 가 active면 toggle 필요 없음
+                webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+            }
+        } catch (error) {
+            console.error('Error in getSelectedPmkData:', error);
+            webconsolejs["common/util"].showToast(
+                'An error occurred while loading cluster information. Please try again.',
+                'error',
+                5000
+            );
         }
     }
 }
