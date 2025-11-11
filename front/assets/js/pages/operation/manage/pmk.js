@@ -285,12 +285,16 @@ function setPmkInfoData(pmkData) {
     var pmkNetwork = clusterDetailData?.Network || {};
     var clusterProvider = clusterData.connectionConfig.providerName
     currentProvider = clusterProvider
+    
+    // pmkStatus를 try 블록 밖에서 선언
+    var pmkStatus = "N/A";
+    
     try {
 
         var pmkName = clusterData.name;
         var pmkID = clusterData.id
         var pmkVersion = clusterDetailData?.Version || "N/A";
-        var pmkStatus = clusterDetailData?.Status || "N/A";
+        pmkStatus = clusterDetailData?.Status || "N/A";
 
         // 네트워크 정보
         var pmkVpc = (pmkNetwork.VpcIID && pmkNetwork.VpcIID.SystemId) || "N/A";
@@ -334,6 +338,9 @@ function setPmkInfoData(pmkData) {
     if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
         displayNodeGroupStatusList(pmkID, clusterProvider, clusterData);
     }
+    
+    // Add NodeGroup 버튼 상태 업데이트
+    updateAddNodeGroupButtonState(pmkStatus);
 }
 
 // pmk life cycle 변경
@@ -1784,4 +1791,28 @@ function updateClusterRemoteCmdButtonState() {
             clusterRemoteCmdBtn.title = 'Please select a Cluster first';
         }
     }
+}
+
+// Add NodeGroup 버튼 상태 업데이트
+function updateAddNodeGroupButtonState(clusterStatus) {
+    const addNodeGroupBtns = document.querySelectorAll('a[onclick*="addNewNodeGroup"]');
+
+    addNodeGroupBtns.forEach(btn => {
+        if (!currentPmkId) {
+            // Cluster가 선택되지 않은 경우
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            btn.title = 'Please select a cluster first';
+        } else if (clusterStatus === 'Active') {
+            // Active 상태인 경우 활성화
+            btn.classList.remove('disabled');
+            btn.style.pointerEvents = 'auto';
+            btn.title = 'Add NodeGroup to this cluster';
+        } else {
+            // Active가 아닌 경우 비활성화
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            btn.title = 'NodeGroup can only be added when cluster is Active. Current status: ' + clusterStatus;
+        }
+    });
 }

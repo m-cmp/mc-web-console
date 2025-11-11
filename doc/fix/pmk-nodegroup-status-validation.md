@@ -304,3 +304,121 @@ export async function getCluster(nsId, clusterId) {
 - Improved API error handling with try-catch blocks
 - Return error objects instead of undefined
 
+### 2025-11-11 - UI/UX Improvements (Button State Management)
+- Changed Add NodeGroup button behavior to prevent form flash
+- Implemented button enable/disable based on cluster status
+- Button only enabled when cluster is Active
+- Added tooltip to show current cluster status
+- Removed href to prevent automatic form display
+- Simplified addNewNodeGroup() function by removing redundant status checks
+- Following existing pattern: updateClusterRemoteCmdButtonState()
+
+## UI/UX Improvements
+
+### Problem
+이전에는 Add NodeGroup 버튼을 클릭하면:
+1. `href="#addnode"`로 인해 URL이 변경되고 폼이 즉시 표시됨
+2. 그 후 상태 체크가 실행됨
+3. 상태가 Active가 아니면 모달이 표시되고 폼이 사라짐
+4. 사용자 혼란 발생 (폼이 잠깐 보였다가 사라짐)
+
+### Solution: Button State Management
+**패턴**: Cluster Terminal 버튼과 동일한 방식 사용
+
+#### 구현 내용
+
+1. **updateAddNodeGroupButtonState() 함수 추가**
+   - **File**: `front/assets/js/pages/operation/manage/pmk.js`
+   - **Location**: Line 1789-1811
+   - Cluster 상태에 따라 버튼 활성화/비활성화
+   - Active 상태일 때만 버튼 활성화
+   - Tooltip으로 현재 상태 표시
+
+```javascript
+function updateAddNodeGroupButtonState(clusterStatus) {
+    const addNodeGroupBtns = document.querySelectorAll('a[onclick*="addNewNodeGroup"]');
+    
+    addNodeGroupBtns.forEach(btn => {
+        if (!currentPmkId) {
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            btn.title = 'Please select a cluster first';
+        } else if (clusterStatus === 'Active') {
+            btn.classList.remove('disabled');
+            btn.style.pointerEvents = 'auto';
+            btn.title = 'Add NodeGroup to this cluster';
+        } else {
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            btn.title = 'NodeGroup can only be added when cluster is Active. Current status: ' + clusterStatus;
+        }
+    });
+}
+```
+
+2. **setPmkInfoData() 함수 수정**
+   - **File**: `front/assets/js/pages/operation/manage/pmk.js`
+   - **Location**: Line 343
+   - Cluster 정보 표시 후 버튼 상태 업데이트
+
+```javascript
+// Add NodeGroup 버튼 상태 업데이트
+updateAddNodeGroupButtonState(pmkStatus);
+```
+
+3. **addNewNodeGroup() 함수 단순화**
+   - **File**: `front/assets/js/partials/operation/manage/clustercreate.js`
+   - **Removed**: Lines 425-459 (상태 체크 로직 전체 제거)
+   - Cluster 선택 여부만 확인
+   - 버튼이 이미 비활성화되어 있으므로 상태 체크 불필요
+
+4. **HTML 수정**
+   - **File**: `front/templates/partials/operation/manage/_nodegrouplist_status.html`
+   - **Changes**:
+     - `href="#addnode"` 제거 → 폼 자동 표시 방지
+     - `class="btn btn-outline-primary disabled"` 추가
+     - `style="pointer-events: none;"` 추가
+     - `title="Please select an Active cluster first"` 추가
+
+```html
+<!-- Before -->
+<a
+  href="#addnode"
+  class="btn btn-outline-primary"
+  onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
+>
+
+<!-- After -->
+<a
+  class="btn btn-outline-primary disabled"
+  style="pointer-events: none;"
+  title="Please select an Active cluster first"
+  onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
+>
+```
+
+### User Experience Comparison
+
+| 시나리오 | 이전 동작 | 개선 후 동작 |
+|---------|----------|-------------|
+| Cluster 미선택 | 버튼 활성화 → 클릭 → 모달 표시 | 버튼 비활성화 (tooltip: "Please select a cluster first") |
+| Creating 상태 | 버튼 활성화 → 클릭 → 폼 표시 → 모달 → 폼 사라짐 | 버튼 비활성화 (tooltip: "Current status: Creating") |
+| Deleting 상태 | 버튼 활성화 → 클릭 → 폼 표시 → 모달 → 폼 사라짐 | 버튼 비활성화 (tooltip: "Current status: Deleting") |
+| Active 상태 | 버튼 활성화 → 클릭 → API 호출 → 상태 체크 → 폼 표시 | 버튼 활성화 → 클릭 → 바로 폼 표시 |
+
+### Benefits
+
+1. **예방적 접근**: 불가능한 상태에서 시도를 미연에 방지
+2. **명확한 피드백**: Tooltip으로 버튼이 비활성화된 이유 즉시 확인 가능
+3. **성능 개선**: 불필요한 API 호출 및 validation 제거
+4. **일관성**: 기존 Terminal 버튼들과 동일한 패턴 사용
+5. **혼란 제거**: 폼이 잠깐 나타났다가 사라지는 현상 완전히 제거
+
+### Pattern Consistency
+
+이 구현은 기존 코드와 일관성을 유지합니다:
+- `updateClusterRemoteCmdButtonState()` - Cluster Terminal 버튼
+- `updateMciRemoteCmdButtonState()` - MCI Terminal 버튼  
+- `updateSubGroupRemoteCmdButtonState()` - SubGroup Terminal 버튼
+- `updateAddNodeGroupButtonState()` - Add NodeGroup 버튼 (신규)
+
