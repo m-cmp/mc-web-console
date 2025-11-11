@@ -391,23 +391,100 @@ export async function createNode() {
 	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Node_Config_Arr)
 }
 
+// Extract region from connectionName
+// e.g., "aws-ap-northeast-2" -> "[aws] aws-ap-northeast-2"
+function extractRegionFromConnection(connectionName, provider) {
+	if (!connectionName || !provider) return '';
+
+	// Return in the format: [provider] connectionName
+	return '[' + provider + '] ' + connectionName;
+}
+
+// Load region list for Add NodeGroup form
+async function loadRegionListForNodeGroup(currentProvider, currentRegion) {
+	try {
+		// Call getRegion API
+		var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList();
+
+		if (!regionList || regionList.length === 0) {
+			// If API fails, show only current region
+			$("#node_cluster_region").html(
+				'<option value="' + currentRegion + '" selected>' +
+				currentRegion +
+				'</option>'
+			);
+			return;
+		}
+
+		// Filter regions by current provider
+		var filteredRegions = regionList.filter(region => {
+			return region.ProviderName.toLowerCase() === currentProvider.toLowerCase();
+		});
+
+		// Build region dropdown
+		var html = '<option value="">Select Region</option>';
+		filteredRegions.forEach(region => {
+			var regionValue = '[' + region.ProviderName + '] ' + region.RegionName;
+			var isSelected = regionValue === currentRegion ? ' selected' : '';
+			html += '<option value="' + regionValue + '"' + isSelected + '>' +
+				regionValue + '</option>';
+		});
+
+		$("#node_cluster_region").empty();
+		$("#node_cluster_region").append(html);
+
+		// Add change event listener for region
+		$("#node_cluster_region").off('change').on('change', function() {
+			var selectedRegion = $(this).val();
+			if (selectedRegion) {
+				// Filter cloud connections based on selected region
+				updateNodeClusterConnectionsByRegion(selectedRegion);
+			}
+		});
+
+	} catch (error) {
+		console.error('Failed to load region list:', error);
+		// Fallback: show only current region
+		$("#node_cluster_region").html(
+			'<option value="' + currentRegion + '" selected>' +
+			currentRegion +
+			'</option>'
+		);
+	}
+}
+
+// Update cloud connections when region changes
+async function updateNodeClusterConnectionsByRegion(selectedRegion) {
+	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+
+	try {
+		// Get all cloud connections
+		var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
+
+		// Extract region name from selectedRegion (e.g., "[aws] aws-ap-northeast-2")
+		var regionMatch = selectedRegion.match(/\[.*?\]\s+(.*)/);
+		var regionName = regionMatch ? regionMatch[1] : selectedRegion;
+
+		// Filter connections that match the selected region
+		var filteredConnections = connectionList.filter(conn =>
+			conn.toLowerCase().includes(regionName.toLowerCase())
+		);
+
+		// Update connection dropdown
+		var html = '<option value="">Select Connection</option>';
+		filteredConnections.forEach(conn => {
+			html += '<option value="' + conn + '">' + conn + '</option>';
+		});
+
+		$("#node_cluster_cloudconnection").empty();
+		$("#node_cluster_cloudconnection").append(html);
+
+	} catch (error) {
+		console.error('Failed to update connections:', error);
+	}
+}
+
 export async function addNewNodeGroup() {
-	// isNode = false
-
-	// var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
-	// // provider set
-	// await setProviderList(providerList)
-
-	// // call getRegion API
-	// var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList()
-	// // region set
-	// await setRegionList(regionList)
-
-	// // call cloudconnection
-	// var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection()
-	// // cloudconnection set
-	// await setCloudConnection(connectionList)
-
 	Create_Cluster_Config_Arr = new Array();
 	Create_Node_Config_Arr = new Array();
 
@@ -426,28 +503,64 @@ export async function addNewNodeGroup() {
 	// The button is only enabled when cluster status is Active
 	// See updateAddNodeGroupButtonState() in pmk.js
 
-	var cluster_name = selectedCluster[0].name
-	var cluster_desc = selectedCluster[0].description
-	var cluster_connection = selectedCluster[0].provider// 임시
-	var cluster_vpc = selectedCluster[0].vpc
-	var cluster_subnet = selectedCluster[0].subnet
-	var cluster_securitygroup = selectedCluster[0].securitygroup
-	var cluster_version = selectedCluster[0].version
+	var cluster_name = selectedCluster[0].name;
+	var cluster_desc = selectedCluster[0].description;
+	var cluster_provider = selectedCluster[0].provider;
+	var cluster_connection = selectedCluster[0].connectionName;
+	var cluster_vpc = selectedCluster[0].vpc;
+	var cluster_subnet = selectedCluster[0].subnet;
+	var cluster_securitygroup = selectedCluster[0].securitygroup;
+	var cluster_version = selectedCluster[0].version;
 
-	$("#node_cluster_name").val(cluster_name)
-	$("#node_cluster_desc").val(cluster_desc)
-	// $("#node_cluster_connection").val(cluster_connection)
-	$("#node_cluster_cloudconnection").html('<option value="' + cluster_connection + '" selected>' + cluster_connection + '</option>');
-	// provider, region, connection, vpc, subnet, sg, cluster version 채워넣어 펼치기
-	$("#node_cluster_vpc").html('<option value="' + cluster_vpc + '" selected>' + cluster_vpc + '</option>');
-	$("#node_cluster_subnet").html('<option value="' + cluster_subnet + '" selected>' + cluster_subnet + '</option>');
-	$("#node_cluster_sg").html('<option value="' + cluster_securitygroup + '" selected>' + cluster_securitygroup + '</option>');
-	$("#node_cluster_version").html('<option value="' + cluster_version + '" selected>' + cluster_version + '</option>');
+	// Extract region from connectionName
+	var cluster_region = extractRegionFromConnection(cluster_connection, cluster_provider);
+
+	// Set basic cluster information
+	$("#node_cluster_name").val(cluster_name);
+	$("#node_cluster_desc").val(cluster_desc);
+
+	// Set Provider (fixed, single option, disabled)
+	$("#node_cluster_provider").html(
+		'<option value="' + cluster_provider + '" selected>' +
+		cluster_provider.toUpperCase() +
+		'</option>'
+	);
+	$("#node_cluster_provider").prop('disabled', true);
+
+	// Load region list from API
+	await loadRegionListForNodeGroup(cluster_provider, cluster_region);
+
+	// Set other fields
+	$("#node_cluster_cloudconnection").html(
+		'<option value="' + cluster_connection + '" selected>' +
+		cluster_connection +
+		'</option>'
+	);
+	$("#node_cluster_vpc").html(
+		'<option value="' + cluster_vpc + '" selected>' +
+		cluster_vpc +
+		'</option>'
+	);
+	$("#node_cluster_subnet").html(
+		'<option value="' + cluster_subnet + '" selected>' +
+		cluster_subnet +
+		'</option>'
+	);
+	$("#node_cluster_sg").html(
+		'<option value="' + cluster_securitygroup + '" selected>' +
+		cluster_securitygroup +
+		'</option>'
+	);
+	$("#node_cluster_version").html(
+		'<option value="' + cluster_version + '" selected>' +
+		cluster_version +
+		'</option>'
+	);
 
 	// Navigate to Add NodeGroup section (following existing pattern)
 	window.location.hash = "#addnode";
 
-	isNodeGroup = true
+	isNodeGroup = true;
 }
 
 export async function addNewPmk() {

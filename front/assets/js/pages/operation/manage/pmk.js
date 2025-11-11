@@ -149,6 +149,8 @@ function mappingTablePmkData(totalPmkListObj) {
         return {
             name: item.name,
             id: item.id,
+            description: item.description || "",
+            connectionName: item.connectionName || "N/A",
             resourceType: item.resourceType,
             systemLabel: item.systemLabel || "N/A",
             systemMessage: item.systemMessage || "N/A",
