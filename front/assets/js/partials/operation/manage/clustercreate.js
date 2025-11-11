@@ -290,18 +290,25 @@ export async function displayNewNodeForm() {
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	
-	// getSSHKEY
-	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId)
-	var mysshKeyList = sshKeyList.data.responseData.sshKey
+	// Get selected cluster's provider information for SSH Key filtering
+	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
+	var clusterProvider = null;
+	if (selectedCluster && selectedCluster.length > 0) {
+		clusterProvider = selectedCluster[0].provider; // e.g., "aws", "azure", "gcp"
+	}
+	
+	// getSSHKEY with provider filter
+	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId, clusterProvider);
+	var mysshKeyList = sshKeyList.data.responseData.sshKey;
 	if (mysshKeyList && mysshKeyList.length > 0) {
-        var html = '<option value="">Select sshKey</option>';
-        mysshKeyList.forEach(item => {
-            html += '<option value="' + item.id + '">' + item.id + '</option>';
-        });
-    
-        $("#node_sshkey").empty();
-        $("#node_sshkey").append(html);
-    } else {
+		var html = '<option value="">Select sshKey</option>';
+		mysshKeyList.forEach(item => {
+			html += '<option value="' + item.id + '">' + item.id + '</option>';
+		});
+		
+		$("#node_sshkey").empty();
+		$("#node_sshkey").append(html);
+	} else {
 	}
 
 	//recommendVm으로 k8s spec
