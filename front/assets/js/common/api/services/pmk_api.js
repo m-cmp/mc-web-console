@@ -430,7 +430,7 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
   }
 }
 
-export async function getSshKey(nsId) {
+export async function getSshKey(nsId, providerName) {
 
   if (nsId == "") {
     alert("Project has not set")
@@ -442,6 +442,14 @@ export async function getSshKey(nsId) {
       nsId: nsId,
     },
   };
+
+  // Add provider filter if provided
+  if (providerName && providerName !== "") {
+    data.queryParams = {
+      filterKey: "providerName",
+      filterVal: providerName.toLowerCase() // e.g., "aws", "azure", "gcp"
+    };
+  }
 
   var controller = "/api/" + "mc-infra-manager/" + "Getallsshkey";
   const response = webconsolejs["common/api/http"].commonAPIPost(
