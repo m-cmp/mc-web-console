@@ -444,6 +444,11 @@ export async function addNewNodeGroup() {
 	$("#node_cluster_sg").html('<option value="' + cluster_securitygroup + '" selected>' + cluster_securitygroup + '</option>');
 	$("#node_cluster_version").html('<option value="' + cluster_version + '" selected>' + cluster_version + '</option>');
 
+	// Display the NodeGroup form
+	var addNodeDiv = document.getElementById("addnode");
+	if (addNodeDiv && !addNodeDiv.classList.contains('active')) {
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(addNodeDiv);
+	}
 
 	isNodeGroup = true
 }
