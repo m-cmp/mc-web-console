@@ -149,6 +149,8 @@ function mappingTablePmkData(totalPmkListObj) {
         return {
             name: item.name,
             id: item.id,
+            description: item.description || "",
+            connectionName: item.connectionName || "N/A",
             resourceType: item.resourceType,
             systemLabel: item.systemLabel || "N/A",
             systemMessage: item.systemMessage || "N/A",
@@ -171,21 +173,46 @@ export async function getSelectedPmkData() {
     if (currentPmkId != undefined && currentPmkId != "") {
         var selectedNsId = selectedWorkspaceProject.nsId;
 
-        var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId)
+        try {
+            var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId);
 
-        if (pmkResp.status != 200) {
-            // failed.  // TODO : Error Popup 처리
-            return;
-        }
-        // SET PMK Info page
-        setPmkInfoData(pmkResp.data)
+            // Check if pmkResp exists
+            if (!pmkResp) {
+                webconsolejs["common/util"].showToast(
+                    'Failed to retrieve cluster information. The cluster may not exist or the API is not responding.',
+                    'error',
+                    5000
+                );
+                return;
+            }
 
-        // Toggle PMK Info
-        var div = document.getElementById("cluster_info");
-        const hasActiveClass = div.classList.contains("active");
-        if (!hasActiveClass) {
-            // cluster_info 가 active면 toggle 필요 없음
-            webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+            // Check response status
+            if (pmkResp.status != 200) {
+                webconsolejs["common/util"].showToast(
+                    'Failed to load cluster information. Status: ' + (pmkResp.status || 'Unknown'),
+                    'error',
+                    5000
+                );
+                return;
+            }
+
+            // SET PMK Info page
+            setPmkInfoData(pmkResp.data);
+
+            // Toggle PMK Info
+            var div = document.getElementById("cluster_info");
+            const hasActiveClass = div.classList.contains("active");
+            if (!hasActiveClass) {
+                // cluster_info 가 active면 toggle 필요 없음
+                webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+            }
+        } catch (error) {
+            console.error('Error in getSelectedPmkData:', error);
+            webconsolejs["common/util"].showToast(
+                'An error occurred while loading cluster information. Please try again.',
+                'error',
+                5000
+            );
         }
     }
 }
@@ -260,12 +287,16 @@ function setPmkInfoData(pmkData) {
     var pmkNetwork = clusterDetailData?.Network || {};
     var clusterProvider = clusterData.connectionConfig.providerName
     currentProvider = clusterProvider
+    
+    // pmkStatus를 try 블록 밖에서 선언
+    var pmkStatus = "N/A";
+    
     try {
 
         var pmkName = clusterData.name;
         var pmkID = clusterData.id
         var pmkVersion = clusterDetailData?.Version || "N/A";
-        var pmkStatus = clusterDetailData?.Status || "N/A";
+        pmkStatus = clusterDetailData?.Status || "N/A";
 
         // 네트워크 정보
         var pmkVpc = (pmkNetwork.VpcIID && pmkNetwork.VpcIID.SystemId) || "N/A";
@@ -309,6 +340,9 @@ function setPmkInfoData(pmkData) {
     if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
         displayNodeGroupStatusList(pmkID, clusterProvider, clusterData);
     }
+    
+    // Add NodeGroup 버튼 상태 업데이트
+    updateAddNodeGroupButtonState(pmkStatus);
 }
 
 // pmk life cycle 변경
@@ -1759,4 +1793,28 @@ function updateClusterRemoteCmdButtonState() {
             clusterRemoteCmdBtn.title = 'Please select a Cluster first';
         }
     }
+}
+
+// Add NodeGroup 버튼 상태 업데이트
+function updateAddNodeGroupButtonState(clusterStatus) {
+    const addNodeGroupBtns = document.querySelectorAll('a[onclick*="addNewNodeGroup"]');
+
+    addNodeGroupBtns.forEach(btn => {
+        if (!currentPmkId) {
+            // Cluster가 선택되지 않은 경우
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            btn.title = 'Please select a cluster first';
+        } else if (clusterStatus === 'Active') {
+            // Active 상태인 경우 활성화
+            btn.classList.remove('disabled');
+            btn.style.pointerEvents = 'auto';
+            btn.title = 'Add NodeGroup to this cluster';
+        } else {
+            // Active가 아닌 경우 비활성화
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            btn.title = 'NodeGroup can only be added when cluster is Active. Current status: ' + clusterStatus;
+        }
+    });
 }

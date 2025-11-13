@@ -25,25 +25,49 @@ export async function getClusterList(nsId) {
 }
 
 export async function getCluster(nsId, clusterId) {
-  if (nsId == "" || nsId == undefined || clusterId == undefined || clusterId == "") {
-    alert(" undefined nsId: " + nsId + " clusterId " + clusterId);
-    return;
-  }
-  const data = {
-    pathParams: {
-      nsId: nsId,
-      k8sClusterId: clusterId
-    }
+  // Validation: Check nsId
+  if (!nsId || nsId === "") {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Project Selection Required',
+      'Please select a project first before viewing cluster details.'
+    );
+    return { status: 400, error: 'No project selected' };
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "Getk8scluster";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  );
+  // Validation: Check clusterId
+  if (!clusterId || clusterId === "") {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Cluster Selection Required',
+      'Please select a cluster first.'
+    );
+    return { status: 400, error: 'No cluster selected' };
+  }
 
-  // error check를 위해 response를 return
-  return response
+  // API call with error handling
+  try {
+    const data = {
+      pathParams: {
+        nsId: nsId,
+        k8sClusterId: clusterId
+      }
+    };
+
+    var controller = "/api/" + "mc-infra-manager/" + "Getk8scluster";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+
+    // error check를 위해 response를 return
+    return response;
+  } catch (error) {
+    console.error('Error in getCluster API call:', error);
+    // API 호출 실패 시에도 에러 객체 반환
+    return {
+      status: 500,
+      error: 'API call failed: ' + (error.message || 'Unknown error')
+    };
+  }
 }
 
 export async function CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId) {
@@ -406,7 +430,7 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
   }
 }
 
-export async function getSshKey(nsId) {
+export async function getSshKey(nsId, providerName) {
 
   if (nsId == "") {
     alert("Project has not set")
@@ -418,6 +442,14 @@ export async function getSshKey(nsId) {
       nsId: nsId,
     },
   };
+
+  // Add provider filter if provided
+  if (providerName && providerName !== "") {
+    data.queryParams = {
+      filterKey: "providerName",
+      filterVal: providerName.toLowerCase() // e.g., "aws", "azure", "gcp"
+    };
+  }
 
   var controller = "/api/" + "mc-infra-manager/" + "Getallsshkey";
   const response = webconsolejs["common/api/http"].commonAPIPost(

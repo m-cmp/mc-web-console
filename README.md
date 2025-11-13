@@ -107,7 +107,7 @@ $ docker-compose up --build -d
 ## This warning sign is a natural occurrence when running an existing MCIAMMANAGER with docker components.
 WARNING: Found orphan containers (mciammanager, mciammanager-keycloak, mciammanager-nginx, mciammanager-certbot) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up.
 Building mcwebconsole
-Step 1/32 : FROM golang:1.22.3-alpine AS builder
+Step 1/32 : FROM golang:1.25-alpine AS builder
  ---> 0594d7786b7c
 Step 2/32 : RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
  ---> Using cache
@@ -151,7 +151,7 @@ MC-WEB-CONSOLE has been successfully deployed if the screen below is visible dur
 
 **[설치 환경]**
 
-mc-web-console은 1.19 이상의 Go 버전이 설치된 다양한 환경에서 실행 가능하지만 최종 동작을 검증한 OS는 Ubuntu 22.0.4입니다.
+mc-web-console은 1.25 이상의 Go 버전이 설치된 다양한 환경에서 실행 가능하지만 최종 동작을 검증한 OS는 Ubuntu 22.0.4입니다.
 
 **[의존성]**
 
@@ -167,7 +167,7 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
 - Git 설치
     - `$ sudo apt update`
     - `$ sudo apt install git`
-- Go 1.19 이상의 버전 설치 ( 공식 문서 참고 )
+- Go 1.25 이상의 버전 설치 ( 공식 문서 참고 )
     - https://go.dev/doc/install
 - mc-web-console 설치
     
