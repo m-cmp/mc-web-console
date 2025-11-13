@@ -290,18 +290,25 @@ export async function displayNewNodeForm() {
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	
-	// getSSHKEY
-	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId)
-	var mysshKeyList = sshKeyList.data.responseData.sshKey
+	// Get selected cluster's provider information for SSH Key filtering
+	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
+	var clusterProvider = null;
+	if (selectedCluster && selectedCluster.length > 0) {
+		clusterProvider = selectedCluster[0].provider; // e.g., "aws", "azure", "gcp"
+	}
+	
+	// getSSHKEY with provider filter
+	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId, clusterProvider);
+	var mysshKeyList = sshKeyList.data.responseData.sshKey;
 	if (mysshKeyList && mysshKeyList.length > 0) {
-        var html = '<option value="">Select sshKey</option>';
-        mysshKeyList.forEach(item => {
-            html += '<option value="' + item.id + '">' + item.id + '</option>';
-        });
-    
-        $("#node_sshkey").empty();
-        $("#node_sshkey").append(html);
-    } else {
+		var html = '<option value="">Select sshKey</option>';
+		mysshKeyList.forEach(item => {
+			html += '<option value="' + item.id + '">' + item.id + '</option>';
+		});
+		
+		$("#node_sshkey").empty();
+		$("#node_sshkey").append(html);
+	} else {
 	}
 
 	//recommendVm으로 k8s spec
@@ -391,47 +398,97 @@ export async function createNode() {
 	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Node_Config_Arr)
 }
 
+// Extract region from connectionName
+// e.g., "aws-ap-northeast-2" -> "[aws] aws-ap-northeast-2"
+function extractRegionFromConnection(connectionName, provider) {
+	if (!connectionName || !provider) return '';
+
+	// Return in the format: [provider] connectionName
+	return '[' + provider + '] ' + connectionName;
+}
+
 export async function addNewNodeGroup() {
-	// isNode = false
-
-	// var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
-	// // provider set
-	// await setProviderList(providerList)
-
-	// // call getRegion API
-	// var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList()
-	// // region set
-	// await setRegionList(regionList)
-
-	// // call cloudconnection
-	// var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection()
-	// // cloudconnection set
-	// await setCloudConnection(connectionList)
-
 	Create_Cluster_Config_Arr = new Array();
 	Create_Node_Config_Arr = new Array();
 
-	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
-	var cluster_name = selectedCluster[0].name
-	var cluster_desc = selectedCluster[0].description
-	var cluster_connection = selectedCluster[0].provider// 임시
-	var cluster_vpc = selectedCluster[0].vpc
-	var cluster_subnet = selectedCluster[0].subnet
-	var cluster_securitygroup = selectedCluster[0].securitygroup
-	var cluster_version = selectedCluster[0].version
+	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
 
-	$("#node_cluster_name").val(cluster_name)
-	$("#node_cluster_desc").val(cluster_desc)
-	// $("#node_cluster_connection").val(cluster_connection)
-	$("#node_cluster_cloudconnection").html('<option value="' + cluster_connection + '" selected>' + cluster_connection + '</option>');
-	// provider, region, connection, vpc, subnet, sg, cluster version 채워넣어 펼치기
-	$("#node_cluster_vpc").html('<option value="' + cluster_vpc + '" selected>' + cluster_vpc + '</option>');
-	$("#node_cluster_subnet").html('<option value="' + cluster_subnet + '" selected>' + cluster_subnet + '</option>');
-	$("#node_cluster_sg").html('<option value="' + cluster_securitygroup + '" selected>' + cluster_securitygroup + '</option>');
-	$("#node_cluster_version").html('<option value="' + cluster_version + '" selected>' + cluster_version + '</option>');
+	// Validation: Check if cluster is selected
+	if (!selectedCluster || selectedCluster.length === 0) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Cluster Selection Required',
+			'Please select a cluster first before adding a NodeGroup.'
+		);
+		return;
+	}
 
+	// Note: Cluster status check is handled by button state management
+	// The button is only enabled when cluster status is Active
+	// See updateAddNodeGroupButtonState() in pmk.js
 
-	isNodeGroup = true
+	var cluster_name = selectedCluster[0].name;
+	var cluster_desc = selectedCluster[0].description;
+	var cluster_provider = selectedCluster[0].provider;
+	var cluster_connection = selectedCluster[0].connectionName;
+	var cluster_vpc = selectedCluster[0].vpc;
+	var cluster_subnet = selectedCluster[0].subnet;
+	var cluster_securitygroup = selectedCluster[0].securitygroup;
+	var cluster_version = selectedCluster[0].version;
+
+	// Extract region from connectionName
+	var cluster_region = extractRegionFromConnection(cluster_connection, cluster_provider);
+
+	// Set basic cluster information
+	$("#node_cluster_name").val(cluster_name);
+	$("#node_cluster_desc").val(cluster_desc);
+
+	// Set Provider (fixed, single option, disabled - display only)
+	$("#node_cluster_provider").html(
+		'<option value="' + cluster_provider + '" selected>' +
+		cluster_provider.toUpperCase() +
+		'</option>'
+	);
+	$("#node_cluster_provider").prop('disabled', true);
+
+	// Set Region (fixed, single option, disabled - display only)
+	$("#node_cluster_region").html(
+		'<option value="' + cluster_region + '" selected>' +
+		cluster_region +
+		'</option>'
+	);
+	$("#node_cluster_region").prop('disabled', true);
+
+	// Set other fields
+	$("#node_cluster_cloudconnection").html(
+		'<option value="' + cluster_connection + '" selected>' +
+		cluster_connection +
+		'</option>'
+	);
+	$("#node_cluster_vpc").html(
+		'<option value="' + cluster_vpc + '" selected>' +
+		cluster_vpc +
+		'</option>'
+	);
+	$("#node_cluster_subnet").html(
+		'<option value="' + cluster_subnet + '" selected>' +
+		cluster_subnet +
+		'</option>'
+	);
+	$("#node_cluster_sg").html(
+		'<option value="' + cluster_securitygroup + '" selected>' +
+		cluster_securitygroup +
+		'</option>'
+	);
+	$("#node_cluster_version").html(
+		'<option value="' + cluster_version + '" selected>' +
+		cluster_version +
+		'</option>'
+	);
+
+	// Navigate to Add NodeGroup section (following existing pattern)
+	window.location.hash = "#addnode";
+
+	isNodeGroup = true;
 }
 
 export async function addNewPmk() {
