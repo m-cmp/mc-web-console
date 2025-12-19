@@ -20,24 +20,8 @@ export function initServerRecommendationPmk(callbackfunction) {
 
 // PMK용 서버 추천 모달 이벤트 설정
 function setupServerModalEventsPmk() {
-	// MCI용과 동일하게 단순한 이벤트 리스너만 등록
-	
-	// Bootstrap 5 방식
-	if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-		var pmkModal = document.getElementById('spec-search-pmk');
-		if (pmkModal) {
-			pmkModal.addEventListener('shown.bs.modal', function() {
-				// 모달이 열렸을 때의 처리
-			});
-		}
-	}
-	
-	// jQuery 방식
-	if (typeof $ !== 'undefined' && $.fn.modal) {
-		$("#spec-search-pmk").on('shown.bs.modal', function() {
-			// 모달이 열렸을 때의 처리
-		});
-	}
+	// Provider 옵션은 HTML partial component로 이미 렌더링됨
+	// 추가 초기화가 필요한 경우 여기에 작성
 }
 
 function initRecommendSpecTablePmk() {

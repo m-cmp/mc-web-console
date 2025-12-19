@@ -209,7 +209,7 @@ export async function getRecommendImageInfoPmk() {
 			providerName: provider,              // 개별 전달
 			regionName: region,                  // 개별 전달
 			matchedSpecId: specId,               // 유지
-			isKubernetesImage: true,             // PMK 필수
+			// isKubernetesImage: true,             // PMK 필수
 			maxResults: 100
 		};
 		
