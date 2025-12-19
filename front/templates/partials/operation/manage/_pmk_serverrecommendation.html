@@ -180,15 +180,7 @@
               name="spec-provider-filter-pmk"
               onchange="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].filterByProviderPmk(this.value)"
             >
-              <option value="">All Providers</option>
-              <option value="aws">AWS</option>
-              <option value="azure">Azure</option>
-              <option value="alibaba">Alibaba</option>
-              <option value="gcp">GCP</option>
-              <option value="tencent">Tencent</option>
-              <option value="ncp">NCP</option>
-              <option value="nhn">NHN</option>
-              <option value="ibm">IBM</option>
+              <%= partial("partials/common/provider_select.html") %>
             </select>
           </div>
         </div>

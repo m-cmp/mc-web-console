@@ -1,7 +1,7 @@
 // PMK API 관련 
 
 // 받아온 project(namespace)로 PmkList GET
-export async function getClusterList(nsId) {
+export async function getClusterList(nsId, options = {}) {
 
   if (nsId == "") {
     alert("Project has not set")
@@ -17,14 +17,16 @@ export async function getClusterList(nsId) {
   var controller = "/api/" + "mc-infra-manager/" + "GetAllK8sCluster";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
-    data
+    data,
+    false,
+    options
   )
   var pmkList = response.data.responseData;
 
   return pmkList
 }
 
-export async function getCluster(nsId, clusterId) {
+export async function getCluster(nsId, clusterId, options = {}) {
   // Validation: Check nsId
   if (!nsId || nsId === "") {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal(
@@ -55,7 +57,9 @@ export async function getCluster(nsId, clusterId) {
     var controller = "/api/" + "mc-infra-manager/" + "Getk8scluster";
     const response = await webconsolejs["common/api/http"].commonAPIPost(
       controller,
-      data
+      data,
+      false,
+      options
     );
 
     // error check를 위해 response를 return
@@ -305,7 +309,7 @@ export async function getProviderList() {
   return response.data.responseData.output
 }
 
-export async function getRegionList() {
+export async function getRegionList(options = {}) {
 
   // let data = {
   // pathParams: {
@@ -317,13 +321,15 @@ export async function getRegionList() {
   let controller = "/api/" + "mc-infra-manager/" + "RetrieveRegionListFromCsp";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
-
+    undefined,
+    false,
+    options
   );
 
   return response.data.responseData.region
 }
 
-export async function getCloudConnection() {
+export async function getCloudConnection(options = {}) {
 
 
   // test
@@ -335,7 +341,9 @@ export async function getCloudConnection() {
   let controller = "/api/" + "mc-infra-manager/" + "GetConnConfigList";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
-    data
+    data,
+    false,
+    options
   );
 
   return response.data.responseData.connectionconfig
@@ -414,12 +422,13 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
       data
     );
     
-    // 성공 처리
-    if (response && response.status === 200) {
+    // 성공 처리 (200 OK 또는 201 Created)
+    if (response && (response.status === 200 || response.status === 201)) {
       webconsolejs["common/util"].showToast('Node group creation request completed successfully', 'success');
       return response;
     } else {
       console.error('Node creation failed:', response);
+      console.error('Response status:', response?.status, 'Type:', typeof response?.status);
       webconsolejs["common/util"].showToast('Failed to create node group', 'error');
       return response;
     }
@@ -647,7 +656,7 @@ export function calculateVmStatusCount(aPmk) {
   return vmStatusCountMap;
 }
 
-export function pmkDelete(nsId, k8sClusterId) {
+export function pmkDelete(nsId, k8sClusterId, options = {}) {
   // API 레벨 Validation (추가 안전장치)
   if (!nsId || nsId === '' || !k8sClusterId || k8sClusterId === '') {
     console.error('Invalid parameters for PMK deletion:', {
@@ -670,12 +679,14 @@ export function pmkDelete(nsId, k8sClusterId) {
   let controller = '/api/' + 'mc-infra-manager/' + 'Deletek8scluster';
   let response = webconsolejs['common/api/http'].commonAPIPost(
     controller,
-    data
+    data,
+    false,
+    options
   );
   return response;
 }
 
-export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
+export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName, options = {}) {
   // API 레벨 Validation (추가 안전장치)
   if (!nsId || nsId === '' || 
       !k8sClusterId || k8sClusterId === '' || 
@@ -702,7 +713,9 @@ export function nodeGroupDelete(nsId, k8sClusterId, k8sNodeGroupName) {
   let controller = '/api/' + 'mc-infra-manager/' + 'Deletek8snodegroup';
   let response = webconsolejs['common/api/http'].commonAPIPost(
     controller,
-    data
+    data,
+    false,
+    options
   );
   return response;
 }

@@ -8,6 +8,72 @@ export function iniClusterkCreate() {
 	// partial init functions
 
 	webconsolejs["partials/operation/manage/clusterrecommendation"].initClusterRecommendation(webconsolejs["partials/operation/manage/clustercreate"].callbackClusterRecommendation);// recommend popup에서 사용하는 table 정의.
+	
+	// Desired Node Size +/- 버튼 이벤트 리스너 설정
+	setupDesiredNodeSizeButtons();
+}
+
+// Desired Node Size +/- 버튼 이벤트 리스너 설정
+function setupDesiredNodeSizeButtons() {
+	// 기존 이벤트 핸들러 제거 (중복 방지)
+	$(document).off('click', '#nodegroup_configuration .input-number-decrement');
+	$(document).off('click', '#nodegroup_configuration .input-number-increment');
+	$(document).off('change', '#node_minnodesize');
+	$(document).off('change', '#node_maxnodesize');
+
+	// Decrement 버튼 (-) 이벤트 핸들러
+	$(document).on('click', '#nodegroup_configuration .input-number-decrement', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const input = $(this).siblings('.input-number');
+		const currentValue = parseInt(input.val()) || 1;
+		const minNodeSize = parseInt($('#node_minnodesize').val()) || 1;
+
+		// minNodeSize 이상으로 유지
+		if (currentValue > minNodeSize) {
+			input.val(currentValue - 1);
+		}
+	});
+
+	// Increment 버튼 (+) 이벤트 핸들러
+	$(document).on('click', '#nodegroup_configuration .input-number-increment', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const input = $(this).siblings('.input-number');
+		const currentValue = parseInt(input.val()) || 1;
+		const maxNodeSize = parseInt($('#node_maxnodesize').val()) || 5;
+
+		// maxNodeSize 이하로 유지
+		if (currentValue < maxNodeSize) {
+			input.val(currentValue + 1);
+		}
+	});
+
+	// minNodeSize 변경 시 Desired Node Size 자동 조정
+	$(document).on('change', '#node_minnodesize', function () {
+		const minNodeSize = parseInt($(this).val()) || 1;
+		const desiredInput = $('#node_desirednodesize');
+		const currentDesired = parseInt(desiredInput.val()) || 1;
+
+		// Desired Node Size가 minNodeSize보다 작으면 minNodeSize로 설정
+		if (currentDesired < minNodeSize) {
+			desiredInput.val(minNodeSize);
+		}
+	});
+
+	// maxNodeSize 변경 시 Desired Node Size 자동 조정
+	$(document).on('change', '#node_maxnodesize', function () {
+		const maxNodeSize = parseInt($(this).val()) || 5;
+		const desiredInput = $('#node_desirednodesize');
+		const currentDesired = parseInt(desiredInput.val()) || 1;
+
+		// Desired Node Size가 maxNodeSize보다 크면 maxNodeSize로 설정
+		if (currentDesired > maxNodeSize) {
+			desiredInput.val(maxNodeSize);
+		}
+	});
 }
 
 // callback PopupData
@@ -280,6 +346,7 @@ var isNodeGroup = false // mci 생성(false) / vm 추가(true)
 var Create_Cluster_Config_Arr = new Array();
 var Create_Node_Config_Arr = new Array();
 var nodeGroup_data_cnt = 0
+var currentEditingNodeGroupIndex = null; // Edit 모드 추적용 변수
 
 
 // 서버 더하기버튼 클릭시 서버정보 입력area 보이기/숨기기
@@ -371,10 +438,22 @@ export async function displayNewNodeForm() {
 function getPlusVm(vmElementId) {
 
 	var append = "";
-	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
+	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/clustercreate\'].startCreateMode()">';
 	append = append + "+ NodeGroup"
 	append = append + '</li>';
 	return append;
+}
+
+// + NodeGroup 클릭 시 Create 모드 시작
+export function startCreateMode() {
+	currentEditingNodeGroupIndex = null; // Create 모드로 초기화
+	console.log("Create mode: Starting new NodeGroup creation");
+	
+	// NodeGroup Configuration 폼 표시
+	var div = document.getElementById("nodegroup_configuration");
+	if (div && !div.classList.contains('show')) {
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
+	}
 }
 // 서버정보 입력 area에서 'DONE'버튼 클릭시 array에 담고 form을 초기화
 
@@ -395,7 +474,60 @@ export async function createNode() {
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	var k8sClusterId = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj[0].id
-	webconsolejs["common/api/services/pmk_api"].createNode(k8sClusterId, selectedNsId, Create_Node_Config_Arr)
+	
+	// NodeGroup 생성 요청만 보내고 결과를 기다리지 않음 (fire and forget)
+	webconsolejs["common/api/services/pmk_api"].createNode(
+		k8sClusterId, 
+		selectedNsId, 
+		Create_Node_Config_Arr
+	);
+	
+	// 즉시 메시지 표시
+	webconsolejs['common/util'].showToast('NodeGroup creation request has been sent', 'info');
+	
+	// NodeGroup Configuration 폼 닫기
+	var nodeGroupConfigDiv = document.getElementById("nodegroup_configuration");
+	if (nodeGroupConfigDiv) {
+		webconsolejs["partials/layout/navigatePages"].toggleSubElement(nodeGroupConfigDiv);
+	}
+	
+	// Add Node 영역 숨기기
+	var addNodeDiv = document.getElementById("addnode");
+	if (addNodeDiv && addNodeDiv.classList.contains("active")) {
+		webconsolejs["partials/layout/navigatePages"].toggleElement(addNodeDiv);
+	}
+	
+	// Add NodeGroup 폼 초기화
+	Create_Node_Config_Arr = new Array();
+	nodeGroup_data_cnt = 0;
+	
+	// addnodegroup_list 초기화 (+ NodeGroup 버튼만 남기기)
+	var addNodeGroupList = document.getElementById("addnodegroup_list");
+	if (addNodeGroupList) {
+		var plusIcon = document.getElementById("addnodegroup_plusIcon");
+		addNodeGroupList.innerHTML = '';
+		if (plusIcon) {
+			addNodeGroupList.appendChild(plusIcon);
+		} else {
+			// + NodeGroup 버튼이 없으면 다시 생성
+			var li = document.createElement('li');
+			li.className = 'removebullet btn btn-secondary-lt';
+			li.id = 'addnodegroup_plusIcon';
+			li.onclick = function() {
+				webconsolejs['partials/operation/manage/clustercreate'].displayNewNodeForm();
+			};
+			li.textContent = '+ NodeGroup';
+			addNodeGroupList.appendChild(li);
+		}
+	}
+	
+	// PMK 목록 새로고침
+	if (webconsolejs["pages/operation/manage/pmk"] && 
+	    typeof webconsolejs["pages/operation/manage/pmk"].refreshPmkList === 'function') {
+		await webconsolejs["pages/operation/manage/pmk"].refreshPmkList();
+	}
+	
+	console.log("NodeGroup creation request sent and PMK list refreshed");
 }
 
 // Extract region from connectionName
@@ -410,6 +542,7 @@ function extractRegionFromConnection(connectionName, provider) {
 export async function addNewNodeGroup() {
 	Create_Cluster_Config_Arr = new Array();
 	Create_Node_Config_Arr = new Array();
+	currentEditingNodeGroupIndex = null; // Create 모드로 초기화
 
 	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
 
@@ -498,13 +631,13 @@ export async function addNewPmk() {
 	// provider set
 	await setProviderList(providerList)
 
-	// call getRegion API
-	var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList()
+	// call getRegion API (백그라운드, 로더 없음)
+	var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' })
 	// region set
 	await setRegionList(regionList)
 
-	// call cloudconnection
-	var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection()
+	// call cloudconnection (백그라운드, 로더 없음)
+	var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' })
 	// cloudconnection set
 	await setCloudConnection(connectionList)
 
@@ -681,6 +814,9 @@ export function clusterFormDone_btn() {
 		{ id: '#node_name', message: 'NodeGroup name is required' },
 		{ id: '#node_specid', message: 'Spec is required' },
 		{ id: '#node_imageid', message: 'Image is required' },
+		{ id: '#node_minnodesize', message: 'Min Node Size is required' },
+		{ id: '#node_maxnodesize', message: 'Max Node Size is required' },
+		{ id: '#node_sshkey', message: 'SSH Key is required' },
 		{ id: '#node_autoscaling', message: 'AutoScaling option is required' }
 	];
 	
@@ -736,54 +872,80 @@ export function clusterFormDone_btn() {
 	$("#n_autoscaling").val(onAutoScaling);
 	$("#n_desirednodesize").val(desiredNodeSize || "1");
 
+    // 4. NodeGroup 데이터 객체 생성
+    var nodeGroupData = {
+        "desiredNodeSize": desiredNodeSize || "",
+        "imageId": imageId || "",
+        "maxNodeSize": maxNodeSize || "",
+        "minNodeSize": minNodeSize || "",
+        "name": nodeGroupName,
+        "onAutoScaling": onAutoScaling || "false",
+        "rootDiskSize": rootDiskSize || "",
+        "rootDiskType": rootDiskType || "",
+        "specId": specId || "",
+        "sshKeyId": sshKeyId || ""
+    };
+
     if (nodeGroupName) {
-        cluster_form["k8sNodeGroupList"] = [
-            {
-                "desiredNodeSize": desiredNodeSize || "",
-                "imageId": imageId || "",
-                "maxNodeSize": maxNodeSize || "",
-                "minNodeSize": minNodeSize || "",
-                "name": nodeGroupName,
-                "onAutoScaling": onAutoScaling || "false",
-                "rootDiskSize": rootDiskSize || "",
-                "rootDiskType": rootDiskType || "",
-                "specId": specId || "",
-                "sshKeyId": sshKeyId || ""
-            }
-        ];
+        cluster_form["k8sNodeGroupList"] = [nodeGroupData];
     }
-	// 4. 배열에 저장
-	var nodeGroup_name = nodeGroupName; // cluster_form.name이 아닌 nodeGroupName 사용
-	var nodeGroup_cnt = parseInt(desiredNodeSize) || 1;
-	var add_nodegroup_html = "";
 	
-    Create_Cluster_Config_Arr.push(cluster_form);
-	if (isNodeGroup) {
-		Create_Node_Config_Arr.push(cluster_form["k8sNodeGroupList"][0]);
+	var nodeGroup_name = nodeGroupName;
+	var nodeGroup_cnt = parseInt(desiredNodeSize) || 1;
+	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')';
+	
+	// Edit 모드 vs Create 모드 구분
+	if (currentEditingNodeGroupIndex !== null) {
+		// **Edit 모드**: 기존 NodeGroup 업데이트
+		console.log("Edit mode: Updating NodeGroup at index", currentEditingNodeGroupIndex);
+		
+		// 배열의 기존 데이터 업데이트
+		Create_Node_Config_Arr[currentEditingNodeGroupIndex] = nodeGroupData;
+		Create_Cluster_Config_Arr[currentEditingNodeGroupIndex] = cluster_form;
+		
+		// HTML 리스트 항목 업데이트 (기존 항목 찾아서 텍스트만 변경)
+		var targetLi = $("#nodegroup_list li").eq(currentEditingNodeGroupIndex + 1); // +1은 plusIcon 때문
+		if (targetLi.length > 0) {
+			targetLi.text(nodeGroup_name + displayNodegroupCnt);
+			// onclick 이벤트 다시 설정
+			targetLi.attr('onclick', "webconsolejs['partials/operation/manage/clustercreate'].view_ngForm('" + currentEditingNodeGroupIndex + "')");
+		}
+		
+		// Edit 모드 종료
+		currentEditingNodeGroupIndex = null;
+		
+	} else {
+		// **Create 모드**: 새 NodeGroup 추가
+		console.log("Create mode: Adding new NodeGroup");
+		
+		// 배열에 저장
+		Create_Cluster_Config_Arr.push(cluster_form);
+		if (isNodeGroup) {
+			Create_Node_Config_Arr.push(nodeGroupData);
+		}
+
+		// HTML 생성 (NodeGroup 리스트 항목)
+		var add_nodegroup_html = '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
+			+ nodeGroup_name + displayNodegroupCnt
+			+ '</li>';
+
+		// plusIcon 제거 및 리스트 업데이트
+		var ngEleId = "nodegroup";
+		if (isNodeGroup) {
+			ngEleId = "addnodegroup";
+		}
+		
+		$("#" + ngEleId + "_plusIcon").remove();
+		$("#" + ngEleId + "_list").append(add_nodegroup_html);
+		$("#" + ngEleId + "_list").prepend(getPlusVm(ngEleId));
+
+		// 카운터 증가
+		nodeGroup_data_cnt++;
 	}
 
-	// 5. HTML 생성 (NodeGroup 리스트 항목)
-	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')';
-	add_nodegroup_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
-		+ nodeGroup_name + displayNodegroupCnt
-		+ '</li>';
-
-	// 6. 폼 토글 (먼저 실행)
+	// 폼 토글
     var div = document.getElementById("nodegroup_configuration");
     webconsolejs["partials/layout/navigatePages"].toggleSubElement(div);
-
-	// 7. plusIcon 제거 및 리스트 업데이트
-	var ngEleId = "nodegroup";
-	if (isNodeGroup) {
-		ngEleId = "addnodegroup";
-	}
-	
-	$("#" + ngEleId + "_plusIcon").remove();
-	$("#" + ngEleId + "_list").append(add_nodegroup_html);
-	$("#" + ngEleId + "_list").prepend(getPlusVm(ngEleId));
-
-	// 8. 카운터 증가
-	nodeGroup_data_cnt++;
 
 	// 9. 폼 초기화
 	$("#cluster_form").each(function () {
@@ -884,8 +1046,48 @@ export function addNodeFormDone_btn() {
 }
 
 export function view_ngForm(cnt){
+	// NodeGroup Configuration 폼 표시
 	var div = document.getElementById("nodegroup_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleElement(div)
+	webconsolejs["partials/layout/navigatePages"].toggleElement(div);
+	
+	// 배열에서 해당 NodeGroup 데이터 가져오기
+	if (cnt !== undefined && Create_Node_Config_Arr[cnt]) {
+		// Edit 모드 활성화
+		currentEditingNodeGroupIndex = cnt;
+		
+		var nodeGroupData = Create_Node_Config_Arr[cnt];
+		
+		// Form 필드에 기존 데이터 채우기
+		$("#node_name").val(nodeGroupData.name || "");
+		$("#node_specid").val(nodeGroupData.specId || "");
+		$("#node_commonSpecId").val(nodeGroupData.specId || "");
+		$("#node_imageid").val(nodeGroupData.imageId || "");
+		$("#node_minnodesize").val(nodeGroupData.minNodeSize || "");
+		$("#node_maxnodesize").val(nodeGroupData.maxNodeSize || "");
+		$("#node_sshkey").val(nodeGroupData.sshKeyId || "");
+		$("#node_rootdisk").val(nodeGroupData.rootDiskType || "");
+		$("#node_rootdisksize").val(nodeGroupData.rootDiskSize || "");
+		$("#node_autoscaling").val(nodeGroupData.onAutoScaling || "false");
+		$("#node_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
+		
+		// Hidden 필드에도 설정
+		$("#n_name").val(nodeGroupData.name || "");
+		$("#n_specid").val(nodeGroupData.specId || "");
+		$("#n_imageid").val(nodeGroupData.imageId || "");
+		$("#n_minnodesize").val(nodeGroupData.minNodeSize || "");
+		$("#n_maxnodesize").val(nodeGroupData.maxNodeSize || "");
+		$("#n_sshkey").val(nodeGroupData.sshKeyId || "");
+		$("#n_rootdisk").val(nodeGroupData.rootDiskType || "");
+		$("#n_rootdisksize").val(nodeGroupData.rootDiskSize || "");
+		$("#n_autoscaling").val(nodeGroupData.onAutoScaling || "false");
+		$("#n_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
+		
+		console.log("Edit mode: Loaded NodeGroup data at index", cnt, ":", nodeGroupData);
+	} else {
+		// Create 모드 (+ NodeGroup 클릭 시)
+		currentEditingNodeGroupIndex = null;
+		console.log("Create mode: New NodeGroup");
+	}
 }
 
 // PMK용 Server Recommendation 콜백 함수 (Runtime nodegroup_configuration 폼용)
