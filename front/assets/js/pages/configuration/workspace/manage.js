@@ -254,6 +254,13 @@ export async function deleteWorkspace() {
         "workspaceId": workspace.workspace_id,
       }
     };
+
+    // const data = {
+    //   request: {
+    //     "name": name,
+    //     "description": desc,
+    //   }
+    // }
     let controller = "/api/" + "deleteworkspace";
     let response = await webconsolejs["common/api/http"].commonAPIPost(
       controller,
