@@ -380,7 +380,7 @@
                           class="form-select"
                           id="cluster_provider_dynamic"
                         >
-                          <option value="">Select Provider</option>
+                          <%= partial("partials/common/provider_select.html") %>
                         </select>
                       </div>
                       <div class="col-6">
@@ -1279,8 +1279,9 @@
   </div>
 </div>
 
-<%= javascriptTag("pages/operation/manage/pmk.js") %> <%=
-javascriptTag("common/api/services/pmk_api.js") %> <%=
+<%= javascriptTag("common/utils/listRefreshPattern.js") %>
+<%= javascriptTag("pages/operation/manage/pmk.js") %>
+<%= javascriptTag("common/api/services/pmk_api.js") %> <%=
 javascriptTag("common/api/services/mci_api.js") %> <%=
 javascriptTag("common/api/services/vmimage_api.js") %> <%=
 javascriptTag("partials/operation/manage/serverrecommendation.js") %> <%=
