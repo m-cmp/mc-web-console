@@ -1,9 +1,90 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
+/**
+ * ===================================================================
+ * PMK WORKLOADS PAGE - LOADER STRATEGY
+ * ===================================================================
+ * 📄 Page Loader: Create, Delete, Update, Synchronous Fetch operations
+ * 🔔 Toast Loader: Asynchronous background data loading
+ * ⚪ No Loader: Background status updates
+ * ===================================================================
+ */
+
+// PMK Loader Configuration / PMK 로더 설정
+const PMK_LOADER_CONFIG = {
+  // 생성 작업 / Create operations
+  create: {
+    cluster: { loaderType: 'page' },
+    nodeGroup: { loaderType: 'page' }
+  },
+  
+  // 삭제 작업 / Delete operations
+  delete: {
+    cluster: { loaderType: 'page' },
+    nodeGroup: { loaderType: 'page' }
+  },
+  
+  // 조회 작업 / Fetch operations
+  fetch: {
+    // 동기 조회 - Page Loader (사용자가 결과를 기다려야 함)
+    clusterList: {
+      loaderType: 'page'  // 변경: GetAllK8sCluster는 동기적으로 기다려야 함
+    },
+    clusterDetail: {
+      loaderType: 'page'  // 변경: Getk8scluster는 동기적으로 기다려야 함
+    },
+    
+    // 비동기 조회 - Toast Loader (백그라운드 데이터)
+    monitoring: {
+      loaderType: 'toast',
+      progressLabel: 'Loading Monitoring Data...',
+      successMessage: null
+    }
+  }
+};
+
+// PMK API Helper / PMK API 헬퍼
+const PmkApiHelper = {
+  // 조회 작업 / Fetch operations
+  async getClusterList(nsId) {
+    return await webconsolejs["common/api/services/pmk_api"].getClusterList(
+      nsId,
+      PMK_LOADER_CONFIG.fetch.clusterList
+    );
+  },
+  
+  async getClusterDetail(nsId, clusterId) {
+    return await webconsolejs["common/api/services/pmk_api"].getCluster(
+      nsId,
+      clusterId,
+      PMK_LOADER_CONFIG.fetch.clusterDetail
+    );
+  },
+  
+  // 삭제 작업 / Delete operations
+  async deleteCluster(nsId, clusterId) {
+    return await webconsolejs["common/api/services/pmk_api"].pmkDelete(
+      nsId,
+      clusterId,
+      PMK_LOADER_CONFIG.delete.cluster
+    );
+  },
+  
+  async deleteNodeGroup(nsId, clusterId, nodeGroupName) {
+    return await webconsolejs["common/api/services/pmk_api"].nodeGroupDelete(
+      nsId,
+      clusterId,
+      nodeGroupName,
+      PMK_LOADER_CONFIG.delete.nodeGroup
+    );
+  }
+};
+
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
     let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
+    // Using direct API call with default page loader for project change
     var respPmkList = await webconsolejs["common/api/services/pmk_api"].getClusterList(project.NsId);
     getPmkListCallbackSuccess(project.NsId, respPmkList);
 })
@@ -100,21 +181,82 @@ async function initPmk() {
 }
 
 // pmk목록 조회. init, refresh 에서 사용
+/**
+ * PMK 목록 새로고침
+ * Refresh PMK list
+ * 
+ * List Refresh Pattern을 사용하여 일관된 refresh 동작 제공
+ * Uses List Refresh Pattern for consistent refresh behavior
+ * 
+ * 적용 시나리오 / Applied scenarios:
+ * - 화면 최초 로드 시 / Initial screen load
+ * - Refresh 아이콘 클릭 시 / Refresh icon click
+ * - NodeGroup 추가/삭제 후 / After NodeGroup add/delete
+ * - Cluster 삭제 후 / After Cluster delete
+ */
 export async function refreshPmkList() {
-    if (selectedWorkspaceProject.projectId != "") {
-        var selectedProjectId = selectedWorkspaceProject.projectId;
-        var selectedNsId = selectedWorkspaceProject.nsId;
+  if (selectedWorkspaceProject.projectId != "") {
+    var selectedProjectId = selectedWorkspaceProject.projectId;
+    var selectedNsId = selectedWorkspaceProject.nsId;
 
-        //getPmkList();// project가 선택되어 있으면 pmk목록을 조회한다.
-        var respPmkList = await webconsolejs["common/api/services/pmk_api"].getClusterList(selectedNsId);
+    // List Refresh Pattern 설정 / List Refresh Pattern configuration
+    const config = {
+      // 현재 선택 ID 가져오기 / Get current selection ID
+      getSelectionId: () => currentPmkId,
+
+      // 숨길 상세 영역 / Detail areas to hide
+      detailElementIds: ['cluster_info'],
+
+      // 내용을 비울 영역 / Areas to empty
+      detailElementsToEmpty: ['pmk_nodegroup_info_box', 'pmk_node_info_box'],
+
+      // 닫을 폼 / Forms to close
+      formsToClose: ['nodegroup_configuration'],
+
+      // 목록 데이터 조회 / Fetch list data
+      fetchListData: async () => {
+        return await PmkApiHelper.getClusterList(selectedNsId);
+      },
+
+      // 목록 업데이트 / Update list
+      updateListCallback: (respPmkList) => {
         getPmkListCallbackSuccess(selectedProjectId, respPmkList);
+      },
 
-        if (currentPmkId != undefined) {
-            toggleRowSelection(currentPmkId)
-            getSelectedPmkData()
+      // Row 가져오기 / Get row by ID
+      getRowById: (id) => {
+        try {
+          return pmkListTable.getRow(id);
+        } catch (e) {
+          return null;
         }
-        ////////////////////  pmkId를 set하고 조회 완료. ////////////////
-    }
+      },
+
+      // Row 선택 / Select row
+      selectRow: (id) => {
+        toggleRowSelection(id);
+      },
+
+      // 상세 정보 표시 / Show detail data
+      showDetailData: async () => {
+        await getSelectedPmkData();
+      },
+
+      // 선택 상태 초기화 / Clear selection state
+      clearSelectionState: () => {
+        currentPmkId = '';
+        currentNodeGroupName = '';
+        currentProvider = '';
+        selectedClusterData = {};
+      },
+
+      // 에러 메시지 / Error message
+      errorMessage: 'Failed to refresh PMK list. Please try again.'
+    };
+
+    // Pattern 실행 / Execute pattern
+    await webconsolejs['common/utils/listRefreshPattern'].execute(config);
+  }
 }
 
 // getPmkList 호출 성공 시
@@ -146,6 +288,10 @@ function mappingTablePmkData(totalPmkListObj) {
         const securityGroup = (network.SecurityGroupIIDs && network.SecurityGroupIIDs[0] && network.SecurityGroupIIDs[0].SystemId) || "N/A";
         const version = item.spiderViewK8sClusterDetail?.Version || "N/A";
         const nodeGroupCount = item.spiderViewK8sClusterDetail?.NodeGroupList?.length || 0;
+        
+        // Status 직접 사용 (Cluster Info와 동일하게)
+        const clusterStatus = item.spiderViewK8sClusterDetail?.Status || "N/A";
+        
         return {
             name: item.name,
             id: item.id,
@@ -157,6 +303,7 @@ function mappingTablePmkData(totalPmkListObj) {
             // TODO : ima, provider api res 변경되면 수정
             providerImg: item.connectionConfig.providerName || "",  // providerImg 값을 추가해야 함 (필요시)
             provider: item.connectionConfig.providerName || "N/A",
+            status: clusterStatus,
             vpc: vpc,
             subnet: subnet,
             securitygroup: securityGroup,
@@ -174,7 +321,7 @@ export async function getSelectedPmkData() {
         var selectedNsId = selectedWorkspaceProject.nsId;
 
         try {
-            var pmkResp = await webconsolejs["common/api/services/pmk_api"].getCluster(selectedNsId, currentPmkId);
+            var pmkResp = await PmkApiHelper.getClusterDetail(selectedNsId, currentPmkId);
 
             // Check if pmkResp exists
             if (!pmkResp) {
@@ -218,7 +365,7 @@ export async function getSelectedPmkData() {
 }
 
 // pmk 삭제
-export function deletePmk() {
+export async function deletePmk() {
   // Validation 1: PMK가 선택되었는지 확인
   if (!currentPmkId || currentPmkId === '') {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal(
@@ -238,12 +385,71 @@ export function deletePmk() {
     return;
   }
 
-  // Validation 통과 후 API 호출
-  webconsolejs['common/api/services/pmk_api'].pmkDelete(selectedNsId, currentPmkId);
+  // Validation 3: Tencent 클러스터의 경우 NodeGroup이 없어야 삭제 가능
+  if (currentProvider && currentProvider.toLowerCase() === 'tencent') {
+    // selectedClusterData에서 NodeGroup 목록 확인
+    var nodeGroupList = selectedClusterData?.responseData?.spiderViewK8sClusterDetail?.NodeGroupList ||
+                       selectedClusterData?.spiderViewK8sClusterDetail?.NodeGroupList ||
+                       [];
+
+    if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
+      webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+        'Tencent Cluster Delete Restriction',
+        'Tencent clusters can only be deleted when there are no NodeGroups.<br>' +
+        'Please delete all NodeGroups first.<br><br>' +
+        '<strong>Current NodeGroups: ' + nodeGroupList.length + '</strong>'
+      );
+      return;
+    }
+  }
+
+  // 삭제 요청만 보내고 결과를 기다리지 않음 (fire and forget)
+  PmkApiHelper.deleteCluster(
+    selectedNsId,
+    currentPmkId
+  );
+
+  // 즉시 Toast 메시지 표시
+  webconsolejs['common/util'].showToast('Cluster deletion request has been sent', 'info');
+
+  // 전역 변수 초기화
+  currentPmkId = '';
+  currentNodeGroupName = '';
+  currentProvider = '';
+  selectedClusterData = {};
+
+  // PMK 상세 정보 초기화
+  $('#cluster_info_name').text('N/A');
+  $('#cluster_info_version').text('N/A');
+  $('#cluster_info_status').text('N/A');
+  $('#cluster_info_vpc').text('N/A');
+  $('#cluster_info_subnet').text('N/A');
+  $('#cluster_info_securitygroup').text('N/A');
+  $('#cluster_info_cloudconnection').text('N/A');
+  $('#cluster_info_endpoint').text('N/A');
+
+  // NodeGroup List 초기화
+  $('#pmk_nodegroup_info_box').empty();
+
+  // Node 상세 정보 초기화
+  $('#pmk_node_info_box').empty();
+
+  // NodeGroup Info 영역 초기화 및 숨기기
+  clearServerInfo();
+  const nodeGroupInfoDiv = document.getElementById("nodeGroup_info");
+  if (nodeGroupInfoDiv && nodeGroupInfoDiv.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(nodeGroupInfoDiv);
+  }
+
+  // Cluster Info 영역 숨기기 (초기 화면처럼)
+  $('#cluster_info').hide();
+
+  // PMK 목록 새로고침
+  await refreshPmkList();
 }
 
 // nodegroup 삭제
-export function deleteNodeGroup() {
+export async function deleteNodeGroup() {
   // Validation 1: NodeGroup이 선택되었는지 확인
   if (!currentNodeGroupName || currentNodeGroupName === '') {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal(
@@ -272,16 +478,38 @@ export function deleteNodeGroup() {
     return;
   }
 
-  // Validation 통과 후 API 호출
-  webconsolejs['common/api/services/pmk_api'].nodeGroupDelete(
+  // 삭제 요청만 보내고 결과를 기다리지 않음 (fire and forget)
+  PmkApiHelper.deleteNodeGroup(
     selectedNsId,
     currentPmkId,
     currentNodeGroupName
   );
+
+  // 즉시 메시지 표시
+  webconsolejs['common/util'].showToast('NodeGroup deletion request has been sent', 'info');
+
+  // 선택된 NodeGroup 정보 초기화
+  currentNodeGroupName = '';
+
+  // Node 상세 정보 초기화
+  $('#pmk_node_info_box').empty();
+
+  // NodeGroup Info 영역 초기화 및 숨기기
+  clearServerInfo();
+  const nodeGroupInfoDiv = document.getElementById("nodeGroup_info");
+  if (nodeGroupInfoDiv && nodeGroupInfoDiv.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].toggleElement(nodeGroupInfoDiv);
+  }
+
+  // PMK 목록 새로고침 (ListRefreshPattern이 자동으로 상세 정보 표시)
+  await refreshPmkList();
 }
 
 // 클릭한 pmk의 info값 세팅
 function setPmkInfoData(pmkData) {
+    // Cluster Info 영역 표시
+    $('#cluster_info').show();
+    
     var clusterData = pmkData.responseData;
     var clusterDetailData = clusterData.spiderViewK8sClusterDetail;
     var pmkNetwork = clusterDetailData?.Network || {};
@@ -293,8 +521,10 @@ function setPmkInfoData(pmkData) {
     
     try {
 
-        var pmkName = clusterData.name;
-        var pmkID = clusterData.id
+        // Name, CspName, CspId 구분
+        var pmkName = clusterData.name || "N/A";
+        var pmkCspName = clusterDetailData?.IId?.NameId || "N/A";
+        var pmkCspId = clusterDetailData?.IId?.SystemId || "N/A";
         var pmkVersion = clusterDetailData?.Version || "N/A";
         pmkStatus = clusterDetailData?.Status || "N/A";
 
@@ -315,7 +545,8 @@ function setPmkInfoData(pmkData) {
         // var totalNodeGroupCount = (clusterDetailData.NodeGroupList == null) ? 0 : clusterDetailData.NodeGroupList.length;
 
         $("#cluster_info_name").text(pmkName);
-        // $("#cluster_info_name").text(pmkName + " / " + pmkID);
+        $("#cluster_info_cspname").text(pmkCspName);
+        $("#cluster_info_cspid").text(pmkCspId);
         $("#cluster_info_version").text(pmkVersion);
         $("#cluster_info_status").text(pmkStatus);
 
@@ -370,7 +601,7 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
 
     nodeGroupList.forEach((aNodeGroup) => {
         var nodeID = aNodeGroup.IId.SystemId;
-        var nodeName = aNodeGroup.IId.name;
+        var nodeName = aNodeGroup.IId.NameId;
         var nodeStatus = aNodeGroup.Status;
 
         if (clusterProvider === "azure") {
@@ -379,20 +610,34 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
         }
         var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus);
 
+        // 텍스트 길이 제한 (10자 초과 시 ... 표시)
+        var displayName = nodeName.length > 10 ? nodeName.substring(0, 10) + '...' : nodeName;
+
         nodeLi += `
         <li id="nodeGroup_status_icon_${nodeID}" 
             class="card ${nodeStatusClass} d-flex align-items-center" 
-            style="display: flex; flex-direction: row; alig
-            n-items: center; justify-content: center; padding: 5px;" 
-            onclick="webconsolejs['pages/operation/manage/pmk'].toggleNodeCheck('${pmkID}', '${nodeID}')">
+            style="display: flex; 
+                   flex-direction: row; 
+                   align-items: center; 
+                   justify-content: flex-start; 
+                   padding: 10px 15px; 
+                   min-width: 150px; 
+                   min-height: 60px;
+                   cursor: pointer;" 
+            onclick="webconsolejs['pages/operation/manage/pmk'].toggleNodeCheck('${pmkID}', '${nodeID}')"
+            title="${nodeName}">
           
           <input type="checkbox" 
                  id="node_checkbox_${nodeID}" 
                  class="vm-checkbox" 
-                 style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
+                 style="width: 20px; height: 20px; margin-right: 15px; flex-shrink: 0;" 
                  onchange="webconsolejs['pages/operation/manage/pmk'].handleNodeCheck('${pmkID}', '${nodeID}')">
           
-          <span class="text-dark-fg">${nodeID}</span>
+          <span class="text-dark-fg" 
+                style="overflow: hidden; 
+                       text-overflow: ellipsis; 
+                       white-space: nowrap; 
+                       flex: 1;">${displayName}</span>
         </li>
       `;
 
@@ -481,6 +726,8 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
 
     var ngName = nodeGroupDetail.IId.NameId || nodeGroupDetail.IId.SystemId || aNode.cspResourceId
     currentNodeGroupName = ngName
+    var ngId = aNode.cspResourceId || nodeGroupDetail.IId.SystemId || 'N/A'
+    var ngStatus = aNode.status || 'N/A'
     var ngImage = nodeGroupDetail.ImageIID.NameId || "AL2023_x86_64_STANDARD"
     var ngSpec = nodeGroupDetail.VMSpecName || "t3.medium"
 
@@ -495,6 +742,8 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
 
     // Info SET
     $("#ng_info_name").text(ngName)
+    $("#ng_info_id").text(ngId)
+    $("#ng_info_status").text(ngStatus)
     $("#ng_info_image").text(ngImage)
     $("#ng_info_spec").text(ngSpec)
 
@@ -529,6 +778,46 @@ function displayNodeStatusList(nodeData) {
     }
 }
 
+// Cluster Info 초기화
+function clearClusterInfo() {
+    // Cluster Info 필드 초기화
+    $("#cluster_info_name").text("N/A");
+    $("#cluster_info_cspname").text("N/A");
+    $("#cluster_info_cspid").text("N/A");
+    $("#cluster_info_version").text("N/A");
+    $("#cluster_info_status").text("N/A");
+    $("#cluster_info_vpc").text("N/A");
+    $("#cluster_info_subnet").text("N/A");
+    $("#cluster_info_securitygroup").text("N/A");
+    $("#cluster_info_cloudconnection").text("N/A");
+    $("#cluster_info_endpoint").text("N/A");
+}
+
+// NodeGroup List & Info 초기화
+function clearNodeGroupInfo() {
+    // NodeGroup 선택 상태 초기화
+    currentNodeGroupName = '';
+    
+    // NodeGroup List 영역 비우기
+    $('#pmk_nodegroup_info_box').empty();
+    
+    // Node 목록 비우기
+    $('#pmk_node_info_box').empty();
+    
+    // NodeGroup Info 초기화 (clearServerInfo의 NodeGroup 부분)
+    $("#ng_info_name").text("");
+    $("#ng_info_id").text("");
+    $("#ng_info_status").text("");
+    $("#ng_info_image").text("");
+    $("#ng_info_spec").text("");
+    $("#ng_info_keypair").text("");
+    $("#ng_info_desirednodesize").text("");
+    $("#ng_info_nodesize").text("");
+    $("#ng_info_autoscaling").text("");
+    $("#ng_info_rootdisktype").text("");
+    $("#ng_info_rootdisksize").text("");
+}
+
 // vm 세부 정보 초기화
 function clearServerInfo() {
 
@@ -537,6 +826,19 @@ function clearServerInfo() {
     $("#server_detail_view_server_status").val("");
     $("#server_info_name").val("")
     $("#server_info_desc").val("")
+
+    // NodeGroup Info 초기화
+    $("#ng_info_name").text("")
+    $("#ng_info_id").text("")
+    $("#ng_info_status").text("")
+    $("#ng_info_image").text("")
+    $("#ng_info_spec").text("")
+    $("#ng_info_keypair").text("")
+    $("#ng_info_desirednodesize").text("")
+    $("#ng_info_nodesize").text("")
+    $("#ng_info_autoscaling").text("")
+    $("#ng_info_rootdisktype").text("")
+    $("#ng_info_rootdisksize").text("")
 
     // ip information
     $("#server_info_public_ip").val("")
@@ -750,8 +1052,34 @@ function initPmkTable() {
             width: 60,
         },
         {
+            title: "ProviderImg",
+            field: "providerImg",
+            formatter: providerFormatter,
+            vertAlign: "middle",
+            hozAlign: "center",
+            headerSort: false,
+        },
+        {
+            title: "Status",
+            field: "status",
+            vertAlign: "middle",
+            hozAlign: "center",
+        },
+        {
             title: "Name",
             field: "name",
+            vertAlign: "middle"
+        },
+        {
+            title: "Node Group",
+            field: "nodegroup",
+            vertAlign: "middle",
+            hozAlign: "center",
+            maxWidth: 150,
+        },
+        {
+            title: "VPC",
+            field: "vpc",
             vertAlign: "middle"
         },
         {
@@ -775,23 +1103,10 @@ function initPmkTable() {
             visible: false
         },
         {
-            title: "ProviderImg",
-            field: "providerImg",
-            formatter: providerFormatter,
-            vertAlign: "middle",
-            hozAlign: "center",
-            headerSort: false,
-        },
-        {
             title: "Provider",
             field: "provider",
             formatter: providerFormatterString,
             visible: false
-        },
-        {
-            title: "VPC",
-            field: "vpc",
-            vertAlign: "middle"
         },
         {
             title: "Subnet",
@@ -808,13 +1123,6 @@ function initPmkTable() {
             field: "version",
             vertAlign: "middle",
             visible: false,
-        },
-        {
-            title: "Node Group",
-            field: "nodegroup",
-            vertAlign: "middle",
-            hozAlign: "center",
-            maxWidth: 150,
         }
     ];
 
@@ -826,11 +1134,17 @@ function initPmkTable() {
         // vmid 초기화 for vmlifecycle
         // selectedClusterId = ""
 
+        // 1. 기존 UI 먼저 초기화
+        clearClusterInfo();
+        clearNodeGroupInfo();
+        
+        // 2. 새로운 PMK ID 설정
         currentPmkId = row.getCell("id").getValue();
-        // 표에서 선택된 PmkInfo 
+        
+        // 3. 표에서 선택된 PmkInfo 조회
         getSelectedPmkData()
 
-        // Cluster Terminal 버튼 상태 업데이트
+        // 4. Cluster Terminal 버튼 상태 업데이트
         updateClusterRemoteCmdButtonState();
 
     });
@@ -1017,21 +1331,9 @@ export async function initFormDynamic() {
 // Dynamic 폼용 데이터 직접 로드
 async function loadFormDynamicData() {
     try {
-        // Provider 목록 로드
-        const providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList();
-        if (providerList && Array.isArray(providerList)) {
-            const sortedProviders = providerList.map(str => str.toUpperCase()).sort();
-
-            let html = '<option value="">Select Provider</option>';
-            sortedProviders.forEach(item => {
-                html += `<option value="${item}">${item}</option>`;
-            });
-
-            $("#cluster_provider_dynamic").empty().append(html);
-        }
-
-        // Region 목록 로드
-        const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList();
+        // Provider 목록은 HTML partial component로 이미 렌더링됨
+        // Region 목록 로드 (백그라운드, 로더 없음)
+        const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' });
         if (regionList && Array.isArray(regionList)) {
             let html = '<option value="">Select Region</option>';
             regionList.forEach(region => {
@@ -1044,8 +1346,8 @@ async function loadFormDynamicData() {
             $("#cluster_region_dynamic").empty().append(html);
         }
 
-        // Cloud Connection 목록 로드
-        const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
+        // Cloud Connection 목록 로드 (백그라운드, 로더 없음)
+        const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' });
         if (cloudConnection && Array.isArray(cloudConnection)) {
             const connectionNames = cloudConnection.map(item => item.configName).sort();
 
@@ -1093,8 +1395,8 @@ async function updateFormDynamicConfigurationFiltering() {
     // provider 선택시 region, connection filtering
     if (selectedProvider !== "" && selectedRegion === "") {
         try {
-            // Region 필터링 - 선택된 Provider의 Region만 표시
-            const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList();
+            // Region 필터링 - 선택된 Provider의 Region만 표시 (백그라운드, 로더 없음)
+            const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' });
             if (regionList && Array.isArray(regionList)) {
                 const filteredRegions = regionList.filter(region =>
                     region.ProviderName && region.ProviderName.toUpperCase() === selectedProvider
@@ -1111,8 +1413,8 @@ async function updateFormDynamicConfigurationFiltering() {
                 $("#cluster_region_dynamic").empty().append(html);
             }
 
-            // Connection 필터링 - 선택된 Provider의 Connection만 표시
-            const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
+            // Connection 필터링 - 선택된 Provider의 Connection만 표시 (백그라운드, 로더 없음)
+            const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' });
             if (cloudConnection && Array.isArray(cloudConnection)) {
                 const lowerSelectedProvider = selectedProvider.toLowerCase();
                 const filteredConnections = cloudConnection.filter(connection =>
@@ -1145,7 +1447,7 @@ async function updateFormDynamicConfigurationFiltering() {
             const regionName = selectedRegion.replace(cspRegex, '').trim();
 
             if (provider && regionName) {
-                const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection();
+                const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' });
                 if (cloudConnection && Array.isArray(cloudConnection)) {
                     // Provider + Region으로 정확한 Connection 필터링
                     const filteredConnections = cloudConnection.filter(connection => {
@@ -1224,7 +1526,7 @@ export async function deployPmkDynamic() {
 
     // 필수 필드 검증
     if (!clusterData.name || !clusterData.provider || !clusterData.region || !clusterData.connection) {
-        alert("please fill in all required fields");
+        webconsolejs['common/util'].showToast('Please fill in all required fields', 'warning');
         return;
     }
 
@@ -1242,7 +1544,7 @@ export async function deployPmkDynamic() {
             commonSpec = $("#nodegroup_commonSpecId_dynamic").val();
             commonImage = $("#nodegroup_image_dynamic").val();
             if (!commonSpec) {
-                alert("please select NodeGroup spec");
+                webconsolejs['common/util'].showToast('Please select NodeGroup spec', 'warning');
                 return;
             }
         } else {
@@ -1255,8 +1557,12 @@ export async function deployPmkDynamic() {
                     commonImage = "default";
                     break;
                 case 'alibaba':
-                    commonSpec = "alibaba+ap-northeast-2+ecs.g6e.xlarge";
-                    commonImage = "alibaba+ubuntu_22_04_arm64_20g_alibase_20250625.vhd";
+                    //commonSpec = "alibaba+ap-northeast-2+ecs.g6e.xlarge";// tb에 미등록된 spec임.
+                    commonSpec = "alibaba+ap-northeast-2+ecs.t6-c1m4.xlarge";
+                    //commonImage = "alibaba+ubuntu_22_04_arm64_20g_alibase_20250625.vhd";
+                    //commonImage = "alibaba+ubuntu_20_04_arm64_20g_alibase_20250625.vhd";
+                    commonImage = "ubuntu_20_04_arm64_20g_alibase_20250625.vhd";
+                    //commonImage = "alibaba+ubuntu_22_04_x64_20G_alibase_20250722.vhd";
                     break;
                 case 'azure':
                     commonSpec = "azure+koreacentral+standard_b4ms";
@@ -1266,6 +1572,10 @@ export async function deployPmkDynamic() {
                     commonSpec = "nhncloud+kr1+m2.c4m8";
                     commonImage = "nhncloud+kr1+ubuntu20.04container";
                     break;
+                case 'tencent':
+                    commonSpec = "tencent+ap-seoul+s5.medium2";
+                    commonImage = "img-487zeit5";
+                    break;
                 default:
                     // 기타 CSP는 빈값으로 설정
                     commonSpec = "";
@@ -1274,14 +1584,14 @@ export async function deployPmkDynamic() {
             }
         }
 
-        // 사전 검증 API 호출
+        // 사전 검증 API 호출 (동기 - 결과 확인 필요)
         const checkResult = await webconsolejs["common/api/services/pmk_api"].checkK8sClusterDynamic(
             selectedWorkspaceProject.nsId,
             commonSpec
         );
 
         if (!checkResult || checkResult.status !== 200) {
-            alert("failed to pre-validate. please check the settings");
+            webconsolejs['common/util'].showToast('Failed to pre-validate. Please check the settings', 'error');
             return;
         }
 
@@ -1316,64 +1626,89 @@ export async function deployPmkDynamic() {
         if (isNodeGroupVisible) {
             // NodeGroup 필수 필드 검증
             if (!createData.nodeGroupName) {
-                alert("please input NodeGroup name");
+                webconsolejs['common/util'].showToast('Please input NodeGroup name', 'warning');
                 return;
             }
         }
 
-        // 동적 클러스터 생성 API 호출
-        const result = await webconsolejs["common/api/services/pmk_api"].createK8sClusterDynamic(
+        // available k8sversion 조회        
+        if(clusterData.provider.toLowerCase() === 'alibaba'){
+            //createData.k8sVersion = "1.33.3-aliyun.1";
+            //createData.k8sVersion = "1.33";//(사용못함 format 안맞음)
+            //createData.k8sVersion = "1.31.9-aliyun.1";// 
+            //createData.k8sVersion = "1.22.15-aliyun.1";
+            // createData.k8sVersion = "1.32.7-aliyun.1";
+            createData.k8sVersion = "1.32.7-aliyun.1";
+        }
+        // const k8sVersionList = await webconsolejs["common/api/services/pmk_api"].getAvailableK8sVersionList(
+        //     selectedWorkspaceProject.nsId
+        // );
+        // if (k8sVersionList && k8sVersionList.status === 200) {
+        //     console.log(k8sVersionList);
+        // }
+        // // 가져온 k8sversion 중 가장 최신 버전 선택
+        // if (k8sVersionList && k8sVersionList.data && k8sVersionList.data.responseData && k8sVersionList.data.responseData.length > 0) {
+        //     const latestK8sVersion = k8sVersionList.data.responseData[0];
+        //     if (!latestK8sVersion) {
+        //         if(clusterData.provider.toLowerCase() === 'alibaba'){
+        //             latestK8sVersion = "1.33.3-aliyun.1";
+        //         }
+        //     }else{
+        //         createData.k8sVersion = latestK8sVersion;
+        //     }
+        // }
+
+        // 동적 클러스터 생성 API 호출 (비동기 - 결과를 기다리지 않음)
+        webconsolejs["common/api/services/pmk_api"].createK8sClusterDynamic(
             selectedWorkspaceProject.nsId,
             createData
         );
 
-        if (result && result.status === 200) {
-            alert("Cluster created successfully");
+        // 즉시 Toast 메시지 표시
+        webconsolejs['common/util'].showToast('Cluster creation request has been sent', 'info');
 
-            // 폼 초기화
-            $("#cluster_name_dynamic").val("");
-            $("#cluster_desc_dynamic").val("");
-            $("#cluster_provider_dynamic").val("");
-            $("#cluster_region_dynamic").val("");
-            $("#cluster_cloudconnection_dynamic").val("");
+        // 폼 초기화
+        $("#cluster_name_dynamic").val("");
+        $("#cluster_desc_dynamic").val("");
+        $("#cluster_provider_dynamic").val("");
+        $("#cluster_region_dynamic").val("");
+        $("#cluster_cloudconnection_dynamic").val("");
 
-            // NodeGroup 폼이 표시되어 있었다면 초기화
-            if (isNodeGroupVisible) {
-                $("#nodegroup_name_dynamic").val("");
-                $("#nodegroup_spec_dynamic").val("");
-                $("#nodegroup_provider_dynamic").val("");
-                $("#nodegroup_connectionName_dynamic").val("");
-                $("#nodegroup_commonSpecId_dynamic").val("");
-                $("#nodegroup_image_dynamic").val("");
-                $("#nodegroup_minnodesize_dynamic").val("");
-                $("#nodegroup_maxnodesize_dynamic").val("");
-                $("#nodegroup_autoscaling_dynamic").val("");
-                $("#nodegroup_rootdisk_dynamic").val("");
-                $("#nodegroup_rootdisksize_dynamic").val("");
-                $("#nodegroup_desirednodesize_dynamic").val("1");
+        // NodeGroup 폼이 표시되어 있었다면 초기화
+        if (isNodeGroupVisible) {
+            $("#nodegroup_name_dynamic").val("");
+            $("#nodegroup_spec_dynamic").val("");
+            $("#nodegroup_provider_dynamic").val("");
+            $("#nodegroup_connectionName_dynamic").val("");
+            $("#nodegroup_commonSpecId_dynamic").val("");
+            $("#nodegroup_image_dynamic").val("");
+            $("#nodegroup_minnodesize_dynamic").val("");
+            $("#nodegroup_maxnodesize_dynamic").val("");
+            $("#nodegroup_autoscaling_dynamic").val("");
+            $("#nodegroup_rootdisk_dynamic").val("");
+            $("#nodegroup_rootdisksize_dynamic").val("");
+            $("#nodegroup_desirednodesize_dynamic").val("1");
 
-                // NodeGroup 폼 숨기기
-                hideNodeGroupFormDynamic();
-            }
-
-            // Create Cluster 카드의 Deploy 버튼 표시
-            $("#createcluster .card-footer").show();
-
-            // PMK 목록 새로고침
-            await refreshPmkList();
-
-            // 클러스터 생성 폼 섹션을 닫기 (NodeGroup이 표시되어 있든 없든 항상 실행)
-            const createClusterSection = document.querySelector('#createcluster');
-            if (createClusterSection && createClusterSection.classList.contains('active')) {
-                webconsolejs["partials/layout/navigatePages"].toggleElement(createClusterSection);
-            }
-
-        } else {
-            alert("failed to create cluster");
+            // NodeGroup 폼 숨기기
+            hideNodeGroupFormDynamic();
         }
+
+        // Create Cluster 카드의 Deploy 버튼 표시
+        $("#createcluster .card-footer").show();
+
+        // 2초 대기 후 PMK 목록 새로고침 (CSP에 생성 명령이 전달되는 시간 고려)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await refreshPmkList();
+
+        // 클러스터 생성 폼 섹션을 닫기 (NodeGroup이 표시되어 있든 없든 항상 실행)
+        const createClusterSection = document.querySelector('#createcluster');
+        if (createClusterSection && createClusterSection.classList.contains('active')) {
+            webconsolejs["partials/layout/navigatePages"].toggleElement(createClusterSection);
+        }
+
     } catch (error) {
         console.error("failed to create cluster:", error);
-        alert("failed to create cluster");
+        webconsolejs['common/util'].showToast('Failed to create cluster', 'error');
     }
 }
 
