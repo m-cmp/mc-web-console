@@ -606,6 +606,36 @@ function updateSummary() {
   document.getElementById('projects_count').textContent = workspaceListInfoSummary.projectsCount;
   document.getElementById('groupMembers_count').textContent = workspaceListInfoSummary.groupCount + " / " + workspaceListInfoSummary.memberCount;
 }
+
+/**
+ * Workspace 목록 및 관련 데이터 새로고침
+ * Refresh workspace list and related data
+ */
+async function refreshWorkspaceData() {
+  // 상세정보 영역 숨기기
+  webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("workspace-info-card"));
+  
+  // 선택 상태 초기화
+  checked_array = [];
+  currentClickedWorkspaceId = "";
+  
+  // 테이블 선택 해제
+  if (workspacesListTable) {
+    workspacesListTable.deselectRow();
+  }
+  
+  // 데이터 갱신
+  await updateInitData();
+  
+  // 요약 정보 갱신
+  updateSummary();
+  
+  // 프로젝트 모달 셀렉터 재초기화 (새 프로젝트가 추가되었을 수 있음)
+  initProjectModalSeletor();
+  
+  // 테이블 데이터 갱신
+  await setWokrspaceTableData();
+}
 // DOMContentLoaded area end
 
 
@@ -811,30 +841,61 @@ async function setWokrspaceUserTableData(wsId) {
 export async function creatworkspaceProject() {
   let wsName = document.getElementById("workspace-modal-add-name").value
   let wsDesc = document.getElementById("workspace-modal-add-description").value
-  const createdWorkspace = await webconsolejs["common/api/services/workspace_api"].createWorkspace(wsName, wsDesc);
-  if (!createdWorkspace.success) {
-    webconsolejs["common/util"].showToast("Failed to create workspace: " + JSON.stringify(createdWorkspace.message), 'error');
-    return
-  }
+  
+  // 프로젝트 선택 여부 확인
+  let projects = null;
   if (document.getElementById('workspace-modal-add-withprojects').checked) {
     let multiprojectSelect = document.getElementById('workspace-modal-add-multiproject');
-    let multiprojects = Array.from(multiprojectSelect.selectedOptions, option => option.value);
-    const createdWPmapping = await webconsolejs["common/api/services/workspace_api"].createWPmapping(createdWorkspace.message.id, multiprojects);
-    if (!createdWPmapping.success) {
-      webconsolejs["common/util"].showToast("Failed to map projects to workspace: " + JSON.stringify(createdWPmapping.message), 'error');
-      return
-    }
+    projects = Array.from(multiprojectSelect.selectedOptions, option => option.value);
   }
-  location.reload()
+  
+  const createdWorkspace = await webconsolejs["common/api/services/workspace_api"].createWorkspace(wsName, wsDesc, projects);
+  
+  // 결과를 먼저 toast로 표시
+  if (!createdWorkspace.success) {
+    webconsolejs["common/util"].showToast("Failed to create workspace: " + JSON.stringify(createdWorkspace.message), 'error');
+    return;
+  }
+  
+  // 성공 시 toast 표시
+  const projectCount = projects ? projects.length : 0;
+  const successMessage = projectCount > 0 
+    ? `Workspace "${wsName}" created successfully with ${projectCount} project(s) mapped.`
+    : `Workspace "${wsName}" created successfully.`;
+  webconsolejs["common/util"].showToast(successMessage, 'success');
+  
+  // 모달 닫기
+  const modal = bootstrap.Modal.getInstance(document.getElementById('workspace-modal-add'));
+  if (modal) {
+    modal.hide();
+  }
+  
+  // 데이터 새로고침
+  await refreshWorkspaceData();
 }
 
 export async function deleteWorkspaces() {
   if (checked_array.length === 0) {
-    webconsolejs['partials/layout/modal'].commonShowDefaultModal("Delete Workspaces", "No Checked Workspace")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal("Delete Workspaces", "No Checked Workspace");
+    return;
   }
-  checked_array.forEach(async function (checkedWorkspace) {
-    await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceById(checkedWorkspace.id);
-  })
+  
+  // forEach 대신 for...of 사용하여 모든 삭제 완료 대기
+  for (const checkedWorkspace of checked_array) {
+    try {
+      await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceById(checkedWorkspace.id);
+    } catch (error) {
+      console.error("Failed to delete workspace:", checkedWorkspace.id, error);
+      webconsolejs["common/util"].showToast(
+        `Failed to delete workspace: ${checkedWorkspace.name}`,
+        'error',
+        5000
+      );
+    }
+  }
+  
+  // 삭제 성공 후 페이지 새로고침
+  location.reload();
 }
 
 //// workspace table Modal 
