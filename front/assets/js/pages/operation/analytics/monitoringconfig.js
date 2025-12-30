@@ -144,11 +144,16 @@ async function getWorkloadList(nsId){
   $("#workloadlist").append(html);
 }
 
-// workload(mci,pmk) 선택했을 때 monitoring 정보 조회 
-$("#workloadlist").on('change', async function () {
+// 서버 목록 조회 함수 (workload 선택 및 refresh 버튼에서 사용)
+export async function refreshServerList() {
+  // workload가 선택되지 않은 경우 처리
+  if (!currentWorkloadId || currentWorkloadId === "") {
+    alert("Please select a Workload first.");
+    return;
+  }
+
   // 현재 mci만 monitoring 하므로 mci/pmk 구분없이 mci 호출
   var currentNsId = selectedWorkspaceProject.nsId;
-  currentWorkloadId = $("#workloadlist").val()
   var currentWorkloadName = $("#workloadlist option:selected").text();
 
   var vmMap = new Map();
@@ -204,6 +209,19 @@ $("#workloadlist").on('change', async function () {
 
   // 4. table에 필요한 data set
   monitorConfigListTable.setData(Array.from(vmMap.values()));
+}
+
+// workload(mci,pmk) 선택했을 때 monitoring 정보 조회 
+$("#workloadlist").on('change', async function () {
+  currentWorkloadId = $("#workloadlist").val()
+  
+  // workload가 선택되지 않은 경우 테이블 초기화
+  if (!currentWorkloadId || currentWorkloadId === "") {
+    monitorConfigListTable.setData([]);
+    return;
+  }
+  
+  await refreshServerList();
 })
 
 // tabulator Table 초기값 설정
@@ -562,11 +580,22 @@ async function setMonitorConfigInfoData() {
 // 클릭한 mci의 info값 세팅
 async function setMonitorMetricsTable() {
   try {
+    // Monitoring Agent나 Log Agent가 설치되지 않은 경우 조회하지 않음
+    if (!selectedServerNode || 
+        selectedServerNode.monitoringAgentStatus !== "SUCCESS" || 
+        selectedServerNode.logAgentStatus !== "SUCCESS") {
+      // 테이블 데이터 초기화
+      monitorMetricsTable.setData([]);
+      return;
+    }
+
     var currentNsId = selectedWorkspaceProject.nsId;
     var response = await webconsolejs["common/api/services/monitoring_api"].GetMetricitems(currentNsId, selectedServerNode.workloadName, selectedServerNode.id);
     monitorMetricsTable.setData(response.data);
   } catch (e) {
     console.error(e);
+    // 에러 발생 시 테이블 데이터 초기화
+    monitorMetricsTable.setData([]);
   }
 }
 

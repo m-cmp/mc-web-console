@@ -325,6 +325,7 @@ export async function getSelectedPmkData() {
 
             // Check if pmkResp exists
             if (!pmkResp) {
+                console.error('getSelectedPmkData - pmkResp is null or undefined');
                 webconsolejs["common/util"].showToast(
                     'Failed to retrieve cluster information. The cluster may not exist or the API is not responding.',
                     'error',
@@ -334,9 +335,24 @@ export async function getSelectedPmkData() {
             }
 
             // Check response status
+            // Note: axios response has status at top level, not in data
             if (pmkResp.status != 200) {
+                console.error('getSelectedPmkData - Response status is not 200:', pmkResp.status);
+                console.error('getSelectedPmkData - Full response:', JSON.stringify(pmkResp, null, 2));
                 webconsolejs["common/util"].showToast(
                     'Failed to load cluster information. Status: ' + (pmkResp.status || 'Unknown'),
+                    'error',
+                    5000
+                );
+                return;
+            }
+
+            // Check if responseData exists in the expected location
+            if (!pmkResp.data || !pmkResp.data.responseData) {
+                console.error('getSelectedPmkData - responseData not found in expected location');
+                console.error('getSelectedPmkData - pmkResp.data structure:', Object.keys(pmkResp.data || {}));
+                webconsolejs["common/util"].showToast(
+                    'Invalid response structure from API. Please check console for details.',
                     'error',
                     5000
                 );
@@ -569,7 +585,7 @@ function setPmkInfoData(pmkData) {
 
     // displayNodeGroupStatusList(pmkID, clusterData)
     if (Array.isArray(nodeGroupList) && nodeGroupList.length > 0) {
-        displayNodeGroupStatusList(pmkID, clusterProvider, clusterData);
+        displayNodeGroupStatusList(currentPmkId, clusterProvider, clusterData);
     }
     
     // Add NodeGroup 버튼 상태 업데이트
