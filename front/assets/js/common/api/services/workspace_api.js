@@ -195,13 +195,20 @@ export function setPrjSelectBox(projectList, curProjectId) {
 
 // handle workspace
 
-export async function createWorkspace(name, description) {
+export async function createWorkspace(name, description, projects = null) {
   const controller = '/api/mc-iam-manager/CreateWorkspace'
+  var requestData = {
+    "name": name,
+    "description": description
+  };
+  
+  // projects가 제공된 경우 배열 형태로 추가
+  if (projects && Array.isArray(projects) && projects.length > 0) {
+    requestData.projects = projects.map(projectId => ({ "id": Number(projectId) }));
+  }
+  
   var data = {
-    request: {
-      "name": name,
-      "description": description
-    },
+    request: requestData
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
   try {
@@ -252,7 +259,7 @@ export async function deleteWorkspaceById(wsId) {
   const controller = '/api/mc-iam-manager/deleteWorkspace'
   var data = {
     pathParams: {
-      "workspaceId": wsId
+      "workspaceId": wsId.toString()
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, null)
