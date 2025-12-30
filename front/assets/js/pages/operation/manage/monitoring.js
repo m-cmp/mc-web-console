@@ -16,6 +16,12 @@ export function commoncallbac(val) {
 
 var selectedWorkspaceProject = new Object();
 
+// 차트 인스턴스와 현재 메트릭 목록을 저장할 전역 변수
+var monitoringChartInstance = null;
+var currentMetrics = []; // 현재 표시 중인 메트릭 목록
+var currentMeasurement = null; // 현재 measurement
+var currentVMId = null; // 현재 VM ID
+
 //DOMContentLoaded 는 Page에서 1개만.
 // init + 파일명 () : ex) initMonitoring() 를 호출하도록 한다.
 document.addEventListener("DOMContentLoaded", initMonitoring);
@@ -297,36 +303,128 @@ export async function startMonitoring() {
     $("#selected_vm_name").text("(" + selectedVMName + ")");
   }
 
+  // Start Monitoring 버튼 클릭 시 항상 차트 초기화
+  if (monitoringChartInstance) {
+    monitoringChartInstance.destroy();
+    monitoringChartInstance = null;
+  }
+  currentMetrics = [];
+  currentMeasurement = selectedMeasurement;
+  currentVMId = selectedVMId;
+
   var response = await webconsolejs["common/api/services/monitoring_api"].getInfluxDBMetrics(selectedMeasurement, selectedMetric, selectedRange, selectedPeriod, selectedNsId, selectedMci, selectedVMId);
+
+  // Debug: Log response structure
+  console.log('startMonitoring - response:', response);
+  console.log('startMonitoring - response.responseData:', response?.responseData);
+  console.log('startMonitoring - response.responseData.data:', response?.responseData?.data);
 
   // 응답 데이터의 구조를 검증
   if (response && response.responseData && response.responseData.data) {
     var respMonitoringData = response.responseData.data;
-    drawMonitoringGraph(respMonitoringData, selectedNsId, selectedMci, selectedVMId, selectedMeasurement);
+    console.log('startMonitoring - respMonitoringData:', respMonitoringData);
+    drawMonitoringGraph(respMonitoringData, selectedNsId, selectedMci, selectedVMId, selectedMeasurement, selectedMetric);
   } else {
     console.error("Invalid response structure:", response);
   }
 }
 
-async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measurement) {
+async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measurement, metric) {
   const chartDataList = [];
   const chartLabels = [];
+
+  // Debug: Log input parameters
+  console.log('drawMonitoringGraph - MonitoringData:', MonitoringData);
+  console.log('drawMonitoringGraph - measurement:', measurement);
+  console.log('drawMonitoringGraph - metric:', metric);
 
   // MonitoringData.data가 존재하는지 확인
   if (MonitoringData && Array.isArray(MonitoringData)) {
     MonitoringData.forEach(data => {
+      // Debug: Log each data series
+      console.log('drawMonitoringGraph - data series:', data);
+      console.log('drawMonitoringGraph - data.name:', data.name);
+      console.log('drawMonitoringGraph - data.columns:', data.columns);
+      console.log('drawMonitoringGraph - data.values:', data.values);
+      
+      // 데이터 구조 확인: columns 배열을 확인하여 어떤 컬럼이 어떤 인덱스인지 확인
+      if (data.columns && data.columns.length >= 2) {
+        console.log('drawMonitoringGraph - Column 0:', data.columns[0], 'Column 1:', data.columns[1]);
+        // 첫 번째 값 샘플 확인
+        if (data.values && data.values.length > 0) {
+          console.log('drawMonitoringGraph - First value sample:', data.values[0]);
+          console.log('drawMonitoringGraph - value[0] type:', typeof data.values[0][0], 'value:', data.values[0][0]);
+          console.log('drawMonitoringGraph - value[1] type:', typeof data.values[0][1], 'value:', data.values[0][1]);
+        }
+      }
+      
       // null 값을 skip하고 유효한 데이터만 필터링
       const validData = data.values
         .filter(value => value[1] !== null && value[1] !== undefined)
-        .map(value => ({
-          x: value[0], // timestamp
-          y: parseFloat(value[1]).toFixed(2)
-        }));
+        .map((value, index, array) => {
+          // 타임스탬프를 Date 객체로 변환 (ISO 문자열이거나 Unix 타임스탬프일 수 있음)
+          let timestamp = value[0];
+          if (typeof timestamp === 'string') {
+            // ISO 문자열인 경우
+            timestamp = new Date(timestamp).getTime();
+          } else if (typeof timestamp === 'number' && timestamp < 10000000000) {
+            // Unix 타임스탬프 (초 단위)인 경우 밀리초로 변환
+            timestamp = timestamp * 1000;
+          }
+          
+          // 실제 값 추출
+          let yValue = parseFloat(value[1]);
+          
+          // server_time 메트릭인 경우: 타임스탬프 값을 시간 차이(초)로 변환
+          // columns 배열의 두 번째 컬럼이 'server_time'인지 확인
+          if (metric === 'server_time' && data.columns && data.columns.length >= 2) {
+            const columnName = data.columns[1];
+            console.log('drawMonitoringGraph - Processing server_time metric, column name:', columnName);
+            
+            // server_time 컬럼인 경우 처리
+            if (columnName === 'server_time' || columnName === metric) {
+              // server_time은 타임스탬프 값이므로, 첫 번째 값과의 차이를 초 단위로 계산
+              if (index === 0) {
+                // 첫 번째 값은 0으로 설정 (기준점)
+                yValue = 0;
+              } else {
+                // 이전 값과의 차이를 초 단위로 계산
+                const prevValue = parseFloat(array[index - 1][1]);
+                const currentValue = parseFloat(value[1]);
+                
+                // 타임스탬프 차이 계산
+                const timeDiff = Math.abs(currentValue - prevValue);
+                
+                // 타임스탬프가 밀리초 단위인지 초 단위인지 판단
+                // 일반적으로 Unix 타임스탬프는 10자리(초) 또는 13자리(밀리초)
+                if (currentValue > 1000000000000) {
+                  // 밀리초 단위 (13자리 이상)
+                  yValue = timeDiff / 1000; // 밀리초를 초로 변환
+                } else if (currentValue > 1000000000) {
+                  // 초 단위 (10자리)
+                  yValue = timeDiff; // 이미 초 단위
+                } else {
+                  // 매우 작은 값인 경우 그대로 사용
+                  yValue = timeDiff;
+                }
+              }
+            }
+          }
+          
+          return {
+            x: timestamp, // timestamp (milliseconds)
+            y: yValue // 실제 값 또는 server_time의 경우 시간 차이(초)
+          };
+        });
+
+      console.log('drawMonitoringGraph - validData (first 3):', validData.slice(0, 3));
 
       // 유효한 데이터가 있을 때만 시리즈에 추가
       if (validData.length > 0) {
+        // 시리즈 이름을 메트릭 기반으로 설정 (data.name이 있으면 사용, 없으면 metric 사용)
+        const seriesName = metric || data.name || 'Unknown';
         const seriesData = {
-          name: data.name,
+          name: seriesName,
           data: validData
         };
         chartDataList.push(seriesData);
@@ -347,12 +445,24 @@ async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measuremen
     return;
   }
 
+  console.log('drawMonitoringGraph - chartDataList:', chartDataList);
+
   // 유효한 데이터가 없으면 사용자에게 알림
   if (chartDataList.length === 0 || chartDataList.every(series => series.data.length === 0)) {
     alert("No valid data available for the selected metric. Please try a different time range or metric.");
     return;
   }
 
+  // 동적 차트 제목 생성: Measurement - Metric 형식
+  const chartTitle = `${measurement.toUpperCase()} - ${metric || 'Unknown'}`;
+
+  // 기존 차트가 있으면 제거
+  if (monitoringChartInstance) {
+    monitoringChartInstance.destroy();
+    monitoringChartInstance = null;
+  }
+
+  // 새 차트 생성
   const options = {
     chart: {
       type: "area",
@@ -365,7 +475,7 @@ async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measuremen
       }
     },
     title: {
-      text: "CPU Usage Idle (cpu0, cpu1, cpu2, cpu3)",
+      text: chartTitle,
       align: "center",
       style: {
         fontSize: "14px",
@@ -396,7 +506,7 @@ async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measuremen
       curve: "smooth",
       width: 2
     },
-    colors: ['#FFD700', '#33FF57', '#3357FF', '#FF33A6'],
+    colors: ['#FFD700', '#33FF57', '#3357FF', '#FF33A6', '#FF6B9D', '#C44569', '#F8B500', '#6C5CE7'],
     legend: {
       show: true,
       position: "top",
@@ -412,7 +522,7 @@ async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measuremen
       theme: "dark",
       y: {
         formatter: function (val) {
-          return val;  // 툴팁에서도 소수점 둘째 자리까지 표시
+          return val;
         }
       }
     },
@@ -421,8 +531,8 @@ async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measuremen
     }
   };
 
-  const chart = new ApexCharts(document.getElementById("monitoring_chart_1"), options);
-  chart.render();
+  monitoringChartInstance = new ApexCharts(document.getElementById("monitoring_chart_1"), options);
+  monitoringChartInstance.render();
 
   // Prediction Switch 체크 여부 확인
   if ($('#monitoring_predictionSwitch').is(':checked')) {
@@ -446,8 +556,17 @@ async function drawMonitoringGraph(MonitoringData, nsId, mciId, vmId, measuremen
           color: '#FF5733'
         };
 
-        // 기존 데이터와 함께 업데이트
-        chart.updateSeries([...chartDataList, predictionSeries]);
+        // 기존 차트 인스턴스가 있으면 예측 데이터 추가
+        if (monitoringChartInstance) {
+          const existingSeries = monitoringChartInstance.w.globals.series.map((series, index) => {
+            return {
+              name: monitoringChartInstance.w.globals.seriesNames[index],
+              data: series
+            };
+          });
+          
+          monitoringChartInstance.updateSeries([...existingSeries, predictionSeries]);
+        }
       } else {
       }
     } catch (error) {
