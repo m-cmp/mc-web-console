@@ -180,7 +180,7 @@
               name="spec-provider-filter-pmk"
               onchange="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].filterByProviderPmk(this.value)"
             >
-              <%= partial("partials/common/provider_select.html") %>
+              {{ partial("partials/common/provider_select.html") | raw }}
             </select>
           </div>
         </div>

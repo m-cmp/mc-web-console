@@ -47,7 +47,7 @@
     </div>
     <div class="row p-2">
       <div class="col-12">
-        <%= partial("partials/operation/manage/subgroupvmlist_status.html") %>
+        {{ partial("partials/operation/manage/subgroupvmlist_status.html") | raw }}
       </div>
     </div>
   </div>
@@ -204,4 +204,4 @@
   </div>
 </div>
 
-<%= javascriptTag("partials/operation/manage/remotecmd.js") %>
+{{ javascriptTag("partials/operation/manage/remotecmd.js") | raw }}

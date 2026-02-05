@@ -17,11 +17,11 @@
                                 <label class="form-label required">Target</label>
                                 <select id="target" class="form-select">
                                     <option value="">Select the target...</option>
-                                    <%= if (devApiSets) { %>
-                                        <%= for (devApiSet) in devApiSets { %>
-                                            <option value="<%= devApiSet.ServiceName %>"><%= devApiSet.ServiceName %></option>
-                                        <% } %>
-                                    <% } %>
+                                    {% if (devApiSets) %}
+                                        {% for devApiSet in devApiSets %}
+                                            <option value="{{ devApiSet.ServiceName }}">{{ devApiSet.ServiceName }}</option>
+                                        {% endfor %}
+                                    {% endif %}
                                 </select>
                             </div>
 
@@ -30,23 +30,23 @@
                                 <input type="text" class="form-control" value="Select the target..." disabled>
                             </div>
 
-                            <%= if (devApiSets) { %>
-                                <%= for (devApiSet) in devApiSets { %>
-                                    <div id="<%= devApiSet.ServiceName %>" class="mb-3 col-sm-8 col-md-10 section operationIdSelector" >
+                            {% if (devApiSets) %}
+                                {% for devApiSet in devApiSets %}
+                                    <div id="{{ devApiSet.ServiceName }}" class="mb-3 col-sm-8 col-md-10 section operationIdSelector" >
                                         <label class="form-label required">Select Operation Id</label>
-                                        <select id="<%= devApiSet.ServiceName %>_operationId" class="form-select">
+                                        <select id="{{ devApiSet.ServiceName }}_operationId" class="form-select">
                                             <option value="">Select the operationId...</option>
-                                            <%= for (SpecWithOpertaionId) in devApiSet.SpecWithOpertaionId { %>
-                                                <option value="<%= SpecWithOpertaionId.OperationId %>"
-                                                        resourcePath="<%= SpecWithOpertaionId.Spec.ResourcePath %>"
-                                                        desc="<%= SpecWithOpertaionId.Spec.Description %>"
-                                                        method="<%= SpecWithOpertaionId.Spec.Method %>">
-                                                        <%= SpecWithOpertaionId.OperationId %> - <%= SpecWithOpertaionId.Spec.Description %></option>
-                                            <% } %>
+                                            {% for SpecWithOpertaionId in devApiSet.SpecWithOpertaionId %}
+                                                <option value="{{ SpecWithOpertaionId.OperationId }}"
+                                                        resourcePath="{{ SpecWithOpertaionId.Spec.ResourcePath }}"
+                                                        desc="{{ SpecWithOpertaionId.Spec.Description }}"
+                                                        method="{{ SpecWithOpertaionId.Spec.Method }}">
+                                                        {{ SpecWithOpertaionId.OperationId }} - {{ SpecWithOpertaionId.Spec.Description }}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
-                                <% } %>
-                            <% } %>
+                                {% endfor %}
+                            {% endif %}
 
                         </div>
                     </div>
@@ -127,4 +127,4 @@
     </div>
 </div>
 
-<%= javascriptTag("pages/demo/rest/apicall.js") %>
+{{ javascriptTag("pages/demo/rest/apicall.js") | raw }}
