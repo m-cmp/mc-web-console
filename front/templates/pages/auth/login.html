@@ -1,45 +1,64 @@
-<div class="page page-center" >
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>M-CMP : mc-web-console - Login</title>
+    <link rel="icon" href="/assets/favicon.ico">
+    {{ stylesheetTag("application.css") | raw }}
+</head>
+<body>
+  <div class="page page-center" >
+    <div class="container container-tight py-4">
 
-  <div class="container container-tight py-4">
-
-    <div class="text-center mb-4">
-      <a class="navbar-brand navbar-brand-autodark">
-        <div class="row">
-          <div>
-            <img src="/assets/static/logo/mcmp.svg" width="150" >
-          </div>          
-        </div>
-      </a>
-    </div>
-
-    <div class="card card-md">
-      <div class="card-body">
-        <h2 class="h2 text-center mb-4">Login to your Account</h2>
-        
-          <div class="mb-3">
-            <label class="form-label">ID</label>
-            <input type="ID" class="form-control" id="id" placeholder="Your ID" autocomplete="off">
+      <div class="text-center mb-4">
+        <a class="navbar-brand navbar-brand-autodark">
+          <div class="row">
+            <div>
+              <img src="/assets/static/logo/mcmp.svg" width="150" >
+            </div>
           </div>
-
-          <div class="mb-2">
-            <label class="form-label">Password<span class="form-label-description"><a href="#">I forgot password</a></span></label>
-            <input type="password" class="form-control" id="password" placeholder="Your password" autocomplete="off">
-          </div>
-
-          <div class="form-footer">
-            <button id="loginbtn" class="btn btn-primary w-100">Login</button>
-          </div>
-
+        </a>
       </div>
-    </div>
 
-    <div class="text-center text-secondary mt-3">
-      <a href="#" tabindex="-1">Register Account</a>
-    </div>
+      <div class="card card-md">
+        <div class="card-body">
+          <h2 class="h2 text-center mb-4">Login to your Account</h2>
 
+            <div class="mb-3">
+              <label class="form-label">ID</label>
+              <input type="ID" class="form-control" id="id" placeholder="Your ID" autocomplete="off">
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Password<span class="form-label-description"><a href="#">I forgot password</a></span></label>
+              <input type="password" class="form-control" id="password" placeholder="Your password" autocomplete="off">
+            </div>
+
+            <div class="form-footer">
+              <button id="loginbtn" class="btn btn-primary w-100">Login</button>
+            </div>
+
+        </div>
+      </div>
+
+      <div class="text-center text-secondary mt-3">
+        <a href="#" tabindex="-1">Register Account</a>
+      </div>
+
+    </div>
   </div>
-</div>
 
-<!-- page JS -->
-<%= javascriptTag("pages/auth/login.js") %>
-<%= javascriptTag("common/cookie/authcookie.js") %>
+  <!-- common JS -->
+  {{ javascriptTag("application.js") | raw }}
+  {{ javascriptTag("common/util.js") | raw }}
+  {{ javascriptTag("common/api/http.js") | raw }}
+  {{ javascriptTag("common/cookie/authcookie.js") | raw }}
+  {{ javascriptTag("common/storage/localstorage.js") | raw }}
+  {{ javascriptTag("common/storage/sessionstorage.js") | raw }}
+
+  <!-- page JS -->
+  {{ javascriptTag("pages/auth/login.js") | raw }}
+</body>
+</html>

@@ -92,13 +92,13 @@
 
     <div class="row p-4">
       <div class="col-12">
-        <%= partial("partials/operation/manage/nodegrouplist_status.html") %> 
+        {{ partial("partials/operation/manage/nodegrouplist_status.html") | raw }} 
       </div>
     </div>
 
     <div class="row p-4">
       <div class="col-12">
-        <%= partial("partials/operation/manage/nodegroupinfo.html") %>
+        {{ partial("partials/operation/manage/nodegroupinfo.html") | raw }}
       </div>
     </div>
   </div>

@@ -6,87 +6,102 @@ import (
 	"front/middleware"
 	"front/public"
 
-	"github.com/gobuffalo/buffalo"
-	forcessl "github.com/gobuffalo/mw-forcessl"
-	i18n "github.com/gobuffalo/mw-i18n/v2"
-	paramlogger "github.com/gobuffalo/mw-paramlogger"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
+	"github.com/labstack/echo/v4"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/unrolled/secure"
 )
 
-// ENV is used to help switch settings based on where the
-// application is being run. Default is "development".
-
 var (
-	app *buffalo.App
-	T   *i18n.Translator
+	app *echo.Echo
 )
 
-// App is where all routes and middleware for buffalo
-// should be defined. This is the nerve center of your
-// application.
-//
-// Routing, middleware, groups, etc... are declared TOP -> DOWN.
-// This means if you add a middleware to `app` *after* declaring a
-// group, that group will NOT have that new middleware. The same
-// is true of resource declarations as well.
-//
-// It also means that routes are checked in the order they are declared.
-// `ServeFiles` is a CATCH-ALL route, so it should always be
-// placed last in the route declarations, as it will prevent routes
-// declared after it to never be called.
-func App() *buffalo.App {
+// App is where all routes and middleware for Echo should be defined.
+// This is the nerve center of your application.
+func App() *echo.Echo {
 	if app == nil {
-		app = buffalo.New(buffalo.Options{
-			SessionName: "mc_web_console",
-			Addr:        FRONT_ADDR + ":" + FRONT_PORT,
-		})
+		app = echo.New()
 
+		// Hide Echo banner
+		app.HideBanner = true
+
+		// Session middleware (using Gorilla sessions)
+		store := sessions.NewCookieStore([]byte("mc-web-console-secret-key")) // TODO: 환경 변수에서 읽기
+		store.Options = &sessions.Options{
+			Path:     "/",
+			MaxAge:   86400 * 7, // 7 days
+			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		}
+		app.Use(session.Middleware(store))
+
+		// Security middleware (forceSSL)
 		app.Use(forceSSL())
-		app.Use(paramlogger.ParameterLogger)
+
+		// Logger middleware
+		app.Use(echomiddleware.Logger())
+
+		// Recover middleware
+		app.Use(echomiddleware.Recover())
+
+		// Custom auth middleware (applied globally, skipped for specific routes)
 		app.Use(middleware.IsTokenExistMiddleware)
 
-		app.Middleware.Skip(middleware.IsTokenExistMiddleware, alive)
+		// Health check endpoint (no auth required)
 		app.GET("/alive", alive)
 
+		// Auth routes (no auth required)
 		auth := app.Group("/auth")
-		auth.Middleware.Skip(middleware.IsTokenExistMiddleware, UserLogin, UserLogout, UserUnauthorized)
 		auth.GET("/login", UserLogin)
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
 
+		// API auth endpoints (no auth required)
 		authapi := app.Group("/api")
-		authapi.Middleware.Skip(middleware.IsTokenExistMiddleware, SessionInitializer)
 		authapi.POST("/auth/login", SessionInitializer)
 		authapi.POST("/auth/refresh", SessionInitializer)
-		app.Redirect(http.StatusSeeOther, "/", RootPathForRedirectString) //home redirect to dash
 
+		// Root redirect
+		app.GET("/", func(c echo.Context) error {
+			return c.Redirect(http.StatusSeeOther, RootPathForRedirectString)
+		})
+
+		// Page controller for webconsole (wildcard routing)
 		pages := app.Group("/webconsole")
-		pages.GET("/{path:.+}", PageController)
+		pages.GET("/*", PageController)
 
-		apiPath := "/api"
-		api := app.Group(apiPath)
-		api.ANY("/{path:.+}", ApiCaller)
+		// API proxy (wildcard routing)
+		api := app.Group("/api")
+		api.Any("/*", ApiCaller)
 
-		app.ServeFiles("/", http.FS(public.FS()))
+		// Static file serving
+		app.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", http.FileServer(http.FS(public.FS())))))
+
+		// Webpack bundled assets serving
+		app.GET("/assets/*", echo.WrapHandler(http.FileServer(http.FS(public.FS()))))
+
+		app.GET("/favicon.ico", func(c echo.Context) error {
+			return c.File("public/favicon.ico")
+		})
 	}
 
 	return app
 }
 
-// forceSSL will return a middleware that will redirect an incoming request
-// if it is not HTTPS. "http://example.com" => "https://example.com".
-// This middleware does **not** enable SSL. for your application. To do that
-// we recommend using a proxy: https://gobuffalo.io/en/docs/proxy
-// for more information: https://github.com/unrolled/secure/
-func forceSSL() buffalo.MiddlewareFunc {
-	return forcessl.Middleware(secure.Options{
+// forceSSL returns a middleware that adds security headers
+func forceSSL() echo.MiddlewareFunc {
+	secureMiddleware := secure.New(secure.Options{
 		SSLRedirect:     false,
 		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
 	})
+
+	return echo.WrapMiddleware(secureMiddleware.Handler)
 }
 
-func alive(c buffalo.Context) error {
-	return c.Render(200, defaultRender.JSON(map[string]interface{}{
+// alive is a health check endpoint
+func alive(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": "OK",
-	}))
+	})
 }

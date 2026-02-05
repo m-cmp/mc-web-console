@@ -25,15 +25,10 @@ function getSoftwareManagerData() {
 
 document.addEventListener("DOMContentLoaded", async function(){
     var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-application-manager")
-    const domain = window.location.protocol + '//' + window.location.hostname;
 
-    if (host.startsWith(":")) {
-        host = `${domain}${host}`;
-    }
-    
     // 동적으로 데이터 가져오기
     const data = getSoftwareManagerData();
-    
+
     // webconsolejs["common/iframe/iframe"].addIframe("targetIframe-repository", host+"/web/repository/list", data)
     webconsolejs["common/iframe/iframe"].addIframe("targetIframe-sofrwareCatalog", host+"/web/softwareCatalog", data)
 });

@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/gobuffalo/buffalo"
+	"github.com/labstack/echo/v4"
 )
 
-func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
-	return func(c buffalo.Context) error {
+// IsTokenExistMiddleware checks if the Authorization token exists in cookies
+func IsTokenExistMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Skip auth for specific paths
+		if shouldSkipAuth(c.Request().URL.Path) {
+			return next(c)
+		}
+
 		cookie, err := c.Request().Cookie("Authorization")
 		if err != nil && c.Request().RequestURI == "/" {
 			log.Println(err.Error())
@@ -26,7 +33,8 @@ func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#AuthorizationNotExist")
 		}
 
-		if cookie.Expires.After(time.Now()) {
+		// Check cookie expiration (if Expires is set)
+		if !cookie.Expires.IsZero() && cookie.Expires.Before(time.Now()) {
 			errMsg := fmt.Errorf("cookie token is expired")
 			log.Println(errMsg.Error())
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#cookieExpired")
@@ -35,4 +43,28 @@ func IsTokenExistMiddleware(next buffalo.Handler) buffalo.Handler {
 		c.Set("Authorization", cookie.Value)
 		return next(c)
 	}
+}
+
+// shouldSkipAuth checks if the given path should skip authentication
+func shouldSkipAuth(path string) bool {
+	// Paths that don't require authentication
+	skipPaths := []string{
+		"/alive",
+		"/auth/login",
+		"/auth/logout",
+		"/auth/unauthorized",
+		"/api/auth/login",
+		"/api/auth/refresh",
+		"/static/",
+		"/assets/",
+		"/favicon.ico",
+	}
+
+	for _, skipPath := range skipPaths {
+		if path == skipPath || strings.HasPrefix(path, skipPath) {
+			return true
+		}
+	}
+
+	return false
 }

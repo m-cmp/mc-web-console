@@ -722,10 +722,9 @@
 </div>
 
 <!-- pageloader -->
-<%= partial("partials/layout/pageloader.html") %>
+{{ partial("partials/layout/pageloader.html") | raw }}
 
 <!-- javascript -->
-<%= javascriptTag("common/api/services/roles_api.js") %> <%=
-javascriptTag("pages/operation/workspace/roles.js") %>
-<%= javascriptTag("common/api/services/users_api.js") %>
-<%= javascriptTag("common/api/services/csproles_api.js") %>
+{{ javascriptTag("common/api/services/roles_api.js") | raw }} {{ javascriptTag("pages/operation/workspace/roles.js") | raw }}
+{{ javascriptTag("common/api/services/users_api.js") | raw }}
+{{ javascriptTag("common/api/services/csproles_api.js") | raw }}

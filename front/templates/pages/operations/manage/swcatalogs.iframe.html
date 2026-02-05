@@ -2,4 +2,5 @@
 <!-- <div class="iframe-wrapper" id="targetIframe-repository" height="50%" ></div> -->
 <div class="iframe-wrapper" id="targetIframe-sofrwareCatalog" height="100%"></div>
 
-<%= javascriptTag("pages/operation/plugins/softwaremanager.iframe.js") %>
+{{ javascriptTag("common/iframe/iframe.js") | raw }}
+{{ javascriptTag("pages/operation/plugins/softwaremanager.iframe.js") | raw }}

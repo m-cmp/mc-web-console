@@ -26,10 +26,6 @@ const data = {
 
 document.addEventListener("DOMContentLoaded", async function(){
     var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-workflow-manager")
-    const domain = window.location.protocol + '//' + window.location.hostname;
 
-    if (host.startsWith(":")) {
-        host = `${domain}${host}`;
-    }
     webconsolejs["common/iframe/iframe"].addIframe("targetIframe", host+"/web/workflow/list", data)
 });

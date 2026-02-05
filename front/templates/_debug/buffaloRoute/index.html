@@ -17,24 +17,20 @@
         </thead>
         <tbody>
 
-          <%= for (r) in routes { %>
+          {% for r in routes %}
             <tr>
               <td class="centered">
-                <%= r.Method %>
+                {{ r.Method }}
               </td>
               <td>
-                <%= if (r.Method != "GET" || r.Path ~= "{") { %><%=
-                  r.Path %><%
-                } else { %><%=
-                  linkTo(r.Path, {body: r.Path}) %><%
-                } %>
+                {% if (r.Method != "GET" || r.Path ~= "{") %}{{ r.Path }}{% else %}{{ linkTo(r.Path, {body: r.Path}) }}{% endif %}
               </td>
               <td>
-                <%= r.PathName %>
+                {{ r.PathName }}
               </td>
-              <td><code><%= r.HandlerName %></code></td>
+              <td><code>{{ r.HandlerName }}</code></td>
             </tr>
-          <% } %>
+          {% endfor %}
 
         </tbody>
       </table>
