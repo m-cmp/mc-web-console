@@ -44,7 +44,7 @@
 
         <!-- Page body -->
         {{ partial("partials/layout/flash.html") | raw }}
-        {{ yield }}
+        {{ pageContent | raw }}
 
         <!-- footer -->
         {{ partial("partials/layout/footer.html") | raw }}
