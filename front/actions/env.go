@@ -13,8 +13,8 @@ var API_PORT string
 func init() {
 	// Get environment variables with defaults
 	FRONT_ADDR = getEnvOrDefault("FRONT_ADDR", "0.0.0.0")
-	FRONT_PORT = getEnvOrDefault("FRONT_PORT", "3005")
-	API_ADDR = getEnvOrDefault("API_ADDR", "mcmp.dev.cscmzc.com")
+	FRONT_PORT = getEnvOrDefault("FRONT_PORT", "3001")
+	API_ADDR = getEnvOrDefault("API_ADDR", "localhost")
 	API_PORT = getEnvOrDefault("API_PORT", "3000")
 }
 

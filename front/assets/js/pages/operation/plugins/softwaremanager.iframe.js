@@ -26,6 +26,12 @@ function getSoftwareManagerData() {
 document.addEventListener("DOMContentLoaded", async function(){
     var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-application-manager")
 
+    // 포트만 반환된 경우 현재 호스트 이름 추가
+    if (host.startsWith(":")) {
+        const currentHost = window.location.protocol + "//" + window.location.hostname;
+        host = currentHost + host;
+    }
+
     // 동적으로 데이터 가져오기
     const data = getSoftwareManagerData();
 

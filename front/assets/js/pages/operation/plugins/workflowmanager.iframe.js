@@ -27,5 +27,11 @@ const data = {
 document.addEventListener("DOMContentLoaded", async function(){
     var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-workflow-manager")
 
+    // 포트만 반환된 경우 현재 호스트 이름 추가
+    if (host.startsWith(":")) {
+        const currentHost = window.location.protocol + "//" + window.location.hostname;
+        host = currentHost + host;
+    }
+
     webconsolejs["common/iframe/iframe"].addIframe("targetIframe", host+"/web/workflow/list", data)
 });
