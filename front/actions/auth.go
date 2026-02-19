@@ -16,9 +16,11 @@ func SessionInitializer(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
 	}
 
-	// Authorization 헤더 추가
-	if authHeader := c.Request().Header.Get("Authorization"); authHeader != "" {
-		req.Header.Set("Authorization", authHeader)
+	// Copy all headers from original request
+	for key, values := range c.Request().Header {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
 	}
 
 	client := &http.Client{}
@@ -41,15 +43,25 @@ func SessionInitializer(c echo.Context) error {
 	}
 
 	if resp.StatusCode != 200 {
-		errmsg := data["responseData"].(map[string]interface{})["message"]
-		log.Println("resp.StatusCode err :", errmsg)
-		return c.JSON(resp.StatusCode, map[string]interface{}{"message": errmsg})
+		// Handle error response safely
+		log.Printf("API returned status %d: %s", resp.StatusCode, string(respBody))
+		if statusData, ok := data["status"].(map[string]interface{}); ok {
+			if message, ok := statusData["message"].(string); ok {
+				return c.JSON(resp.StatusCode, map[string]interface{}{"message": message})
+			}
+		}
+		return c.JSON(resp.StatusCode, data)
 	}
 
 	// access_token과 refresh_token을 각각 추출
-	responseDataMap := data["responseData"].(map[string]interface{})
-	accessToken := responseDataMap["access_token"].(string)
-	refreshToken := responseDataMap["refresh_token"].(string)
+	responseDataMap, ok := data["responseData"].(map[string]interface{})
+	if !ok {
+		log.Println("responseData is not a map")
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Invalid response format"})
+	}
+
+	accessToken, _ := responseDataMap["access_token"].(string)
+	refreshToken, _ := responseDataMap["refresh_token"].(string)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"access_token":  accessToken,

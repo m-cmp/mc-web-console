@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"front/middleware"
-	"front/public"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -75,14 +74,16 @@ func App() *echo.Echo {
 		api := app.Group("/api")
 		api.Any("/*", ApiCaller)
 
-		// Static file serving
-		app.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", http.FileServer(http.FS(public.FS())))))
+		// Static file serving - serve webpack build output from public directory
+		app.Static("/assets", "public/assets")
+		app.Static("/static", "public/assets/static")
 
-		// Webpack bundled assets serving
-		app.GET("/assets/*", echo.WrapHandler(http.FileServer(http.FS(public.FS()))))
+		// Fallback to source assets if not found in public
+		app.Static("/css", "assets/css")
+		app.Static("/js", "assets/js")
 
 		app.GET("/favicon.ico", func(c echo.Context) error {
-			return c.File("public/favicon.ico")
+			return c.File("public/assets/favicon.ico")
 		})
 	}
 
