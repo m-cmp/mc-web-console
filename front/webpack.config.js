@@ -155,9 +155,8 @@ const configurator = {
   },
 
   buildConfig: function(){
-    // NOTE: If you are having issues with this not being set "properly", make
-    // sure your GO_ENV is set properly as `buffalo build` overrides NODE_ENV
-    // with whatever GO_ENV is set to or "development".
+    // NOTE: NODE_ENV is used for build mode. When building via Go/CI, set NODE_ENV
+    // explicitly (e.g. NODE_ENV=production) if needed.
     const env = process.env.NODE_ENV || "development";
 
     var config = {

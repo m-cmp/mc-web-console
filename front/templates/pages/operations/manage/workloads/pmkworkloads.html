@@ -333,7 +333,7 @@
           </div>
         </div>
         <div class="col-md-12">
-          <%= partial("partials/operation/manage/clusterinfo.html") %>
+          {{ partial("partials/operation/manage/clusterinfo.html") | raw }}
         </div>
       </div>
     </div>
@@ -380,7 +380,7 @@
                           class="form-select"
                           id="cluster_provider_dynamic"
                         >
-                          <%= partial("partials/common/provider_select.html") %>
+                          {{ partial("partials/common/provider_select.html") | raw }}
                         </select>
                       </div>
                       <div class="col-6">
@@ -1080,20 +1080,20 @@
 </div>
 
 <!-- add node : node configuration -->
-<%= partial("partials/operation/manage/clustercreate.html") %>
+{{ partial("partials/operation/manage/clustercreate.html") | raw }}
 
 <!-- add server : spec-search -->
-<%= partial("partials/operation/manage/clusterrecommendation.html") %>
+{{ partial("partials/operation/manage/clusterrecommendation.html") | raw }}
 <!-- add server : image-search -->
-<%= partial("partials/operation/manage/imagerecommendation.html") %>
+{{ partial("partials/operation/manage/imagerecommendation.html") | raw }}
 <!-- add server : cspimagelist -->
-<%= partial("partials/operation/manage/cspimagelist.html") %>
+{{ partial("partials/operation/manage/cspimagelist.html") | raw }}
 <!-- add server : cspspeclist -->
-<%= partial("partials/operation/manage/cspspeclist.html") %>
+{{ partial("partials/operation/manage/cspspeclist.html") | raw }}
 
 <!-- PMK용 모달 포함 -->
-<%= partial("partials/operation/manage/pmk_serverrecommendation.html") %>
-<%= partial("partials/operation/manage/pmk_imagerecommendation.html") %>
+{{ partial("partials/operation/manage/pmk_serverrecommendation.html") | raw }}
+{{ partial("partials/operation/manage/pmk_imagerecommendation.html") | raw }}
 
 <!-- Cluster Terminal Modal -->
 <div
@@ -1161,7 +1161,7 @@
 </div>
 
 <!-- remote command -->
-<%= javascriptTag("partials/operation/manage/remotecmd.js") %>
+{{ javascriptTag("partials/operation/manage/remotecmd.js") | raw }}
 
 <!-- Cluster Terminal Modal -->
 <div
@@ -1279,12 +1279,6 @@
   </div>
 </div>
 
-<%= javascriptTag("common/utils/listRefreshPattern.js") %>
-<%= javascriptTag("pages/operation/manage/pmk.js") %>
-<%= javascriptTag("common/api/services/pmk_api.js") %> <%=
-javascriptTag("common/api/services/mci_api.js") %> <%=
-javascriptTag("common/api/services/vmimage_api.js") %> <%=
-javascriptTag("partials/operation/manage/serverrecommendation.js") %> <%=
-javascriptTag("partials/operation/manage/imagerecommendation.js") %> <%=
-javascriptTag("partials/operation/manage/pmk_serverrecommendation.js") %> <%=
-javascriptTag("partials/operation/manage/pmk_imagerecommendation.js") %>
+{{ javascriptTag("common/utils/listRefreshPattern.js") | raw }}
+{{ javascriptTag("pages/operation/manage/pmk.js") | raw }}
+{{ javascriptTag("common/api/services/pmk_api.js") | raw }} {{ javascriptTag("common/api/services/mci_api.js") | raw }} {{ javascriptTag("common/api/services/vmimage_api.js") | raw }} {{ javascriptTag("partials/operation/manage/serverrecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/imagerecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/pmk_serverrecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/pmk_imagerecommendation.js") | raw }}

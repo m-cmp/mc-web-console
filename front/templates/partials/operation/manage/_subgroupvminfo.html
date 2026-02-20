@@ -144,9 +144,9 @@
         </div>
       </div>
     </div>
-    <%= partial("partials/operation/manage/subgroup_servertabcards.html") %>
+    {{ partial("partials/operation/manage/subgroup_servertabcards.html") | raw }}
   </div>
   <!-- body end -->
 </div>
 
-<%= javascriptTag("partials/operation/manage/remotecmd.js") %>
+{{ javascriptTag("partials/operation/manage/remotecmd.js") | raw }}

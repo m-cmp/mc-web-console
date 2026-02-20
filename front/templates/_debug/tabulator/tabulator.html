@@ -1,4 +1,4 @@
-<%= partial("partials/layout/pageheader/default.html") %>
+{{ partial("partials/layout/pageheader/default.html") | raw }}
 
 <div class="page-body">
     <div class="container-xl">
@@ -19,4 +19,4 @@
     </div>
 </div>
 
-<%= javascriptTag("debug/tabulator/tabulator.js") %>
+{{ javascriptTag("debug/tabulator/tabulator.js") | raw }}
