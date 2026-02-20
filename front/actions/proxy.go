@@ -1,11 +1,10 @@
 package actions
 
 import (
-	"log"
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/gobuffalo/buffalo"
+	"github.com/labstack/echo/v4"
 )
 
 var proxy *httputil.ReverseProxy
@@ -16,20 +15,18 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("API baseHost is ", ApiBaseHost)
 	proxy = httputil.NewSingleHostReverseProxy(ApiBaseHost)
 }
 
-func ApiCaller(c buffalo.Context) error {
-	log.Println("#### IN Api Proxy")
-	log.Println("Method", c.Request().Method)
-	log.Println("RequestURI", ApiBaseHost.String()+c.Request().RequestURI)
+// ApiCaller proxies API requests to the backend
+func ApiCaller(c echo.Context) error {
+	// Get Authorization from context (set by middleware)
+	authorization, _ := c.Get("Authorization").(string)
+	if authorization != "" {
+		c.Request().Header.Set("Authorization", authorization)
+	}
 
-	authorization := c.Value("Authorization").(string)
-	c.Request().Header.Add("Authorization", authorization)
-
+	// Serve the reverse proxy
 	proxy.ServeHTTP(c.Response(), c.Request())
-
-	log.Println("#### ServeHTTP Success")
 	return nil
 }
