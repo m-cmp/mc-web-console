@@ -1,25 +1,25 @@
 <div class="page-body">
   <div class="col-md-5">
-    <%= partial("partials/platformsetting/workspace_summary.html") %>
+    {{ partial("partials/platformsetting/workspace_summary.html") | raw }}
   </div>
   <div class="col-md-5"></div>
-    <%= partial("partials/platformsetting/workspace_list.html") %>
+    {{ partial("partials/platformsetting/workspace_list.html") | raw }}
   </div>
 
   [Tabs]
   <div class="col-md-5"></div>
-    <%= partial("partials/platformsetting/workspace_details.html") %>
+    {{ partial("partials/platformsetting/workspace_details.html") | raw }}
   </div>
   <div class="col-md-5">
-    <%= partial("partials/platformsetting/workspace_projects.html") %>
+    {{ partial("partials/platformsetting/workspace_projects.html") | raw }}
   </div>
   <div class="col-md-5">
-    <%= partial("partials/platformsetting/workspace_sharemembers.html") %>
+    {{ partial("partials/platformsetting/workspace_sharemembers.html") | raw }}
   </div>
   <div class="col-md-5">
-    <%= partial("partials/platformsetting/workspace_accessroles.html") %>
+    {{ partial("partials/platformsetting/workspace_accessroles.html") | raw }}
   </div>
 </div>
 
 
-<%= javascriptTag("pages/configuration/workspace/manage.js") %>
+{{ javascriptTag("pages/configuration/workspace/manage.js") | raw }}

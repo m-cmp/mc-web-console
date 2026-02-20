@@ -1,4 +1,5 @@
 <!-- <iframe src="http://43.202.179.178"></iframe> -->
 <div class="iframe-wrapper" id="targetIframe" height="100%" ></div>
 
-<%= javascriptTag("pages/operation/plugins/workflowmanager.iframe.js") %>
+{{ javascriptTag("common/iframe/iframe.js") | raw }}
+{{ javascriptTag("pages/operation/plugins/workflowmanager.iframe.js") | raw }}

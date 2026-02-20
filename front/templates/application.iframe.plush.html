@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 
 <html>
-<%= partial("partials/layout/header.html") %>
+{{ partial("partials/layout/header.html") | raw }}
 
   <body>
     <!-- theme js -->
-    <%= javascriptTag("common/theme/themeMode.js") %>
-    <%= javascriptTag("common/theme/tabler.js") %>
-    <%= javascriptTag("common/theme/tablerHelper.js") %>
+    {{ javascriptTag("common/theme/themeMode.js") | raw }}
+    {{ javascriptTag("common/theme/tabler.js") | raw }}
+    {{ javascriptTag("common/theme/tablerHelper.js") | raw }}
 
     <style>
       html, body {
@@ -37,32 +37,32 @@
     
     <div class="page">
 
-      <%= partial("partials/layout/sidebar.html") %>
-      <%= partial("partials/layout/navbar.html") %>
+      {{ partial("partials/layout/sidebar.html") | raw }}
+      {{ partial("partials/layout/navbar.html") | raw }}
       
       <div class="page-wrapper" height="100%">
 
         <!-- Page body -->
-        <%= partial("partials/layout/flash.html") %>
-        <%= yield %>
+        {{ partial("partials/layout/flash.html") | raw }}
+        {{ pageContent | raw }}
 
         <!-- footer -->
-        <%= partial("partials/layout/footer.html") %>
+        {{ partial("partials/layout/footer.html") | raw }}
       </div>
 
     </div>
 
   <!-- common js-->
-  <%= javascriptTag("application.js") %>
-  <%= javascriptTag("common/util.js") %>
-  <%= javascriptTag("common/api/http.js") %>
-  <%= javascriptTag("common/cookie/authcookie.js") %>
-  <%= javascriptTag("common/storage/localstorage.js") %>
-  <%= javascriptTag("common/storage/sessionstorage.js") %>
-  <%= javascriptTag("partials/layout/modal.js") %>
+  {{ javascriptTag("application.js") | raw }}
+  {{ javascriptTag("common/util.js") | raw }}
+  {{ javascriptTag("common/api/http.js") | raw }}
+  {{ javascriptTag("common/cookie/authcookie.js") | raw }}
+  {{ javascriptTag("common/storage/localstorage.js") | raw }}
+  {{ javascriptTag("common/storage/sessionstorage.js") | raw }}
+  {{ javascriptTag("partials/layout/modal.js") | raw }}
 
   <!-- iframe common js-->
-  <%= javascriptTag("common/iframe/iframe.js") %>
+  {{ javascriptTag("common/iframe/iframe.js") | raw }}
 
   </body>
 

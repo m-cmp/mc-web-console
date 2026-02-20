@@ -5,24 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
     <title>M-CMP : mc-web-console</title>
-    <%= stylesheetTag("application.css") %>
+    {{ stylesheetTag("application.css") | raw }}
     <!-- theme js -->
-    <%= javascriptTag("common/theme/themeMode.js") %>
-    <%= javascriptTag("common/theme/tabler.js") %>
-    <%= javascriptTag("common/theme/tablerHelper.js") %>
+    {{ javascriptTag("common/theme/themeMode.js") | raw }}
+    {{ javascriptTag("common/theme/tabler.js") | raw }}
+    {{ javascriptTag("common/theme/tablerHelper.js") | raw }}
     
-    <%= partial("partials/layout/flash.html") %>
+    {{ partial("partials/layout/flash.html") | raw }}
   </head>
   <body class="d-flex flex-column" data-bs-theme>
-    <%= yield %>
+    {{ yield }}
   </body>
 
   <!-- common js-->
-  <%= javascriptTag("application.js") %>
-  <%= javascriptTag("common/util.js") %>
-  <%= javascriptTag("common/api/http.js") %>
-  <%= javascriptTag("common/cookie/authcookie.js") %>
-  <%= javascriptTag("common/storage/localstorage.js") %>
-  <%= javascriptTag("common/storage/sessionstorage.js") %>
+  {{ javascriptTag("application.js") | raw }}
+  {{ javascriptTag("common/util.js") | raw }}
+  {{ javascriptTag("common/api/http.js") | raw }}
+  {{ javascriptTag("common/cookie/authcookie.js") | raw }}
+  {{ javascriptTag("common/storage/localstorage.js") | raw }}
+  {{ javascriptTag("common/storage/sessionstorage.js") | raw }}
 </html>
 
