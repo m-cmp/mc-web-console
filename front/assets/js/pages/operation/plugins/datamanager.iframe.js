@@ -27,9 +27,12 @@ const data = {
 
 document.addEventListener("DOMContentLoaded", async function(){
     var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-data-manager")
-    const domain = window.location.protocol + '//' + window.location.hostname;
+
+    // 포트만 반환된 경우 현재 호스트 이름 추가
     if (host.startsWith(":")) {
-        host = `${domain}${host}`;
+        const currentHost = window.location.protocol + "//" + window.location.hostname;
+        host = currentHost + host;
     }
+
     webconsolejs["common/iframe/iframe"].addIframe("targetIframe", host, data)
 });

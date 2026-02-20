@@ -353,23 +353,16 @@
                   <div class="container">
                     <div class="tab-content">
                       <div class="tab-pane fade active show" id="tabs-oshw-8">
-                        <%=
-                        partial("partials/operation/manage/oshwtabcard.html") %>
+                        {{ partial("partials/operation/manage/oshwtabcard.html") | raw }}
                       </div>
                       <div class="tab-pane fade" id="tabs-network-8">
-                        <%=
-                        partial("partials/operation/manage/networktabcard.html")
-                        %>
+                        {{ partial("partials/operation/manage/networktabcard.html") | raw }}
                       </div>
                       <div class="tab-pane fade" id="tabs-security-8">
-                        <%=
-                        partial("partials/operation/manage/securitytabcard.html")
-                        %>
+                        {{ partial("partials/operation/manage/securitytabcard.html") | raw }}
                       </div>
                       <div class="tab-pane fade" id="tabs-other-8">
-                        <%=
-                        partial("partials/operation/manage/othertabcard.html")
-                        %>
+                        {{ partial("partials/operation/manage/othertabcard.html") | raw }}
                       </div>
                     </div>
                   </div>
@@ -414,9 +407,8 @@
 <input type="hidden" id="p_vm_cnt" value="" />
 <input type="hidden" id="p_command" value="" />
 
-<%= partial("partials/operation/manage/imagerecommendation.html") %>
+{{ partial("partials/operation/manage/imagerecommendation.html") | raw }}
 
-<%= javascriptTag("partials/operation/manage/mcicreate.js") %> <%=
-javascriptTag("common/api/services/mci_api.js") %><!--API 호출-->
-<%= javascriptTag("common/api/services/disk_api.js") %><!--API 호출-->
-<%= javascriptTag("common/api/services/vmimage_api.js") %><!--API 호출-->
+{{ javascriptTag("partials/operation/manage/mcicreate.js") | raw }} {{ javascriptTag("common/api/services/mci_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("common/api/services/disk_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("common/api/services/vmimage_api.js") | raw }}<!--API 호출-->

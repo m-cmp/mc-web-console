@@ -4,11 +4,11 @@
     <div id="index" class="section">
       <div class="row row-cards">
         <div class="col-md-7">
-          <%= partial("partials/operation/manage/mci_status_summary.html") %>
+          {{ partial("partials/operation/manage/mci_status_summary.html") | raw }}
         </div>
 
         <div class="col-md-5">
-          <%= partial("partials/operation/manage/server_status_summary.html") %>
+          {{ partial("partials/operation/manage/server_status_summary.html") | raw }}
         </div>
 
         <div class="col-md-12">
@@ -548,7 +548,7 @@
           </div>
         </div>
         <div class="col-md-12">
-          <%= partial("partials/operation/manage/mciinfo.html") %>
+          {{ partial("partials/operation/manage/mciinfo.html") | raw }}
         </div>
       </div>
     </div>
@@ -1190,7 +1190,7 @@
 <!-- end of page-body -->
 
 <!-- remote commnad -->
-<%= javascriptTag("partials/operation/manage/remotecmd.js") %>
+{{ javascriptTag("partials/operation/manage/remotecmd.js") | raw }}
 
 <!-- MCI Terminal Modal -->
 <div
@@ -1344,16 +1344,16 @@
 </div>
 
 <!-- add server : server configuration -->
-<%= partial("partials/operation/manage/mcicreate.html") %>
+{{ partial("partials/operation/manage/mcicreate.html") | raw }}
 
 <!-- add server : spec-search -->
-<%= partial("partials/operation/manage/serverrecommendation.html") %>
+{{ partial("partials/operation/manage/serverrecommendation.html") | raw }}
 <!-- add server : image-search -->
-<%= partial("partials/operation/manage/imagerecommendation.html") %>
+{{ partial("partials/operation/manage/imagerecommendation.html") | raw }}
 <!-- add server : cspimagelist -->
-<%= partial("partials/operation/manage/cspimagelist.html") %>
+{{ partial("partials/operation/manage/cspimagelist.html") | raw }}
 <!-- add server : cspspeclist -->
-<%= partial("partials/operation/manage/cspspeclist.html") %>
+{{ partial("partials/operation/manage/cspspeclist.html") | raw }}
 
 <!-- Label Editor Modal -->
 <div
@@ -1564,7 +1564,4 @@
 </div>
 
 <!-- pageloader-->
-<%= partial("partials/layout/pageloader.html") %> <%=
-javascriptTag("pages/operation/manage/mci.js") %> <%=
-javascriptTag("common/api/services/mci_api.js") %> <%=
-javascriptTag("common/api/services/vmimage_api.js") %>
+{{ partial("partials/layout/pageloader.html") | raw }} {{ javascriptTag("pages/operation/manage/mci.js") | raw }} {{ javascriptTag("common/api/services/mci_api.js") | raw }} {{ javascriptTag("common/api/services/vmimage_api.js") | raw }}

@@ -1,4 +1,4 @@
-<%= contentFor("content") %>
+{{ contentFor("content") }}
 
 <div class="page-body">
   <div class="container-xl">
@@ -795,7 +795,7 @@
 </div>
 
 <!-- pageloader -->
-<%= partial("partials/layout/pageloader.html") %>
+{{ partial("partials/layout/pageloader.html") | raw }}
 
 <!-- Custom Styles -->
 <style>
@@ -892,5 +892,4 @@
 </style>
 
 <!-- javascript -->
-<%= javascriptTag("common/api/services/users_api.js") %> <%=
-javascriptTag("pages/settings/accountnaccess/organizations/users.js") %>
+{{ javascriptTag("common/api/services/users_api.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}

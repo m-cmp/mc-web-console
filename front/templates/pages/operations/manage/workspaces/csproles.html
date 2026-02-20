@@ -1743,8 +1743,7 @@
 </div>
 
 <!-- pageloader -->
-<%= partial("partials/layout/pageloader.html") %>
+{{ partial("partials/layout/pageloader.html") | raw }}
 
 <!-- javascript -->
-<%= javascriptTag("common/api/services/csproles_api.js") %> <%=
-javascriptTag("pages/operation/workspace/csproles.js") %>
+{{ javascriptTag("common/api/services/csproles_api.js") | raw }} {{ javascriptTag("pages/operation/workspace/csproles.js") | raw }}
