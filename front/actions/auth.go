@@ -53,15 +53,20 @@ func SessionInitializer(c echo.Context) error {
 		return c.JSON(resp.StatusCode, data)
 	}
 
-	// access_token과 refresh_token을 각각 추출
-	responseDataMap, ok := data["responseData"].(map[string]interface{})
-	if !ok {
-		log.Println("responseData is not a map")
+	// access_token과 refresh_token 추출 (MCIAM 직접 응답 또는 responseData 래퍼 모두 지원)
+	var accessToken, refreshToken string
+	if at, ok := data["access_token"].(string); ok {
+		// MCIAM 직접 응답 형식: {access_token, refresh_token, ...}
+		accessToken = at
+		refreshToken, _ = data["refresh_token"].(string)
+	} else if responseDataMap, ok := data["responseData"].(map[string]interface{}); ok {
+		// Buffalo CommonResponse 래퍼 형식: {responseData: {access_token, ...}}
+		accessToken, _ = responseDataMap["access_token"].(string)
+		refreshToken, _ = responseDataMap["refresh_token"].(string)
+	} else {
+		log.Println("could not find access_token in response")
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Invalid response format"})
 	}
-
-	accessToken, _ := responseDataMap["access_token"].(string)
-	refreshToken, _ := responseDataMap["refresh_token"].(string)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"access_token":  accessToken,
