@@ -48,7 +48,7 @@ func App() *echo.Echo {
 		app.Use(middleware.IsTokenExistMiddleware)
 
 		// Health check endpoint (no auth required)
-		app.GET("/alive", alive)
+		app.GET("/readyz", readyz)
 
 		// Auth routes (no auth required)
 		auth := app.Group("/auth")
@@ -100,8 +100,8 @@ func forceSSL() echo.MiddlewareFunc {
 	return echo.WrapMiddleware(secureMiddleware.Handler)
 }
 
-// alive is a health check endpoint
-func alive(c echo.Context) error {
+// readyz is a health check endpoint
+func readyz(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": "OK",
 	})

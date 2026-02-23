@@ -49,7 +49,7 @@ func IsTokenExistMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 func shouldSkipAuth(path string) bool {
 	// Paths that don't require authentication
 	skipPaths := []string{
-		"/alive",
+		"/readyz",
 		"/auth/login",
 		"/auth/logout",
 		"/auth/unauthorized",
