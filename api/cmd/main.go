@@ -50,6 +50,14 @@ func main() {
 	e.Use(middleware.RequestIDMiddleware)
 	e.Use(middleware.PanicHandler)
 
+	// Config를 핸들러에서 사용할 수 있도록 context에 주입
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Set("config", cfg)
+			return next(c)
+		}
+	})
+
 	// Health check 엔드포인트
 	e.GET("/readyz", func(c echo.Context) error {
 		return c.JSON(200, map[string]interface{}{
@@ -76,6 +84,10 @@ func main() {
 	authProtected.POST("/logout", handler.Logout)
 	authProtected.POST("/userinfo", handler.UserInfo)
 	*/
+
+	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
+	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시
+	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController)
 
 	// 테스트 엔드포인트들
 	api.GET("/hello", func(c echo.Context) error {
