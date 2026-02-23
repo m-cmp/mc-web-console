@@ -1,0 +1,11 @@
+create_table("usersesses") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("user_id", "text", {})
+	t.Column("access_token", "text", {})
+	t.Column("expires_in", "decimal", {})
+	t.Column("refresh_token", "text", {})
+	t.Column("refresh_expires_in", "decimal", {})
+	t.Timestamps()
+}
+
+add_index("usersesses", "user_id", {"unique": true})
