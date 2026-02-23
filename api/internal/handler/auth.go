@@ -1,20 +1,30 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"time"
+
+	"mc_web_console_api/internal/config"
 	"mc_web_console_api/internal/middleware"
 	"mc_web_console_api/internal/model"
-	"mc_web_console_api/internal/repository"
-	"mc_web_console_api/internal/service"
 	"mc_web_console_api/pkg/errors"
 	"mc_web_console_api/pkg/jwt"
 
 	"github.com/labstack/echo/v4"
 )
 
-// LoginRequest 로그인 요청
-type LoginRequest struct {
-	Username string `json:"username"`
+// LoginRequestBody id/password 페이로드
+type LoginRequestBody struct {
+	ID       string `json:"id"`
 	Password string `json:"password"`
+}
+
+// LoginRequest Buffalo CommonRequest 호환 래퍼
+type LoginRequest struct {
+	Request LoginRequestBody `json:"request"`
 }
 
 // LoginResponse 로그인 응답
@@ -34,58 +44,96 @@ type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-// Login 로그인 핸들러 (기본 모드)
+// Login 로그인 핸들러
 // POST /api/auth/login
+// MCIAM_USE=true : mc-iam-manager로 프록시
+// MCIAM_USE=false: 로컬 JWT 발급
 func Login(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
 		return errors.NewBadRequest("Invalid request body")
 	}
 
-	// TODO: 실제 사용자 인증 로직 (DB 조회, 비밀번호 검증 등)
-	// 현재는 데모용으로 간단히 처리
-	if req.Username == "" || req.Password == "" {
-		return errors.NewBadRequest("Username and password are required")
+	if req.Request.ID == "" || req.Request.Password == "" {
+		return errors.NewBadRequest("ID and password are required")
 	}
 
-	// 임시: 사용자 정보 설정 (실제로는 DB에서 조회)
-	userID := req.Username
+	cfg, _ := c.Get("config").(*config.Config)
+	if cfg != nil && cfg.MCIAM.Use {
+		return loginViaMCIAM(c, req.Request.ID, req.Request.Password, cfg)
+	}
+	return loginLocal(c, req.Request.ID, req.Request.Password)
+}
+
+// loginViaMCIAM MCIAM 서버에 로그인 요청을 프록시
+func loginViaMCIAM(c echo.Context, id, password string, cfg *config.Config) error {
+	service, actionSpec, err := cfg.ApiSpec.GetAction("mc-iam-manager", "login")
+	if err != nil {
+		return errors.NewInternalServerError("MCIAM login config not found", err)
+	}
+
+	targetURL := service.BaseURL + actionSpec.ResourcePath
+
+	body, _ := json.Marshal(map[string]string{
+		"id":       id,
+		"password": password,
+	})
+
+	httpReq, err := http.NewRequest(http.MethodPost, targetURL, bytes.NewBuffer(body))
+	if err != nil {
+		return errors.NewInternalServerError("Failed to build MCIAM request", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return errors.NewInternalServerError("Failed to reach MCIAM server", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.NewInternalServerError("Failed to read MCIAM response", err)
+	}
+
+	// MCIAM 응답을 그대로 클라이언트에 전달
+	var data interface{}
+	if err := json.Unmarshal(respBody, &data); err != nil {
+		return errors.NewInternalServerError("Invalid MCIAM response", err)
+	}
+
+	return c.JSON(resp.StatusCode, data)
+}
+
+// loginLocal DB 비활성 상태에서의 로컬 JWT 발급 (MCIAM_USE=false 용)
+func loginLocal(c echo.Context, id, password string) error {
+	accessExpiresIn := time.Duration(3600) * time.Second
+	refreshExpiresIn := time.Duration(604800) * time.Second
+
 	userName := "Demo User"
-	email := req.Username + "@example.com"
+	email := id + "@example.com"
 	role := "user"
 
-	// 세션 생성
-	sessionService := service.NewSessionService(
-		repository.NewSessionRepository(repository.GetDB()),
-	)
-
-	accessExpiresIn := float64(3600)    // 1시간
-	refreshExpiresIn := float64(604800) // 7일
-
-	session, err := sessionService.CreateSession(
-		userID,
-		userName,
-		email,
-		role,
-		accessExpiresIn,
-		refreshExpiresIn,
-	)
+	accessToken, err := jwt.GenerateToken(id, userName, email, role, accessExpiresIn)
 	if err != nil {
-		return errors.NewInternalServerError("Failed to create session", err)
+		return errors.NewInternalServerError("Failed to generate access token", err)
+	}
+	refreshToken, err := jwt.GenerateToken(id, userName, email, role, refreshExpiresIn)
+	if err != nil {
+		return errors.NewInternalServerError("Failed to generate refresh token", err)
 	}
 
-	// 응답
 	resp := model.CommonResponseStatusOK(&LoginResponse{
-		AccessToken:      session.AccessToken,
-		RefreshToken:     session.RefreshToken,
-		ExpiresIn:        session.ExpiresIn,
-		RefreshExpiresIn: session.RefreshExpiresIn,
-		UserID:           userID,
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		ExpiresIn:        accessExpiresIn.Seconds(),
+		RefreshExpiresIn: refreshExpiresIn.Seconds(),
+		UserID:           id,
 		UserName:         userName,
 		Email:            email,
 		Role:             role,
 	})
-
 	return c.JSON(resp.Status.Code, resp)
 }
 
@@ -101,51 +149,69 @@ func Refresh(c echo.Context) error {
 		return errors.NewBadRequest("Refresh token is required")
 	}
 
-	// 리프레시 토큰에서 사용자 ID 추출
+	cfg, _ := c.Get("config").(*config.Config)
+	if cfg != nil && cfg.MCIAM.Use {
+		return refreshViaMCIAM(c, req.RefreshToken, cfg)
+	}
+
+	// 로컬 모드: refresh token으로 새 access token 발급
 	userID, err := jwt.ExtractUserID(req.RefreshToken)
 	if err != nil {
 		return errors.NewUnauthorized("Invalid refresh token")
 	}
 
-	// 세션 갱신
-	sessionService := service.NewSessionService(
-		repository.NewSessionRepository(repository.GetDB()),
-	)
-
-	session, err := sessionService.RefreshSession(userID, req.RefreshToken)
+	newToken, err := jwt.GenerateToken(userID, "Demo User", userID+"@example.com", "user", time.Duration(3600)*time.Second)
 	if err != nil {
-		return errors.NewUnauthorized("Failed to refresh token")
+		return errors.NewInternalServerError("Failed to generate token", err)
 	}
 
-	// 응답
 	resp := model.CommonResponseStatusOK(map[string]interface{}{
-		"access_token": session.AccessToken,
-		"expires_in":   session.ExpiresIn,
+		"access_token": newToken,
+		"expires_in":   float64(3600),
+	})
+	return c.JSON(resp.Status.Code, resp)
+}
+
+// refreshViaMCIAM MCIAM 서버에 토큰 갱신 요청 프록시
+func refreshViaMCIAM(c echo.Context, refreshToken string, cfg *config.Config) error {
+	service, actionSpec, err := cfg.ApiSpec.GetAction("mc-iam-manager", "loginrefresh")
+	if err != nil {
+		return errors.NewInternalServerError("MCIAM refresh config not found", err)
+	}
+
+	targetURL := service.BaseURL + actionSpec.ResourcePath
+
+	body, _ := json.Marshal(map[string]string{
+		"refresh_token": refreshToken,
 	})
 
-	return c.JSON(resp.Status.Code, resp)
+	httpReq, err := http.NewRequest(http.MethodPost, targetURL, bytes.NewBuffer(body))
+	if err != nil {
+		return errors.NewInternalServerError("Failed to build MCIAM request", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return errors.NewInternalServerError("Failed to reach MCIAM server", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	var data interface{}
+	json.Unmarshal(respBody, &data)
+	return c.JSON(resp.StatusCode, data)
 }
 
 // Validate 토큰 검증 핸들러
 // POST /api/auth/validate
 func Validate(c echo.Context) error {
-	// 미들웨어에서 이미 검증되었으므로 Context에서 사용자 정보 조회
 	userID := middleware.GetUserID(c)
 	if userID == "" {
 		return errors.NewUnauthorized("Invalid token")
 	}
 
-	// 세션 유효성 검증
-	sessionService := service.NewSessionService(
-		repository.NewSessionRepository(repository.GetDB()),
-	)
-
-	valid, err := sessionService.ValidateSession(userID)
-	if err != nil || !valid {
-		return errors.NewUnauthorized("Session is not valid")
-	}
-
-	// 응답
 	resp := model.CommonResponseStatusOK(map[string]interface{}{
 		"valid":     true,
 		"user_id":   userID,
@@ -153,52 +219,36 @@ func Validate(c echo.Context) error {
 		"email":     middleware.GetEmail(c),
 		"role":      middleware.GetRole(c),
 	})
-
 	return c.JSON(resp.Status.Code, resp)
 }
 
 // Logout 로그아웃 핸들러
 // POST /api/auth/logout
 func Logout(c echo.Context) error {
-	// Context에서 사용자 ID 조회
 	userID := middleware.GetUserID(c)
 	if userID == "" {
 		return errors.NewUnauthorized("Not authenticated")
 	}
 
-	// 세션 삭제
-	sessionService := service.NewSessionService(
-		repository.NewSessionRepository(repository.GetDB()),
-	)
-
-	if err := sessionService.DeleteSession(userID); err != nil {
-		return errors.NewInternalServerError("Failed to logout", err)
-	}
-
-	// 응답
 	resp := model.CommonResponseStatusOK(map[string]interface{}{
 		"message": "Logged out successfully",
 	})
-
 	return c.JSON(resp.Status.Code, resp)
 }
 
 // UserInfo 사용자 정보 조회 핸들러
 // POST /api/auth/userinfo
 func UserInfo(c echo.Context) error {
-	// Context에서 사용자 정보 조회
 	userID := middleware.GetUserID(c)
 	if userID == "" {
 		return errors.NewUnauthorized("Not authenticated")
 	}
 
-	// 응답
 	resp := model.CommonResponseStatusOK(map[string]interface{}{
 		"user_id":   userID,
 		"user_name": middleware.GetUserName(c),
 		"email":     middleware.GetEmail(c),
 		"role":      middleware.GetRole(c),
 	})
-
 	return c.JSON(resp.Status.Code, resp)
 }
