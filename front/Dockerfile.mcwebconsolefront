@@ -2,7 +2,6 @@
 FROM golang:1.25-alpine AS build
 
 RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
-RUN npm install --global yarn
 
 ENV GOPROXY https://proxy.golang.org
 ENV CGO_ENABLED 0
@@ -12,22 +11,22 @@ WORKDIR /src/mc-web-console-front
 ADD ./front .
 
 RUN go mod download
-RUN npm install
-RUN yarn install
-RUN yarn build
+RUN npm ci
+RUN npm run build
 RUN go build -ldflags="-s -w" -o /bin/front ./cmd/app
 
 ## Stage 2 - Application Deploy
 FROM debian:buster-slim as deploy
 
-WORKDIR /bin/
+WORKDIR /app
 COPY --from=build /bin/front .
+COPY --from=build /src/mc-web-console-front/public ./public
 
 ENV FRONT_ADDR 0.0.0.0
 ENV FRONT_PORT 3001
 
 EXPOSE 3001
-CMD bash -c '/bin/front'
+CMD ["./front"]
 
 # sudo docker build -f ./front/Dockerfile.mcwebconsolefront -t mc-web-console-front:latest .
 # sudo docker run --rm -p 3001:3001 mc-web-console-front:latest
