@@ -1,8 +1,8 @@
 ## Stage 1 - Go Build Env
 FROM golang:1.25-alpine AS build
 
-ENV GOPROXY https://proxy.golang.org
-ENV CGO_ENABLED 0
+ENV GOPROXY=https://proxy.golang.org
+ENV CGO_ENABLED=0
 
 RUN mkdir -p /src/mc-web-console-api
 WORKDIR /src/mc-web-console-api
@@ -12,14 +12,14 @@ RUN go mod download
 RUN go build -ldflags="-s -w" -o /bin/api ./cmd
 
 ## Stage 2 - Application Deploy
-FROM debian:bookworm-slim as deploy
+FROM debian:bookworm-slim AS deploy
 
 WORKDIR /app/
 COPY --from=build /bin/api .
 ADD ./conf/api.yaml /conf/api.yaml
 
-ENV API_ADDR 0.0.0.0
-ENV API_PORT 3000
+ENV API_ADDR=0.0.0.0
+ENV API_PORT=3000
 
 EXPOSE 3000
 CMD ["/app/api"]

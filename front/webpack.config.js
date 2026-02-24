@@ -1,5 +1,5 @@
 const Webpack = require("webpack");
-const Glob = require("glob");
+const { globSync } = require("glob");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
@@ -13,8 +13,8 @@ const configurator = {
         './assets/css/application.scss',
       ],
     }
-    // Glob.sync("./assets/*/*.*").forEach((entry) => {
-    Glob.sync("./assets/*/*/*.*").forEach((entry) => {
+    // globSync("./assets/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -31,25 +31,7 @@ const configurator = {
 
       entries[key].push(entry)
     })
-    Glob.sync("./assets/*/*/*/*.*").forEach((entry) => {
-      if (entry === './assets/css/application.scss') {
-        return
-      }
-
-      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
-      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
-        return
-      }
-
-      if( entries[key] == null) {
-        entries[key] = [entry]
-        return
-      }
-
-      entries[key].push(entry)
-    })
-
-    Glob.sync("./assets/*/*/*/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -67,7 +49,7 @@ const configurator = {
       entries[key].push(entry)
     })
 
-    Glob.sync("./assets/*/*/*/*/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -85,7 +67,25 @@ const configurator = {
       entries[key].push(entry)
     })
 
-    Glob.sync("./assets/*/*/*/*/*/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
+      if (entry === './assets/css/application.scss') {
+        return
+      }
+
+      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
+      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
+        return
+      }
+
+      if( entries[key] == null) {
+        entries[key] = [entry]
+        return
+      }
+
+      entries[key].push(entry)
+    })
+
+    globSync("assets/*/*/*/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -141,7 +141,7 @@ const configurator = {
             MiniCssExtractPlugin.loader,
             { loader: "css-loader", options: {sourceMap: true}},
             { loader: "postcss-loader", options: {sourceMap: true}},
-            { loader: "sass-loader", options: {sourceMap: true}}
+            { loader: "sass-loader", options: {sourceMap: true, sassOptions: {quietDeps: true, silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin', 'color-functions']}}}
           ]
         },
         { test: /\.tsx?$/, use: "ts-loader", exclude: /node_modules/},
