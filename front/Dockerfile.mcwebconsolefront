@@ -3,27 +3,30 @@ FROM golang:1.25-alpine AS build
 
 RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
 
-ENV GOPROXY https://proxy.golang.org
-ENV CGO_ENABLED 0
+ENV GOPROXY=https://proxy.golang.org
+ENV CGO_ENABLED=0
 
 RUN mkdir -p /src/mc-web-console-front
 WORKDIR /src/mc-web-console-front
+
+COPY ./front/package.json ./front/package-lock.json ./
+RUN npm ci
+
 ADD ./front .
 
 RUN go mod download
-RUN npm ci
 RUN npm run build
 RUN go build -ldflags="-s -w" -o /bin/front ./cmd/app
 
 ## Stage 2 - Application Deploy
-FROM debian:buster-slim as deploy
+FROM debian:buster-slim AS deploy
 
 WORKDIR /app
 COPY --from=build /bin/front .
 COPY --from=build /src/mc-web-console-front/public ./public
 
-ENV FRONT_ADDR 0.0.0.0
-ENV FRONT_PORT 3001
+ENV FRONT_ADDR=0.0.0.0
+ENV FRONT_PORT=3001
 
 EXPOSE 3001
 CMD ["./front"]
