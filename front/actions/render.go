@@ -244,7 +244,7 @@ func partialFunc(args jet.Arguments) reflect.Value {
 	args.RequireNumOfArguments("partial", 1, 2)
 	name := args.Get(0).String()
 
-	// Buffalo 규칙: partial 파일명 앞에 '_' 추가
+	// Jet partial 규칙: partial 파일명 앞에 '_' 추가
 	// 예: "partials/layout/header.html" -> "partials/layout/_header.html"
 	parts := strings.Split(name, "/")
 	if len(parts) > 0 {
