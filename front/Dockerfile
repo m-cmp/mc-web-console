@@ -5,8 +5,8 @@ FROM node:18-alpine AS node-builder
 WORKDIR /app
 
 # Copy package files and install dependencies
-COPY package.json yarn.lock* package-lock.json* ./
-RUN npm install || yarn install
+COPY package.json package-lock.json* ./
+RUN npm install
 
 # Copy source files and build with webpack
 COPY webpack.config.js .babelrc postcss.config.js ./

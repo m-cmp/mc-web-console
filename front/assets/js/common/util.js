@@ -116,7 +116,7 @@ export function displayColumn(table) {
 // optionParamMap.set("is_cb", "N");// db를 조회하는 경우 'N', cloud-barista를 직접호출하면 is_cb='Y'. 기본은 is_cb=Y
 // filter 할 조건이 있으면 filterKey="connectionName", filterVal="conn-xxx" 등으로 optionParam에 추가하면 됨.
 // optionParamMap.set("option", "id");// 결과를 id만 가져오는 경우는 option="id"를 추가 한다.
-// buffalo의 helperName으로 router를 찾도록 변경함.
+// Echo 라우트의 helperName으로 URL을 찾도록 함.
 //export function getCommonData(caller, controllerKeyName, optionParamMap, callbackSuccessFunction, callbackFailFunction){
 export function getCommonData(
   caller,
