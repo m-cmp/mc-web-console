@@ -60,7 +60,7 @@ func SessionInitializer(c echo.Context) error {
 		accessToken = at
 		refreshToken, _ = data["refresh_token"].(string)
 	} else if responseDataMap, ok := data["responseData"].(map[string]interface{}); ok {
-		// Buffalo CommonResponse 래퍼 형식: {responseData: {access_token, ...}}
+		// API CommonResponse 래퍼 형식: {responseData: {access_token, ...}}
 		accessToken, _ = responseDataMap["access_token"].(string)
 		refreshToken, _ = responseDataMap["refresh_token"].(string)
 	} else {
