@@ -179,20 +179,20 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
     $ git clone <https://github.com/m-cmp/mc-web-console.git>
     ```
     
-    - web_console_api
-        
+    - api
+
         ```bash
-        $ cd mc-web-console/mc_web_console_api
-        $ buffalo build
+        $ cd mc-web-console/api
+        $ go build ./...
         ```
-        
-    - web_console_front
-        
+
+    - front
+
         ```bash
         $ cd mc-web-console/front
         $ npm install
-        $ yarn install
-        $ buffalo build
+        $ npm run build
+        $ go build ./cmd/app
         ```
         
 
@@ -217,11 +217,11 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
     ```bash
     $ cd <YourFolderName>/api
     $ source ../conf/.env
-    $ buffalo dev
+    $ go run ./cmd
     ```
-    
+
     ```bash
     $ cd <YourFolderName>/front
     $ source ../conf/.env
-    $ buffalo dev
+    $ go run ./cmd/app
     ```
