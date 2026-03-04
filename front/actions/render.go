@@ -155,9 +155,9 @@ func RenderHTML(c echo.Context, status int, templatePath string, data map[string
 	log.Printf("Page content length: %d bytes", len(pageContent))
 
 	// 2단계: 레이아웃 템플릿 결정 - iframe 템플릿인 경우 iframe 레이아웃 사용
-	layoutName := "application.plush.html"
+	layoutName := "application.html"
 	if strings.Contains(templatePath, ".iframe.") {
-		layoutName = "application.iframe.plush.html"
+		layoutName = "application.iframe.html"
 	}
 
 	layoutTmpl, err := jetSet.GetTemplate(layoutName)
