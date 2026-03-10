@@ -93,3 +93,39 @@ func UserUnauthorized(c echo.Context) error {
 	// Unauthorized 페이지는 레이아웃 없이 렌더링
 	return RenderWithoutLayout(c, http.StatusOK, "pages/auth/unauthorized.html", nil)
 }
+
+func UserSignup(c echo.Context) error {
+	return RenderWithoutLayout(c, http.StatusOK, "pages/auth/signup.html", nil)
+}
+
+func SignupProxy(c echo.Context) error {
+	req, err := http.NewRequest(c.Request().Method, ApiBaseHost.String()+"/api/auth/signup", c.Request().Body)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+	}
+
+	for key, values := range c.Request().Header {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+	}
+	defer resp.Body.Close()
+
+	respBody, ioerr := io.ReadAll(resp.Body)
+	if ioerr != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": ioerr.Error()})
+	}
+
+	var data map[string]interface{}
+	if jsonerr := json.Unmarshal(respBody, &data); jsonerr != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": jsonerr.Error()})
+	}
+
+	return c.JSON(resp.StatusCode, data)
+}
