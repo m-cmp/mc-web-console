@@ -1,5 +1,6 @@
+// 전체 메뉴 리소스 목록 조회 (flat 배열, parentId 기반)
 export async function listMenusTree() {
-    const controller = "/api/mc-iam-manager/Listmenustree";
+    const controller = "/api/mc-iam-manager/Getmenuresources";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
     return response.data.responseData;
 }
@@ -32,5 +33,11 @@ export async function deleteMenu(menuId) {
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {
         pathParams: { menuId: menuId }
     });
+    return response.data.responseData;
+}
+
+export async function listRoles() {
+    const controller = "/api/mc-iam-manager/Getrolelist";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
     return response.data.responseData;
 }

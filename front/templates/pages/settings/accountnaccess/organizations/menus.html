@@ -1,29 +1,5 @@
-{{ contentFor("content") }}
-
 <div class="page-body">
   <div class="container-xl">
-
-    <!-- 페이지 헤더 -->
-    <div class="page-header d-print-none mb-3">
-      <div class="row align-items-center">
-        <div class="col">
-          <h2 class="page-title">Menus</h2>
-          <div class="text-secondary">Manage your application menu hierarchy</div>
-        </div>
-        <div class="col-auto">
-          <button type="button" class="btn btn-primary" onclick="openCreateRootMenuModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-              viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M12 5l0 14"></path>
-              <path d="M5 12l14 0"></path>
-            </svg>
-            Add Root Menu
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- 메인 콘텐츠 -->
     <div class="row">
@@ -159,6 +135,13 @@
             <span class="form-check-label">Is Action (clickable page menu)</span>
           </label>
         </div>
+        <div class="mb-3">
+          <label class="form-label">Roles</label>
+          <div id="create-menu-roles" class="d-flex flex-column gap-1" style="max-height: 180px; overflow-y: auto;">
+            <!-- role checkboxes rendered by JS -->
+          </div>
+          <small class="text-muted">platform_admin is always mapped automatically</small>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -205,6 +188,13 @@
             <input class="form-check-input" type="checkbox" id="edit-menu-isaction" />
             <span class="form-check-label">Is Action (clickable page menu)</span>
           </label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Roles</label>
+          <div id="edit-menu-roles" class="d-flex flex-column gap-1" style="max-height: 180px; overflow-y: auto;">
+            <!-- role checkboxes rendered by JS -->
+          </div>
+          <small class="text-muted">platform_admin is always mapped automatically</small>
         </div>
       </div>
       <div class="modal-footer">
