@@ -224,6 +224,92 @@ func refreshViaMCIAM(c echo.Context, refreshToken string, cfg *config.Config) er
 	return c.JSON(resp.StatusCode, data)
 }
 
+// SignupRequestBody 회원가입 페이로드
+type SignupRequestBody struct {
+	Email        string `json:"email"`
+	Password     string `json:"password"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	Organization string `json:"organization,omitempty"`
+}
+
+// SignupRequest Buffalo CommonRequest 호환 래퍼
+type SignupRequest struct {
+	Request SignupRequestBody `json:"request"`
+}
+
+// Signup 회원가입 핸들러
+// POST /api/auth/signup
+// MCIAM_USE=true : mc-iam-manager로 프록시
+// MCIAM_USE=false: 미지원 안내 반환
+func Signup(c echo.Context) error {
+	var req SignupRequest
+	if err := c.Bind(&req); err != nil {
+		return errors.NewBadRequest("Invalid request body")
+	}
+
+	if req.Request.Email == "" || req.Request.Password == "" || req.Request.FirstName == "" || req.Request.LastName == "" {
+		return errors.NewBadRequest("email, password, firstName, lastName are required")
+	}
+
+	cfg, _ := c.Get("config").(*config.Config)
+	if cfg != nil && cfg.MCIAM.Use {
+		return signupViaMCIAM(c, req.Request, cfg)
+	}
+
+	// 로컬 모드에서는 회원가입 미지원
+	return c.JSON(http.StatusServiceUnavailable, map[string]interface{}{
+		"error": "현재 환경에서는 회원가입을 지원하지 않습니다.",
+	})
+}
+
+// signupViaMCIAM mc-iam-manager에 회원가입 요청을 프록시
+func signupViaMCIAM(c echo.Context, req SignupRequestBody, cfg *config.Config) error {
+	service, actionSpec, err := cfg.ApiSpec.GetAction("mc-iam-manager", "signup")
+	if err != nil {
+		return errors.NewInternalServerError("MCIAM signup config not found", err)
+	}
+
+	targetURL := service.BaseURL + actionSpec.ResourcePath
+
+	bodyMap := map[string]interface{}{
+		"email":     req.Email,
+		"password":  req.Password,
+		"firstName": req.FirstName,
+		"lastName":  req.LastName,
+	}
+	if req.Organization != "" {
+		bodyMap["organization"] = req.Organization
+	}
+
+	body, _ := json.Marshal(bodyMap)
+
+	httpReq, err := http.NewRequest(http.MethodPost, targetURL, bytes.NewBuffer(body))
+	if err != nil {
+		return errors.NewInternalServerError("Failed to build MCIAM request", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return errors.NewInternalServerError("Failed to reach MCIAM server", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.NewInternalServerError("Failed to read MCIAM response", err)
+	}
+
+	var data interface{}
+	if err := json.Unmarshal(respBody, &data); err != nil {
+		return errors.NewInternalServerError("Invalid MCIAM response", err)
+	}
+
+	return c.JSON(resp.StatusCode, data)
+}
+
 // Validate 토큰 검증 핸들러
 // POST /api/auth/validate
 func Validate(c echo.Context) error {

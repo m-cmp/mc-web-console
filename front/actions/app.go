@@ -55,11 +55,13 @@ func App() *echo.Echo {
 		auth.GET("/login", UserLogin)
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
+		auth.GET("/signup", UserSignup)
 
 		// API auth endpoints (no auth required)
 		authapi := app.Group("/api")
 		authapi.POST("/auth/login", SessionInitializer)
 		authapi.POST("/auth/refresh", SessionInitializer)
+		authapi.POST("/auth/signup", SignupProxy)
 
 		// Root redirect
 		app.GET("/", func(c echo.Context) error {
