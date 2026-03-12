@@ -996,6 +996,18 @@ serviceActions:
       method: post
       resourcePath: /api/roles/assign/platform-role
       description: "Platform Role 할당"
+    UpdateUserStatus:
+      method: post
+      resourcePath: /api/users/id/{userId}/status
+      description: "사용자 승인/비활성화 (enabled true/false)"
+    ResetUserPassword:
+      method: put
+      resourcePath: /api/users/id/{userId}/password
+      description: "관리자가 사용자 비밀번호 재설정"
+    ChangeMyPassword:
+      method: put
+      resourcePath: /api/users/me/password
+      description: "사용자 본인 비밀번호 변경"
 
   mc-infra-manager:
     Lookupspeclist:

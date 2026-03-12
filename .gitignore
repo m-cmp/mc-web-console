@@ -89,3 +89,6 @@ scripts/container-volume
 conf/api.yaml
 bin/mc-web-console-front
 node_modules
+
+# git worktrees
+.worktrees/

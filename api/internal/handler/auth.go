@@ -39,9 +39,14 @@ type LoginResponse struct {
 	Role             string  `json:"role"`
 }
 
-// RefreshRequest 토큰 갱신 요청
+// RefreshRequest 토큰 갱신 요청 (flat 형식)
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
+}
+
+// RefreshRequestWrapper CommonRequest 래퍼 형식 (authcookie.js 호환)
+type RefreshRequestWrapper struct {
+	Request RefreshRequest `json:"request"`
 }
 
 // Login 로그인 핸들러
@@ -139,23 +144,38 @@ func loginLocal(c echo.Context, id, password string) error {
 
 // Refresh 토큰 갱신 핸들러
 // POST /api/auth/refresh
+// {"refresh_token": "..."} 또는 {"request": {"refresh_token": "..."}} 형식 모두 지원
 func Refresh(c echo.Context) error {
-	var req RefreshRequest
-	if err := c.Bind(&req); err != nil {
+	body, err := io.ReadAll(c.Request().Body)
+	if err != nil {
 		return errors.NewBadRequest("Invalid request body")
 	}
 
-	if req.RefreshToken == "" {
+	var refreshToken string
+
+	// request 래퍼 형식 시도
+	var wrapper RefreshRequestWrapper
+	if jsonErr := json.Unmarshal(body, &wrapper); jsonErr == nil && wrapper.Request.RefreshToken != "" {
+		refreshToken = wrapper.Request.RefreshToken
+	} else {
+		// flat 형식 시도
+		var req RefreshRequest
+		if jsonErr := json.Unmarshal(body, &req); jsonErr == nil {
+			refreshToken = req.RefreshToken
+		}
+	}
+
+	if refreshToken == "" {
 		return errors.NewBadRequest("Refresh token is required")
 	}
 
 	cfg, _ := c.Get("config").(*config.Config)
 	if cfg != nil && cfg.MCIAM.Use {
-		return refreshViaMCIAM(c, req.RefreshToken, cfg)
+		return refreshViaMCIAM(c, refreshToken, cfg)
 	}
 
 	// 로컬 모드: refresh token으로 새 access token 발급
-	userID, err := jwt.ExtractUserID(req.RefreshToken)
+	userID, err := jwt.ExtractUserID(refreshToken)
 	if err != nil {
 		return errors.NewUnauthorized("Invalid refresh token")
 	}

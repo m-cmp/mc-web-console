@@ -1031,6 +1031,56 @@ function goBackToUserList() {
   }
 }
 
+// 비밀번호 재설정 모달 열기
+window.openResetPasswordModal = function() {
+  if (!AppState.users.selectedUser) {
+    alert('Please select a user.');
+    return;
+  }
+  const modal = new bootstrap.Modal(document.getElementById('reset-password-modal'));
+  modal.show();
+};
+
+// 비밀번호 재설정 실행
+window.resetUserPassword = async function() {
+  if (!AppState.users.selectedUser) {
+    alert('Please select a user.');
+    return;
+  }
+
+  const newPassword = document.getElementById('reset-password-new').value;
+  const confirmPassword = document.getElementById('reset-password-confirm').value;
+
+  if (!newPassword || newPassword.trim() === '') {
+    alert('Please enter a new password.');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    alert('Passwords do not match.');
+    return;
+  }
+
+  try {
+    const response = await webconsolejs["common/api/services/users_api"].resetUserPassword(
+      AppState.users.selectedUser.id,
+      newPassword
+    );
+
+    if (response && (response.status === 200 || response.status === 204 || response.data?.success)) {
+      alert('Password reset successfully.');
+      const modal = bootstrap.Modal.getInstance(document.getElementById('reset-password-modal'));
+      if (modal) modal.hide();
+      document.getElementById('reset-password-form').reset();
+    } else {
+      alert('Failed to reset password: ' + (response?.data?.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    alert('Error resetting password: ' + error.message);
+  }
+};
+
 // DOMContentLoaded 이벤트 리스너 등록
 document.addEventListener("DOMContentLoaded", async function () {
   
