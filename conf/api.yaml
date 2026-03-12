@@ -868,6 +868,26 @@ serviceActions:
       # resourcePath: /api/resource/menus
       resourcePath: /api/menus/list
       description: "메뉴 리소스를 검색합니다."
+    Listmenustree:
+      method: post
+      resourcePath: /api/menus/menus-tree/list
+      description: "List all menus as tree structure (Admin only)"
+    Createmenu:
+      method: post
+      resourcePath: /api/menus
+      description: "Create a new menu"
+    Getmenubyid:
+      method: get
+      resourcePath: /api/menus/id/{menuId}
+      description: "Get menu details by ID"
+    Updatemenu:
+      method: put
+      resourcePath: /api/menus/id/{menuId}
+      description: "Update menu details"
+    Deletemenu:
+      method: delete
+      resourcePath: /api/menus/id/{menuId}
+      description: "Delete a menu"
     Getallpermissions:
       method: get
       resourcePath: /api/ticket

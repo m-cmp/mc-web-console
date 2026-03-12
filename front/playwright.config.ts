@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 90_000,
   retries: 1,
   use: {
-    baseURL: 'http://localhost:3115',
+    baseURL: 'http://localhost:3001',
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
