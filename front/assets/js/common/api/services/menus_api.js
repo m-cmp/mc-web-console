@@ -1,0 +1,43 @@
+// 전체 메뉴 리소스 목록 조회 (flat 배열, parentId 기반)
+export async function listMenusTree() {
+    const controller = "/api/mc-iam-manager/Getmenuresources";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
+    return response.data.responseData;
+}
+
+export async function createMenu(data) {
+    const controller = "/api/mc-iam-manager/Createmenu";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, { request: data });
+    return response.data.responseData;
+}
+
+export async function getMenuByID(menuId) {
+    const controller = "/api/mc-iam-manager/Getmenubyid";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {
+        pathParams: { menuId: menuId }
+    });
+    return response.data.responseData;
+}
+
+export async function updateMenu(menuId, data) {
+    const controller = "/api/mc-iam-manager/Updatemenu";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {
+        pathParams: { menuId: menuId },
+        request: data
+    });
+    return response.data.responseData;
+}
+
+export async function deleteMenu(menuId) {
+    const controller = "/api/mc-iam-manager/Deletemenu";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {
+        pathParams: { menuId: menuId }
+    });
+    return response.data.responseData;
+}
+
+export async function listRoles() {
+    const controller = "/api/mc-iam-manager/Getrolelist";
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
+    return response.data.responseData;
+}

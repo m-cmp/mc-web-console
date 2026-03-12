@@ -872,6 +872,26 @@ serviceActions:
       # resourcePath: /api/resource/menus
       resourcePath: /api/menus/list
       description: "메뉴 리소스를 검색합니다."
+    Listmenustree:
+      method: post
+      resourcePath: /api/menus/menus-tree/list
+      description: "List all menus as tree structure (Admin only)"
+    Createmenu:
+      method: post
+      resourcePath: /api/menus
+      description: "Create a new menu"
+    Getmenubyid:
+      method: get
+      resourcePath: /api/menus/id/{menuId}
+      description: "Get menu details by ID"
+    Updatemenu:
+      method: put
+      resourcePath: /api/menus/id/{menuId}
+      description: "Update menu details"
+    Deletemenu:
+      method: delete
+      resourcePath: /api/menus/id/{menuId}
+      description: "Delete a menu"
     Getallpermissions:
       method: get
       resourcePath: /api/ticket
@@ -980,6 +1000,18 @@ serviceActions:
       method: post
       resourcePath: /api/roles/assign/platform-role
       description: "Platform Role 할당"
+    UpdateUserStatus:
+      method: post
+      resourcePath: /api/users/id/{userId}/status
+      description: "사용자 승인/비활성화 (enabled true/false)"
+    ResetUserPassword:
+      method: put
+      resourcePath: /api/users/id/{userId}/password
+      description: "관리자가 사용자 비밀번호 재설정"
+    ChangeMyPassword:
+      method: put
+      resourcePath: /api/users/me/password
+      description: "사용자 본인 비밀번호 변경"
 
   mc-infra-manager:
     Lookupspeclist:
