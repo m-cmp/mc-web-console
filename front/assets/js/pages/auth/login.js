@@ -5,12 +5,15 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
             "password":document.getElementById("password").value
         }
     };
-    const response = await webconsolejs["common/api/http"].commonAPIPostWithoutRetry('/api/auth/login', data)
-    if (response.status !== 200){
-        alert("LoginFail\n"+response)
-        document.getElementById("id").value = null
-        document.getElementById("password").value = null
-    }else{
+    const response = await webconsolejs["common/api/http"].commonAPIPostWithoutRetry('/api/auth/login', data);
+    const isSuccess = response && response.status === 200 && response.data &&
+        response.data.refresh_token && response.data.access_token;
+    if (!isSuccess) {
+        const errMsg = response && response.response ? (response.response.data?.message || response.message) : 'Login failed';
+        alert('LoginFail\n' + (typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg)));
+        document.getElementById('id').value = '';
+        document.getElementById('password').value = '';
+    } else {
         // 로그인 성공 시에만 토큰 저장
         try {
             await webconsolejs["common/cookie/authcookie"].updateCookieRefreshToken(response.data.refresh_token);
