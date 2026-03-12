@@ -75,6 +75,7 @@ func main() {
 	auth := api.Group("/auth")
 	auth.POST("/login", handler.Login)
 	auth.POST("/refresh", handler.Refresh)
+	auth.POST("/signup", handler.Signup)
 
 	// 보호된 인증 라우트 (인증 필요) - DB 설정 완료 시 활성화
 	/*

@@ -12,13 +12,13 @@ services:
 
   mc-iam-manager:
     version: 0.2.11
-    baseurl: http://iam_url:3000
+    baseurl: http://52.79.163.111:5006
     auth:
       type: bearer
 
   mc-infra-manager:
     version: 0.9.11
-    baseurl: http://tumblebug_url:1323/tumblebug
+    baseurl: http://52.79.163.111:1323/tumblebug
 
     auth:
       type: basic
@@ -737,6 +737,10 @@ serviceActions:
       method: get
       resourcePath: /api/wsuserrole/workspace/id/{workspaceId}
       description: "workspace - user - role mapping 목록 workspace 기준 조회"
+    Signup:
+      method: post
+      resourcePath: /api/auth/signup
+      description: "신규 사용자 회원가입 (관리자 승인 후 로그인 가능)"
     Login:
       method: post
       resourcePath: /api/auth/login
