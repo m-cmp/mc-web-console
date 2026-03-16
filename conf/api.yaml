@@ -1012,6 +1012,46 @@ serviceActions:
       method: put
       resourcePath: /api/users/me/password
       description: "사용자 본인 비밀번호 변경"
+    Createorganization:
+      method: post
+      resourcePath: /api/organizations
+      description: "그룹 생성"
+    Getorganizations:
+      method: get
+      resourcePath: /api/organizations
+      description: "그룹 목록/트리 조회 (query: tree=true면 중첩 구조)"
+    Getorganizationbyid:
+      method: get
+      resourcePath: /api/organizations/id/{organizationId}
+      description: "그룹 단건 조회 by ID"
+    Getorganizationbycode:
+      method: get
+      resourcePath: /api/organizations/code/{code}
+      description: "그룹 단건 조회 by code"
+    Updateorganization:
+      method: put
+      resourcePath: /api/organizations/id/{organizationId}
+      description: "그룹 수정 (부모 변경 시 하위 코드 자동 재생성)"
+    Deleteorganization:
+      method: delete
+      resourcePath: /api/organizations/id/{organizationId}
+      description: "그룹 삭제 (하위 그룹·소속 사용자 있으면 400)"
+    Getorganizationusers:
+      method: get
+      resourcePath: /api/organizations/id/{organizationId}/users
+      description: "그룹 소속 사용자 목록"
+    Assignuserorganizations:
+      method: post
+      resourcePath: /api/users/id/{userId}/organizations
+      description: "사용자 그룹 할당 (다중)"
+    Getuserorganizations:
+      method: get
+      resourcePath: /api/users/id/{userId}/organizations
+      description: "사용자 소속 그룹 목록"
+    Removeuserorganization:
+      method: delete
+      resourcePath: /api/users/id/{userId}/organizations/{organizationId}
+      description: "사용자 그룹 제거"
 
   mc-infra-manager:
     Lookupspeclist:
