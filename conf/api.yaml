@@ -12,13 +12,13 @@ services:
 
   mc-iam-manager:
     version: 0.2.11
-    baseurl: http://52.79.163.111:5006
+    baseurl: http://mc-iam-manager_url:5006
     auth:
       type: bearer
 
   mc-infra-manager:
     version: 0.9.11
-    baseurl: http://52.79.163.111:1323/tumblebug
+    baseurl: http://tumblebug_url:1323/tumblebug
 
     auth:
       type: basic
