@@ -92,3 +92,4 @@ node_modules
 
 # git worktrees
 .worktrees/
+front/test-results/
