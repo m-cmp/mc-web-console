@@ -1,0 +1,315 @@
+<div class="page-body">
+  <div class="container-xl">
+    <!-- Main Content: Tree + Detail Panel -->
+    <div class="row row-cards">
+      <!-- Left: Group Tree -->
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Organization Tree</h3>
+            <div class="card-options">
+              <button class="btn btn-sm btn-ghost-secondary" onclick="expandAllGroups()" title="Expand All">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M7 7l5 5l5 -5"></path>
+                  <path d="M7 13l5 5l5 -5"></path>
+                </svg>
+                Expand All
+              </button>
+              <button class="btn btn-sm btn-ghost-secondary" onclick="collapseAllGroups()" title="Collapse All">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M7 11l5 -5l5 5"></path>
+                  <path d="M7 17l5 -5l5 5"></path>
+                </svg>
+                Collapse All
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="min-height: 400px; max-height: 400px; overflow-y: auto;">
+            <div class="jstree-wrapper jstree-mode-expandable">
+              <div id="group-tree"></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="btn-list">
+              <button id="btn-add-child" class="btn btn-sm btn-outline-primary" onclick="openAddChildGroup()" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M12 5l0 14"></path>
+                  <path d="M5 12l14 0"></path>
+                </svg>
+                Add Child
+              </button>
+              <button id="btn-edit" class="btn btn-sm btn-outline-warning" onclick="openEditGroup()" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
+                  <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
+                  <path d="M16 5l3 3"></path>
+                </svg>
+                Edit
+              </button>
+              <button id="btn-delete" class="btn btn-sm btn-outline-danger" onclick="openDeleteGroup()" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M4 7l16 0"></path>
+                  <path d="M10 11l0 6"></path>
+                  <path d="M14 11l0 6"></path>
+                  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                </svg>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Detail Panel -->
+      <div class="col-md-7">
+        <div id="group-detail-panel" class="card" style="display: none;">
+          <div class="card-header">
+            <h3 class="card-title" id="detail-name">-</h3>
+          </div>
+          <div class="card-body">
+            <div class="datagrid">
+              <div class="datagrid-item">
+                <div class="datagrid-title">Code</div>
+                <div class="datagrid-content" id="detail-code">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Level</div>
+                <div class="datagrid-content" id="detail-level">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Path</div>
+                <div class="datagrid-content" id="detail-path">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Users</div>
+                <div class="datagrid-content" id="detail-user-count">-</div>
+              </div>
+              <div class="datagrid-item" style="grid-column: span 2;">
+                <div class="datagrid-title">Description</div>
+                <div class="datagrid-content" id="detail-description">-</div>
+              </div>
+            </div>
+
+            <!-- Members Tab -->
+            <div class="mt-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Members</h4>
+                <button id="btn-invite-member" class="btn btn-sm btn-primary"
+                        onclick="openInviteMember()" disabled>
+                  + Invite Member
+                </button>
+              </div>
+              <div id="group-members-list">
+                <p class="text-muted">Select a group to view members.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state when no group selected -->
+        <div id="group-empty-state" class="card">
+          <div class="card-body text-center py-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="48" height="48" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 21l18 0"></path>
+              <path d="M9 8l1 0"></path>
+              <path d="M9 12l1 0"></path>
+              <path d="M9 16l1 0"></path>
+              <path d="M14 8l1 0"></path>
+              <path d="M14 12l1 0"></path>
+              <path d="M14 16l1 0"></path>
+              <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16"></path>
+            </svg>
+            <p class="text-muted">Select a group from the tree to view details.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Group Modal -->
+<div class="modal modal-blur fade" id="create-group-modal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="create-group-form">
+          <div class="mb-3">
+            <label class="form-label required">Name</label>
+            <input type="text" class="form-control" id="group-name" placeholder="Enter group name" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-control" id="group-description" placeholder="Enter description (optional)" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Parent Organization</label>
+            <select class="form-select" id="group-parent-select">
+              <option value="">None (Top-level)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Organization Code</label>
+            <input type="text" class="form-control" id="group-code" placeholder="Leave empty to auto-generate" />
+          </div>
+          <div id="parent-change-warning" class="alert alert-warning" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M12 9v4"></path>
+              <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.871l-8.106 -13.534a1.914 1.914 0 0 0 -3.274 0z"></path>
+              <path d="M12 16h.01"></path>
+            </svg>
+            Changing parent will regenerate codes for all child organizations.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitCreateGroup()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Group Modal -->
+<div class="modal modal-blur fade" id="edit-group-modal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-group-form">
+          <input type="hidden" id="edit-group-id" />
+          <div class="mb-3">
+            <label class="form-label required">Name</label>
+            <input type="text" class="form-control" id="edit-group-name" placeholder="Enter group name" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-control" id="edit-group-description" placeholder="Enter description (optional)" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Parent Organization</label>
+            <select class="form-select" id="edit-group-parent-select">
+              <option value="">None (Top-level)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Organization Code</label>
+            <input type="text" class="form-control" id="edit-group-code" placeholder="Leave empty to auto-generate" />
+          </div>
+          <div id="edit-parent-change-warning" class="alert alert-warning" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M12 9v4"></path>
+              <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.871l-8.106 -13.534a1.914 1.914 0 0 0 -3.274 0z"></path>
+              <path d="M12 16h.01"></path>
+            </svg>
+            Changing parent will regenerate codes for all child organizations.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitEditGroup()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Group Modal -->
+<div class="modal modal-blur fade" id="delete-group-modal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="delete-group-id" />
+        <p>Are you sure you want to delete group <strong id="delete-group-name"></strong>?</p>
+        <div class="alert alert-warning">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 9v4"></path>
+            <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.871l-8.106 -13.534a1.914 1.914 0 0 0 -3.274 0z"></path>
+            <path d="M12 16h.01"></path>
+          </svg>
+          Groups with child organizations or assigned users cannot be deleted.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="submitDeleteGroup()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Member Modal -->
+<div class="modal modal-blur fade" id="invite-member-modal" tabindex="-1"
+     style="display:none;" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Invite Member</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control mb-3" id="invite-member-search"
+               placeholder="Search by name or email..."
+               oninput="filterInviteUsers()" />
+        <div id="invite-member-list" style="max-height:360px; overflow-y:auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitInviteMembers()">Invite</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Result Modal -->
+<div class="modal modal-blur fade" id="import-result-modal" tabindex="-1" style="display:none;" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Result</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="import-result-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- pageloader -->
+{{ partial("partials/layout/pageloader.html") | raw }}
+
+<style>
+  #group-detail-panel .datagrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .jstree-default .jstree-anchor {
+    line-height: 28px;
+  }
+</style>
+
+<!-- javascript -->
+{{ javascriptTag("common/api/services/groups_api.js") | raw }}
+{{ javascriptTag("pages/settings/accountnaccess/groups/groups.js") | raw }}
