@@ -8,34 +8,128 @@
     border: 1px solid #e0e6ed;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
-  
-  // 트리 노드 기본
+
+  // jstree 기본 테마(.jstree-default)보다 우선 — 행 높이·여백 최소화 (24px → 18px)
+  // 한 줄 가로 배치: ocl 아이콘 + anchor가 세로로 쌓이지 않도록 flex row
+  // 직계 자식(ocl, anchor)이 여백으로 행 높이를 늘리지 않도록
+  .jstree-default .jstree-node,
+  .jstree.jstree-default .jstree-node,
+  .jstree-default > .jstree-container-ul .jstree-node,
+  .jstree-node,
+  li.jstree-node {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    min-height: 18px !important;
+    height: auto !important;
+    line-height: 18px !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .jstree-node > .jstree-ocl,
+  .jstree-node > .jstree-anchor {
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  .jstree-node > .jstree-ocl {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .jstree-node > .jstree-anchor {
+    padding: 0 8px !important;
+    white-space: nowrap;
+  }
+
+  .jstree-default .jstree-anchor,
   .jstree-anchor {
     color: #333;
-    padding: 4px 8px;
+    padding: 0 8px !important;
+    line-height: 18px !important;
+    height: 18px !important;
+    min-height: 18px !important;
     border-radius: 4px;
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 6px;
     text-decoration: none;
-  
+    box-sizing: border-box !important;
+  }
+
+  .jstree-anchor {
     &:hover {
       background-color: #f0f4f8;
       color: #0054a6;
     }
-  
+
     &.jstree-clicked {
       background-color: #e6f0ff;
       color: #0054a6;
       font-weight: 500;
     }
   }
-  
-  // 아이콘 스타일
+
+  // 접기/펼치기 추가 시 삽입된 jstree-icon(ocl)이 행 높이를 늘리지 않도록 고정
+  .jstree-default .jstree-icon,
+  .jstree-icon {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    vertical-align: middle !important;
+    background-color: transparent !important;
+    box-sizing: border-box !important;
+  }
+  .jstree-icon:empty {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+  }
+
+  // 스프라이트 경로 깨짐 시 보이도록: ocl(펼침/접힘) 아이콘 — 행 높이 추가 금지
+  .jstree-ocl {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: rgba(0, 0, 0, 0.15) !important;
+    border-radius: 2px;
+  }
+  .jstree-open > .jstree-ocl {
+    background-image: none !important;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+  }
+  .jstree-closed > .jstree-ocl {
+    background-image: none !important;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+  }
+  .jstree-leaf > .jstree-ocl {
+    background-image: none !important;
+    background-color: transparent !important;
+  }
+  // themeicon(폴더 등)이 하얗게 보일 때 대비 — 배경을 더 진하게, 행 높이 추가 금지
   .jstree-themeicon {
-    width: 16px;
-    height: 16px;
+    width: 16px !important;
+    height: 16px !important;
+    max-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
     flex-shrink: 0;
+    background-image: none !important;
+    background-color: rgba(0, 0, 0, 0.15) !important;
+    border-radius: 2px;
   }
   
   // 체크박스 커스터마이징
@@ -44,26 +138,30 @@
     transform: scale(1.1);
   }
   
-  // 노드 간 간격
-  .jstree-node {
-    margin-bottom: 0px;
+  // 하위 노드 들여쓰기 (세로 간격 없음) — 자식 트리는 항상 다음 줄에 배치
+  .jstree-node > .jstree-children {
+    flex-basis: 100% !important;
+    width: 100% !important;
   }
-  
-  // 하위 노드 들여쓰기
   .jstree-children {
     margin-left: 12px;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
   }
   
-  // 전체 행 하이라이트 (wholerow plugin용)
+  // 전체 행(wholerow) 높이 — 행 간격 축소
+  .jstree-default .jstree-wholerow,
   .jstree-wholerow {
+    height: 18px !important;
     border-radius: 4px;
-    height: 28px;
   }
 
 .jstree,
 .jstree ul,
-.jstree li {
+.jstree li,
+.jstree li.jstree-node {
   list-style: none !important;
-  margin: 5;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
 }

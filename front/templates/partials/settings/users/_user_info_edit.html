@@ -1,0 +1,47 @@
+<!-- Assigned Groups Section (included in users.html view mode cards) -->
+
+<!-- Assigned Groups Card -->
+<div class="card card-sm mt-3">
+  <div class="card-header">
+    <h3 class="card-title">Assigned Groups</h3>
+    <div class="card-actions">
+      <button class="btn btn-sm btn-outline-primary" onclick="addUserGroup()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M12 5l0 14"></path>
+          <path d="M5 12l14 0"></path>
+        </svg>
+        Add Group
+      </button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div id="user-groups-list">
+      <p class="text-muted">Select a user to view assigned groups.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Group Modal -->
+<div class="modal modal-blur fade" id="assign-group-modal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Assign Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Select Group</label>
+          <select class="form-select" id="assign-group-select">
+            <option value="">Select a group</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitAssignGroup()">Assign</button>
+      </div>
+    </div>
+  </div>
+</div>
