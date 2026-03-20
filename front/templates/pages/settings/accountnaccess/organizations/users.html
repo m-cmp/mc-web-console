@@ -643,6 +643,10 @@
         </div>
       </div>
     </div>
+
+    <!-- Assigned Groups Section -->
+    {{ partial("partials/settings/users/_user_info_edit.html") | raw }}
+
   </div>
 </div>
 
@@ -930,4 +934,4 @@
 </div>
 
 <!-- javascript -->
-{{ javascriptTag("common/api/services/users_api.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}
+{{ javascriptTag("common/api/services/users_api.js") | raw }} {{ javascriptTag("common/api/services/groups_api.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}

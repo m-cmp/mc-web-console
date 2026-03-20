@@ -10,8 +10,7 @@
 // tabulator Custom CSS
 @import "./tabulator_for_tabler.scss";
 
-// jstree Custom CSS
-@import "./jstree_for_tabler.scss";
+// jstree Custom CSS: application.js에서 jstree 테마 직후 require하여 로드 (우선순위 확보)
 
 // tomselect Custom CSS
 @import "./tomselect_for_tabler.scss";

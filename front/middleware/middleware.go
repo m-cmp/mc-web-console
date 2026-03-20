@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"net/url"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,6 +34,12 @@ func IsTokenExistMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#AuthorizationNotExist")
 		}
 
+		// JWT는 base64 패딩(=) 포함 가능 → 쿠키 저장 시 encodeURIComponent 적용되어 있으면 디코딩
+		tokenValue, _ := url.QueryUnescape(cookie.Value)
+		if tokenValue == "" {
+			tokenValue = cookie.Value
+		}
+
 		// Check cookie expiration (if Expires is set)
 		if !cookie.Expires.IsZero() && cookie.Expires.Before(time.Now()) {
 			errMsg := fmt.Errorf("cookie token is expired")
@@ -40,7 +47,7 @@ func IsTokenExistMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.Redirect(http.StatusSeeOther, "/auth/unauthorized#cookieExpired")
 		}
 
-		c.Set("Authorization", cookie.Value)
+		c.Set("Authorization", tokenValue)
 		return next(c)
 	}
 }
