@@ -84,7 +84,7 @@ menus:
     parentid: cloudsps
     displayname: Cloud Overview
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1310
 
