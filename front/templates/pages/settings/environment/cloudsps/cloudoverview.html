@@ -1,116 +1,261 @@
-<div class="container-xl">
-  <div class="row">
-    <!-- CSP 계정 목록 -->
-    <div id="csp-accounts-list-col" class="col-12">
-      <div class="card">
-        <div class="card-header d-flex align-items-center gap-2">
-          <div class="me-auto">
-            <!-- CSP 타입 필터 버튼 -->
-            <div class="btn-group" id="csp-type-filter" role="group">
-              <button type="button" class="btn btn-sm btn-outline-secondary active" data-csp-type="">전체</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-csp-type="aws">AWS</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-csp-type="gcp">GCP</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-csp-type="azure">Azure</button>
+<div class="page-body">
+  <div class="container-xl">
+
+    <!-- CSP ACCOUNT LIST SECTION -->
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">List of Cloud Service Providers</h3>
+              <div class="card-actions btn-actions">
+
+                <!-- filter toggle -->
+                <a class="btn-action" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#csp-filterbody" aria-expanded="false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"></path>
+                  </svg>
+                </a>
+
+                <!-- action dropdown -->
+                <div class="dropdown">
+                  <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M6 9l6 6l6 -6"></path>
+                    </svg>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <a class="dropdown-item" href="#"
+                      data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this, 'Delete CSP Account', 'Would you like to delete the selected CSP account(s)?', 'pages/settings/environment/cloudsps/cloudoverview.deleteCspAccounts')">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M4 7l16 0"></path>
+                        <path d="M10 11l0 6"></path>
+                        <path d="M14 11l0 6"></path>
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                      </svg>
+                      Delete
+                    </a>
+                  </div>
+                </div>
+
+                <!-- refresh -->
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].refreshCspList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- Filter 영역 -->
+            <div id="csp-filterbody" class="accordion-collapse collapse">
+              <div class="accordion-body p-3 row">
+                <div class="col-sm-12 col-md-3 row mb-1">
+                  <div class="col-4 col-form-label d-flex justify-content-end">CSP Type</div>
+                  <select class="col form-select" id="csp-filter-type">
+                    <option value="">All</option>
+                    <option value="aws">AWS</option>
+                    <option value="gcp">GCP</option>
+                    <option value="azure">Azure</option>
+                  </select>
+                </div>
+                <div class="col-sm-12 col-md-3 row mb-1">
+                  <div class="col-4 col-form-label d-flex justify-content-end">Status</div>
+                  <select class="col form-select" id="csp-filter-status">
+                    <option value="">All</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+                <div class="col-auto d-flex align-items-end mb-1">
+                  <a id="csp-filter-clear" class="btn btn-icon" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M18 6l-12 12"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+              <div id="csp-accounts-table" class="csp-accounts-table-container"></div>
             </div>
           </div>
         </div>
-        <div class="card-body p-0">
-          <div id="csp-accounts-table"></div>
+      </div>
+
+      <!-- VIEW 모드 — CSP 상세 정보 -->
+      <div id="view-mode-cards" class="collapse bg-secondary-lt">
+        <div class="card" id="csp-info-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              CSP Account Info
+              <span id="csp-info-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                [<span id="csp-info-name-text"></span>]
+              </span>
+            </h3>
+            <div class="card-actions btn-actions">
+              <button class="btn btn-outline-secondary" onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].validateSelectedCsp()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M5 12l5 5l10 -10"></path>
+                </svg>
+                Validate
+              </button>
+              <button id="csp-toggle-status-btn" class="btn btn-outline-warning"
+                onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].toggleSelectedCspStatus()">
+                Deactivate
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row p-4 mb-2" style="background-color:#f8f9fa; border-radius:8px; border:1px solid #e9ecef">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Name</div>
+                  <div class="datagrid-content" id="csp-info-name"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CSP Type</div>
+                  <div class="datagrid-content" id="csp-info-type"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Status</div>
+                  <div class="datagrid-content" id="csp-info-status"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Description</div>
+                  <div class="datagrid-content" id="csp-info-description"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Created At</div>
+                  <div class="datagrid-content" id="csp-info-created"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Updated At</div>
+                  <div class="datagrid-content" id="csp-info-updated"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- CSP 계정 상세 패널 (slide-over) -->
-    <div id="csp-account-detail-panel" class="col-12 col-md-6 d-none">
-      <div class="card">
-        <div class="card-header d-flex align-items-center">
-          <button type="button" class="btn btn-sm btn-ghost-secondary me-2" id="detail-panel-close-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            목록으로
-          </button>
-          <h3 class="card-title mb-0" id="detail-panel-title"></h3>
-          <div class="card-options ms-auto">
-            <button type="button" class="btn btn-sm btn-outline-primary me-2" id="detail-edit-btn">Edit</button>
-            <button type="button" class="btn btn-sm btn-primary me-2 d-none" id="detail-save-btn">Save</button>
-            <button type="button" class="btn btn-sm btn-ghost-secondary me-2 d-none" id="detail-cancel-btn">Cancel</button>
-            <button type="button" class="btn btn-sm btn-outline-danger" id="detail-delete-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+      <!-- ADD CSP SECTION -->
+      <div id="cspcreate" class="collapse">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Add CSP Account</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label required">CSP Type</label>
+                  <select class="form-select" id="create-csp-type">
+                    <option value="">Select CSP Type</option>
+                    <option value="aws">AWS</option>
+                    <option value="gcp">GCP</option>
+                    <option value="azure">Azure</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label required">Account Name</label>
+                  <input type="text" class="form-control" id="create-csp-name" placeholder="e.g. my-aws-account">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <input type="text" class="form-control" id="create-csp-description" placeholder="Optional description">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <!-- AWS fields -->
+                <div id="create-fields-aws" style="display:none">
+                  <div class="mb-3">
+                    <label class="form-label required">Access Key ID</label>
+                    <input type="text" class="form-control" id="create-aws-access-key" placeholder="AKIAIOSFODNN7EXAMPLE">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Secret Access Key</label>
+                    <input type="password" class="form-control" id="create-aws-secret-key" placeholder="Secret Access Key">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Default Region</label>
+                    <input type="text" class="form-control" id="create-aws-region" placeholder="ap-northeast-2">
+                  </div>
+                </div>
+                <!-- GCP fields -->
+                <div id="create-fields-gcp" style="display:none">
+                  <div class="mb-3">
+                    <label class="form-label required">Project ID</label>
+                    <input type="text" class="form-control" id="create-gcp-project-id" placeholder="my-gcp-project">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Client Email</label>
+                    <input type="text" class="form-control" id="create-gcp-client-email" placeholder="sa@project.iam.gserviceaccount.com">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Private Key</label>
+                    <textarea class="form-control" id="create-gcp-private-key" rows="4" placeholder="-----BEGIN RSA PRIVATE KEY-----"></textarea>
+                  </div>
+                </div>
+                <!-- Azure fields -->
+                <div id="create-fields-azure" style="display:none">
+                  <div class="mb-3">
+                    <label class="form-label required">Subscription ID</label>
+                    <input type="text" class="form-control" id="create-azure-subscription-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Tenant ID</label>
+                    <input type="text" class="form-control" id="create-azure-tenant-id" placeholder="Tenant ID">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Client ID</label>
+                    <input type="text" class="form-control" id="create-azure-client-id" placeholder="Client ID">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Client Secret</label>
+                    <input type="password" class="form-control" id="create-azure-client-secret" placeholder="Client Secret">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <a href="#cspcreate" class="btn btn-outline-secondary me-2"
+              data-bs-toggle="collapse" data-bs-target="#cspcreate">Cancel</a>
+            <button class="btn btn-primary"
+              onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].createCspAccount()">
+              Save
             </button>
           </div>
         </div>
-        <div class="card-body" id="detail-panel-body">
-          <!-- 상세 내용은 JS에서 동적 렌더링 -->
-        </div>
-        <div class="card-footer d-flex align-items-center gap-2">
-          <div id="detail-status-control"></div>
-          <div class="ms-auto">
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="detail-validate-btn">
-              <span class="spinner-border spinner-border-sm d-none me-1" id="validate-spinner"></span>
-              Validate
-            </button>
-          </div>
-        </div>
       </div>
-    </div>
+
+    </div><!-- /index section -->
   </div>
 </div>
 
-<!-- CSP 계정 등록 모달 -->
-<div class="modal modal-blur fade" id="csp-account-create-modal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">CSP 계정 등록</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label required">계정 이름</label>
-          <input type="text" class="form-control" id="create-name" placeholder="예: my-aws-account">
-        </div>
-        <div class="mb-3">
-          <label class="form-label required">CSP 타입</label>
-          <select class="form-select" id="create-csp-type">
-            <option value="">선택하세요</option>
-            <option value="aws">AWS</option>
-            <option value="gcp">GCP</option>
-            <option value="azure">Azure</option>
-          </select>
-        </div>
-        <div id="create-account-info-fields">
-          <!-- CSP 타입 선택 후 동적 렌더링 -->
-        </div>
-        <div class="mb-3">
-          <label class="form-label">설명</label>
-          <textarea class="form-control" id="create-description" rows="2" placeholder="계정 설명 (선택)"></textarea>
-        </div>
-        <div id="create-error-msg" class="alert alert-danger d-none"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-        <button type="button" class="btn btn-primary" id="create-save-btn">저장</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CSP 계정 삭제 확인 모달 -->
-<div class="modal modal-blur fade" id="csp-account-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-        <div class="modal-title">정말 삭제하시겠습니까?</div>
-        <div class="text-secondary mt-2">
-          <strong id="delete-account-name"></strong> 계정을 삭제합니다. 이 작업은 되돌릴 수 없습니다.
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">취소</button>
-        <button type="button" class="btn btn-danger" id="delete-confirm-btn">삭제</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }}
-{{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}
+{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}

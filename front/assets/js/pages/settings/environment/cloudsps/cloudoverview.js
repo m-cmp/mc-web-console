@@ -1,45 +1,45 @@
-// CSP 계정 관리 페이지 (Cloud Overview)
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-if (typeof webconsolejs === 'undefined') {
-    window.webconsolejs = {};
-}
-if (typeof webconsolejs['pages/settings/environment/cloudsps/cloudoverview'] === 'undefined') {
-    webconsolejs['pages/settings/environment/cloudsps/cloudoverview'] = {};
-}
-
-function escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-const SENSITIVE_FIELDS = ['secret_access_key', 'client_secret', 'service_account_key'];
-
-const CSP_ACCOUNT_INFO_FIELDS = {
-    aws: [
-        { key: 'account_id', label: 'AWS Account ID', required: true, type: 'text', placeholder: '12자리 숫자 (예: 050864702683)' },
-        { key: 'alias', label: 'Alias', required: false, type: 'text', placeholder: '계정 별칭' },
-        { key: 'region', label: 'Default Region', required: false, type: 'text', placeholder: 'ap-northeast-2' },
-        { key: 'access_key_id', label: 'Access Key ID', required: false, type: 'text', placeholder: 'AKIAIOSFODNN7EXAMPLE' },
-        { key: 'secret_access_key', label: 'Secret Access Key', required: false, type: 'password', placeholder: '민감 정보' },
-    ],
-    gcp: [
-        { key: 'project_id', label: 'Project ID', required: true, type: 'text', placeholder: 'my-gcp-project' },
-        { key: 'project_number', label: 'Project Number', required: false, type: 'text', placeholder: '숫자 문자열' },
-        { key: 'service_account_key', label: 'Service Account Key (JSON)', required: false, type: 'textarea', placeholder: '{ "type": "service_account", ... }' },
-    ],
-    azure: [
-        { key: 'subscription_id', label: 'Subscription ID', required: true, type: 'text', placeholder: 'UUID 형식' },
-        { key: 'tenant_id', label: 'Tenant ID', required: true, type: 'text', placeholder: 'UUID 형식' },
-        { key: 'directory_id', label: 'Directory ID', required: false, type: 'text', placeholder: 'tenant_id와 동일한 경우 많음' },
-        { key: 'client_id', label: 'Client ID', required: false, type: 'text', placeholder: 'App Registration Client ID' },
-        { key: 'client_secret', label: 'Client Secret', required: false, type: 'password', placeholder: '민감 정보' },
-    ],
+// DOM 요소 캐싱
+const DOM = {
+    cspTable: document.getElementById('csp-accounts-table'),
+    viewModeCards: document.getElementById('view-mode-cards'),
+    cspInfoNameLabel: document.getElementById('csp-info-name-label'),
+    cspInfoNameText: document.getElementById('csp-info-name-text'),
+    cspInfoName: document.getElementById('csp-info-name'),
+    cspInfoType: document.getElementById('csp-info-type'),
+    cspInfoStatus: document.getElementById('csp-info-status'),
+    cspInfoDescription: document.getElementById('csp-info-description'),
+    cspInfoCreated: document.getElementById('csp-info-created'),
+    cspInfoUpdated: document.getElementById('csp-info-updated'),
+    toggleStatusBtn: document.getElementById('csp-toggle-status-btn'),
+    filterType: document.getElementById('csp-filter-type'),
+    filterStatus: document.getElementById('csp-filter-status'),
+    filterClear: document.getElementById('csp-filter-clear'),
+    createCspType: document.getElementById('create-csp-type'),
+    createCspName: document.getElementById('create-csp-name'),
+    createCspDescription: document.getElementById('create-csp-description'),
+    createFieldsAws: document.getElementById('create-fields-aws'),
+    createFieldsGcp: document.getElementById('create-fields-gcp'),
+    createFieldsAzure: document.getElementById('create-fields-azure'),
 };
+
+// 중앙화된 상태 관리 객체
+const AppState = {
+    csp: {
+        list: [],
+        selectedAccount: null,
+    },
+    ui: {
+        viewMode: false,
+    },
+    tables: {
+        cspTable: null,
+    },
+};
+
+// 선택된 행들을 관리하는 배열 (users.js와 동일한 패턴)
+var checked_array = [];
 
 const CSP_TYPE_BADGE = {
     aws: '<span class="badge bg-orange-lt">AWS</span>',
@@ -47,493 +47,420 @@ const CSP_TYPE_BADGE = {
     azure: '<span class="badge bg-indigo-lt">Azure</span>',
 };
 
-// 앱 상태
-const AppState = {
-    accounts: [],
-    currentFilter: '',
-    selectedAccountId: null,
-    isEditMode: false,
-    deleteTargetId: null,
+// ─── UIManager ──────────────────────────────────────────────────────
+
+const UIManager = {
+    showViewMode(account) {
+        // Add CSP 폼이 열려 있으면 닫기
+        const createSection = document.getElementById('cspcreate');
+        if (createSection && createSection.classList.contains('show')) {
+            bootstrap.Collapse.getOrCreateInstance(createSection).hide();
+        }
+        DOM.viewModeCards.classList.add('show');
+        AppState.ui.viewMode = true;
+        this.updateCspDetail(account);
+    },
+
+    hideViewMode() {
+        DOM.viewModeCards.classList.remove('show');
+        AppState.ui.viewMode = false;
+        AppState.csp.selectedAccount = null;
+        this.clearCspDetail();
+    },
+
+    updateCspDetail(account) {
+        AppState.csp.selectedAccount = account;
+
+        // name label in card header
+        if (DOM.cspInfoNameLabel) {
+            DOM.cspInfoNameLabel.style.display = '';
+        }
+        if (DOM.cspInfoNameText) {
+            DOM.cspInfoNameText.textContent = account.name || '';
+        }
+
+        // datagrid fields
+        if (DOM.cspInfoName) DOM.cspInfoName.textContent = account.name || '';
+        if (DOM.cspInfoType) {
+            DOM.cspInfoType.innerHTML = CSP_TYPE_BADGE[account.csp_type] || account.csp_type || '';
+        }
+        if (DOM.cspInfoStatus) {
+            DOM.cspInfoStatus.innerHTML = account.is_active
+                ? '<span class="badge bg-success-lt">Active</span>'
+                : '<span class="badge bg-secondary-lt">Inactive</span>';
+        }
+        if (DOM.cspInfoDescription) DOM.cspInfoDescription.textContent = account.description || '';
+        if (DOM.cspInfoCreated) {
+            DOM.cspInfoCreated.textContent = account.created_at
+                ? account.created_at.replace('T', ' ').substring(0, 19)
+                : '';
+        }
+        if (DOM.cspInfoUpdated) {
+            DOM.cspInfoUpdated.textContent = account.updated_at
+                ? account.updated_at.replace('T', ' ').substring(0, 19)
+                : '';
+        }
+
+        // toggle button label
+        if (DOM.toggleStatusBtn) {
+            DOM.toggleStatusBtn.textContent = account.is_active ? 'Deactivate' : 'Activate';
+            DOM.toggleStatusBtn.className = account.is_active
+                ? 'btn btn-outline-warning'
+                : 'btn btn-outline-success';
+        }
+    },
+
+    clearCspDetail() {
+        if (DOM.cspInfoNameLabel) DOM.cspInfoNameLabel.style.display = 'none';
+        if (DOM.cspInfoNameText) DOM.cspInfoNameText.textContent = '';
+        if (DOM.cspInfoName) DOM.cspInfoName.textContent = '';
+        if (DOM.cspInfoType) DOM.cspInfoType.textContent = '';
+        if (DOM.cspInfoStatus) DOM.cspInfoStatus.textContent = '';
+        if (DOM.cspInfoDescription) DOM.cspInfoDescription.textContent = '';
+        if (DOM.cspInfoCreated) DOM.cspInfoCreated.textContent = '';
+        if (DOM.cspInfoUpdated) DOM.cspInfoUpdated.textContent = '';
+    },
 };
 
-// ─── Tabulator 테이블 ───────────────────────────────────────────────
+// ─── CspManager ─────────────────────────────────────────────────────
 
-let table = null;
+const CspManager = {
+    async loadAccounts(filter = {}) {
+        const accounts = await webconsolejs["common/api/services/csp_accounts_api"].listCspAccounts(filter);
+        AppState.csp.list = accounts || [];
+        return AppState.csp.list;
+    },
 
-function initTable() {
-    table = new Tabulator("#csp-accounts-table", {
-        data: [],
-        layout: "fitColumns",
-        responsiveLayout: "collapse",
-        placeholder: "등록된 CSP 계정이 없습니다.",
-        columns: [
+    async getAccountById(id) {
+        return await webconsolejs["common/api/services/csp_accounts_api"].getCspAccountById(id);
+    },
+
+    async createAccount(payload) {
+        return await webconsolejs["common/api/services/csp_accounts_api"].createCspAccount(payload);
+    },
+
+    async deleteAccounts(ids) {
+        for (const id of ids) {
+            await webconsolejs["common/api/services/csp_accounts_api"].deleteCspAccount(id);
+        }
+    },
+
+    async validateAccount(id) {
+        return await webconsolejs["common/api/services/csp_accounts_api"].validateCspAccount(id);
+    },
+
+    async activateAccount(id) {
+        return await webconsolejs["common/api/services/csp_accounts_api"].activateCspAccount(id);
+    },
+
+    async deactivateAccount(id) {
+        return await webconsolejs["common/api/services/csp_accounts_api"].deactivateCspAccount(id);
+    },
+};
+
+// ─── TableManager ───────────────────────────────────────────────────
+
+const TableManager = {
+    initTable(data) {
+        AppState.tables.cspTable = new Tabulator(DOM.cspTable, {
+            data: data || [],
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No CSP accounts found.",
+            columns: this.getColumns(),
+        });
+
+        // users.js 패턴: 생성 후 이벤트 등록
+        AppState.tables.cspTable.on("rowClick", function (e, row) {
+            const rowData = row.getData();
+            row.toggleSelect();
+            getSelectedCspData(rowData.id);
+        });
+
+        AppState.tables.cspTable.on("rowSelectionChanged", function (data, rows) {
+            // data는 row data 객체 배열 (users.js 패턴)
+            checked_array = data;
+        });
+    },
+
+    getColumns() {
+        return [
             {
-                title: "이름", field: "name", widthGrow: 2,
-                formatter: (cell) => `<span class="fw-medium">${cell.getValue()}</span>`,
+                formatter: "rowSelection",
+                titleFormatter: "rowSelection",
+                hozAlign: "center",
+                headerSort: false,
+                width: 40,
+                cellClick: (e, cell) => {
+                    cell.getRow().toggleSelect();
+                },
             },
             {
-                title: "CSP 타입", field: "csp_type", width: 100,
-                formatter: (cell) => CSP_TYPE_BADGE[cell.getValue()] || cell.getValue(),
+                title: "Name", field: "name", widthGrow: 2,
+                formatter: (cell) => `<span class="fw-medium">${cell.getValue() || ''}</span>`,
             },
             {
-                title: "상태", field: "is_active", width: 110,
+                title: "CSP Type", field: "csp_type", width: 110,
+                formatter: (cell) => CSP_TYPE_BADGE[cell.getValue()] || cell.getValue() || '',
+            },
+            {
+                title: "Status", field: "is_active", width: 110,
                 formatter: (cell) => cell.getValue()
                     ? '<span class="badge bg-success-lt">Active</span>'
                     : '<span class="badge bg-secondary-lt">Inactive</span>',
             },
-            { title: "설명", field: "description", widthGrow: 3 },
             {
-                title: "등록일", field: "created_at", width: 130,
+                title: "Description", field: "description", widthGrow: 3,
+            },
+            {
+                title: "Created At", field: "created_at", width: 130,
                 formatter: (cell) => cell.getValue() ? cell.getValue().substring(0, 10) : '',
             },
-            {
-                title: "", field: "id", width: 60, hozAlign: "center", headerSort: false,
-                formatter: () => `<button class="btn btn-sm btn-ghost-danger py-0 px-1" title="삭제">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
-                </button>`,
-                cellClick: (e, cell) => {
-                    e.stopPropagation();
-                    openDeleteModal(cell.getData());
-                },
-            },
-        ],
-        rowClick: (e, row) => {
-            if (e.target.closest('button')) return;
-            loadCspAccountDetail(row.getData().id);
-        },
+        ];
+    },
+
+    setData(data) {
+        if (AppState.tables.cspTable) {
+            AppState.tables.cspTable.setData(data);
+        }
+    },
+
+    applyFilter() {
+        const cspType = DOM.filterType ? DOM.filterType.value : '';
+        const statusVal = DOM.filterStatus ? DOM.filterStatus.value : '';
+
+        const filters = [];
+        if (cspType) filters.push({ field: "csp_type", type: "=", value: cspType });
+        if (statusVal !== '') filters.push({ field: "is_active", type: "=", value: statusVal === 'true' });
+
+        if (AppState.tables.cspTable) {
+            AppState.tables.cspTable.setFilter(filters);
+        }
+    },
+
+    clearFilter() {
+        if (DOM.filterType) DOM.filterType.value = '';
+        if (DOM.filterStatus) DOM.filterStatus.value = '';
+        if (AppState.tables.cspTable) {
+            AppState.tables.cspTable.clearFilter();
+        }
+    },
+};
+
+// ─── 상세 조회 (rowClick 핸들러) ─────────────────────────────────────
+
+async function getSelectedCspData(accountId) {
+    try {
+        const account = await CspManager.getAccountById(accountId);
+        UIManager.showViewMode(account);
+    } catch (err) {
+        console.error('Failed to load CSP account detail:', err);
+        alert('Failed to load account details: ' + err.message);
+    }
+}
+
+// ─── 초기화 ─────────────────────────────────────────────────────────
+
+async function initCspAccounts() {
+    try {
+        const accounts = await CspManager.loadAccounts();
+        TableManager.initTable(accounts);
+    } catch (err) {
+        console.error('Failed to initialize CSP accounts:', err);
+        TableManager.initTable([]);
+    }
+}
+
+// ─── 필터 이벤트 ─────────────────────────────────────────────────────
+
+function initFilterEvents() {
+    if (DOM.filterType) {
+        DOM.filterType.addEventListener('change', () => TableManager.applyFilter());
+    }
+    if (DOM.filterStatus) {
+        DOM.filterStatus.addEventListener('change', () => TableManager.applyFilter());
+    }
+    if (DOM.filterClear) {
+        DOM.filterClear.addEventListener('click', () => TableManager.clearFilter());
+    }
+}
+
+// ─── 등록 폼 CSP 타입 연동 ──────────────────────────────────────────
+
+function initCreateFormEvents() {
+    if (!DOM.createCspType) return;
+    DOM.createCspType.addEventListener('change', () => {
+        const val = DOM.createCspType.value;
+        if (DOM.createFieldsAws) DOM.createFieldsAws.style.display = val === 'aws' ? '' : 'none';
+        if (DOM.createFieldsGcp) DOM.createFieldsGcp.style.display = val === 'gcp' ? '' : 'none';
+        if (DOM.createFieldsAzure) DOM.createFieldsAzure.style.display = val === 'azure' ? '' : 'none';
     });
 }
 
-// ─── 목록 조회 ─────────────────────────────────────────────────────
+// ─── Export 함수 (webpack library 설정으로 webconsolejs 네임스페이스에 자동 등록) ──
 
-async function loadCspAccounts() {
+export async function refreshCspList() {
     try {
-        const filter = AppState.currentFilter ? { csp_type: AppState.currentFilter } : {};
-        const accounts = await webconsolejs["common/api/services/csp_accounts_api"].listCspAccounts(filter);
-        AppState.accounts = accounts || [];
-        if (table) {
-            table.setData(AppState.accounts);
+        const accounts = await CspManager.loadAccounts();
+        TableManager.setData(accounts);
+        if (AppState.csp.selectedAccount) {
+            const refreshed = await CspManager.getAccountById(AppState.csp.selectedAccount.id);
+            UIManager.updateCspDetail(refreshed);
         }
     } catch (err) {
-        showToast('error', '목록을 불러오지 못했습니다: ' + err.message);
+        console.error('Failed to refresh CSP list:', err);
+        alert('Failed to refresh: ' + err.message);
     }
 }
 
-// ─── CSP 타입 필터 ─────────────────────────────────────────────────
+export async function createCspAccount() {
+    const cspType = document.getElementById('create-csp-type') ? document.getElementById('create-csp-type').value : '';
+    const name = document.getElementById('create-csp-name') ? document.getElementById('create-csp-name').value.trim() : '';
+    const description = document.getElementById('create-csp-description') ? document.getElementById('create-csp-description').value.trim() : '';
 
-function initCspTypeFilter() {
-    document.getElementById('csp-type-filter').addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-csp-type]');
-        if (!btn) return;
-        document.querySelectorAll('#csp-type-filter [data-csp-type]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        AppState.currentFilter = btn.dataset.cspType;
-        loadCspAccounts();
-    });
-}
-
-// ─── AccountInfo 동적 입력 필드 ────────────────────────────────────
-
-function renderAccountInfoFields(cspType, container, values = {}) {
-    const fields = CSP_ACCOUNT_INFO_FIELDS[cspType] || [];
-    if (!fields.length) {
-        container.innerHTML = '';
-        return;
-    }
-    container.innerHTML = `
-        <div class="card mb-3">
-            <div class="card-header"><h5 class="card-title mb-0">Account Info</h5></div>
-            <div class="card-body">
-                ${fields.map(f => {
-                    const requiredMark = f.required ? '<span class="text-danger ms-1">*</span>' : '';
-                    const val = values[f.key] || '';
-                    if (f.type === 'textarea') {
-                        return `<div class="mb-3">
-                            <label class="form-label">${f.label}${requiredMark}</label>
-                            <textarea class="form-control" id="ai-${f.key}" rows="4" placeholder="${f.placeholder}">${val}</textarea>
-                        </div>`;
-                    }
-                    return `<div class="mb-3">
-                        <label class="form-label">${f.label}${requiredMark}</label>
-                        <input type="${f.type}" class="form-control" id="ai-${f.key}" value="${val}" placeholder="${f.placeholder}">
-                    </div>`;
-                }).join('')}
-            </div>
-        </div>`;
-}
-
-function collectAccountInfoValues(cspType) {
-    const fields = CSP_ACCOUNT_INFO_FIELDS[cspType] || [];
-    const result = {};
-    fields.forEach(f => {
-        const el = document.getElementById(`ai-${f.key}`);
-        if (el && el.value.trim()) {
-            result[f.key] = el.value.trim();
-        }
-    });
-    return result;
-}
-
-// ─── 등록 모달 ─────────────────────────────────────────────────────
-
-function initCreateModal() {
-    const cspTypeSelect = document.getElementById('create-csp-type');
-    const accountInfoContainer = document.getElementById('create-account-info-fields');
-
-    cspTypeSelect.addEventListener('change', () => {
-        renderAccountInfoFields(cspTypeSelect.value, accountInfoContainer);
-    });
-
-    document.getElementById('create-save-btn').addEventListener('click', createCspAccount);
-
-    const modal = document.getElementById('csp-account-create-modal');
-    modal.addEventListener('hidden.bs.modal', () => {
-        document.getElementById('create-name').value = '';
-        cspTypeSelect.value = '';
-        accountInfoContainer.innerHTML = '';
-        document.getElementById('create-description').value = '';
-        document.getElementById('create-error-msg').classList.add('d-none');
-    });
-}
-
-async function createCspAccount() {
-    const name = document.getElementById('create-name').value.trim();
-    const cspType = document.getElementById('create-csp-type').value;
-    const description = document.getElementById('create-description').value.trim();
-    const errorEl = document.getElementById('create-error-msg');
-
-    if (!name || !cspType) {
-        errorEl.textContent = '계정 이름과 CSP 타입은 필수입니다.';
-        errorEl.classList.remove('d-none');
+    if (!cspType || !name) {
+        alert('CSP Type and Account Name are required.');
         return;
     }
 
-    const accountInfo = collectAccountInfoValues(cspType);
-    const requiredFields = (CSP_ACCOUNT_INFO_FIELDS[cspType] || []).filter(f => f.required);
-    for (const f of requiredFields) {
-        if (!accountInfo[f.key]) {
-            errorEl.textContent = `${f.label} 은(는) 필수입니다.`;
-            errorEl.classList.remove('d-none');
-            return;
-        }
+    const accountInfo = {};
+    if (cspType === 'aws') {
+        const accessKey = document.getElementById('create-aws-access-key');
+        const secretKey = document.getElementById('create-aws-secret-key');
+        const region = document.getElementById('create-aws-region');
+        if (accessKey && accessKey.value.trim()) accountInfo.access_key_id = accessKey.value.trim();
+        if (secretKey && secretKey.value.trim()) accountInfo.secret_access_key = secretKey.value.trim();
+        if (region && region.value.trim()) accountInfo.region = region.value.trim();
+    } else if (cspType === 'gcp') {
+        const projectId = document.getElementById('create-gcp-project-id');
+        const clientEmail = document.getElementById('create-gcp-client-email');
+        const privateKey = document.getElementById('create-gcp-private-key');
+        if (projectId && projectId.value.trim()) accountInfo.project_id = projectId.value.trim();
+        if (clientEmail && clientEmail.value.trim()) accountInfo.client_email = clientEmail.value.trim();
+        if (privateKey && privateKey.value.trim()) accountInfo.private_key = privateKey.value.trim();
+    } else if (cspType === 'azure') {
+        const subscriptionId = document.getElementById('create-azure-subscription-id');
+        const tenantId = document.getElementById('create-azure-tenant-id');
+        const clientId = document.getElementById('create-azure-client-id');
+        const clientSecret = document.getElementById('create-azure-client-secret');
+        if (subscriptionId && subscriptionId.value.trim()) accountInfo.subscription_id = subscriptionId.value.trim();
+        if (tenantId && tenantId.value.trim()) accountInfo.tenant_id = tenantId.value.trim();
+        if (clientId && clientId.value.trim()) accountInfo.client_id = clientId.value.trim();
+        if (clientSecret && clientSecret.value.trim()) accountInfo.client_secret = clientSecret.value.trim();
     }
-
-    errorEl.classList.add('d-none');
-    const saveBtn = document.getElementById('create-save-btn');
-    saveBtn.disabled = true;
 
     try {
-        await webconsolejs["common/api/services/csp_accounts_api"].createCspAccount({
-            name,
-            csp_type: cspType,
-            account_info: accountInfo,
-            description,
-        });
-        bootstrap.Modal.getInstance(document.getElementById('csp-account-create-modal')).hide();
-        showToast('success', '계정이 등록되었습니다.');
-        await loadCspAccounts();
-    } catch (err) {
-        errorEl.textContent = '등록 실패: ' + err.message;
-        errorEl.classList.remove('d-none');
-    } finally {
-        saveBtn.disabled = false;
-    }
-}
+        await CspManager.createAccount({ name, csp_type: cspType, account_info: accountInfo, description });
 
-// ─── 삭제 모달 ─────────────────────────────────────────────────────
+        // 폼 초기화
+        const createType = document.getElementById('create-csp-type');
+        const createName = document.getElementById('create-csp-name');
+        const createDesc = document.getElementById('create-csp-description');
+        const fieldsAws = document.getElementById('create-fields-aws');
+        const fieldsGcp = document.getElementById('create-fields-gcp');
+        const fieldsAzure = document.getElementById('create-fields-azure');
+        if (createType) createType.value = '';
+        if (createName) createName.value = '';
+        if (createDesc) createDesc.value = '';
+        if (fieldsAws) fieldsAws.style.display = 'none';
+        if (fieldsGcp) fieldsGcp.style.display = 'none';
+        if (fieldsAzure) fieldsAzure.style.display = 'none';
 
-function openDeleteModal(account) {
-    AppState.deleteTargetId = account.id;
-    document.getElementById('delete-account-name').textContent = account.name;
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('csp-account-delete-modal')).show();
-}
-
-function initDeleteModal() {
-    document.getElementById('delete-confirm-btn').addEventListener('click', async () => {
-        if (!AppState.deleteTargetId) return;
-        const btn = document.getElementById('delete-confirm-btn');
-        btn.disabled = true;
-        try {
-            await webconsolejs["common/api/services/csp_accounts_api"].deleteCspAccount(AppState.deleteTargetId);
-            bootstrap.Modal.getInstance(document.getElementById('csp-account-delete-modal')).hide();
-            showToast('success', '계정이 삭제되었습니다.');
-            if (AppState.selectedAccountId === AppState.deleteTargetId) {
-                closeDetailPanel();
-            }
-            AppState.deleteTargetId = null;
-            await loadCspAccounts();
-        } catch (err) {
-            showToast('error', '삭제 실패: ' + err.message);
-        } finally {
-            btn.disabled = false;
+        // cspcreate collapse 닫기
+        const cspcreate = document.getElementById('cspcreate');
+        if (cspcreate && cspcreate.classList.contains('show')) {
+            bootstrap.Collapse.getOrCreateInstance(cspcreate).hide();
         }
-    });
-}
 
-// ─── 상세 패널 ─────────────────────────────────────────────────────
-
-async function loadCspAccountDetail(accountId) {
-    AppState.selectedAccountId = accountId;
-    AppState.isEditMode = false;
-
-    try {
-        const account = await webconsolejs["common/api/services/csp_accounts_api"].getCspAccountById(accountId);
-        renderDetailPanel(account);
-        openDetailPanel();
+        // 목록 갱신
+        const accounts = await CspManager.loadAccounts();
+        TableManager.setData(accounts);
     } catch (err) {
-        showToast('error', '상세 정보를 불러오지 못했습니다: ' + err.message);
+        console.error('Failed to create CSP account:', err);
+        alert('Failed to create account: ' + err.message);
     }
 }
 
-function openDetailPanel() {
-    const listCol = document.getElementById('csp-accounts-list-col');
-    const detailPanel = document.getElementById('csp-account-detail-panel');
-    listCol.classList.remove('col-12');
-    listCol.classList.add('col-md-6');
-    detailPanel.classList.remove('d-none');
-}
-
-function closeDetailPanel() {
-    const listCol = document.getElementById('csp-accounts-list-col');
-    const detailPanel = document.getElementById('csp-account-detail-panel');
-    listCol.classList.remove('col-md-6');
-    listCol.classList.add('col-12');
-    detailPanel.classList.add('d-none');
-    AppState.selectedAccountId = null;
-    AppState.isEditMode = false;
-}
-
-function renderDetailPanel(account) {
-    document.getElementById('detail-panel-title').textContent = account.name;
-
-    // 상태 제어 버튼
-    const statusControl = document.getElementById('detail-status-control');
-    if (account.is_active) {
-        statusControl.innerHTML = `<button type="button" class="btn btn-sm btn-outline-warning" id="detail-status-toggle-btn" data-active="true">Deactivate</button>`;
-    } else {
-        statusControl.innerHTML = `<button type="button" class="btn btn-sm btn-outline-success" id="detail-status-toggle-btn" data-active="false">Activate</button>`;
-    }
-    document.getElementById('detail-status-toggle-btn').addEventListener('click', () => toggleStatus(account));
-
-    // 본문 렌더링 (읽기 모드)
-    renderDetailBody(account, false);
-
-    // Edit 버튼 이벤트
-    document.getElementById('detail-edit-btn').onclick = () => enterEditMode(account);
-    document.getElementById('detail-delete-btn').onclick = () => openDeleteModal(account);
-    document.getElementById('detail-save-btn').onclick = () => saveEdit(account.id);
-    document.getElementById('detail-cancel-btn').onclick = () => renderDetailPanel(account);
-    document.getElementById('detail-validate-btn').onclick = () => validateAccount(account.id);
-}
-
-function renderDetailBody(account, editMode) {
-    const body = document.getElementById('detail-panel-body');
-
-    const cspBadge = CSP_TYPE_BADGE[account.csp_type] || account.csp_type;
-    const statusBadge = account.is_active
-        ? '<span class="badge bg-success-lt">Active</span>'
-        : '<span class="badge bg-secondary-lt">Inactive</span>';
-
-    if (!editMode) {
-        // 읽기 모드
-        const accountInfoRows = Object.entries(account.account_info || {}).map(([k, v]) => {
-            const displayVal = SENSITIVE_FIELDS.includes(k) ? '****' : escapeHtml(v);
-            return `<tr><th class="w-40">${escapeHtml(k)}</th><td>${displayVal}</td></tr>`;
-        }).join('');
-
-        body.innerHTML = `
-            <table class="table table-sm card-table mb-3">
-                <tbody>
-                    <tr><th class="w-40">CSP 타입</th><td>${cspBadge}</td></tr>
-                    <tr><th>상태</th><td>${statusBadge}</td></tr>
-                    <tr><th>설명</th><td>${account.description || '-'}</td></tr>
-                </tbody>
-            </table>
-            <div class="mb-3">
-                <div class="fw-medium mb-2">Account Info</div>
-                <table class="table table-sm card-table">
-                    <tbody>${accountInfoRows}</tbody>
-                </table>
-            </div>
-            <table class="table table-sm card-table">
-                <tbody>
-                    <tr><th class="w-40">등록일</th><td>${account.created_at ? account.created_at.replace('T', ' ').substring(0, 19) : '-'}</td></tr>
-                    <tr><th>수정일</th><td>${account.updated_at ? account.updated_at.replace('T', ' ').substring(0, 19) : '-'}</td></tr>
-                </tbody>
-            </table>`;
-
-        document.getElementById('detail-edit-btn').classList.remove('d-none');
-        document.getElementById('detail-save-btn').classList.add('d-none');
-        document.getElementById('detail-cancel-btn').classList.add('d-none');
-    } else {
-        // 편집 모드
-        body.innerHTML = `
-            <div class="mb-3">
-                <label class="form-label required">계정 이름</label>
-                <input type="text" class="form-control" id="edit-name" value="${account.name}">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">CSP 타입</label>
-                <input type="text" class="form-control" value="${account.csp_type}" readonly>
-            </div>
-            <div id="edit-account-info-fields"></div>
-            <div class="mb-3">
-                <label class="form-label">설명</label>
-                <textarea class="form-control" id="edit-description" rows="2">${account.description || ''}</textarea>
-            </div>
-            <div id="edit-error-msg" class="alert alert-danger d-none"></div>`;
-
-        renderAccountInfoFields(account.csp_type, document.getElementById('edit-account-info-fields'), account.account_info || {});
-
-        document.getElementById('detail-edit-btn').classList.add('d-none');
-        document.getElementById('detail-save-btn').classList.remove('d-none');
-        document.getElementById('detail-cancel-btn').classList.remove('d-none');
-    }
-}
-
-function enterEditMode(account) {
-    AppState.isEditMode = true;
-    renderDetailBody(account, true);
-}
-
-async function saveEdit(accountId) {
-    const nameEl = document.getElementById('edit-name');
-    const descEl = document.getElementById('edit-description');
-    const errorEl = document.getElementById('edit-error-msg');
-
-    const name = nameEl ? nameEl.value.trim() : '';
-    if (!name) {
-        if (errorEl) {
-            errorEl.textContent = '계정 이름은 필수입니다.';
-            errorEl.classList.remove('d-none');
-        }
+export async function deleteCspAccounts() {
+    if (!checked_array || checked_array.length === 0) {
+        alert('Please select at least one account to delete.');
         return;
     }
 
-    // 현재 CSP 타입으로 account_info 수집
-    const currentAccount = AppState.accounts.find(a => a.id === accountId);
-    const cspType = currentAccount ? currentAccount.csp_type : '';
-    const accountInfo = collectAccountInfoValues(cspType);
-
-    const saveBtn = document.getElementById('detail-save-btn');
-    saveBtn.disabled = true;
+    // checked_array는 row data 객체 배열 → ID 추출
+    const idsToDelete = checked_array.map(item => item.id);
 
     try {
-        const updated = await webconsolejs["common/api/services/csp_accounts_api"].updateCspAccount(accountId, {
-            name,
-            account_info: accountInfo,
-            description: descEl ? descEl.value.trim() : '',
-        });
-        showToast('success', '저장되었습니다.');
-        await loadCspAccounts();
-        // 업데이트된 데이터로 상세 패널 다시 렌더링
-        const refreshed = await webconsolejs["common/api/services/csp_accounts_api"].getCspAccountById(accountId);
-        renderDetailPanel(refreshed);
-    } catch (err) {
-        if (errorEl) {
-            errorEl.textContent = '저장 실패: ' + err.message;
-            errorEl.classList.remove('d-none');
-        } else {
-            showToast('error', '저장 실패: ' + err.message);
+        await CspManager.deleteAccounts(idsToDelete);
+
+        // 삭제된 계정이 선택 중이면 상세 패널 닫기
+        if (AppState.csp.selectedAccount && idsToDelete.includes(AppState.csp.selectedAccount.id)) {
+            UIManager.hideViewMode();
         }
-    } finally {
-        saveBtn.disabled = false;
+
+        checked_array = [];
+        const accounts = await CspManager.loadAccounts();
+        TableManager.setData(accounts);
+    } catch (err) {
+        console.error('Failed to delete CSP accounts:', err);
+        alert('Failed to delete: ' + err.message);
     }
 }
 
-async function toggleStatus(account) {
+export async function validateSelectedCsp() {
+    if (!AppState.csp.selectedAccount) {
+        alert('Please select an account to validate.');
+        return;
+    }
+    try {
+        await CspManager.validateAccount(AppState.csp.selectedAccount.id);
+        alert('Account credentials are valid.');
+    } catch (err) {
+        console.error('Validation failed:', err);
+        alert('Validation failed: ' + err.message);
+    }
+}
+
+export async function toggleSelectedCspStatus() {
+    if (!AppState.csp.selectedAccount) return;
+
+    const account = AppState.csp.selectedAccount;
     const isActive = account.is_active;
-    const action = isActive ? '비활성화' : '활성화';
-    if (!confirm(`계정을 ${action}하시겠습니까?`)) return;
 
     try {
         if (isActive) {
-            await webconsolejs["common/api/services/csp_accounts_api"].deactivateCspAccount(account.id);
+            await CspManager.deactivateAccount(account.id);
         } else {
-            await webconsolejs["common/api/services/csp_accounts_api"].activateCspAccount(account.id);
+            await CspManager.activateAccount(account.id);
         }
-        showToast('success', `계정이 ${action}되었습니다.`);
-        await loadCspAccounts();
-        const refreshed = await webconsolejs["common/api/services/csp_accounts_api"].getCspAccountById(account.id);
-        renderDetailPanel(refreshed);
+
+        const refreshed = await CspManager.getAccountById(account.id);
+        UIManager.updateCspDetail(refreshed);
+
+        const accounts = await CspManager.loadAccounts();
+        TableManager.setData(accounts);
     } catch (err) {
-        showToast('error', `${action} 실패: ` + err.message);
+        console.error('Failed to toggle CSP status:', err);
+        alert('Failed to change status: ' + err.message);
     }
 }
 
-async function validateAccount(accountId) {
-    const btn = document.getElementById('detail-validate-btn');
-    const spinner = document.getElementById('validate-spinner');
-    btn.disabled = true;
-    spinner.classList.remove('d-none');
-
-    try {
-        await webconsolejs["common/api/services/csp_accounts_api"].validateCspAccount(accountId);
-        showToast('success', '계정 자격증명이 유효합니다.');
-    } catch (err) {
-        showToast('error', '유효성 검증 실패: ' + err.message);
-    } finally {
-        btn.disabled = false;
-        spinner.classList.add('d-none');
-    }
-}
-
-// ─── 토스트 ────────────────────────────────────────────────────────
-
-function showToast(type, message) {
-    // Tabler 토스트 활용 (또는 alert fallback)
-    const toastContainer = document.getElementById('toast-container') || createToastContainer();
-    const id = 'toast-' + Date.now();
-    const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
-    const html = `
-        <div id="${id}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>`;
-    toastContainer.insertAdjacentHTML('beforeend', html);
-    const el = document.getElementById(id);
-    const toast = new bootstrap.Toast(el, { delay: 4000 });
-    toast.show();
-    el.addEventListener('hidden.bs.toast', () => el.remove());
-}
-
-function createToastContainer() {
-    const div = document.createElement('div');
-    div.id = 'toast-container';
-    div.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-    div.style.zIndex = '9999';
-    document.body.appendChild(div);
-    return div;
-}
-
-// ─── 초기화 ────────────────────────────────────────────────────────
+// ─── DOMContentLoaded ────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", async function () {
-    // page-header 버튼 삽입
-    const btnList = document.getElementById('page-header-btn-list');
-    if (btnList) {
-        btnList.innerHTML = `
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#csp-account-create-modal">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Add Account
-            </button>`;
-    }
+    // page-header Add CSP 버튼 삽입 (상세 패널 닫고 등록 폼 토글)
+    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(
+        "cspcreate",
+        "Add CSP",
+        "document.getElementById('view-mode-cards').classList.remove('show'); bootstrap.Collapse.getOrCreateInstance(document.getElementById('cspcreate')).toggle()"
+    );
 
-    // 상세 패널 닫기
-    document.getElementById('detail-panel-close-btn').addEventListener('click', closeDetailPanel);
+    // 필터 이벤트 초기화
+    initFilterEvents();
 
-    // 테이블 초기화
-    initTable();
+    // 등록 폼 이벤트 초기화
+    initCreateFormEvents();
 
-    // 필터 초기화
-    initCspTypeFilter();
-
-    // 모달 초기화
-    initCreateModal();
-    initDeleteModal();
-
-    // 목록 로드
-    await loadCspAccounts();
+    // 목록 초기화
+    await initCspAccounts();
 });

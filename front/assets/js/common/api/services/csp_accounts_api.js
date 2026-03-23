@@ -4,10 +4,9 @@ function unwrapResponse(response) {
     if (!response) {
         throw new Error('Invalid response from server');
     }
-    if (response.response) {
-        const err = new Error(response.message || 'Request failed');
-        err.response = response.response;
-        throw err;
+    // 204 No Content: DELETE 등 body 없는 성공 응답
+    if (response.status === 204) {
+        return null;
     }
     if (!response.data) {
         throw new Error('Invalid response from server');
