@@ -22,6 +22,7 @@
     "countup.js": "^2.8.0",
     "dropzone": "^6.0.0-beta.2",
     "fslightbox": "^3.4.1",
+    "gridstack": "^7.3.0",
     "jquery": "^3.6.0",
     "jquery-ujs": "^1.2.2",
     "jstree": "^3.3.17",
