@@ -1818,6 +1818,62 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/sharedResource
       description: "Create shared resources for MC-Infra"
+    ListVNet:
+      method: get
+      resourcePath: /ns/{nsId}/resources/vNet
+      description: "List all VNets in a namespace"
+    CreateVNet:
+      method: post
+      resourcePath: /ns/{nsId}/resources/vNet
+      description: "Create VNet"
+    DeleteVNet:
+      method: delete
+      resourcePath: /ns/{nsId}/resources/vNet/{vNetId}
+      description: "Delete VNet"
+    ListSecurityGroup:
+      method: get
+      resourcePath: /ns/{nsId}/resources/securityGroup
+      description: "List all Security Groups in a namespace"
+    CreateSecurityGroup:
+      method: post
+      resourcePath: /ns/{nsId}/resources/securityGroup
+      description: "Create Security Group"
+    DeleteSecurityGroup:
+      method: delete
+      resourcePath: /ns/{nsId}/resources/securityGroup/{securityGroupId}
+      description: "Delete Security Group"
+    ListSSHKey:
+      method: get
+      resourcePath: /ns/{nsId}/resources/sshKey
+      description: "List all SSH Keys in a namespace"
+    CreateSSHKey:
+      method: post
+      resourcePath: /ns/{nsId}/resources/sshKey
+      description: "Create SSH Key"
+    ListImage:
+      method: get
+      resourcePath: /ns/{nsId}/resources/image
+      description: "List all images in a namespace"
+    RegisterImage:
+      method: post
+      resourcePath: /ns/{nsId}/resources/image
+      description: "Register image in a namespace"
+    DeleteImage:
+      method: delete
+      resourcePath: /ns/{nsId}/resources/image/{imageId}
+      description: "Delete image"
+    ListSpec:
+      method: get
+      resourcePath: /ns/{nsId}/resources/spec
+      description: "List all specs in a namespace"
+    RegisterSpec:
+      method: post
+      resourcePath: /ns/{nsId}/resources/spec
+      description: "Register spec in a namespace"
+    DeleteSpec:
+      method: delete
+      resourcePath: /ns/{nsId}/resources/spec/{specId}
+      description: "Delete spec"
 
   mc-web-console:
     Anycontroller:
