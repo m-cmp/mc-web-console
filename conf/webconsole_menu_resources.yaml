@@ -128,7 +128,7 @@ menus:
     priority: 2
     menunumber: 1405
 
-  - id: specs
+  - id: serverspecs
     parentid: cloudresources
     displayname: Specs
     restype: menu
@@ -136,7 +136,7 @@ menus:
     priority: 2
     menunumber: 1410
 
-  - id: images
+  - id: serverimages
     parentid: cloudresources
     displayname: Images
     restype: menu
@@ -152,7 +152,7 @@ menus:
     priority: 2
     menunumber: 1510
 
-  - id: securitys
+  - id: securitygroups
     parentid: cloudresources
     displayname: Securitys
     restype: menu
