@@ -1573,6 +1573,7 @@ async function initPlatformMenuTree() {
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
+          "visible": true,
           "keep_selected_style": true,
           "three_state": false
         },
@@ -1585,8 +1586,12 @@ async function initPlatformMenuTree() {
 
       // View 모드 체크박스를 readonly로 만들기 위한 CSS 적용
       $("#platform-menu-tree").on("ready.jstree", function () {
+        const inst = $('#platform-menu-tree').jstree(true);
+        if (inst && inst.show_checkboxes) {
+          inst.show_checkboxes();
+        }
         // 모든 노드를 펼쳐놓기
-        $('#platform-menu-tree').jstree(true).open_all();
+        inst.open_all();
 
         // 체크박스를 readonly로 만들기
         $("#platform-menu-tree .jstree-checkbox").css({
@@ -1649,6 +1654,7 @@ async function initPlatformMenuCreateTree() {
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
+          "visible": true,
           "keep_selected_style": true,
           "three_state": true,
           "cascade": "up"
@@ -1661,11 +1667,15 @@ async function initPlatformMenuCreateTree() {
       });
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-create-tree").on("ready.jstree", function () {
+        const inst = $('#platform-menu-create-tree').jstree(true);
+        if (inst && inst.show_checkboxes) {
+          inst.show_checkboxes();
+        }
         // 모든 노드를 펼쳐놓기
-        $('#platform-menu-create-tree').jstree(true).open_all();
+        inst.open_all();
 
-        // 펼치기/접기 아이콘 숨기기
-        $('#platform-menu-create-tree .jstree-ocl').hide();
+        // ocl을 display:none/visibility:hidden 하면 32px.png 가로/접점 스프라이트가 사라져 트리 선이 깨짐
+        // 펼침 막기는 아래 click.jstree 핸들러로만 처리
 
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-create-tree').on('click.jstree', function (e, data) {
@@ -1718,6 +1728,7 @@ async function initPlatformMenuEditTree() {
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
+          "visible": true,
           "keep_selected_style": true,
           "three_state": true,
           "cascade": "up"
@@ -1731,11 +1742,12 @@ async function initPlatformMenuEditTree() {
 
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-edit-tree").on("ready.jstree", function () {
+        const inst = $('#platform-menu-edit-tree').jstree(true);
+        if (inst && inst.show_checkboxes) {
+          inst.show_checkboxes();
+        }
         // 모든 노드를 펼쳐놓기
-        $('#platform-menu-edit-tree').jstree(true).open_all();
-
-        // 펼치기/접기 아이콘 숨기기
-        $('#platform-menu-edit-tree .jstree-ocl').hide();
+        inst.open_all();
 
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-edit-tree').on('click.jstree', function (e, data) {
