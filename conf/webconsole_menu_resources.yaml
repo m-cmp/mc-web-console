@@ -108,7 +108,7 @@ menus:
     parentid: cloudsps
     displayname: Cloud Drivers
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1340
 
