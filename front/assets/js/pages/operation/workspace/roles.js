@@ -1481,7 +1481,7 @@ function toggleCards(showPlatform = false, showWorkspace = false, showCsp = fals
 
 
 
-function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
+function convertToJstreeFormat(menuData) {
   let result = [];
   if (!Array.isArray(menuData)) return result;
 
@@ -1489,34 +1489,18 @@ function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
   const topLevelMenus = menuData.filter(menu => menu.parentId === "home");
 
   topLevelMenus.forEach(menu => {
-    result = result.concat(processMenuNode(menu, menuData, "#", 0));
+    result = result.concat(processMenuNode(menu, menuData, '#'));
   });
 
   return result;
 }
 
-function processMenuNode(menu, allMenus, parentId, level) {
+function processMenuNode(menu, allMenus, parentId) {
   let result = [];
 
-  // 계층 단계에 따라 아이콘 결정
-  let icon = "ti ti-menu"; // 기본 아이콘
-
-  if (level === 0) {
-    // 최상위 노드 (Operations, Settings)
-    icon = "ti ti-folder";
-  } else if (level === 1) {
-    // 2차 노드들
-    icon = "ti ti-folder-open";
-  } else if (level === 2) {
-    // 3차 노드들
-    icon = "ti ti-layout-grid";
-  } else if (level === 3) {
-    // 4차 노드들
-    icon = "ti ti-settings";
-  } else if (level >= 4) {
-    // 5차 이상 노드들
-    icon = "ti ti-click";
-  }
+  const isActionMenu = !!(menu.is_action ?? menu.isAction);
+  // Organizations menus.js와 동일: isAction 구분을 Platform access 트리에 반영 (BUG-002)
+  const icon = isActionMenu ? 'ti ti-file-text' : 'ti ti-folder';
 
   // jstree 노드 객체 생성
   const node = {
@@ -1527,7 +1511,7 @@ function processMenuNode(menu, allMenus, parentId, level) {
     icon: icon,
     data: {
       menunumber: menu.menu_number || menu.menunumber,
-      isAction: menu.is_action || menu.isAction,
+      isAction: isActionMenu,
       priority: menu.priority
     }
   };
@@ -1538,7 +1522,7 @@ function processMenuNode(menu, allMenus, parentId, level) {
 
   // 하위 메뉴가 있으면 재귀적으로 처리
   childMenus.forEach(childMenu => {
-    result = result.concat(processMenuNode(childMenu, allMenus, menu.id, level + 1));
+    result = result.concat(processMenuNode(childMenu, allMenus, menu.id));
   });
 
   return result;
