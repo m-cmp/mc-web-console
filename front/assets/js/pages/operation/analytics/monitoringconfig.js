@@ -293,23 +293,21 @@ function initMonitorConfigTable() {
 
   // 행 클릭 시
   monitorConfigListTable.on("rowClick", function (e, row) {
-    selectedServerNode = row.getData(); 
-    //var workloadType = row.getCell("workloadType").getValue();    
-    var tempServernodeId = currentServernodeId;    
-    currentServernodeId = row.getCell("id").getValue();
-    // console.log("row ", row.getData())
-    // console.log("currentServernodeId ", currentServernodeId)
+    selectedServerNode = row.getData();
+    var clickedId = row.getCell("id").getValue();
 
-    // 상세 정보 표시 여부
-    if (tempServernodeId === currentServernodeId) {
+    // 같은 행 재클릭 → 토글 OFF
+    if (currentServernodeId === clickedId) {
       webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("monitoring_configuration"))
       this.deselectRow();
+      currentServernodeId = "-1"; // 리셋하여 다음 클릭 시 토글 ON 가능
       return
     } else {
+      // 다른 행 클릭 → 토글 ON
+      currentServernodeId = clickedId;
       webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("monitoring_configuration"))
       this.deselectRow();
       this.selectRow(currentServernodeId);
-      // 표에서 선택된 Servernode
       getSelectedMonitorConfigData(currentServernodeId)
       return
     }
@@ -566,7 +564,7 @@ async function setMonitorConfigInfoData() {
         $(this).prop('checked', false);
       }
       // 토글 OFF 시: 에이전트가 활성화된 경우 비활성화 확인 (선택사항)
-      else if (!isChecked && currentAgentStatus === "ACTIVE") {
+      else if (!isChecked && currentMonitoringAgentStatus === "SUCCESS") {
         // 필요시 에이전트 비활성화 로직 추가 가능
       }
     });
