@@ -447,6 +447,91 @@ export async function toggleSelectedCspStatus() {
 
 // ─── DOMContentLoaded ────────────────────────────────────────────────
 
+// ─── CSP 자원 동기화 (RQ-CLOUD-ADMIN-007) ────────────────────────────
+
+/**
+ * Sync 팝업 오픈 — 현재 Project nsId 표시 + Connection 목록 로드
+ */
+export async function openSyncPopup() {
+    const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+    document.getElementById('sync-target-project').value = nsId || '(프로젝트 미선택)';
+
+    // Connection 드롭다운 — CSP 계정 목록으로 채우기
+    const select = document.getElementById('sync-connection-select');
+    select.innerHTML = '<option value="">전체 계정</option>';
+    for (const acc of AppState.csp.list) {
+        const opt = document.createElement('option');
+        opt.value = acc.connectionName || acc.name;
+        opt.textContent = acc.name;
+        select.appendChild(opt);
+    }
+
+    // 결과 영역 초기화
+    document.getElementById('sync-result').classList.add('d-none');
+    document.getElementById('sync-execute-btn').disabled = false;
+
+    new bootstrap.Modal(document.getElementById('sync-csp-modal')).show();
+}
+
+/**
+ * 동기화 실행
+ */
+export async function executeSyncCspResources() {
+    const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+    if (!nsId) {
+        alert('프로젝트를 먼저 선택하세요.');
+        return;
+    }
+
+    const options = Array.from(document.querySelectorAll('.sync-resource-type:checked')).map(cb => cb.value);
+    if (options.length === 0) {
+        alert('동기화할 자원 유형을 하나 이상 선택하세요.');
+        return;
+    }
+
+    const connectionName = document.getElementById('sync-connection-select').value || null;
+
+    const spinner = document.getElementById('sync-execute-spinner');
+    const btn = document.getElementById('sync-execute-btn');
+    spinner.classList.remove('d-none');
+    btn.disabled = true;
+
+    try {
+        const result = await webconsolejs["common/api/services/import_api"].registerCspResources(options, connectionName, nsId);
+        renderSyncResult(result);
+    } catch (err) {
+        console.error('Sync failed:', err);
+        document.getElementById('sync-result-body').innerHTML =
+            `<div class="alert alert-danger">동기화 실패: ${err.message || '알 수 없는 오류'}</div>`;
+        document.getElementById('sync-result').classList.remove('d-none');
+    } finally {
+        spinner.classList.add('d-none');
+        btn.disabled = false;
+    }
+}
+
+function renderSyncResult(result) {
+    const overview = result?.registerationOverview || {};
+    const rows = ['vNet', 'securityGroup', 'sshKey', 'vm', 'dataDisk', 'nlb', 'customImage']
+        .filter(k => overview[k] !== undefined)
+        .map(k => `<tr><td>${k}</td><td class="text-end">${overview[k]}개</td></tr>`)
+        .join('');
+
+    const failed = overview.failed || 0;
+    const failBadge = failed > 0
+        ? `<tr class="text-danger"><td>실패</td><td class="text-end">${failed}개</td></tr>`
+        : '';
+
+    document.getElementById('sync-result-body').innerHTML = `
+        <table class="table table-sm">
+          <thead><tr><th>자원 유형</th><th class="text-end">등록</th></tr></thead>
+          <tbody>${rows}${failBadge}</tbody>
+        </table>`;
+    document.getElementById('sync-result').classList.remove('d-none');
+}
+
+// ─── DOMContentLoaded ────────────────────────────────────────────────
+
 document.addEventListener("DOMContentLoaded", async function () {
     // page-header Add CSP 버튼 삽입 (상세 패널 닫고 등록 폼 토글)
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(
@@ -454,6 +539,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Add CSP",
         "document.getElementById('view-mode-cards').classList.remove('show'); bootstrap.Collapse.getOrCreateInstance(document.getElementById('cspcreate')).toggle()"
     );
+
+    // Sync 버튼 삽입 (Project 선택 시에만 활성화)
+    const syncBtn = document.createElement('button');
+    syncBtn.className = 'btn btn-secondary ms-2';
+    syncBtn.id = 'sync-csp-btn';
+    syncBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg> Sync';
+    syncBtn.onclick = () => webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].openSyncPopup();
+
+    const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+    if (!nsId) syncBtn.disabled = true;
+    syncBtn.title = nsId ? '자원 동기화' : '프로젝트를 먼저 선택하세요';
+
+    document.getElementById('page-header-btn-list').appendChild(syncBtn);
 
     // 필터 이벤트 초기화
     initFilterEvents();
