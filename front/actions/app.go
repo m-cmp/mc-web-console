@@ -26,7 +26,7 @@ func App() *echo.Echo {
 		app.HideBanner = true
 
 		// Session middleware (using Gorilla sessions)
-		store := sessions.NewCookieStore([]byte("mc-web-console-secret-key")) // TODO: 환경 변수에서 읽기
+		store := sessions.NewCookieStore([]byte(SESSION_SECRET))
 		store.Options = &sessions.Options{
 			Path:     "/",
 			MaxAge:   86400 * 7, // 7 days
