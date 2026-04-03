@@ -7,8 +7,10 @@ import (
 	"mc_web_console_api/internal/handler"
 	"mc_web_console_api/internal/middleware"
 	"mc_web_console_api/internal/model"
+	"mc_web_console_api/internal/repository"
 	"mc_web_console_api/pkg/errors"
 	"mc_web_console_api/pkg/jwt"
+	"os"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,21 +23,27 @@ func main() {
 	}
 
 	// JWT 시크릿 키 설정 (환경 변수에서 로드, 없으면 기본값)
-	jwtSecret := "your-secret-key-change-in-production" // TODO: 환경 변수에서 로드
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key-change-in-production"
+		log.Println("⚠️  JWT_SECRET not set, using insecure default key")
+	}
 	jwt.SetSecretKey(jwtSecret)
 
-	// 데이터베이스 초기화 (옵션 - DB 설정 완료 시 활성화)
-	/*
-	if err := repository.InitDatabase(cfg); err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
-	}
-	defer repository.CloseDatabase()
+	// 데이터베이스 초기화 (DB_HOST 환경변수가 설정된 경우에만 활성화)
+	if os.Getenv("DB_HOST") != "" {
+		if err := repository.InitDatabase(cfg); err != nil {
+			log.Fatalf("Failed to initialize database: %v", err)
+		}
+		defer repository.CloseDatabase()
 
-	// 자동 마이그레이션
-	if err := repository.AutoMigrate(); err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		// 자동 마이그레이션
+		if err := repository.AutoMigrate(); err != nil {
+			log.Fatalf("Failed to migrate database: %v", err)
+		}
+	} else {
+		log.Println("⚠️  DB_HOST not configured, running without database (session management disabled)")
 	}
-	*/
 
 	// Echo 인스턴스 생성
 	e := echo.New()
@@ -77,14 +85,12 @@ func main() {
 	auth.POST("/refresh", handler.Refresh)
 	auth.POST("/signup", handler.Signup)
 
-	// 보호된 인증 라우트 (인증 필요) - DB 설정 완료 시 활성화
-	/*
+	// 보호된 인증 라우트 (인증 필요)
 	authProtected := api.Group("/auth")
 	authProtected.Use(middleware.AuthMiddleware)
 	authProtected.POST("/validate", handler.Validate)
 	authProtected.POST("/logout", handler.Logout)
-	authProtected.POST("/userinfo", handler.UserInfo)
-	*/
+	authProtected.GET("/userinfo", handler.UserInfo)
 
 	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
 	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시
@@ -132,9 +138,8 @@ func main() {
 	fmt.Printf("📝 Environment: %s\n", cfg.Server.Env)
 	fmt.Printf("🔐 MCIAM Use: %v\n", cfg.MCIAM.Use)
 	fmt.Printf("✅ API Spec loaded: %d services\n", len(cfg.ApiSpec.Services))
-	fmt.Printf("🎯 Phase 2: Authentication System Complete (DB disabled for testing)\n")
-	fmt.Printf("🔐 JWT Secret: %s\n", jwtSecret[:20]+"...")
-	fmt.Printf("⚠️  Note: Database is disabled. Enable it in main.go when DB is ready.\n")
+	fmt.Printf("🎯 Authentication System: DB=%v, MCIAM=%v\n", repository.GetDB() != nil, cfg.MCIAM.Use)
+	fmt.Printf("🔐 JWT Secret: configured\n")
 	fmt.Printf("\n")
 
 	if err := e.Start(address); err != nil {

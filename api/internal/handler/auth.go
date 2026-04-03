@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
 	"mc_web_console_api/internal/config"
 	"mc_web_console_api/internal/middleware"
 	"mc_web_console_api/internal/model"
+	"mc_web_console_api/internal/repository"
 	"mc_web_console_api/pkg/errors"
 	"mc_web_console_api/pkg/jwt"
 
@@ -108,6 +110,14 @@ func loginViaMCIAM(c echo.Context, id, password string, cfg *config.Config) erro
 		return errors.NewInternalServerError("Invalid MCIAM response", err)
 	}
 
+	// DB가 활성화된 경우 세션 저장 (MCIAM 응답에서 토큰 추출 시도)
+	if resp.StatusCode == http.StatusOK {
+		var loginResp LoginResponse
+		if jsonErr := json.Unmarshal(respBody, &loginResp); jsonErr == nil && loginResp.AccessToken != "" && loginResp.UserID != "" {
+			storeSession(loginResp.UserID, loginResp.AccessToken, loginResp.ExpiresIn, loginResp.RefreshToken, loginResp.RefreshExpiresIn)
+		}
+	}
+
 	return c.JSON(resp.StatusCode, data)
 }
 
@@ -128,6 +138,9 @@ func loginLocal(c echo.Context, id, password string) error {
 	if err != nil {
 		return errors.NewInternalServerError("Failed to generate refresh token", err)
 	}
+
+	// DB가 활성화된 경우 세션 저장
+	storeSession(id, accessToken, accessExpiresIn.Seconds(), refreshToken, refreshExpiresIn.Seconds())
 
 	resp := model.CommonResponseStatusOK(&LoginResponse{
 		AccessToken:      accessToken,
@@ -328,12 +341,42 @@ func Validate(c echo.Context) error {
 	return c.JSON(resp.Status.Code, resp)
 }
 
+// storeSession DB가 활성화된 경우 세션을 저장한다. 기존 세션은 교체된다.
+func storeSession(userID, accessToken string, expiresIn float64, refreshToken string, refreshExpiresIn float64) {
+	db := repository.GetDB()
+	if db == nil {
+		return
+	}
+	sessionRepo := repository.NewSessionRepository(db)
+	session := &model.UserSession{
+		UserID:           userID,
+		AccessToken:      accessToken,
+		ExpiresIn:        expiresIn,
+		RefreshToken:     refreshToken,
+		RefreshExpiresIn: refreshExpiresIn,
+	}
+	if err := sessionRepo.Delete(userID); err != nil {
+		log.Printf("storeSession: delete old session error (userID=%s): %v", userID, err)
+	}
+	if err := sessionRepo.Create(session); err != nil {
+		log.Printf("storeSession: create session error (userID=%s): %v", userID, err)
+	}
+}
+
 // Logout 로그아웃 핸들러
 // POST /api/auth/logout
 func Logout(c echo.Context) error {
 	userID := middleware.GetUserID(c)
 	if userID == "" {
 		return errors.NewUnauthorized("Not authenticated")
+	}
+
+	// DB 세션 삭제
+	if db := repository.GetDB(); db != nil {
+		sessionRepo := repository.NewSessionRepository(db)
+		if err := sessionRepo.Delete(userID); err != nil {
+			log.Printf("Logout: delete session error (userID=%s): %v", userID, err)
+		}
 	}
 
 	resp := model.CommonResponseStatusOK(map[string]interface{}{
