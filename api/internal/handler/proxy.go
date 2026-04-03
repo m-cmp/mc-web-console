@@ -40,8 +40,10 @@ func SubsystemAnyController(c echo.Context) error {
 
 	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
 	if err != nil {
-		log.Printf("GetAction error: %v", err)
-		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(operationId+"-"+err.Error()))
+		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
+		// 서비스 자체가 없는 경우와 액션이 없는 경우를 구분하여 안내
+		msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
+		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
 	}
 
 	// CommonRequest 파싱

@@ -79,8 +79,9 @@ func (r *SessionRepository) Exists(userID string) (bool, error) {
 }
 
 // DeleteExpired 만료된 세션 삭제 (정리 작업)
+// refresh_expires_in(초) 기준으로 created_at 이후 만료된 세션을 삭제한다.
 func (r *SessionRepository) DeleteExpired() error {
-	// refresh_expires_in 기준으로 만료된 세션 삭제
-	// TODO: 구현 필요 (현재 시간 - created_at > refresh_expires_in)
-	return nil
+	return r.db.Exec(
+		"DELETE FROM usersesses WHERE created_at + (refresh_expires_in * interval '1 second') < NOW()",
+	).Error
 }
