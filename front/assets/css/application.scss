@@ -10,7 +10,9 @@
 // tabulator Custom CSS
 @import "./tabulator_for_tabler.scss";
 
-// jstree Custom CSS: application.js에서 jstree 테마 직후 require하여 로드 (우선순위 확보)
+// jsTree: 기본 테마 직후 프로젝트 오버라이드 (체크박스 스프라이트·행 높이 등, Tabler 다음)
+@import "~jstree/src/themes/default/style.css";
+@import "./jstree_for_tabler.scss";
 
 // tomselect Custom CSS
 @import "./tomselect_for_tabler.scss";
