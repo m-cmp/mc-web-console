@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
 
@@ -16,9 +17,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	webpackManifestDiskPath = "public/assets/manifest.json"
+	embedManifestMtime      = int64(-1) // init loaded from embed, not disk
+)
+
 var (
-	jetSet          *jet.Set
-	webpackManifest map[string]string
+	jetSet               *jet.Set
+	webpackManifest      map[string]string
+	webpackManifestMtime int64
 )
 
 func init() {
@@ -44,25 +51,53 @@ func init() {
 	jetSet.AddGlobalFunc("yield", yieldFunc)
 }
 
-// loadWebpackManifest - webpack manifest.json 파일을 로드하여 메모리에 저장
-func loadWebpackManifest() {
-	webpackManifest = make(map[string]string)
+// tryLoadWebpackManifestFromDisk - 정적 파일은 디스크에서 서빙되므로 manifest도 디스크 우선.
+// webpack 재빌드 후 go 재시작 없이도 해시 불일치(404) 방지.
+func tryLoadWebpackManifestFromDisk(force bool) bool {
+	info, err := os.Stat(webpackManifestDiskPath)
+	if err != nil {
+		return false
+	}
+	mtime := info.ModTime().UnixNano()
+	if !force && mtime == webpackManifestMtime && len(webpackManifest) > 0 {
+		return true
+	}
+	f, err := os.Open(webpackManifestDiskPath)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	var m map[string]string
+	if err := json.NewDecoder(f).Decode(&m); err != nil || len(m) == 0 {
+		return false
+	}
+	webpackManifest = m
+	webpackManifestMtime = mtime
+	return true
+}
 
-	// manifest.json 파일 읽기
+func loadWebpackManifestFromEmbed() {
+	webpackManifest = make(map[string]string)
+	webpackManifestMtime = embedManifestMtime
 	manifestFile, err := public.FS().Open("assets/manifest.json")
 	if err != nil {
-		log.Printf("Warning: webpack manifest.json not found: %v", err)
+		log.Printf("Warning: webpack manifest.json not found in embed: %v", err)
 		return
 	}
 	defer manifestFile.Close()
-
-	// JSON 파싱
 	if err := json.NewDecoder(manifestFile).Decode(&webpackManifest); err != nil {
-		log.Printf("Warning: failed to parse webpack manifest: %v", err)
+		log.Printf("Warning: failed to parse webpack manifest (embed): %v", err)
 		return
 	}
+	log.Printf("Loaded webpack manifest from embed with %d entries", len(webpackManifest))
+}
 
-	log.Printf("Loaded webpack manifest with %d entries", len(webpackManifest))
+func loadWebpackManifest() {
+	if tryLoadWebpackManifestFromDisk(true) {
+		log.Printf("Loaded webpack manifest from disk (%s) with %d entries", webpackManifestDiskPath, len(webpackManifest))
+		return
+	}
+	loadWebpackManifestFromEmbed()
 }
 
 // Jet 렌더러 구조체
@@ -187,6 +222,7 @@ type SafeHTML string
 
 // resolveAssetPath - webpack manifest를 사용하여 실제 asset 경로 반환
 func resolveAssetPath(entryName string, extension string) string {
+	tryLoadWebpackManifestFromDisk(false)
 	// 확장자가 없으면 추가
 	if !strings.HasSuffix(entryName, extension) {
 		entryName = entryName + extension
