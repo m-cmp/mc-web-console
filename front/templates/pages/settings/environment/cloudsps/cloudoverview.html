@@ -255,7 +255,47 @@
       </div>
 
     </div><!-- /index section -->
+
+    <!-- READYZ SECTION -->
+    <div id="readyz-section" class="row row-cards mt-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Readyz</h3>
+            <div class="card-subtitle text-muted">Framework health check and initialization</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary" onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runAllReadyz()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon me-1">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M7 4v16l13 -8z"></path>
+                </svg>
+                Run All
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+              <thead>
+                <tr>
+                  <th>Framework</th>
+                  <th>Status</th>
+                  <th style="width:200px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="readyz-table-body">
+                <!-- JS에서 동적 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /readyz section -->
+
   </div>
 </div>
 
-{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}
+{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }}
+{{ javascriptTag("common/api/services/readyz_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}

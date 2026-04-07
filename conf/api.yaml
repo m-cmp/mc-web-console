@@ -661,6 +661,10 @@ serviceActions:
       description: "Unregister a Disk with the specified name."
 
   mc-iam-manager:
+    GetIamReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-iam-manager 헬스체크. keycloak, db, nginx, mc-infra-manager 상태 확인."
     Searchrolesbyname:
       method: get
       resourcePath: /api/role/name/{roleName}
@@ -1086,6 +1090,14 @@ serviceActions:
       description: "CSP 계정 비활성화"
 
   mc-infra-manager:
+    GetInfraReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-infra-manager(cb-tumblebug) 헬스체크. 응답: {ready, initialized, message}"
+    GetInfraReadyzInit:
+      method: get
+      resourcePath: /readyz/init
+      description: "mc-infra-manager 초기화. credential valid 선행 필요. image/spec 등 초기 데이터 로드."
     Lookupspeclist:
       method: post
       resourcePath: /lookupSpecs
@@ -1950,6 +1962,10 @@ serviceActions:
       description: webValidate
 
   mc-observability:
+    GetObsReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-observability 헬스체크."
     LogLabelsQuery:
       method: get
       resourcePath: /api/o11y/log/labels
@@ -2221,6 +2237,10 @@ serviceActions:
       description: "deleteLLMApiKeys"  
       
   mc-application-manager:
+    GetAppMgrReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-application-manager 헬스체크."
     GetCatalogDetailUsingGET:
       method: get
       resourcePath: /catalog/software/{catalogIdx}
@@ -2487,6 +2507,10 @@ serviceActions:
       description: ""
 
   mc-workflow-manager:
+    GetWorkflowReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-workflow-manager 헬스체크."
     IsWorkflowNameDuplicatedUsingGET:
       method: get
       resourcePath: /workflow/name/duplicate
@@ -2677,6 +2701,10 @@ serviceActions:
       description: ""
 
   mc-cost-optimizer:
+    GetCostReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-cost-optimizer 헬스체크."
     GetProjects:
       method: get
       resourcePath: /api/v2/getProjects
@@ -2715,6 +2743,10 @@ serviceActions:
       description: "워크스페이스 목록을 조회합니다."
 
   mc-data-manager:
+    GetDataMgrReadyz:
+      method: get
+      resourcePath: /readyz
+      description: "mc-data-manager 헬스체크."
     GenerateWindows:
       method: post
       resourcePath: /generate/windows
