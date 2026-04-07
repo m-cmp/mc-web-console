@@ -1,0 +1,86 @@
+<div class="page-body">
+  <div class="container-xl">
+
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="schedule-tabs">
+              <li class="nav-item">
+                <a class="nav-link active" href="#" onclick="scheduleShowTab('list', this); return false;">Schedule List</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="scheduleShowTab('history', this); return false;">Execution History</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Schedule List Tab -->
+          <div id="tab-list">
+            <div class="card-body p-0">
+              <div id="schedule-table"></div>
+            </div>
+          </div>
+
+          <!-- Execution History Tab -->
+          <div id="tab-history" style="display:none">
+            <div class="card-body p-0">
+              <div id="history-table"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add Schedule Modal -->
+<div class="modal modal-blur fade" id="modal-add-schedule" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Schedule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Namespace</label>
+          <select id="modal-ns" class="form-select">
+            <option value="">Select Namespace</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">Connection</label>
+          <select id="modal-connection" class="form-select">
+            <option value="">Select Connection</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">Resource Types</label>
+          <div class="d-flex gap-3 flex-wrap">
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="vNet"><span class="form-check-label">vNet</span></label>
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="securityGroup"><span class="form-check-label">Security Group</span></label>
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="sshKey"><span class="form-check-label">SSH Key</span></label>
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="vm" onchange="scheduleToggleModalMci()"><span class="form-check-label">VM</span></label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">Interval (seconds)</label>
+          <input type="number" id="modal-interval" class="form-control" value="60" min="10">
+        </div>
+        <div class="mb-3" id="modal-mci-group" style="display:none">
+          <label class="form-label">MCI Name Prefix (for VM)</label>
+          <input type="text" id="modal-mci-prefix" class="form-control" value="csp">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="scheduleSubmitCreate()">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/cspimport_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/cspschedule.js") | raw }}

@@ -128,7 +128,7 @@ menus:
     priority: 2
     menunumber: 1405
 
-  - id: specs
+  - id: serverspecs
     parentid: cloudresources
     displayname: Specs
     restype: menu
@@ -136,7 +136,7 @@ menus:
     priority: 2
     menunumber: 1410
 
-  - id: images
+  - id: serverimages
     parentid: cloudresources
     displayname: Images
     restype: menu
@@ -148,13 +148,13 @@ menus:
     parentid: cloudresources
     displayname: Networks
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1510
 
-  - id: securitys
+  - id: securitygroups
     parentid: cloudresources
-    displayname: Securitys
+    displayname: Security Groups
     restype: menu
     isaction: false
     priority: 2
@@ -183,6 +183,22 @@ menus:
     isaction: false
     priority: 2
     menunumber: 1550
+
+  - id: csp
+    parentid: cloudresources
+    displayname: CSP Overview
+    restype: menu
+    isaction: true
+    priority: 2
+    menunumber: 1580
+
+  - id: cspschedule
+    parentid: cloudresources
+    displayname: CSP Schedule
+    restype: menu
+    isaction: true
+    priority: 2
+    menunumber: 1590
 
   - id: cloudrescatalogs
     parentid: environment
