@@ -1,5 +1,10 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
+// readyz_api 런타임 접근 헬퍼 (UMD 빌드 — ES module import 불가)
+function readyzApi() {
+    return webconsolejs["common/api/services/readyz_api"];
+}
+
 // DOM 요소 캐싱
 const DOM = {
     cspTable: document.getElementById('csp-accounts-table'),
@@ -36,6 +41,11 @@ const AppState = {
     tables: {
         cspTable: null,
     },
+    readyz: {
+        // { frameworkName: { ready, initialized, message } }
+        results: {},
+    },
+    credentialValid: false,
 };
 
 // 선택된 행들을 관리하는 배열 (users.js와 동일한 패턴)
@@ -414,11 +424,32 @@ export async function validateSelectedCsp() {
     }
     try {
         await CspManager.validateAccount(AppState.csp.selectedAccount.id);
+        AppState.credentialValid = true;
+        // 검증 성공 상태를 상세 패널에 표시
+        const statusEl = document.getElementById('csp-info-status');
+        if (statusEl) {
+            statusEl.innerHTML += ' <span class="badge bg-teal-lt ms-1">✅ Valid</span>';
+        }
         alert('Account credentials are valid.');
     } catch (err) {
+        AppState.credentialValid = false;
         console.error('Validation failed:', err);
         alert('Validation failed: ' + err.message);
     }
+}
+
+// ─── Readyz export 함수 ──────────────────────────────────────────────
+
+export async function runReadyz(frameworkName) {
+    await ReadyzManager.runReadyz(frameworkName);
+}
+
+export async function runAllReadyz() {
+    await ReadyzManager.runAll();
+}
+
+export async function runInit(frameworkName) {
+    await ReadyzManager.runInit(frameworkName);
 }
 
 export async function toggleSelectedCspStatus() {
@@ -445,6 +476,150 @@ export async function toggleSelectedCspStatus() {
     }
 }
 
+// ─── ReadyzManager ──────────────────────────────────────────────────
+
+const ReadyzManager = {
+    /** Readyz 섹션 테이블 초기 렌더링 */
+    renderTable() {
+        const tbody = document.getElementById('readyz-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = readyzApi().READYZ_FRAMEWORK_LIST.map(fw => `
+            <tr id="readyz-row-${fw.name}">
+                <td class="fw-medium">${fw.name}</td>
+                <td id="readyz-status-${fw.name}">
+                    <span class="badge bg-secondary-lt">-</span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"
+                        onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runReadyz('${fw.name}')">
+                        Readyz
+                    </button>
+                    ${fw.initOperationId ? `
+                    <button class="btn btn-sm btn-outline-secondary" id="readyz-init-btn-${fw.name}"
+                        onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runInit('${fw.name}')">
+                        Init
+                    </button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    /** 단일 프레임워크 readyz 실행 */
+    async runReadyz(frameworkName) {
+        const fw = readyzApi().READYZ_FRAMEWORK_LIST.find(f => f.name === frameworkName);
+        if (!fw) return;
+
+        this.setStatus(frameworkName, 'loading', null, '');
+        try {
+            const response = await readyzApi().callReadyz(fw.subsystem, fw.operationId);
+            const parsed = readyzApi().parseReadyzResponse(response);
+            AppState.readyz.results[frameworkName] = parsed;
+            this.setStatus(frameworkName, parsed.ready ? 'ok' : 'error', parsed.initialized, parsed.message);
+            // Init 버튼 상태 업데이트 (mc-infra-manager)
+            if (fw.initOperationId) {
+                this.updateInitButton(frameworkName, parsed);
+            }
+        } catch (e) {
+            const msg = e.message || 'Connection failed';
+            AppState.readyz.results[frameworkName] = { ready: false, initialized: null, message: msg };
+            this.setStatus(frameworkName, 'error', null, msg);
+        }
+    },
+
+    /** 전체 프레임워크 readyz 병렬 실행 */
+    async runAll() {
+        await Promise.all(readyzApi().READYZ_FRAMEWORK_LIST.map(fw => this.runReadyz(fw.name)));
+    },
+
+    /** Init 실행 (credential valid 확인 후) */
+    async runInit(frameworkName) {
+        const fw = readyzApi().READYZ_FRAMEWORK_LIST.find(f => f.name === frameworkName);
+        if (!fw || !fw.initOperationId) return;
+
+        if (!AppState.credentialValid) {
+            alert('Credential 검증이 필요합니다.\nCloud Overview에서 CSP 계정을 선택하고 Validate 버튼을 클릭하세요.');
+            return;
+        }
+
+        const btn = document.getElementById(`readyz-init-btn-${frameworkName}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '...';
+        }
+
+        try {
+            const response = await readyzApi().callInit(fw.subsystem, fw.initOperationId);
+            const data = response && response.data ? response.data : {};
+            let detail = '';
+            if (data.initialized !== undefined) detail = `initialized: ${data.initialized}`;
+            if (data.message) detail = data.message;
+            this.setInitStatus(frameworkName, 'ok', detail);
+            // readyz 재조회로 initialized 상태 갱신
+            await this.runReadyz(frameworkName);
+        } catch (e) {
+            this.setInitStatus(frameworkName, 'error', e.message || 'Init failed');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Init';
+            }
+        }
+    },
+
+    /** 상태 뱃지 업데이트 */
+    setStatus(frameworkName, state, initialized, message) {
+        const el = document.getElementById(`readyz-status-${frameworkName}`);
+        if (!el) return;
+
+        if (state === 'loading') {
+            el.innerHTML = '<span class="badge bg-secondary-lt"><span class="spinner-border spinner-border-sm me-1"></span>...</span>';
+            return;
+        }
+        if (state === 'error') {
+            el.innerHTML = `<span class="badge bg-danger-lt" title="${this._esc(message)}">❌ ERROR</span>`;
+            return;
+        }
+        // ok
+        if (initialized === null) {
+            el.innerHTML = `<span class="badge bg-success-lt">✅ Ready</span>`;
+        } else if (initialized === false) {
+            el.innerHTML = `<span class="badge bg-success-lt me-1">✅ Ready</span><span class="badge bg-warning-lt">⚠️ Init 필요</span>`;
+        } else {
+            el.innerHTML = `<span class="badge bg-success-lt me-1">✅ Ready</span><span class="badge bg-teal-lt">✅ Initialized</span>`;
+        }
+    },
+
+    /** Init 버튼 강조 업데이트 */
+    updateInitButton(frameworkName, parsed) {
+        const btn = document.getElementById(`readyz-init-btn-${frameworkName}`);
+        if (!btn) return;
+        if (parsed.ready && parsed.initialized === false) {
+            btn.className = 'btn btn-sm btn-warning';
+        } else if (parsed.ready && parsed.initialized === true) {
+            btn.className = 'btn btn-sm btn-outline-secondary';
+        } else {
+            btn.className = 'btn btn-sm btn-outline-secondary';
+            btn.disabled = true;
+        }
+    },
+
+    /** Init 결과 뱃지 */
+    setInitStatus(frameworkName, state, message) {
+        const el = document.getElementById(`readyz-status-${frameworkName}`);
+        if (!el) return;
+        if (state === 'ok') {
+            const current = el.innerHTML;
+            el.innerHTML = current + ` <span class="badge bg-teal-lt" title="${this._esc(message)}">Init Done</span>`;
+        } else {
+            el.innerHTML += ` <span class="badge bg-danger-lt" title="${this._esc(message)}">Init Failed</span>`;
+        }
+    },
+
+    _esc(str) {
+        return (str || '').replace(/"/g, '&quot;');
+    },
+};
+
 // ─── DOMContentLoaded ────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -463,4 +638,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // 목록 초기화
     await initCspAccounts();
+
+    // Readyz 섹션 초기화
+    ReadyzManager.renderTable();
 });
