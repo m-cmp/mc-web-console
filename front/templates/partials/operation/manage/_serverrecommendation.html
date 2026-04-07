@@ -21,9 +21,19 @@
       <div class="modal-body">
         <div class="row">
           <div class="form-group mb-2">
-            <label class="form-label">Priority Option / Limit (location)</label>
+            <label class="form-label">Priority Option</label>
             <div class="row g-2">
-              <div class="col-6">
+              <div class="col-4">
+                <select
+                  class="form-select"
+                  id="assistRecommendPriorityType"
+                  name="assistRecommendPriorityType"
+                >
+                  <option value="location">Location Priority</option>
+                  <option value="cost">Cost Priority</option>
+                </select>
+              </div>
+              <div class="col-4">
                 <input type="hidden" id="latitude" />
                 <input type="hidden" id="longitude" />
                 <select
@@ -32,24 +42,9 @@
                   name="assistRecommendSpecConnectionName"
                   onchange="webconsolejs['partials/operation/manage/serverrecommendation'].showRecommendSpecSetting(this.value)"
                 >
-                  <option value="">Select Region</option>
-                  <option value="seoul">Seoul</option>
-                  <option value="london">London</option>
-                  <option value="newyork">NewYork</option>
+                  <option value="">Select Connection</option>
                 </select>
-                <!-- <select name="user[day]" class="form-select">
-                    <option value="">Select Priority</option>
-                    <option value="location">Location</option>
-                    <option value="cost">Cost</option>
-                  </select> -->
               </div>
-              <!-- <div class="col">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Please Use Search"
-                />
-              </div> -->
               <div class="col-auto">
                 <a
                   class="btn btn-icon"
