@@ -22,6 +22,34 @@
   </div>
 </div>
 
+<!-- Reset Password Modal -->
+<div class="modal modal-blur fade" id="reset-password-modal" tabindex="-1" style="display: none" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reset Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="reset-password-form">
+          <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-control" id="reset-password-new" placeholder="Enter new password" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="reset-password-confirm" placeholder="Confirm new password" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="resetUserPassword()">Reset Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Assign Group Modal -->
 <div class="modal modal-blur fade" id="assign-group-modal" tabindex="-1" style="display: none;" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
