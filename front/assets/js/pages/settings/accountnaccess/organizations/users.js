@@ -255,6 +255,19 @@ const UIManager = {
       DOM.userInfoEnabled.textContent = enabled ? 'Enabled' : 'Disabled';
     }
 
+    // Enable/Disable 토글 버튼 업데이트
+    const toggleBtn = document.getElementById('user-status-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.style.display = 'inline-block';
+      if (enabled) {
+        toggleBtn.textContent = 'Disable';
+        toggleBtn.className = 'btn btn-sm btn-outline-danger';
+      } else {
+        toggleBtn.textContent = 'Enable';
+        toggleBtn.className = 'btn btn-sm btn-outline-success';
+      }
+    }
+
     // User Info 제목에 유저 이름 표시
     if (DOM.userInfoUsername && DOM.userInfoUsernameText) {
       const fullName = `${firstName} ${lastName}`.trim();
@@ -270,6 +283,8 @@ const UIManager = {
     if (DOM.userInfoEmail) DOM.userInfoEmail.textContent = "";
     if (DOM.userInfoEnabled) DOM.userInfoEnabled.textContent = "";
     if (DOM.userInfoUsername) DOM.userInfoUsername.style.display = 'none';
+    const toggleBtn = document.getElementById('user-status-toggle-btn');
+    if (toggleBtn) toggleBtn.style.display = 'none';
     
     // 역할 목록 초기화
     this.clearRoleLists();
@@ -775,6 +790,41 @@ window.removeUserWorkspace = async function(workspaceId) {
   }
 };
 
+// 사용자 활성화/비활성화 토글
+window.toggleUserStatus = async function() {
+  const user = AppState.users.selectedUser;
+  if (!user) {
+    alert('Please select a user.');
+    return;
+  }
+
+  const enabled = user.enabled !== undefined ? user.enabled :
+                  user.Enabled !== undefined ? user.Enabled :
+                  user.status === 'active' || user.Status === 'active';
+
+  if (enabled) {
+    alert('Disable is not yet supported.');
+    return;
+  }
+
+  if (!confirm(`Enable user "${user.userName || user.username || user.id}"?`)) {
+    return;
+  }
+
+  try {
+    const response = await webconsolejs["common/api/services/users_api"].updateUserStatus(user.id, 'approved');
+    if (response && (response.status === 204 || response.status === 200)) {
+      alert('User enabled successfully.');
+      await initUsers();
+    } else {
+      alert('Failed to enable user.');
+    }
+  } catch (error) {
+    console.error('Error toggling user status:', error);
+    alert('An error occurred: ' + error.message);
+  }
+};
+
 // 선택된 유저들 삭제 (roles.js의 deleteRole과 동일한 패턴)
 window.deleteUsers = async function() {
   
@@ -937,6 +987,10 @@ function setupEventListeners() {
 // 초기화 함수
 async function initUsers() {
   try {
+    // 0. 뷰 상태 초기화 (패널/선택 상태 리셋)
+    UIManager.hideViewMode();
+    AppState.users.selectedUser = null;
+
     // 1. 테이블 초기화
     await TableManager.initUsersTable();
 
@@ -1043,7 +1097,7 @@ window.openResetPasswordModal = function() {
     alert('Please select a user.');
     return;
   }
-  const modal = new bootstrap.Modal(document.getElementById('reset-password-modal'));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('reset-password-modal'));
   modal.show();
 };
 
@@ -1059,6 +1113,11 @@ window.resetUserPassword = async function() {
 
   if (!newPassword || newPassword.trim() === '') {
     alert('Please enter a new password.');
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    alert('Password must be at least 8 characters.');
     return;
   }
 
