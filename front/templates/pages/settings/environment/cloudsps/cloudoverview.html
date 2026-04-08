@@ -258,4 +258,82 @@
   </div>
 </div>
 
-{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}
+<!-- CSP 자원 동기화 팝업 (RQ-CLOUD-ADMIN-007) -->
+<div class="modal modal-blur fade" id="sync-csp-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">CSP 자원 동기화</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- 대상 프로젝트 (읽기전용) -->
+        <div class="mb-3">
+          <label class="form-label">대상 프로젝트</label>
+          <input type="text" class="form-control" id="sync-target-project" readonly>
+        </div>
+        <!-- CSP 계정 선택 -->
+        <div class="mb-3">
+          <label class="form-label">CSP 계정</label>
+          <select class="form-select" id="sync-connection-select">
+            <option value="">전체 계정</option>
+          </select>
+        </div>
+        <!-- 자원 유형 선택 -->
+        <div class="mb-3">
+          <label class="form-label">동기화할 자원 유형 <span class="text-muted">(복수 선택 가능)</span></label>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="vNet" checked>
+                <span class="form-check-label">VNet (VPC)</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="securityGroup" checked>
+                <span class="form-check-label">SecurityGroup</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="sshKey" checked>
+                <span class="form-check-label">SSH Key</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="vm" checked>
+                <span class="form-check-label">VM</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="dataDisk" checked>
+                <span class="form-check-label">DataDisk</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- 결과 영역 (실행 후 표시) -->
+        <div id="sync-result" class="d-none">
+          <hr>
+          <label class="form-label">동기화 결과</label>
+          <div id="sync-result-body"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" id="sync-execute-btn"
+          onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].executeSyncCspResources()">
+          <span id="sync-execute-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          동기화 실행
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }}
+{{ javascriptTag("common/api/services/import_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}

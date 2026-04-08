@@ -1,168 +1,73 @@
-import { TabulatorFull as Tabulator } from 'tabulator-tables';
+// SecurityGroup 관리 페이지 — Import 기능 (Connection 단위)
+// RQ-CLOUD-ADMIN-007 / UC-IMPORT-003
 
-// Project change event (module level — MCI pattern)
-$("#select-current-project").on('change', async function () {
-  if (this.value == "") return;
-  const opt = this.options[this.selectedIndex];
-  const project = {
-    Id: this.value,
-    Name: opt.text,
-    NsId: opt.getAttribute('data-nsid') || opt.text
-  };
-  webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);
-  window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-  hideDetail();
-  await refreshSgList();
+import { showToast, TOAST_TYPES } from "../../../../common/utils/toast.js";
+
+const importApi = () => webconsolejs["common/api/services/import_api"];
+
+let _nsId = null;
+
+document.addEventListener("DOMContentLoaded", async function () {
+    _nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+
+    const btnList = document.getElementById('page-header-btn-list');
+    if (btnList) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.textContent = 'Import SecurityGroup';
+        btn.disabled = !_nsId;
+        btn.title = _nsId ? 'CSP 미관리 SecurityGroup 임포트' : '프로젝트를 먼저 선택하세요';
+        btn.onclick = () => openImportSGModal();
+        btnList.appendChild(btn);
+    }
 });
 
-var selectedWorkspaceProject = {};
-window.currentNsId = "";
+export async function openImportSGModal() {
+    _nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+    if (!_nsId) { alert('프로젝트를 먼저 선택하세요.'); return; }
 
-const AppState = {
-  resources: { list: [], selected: null },
-  ui: { viewMode: false },
-  tables: { resourceTable: null, ruleTable: null }
-};
-
-document.addEventListener('DOMContentLoaded', initSecurityGroups);
-
-async function initSecurityGroups() {
-  const btnList = document.getElementById('page-header-btn-list');
-  if (btnList) {
-    btnList.innerHTML = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-sg-modal">Create Security Group</button>`;
-  }
-
-  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
-  window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-  await refreshSgList();
+    document.getElementById('import-sg-project').value = _nsId;
+    await loadConnectionSelect('import-sg-connection');
+    new bootstrap.Modal(document.getElementById('import-sg-modal')).show();
 }
 
-async function refreshSgList() {
-  if (selectedWorkspaceProject.projectId != "") {
+export async function executeImportSG() {
+    const connectionName = document.getElementById('import-sg-connection').value;
+    if (!connectionName) { alert('Connection을 선택하세요.'); return; }
+
+    const spinner = document.getElementById('import-sg-spinner');
+    spinner.classList.remove('d-none');
+
     try {
-      const data = await webconsolejs['common/api/services/securitygroup_api'].list(window.currentNsId);
-      const items = data?.securityGroup || [];
-      AppState.resources.list = items;
-      if (AppState.tables.resourceTable) AppState.tables.resourceTable.replaceData(items);
-      else initTable(items);
-    } catch (e) {
-      if (e?.response?.status !== 404) console.error('Failed to load SecurityGroups', e);
-      const items = [];
-      AppState.resources.list = items;
-      if (AppState.tables.resourceTable) AppState.tables.resourceTable.replaceData(items);
-      else initTable(items);
+        const result = await importApi().registerCspResources(['securityGroup'], connectionName, _nsId);
+        const count = result?.registerationOverview?.securityGroup || 0;
+        const failed = result?.registerationOverview?.failed || 0;
+        showToast(failed > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
+            `SecurityGroup ${count}개 등록 완료${failed > 0 ? `, ${failed}개 실패` : ''}`);
+        bootstrap.Modal.getInstance(document.getElementById('import-sg-modal'))?.hide();
+    } catch (err) {
+        showToast(TOAST_TYPES.ERROR, 'SecurityGroup Import 실패: ' + (err.message || ''));
+    } finally {
+        spinner.classList.add('d-none');
     }
-  }
 }
 
-function initTable(data) {
-  AppState.tables.resourceTable = new Tabulator('#sg-table', {
-    data,
-    layout: 'fitColumns',
-    placeholder: 'No Security Groups found',
-    columns: [
-      { title: 'SG Name', field: 'name', sorter: 'string' },
-      { title: 'VPC', field: 'vNetId', sorter: 'string' },
-      { title: 'Inbound Rules', formatter: cell => (cell.getRow().getData().firewallRules || []).filter(r => r.direction === 'inbound').length },
-      { title: 'Outbound Rules', formatter: cell => (cell.getRow().getData().firewallRules || []).filter(r => r.direction === 'outbound').length },
-      { title: 'Connection', field: 'connectionName', sorter: 'string' }
-    ]
-  });
-  AppState.tables.resourceTable.on('rowClick', function (e, row) {
-    const d = row.getData();
-    AppState.resources.selected = d;
-    renderDetail(d);
-    showDetail();
-  });
+async function loadConnectionSelect(selectId) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = '<option value="">선택하세요</option>';
+    try {
+        const result = await webconsolejs["common/api/http"].commonAPIPost("/api/mc-iam-manager/ListCspAccounts", {});
+        const accounts = result?.data?.responseData?.items || [];
+        accounts.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc.connectionName || acc.name;
+            opt.textContent = acc.name;
+            select.appendChild(opt);
+        });
+    } catch (err) { console.error(err); }
 }
 
-function renderDetail(data) {
-  document.getElementById('detail-name').textContent = data.name || '-';
-  document.getElementById('detail-sgName').textContent = data.name || '-';
-  document.getElementById('detail-vpcName').textContent = data.vNetId || '-';
-  document.getElementById('detail-ns').textContent = window.currentNsId;
-  document.getElementById('detail-connection').textContent = data.connectionName || '-';
-
-  const rules = data.firewallRules || [];
-  if (AppState.tables.ruleTable) {
-    AppState.tables.ruleTable.replaceData(rules);
-  } else {
-    AppState.tables.ruleTable = new Tabulator('#rule-table', {
-      data: rules,
-      layout: 'fitColumns',
-      placeholder: 'No rules',
-      columns: [
-        { title: 'Protocol', field: 'protocol' },
-        { title: 'Direction', field: 'direction' },
-        { title: 'CIDR', field: 'cidr' },
-        { title: 'From Port', field: 'fromPort' },
-        { title: 'To Port', field: 'toPort' }
-      ]
-    });
-  }
-}
-
-function showDetail() {
-  document.getElementById('view-mode-cards').classList.add('show');
-  AppState.ui.viewMode = true;
-}
-
-window.hideDetail = function () {
-  document.getElementById('view-mode-cards').classList.remove('show');
-  AppState.ui.viewMode = false;
-  AppState.resources.selected = null;
-};
-
-window.deleteSg = async function () {
-  const item = AppState.resources.selected;
-  if (!item || !confirm(`Delete Security Group "${item.name}"?`)) return;
-  try {
-    await webconsolejs['common/api/services/securitygroup_api'].del(window.currentNsId, item.name);
-    hideDetail();
-    await refreshSgList();
-  } catch (e) { alert('Failed to delete: ' + (e?.response?.data?.message || e.message)); }
-};
-
-window.addRuleRow = function () {
-  const container = document.getElementById('rule-rows');
-  const row = document.createElement('div');
-  row.className = 'rule-row row g-2 mb-2';
-  row.innerHTML = `
-    <div class="col-2"><select class="form-select form-select-sm rule-protocol"><option>TCP</option><option>UDP</option><option>ICMP</option><option>ALL</option></select></div>
-    <div class="col-2"><select class="form-select form-select-sm rule-direction"><option value="inbound">Inbound</option><option value="outbound">Outbound</option></select></div>
-    <div class="col-3"><input type="text" class="form-control form-control-sm rule-cidr" placeholder="CIDR"></div>
-    <div class="col-2"><input type="number" class="form-control form-control-sm rule-from" placeholder="From Port"></div>
-    <div class="col-2"><input type="number" class="form-control form-control-sm rule-to" placeholder="To Port"></div>
-    <div class="col-1"><button type="button" class="btn btn-sm btn-ghost-danger" onclick="removeRuleRow(this)">✕</button></div>
-  `;
-  container.appendChild(row);
-};
-
-window.removeRuleRow = function (btn) {
-  const rows = document.querySelectorAll('#rule-rows .rule-row');
-  if (rows.length <= 1) return;
-  btn.closest('.rule-row').remove();
-};
-
-window.submitCreateSg = async function () {
-  const ns = window.currentNsId;
-  const name = document.getElementById('modal-sgName').value.trim();
-  const vNetId = document.getElementById('modal-vpcName').value.trim();
-  if (!ns || !name || !vNetId) { alert('SG Name and VPC Name are required. Make sure a project is selected.'); return; }
-
-  const ruleRows = document.querySelectorAll('#rule-rows .rule-row');
-  const firewallRules = Array.from(ruleRows).map(row => ({
-    protocol: row.querySelector('.rule-protocol').value,
-    direction: row.querySelector('.rule-direction').value,
-    cidr: row.querySelector('.rule-cidr').value.trim(),
-    fromPort: row.querySelector('.rule-from').value,
-    toPort: row.querySelector('.rule-to').value
-  })).filter(r => r.cidr);
-
-  try {
-    await webconsolejs['common/api/services/securitygroup_api'].create(ns, { name, vNetId, firewallRules });
-    bootstrap.Modal.getInstance(document.getElementById('create-sg-modal'))?.hide();
-    await refreshSgList();
-  } catch (e) { alert('Failed to create: ' + (e?.response?.data?.message || e.message)); }
+if (typeof webconsolejs === "undefined") { window.webconsolejs = {}; }
+webconsolejs["pages/settings/environment/cloudresources/securitygroups"] = {
+    openImportSGModal, executeImportSG,
 };

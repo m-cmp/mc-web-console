@@ -5,10 +5,10 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">SecurityGroup 목록</h3>
+              <h3 class="card-title">DataDisk 목록</h3>
             </div>
             <div class="card-body p-0">
-              <div id="sg-list-table"></div>
+              <div id="datadisk-list-table"></div>
             </div>
           </div>
         </div>
@@ -17,32 +17,32 @@
   </div>
 </div>
 
-<!-- Import SecurityGroup 모달 (RQ-CLOUD-ADMIN-007) -->
-<div class="modal modal-blur fade" id="import-sg-modal" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Import DataDisk 모달 (RQ-CLOUD-ADMIN-007) -->
+<div class="modal modal-blur fade" id="import-datadisk-modal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">SecurityGroup 임포트</h5>
+        <h5 class="modal-title">DataDisk 임포트</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info mb-3">
-          선택된 Connection의 미등록 SecurityGroup 전체가 현재 프로젝트에 등록됩니다.
+          선택된 Connection의 미등록 DataDisk 전체가 현재 프로젝트에 등록됩니다.
         </div>
         <div class="mb-3">
           <label class="form-label">Connection</label>
-          <select class="form-select" id="import-sg-connection"></select>
+          <select class="form-select" id="import-datadisk-connection"></select>
         </div>
         <div class="mb-2">
           <label class="form-label">대상 프로젝트</label>
-          <input type="text" class="form-control" id="import-sg-project" readonly>
+          <input type="text" class="form-control" id="import-datadisk-project" readonly>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
         <button type="button" class="btn btn-primary"
-          onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].executeImportSG()">
-          <span id="import-sg-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          onclick="webconsolejs['pages/settings/environment/cloudresources/datadisk'].executeImportDisk()">
+          <span id="import-datadisk-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
           Import 실행
         </button>
       </div>
@@ -51,4 +51,4 @@
 </div>
 
 {{ javascriptTag("common/api/services/import_api.js") | raw }}
-{{ javascriptTag("pages/settings/environment/cloudresources/securitygroups.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/datadisk.js") | raw }}

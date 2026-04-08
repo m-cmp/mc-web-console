@@ -570,7 +570,23 @@ function setPmkInfoData(pmkData) {
         $("#cluster_info_cspname").text(pmkCspName);
         $("#cluster_info_cspid").text(pmkCspId);
         $("#cluster_info_version").text(pmkVersion);
-        $("#cluster_info_status").text(pmkStatus);
+
+        // 상태 배지 렌더링
+        const statusEl = document.getElementById("cluster_info_status");
+        if (statusEl) {
+            const statusLower = (pmkStatus || "").toLowerCase();
+            let badgeClass = "bg-muted-lt text-muted";
+            if (statusLower === "active") {
+                badgeClass = "bg-green-lt text-green";
+            } else if (statusLower.includes("creat") || statusLower.includes("pending")) {
+                badgeClass = "bg-azure-lt text-azure";
+            } else if (statusLower.includes("delet") || statusLower.includes("terminat")) {
+                badgeClass = "bg-red-lt text-red";
+            } else if (statusLower.includes("inactive") || statusLower.includes("stop")) {
+                badgeClass = "bg-yellow-lt text-yellow";
+            }
+            statusEl.innerHTML = `<span class="badge ${badgeClass}" style="font-size: 0.8rem;">${pmkStatus}</span>`;
+        }
 
         // 네트워크 정보
         $("#cluster_info_vpc").text(pmkVpc);
@@ -580,13 +596,28 @@ function setPmkInfoData(pmkData) {
         // 추가정보
         $("#cluster_info_cloudconnection").text(pmkCloudConnection);
         $("#cluster_info_endpoint").text(pmkEndPoint || "N/A");
-        // $("#cluster_info_kubeconfig").text(pmkKubeConfig || "N/A");
+
+        // KubeConfig: 클립보드 복사 버튼과 함께 표시
+        const kubeconfigEl = document.getElementById("cluster_info_kubeconfig");
+        if (kubeconfigEl) {
+            if (pmkKubeConfig && pmkKubeConfig !== "N/A") {
+                kubeconfigEl.innerHTML =
+                    `<a href="#" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(${JSON.stringify(pmkKubeConfig)}).then(()=>{ this.textContent='Copied!'; setTimeout(()=>{ this.textContent='Copy KubeConfig'; }, 1500); }); return false;">Copy KubeConfig</a>`;
+            } else {
+                kubeconfigEl.textContent = "N/A";
+            }
+        }
 
     } catch (e) {
         console.error(e);
     }
 
-    // TODO: pmk info로 cursor 이동
+    // cluster info 영역으로 스크롤 이동
+    const clusterInfoEl = document.getElementById("cluster_info");
+    if (clusterInfoEl) {
+        clusterInfoEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     var nodeGroupList = clusterDetailData?.NodeGroupList
 
     // displayNodeGroupStatusList(pmkID, clusterData)
