@@ -122,7 +122,7 @@
     background-color: rgba(0, 0, 0, 0.15) !important;
     border-radius: 2px;
   }
-  
+
   // 체크박스: jsTree default 테마 스프라이트(32px.png)의 background-position은
   // .jstree-default .jstree-icon 기본 크기(24×24)에 맞춰져 있음.
   // 위의 공통 .jstree-icon 18×18 강제 시 스프라이트가 잘려 체크/빈 칸이 구분 안 되는
@@ -140,7 +140,7 @@
     background-image: url('~jstree/src/themes/default/32px.png') !important;
     background-repeat: no-repeat !important;
   }
-  
+
   // 들여쓰기: 테마 margin-left(24px)와 겹치지 않게 과도한 추가 margin 피함
   .jstree-node > .jstree-children {
     display: block;
@@ -151,7 +151,7 @@
     margin-bottom: 0 !important;
     padding: 0 !important;
   }
-  
+
   // 전체 행(wholerow) 높이 — 행 간격 축소
   .jstree-default .jstree-wholerow,
   .jstree-wholerow {

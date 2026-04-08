@@ -9,9 +9,8 @@ const LiveReloadPlugin = require("webpack-livereload-plugin");
 const configurator = {
   entries: function(){
     var entries = {
-      application: [
-        './assets/css/application.scss',
-      ],
+      // application.js: jQuery expose, Bootstrap 등 전역 JS — jstree 스타일은 application.scss에서 @import
+      application: ['./assets/js/application.js', './assets/css/application.scss'],
     }
     // globSync("./assets/*/*.*").forEach((entry) => {
     globSync("assets/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
