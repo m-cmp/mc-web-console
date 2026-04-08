@@ -1,15 +1,18 @@
 <div class="page-body">
   <div class="container-xl">
 
-    <!-- Namespace 필터 + 테이블 -->
     <div class="row row-cards">
+      <div class="col-12">
+        <div id="networks-no-context-alert" class="alert alert-info mb-3" role="alert">
+          Select a <strong>workspace</strong> and <strong>project</strong> in the top bar to load VPCs.
+        </div>
+      </div>
       <div class="col-12">
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">VPC List</h3>
             <div class="card-options ms-auto d-flex gap-2 align-items-center">
-              <label class="form-label mb-0 me-1">Namespace</label>
-              <select id="ns-selector" class="form-select form-select-sm" style="width:180px"></select>
+              <span id="networks-context-label" class="text-secondary small"></span>
             </div>
           </div>
           <div class="card-body p-0">
@@ -49,10 +52,6 @@
                   <div class="datagrid-content" id="detail-cidrBlock">-</div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Namespace</div>
-                  <div class="datagrid-content" id="detail-ns">-</div>
-                </div>
-                <div class="datagrid-item">
                   <div class="datagrid-title">Connection</div>
                   <div class="datagrid-content" id="detail-connection">-</div>
                 </div>
@@ -77,10 +76,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label required">Namespace</label>
-          <select id="modal-ns" class="form-select"></select>
-        </div>
         <div class="mb-3">
           <label class="form-label required">VPC Name</label>
           <input type="text" id="modal-vpcName" class="form-control" placeholder="my-vpc">
@@ -109,3 +104,6 @@
     </div>
   </div>
 </div>
+
+{{ javascriptTag("common/api/services/vpc_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/networks.js") | raw }}

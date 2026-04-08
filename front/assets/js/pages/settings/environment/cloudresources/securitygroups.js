@@ -1,43 +1,58 @@
+import { TabulatorFull as Tabulator } from 'tabulator-tables';
+
+// Project change event (module level — MCI pattern)
+$("#select-current-project").on('change', async function () {
+  if (this.value == "") return;
+  const opt = this.options[this.selectedIndex];
+  const project = {
+    Id: this.value,
+    Name: opt.text,
+    NsId: opt.getAttribute('data-nsid') || opt.text
+  };
+  webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);
+  window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+  hideDetail();
+  await refreshSgList();
+});
+
+var selectedWorkspaceProject = {};
+window.currentNsId = "";
+
 const AppState = {
   resources: { list: [], selected: null },
   ui: { viewMode: false },
-  tables: { resourceTable: null, ruleTable: null },
-  ns: ''
+  tables: { resourceTable: null, ruleTable: null }
 };
 
-async function loadNamespaces() {
-  try {
-    const resp = await webconsolejs['common/api/http'].commonAPIPost('/api/mc-infra-manager/Getallns', {});
-    const nsList = resp?.data?.responseData?.ns || [];
-    const sel = document.getElementById('ns-selector');
-    const modalSel = document.getElementById('modal-ns');
-    nsList.forEach(ns => {
-      [sel, modalSel].forEach(el => {
-        if (!el) return;
-        const opt = document.createElement('option');
-        opt.value = ns.id;
-        opt.textContent = ns.id;
-        el.appendChild(opt);
-      });
-    });
-    if (nsList.length > 0) { AppState.ns = nsList[0].id; await loadList(); }
-  } catch (e) { console.error('Failed to load namespaces', e); }
+document.addEventListener('DOMContentLoaded', initSecurityGroups);
+
+async function initSecurityGroups() {
+  const btnList = document.getElementById('page-header-btn-list');
+  if (btnList) {
+    btnList.innerHTML = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-sg-modal">Create Security Group</button>`;
+  }
+
+  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
+  window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+  await refreshSgList();
 }
 
-async function loadList() {
-  if (!AppState.ns) return;
-  try {
-    const data = await webconsolejs['common/api/services/securitygroup_api'].list(AppState.ns);
-    const items = data?.securityGroup || [];
-    AppState.resources.list = items;
-    if (AppState.tables.resourceTable) AppState.tables.resourceTable.replaceData(items);
-    else initTable(items);
-  } catch (e) {
-    if (e?.response?.status !== 404) console.error('Failed to load SecurityGroups', e);
-    const items = [];
-    AppState.resources.list = items;
-    if (AppState.tables.resourceTable) AppState.tables.resourceTable.replaceData(items);
-    else initTable(items);
+async function refreshSgList() {
+  if (selectedWorkspaceProject.projectId != "") {
+    try {
+      const data = await webconsolejs['common/api/services/securitygroup_api'].list(window.currentNsId);
+      const items = data?.securityGroup || [];
+      AppState.resources.list = items;
+      if (AppState.tables.resourceTable) AppState.tables.resourceTable.replaceData(items);
+      else initTable(items);
+    } catch (e) {
+      if (e?.response?.status !== 404) console.error('Failed to load SecurityGroups', e);
+      const items = [];
+      AppState.resources.list = items;
+      if (AppState.tables.resourceTable) AppState.tables.resourceTable.replaceData(items);
+      else initTable(items);
+    }
   }
 }
 
@@ -52,13 +67,13 @@ function initTable(data) {
       { title: 'Inbound Rules', formatter: cell => (cell.getRow().getData().firewallRules || []).filter(r => r.direction === 'inbound').length },
       { title: 'Outbound Rules', formatter: cell => (cell.getRow().getData().firewallRules || []).filter(r => r.direction === 'outbound').length },
       { title: 'Connection', field: 'connectionName', sorter: 'string' }
-    ],
-    rowClick: function (e, row) {
-      const d = row.getData();
-      AppState.resources.selected = d;
-      renderDetail(d);
-      showDetail();
-    }
+    ]
+  });
+  AppState.tables.resourceTable.on('rowClick', function (e, row) {
+    const d = row.getData();
+    AppState.resources.selected = d;
+    renderDetail(d);
+    showDetail();
   });
 }
 
@@ -66,7 +81,7 @@ function renderDetail(data) {
   document.getElementById('detail-name').textContent = data.name || '-';
   document.getElementById('detail-sgName').textContent = data.name || '-';
   document.getElementById('detail-vpcName').textContent = data.vNetId || '-';
-  document.getElementById('detail-ns').textContent = AppState.ns;
+  document.getElementById('detail-ns').textContent = window.currentNsId;
   document.getElementById('detail-connection').textContent = data.connectionName || '-';
 
   const rules = data.firewallRules || [];
@@ -88,10 +103,14 @@ function renderDetail(data) {
   }
 }
 
-function showDetail() { document.getElementById('view-mode-cards').classList.add('show'); }
+function showDetail() {
+  document.getElementById('view-mode-cards').classList.add('show');
+  AppState.ui.viewMode = true;
+}
 
 window.hideDetail = function () {
   document.getElementById('view-mode-cards').classList.remove('show');
+  AppState.ui.viewMode = false;
   AppState.resources.selected = null;
 };
 
@@ -99,9 +118,9 @@ window.deleteSg = async function () {
   const item = AppState.resources.selected;
   if (!item || !confirm(`Delete Security Group "${item.name}"?`)) return;
   try {
-    await webconsolejs['common/api/services/securitygroup_api'].del(AppState.ns, item.name);
+    await webconsolejs['common/api/services/securitygroup_api'].del(window.currentNsId, item.name);
     hideDetail();
-    await loadList();
+    await refreshSgList();
   } catch (e) { alert('Failed to delete: ' + (e?.response?.data?.message || e.message)); }
 };
 
@@ -127,10 +146,10 @@ window.removeRuleRow = function (btn) {
 };
 
 window.submitCreateSg = async function () {
-  const ns = document.getElementById('modal-ns').value;
+  const ns = window.currentNsId;
   const name = document.getElementById('modal-sgName').value.trim();
   const vNetId = document.getElementById('modal-vpcName').value.trim();
-  if (!ns || !name || !vNetId) { alert('Namespace, SG Name, and VPC Name are required.'); return; }
+  if (!ns || !name || !vNetId) { alert('SG Name and VPC Name are required. Make sure a project is selected.'); return; }
 
   const ruleRows = document.querySelectorAll('#rule-rows .rule-row');
   const firewallRules = Array.from(ruleRows).map(row => ({
@@ -144,20 +163,6 @@ window.submitCreateSg = async function () {
   try {
     await webconsolejs['common/api/services/securitygroup_api'].create(ns, { name, vNetId, firewallRules });
     bootstrap.Modal.getInstance(document.getElementById('create-sg-modal'))?.hide();
-    AppState.ns = ns;
-    await loadList();
+    await refreshSgList();
   } catch (e) { alert('Failed to create: ' + (e?.response?.data?.message || e.message)); }
 };
-
-document.addEventListener('DOMContentLoaded', async function () {
-  const btnList = document.getElementById('page-header-btn-list');
-  if (btnList) btnList.innerHTML = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-sg-modal">Create Security Group</button>`;
-
-  document.getElementById('ns-selector')?.addEventListener('change', async function () {
-    AppState.ns = this.value;
-    hideDetail();
-    await loadList();
-  });
-
-  await loadNamespaces();
-});
