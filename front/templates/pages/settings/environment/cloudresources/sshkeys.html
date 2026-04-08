@@ -1,100 +1,54 @@
 <div class="page-body">
   <div class="container-xl">
-
-    <div class="row row-cards">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">SSH Key List</h3>
-            <div class="card-options ms-auto d-flex gap-2 align-items-center">
-              <label class="form-label mb-0 me-1">Namespace</label>
-              <select id="ns-selector" class="form-select form-select-sm" style="width:180px"></select>
-            </div>
-          </div>
-          <div class="card-body p-0">
-            <div id="sshkey-table"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="view-mode-cards" class="collapse">
-      <div class="row row-cards mt-2">
+    <div id="index" class="section">
+      <div class="row row-cards">
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">SSH Key Info — <span id="detail-name" class="text-primary"></span></h3>
-              <div class="card-options">
-                <button class="btn btn-sm btn-ghost-danger" onclick="deleteSshKey()">Delete</button>
-                <a href="#" class="card-options-remove" onclick="hideDetail()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M18 6l-12 12"></path><path d="M6 6l12 12"></path>
-                  </svg>
-                </a>
-              </div>
+              <h3 class="card-title">SSH Key 목록</h3>
             </div>
-            <div class="card-body">
-              <div class="datagrid">
-                <div class="datagrid-item">
-                  <div class="datagrid-title">Key Name</div>
-                  <div class="datagrid-content" id="detail-keyName">-</div>
-                </div>
-                <div class="datagrid-item">
-                  <div class="datagrid-title">Fingerprint</div>
-                  <div class="datagrid-content" id="detail-fingerprint">-</div>
-                </div>
-                <div class="datagrid-item">
-                  <div class="datagrid-title">Namespace</div>
-                  <div class="datagrid-content" id="detail-ns">-</div>
-                </div>
-              </div>
-              <div class="mt-3">
-                <label class="form-label">Private Key</label>
-                <div class="d-flex gap-2 align-items-start">
-                  <textarea id="detail-privateKey" class="form-control font-monospace" rows="4" readonly style="filter:blur(4px)"></textarea>
-                  <button class="btn btn-sm btn-outline-secondary" onclick="togglePrivateKey()" title="Toggle visibility">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24"
-                      stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
-                      <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
+            <div class="card-body p-0">
+              <div id="sshkey-list-table"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- Create Modal -->
-<div class="modal modal-blur fade" id="create-sshkey-modal" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Import SSH Key 모달 (RQ-CLOUD-ADMIN-007) -->
+<div class="modal modal-blur fade" id="import-sshkey-modal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Create SSH Key</h5>
+        <h5 class="modal-title">SSH Key 임포트</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label required">Namespace</label>
-          <select id="modal-ns" class="form-select"></select>
+        <div class="alert alert-info mb-3">
+          선택된 Connection의 미등록 SSH Key 전체가 현재 프로젝트에 등록됩니다.
         </div>
         <div class="mb-3">
-          <label class="form-label required">Key Name</label>
-          <input type="text" id="modal-keyName" class="form-control" placeholder="my-ssh-key">
+          <label class="form-label">Connection</label>
+          <select class="form-select" id="import-sshkey-connection"></select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">대상 프로젝트</label>
+          <input type="text" class="form-control" id="import-sshkey-project" readonly>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="submitCreateSshKey()">Create</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary"
+          onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].executeImportSshKey()">
+          <span id="import-sshkey-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          Import 실행
+        </button>
       </div>
     </div>
   </div>
 </div>
+
+{{ javascriptTag("common/api/services/import_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/sshkeys.js") | raw }}
