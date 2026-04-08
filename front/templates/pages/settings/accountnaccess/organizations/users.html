@@ -437,7 +437,10 @@
                 </div>
                 <div class="datagrid-item">
                   <div class="datagrid-title">Status</div>
-                  <div class="datagrid-content" id="user-info-enabled"></div>
+                  <div class="datagrid-content d-flex align-items-center gap-2">
+                    <span id="user-info-enabled"></span>
+                    <button id="user-status-toggle-btn" class="btn btn-sm" style="display:none" onclick="toggleUserStatus()"></button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -905,33 +908,6 @@
   }
 </style>
 
-<!-- Reset Password Modal -->
-<div class="modal modal-blur" id="reset-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Reset Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="reset-password-form">
-          <div class="mb-3">
-            <label class="form-label">New Password</label>
-            <input type="password" class="form-control" id="reset-password-new" placeholder="Enter new password" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" id="reset-password-confirm" placeholder="Confirm new password" required>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="resetUserPassword()">Reset Password</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- javascript -->
 {{ javascriptTag("common/api/services/users_api.js") | raw }} {{ javascriptTag("common/api/services/groups_api.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}
