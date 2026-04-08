@@ -1,14 +1,27 @@
 document.addEventListener("DOMContentLoaded", function () {
     updatemenu();
     document.querySelectorAll('div[name^="sidebar_"]').forEach(function(item) {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
             const hrefStr = this.getAttribute('href')
             if( hrefStr && "#navbar-extra" !== hrefStr) {
                 window.location = hrefStr
+                return
+            }
+            // Bootstrap이 두 번 로드되어 toggle이 즉시 취소되는 문제 방지:
+            // document까지 이벤트 전파를 막고 수동으로 show/hide 처리
+            if (this.classList.contains('dropdown-toggle')) {
+                e.stopPropagation()
+                const menu = this.nextElementSibling
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    menu.classList.toggle('show')
+                    this.classList.toggle('show')
+                    this.setAttribute('aria-expanded', this.classList.contains('show'))
+                }
             }
         });
     });
     setActiveMenu();
+
 });
 
 function updatemenu(){

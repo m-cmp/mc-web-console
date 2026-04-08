@@ -82,7 +82,13 @@ const PmkApiHelper = {
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-    let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
+    const opt = this.options[this.selectedIndex];
+    const nsFromAttr = opt ? (opt.getAttribute('data-nsid') || '') : '';
+    let project = {
+        "Id": this.value,
+        "Name": opt ? opt.textContent : '',
+        "NsId": nsFromAttr || (opt ? opt.textContent : '')
+    };
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
     // Using direct API call with default page loader for project change
     var respPmkList = await webconsolejs["common/api/services/pmk_api"].getClusterList(project.NsId);

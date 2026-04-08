@@ -181,13 +181,19 @@ export function setPrjSelectBox(projectList, curProjectId) {
   defaultOpt.textContent = "Please select a project";
   projectListselectBox.appendChild(defaultOpt);
 
-  for (const p in projectList) {
+  const list = projectList || [];
+  for (const p in list) {
     const opt = document.createElement("option");
-    opt.value = projectList[p].id;
-    opt.textContent = projectList[p].name;
+    const row = list[p];
+    opt.value = row.id;
+    opt.textContent = row.name;
+    const infraNs = row.nsid || row.NsId || "";
+    if (infraNs) {
+      opt.setAttribute("data-nsid", infraNs);
+    }
     projectListselectBox.appendChild(opt);
 
-    if (curProjectId != undefined && curProjectId != "" && projectList[p].id == curProjectId) {
+    if (curProjectId != undefined && curProjectId != "" && row.id == curProjectId) {
       opt.setAttribute("selected", "selected");
     }
   }
