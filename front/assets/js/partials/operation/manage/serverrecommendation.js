@@ -13,9 +13,40 @@ export function initServerRecommendation(callbackfunction) {
 	if (callbackfunction != undefined) {
 		returnFunction = callbackfunction;
 	}
-	
+
+	// 클라우드 연결 목록 로드
+	loadConnectionsIntoSelect();
+
 	// 모달 열기 이벤트 리스너 등록
 	setupServerModalEvents();
+}
+
+// 클라우드 연결 목록을 Select에 동적 로드
+async function loadConnectionsIntoSelect() {
+	const select = document.getElementById("assistRecommendSpecConnectionName");
+	if (!select) return;
+
+	try {
+		const connections = await webconsolejs["common/api/services/mci_api"].getCloudConnection();
+		if (!Array.isArray(connections) || connections.length === 0) return;
+
+		// 기존 옵션 제거 후 재구성
+		select.innerHTML = '<option value="">Select Connection</option>';
+		connections.forEach(conn => {
+			const opt = document.createElement("option");
+			opt.value = conn.configName || conn.connectionName || conn.NameId || "";
+			opt.textContent = conn.configName || conn.connectionName || conn.NameId || "";
+			// 연결에 위경도 정보가 있으면 data 속성으로 저장
+			if (conn.regionDetail?.location?.latitude) {
+				opt.dataset.lat = conn.regionDetail.location.latitude;
+				opt.dataset.lon = conn.regionDetail.location.longitude;
+			}
+			select.appendChild(opt);
+		});
+	} catch (e) {
+		// 실패 시 기존 하드코딩 옵션 유지
+		console.warn("Failed to load cloud connections:", e);
+	}
 }
 
 // 서버 추천 모달 이벤트 설정
@@ -25,7 +56,7 @@ function setupServerModalEvents() {
 		var serverModal = document.getElementById('spec-search');
 		if (serverModal) {
 			serverModal.addEventListener('shown.bs.modal', function() {
-				// 모달이 열렸을 때의 처리
+				loadConnectionsIntoSelect();
 			});
 		}
 	}
@@ -414,20 +445,31 @@ export async function getRecommendVmInfo() {
 	//
 	var priorityArr = new Array();
 
-	// location
-	var priorityPolicy = {
-		"metric": "location",
-		"parameter": [
-			{
-				"key": "coordinateClose",
-				"val": [
-					lat + "/" + lon
-				]
-			}
-		],
-		"weight": "0.3"
+	var priorityType = $("#assistRecommendPriorityType").val() || "location";
+
+	if (priorityType === "location") {
+		// 위치 기반 우선순위
+		if (lat && lon) {
+			var priorityPolicy = {
+				"metric": "location",
+				"parameter": [
+					{
+						"key": "coordinateClose",
+						"val": [lat + "/" + lon]
+					}
+				],
+				"weight": "0.3"
+			};
+			priorityArr.push(priorityPolicy);
+		}
+	} else if (priorityType === "cost") {
+		// 비용 우선순위 (낮은 시간당 비용 우선)
+		var costPriorityPolicy = {
+			"metric": "costPerHour",
+			"weight": "1.0"
+		};
+		priorityArr.push(costPriorityPolicy);
 	}
-	priorityArr.push(priorityPolicy)
 	const data = {
 		request: {
 			"filter": {
@@ -499,6 +541,17 @@ export async function applySpecInfo() {
 }
 
 export function showRecommendSpecSetting(value) {
+	// 선택된 option의 data 속성에서 위경도를 읽음 (동적 연결 로드 후 설정됨)
+	const select = document.getElementById("assistRecommendSpecConnectionName");
+	const selectedOption = select ? select.options[select.selectedIndex] : null;
+
+	if (selectedOption && selectedOption.dataset.lat && selectedOption.dataset.lon) {
+		$("#latitude").val(selectedOption.dataset.lat);
+		$("#longitude").val(selectedOption.dataset.lon);
+		return;
+	}
+
+	// 하드코딩 폴백 (동적 로드 실패 시)
 	if (value === "seoul") {
 		$("#latitude").val("37.532600")
 		$("#longitude").val("127.024612")
