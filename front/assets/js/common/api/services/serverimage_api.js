@@ -1,5 +1,5 @@
 export async function list(ns) {
-  const controller = '/api/mc-infra-manager/ListImage';
+  const controller = '/api/mc-infra-manager/Getallimage';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns }
   });
@@ -7,7 +7,7 @@ export async function list(ns) {
 }
 
 export async function register(ns, body) {
-  const controller = '/api/mc-infra-manager/RegisterImage';
+  const controller = '/api/mc-infra-manager/Postimage';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns },
     request: body
@@ -16,7 +16,7 @@ export async function register(ns, body) {
 }
 
 export async function get(ns, name) {
-  const controller = '/api/mc-infra-manager/GetImage';
+  const controller = '/api/mc-infra-manager/Getimage';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, imageId: name }
   });
@@ -24,7 +24,7 @@ export async function get(ns, name) {
 }
 
 export async function del(ns, name) {
-  const controller = '/api/mc-infra-manager/DeleteImage';
+  const controller = '/api/mc-infra-manager/Delimage';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, imageId: name }
   });

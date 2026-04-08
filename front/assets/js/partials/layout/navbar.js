@@ -44,7 +44,13 @@ projectListselectBox.addEventListener('change', function () {
     }else{
         this.classList.remove('is-invalid');
     }
-    let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
+    const opt = this.options[this.selectedIndex];
+    const nsFromAttr = opt ? (opt.getAttribute('data-nsid') || '') : '';
+    let project = {
+        "Id": this.value,
+        "Name": opt ? opt.textContent : '',
+        "NsId": nsFromAttr || (opt ? opt.textContent : '')
+    };
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
 });
 
@@ -69,11 +75,16 @@ export async function setPrjSelectBox(workspaceId) {
     let curProjectId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.Id
     for (const p in projectList) {
         const opt = document.createElement("option");
-        opt.value = projectList[p].id;
-        opt.textContent = projectList[p].name;
+        const row = projectList[p];
+        opt.value = row.id;
+        opt.textContent = row.name;
+        const infraNs = row.nsid || row.NsId || "";
+        if (infraNs) {
+            opt.setAttribute("data-nsid", infraNs);
+        }
         projectListselectBox.appendChild(opt);
 
-        if (curProjectId != "" && projectList[p].id == curProjectId) {
+        if (curProjectId != "" && row.id == curProjectId) {
             opt.setAttribute("selected", "selected");
         }
     }
@@ -117,6 +128,20 @@ export async function workspaceProjectInit() {
             curNsId = curProject.NsId;
         }
         webconsolejs["common/api/services/workspace_api"].setPrjSelectBox(userProjectList, curProjectId);
+        const prjSel = document.getElementById("select-current-project");
+        if (prjSel && prjSel.value) {
+            const opt = prjSel.options[prjSel.selectedIndex];
+            const nsFromAttr = opt ? (opt.getAttribute('data-nsid') || '') : '';
+            const synced = {
+                Id: prjSel.value,
+                Name: opt ? opt.textContent : '',
+                NsId: nsFromAttr || (opt ? opt.textContent : '')
+            };
+            webconsolejs["common/api/services/workspace_api"].setCurrentProject(synced);
+            curProjectId = synced.Id;
+            curProjectName = synced.Name;
+            curNsId = synced.NsId;
+        }
     }
 
     return { workspaceId: curWorkspaceId, workspaceName: curWorkspaceName, projectId: curProjectId, projectName: curProjectName, nsId: curNsId };
