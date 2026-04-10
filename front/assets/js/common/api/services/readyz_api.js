@@ -4,13 +4,13 @@ export const READYZ_FRAMEWORK_LIST = [
     {
         name: 'mc-iam-manager',
         subsystem: 'mc-iam-manager',
-        operationId: 'GetIamReadyz',
+        operationId: 'Readyz',
         initOperationId: null,
     },
     {
         name: 'mc-infra-manager',
         subsystem: 'mc-infra-manager',
-        operationId: 'GetInfraReadyz',
+        operationId: 'Getreadyz',
         initOperationId: 'GetInfraReadyzInit',
     },
     {
