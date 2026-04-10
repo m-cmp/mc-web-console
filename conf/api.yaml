@@ -661,10 +661,6 @@ serviceActions:
       description: "Unregister a Disk with the specified name."
 
   mc-iam-manager:
-    GetIamReadyz:
-      method: get
-      resourcePath: /readyz
-      description: "mc-iam-manager 헬스체크. keycloak, db, nginx, mc-infra-manager 상태 확인."
     ListMcmpApisServices:
       method: post
       resourcePath: /api/mcmp-apis/list
@@ -1098,12 +1094,8 @@ serviceActions:
       description: "CSP 계정 비활성화"
 
   mc-infra-manager:
-    GetInfraReadyz:
-      method: get
-      resourcePath: /readyz
-      description: "mc-infra-manager(cb-tumblebug) 헬스체크. 응답: {ready, initialized, message}"
     GetInfraReadyzInit:
-      method: get
+      method: put
       resourcePath: /readyz/init
       description: "mc-infra-manager 초기화. credential valid 선행 필요. image/spec 등 초기 데이터 로드."
     Lookupspeclist:
@@ -1972,7 +1964,7 @@ serviceActions:
   mc-observability:
     GetObsReadyz:
       method: get
-      resourcePath: /readyz
+      resourcePath: /api/o11y/readyz
       description: "mc-observability 헬스체크."
     LogLabelsQuery:
       method: get
@@ -2711,7 +2703,7 @@ serviceActions:
   mc-cost-optimizer:
     GetCostReadyz:
       method: get
-      resourcePath: /readyz
+      resourcePath: /api/costopti/be/readyz
       description: "mc-cost-optimizer 헬스체크."
     GetProjects:
       method: get
