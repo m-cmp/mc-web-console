@@ -665,6 +665,14 @@ serviceActions:
       method: get
       resourcePath: /readyz
       description: "mc-iam-manager 헬스체크. keycloak, db, nginx, mc-infra-manager 상태 확인."
+    ListMcmpApisServices:
+      method: post
+      resourcePath: /api/mcmp-apis/list
+      description: "전체 프레임워크 서비스 목록 및 BaseURL 조회."
+    UpdateFrameworkService:
+      method: put
+      resourcePath: /api/mcmp-apis/name/{serviceName}
+      description: "프레임워크 서비스 BaseURL 수정. body: {BaseURL: string}"
     Searchrolesbyname:
       method: get
       resourcePath: /api/role/name/{roleName}
