@@ -68,25 +68,49 @@ export async function callInit(subsystem, operationId) {
 }
 
 /**
+ * mc-iam-manager에서 전체 프레임워크 서비스 목록(BaseURL) 조회
+ * @returns {Promise<Object>} { "mc-infra-manager": { Version, BaseURL, Auth }, ... }
+ */
+export async function listFrameworkServices() {
+    const url = `/api/mc-iam-manager/ListMcmpApisServices`;
+    const res = await webconsolejs["common/api/http"].commonAPIPost(url, {}, undefined, { loaderType: 'none' });
+    const d = res && res.data ? (res.data.responseData || res.data) : {};
+    return d.Services || {};
+}
+
+/**
+ * mc-iam-manager에서 특정 프레임워크 서비스의 BaseURL 수정
+ * @param {string} serviceName - 서비스명 (예: "mc-observability")
+ * @param {string} baseUrl - 새 BaseURL (예: "http://1.2.3.4:18080")
+ * @returns {Promise} axios response
+ */
+export async function updateFrameworkServiceUrl(serviceName, baseUrl) {
+    const url = `/api/mc-iam-manager/UpdateFrameworkService`;
+    return await webconsolejs["common/api/http"].commonAPIPost(url, {
+        pathParams: { serviceName },
+        request: { BaseURL: baseUrl },
+    }, undefined, { loaderType: 'none' });
+}
+
+/**
  * readyz 응답에서 상태 파싱
- * mc-infra-manager: { ready, initialized, message }
- * 기타: HTTP 200 = ok
+ * ready 필드가 있으면 그 값을 사용, 없으면 HTTP 200 = ok
+ * message 필드가 있으면 표시용으로 사용
  * @param {object} response - axios response
- * @returns {{ ready: boolean, initialized: boolean|null, message: string }}
+ * @returns {{ ready: boolean, message: string }}
  */
 export function parseReadyzResponse(response) {
     if (!response || response.status >= 400) {
-        return { ready: false, initialized: null, message: 'Error' };
+        return { ready: false, message: 'Error' };
     }
     const data = response.data || {};
-    // mc-infra-manager 응답 형식: { ready, initialized, message }
-    if (typeof data.ready !== 'undefined') {
+    const rd = data.responseData || data;
+    if (typeof rd.ready !== 'undefined') {
         return {
-            ready: data.ready === true,
-            initialized: typeof data.initialized !== 'undefined' ? data.initialized : null,
-            message: data.message || '',
+            ready: rd.ready === true,
+            message: rd.message || '',
         };
     }
     // 기타 프레임워크: HTTP 200이면 ok
-    return { ready: true, initialized: null, message: '' };
+    return { ready: true, message: rd.message || '' };
 }
