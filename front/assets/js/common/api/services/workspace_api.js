@@ -305,8 +305,8 @@ export async function getUsers() {
 export async function getUsersById(userId) {
   const controller = '/api/mc-iam-manager/getUserByID'
   var data = {
-    queryParams: {
-      userid: userId,
+    pathParams: {
+      userId: userId.toString(),
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -314,7 +314,7 @@ export async function getUsersById(userId) {
     data,
     null
   )
-  return response.data.responseData
+  return response?.data?.responseData || null
 }
 
 // handle roles
@@ -482,7 +482,7 @@ export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId) {
   const controller = '/api/mc-iam-manager/listUsersAndRolesByWorkspaces'
   var data = {
     pathParams: {
-      workspaceId: wsId,
+      workspaceId: wsId.toString(),
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
