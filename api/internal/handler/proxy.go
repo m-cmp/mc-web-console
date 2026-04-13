@@ -38,13 +38,24 @@ func SubsystemAnyController(c echo.Context) error {
 		return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
 	}
 
-	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
-	if err != nil {
-		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
-		// 서비스 자체가 없는 경우와 액션이 없는 경우를 구분하여 안내
-		msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
-		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+	// RegistryCache 우선 조회 → 없으면 api.yaml fallback
+	var (
+		svc        *config.Service
+		actionSpec *config.ActionSpec
+	)
+	if cfg.RegistryCache != nil {
+		svc, actionSpec, _ = cfg.RegistryCache.GetAction(subsystemName, operationId)
 	}
+	if svc == nil || actionSpec == nil {
+		var err error
+		svc, actionSpec, err = cfg.ApiSpec.GetAction(subsystemName, operationId)
+		if err != nil {
+			log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
+			msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
+			return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+		}
+	}
+	service := svc
 
 	// CommonRequest 파싱
 	var commonRequest model.CommonRequest
@@ -100,6 +111,27 @@ func SubsystemAnyController(c echo.Context) error {
 	var responseData interface{}
 	if jsonErr := json.Unmarshal(respBody, &responseData); jsonErr != nil {
 		responseData = strings.TrimSpace(string(respBody))
+	}
+
+	// RegistryCache 인터셉트
+	if cfg.RegistryCache != nil {
+		opLower := strings.ToLower(operationId)
+		subsysLower := strings.ToLower(subsystemName)
+		if subsysLower == "mc-iam-manager" {
+			switch opLower {
+			case "listmcmpapisservices":
+				// ListMcmpApisServices 성공 응답 → 캐시 저장
+				if resp.StatusCode == http.StatusOK {
+					// responseData는 CommonResponse 래퍼 없이 mc-iam-manager 원본 응답
+					cfg.RegistryCache.Store(responseData)
+				}
+			case "updateframeworkservice":
+				// UpdateFrameworkService 성공 → 캐시 무효화
+				if resp.StatusCode < 300 {
+					cfg.RegistryCache.Invalidate()
+				}
+			}
+		}
 	}
 
 	commonResp := model.NewCommonResponse(resp.StatusCode, http.StatusText(resp.StatusCode), responseData)

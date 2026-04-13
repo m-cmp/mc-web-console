@@ -8,9 +8,11 @@ import (
 	"mc_web_console_api/internal/middleware"
 	"mc_web_console_api/internal/model"
 	"mc_web_console_api/internal/repository"
+	"mc_web_console_api/internal/service"
 	"mc_web_console_api/pkg/errors"
 	"mc_web_console_api/pkg/jwt"
 	"os"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,6 +23,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+
+	// RegistryCache 초기화 (TTL 60초 Passive 캐시)
+	cfg.RegistryCache = service.NewRegistryCache(60 * time.Second)
 
 	// JWT 시크릿 키 설정 (환경 변수에서 로드, 없으면 기본값)
 	jwtSecret := os.Getenv("JWT_SECRET")
