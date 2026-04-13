@@ -1,49 +1,46 @@
 // Framework Readyz / Init API 서비스
 
-export const READYZ_FRAMEWORK_LIST = [
-    {
-        name: 'mc-iam-manager',
-        subsystem: 'mc-iam-manager',
-        operationId: 'Readyz',
-        initOperationId: null,
-    },
-    {
-        name: 'mc-infra-manager',
-        subsystem: 'mc-infra-manager',
-        operationId: 'Getreadyz',
-        initOperationId: 'GetInfraReadyzInit',
-    },
-    {
-        name: 'mc-observability',
-        subsystem: 'mc-observability',
-        operationId: 'GetObsReadyz',
-        initOperationId: null,
-    },
-    {
-        name: 'mc-application-manager',
-        subsystem: 'mc-application-manager',
-        operationId: 'GetAppMgrReadyz',
-        initOperationId: null,
-    },
-    {
-        name: 'mc-workflow-manager',
-        subsystem: 'mc-workflow-manager',
-        operationId: 'GetWorkflowReadyz',
-        initOperationId: null,
-    },
-    {
-        name: 'mc-cost-optimizer',
-        subsystem: 'mc-cost-optimizer',
-        operationId: 'GetCostReadyz',
-        initOperationId: null,
-    },
-    {
-        name: 'mc-data-manager',
-        subsystem: 'mc-data-manager',
-        operationId: 'GetDataMgrReadyz',
-        initOperationId: null,
-    },
-];
+/**
+ * 서비스명 → readyz/init operationId 매핑
+ * mc-iam-manager의 ListMcmpApisServices 응답에서 서비스 목록을 동적으로 가져온 후
+ * 이 맵을 참조하여 각 서비스의 readyz/init operationId를 결정한다.
+ * 맵에 없는 서비스는 readyz 미지원(operationId: null)으로 처리된다.
+ */
+export const READYZ_OPERATIONID_MAP = {
+    'mc-iam-manager':        { operationId: 'Readyz',            initOperationId: null },
+    'mc-infra-manager':      { operationId: 'Getreadyz',         initOperationId: 'GetInfraReadyzInit' },
+    'mc-observability':      { operationId: 'GetObsReadyz',      initOperationId: null },
+    'mc-application-manager':{ operationId: 'GetAppMgrReadyz',   initOperationId: null },
+    'mc-workflow-manager':   { operationId: 'GetWorkflowReadyz', initOperationId: null },
+    'mc-cost-optimizer':     { operationId: 'GetCostReadyz',     initOperationId: null },
+    'mc-data-manager':       { operationId: 'GetDataMgrReadyz',  initOperationId: null },
+};
+
+/**
+ * readyz 체크에서 제외할 서비스 목록
+ * (mc-iam-manager가 자기 자신과 인프라 커넥터 등을 관리하지만 readyz 대상은 아님)
+ */
+const READYZ_EXCLUDE = new Set(['mc-web-console', 'mc-infra-connector']);
+
+/**
+ * ListMcmpApisServices 응답(services 맵)으로부터 readyz 대상 프레임워크 목록 생성
+ * @param {Object} services - { "mc-infra-manager": { BaseURL, Version }, ... }
+ * @returns {Array<{ name, subsystem, operationId, initOperationId }>}
+ */
+export function buildFrameworkList(services) {
+    return Object.keys(services)
+        .filter(name => !READYZ_EXCLUDE.has(name))
+        .sort()
+        .map(name => {
+            const mapping = READYZ_OPERATIONID_MAP[name] || { operationId: null, initOperationId: null };
+            return {
+                name,
+                subsystem: name,
+                operationId: mapping.operationId,
+                initOperationId: mapping.initOperationId,
+            };
+        });
+}
 
 /**
  * 프레임워크 readyz 호출

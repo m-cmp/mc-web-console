@@ -452,10 +452,10 @@ async function updateInitData() {
   var respUsersList = await webconsolejs["common/api/services/workspace_api"].getUsers();
   var respProjectList = await webconsolejs["common/api/services/workspace_api"].getProjectList();
   var respgetPermissionsList = await webconsolejs["common/api/services/workspace_api"].getPermissions();
-  workspaceListInfoSummary.workspaceCount = respWorkspaceList.length
-  workspaceListInfoSummary.memberCount = respUsersList.length
-  workspaceListInfoSummary.projectsCount = respProjectList.length
-  listData = { wsList: respWorkspaceList, userList: respUsersList, prjList: respProjectList, permissionList: respgetPermissionsList.message }
+  workspaceListInfoSummary.workspaceCount = (respWorkspaceList || []).length
+  workspaceListInfoSummary.memberCount = (respUsersList || []).length
+  workspaceListInfoSummary.projectsCount = (respProjectList || []).length
+  listData = { wsList: respWorkspaceList || [], userList: respUsersList || [], prjList: respProjectList || [], permissionList: respgetPermissionsList?.message || [] }
 }
 
 async function setWokrspaceTableData() {
@@ -950,13 +950,19 @@ export async function deleteProjects() {
     webconsolejs['partials/layout/modal'].commonShowDefaultModal("Delete Project Mappings", "No Checked Projects")
     return
   }
-  checked_projects_array.forEach(async function (checkedProject) {
+  let hasError = false;
+  for (const checkedProject of checked_projects_array) {
     var deleteWorkspaceProjectMappingByIdResp = await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceProjectMappingById(currentClickedWorkspaceId, checkedProject.id);
     if (!deleteWorkspaceProjectMappingByIdResp.success) {
+      hasError = true;
       webconsolejs["common/util"].showToast("Failed to delete project mapping: " + JSON.stringify(deleteWorkspaceProjectMappingByIdResp.message.error), 'error');
     }
-  })
-  location.reload()
+  }
+  // 프로젝트 목록만 갱신 (전체 페이지 reload 제거)
+  var respWorkspaceInfo = await webconsolejs["common/api/services/workspace_api"].getWPmappingListByWorkspaceId(currentClickedWorkspaceId);
+  const workspaceData = respWorkspaceInfo.responseData || respWorkspaceInfo;
+  setWokrspaceProjectsTableData(workspaceData.projects);
+  checked_projects_array = [];
 }
 
 //// Project tab Modal

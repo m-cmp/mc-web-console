@@ -221,7 +221,7 @@ export async function createWorkspace(name, description, projects = null) {
 export async function getAllWorksaceList() {
   const controller = '/api/mc-iam-manager/listWorkspaces'
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, null, null)
-  return response.data.responseData
+  return response?.data?.responseData || []
 }
 
 export async function getWorkspaceById(wsId) {
@@ -549,8 +549,8 @@ export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
   var data = {
 
     request: {
-      workspaceId: wsId, 
-      projectIds: projectsId
+      workspaceId: wsId,
+      projectIds: Array.isArray(projectsId) ? projectsId : [projectsId]
     }
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
