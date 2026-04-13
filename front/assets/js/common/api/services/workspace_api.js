@@ -546,11 +546,11 @@ export async function updateWPmappings(wsId, projectsIdsArr) {
 
 export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
   const controller = '/api/mc-iam-manager/removeWorkspaceFromProject'
+  const projectsIdsArr = (Array.isArray(projectsId) ? projectsId : [projectsId]).map(id => id.toString())
   var data = {
-
     request: {
-      workspaceId: wsId,
-      projectIds: Array.isArray(projectsId) ? projectsId : [projectsId]
+      workspaceId: wsId.toString(),
+      projectIds: projectsIdsArr
     }
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
