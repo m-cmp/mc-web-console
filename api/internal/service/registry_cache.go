@@ -6,18 +6,27 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"mc_web_console_api/internal/config"
 )
 
 // RegistryCache mc-iam-manager 서비스 레지스트리 Passive 캐시.
-// ListMcmpApisServices 응답을 proxy.go가 통과할 때 저장하고,
-// UpdateFrameworkService 성공 시 무효화한다.
 //
-// 역할: 각 서비스의 BaseURL만 캐싱. ActionSpec(path/method)은 api.yaml 사용.
-// - ListMcmpApisServices/UpdateFrameworkService: "" 반환 → mc-iam-manager 고정 주소로 호출
-// - 그 외 모든 subsystem(mc-iam-manager 포함): 캐시 BaseURL 사용, 없으면 api.yaml fallback
+// 캐시 적재: proxy.go가 ListMcmpApisServices 응답 통과 시 자동 저장 (TTL 60s)
+// 캐시 무효화: proxy.go가 UpdateFrameworkService 성공 시 자동 무효화
+//
+// 플로우:
+//  1. Bootstrap (캐시 비어있음): api.yaml의 mc-iam-manager 주소로 readyz 체크 (자동 fallback)
+//  2. ListMcmpApisServices 응답 수신: BaseURL + ServiceActions 캐시에 저장
+//  3. 이후 모든 프록시: 캐시 BaseURL + 캐시 ActionSpec 우선, 없으면 api.yaml fallback
+//  4. mc-iam-manager URL 변경 후: cache invalidate → ListMcmpApisServices 재적재 → 갱신
+//
+// 예외: ListMcmpApisServices, UpdateFrameworkService 는 항상 mc-iam-manager 고정 주소 사용
+// (api.yaml의 mc-iam-manager BaseURL = mc-iam-manager 고정/bootstrap 주소)
 type RegistryCache struct {
 	mu        sync.RWMutex
-	baseURLs  map[string]string // serviceName → BaseURL
+	services  map[string]config.Service                // serviceName → Service(BaseURL, Auth)
+	actions   map[string]map[string]config.ActionSpec  // serviceName → operationId → ActionSpec
 	storedAt  time.Time
 	ttl       time.Duration
 }
@@ -27,93 +36,164 @@ func NewRegistryCache(ttl time.Duration) *RegistryCache {
 	return &RegistryCache{ttl: ttl}
 }
 
-// Store ListMcmpApisServices 응답 데이터(responseData)에서 Services의 BaseURL만 저장.
-// responseData는 proxy.go에서 json.Unmarshal된 interface{} 값이다.
+// Store ListMcmpApisServices 응답(McmpApiDefinitions)에서 Services + ServiceActions 저장.
 func (rc *RegistryCache) Store(responseData interface{}) {
-	baseURLs := extractBaseURLs(responseData)
-	if len(baseURLs) == 0 {
+	services, actions := extractDefinitions(responseData)
+	if len(services) == 0 {
 		return
 	}
 	rc.mu.Lock()
-	rc.baseURLs = baseURLs
+	rc.services = services
+	rc.actions = actions
 	rc.storedAt = time.Now()
 	rc.mu.Unlock()
-	log.Printf("[RegistryCache] stored BaseURLs for %d services", len(baseURLs))
+	log.Printf("[RegistryCache] stored %d services (actions: %d)", len(services), len(actions))
 }
 
 // Invalidate 캐시 무효화. UpdateFrameworkService 성공 시 호출.
 func (rc *RegistryCache) Invalidate() {
 	rc.mu.Lock()
-	rc.baseURLs = nil
+	rc.services = nil
+	rc.actions = nil
 	rc.mu.Unlock()
 	log.Printf("[RegistryCache] invalidated")
 }
 
 // GetBaseURL 캐시가 유효한 경우 subsystem의 BaseURL 반환.
-// 캐시 없음/만료/미등록이면 "" 반환 → proxy.go가 api.yaml의 해당 서비스 BaseURL 사용.
-// mc-iam-manager의 레지스트리 관리 API 2개는 항상 mc-iam-manager 고정 주소 사용:
-//   - ListMcmpApisServices: 이 API 응답으로 캐시를 적재하므로 고정 주소로 호출해야 함
-//   - UpdateFrameworkService: 캐시 BaseURL이 잘못돼도 mc-iam-manager URL 변경은 가능해야 함
-//   → 두 API 모두 "" 반환 → proxy.go가 api.yaml의 mc-iam-manager BaseURL(고정 주소) 사용
+// 캐시 없음/만료/미등록이면 "" 반환 → proxy.go가 api.yaml BaseURL 사용.
+//
+// 예외: mc-iam-manager의 ListMcmpApisServices, UpdateFrameworkService는 "" 반환
+// → mc-iam-manager 고정 주소(api.yaml)로 호출하여 캐시 부트스트랩/순환 방지
 func (rc *RegistryCache) GetBaseURL(subsystem, operationId string) string {
-	// 레지스트리 관리 API는 api.yaml BaseURL 강제 (부트스트랩/순환 방지)
-	if strings.EqualFold(subsystem, "mc-iam-manager") {
-		opLower := strings.ToLower(operationId)
-		if opLower == "listmcmpapisservices" || opLower == "updateframeworkservice" {
-			return ""
-		}
+	if isRegistryManagementAPI(subsystem, operationId) {
+		return ""
 	}
 
 	rc.mu.RLock()
-	urls := rc.baseURLs
+	services := rc.services
 	storedAt := rc.storedAt
 	rc.mu.RUnlock()
 
-	if urls == nil {
-		return ""
-	}
-	if time.Since(storedAt) > rc.ttl {
-		log.Printf("[RegistryCache] TTL expired, using api.yaml BaseURL")
+	if services == nil || rc.isExpired(storedAt) {
 		return ""
 	}
 
-	// 대소문자 무관 매칭
 	subsystemLower := strings.ToLower(subsystem)
-	for name, url := range urls {
+	for name, svc := range services {
 		if strings.ToLower(name) == subsystemLower {
-			return url
+			return svc.BaseURL
 		}
 	}
 	return ""
 }
 
-// extractBaseURLs responseData에서 Services 맵의 serviceName → BaseURL 추출.
-func extractBaseURLs(responseData interface{}) map[string]string {
+// GetActionSpec 캐시가 유효한 경우 subsystem/operationId의 ActionSpec 반환.
+// 캐시 없음/만료/미등록이면 nil 반환 → proxy.go가 api.yaml ActionSpec 사용.
+func (rc *RegistryCache) GetActionSpec(subsystem, operationId string) *config.ActionSpec {
+	if isRegistryManagementAPI(subsystem, operationId) {
+		return nil
+	}
+
+	rc.mu.RLock()
+	actions := rc.actions
+	storedAt := rc.storedAt
+	rc.mu.RUnlock()
+
+	if actions == nil || rc.isExpired(storedAt) {
+		return nil
+	}
+
+	subsystemLower := strings.ToLower(subsystem)
+	operationIdLower := strings.ToLower(operationId)
+	for svcName, svcActions := range actions {
+		if strings.ToLower(svcName) == subsystemLower {
+			for opId, spec := range svcActions {
+				if strings.ToLower(opId) == operationIdLower {
+					s := spec
+					return &s
+				}
+			}
+			return nil // 서비스는 있지만 해당 operationId 없음
+		}
+	}
+	return nil
+}
+
+func (rc *RegistryCache) isExpired(storedAt time.Time) bool {
+	if time.Since(storedAt) > rc.ttl {
+		log.Printf("[RegistryCache] TTL expired, using api.yaml")
+		return true
+	}
+	return false
+}
+
+// isRegistryManagementAPI mc-iam-manager의 레지스트리 관리 API 여부 반환.
+// 이 API들은 항상 mc-iam-manager 고정 주소로 호출해야 함.
+func isRegistryManagementAPI(subsystem, operationId string) bool {
+	if !strings.EqualFold(subsystem, "mc-iam-manager") {
+		return false
+	}
+	opLower := strings.ToLower(operationId)
+	return opLower == "listmcmpapisservices" || opLower == "updateframeworkservice"
+}
+
+// extractDefinitions responseData에서 Services 와 ServiceActions 추출.
+func extractDefinitions(responseData interface{}) (map[string]config.Service, map[string]map[string]config.ActionSpec) {
 	b, err := json.Marshal(responseData)
 	if err != nil {
 		log.Printf("[RegistryCache] marshal error: %v", err)
-		return nil
+		return nil, nil
 	}
 
 	var raw struct {
 		Services map[string]struct {
+			Version string `json:"Version"`
 			BaseURL string `json:"BaseURL"`
+			Auth    struct {
+				Type     string `json:"Type"`
+				Username string `json:"Username"`
+				Password string `json:"Password"`
+			} `json:"Auth"`
 		} `json:"Services"`
+		ServiceActions map[string]map[string]struct {
+			Method       string `json:"Method"`
+			ResourcePath string `json:"ResourcePath"`
+			Description  string `json:"Description"`
+		} `json:"ServiceActions"`
 	}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		log.Printf("[RegistryCache] unmarshal error: %v", err)
-		return nil
+		return nil, nil
 	}
 
 	if len(raw.Services) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	result := make(map[string]string, len(raw.Services))
+	services := make(map[string]config.Service, len(raw.Services))
 	for name, svc := range raw.Services {
-		if svc.BaseURL != "" {
-			result[name] = svc.BaseURL
+		services[name] = config.Service{
+			Version: svc.Version,
+			BaseURL: svc.BaseURL,
+			Auth: config.AuthConfig{
+				Type:     svc.Auth.Type,
+				Username: svc.Auth.Username,
+				Password: svc.Auth.Password,
+			},
 		}
 	}
-	return result
+
+	actions := make(map[string]map[string]config.ActionSpec, len(raw.ServiceActions))
+	for svcName, svcActions := range raw.ServiceActions {
+		actions[svcName] = make(map[string]config.ActionSpec, len(svcActions))
+		for opId, action := range svcActions {
+			actions[svcName][opId] = config.ActionSpec{
+				Method:       action.Method,
+				ResourcePath: action.ResourcePath,
+				Description:  action.Description,
+			}
+		}
+	}
+
+	return services, actions
 }
