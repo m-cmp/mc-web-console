@@ -12,8 +12,9 @@ import (
 // ListMcmpApisServices 응답을 proxy.go가 통과할 때 저장하고,
 // UpdateFrameworkService 성공 시 무효화한다.
 //
-// 역할: BaseURL만 캐싱. ActionSpec(path/method)은 항상 api.yaml 사용.
-// 이유: mc-iam-manager ServiceActions에 모든 operationId가 등록되지 않을 수 있음.
+// 역할: 각 서비스의 BaseURL만 캐싱. ActionSpec(path/method)은 api.yaml 사용.
+// - ListMcmpApisServices/UpdateFrameworkService: "" 반환 → mc-iam-manager 고정 주소로 호출
+// - 그 외 모든 subsystem(mc-iam-manager 포함): 캐시 BaseURL 사용, 없으면 api.yaml fallback
 type RegistryCache struct {
 	mu        sync.RWMutex
 	baseURLs  map[string]string // serviceName → BaseURL
@@ -49,10 +50,11 @@ func (rc *RegistryCache) Invalidate() {
 }
 
 // GetBaseURL 캐시가 유효한 경우 subsystem의 BaseURL 반환.
-// 캐시 없음/만료/미등록이면 "" 반환 → api.yaml BaseURL 사용 유도.
-// mc-iam-manager의 레지스트리 관리 API 2개는 항상 api.yaml 사용:
-//   - ListMcmpApisServices: 이 API로 캐시를 적재하므로 api.yaml 필요
-//   - UpdateFrameworkService: 캐시 BaseURL이 잘못돼도 URL 변경은 가능해야 함
+// 캐시 없음/만료/미등록이면 "" 반환 → proxy.go가 api.yaml의 해당 서비스 BaseURL 사용.
+// mc-iam-manager의 레지스트리 관리 API 2개는 항상 mc-iam-manager 고정 주소 사용:
+//   - ListMcmpApisServices: 이 API 응답으로 캐시를 적재하므로 고정 주소로 호출해야 함
+//   - UpdateFrameworkService: 캐시 BaseURL이 잘못돼도 mc-iam-manager URL 변경은 가능해야 함
+//   → 두 API 모두 "" 반환 → proxy.go가 api.yaml의 mc-iam-manager BaseURL(고정 주소) 사용
 func (rc *RegistryCache) GetBaseURL(subsystem, operationId string) string {
 	// 레지스트리 관리 API는 api.yaml BaseURL 강제 (부트스트랩/순환 방지)
 	if strings.EqualFold(subsystem, "mc-iam-manager") {
