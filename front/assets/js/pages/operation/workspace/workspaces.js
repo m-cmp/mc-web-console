@@ -445,6 +445,58 @@ async function initWorkspace() {
 
   webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName, onclickEvent);
 
+  initProjectsFilter()
+  initMembersFilter()
+}
+
+function initProjectsFilter() {
+  var fieldEl = document.getElementById("projects-filter-field");
+  var typeEl  = document.getElementById("projects-filter-type");
+  var valueEl = document.getElementById("projects-filter-value");
+
+  function updateFilter() {
+    var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+    var typeVal   = typeEl.options[typeEl.selectedIndex].value;
+    if (filterVal && workspacesProjectsInfo) {
+      workspacesProjectsInfo.setFilter(filterVal, typeVal, valueEl.value);
+    }
+  }
+
+  fieldEl.addEventListener("change", updateFilter);
+  typeEl.addEventListener("change", updateFilter);
+  valueEl.addEventListener("keyup", updateFilter);
+
+  document.getElementById("projects-filter-clear").addEventListener("click", function () {
+    fieldEl.value = "";
+    typeEl.value  = "like";
+    valueEl.value = "";
+    if (workspacesProjectsInfo) workspacesProjectsInfo.clearFilter();
+  });
+}
+
+function initMembersFilter() {
+  var fieldEl = document.getElementById("members-filter-field");
+  var typeEl  = document.getElementById("members-filter-type");
+  var valueEl = document.getElementById("members-filter-value");
+
+  function updateFilter() {
+    var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+    var typeVal   = typeEl.options[typeEl.selectedIndex].value;
+    if (filterVal && workspacesUserInfo) {
+      workspacesUserInfo.setFilter(filterVal, typeVal, valueEl.value);
+    }
+  }
+
+  fieldEl.addEventListener("change", updateFilter);
+  typeEl.addEventListener("change", updateFilter);
+  valueEl.addEventListener("keyup", updateFilter);
+
+  document.getElementById("members-filter-clear").addEventListener("click", function () {
+    fieldEl.value = "";
+    typeEl.value  = "like";
+    valueEl.value = "";
+    if (workspacesUserInfo) workspacesUserInfo.clearFilter();
+  });
 }
 
 async function updateInitData() {
@@ -687,18 +739,20 @@ function setWokrspaceProjectsTableData(projects) {
 
 async function setWokrspaceUserTableData(wsId) {
   var userRoleMappingList = await webconsolejs["common/api/services/workspace_api"].getWorkspaceUserRoleMappingListByWorkspaceId(wsId);
-  
-  // API 응답 구조: { responseData: { userinfo: [...] } }
+
+  // API 응답: UserWorkspaceRole 배열 [ { user_id, workspace_id, role_id, username, workspace_name, role_name }, ... ]
   const mappingData = userRoleMappingList.responseData || userRoleMappingList;
-  
-  var userTableData = []
-  for (const userInfo of mappingData.userinfo || []) {
-    var getUsersByIdresp = await webconsolejs["common/api/services/workspace_api"].getUsersById(userInfo.userid);
-    const targetUserInfo = getUsersByIdresp.find(item => item.username === userInfo.userid);
-    targetUserInfo.department = "department example" // TODO : 아직 부서명까지 준비되지 않음.. 
-    targetUserInfo.role = userInfo.role.name
-    userTableData.push(targetUserInfo)
-  }
+  const mappingArray = Array.isArray(mappingData) ? mappingData : []
+
+  var userTableData = mappingArray.map(userInfo => ({
+    id: userInfo.user_id,
+    username: userInfo.username,
+    name: userInfo.username,
+    role: userInfo.role_name,
+    // TODO: Approved(enabled) 항목은 workspace 초대/수락 기능 추가 시 반영
+    //       사용자를 workspace에 초대(invited)하고 초대받은 사용자가 수락(accepted)하는 상태값 표시
+    //       현재 해당 상태 필드 미제공 (listUsersAndRolesByWorkspaces 응답에 없음)
+  }))
   workspacesUserInfo.setData(userTableData)
 }
 
