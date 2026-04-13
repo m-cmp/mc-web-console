@@ -16,9 +16,10 @@ type Config struct {
 	RegistryCache   RegistryCacheInterface
 }
 
-// RegistryCacheInterface proxy.go가 의존하는 캐시 인터페이스 (순환 import 방지)
+// RegistryCacheInterface proxy.go가 의존하는 캐시 인터페이스 (순환 import 방지).
+// ActionSpec(path/method)은 항상 api.yaml 사용; BaseURL만 캐시에서 교체.
 type RegistryCacheInterface interface {
-	GetAction(subsystem, operationId string) (*Service, *ActionSpec, error)
+	GetBaseURL(subsystem, operationId string) string
 	Store(responseData interface{})
 	Invalidate()
 }

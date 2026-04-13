@@ -38,24 +38,22 @@ func SubsystemAnyController(c echo.Context) error {
 		return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
 	}
 
-	// RegistryCache 우선 조회 → 없으면 api.yaml fallback
-	var (
-		svc        *config.Service
-		actionSpec *config.ActionSpec
-	)
-	if cfg.RegistryCache != nil {
-		svc, actionSpec, _ = cfg.RegistryCache.GetAction(subsystemName, operationId)
+	// ActionSpec(path/method)은 항상 api.yaml에서 조회
+	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
+	if err != nil {
+		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
+		msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
+		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
 	}
-	if svc == nil || actionSpec == nil {
-		var err error
-		svc, actionSpec, err = cfg.ApiSpec.GetAction(subsystemName, operationId)
-		if err != nil {
-			log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
-			msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
-			return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+
+	// BaseURL: RegistryCache 우선, 없으면 api.yaml BaseURL 사용
+	effectiveBaseURL := service.BaseURL
+	if cfg.RegistryCache != nil {
+		if dynamicURL := cfg.RegistryCache.GetBaseURL(subsystemName, operationId); dynamicURL != "" {
+			log.Printf("[RegistryCache] using dynamic BaseURL for %s: %s", subsystemName, dynamicURL)
+			effectiveBaseURL = dynamicURL
 		}
 	}
-	service := svc
 
 	// CommonRequest 파싱
 	var commonRequest model.CommonRequest
@@ -70,7 +68,7 @@ func SubsystemAnyController(c echo.Context) error {
 	}
 
 	// QueryParams 추가
-	targetURL := service.BaseURL + resourcePath
+	targetURL := effectiveBaseURL + resourcePath
 	if len(commonRequest.QueryParams) > 0 {
 		params := []string{}
 		for k, v := range commonRequest.QueryParams {
