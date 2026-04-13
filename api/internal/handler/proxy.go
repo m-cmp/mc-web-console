@@ -38,7 +38,7 @@ func SubsystemAnyController(c echo.Context) error {
 		return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
 	}
 
-	// ActionSpec(path/method)은 항상 api.yaml에서 조회
+	// api.yaml에서 기본 Service + ActionSpec 조회 (fallback 및 Auth 설정 소스)
 	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
 	if err != nil {
 		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
@@ -46,12 +46,17 @@ func SubsystemAnyController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
 	}
 
-	// BaseURL: RegistryCache 우선, 없으면 api.yaml BaseURL 사용
+	// BaseURL: 캐시 우선 → 없으면 api.yaml BaseURL (mc-iam-manager 고정 주소)
 	effectiveBaseURL := service.BaseURL
+	// ActionSpec: 캐시 우선 → 없으면 api.yaml ActionSpec
+	effectiveActionSpec := actionSpec
 	if cfg.RegistryCache != nil {
 		if dynamicURL := cfg.RegistryCache.GetBaseURL(subsystemName, operationId); dynamicURL != "" {
-			log.Printf("[RegistryCache] using dynamic BaseURL for %s: %s", subsystemName, dynamicURL)
+			log.Printf("[RegistryCache] BaseURL override for %s: %s", subsystemName, dynamicURL)
 			effectiveBaseURL = dynamicURL
+		}
+		if cachedSpec := cfg.RegistryCache.GetActionSpec(subsystemName, operationId); cachedSpec != nil {
+			effectiveActionSpec = cachedSpec
 		}
 	}
 
@@ -62,7 +67,7 @@ func SubsystemAnyController(c echo.Context) error {
 	}
 
 	// PathParams 치환
-	resourcePath := actionSpec.ResourcePath
+	resourcePath := effectiveActionSpec.ResourcePath
 	for k, v := range commonRequest.PathParams {
 		resourcePath = strings.ReplaceAll(resourcePath, "{"+k+"}", v)
 	}
@@ -83,7 +88,7 @@ func SubsystemAnyController(c echo.Context) error {
 		bodyBytes, _ = json.Marshal(commonRequest.Request)
 	}
 
-	httpReq, err := http.NewRequest(strings.ToUpper(actionSpec.Method), targetURL, bytes.NewBuffer(bodyBytes))
+	httpReq, err := http.NewRequest(strings.ToUpper(effectiveActionSpec.Method), targetURL, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return errors.NewInternalServerError("Failed to build request", err)
 	}
