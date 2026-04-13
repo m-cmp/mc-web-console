@@ -42,11 +42,13 @@ const AppState = {
         cspTable: null,
     },
     readyz: {
-        // { frameworkName: { ready, initialized, message } }
+        // { frameworkName: { ready, message } }
         results: {},
     },
     // mc-iam-manager Services map: { "mc-infra-manager": { Version, BaseURL, Auth }, ... }
     frameworkServices: {},
+    // ListMcmpApisServices 기반 동적 framework 목록
+    frameworkList: [],
     credentialValid: false,
 };
 
@@ -493,14 +495,22 @@ export async function toggleSelectedCspStatus() {
 // ─── ReadyzManager ──────────────────────────────────────────────────
 
 const ReadyzManager = {
-    /** mc-iam-manager에서 framework 서비스 주소 로드 */
+    /** mc-iam-manager에서 framework 서비스 주소 로드 + 동적 목록 빌드 */
     async loadFrameworkServices() {
         try {
             const services = await readyzApi().listFrameworkServices();
             AppState.frameworkServices = services || {};
+            AppState.frameworkList = readyzApi().buildFrameworkList(AppState.frameworkServices);
         } catch (e) {
             console.warn('loadFrameworkServices failed:', e.message);
             AppState.frameworkServices = {};
+        }
+        // API 실패(403/404 등) 또는 빈 응답 시 하드코딩 맵 키로 폴백
+        if (!AppState.frameworkList || AppState.frameworkList.length === 0) {
+            const fallbackServices = Object.fromEntries(
+                Object.keys(readyzApi().READYZ_OPERATIONID_MAP).map(k => [k, {}])
+            );
+            AppState.frameworkList = readyzApi().buildFrameworkList(fallbackServices);
         }
     },
 
@@ -508,7 +518,7 @@ const ReadyzManager = {
     renderTable() {
         const tbody = document.getElementById('readyz-table-body');
         if (!tbody) return;
-        tbody.innerHTML = readyzApi().READYZ_FRAMEWORK_LIST.map(fw => {
+        tbody.innerHTML = (AppState.frameworkList || []).map(fw => {
             const svcInfo = AppState.frameworkServices[fw.name] || {};
             const baseUrl = svcInfo.BaseURL || '-';
             const escapedUrl = this._esc(baseUrl);
@@ -543,9 +553,12 @@ const ReadyzManager = {
                     </div>
                 </td>
                 <td id="readyz-status-${fw.name}">
-                    <span class="badge bg-secondary-lt">-</span>
+                    ${fw.operationId
+                        ? '<span class="badge bg-secondary-lt">-</span>'
+                        : '<span class="badge bg-muted-lt text-muted">N/A</span>'}
                 </td>
                 <td>
+                    ${fw.operationId ? `
                     <button class="btn btn-sm btn-outline-primary me-1"
                         onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runReadyz('${fw.name}')">
                         Readyz
@@ -554,8 +567,9 @@ const ReadyzManager = {
                     <button class="btn btn-sm btn-outline-secondary" id="readyz-init-btn-${fw.name}"
                         onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runInit('${fw.name}')">
                         Init
-                    </button>` : ''}
+                    </button>` : ''}` : ''}
                 </td>
+                <td id="readyz-desc-${fw.name}" class="text-muted small"></td>
             </tr>
         `;
         }).join('');
@@ -611,8 +625,8 @@ const ReadyzManager = {
 
     /** 단일 프레임워크 readyz 실행 */
     async runReadyz(frameworkName) {
-        const fw = readyzApi().READYZ_FRAMEWORK_LIST.find(f => f.name === frameworkName);
-        if (!fw) return;
+        const fw = (AppState.frameworkList || []).find(f => f.name === frameworkName);
+        if (!fw || !fw.operationId) return;
 
         this.setStatus(frameworkName, 'loading', '');
         try {
@@ -627,14 +641,15 @@ const ReadyzManager = {
         }
     },
 
-    /** 전체 프레임워크 readyz 병렬 실행 */
+    /** 전체 프레임워크 readyz 병렬 실행 (operationId 있는 것만) */
     async runAll() {
-        await Promise.all(readyzApi().READYZ_FRAMEWORK_LIST.map(fw => this.runReadyz(fw.name)));
+        const list = (AppState.frameworkList || []).filter(fw => fw.operationId);
+        await Promise.all(list.map(fw => this.runReadyz(fw.name)));
     },
 
     /** Init 실행 (credential valid 확인 후) */
     async runInit(frameworkName) {
-        const fw = readyzApi().READYZ_FRAMEWORK_LIST.find(f => f.name === frameworkName);
+        const fw = (AppState.frameworkList || []).find(f => f.name === frameworkName);
         if (!fw || !fw.initOperationId) return;
 
         if (!AppState.credentialValid) {
@@ -650,9 +665,14 @@ const ReadyzManager = {
 
         try {
             const response = await readyzApi().callInit(fw.subsystem, fw.initOperationId);
-            const data = response && response.data ? (response.data.responseData || response.data) : {};
-            const detail = data.message || 'Init complete';
-            this.setInitStatus(frameworkName, 'ok', detail);
+            if (!response || (response.status && response.status >= 400)) {
+                const errMsg = (response && response.data && response.data.message) || 'Init failed';
+                this.setInitStatus(frameworkName, 'error', errMsg);
+            } else {
+                const data = response.data ? (response.data.responseData || response.data) : {};
+                const detail = data.message || 'Init complete';
+                this.setInitStatus(frameworkName, 'ok', detail);
+            }
         } catch (e) {
             this.setInitStatus(frameworkName, 'error', e.message || 'Init failed');
         } finally {
@@ -666,29 +686,34 @@ const ReadyzManager = {
     /** 상태 뱃지 업데이트 */
     setStatus(frameworkName, state, message) {
         const el = document.getElementById(`readyz-status-${frameworkName}`);
+        const desc = document.getElementById(`readyz-desc-${frameworkName}`);
         if (!el) return;
 
         if (state === 'loading') {
             el.innerHTML = '<span class="badge bg-secondary-lt"><span class="spinner-border spinner-border-sm me-1"></span>...</span>';
+            if (desc) desc.textContent = '';
             return;
         }
         if (state === 'error') {
-            el.innerHTML = `<span class="badge bg-danger-lt" title="${this._esc(message)}">❌ ERROR</span>`;
+            el.innerHTML = `<span class="badge bg-danger-lt">❌ ERROR</span>`;
+            if (desc) desc.textContent = message || '';
             return;
         }
-        const title = message ? ` title="${this._esc(message)}"` : '';
-        el.innerHTML = `<span class="badge bg-success-lt"${title}>✅ Ready</span>`;
+        el.innerHTML = `<span class="badge bg-success-lt" title="${message || ''}">✅ Ready</span>`;
+        if (desc) desc.textContent = message || '';
     },
 
     /** Init 결과 뱃지 */
     setInitStatus(frameworkName, state, message) {
         const el = document.getElementById(`readyz-status-${frameworkName}`);
+        const desc = document.getElementById(`readyz-desc-${frameworkName}`);
         if (!el) return;
         if (state === 'ok') {
-            el.innerHTML += ` <span class="badge bg-teal-lt" title="${this._esc(message)}">Init Done</span>`;
+            el.innerHTML += ` <span class="badge bg-teal-lt">Init Done</span>`;
         } else {
-            el.innerHTML += ` <span class="badge bg-danger-lt" title="${this._esc(message)}">Init Failed</span>`;
+            el.innerHTML += ` <span class="badge bg-danger-lt">Init Failed</span>`;
         }
+        if (desc && message) desc.textContent = (desc.textContent ? desc.textContent + ' | ' : '') + message;
     },
 
     _esc(str) {
