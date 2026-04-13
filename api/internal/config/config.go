@@ -9,10 +9,18 @@ import (
 
 // Config 전체 애플리케이션 설정
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	MCIAM    MCIAMConfig
-	ApiSpec  *ApiSpec
+	Server          ServerConfig
+	Database        DatabaseConfig
+	MCIAM           MCIAMConfig
+	ApiSpec         *ApiSpec
+	RegistryCache   RegistryCacheInterface
+}
+
+// RegistryCacheInterface proxy.go가 의존하는 캐시 인터페이스 (순환 import 방지)
+type RegistryCacheInterface interface {
+	GetAction(subsystem, operationId string) (*Service, *ActionSpec, error)
+	Store(responseData interface{})
+	Invalidate()
 }
 
 // ServerConfig 서버 설정
