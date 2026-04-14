@@ -1,15 +1,50 @@
 <div class="page-body">
   <div class="container-xl">
 
-    <!-- Namespace 필터 + 테이블 -->
+    <!-- VPC 테이블 -->
     <div class="row row-cards">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">VPC List</h3>
-            <div class="card-options ms-auto d-flex gap-2 align-items-center">
-              <label class="form-label mb-0 me-1">Namespace</label>
-              <select id="ns-selector" class="form-select form-select-sm" style="width:180px"></select>
+            <div class="card-options ms-auto">
+              <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#vpc-filterbody" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M5.5 5h13a1 1 0 0 1 .5 1.5L14 12L14 19L10 16L10 12L5 6.5a1 1 0 0 1 .5 -1.5"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="collapse" id="vpc-filterbody">
+            <div class="card-body border-bottom py-3">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <label class="form-label mb-1">Field</label>
+                  <select id="vpc-filter-field" class="form-select form-select-sm">
+                    <option value="">-- select --</option>
+                    <option value="name">name</option>
+                    <option value="cidrBlock">cidrBlock</option>
+                    <option value="connectionName">connectionName</option>
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <label class="form-label mb-1">Type</label>
+                  <select id="vpc-filter-type" class="form-select form-select-sm">
+                    <option value="like">like</option>
+                    <option value="=">=</option>
+                    <option value="!=">!=</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label class="form-label mb-1">Value</label>
+                  <input type="text" id="vpc-filter-value" class="form-control form-control-sm" placeholder="filter...">
+                </div>
+                <div class="col-auto">
+                  <button id="vpc-filter-clear" class="btn btn-sm btn-outline-secondary">Clear</button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="card-body p-0">
@@ -78,8 +113,10 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label required">Namespace</label>
-          <select id="modal-ns" class="form-select"></select>
+          <label class="form-label required">Connection</label>
+          <select id="modal-connectionName" class="form-select">
+            <option value="">-- select connection --</option>
+          </select>
         </div>
         <div class="mb-3">
           <label class="form-label required">VPC Name</label>
@@ -109,3 +146,5 @@
     </div>
   </div>
 </div>
+
+{{ javascriptTag("common/api/services/vpc_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudresources/networks.js") | raw }}

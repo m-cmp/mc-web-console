@@ -5,28 +5,31 @@ const AppState = {
   ns: ''
 };
 
-async function loadNamespaces() {
-  const ctrl = '/api/mc-infra-manager/Getallns';
+// navbar의 project 변경 시 VPC 목록 재조회
+$("#select-current-project").on('change', async function () {
+  if (this.value === "") return;
+  let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text };
+  webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);
+  AppState.ns = project.NsId;
+  hideDetail();
+  await loadList();
+});
+
+async function loadConnectionList() {
   try {
-    const resp = await webconsolejs['common/api/http'].commonAPIPost(ctrl, {});
-    const nsList = resp?.data?.responseData?.ns || [];
-    const sel = document.getElementById('ns-selector');
-    const modalSel = document.getElementById('modal-ns');
-    nsList.forEach(ns => {
-      [sel, modalSel].forEach(el => {
-        if (!el) return;
-        const opt = document.createElement('option');
-        opt.value = ns.id;
-        opt.textContent = ns.id;
-        el.appendChild(opt);
-      });
+    const resp = await webconsolejs['common/api/http'].commonAPIPost('/api/mc-infra-manager/Getconnconfiglist', {});
+    const list = resp?.data?.responseData?.connectionconfig || [];
+    const sel = document.getElementById('modal-connectionName');
+    if (!sel) return;
+    while (sel.options.length > 1) sel.remove(1);
+    list.forEach(conn => {
+      const opt = document.createElement('option');
+      opt.value = conn.configName;
+      opt.textContent = conn.configName;
+      sel.appendChild(opt);
     });
-    if (nsList.length > 0) {
-      AppState.ns = nsList[0].id;
-      await loadList();
-    }
   } catch (e) {
-    console.error('Failed to load namespaces', e);
+    console.error('Failed to load connection list', e);
   }
 }
 
@@ -107,17 +110,26 @@ window.hideDetail = function () {
   AppState.resources.selected = null;
 };
 
-window.deleteVpc = async function () {
-  const item = AppState.resources.selected;
-  if (!item) return;
-  if (!confirm(`Delete VPC "${item.name}"?`)) return;
+export async function executeDeleteVpc(vpcName) {
   try {
-    await webconsolejs['common/api/services/vpc_api'].del(AppState.ns, item.name);
+    await webconsolejs['common/api/services/vpc_api'].del(AppState.ns, vpcName);
     hideDetail();
     await loadList();
   } catch (e) {
-    alert('Failed to delete VPC: ' + (e?.response?.data?.message || e.message));
+    webconsolejs['common/util'].showToast('Failed to delete VPC: ' + (e?.response?.data?.message || e.message), 'error');
   }
+}
+
+window.deleteVpc = function () {
+  const item = AppState.resources.selected;
+  if (!item) return;
+  webconsolejs['partials/layout/modal'].commonConfirmModal(
+    'commonDefaultModal',
+    'Delete VPC',
+    `Delete VPC "${item.name}"?`,
+    'pages/settings/environment/cloudresources/networks.executeDeleteVpc',
+    item.name
+  );
 };
 
 window.addSubnetRow = function () {
@@ -140,12 +152,21 @@ window.removeSubnetRow = function (btn) {
 };
 
 window.submitCreateVpc = async function () {
-  const ns = document.getElementById('modal-ns').value;
+  const ns = AppState.ns;
+  const connectionName = document.getElementById('modal-connectionName').value.trim();
   const vpcName = document.getElementById('modal-vpcName').value.trim();
   const cidrBlock = document.getElementById('modal-cidrBlock').value.trim();
 
-  if (!ns || !vpcName || !cidrBlock) {
-    alert('Namespace, VPC Name, and CIDR are required.');
+  if (!ns) {
+    webconsolejs['common/util'].showToast('No namespace available. Please select a project first.', 'error');
+    return;
+  }
+  if (!connectionName) {
+    webconsolejs['common/util'].showToast('Connection is required.', 'error');
+    return;
+  }
+  if (!vpcName || !cidrBlock) {
+    webconsolejs['common/util'].showToast('VPC Name and CIDR are required.', 'error');
     return;
   }
 
@@ -158,20 +179,45 @@ window.submitCreateVpc = async function () {
     if (name && ipv4_CIDR) subnetInfoList.push({ name, ipv4_CIDR, zone });
   }
   if (subnetInfoList.length === 0) {
-    alert('At least one subnet is required.');
+    webconsolejs['common/util'].showToast('At least one subnet is required.', 'error');
     return;
   }
 
   try {
-    await webconsolejs['common/api/services/vpc_api'].create(ns, { name: vpcName, cidrBlock, subnetInfoList });
+    await webconsolejs['common/api/services/vpc_api'].create(ns, { connectionName, name: vpcName, cidrBlock, subnetInfoList });
     const modal = bootstrap.Modal.getInstance(document.getElementById('create-vpc-modal'));
     if (modal) modal.hide();
-    AppState.ns = ns;
     await loadList();
   } catch (e) {
-    alert('Failed to create VPC: ' + (e?.response?.data?.message || e.message));
+    webconsolejs['common/util'].showToast('Failed to create VPC: ' + (e?.response?.data?.message || e.message), 'error');
   }
 };
+
+function initFilter() {
+  var fieldEl = document.getElementById("vpc-filter-field");
+  var typeEl  = document.getElementById("vpc-filter-type");
+  var valueEl = document.getElementById("vpc-filter-value");
+  if (!fieldEl || !typeEl || !valueEl) return;
+
+  function updateFilter() {
+    var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+    var typeVal   = typeEl.options[typeEl.selectedIndex].value;
+    if (filterVal && AppState.tables.resourceTable) {
+      AppState.tables.resourceTable.setFilter(filterVal, typeVal, valueEl.value);
+    }
+  }
+
+  fieldEl.addEventListener("change", updateFilter);
+  typeEl.addEventListener("change", updateFilter);
+  valueEl.addEventListener("keyup", updateFilter);
+
+  document.getElementById("vpc-filter-clear").addEventListener("click", function () {
+    fieldEl.value = "";
+    typeEl.value  = "like";
+    valueEl.value = "";
+    if (AppState.tables.resourceTable) AppState.tables.resourceTable.clearFilter();
+  });
+}
 
 document.addEventListener('DOMContentLoaded', async function () {
   const btnList = document.getElementById('page-header-btn-list');
@@ -179,14 +225,22 @@ document.addEventListener('DOMContentLoaded', async function () {
     btnList.innerHTML = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-vpc-modal">Create VPC</button>`;
   }
 
-  const nsSel = document.getElementById('ns-selector');
-  if (nsSel) {
-    nsSel.addEventListener('change', async function () {
-      AppState.ns = this.value;
-      hideDetail();
-      await loadList();
-    });
+  const selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+
+  // workspace 미선택 체크
+  webconsolejs["partials/layout/modal"].checkWorkspaceSelection(selectedWorkspaceProject);
+
+  // project 미선택 체크 (workspace는 선택됐으나 project 미선택)
+  if (selectedWorkspaceProject.workspaceId !== "" && selectedWorkspaceProject.projectId === "") {
+    webconsolejs["partials/layout/modal"].commonShowDefaultModal('Project Selection Check', 'Please select a project first');
   }
 
-  await loadNamespaces();
+  AppState.ns = selectedWorkspaceProject.nsId;
+
+  initFilter();
+  await loadConnectionList();
+
+  if (selectedWorkspaceProject.projectId !== "") {
+    await loadList();
+  }
 });
