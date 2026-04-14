@@ -17,7 +17,7 @@ $("#select-current-project").on('change', async function () {
 
 async function loadConnectionList() {
   try {
-    const resp = await webconsolejs['common/api/http'].commonAPIPost('/api/mc-infra-manager/Getconnconfiglist', {});
+    const resp = await webconsolejs['common/api/http'].commonAPIPost('/api/mc-infra-manager/GetConnConfigList', {});
     const list = resp?.data?.responseData?.connectionconfig || [];
     const sel = document.getElementById('modal-connectionName');
     if (!sel) return;
