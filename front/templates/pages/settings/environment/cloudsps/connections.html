@@ -1,0 +1,114 @@
+<div class="page-body">
+  <div class="container-xl">
+
+    <!-- 필터 영역 -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="card card-sm">
+          <div class="card-body">
+            <div class="row g-2 align-items-center">
+              <div class="col-auto">
+                <label class="form-label mb-0">Credential Holder</label>
+              </div>
+              <div class="col-sm-3">
+                <select class="form-select form-select-sm" id="filter-holder">
+                  <option value="">All Holders</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <label class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="filter-verified" checked>
+                  <span class="form-check-label">Verified Only</span>
+                </label>
+              </div>
+              <div class="col-auto">
+                <label class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="filter-representative">
+                  <span class="form-check-label">Region Rep. Only</span>
+                </label>
+              </div>
+              <div class="col-auto ms-auto">
+                <a class="btn-action" onclick="webconsolejs['pages/settings/environment/cloudsps/connections'].applyFilters()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection Config 목록 -->
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Connection Configs</h3>
+            <div class="card-actions">
+              <small class="text-muted">Credential 등록 시 자동 생성됩니다.</small>
+            </div>
+          </div>
+          <div class="card-table table-responsive">
+            <div id="connection-table"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상세 정보 패널 (행 클릭 시 표시) -->
+    <div id="conn-detail-panel" class="collapse mt-3">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            Connection Detail
+            <span id="conn-detail-name" class="ms-2 text-primary" style="font-weight:normal"></span>
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row p-4" style="background-color:#f8f9fa; border-radius:8px; border:1px solid #e9ecef">
+            <div class="datagrid">
+              <div class="datagrid-item">
+                <div class="datagrid-title">Config Name</div>
+                <div class="datagrid-content" id="conn-detail-configname"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Provider</div>
+                <div class="datagrid-content" id="conn-detail-provider"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Credential Holder</div>
+                <div class="datagrid-content" id="conn-detail-holder"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Region</div>
+                <div class="datagrid-content" id="conn-detail-region"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Zone</div>
+                <div class="datagrid-content" id="conn-detail-zone"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Verified</div>
+                <div class="datagrid-content" id="conn-detail-verified"></div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Region Representative</div>
+                <div class="datagrid-content" id="conn-detail-representative"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/cloudconnection_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/connections.js") | raw }}
