@@ -709,6 +709,54 @@ serviceActions:
       method: post
       resourcePath: /api/roles/csp/list
       description: "CSP에 정의된 역할 목록 조회"
+    GetCspRoleById:
+      method: get
+      resourcePath: /api/roles/csp/id/{roleId}
+      description: "CSP Role 단건 조회"
+    CreateCspRole:
+      method: post
+      resourcePath: /api/roles/csp
+      description: "CSP Role 생성"
+    DeleteCspRole:
+      method: delete
+      resourcePath: /api/roles/csp/id/{roleId}
+      description: "CSP Role 삭제"
+    listCspPolicies:
+      method: post
+      resourcePath: /api/csp-policies/list
+      description: "CSP Policy 목록 조회"
+    GetCspPolicyById:
+      method: get
+      resourcePath: /api/csp-policies/id/{policyId}
+      description: "CSP Policy 단건 조회"
+    CreateCspPolicy:
+      method: post
+      resourcePath: /api/csp-policies
+      description: "CSP Policy 생성"
+    UpdateCspPolicy:
+      method: put
+      resourcePath: /api/csp-policies/id/{policyId}
+      description: "CSP Policy 수정"
+    DeleteCspPolicy:
+      method: delete
+      resourcePath: /api/csp-policies/id/{policyId}
+      description: "CSP Policy 삭제"
+    GetPoliciesByRoleId:
+      method: get
+      resourcePath: /api/csp-policies/role/{roleId}
+      description: "CSP Role에 연결된 Policy 목록 조회"
+    AttachPolicyToRole:
+      method: post
+      resourcePath: /api/csp-policies/attach
+      description: "CSP Policy를 Role에 연결"
+    DetachPolicyFromRole:
+      method: post
+      resourcePath: /api/csp-policies/detach
+      description: "CSP Policy를 Role에서 해제"
+    SyncCspPolicies:
+      method: post
+      resourcePath: /api/csp-policies/sync
+      description: "CSP Policy 동기화"
     Createrole:
       method: post
       resourcePath: /api/roles
@@ -1918,6 +1966,10 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/resources/spec/{specId}
       description: "Delete spec"
+    GetProviderList:
+      method: get
+      resourcePath: /provider
+      description: "List all registered cloud providers (aws, azure, gcp, ...)"
 
   mc-web-console:
     Anycontroller:

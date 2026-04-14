@@ -30,10 +30,10 @@ export async function listCloudDrivers() {
 }
 
 export async function listCloudOS() {
-    const controller = "/api/mc-infra-manager/List-Cloudos";
+    const controller = "/api/mc-infra-manager/GetProviderList";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
     const data = unwrapResponse(response);
-    return (data && data.cloudos) ? data.cloudos : [];
+    return (data && data.output) ? data.output : [];
 }
 
 export async function registerCloudDriver(driverData) {
