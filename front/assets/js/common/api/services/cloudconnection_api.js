@@ -55,31 +55,31 @@ export async function registerCredential(payload, credentialHolder) {
 
 /**
  * Credential Holder 목록 조회
- * @returns {Array} CredentialHolderInfo[]
+ * credentialHolder API 미배포 버전 대응: connConfig 목록에서 holder를 추출하여 집계
+ * @returns {Array} [{ credentialHolder, providers, connectionCount, verifiedConnectionCount, isDefault }]
  */
-export async function listCredentialHolders(credentialHolder) {
-    const controller = "/api/mc-infra-manager/GetCredentialHolderList";
-    const data = {
-        headers: { 'X-Credential-Holder': credentialHolder || 'admin' },
-    };
-    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    const result = unwrapResponse(response);
-    return (result && result.credentialHolderInfos) ? result.credentialHolderInfos : [];
-}
+export async function listCredentialHolders() {
+    const conns = await listConnConfigs({ filterVerified: false });
+    if (!conns.length) return [];
 
-/**
- * Credential Holder 상세 조회
- * @param {string} holderId
- * @returns {object} CredentialHolderInfo
- */
-export async function getCredentialHolder(holderId, credentialHolder) {
-    const controller = "/api/mc-infra-manager/GetCredentialHolder";
-    const data = {
-        pathParams: { holderId },
-        headers: { 'X-Credential-Holder': credentialHolder || 'admin' },
-    };
-    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return unwrapResponse(response);
+    const holderMap = {};
+    for (const conn of conns) {
+        const holder = conn.credentialHolder || 'admin';
+        if (!holderMap[holder]) {
+            holderMap[holder] = { credentialHolder: holder, providers: new Set(), connectionCount: 0, verifiedConnectionCount: 0 };
+        }
+        holderMap[holder].providers.add((conn.providerName || '').toLowerCase());
+        holderMap[holder].connectionCount++;
+        if (conn.verified) holderMap[holder].verifiedConnectionCount++;
+    }
+
+    return Object.values(holderMap).map(h => ({
+        credentialHolder: h.credentialHolder,
+        providers: [...h.providers],
+        connectionCount: h.connectionCount,
+        verifiedConnectionCount: h.verifiedConnectionCount,
+        isDefault: h.credentialHolder === 'admin',
+    }));
 }
 
 // ─── Connection Config ─────────────────────────────────────────────────
@@ -93,8 +93,8 @@ export async function listConnConfigs(filters = {}, credentialHolder) {
     const controller = "/api/mc-infra-manager/GetConnConfigList";
     const queryParams = {};
     if (filters.filterCredentialHolder) queryParams.filterCredentialHolder = filters.filterCredentialHolder;
-    if (filters.filterVerified !== undefined) queryParams.filterVerified = filters.filterVerified;
-    if (filters.filterRegionRepresentative !== undefined) queryParams.filterRegionRepresentative = filters.filterRegionRepresentative;
+    if (filters.filterVerified !== undefined) queryParams.filterVerified = String(filters.filterVerified);
+    if (filters.filterRegionRepresentative !== undefined) queryParams.filterRegionRepresentative = String(filters.filterRegionRepresentative);
     const data = {
         queryParams,
         headers: { 'X-Credential-Holder': credentialHolder || 'admin' },
