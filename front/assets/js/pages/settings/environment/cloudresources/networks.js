@@ -11,6 +11,8 @@ const importApi = () => webconsolejs["common/api/services/import_api"];
 const AppState = {
     ns: '',
     tables: { vnetTable: null },
+    resources: { selected: null },
+    ui: { viewMode: false },
 };
 
 let _unmanagedVNets = [];
@@ -93,7 +95,84 @@ function initTable(vNets) {
               hozAlign: 'center', width: 100 },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
+        rowClick: async function (e, row) {
+            const data = row.getData();
+            AppState.resources.selected = data;
+            renderDetail(data);
+            showDetail();
+            // GetVNet으로 subnet 등 상세 정보 추가 로드
+            try {
+                const detail = await vpcApi().get(AppState.ns, data.name);
+                if (detail) {
+                    AppState.resources.selected = detail;
+                    renderDetail(detail);
+                }
+            } catch (err) {
+                console.error('VNet 상세 조회 실패:', err);
+            }
+        },
     });
+}
+
+// ─── Detail Panel ─────────────────────────────────────────────────────────
+
+function renderDetail(data) {
+    document.getElementById('detail-name').textContent      = data.name || '-';
+    document.getElementById('detail-vnet-name').textContent = data.name || '-';
+    document.getElementById('detail-vnet-connection').textContent = data.connectionName || '-';
+    document.getElementById('detail-vnet-cidr').textContent = data.cidrBlock || '-';
+    document.getElementById('detail-vnet-csp-id').textContent = data.cspResourceId || '-';
+
+    const subnets = data.subnetInfoList || [];
+    const tbody = document.getElementById('detail-subnet-tbody');
+    const emptyEl = document.getElementById('detail-subnet-empty');
+    const tableWrap = document.getElementById('detail-subnet-table-wrap');
+
+    tbody.innerHTML = '';
+    if (subnets.length === 0) {
+        emptyEl.classList.remove('d-none');
+        tableWrap.classList.add('d-none');
+    } else {
+        emptyEl.classList.add('d-none');
+        tableWrap.classList.remove('d-none');
+        for (const s of subnets) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${s.name || '-'}</td>
+                <td>${s.ipv4_cidr || s.ipv4CIDR || s.cidr || '-'}</td>
+                <td>${s.zone || '-'}</td>
+                <td><code>${s.cspResourceId || '-'}</code></td>`;
+            tbody.appendChild(tr);
+        }
+    }
+}
+
+function showDetail() {
+    const el = document.getElementById('view-mode-cards');
+    if (el) el.classList.add('show');
+    AppState.ui.viewMode = true;
+}
+
+export function hideDetail() {
+    const el = document.getElementById('view-mode-cards');
+    if (el) el.classList.remove('show');
+    AppState.ui.viewMode = false;
+    AppState.resources.selected = null;
+}
+
+export async function confirmDeleteVNet() {
+    const selected = AppState.resources.selected;
+    if (!selected) return;
+    if (!confirm(`VPC "${selected.name}"을 삭제하시겠습니까?`)) return;
+    try {
+        await vpcApi().del(AppState.ns, selected.name);
+        showToast(TOAST_TYPES.SUCCESS, `VPC "${selected.name}" 삭제 완료`);
+        hideDetail();
+        await loadVNetList();
+    } catch (err) {
+        console.error('VPC 삭제 실패:', err);
+        showToast(TOAST_TYPES.ERROR, 'VPC 삭제에 실패했습니다: ' + (err.message || ''));
+    }
 }
 
 // ─── Filter (Tabulator 내장 setFilter) ───────────────────────────────────
@@ -345,4 +424,6 @@ webconsolejs['pages/settings/environment/cloudresources/networks'] = {
     executeImportVNets,
     addSubnetRow,
     executeCreateVNet,
+    hideDetail,
+    confirmDeleteVNet,
 };
