@@ -38,10 +38,26 @@ func SubsystemAnyController(c echo.Context) error {
 		return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
 	}
 
+	// api.yaml에서 기본 Service + ActionSpec 조회 (fallback 및 Auth 설정 소스)
 	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
 	if err != nil {
-		log.Printf("GetAction error: %v", err)
-		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(operationId+"-"+err.Error()))
+		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
+		msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
+		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+	}
+
+	// BaseURL: 캐시 우선 → 없으면 api.yaml BaseURL (mc-iam-manager 고정 주소)
+	effectiveBaseURL := service.BaseURL
+	// ActionSpec: 캐시 우선 → 없으면 api.yaml ActionSpec
+	effectiveActionSpec := actionSpec
+	if cfg.RegistryCache != nil {
+		if dynamicURL := cfg.RegistryCache.GetBaseURL(subsystemName, operationId); dynamicURL != "" {
+			log.Printf("[RegistryCache] BaseURL override for %s: %s", subsystemName, dynamicURL)
+			effectiveBaseURL = dynamicURL
+		}
+		if cachedSpec := cfg.RegistryCache.GetActionSpec(subsystemName, operationId); cachedSpec != nil {
+			effectiveActionSpec = cachedSpec
+		}
 	}
 
 	// CommonRequest 파싱
@@ -51,13 +67,13 @@ func SubsystemAnyController(c echo.Context) error {
 	}
 
 	// PathParams 치환
-	resourcePath := actionSpec.ResourcePath
+	resourcePath := effectiveActionSpec.ResourcePath
 	for k, v := range commonRequest.PathParams {
 		resourcePath = strings.ReplaceAll(resourcePath, "{"+k+"}", v)
 	}
 
 	// QueryParams 추가
-	targetURL := service.BaseURL + resourcePath
+	targetURL := effectiveBaseURL + resourcePath
 	if len(commonRequest.QueryParams) > 0 {
 		params := []string{}
 		for k, v := range commonRequest.QueryParams {
@@ -72,7 +88,7 @@ func SubsystemAnyController(c echo.Context) error {
 		bodyBytes, _ = json.Marshal(commonRequest.Request)
 	}
 
-	httpReq, err := http.NewRequest(strings.ToUpper(actionSpec.Method), targetURL, bytes.NewBuffer(bodyBytes))
+	httpReq, err := http.NewRequest(strings.ToUpper(effectiveActionSpec.Method), targetURL, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return errors.NewInternalServerError("Failed to build request", err)
 	}
@@ -98,6 +114,27 @@ func SubsystemAnyController(c echo.Context) error {
 	var responseData interface{}
 	if jsonErr := json.Unmarshal(respBody, &responseData); jsonErr != nil {
 		responseData = strings.TrimSpace(string(respBody))
+	}
+
+	// RegistryCache 인터셉트
+	if cfg.RegistryCache != nil {
+		opLower := strings.ToLower(operationId)
+		subsysLower := strings.ToLower(subsystemName)
+		if subsysLower == "mc-iam-manager" {
+			switch opLower {
+			case "listmcmpapisservices":
+				// ListMcmpApisServices 성공 응답 → 캐시 저장
+				if resp.StatusCode == http.StatusOK {
+					// responseData는 CommonResponse 래퍼 없이 mc-iam-manager 원본 응답
+					cfg.RegistryCache.Store(responseData)
+				}
+			case "updateframeworkservice":
+				// UpdateFrameworkService 성공 → 캐시 무효화
+				if resp.StatusCode < 300 {
+					cfg.RegistryCache.Invalidate()
+				}
+			}
+		}
 	}
 
 	commonResp := model.NewCommonResponse(resp.StatusCode, http.StatusText(resp.StatusCode), responseData)
