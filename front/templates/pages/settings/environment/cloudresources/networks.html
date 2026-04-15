@@ -1,47 +1,67 @@
 <div class="page-body">
   <div class="container-xl">
-    <!-- VNet LIST SECTION -->
-    <div id="index" class="section">
-      <div class="row row-cards">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">네트워크 (VPC) 목록</h3>
-              <div class="card-options ms-auto d-flex gap-2">
-                <button id="import-vnet-btn" class="btn btn-sm btn-secondary"
-                  onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].openImportVNetModal()">
-                  Import VNet
-                </button>
-                <button class="btn btn-sm btn-outline-secondary"
-                  onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].loadVNetList()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
-                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
-                  </svg>
-                  Refresh
-                </button>
-              </div>
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">네트워크 (VPC) 목록</h3>
+            <div class="card-options ms-auto d-flex gap-2">
+              <!-- Import VNet -->
+              <a class="btn-action" type="button" title="CSP 미관리 VNet 임포트"
+                onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].openImportVNetModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                  <path d="M7 11l5 5l5 -5"/>
+                  <path d="M12 4l0 12"/>
+                </svg>
+              </a>
+              <!-- Filter toggle -->
+              <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filter-body" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M5.5 5h13a1 1 0 0 1 .5 1.5L14 12L14 19L10 16L10 12L5 6.5a1 1 0 0 1 .5 -1.5"/>
+                </svg>
+              </a>
             </div>
-            <div class="card-body">
-              <!-- Filter 영역 -->
-              <div class="row g-2 mb-3 align-items-end" id="vnet-filter-area">
-                <div class="col-md-4">
-                  <label class="form-label mb-1">Connection</label>
-                  <select id="filter-connection" class="form-select form-select-sm"
-                    onchange="webconsolejs['pages/settings/environment/cloudresources/networks'].applyFilter()">
-                    <option value="">전체</option>
+          </div>
+
+          <!-- Filter Panel -->
+          <div class="collapse" id="filter-body">
+            <div class="card-body border-bottom py-3">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <label class="form-label mb-1">Field</label>
+                  <select id="filter-field" class="form-select form-select-sm">
+                    <option value="">-- select --</option>
+                    <option value="name">Name</option>
+                    <option value="connectionName">Connection</option>
+                    <option value="cidrBlock">CIDR</option>
                   </select>
                 </div>
-                <div class="col-md-4">
-                  <label class="form-label mb-1">이름 검색</label>
-                  <input id="filter-name" type="text" class="form-control form-control-sm"
-                    placeholder="VPC 이름 검색..."
-                    oninput="webconsolejs['pages/settings/environment/cloudresources/networks'].applyFilter()">
+                <div class="col-auto">
+                  <label class="form-label mb-1">Type</label>
+                  <select id="filter-type" class="form-select form-select-sm">
+                    <option value="like">like</option>
+                    <option value="=">=</option>
+                    <option value="!=">!=</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label class="form-label mb-1">Value</label>
+                  <input type="text" id="filter-value" class="form-control form-control-sm" placeholder="filter...">
+                </div>
+                <div class="col-auto">
+                  <button id="filter-clear" class="btn btn-sm btn-outline-secondary">Clear</button>
                 </div>
               </div>
-              <div id="vnet-list-table"></div>
             </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div id="vnet-list-table"></div>
           </div>
         </div>
       </div>
@@ -114,7 +134,6 @@
           <label class="form-label">대상 프로젝트</label>
           <input type="text" class="form-control" id="import-vnet-project" readonly>
         </div>
-        <!-- 목록 테이블 -->
         <div id="import-vnet-list-area" class="d-none">
           <div class="table-responsive">
             <table class="table table-vcenter">
