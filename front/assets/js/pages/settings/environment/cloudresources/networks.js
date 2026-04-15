@@ -95,22 +95,23 @@ function initTable(vNets) {
               hozAlign: 'center', width: 100 },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
-        rowClick: async function (e, row) {
-            const data = row.getData();
-            AppState.resources.selected = data;
-            renderDetail(data);
-            showDetail();
-            // GetVNet으로 subnet 등 상세 정보 추가 로드
-            try {
-                const detail = await vpcApi().get(AppState.ns, data.name);
-                if (detail) {
-                    AppState.resources.selected = detail;
-                    renderDetail(detail);
-                }
-            } catch (err) {
-                console.error('VNet 상세 조회 실패:', err);
+    });
+
+    AppState.tables.vnetTable.on('rowClick', async function (e, row) {
+        const data = row.getData();
+        AppState.resources.selected = data;
+        renderDetail(data);
+        showDetail();
+        // GetVNet으로 subnet 등 상세 정보 추가 로드
+        try {
+            const detail = await vpcApi().get(AppState.ns, data.name);
+            if (detail) {
+                AppState.resources.selected = detail;
+                renderDetail(detail);
             }
-        },
+        } catch (err) {
+            console.error('VNet 상세 조회 실패:', err);
+        }
     });
 }
 
