@@ -155,10 +155,159 @@ function showDetail() {
 }
 
 export function hideDetail() {
-    const el = document.getElementById('view-mode-cards');
-    if (el) el.classList.remove('show');
+    document.getElementById('view-mode-cards')?.classList.remove('show');
+    document.getElementById('edit-mode-cards')?.classList.remove('show');
     AppState.ui.viewMode = false;
+    AppState.ui.editMode = false;
     AppState.resources.selected = null;
+}
+
+// ─── Edit Mode ────────────────────────────────────────────────────────────
+
+export function showEditMode() {
+    const selected = AppState.resources.selected;
+    if (!selected) return;
+
+    // read-only 필드 채우기
+    document.getElementById('edit-name').textContent       = selected.name || '';
+    document.getElementById('edit-vnet-name').value        = selected.name || '';
+    document.getElementById('edit-vnet-connection').value  = selected.connectionName || '';
+    document.getElementById('edit-vnet-cidr').value        = selected.cidrBlock || '';
+
+    // 기존 Subnet 행 렌더링
+    _renderEditSubnetTable(selected.subnetInfoList || []);
+    document.getElementById('edit-new-subnet-list').innerHTML = '';
+
+    // 모드 전환
+    document.getElementById('view-mode-cards')?.classList.remove('show');
+    document.getElementById('edit-mode-cards')?.classList.add('show');
+    AppState.ui.viewMode = false;
+    AppState.ui.editMode = true;
+}
+
+export function cancelEditMode() {
+    document.getElementById('edit-mode-cards')?.classList.remove('show');
+    document.getElementById('view-mode-cards')?.classList.add('show');
+    AppState.ui.editMode = false;
+    AppState.ui.viewMode = true;
+}
+
+function _renderEditSubnetTable(subnets) {
+    const tbody = document.getElementById('edit-subnet-tbody');
+    tbody.innerHTML = '';
+    for (const s of subnets) {
+        const tr = document.createElement('tr');
+        tr.dataset.subnetId = s.name;
+        tr.innerHTML = `
+            <td>${s.name || '-'}</td>
+            <td>${s.ipv4_cidr || s.ipv4CIDR || s.cidr || '-'}</td>
+            <td>${s.zone || '-'}</td>
+            <td><code>${s.cspResourceId || '-'}</code></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-danger"
+                onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].deleteSubnet('${s.name}')">
+                삭제
+              </button>
+            </td>`;
+        tbody.appendChild(tr);
+    }
+}
+
+export function addEditSubnetRow() {
+    const list = document.getElementById('edit-new-subnet-list');
+    const idx = list.children.length;
+    const row = document.createElement('div');
+    row.className = 'row g-2 mb-2 align-items-center new-subnet-row';
+    row.innerHTML = `
+        <div class="col-md-4">
+          <input type="text" class="form-control form-control-sm new-subnet-name"
+            placeholder="Subnet 이름 (예: subnet-${idx + 1})">
+        </div>
+        <div class="col-md-4">
+          <input type="text" class="form-control form-control-sm new-subnet-cidr"
+            placeholder="CIDR (예: 10.0.${idx}.0/24)">
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control form-control-sm new-subnet-zone"
+            placeholder="Zone (선택)">
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-sm btn-outline-danger w-100"
+            onclick="this.closest('.new-subnet-row').remove()">✕</button>
+        </div>`;
+    list.appendChild(row);
+}
+
+export async function deleteSubnet(subnetId) {
+    const vnetName = AppState.resources.selected?.name;
+    if (!vnetName || !subnetId) return;
+    if (!confirm(`Subnet "${subnetId}"을 삭제하시겠습니까?`)) return;
+    try {
+        await vpcApi().delSubnet(AppState.ns, vnetName, subnetId);
+        showToast(TOAST_TYPES.SUCCESS, `Subnet "${subnetId}" 삭제 완료`);
+        // 상태 업데이트 및 UI 갱신
+        const detail = await vpcApi().get(AppState.ns, vnetName);
+        if (detail) {
+            AppState.resources.selected = detail;
+            _renderEditSubnetTable(detail.subnetInfoList || []);
+        }
+    } catch (err) {
+        console.error('Subnet 삭제 실패:', err);
+        showToast(TOAST_TYPES.ERROR, 'Subnet 삭제에 실패했습니다: ' + (err.message || ''));
+    }
+}
+
+export async function saveVNet() {
+    const vnetName = AppState.resources.selected?.name;
+    if (!vnetName) return;
+
+    const newRows = Array.from(document.querySelectorAll('#edit-new-subnet-list .new-subnet-row'));
+    const toAdd = newRows
+        .map(row => ({
+            name:      row.querySelector('.new-subnet-name')?.value.trim(),
+            ipv4_cidr: row.querySelector('.new-subnet-cidr')?.value.trim(),
+            zone:      row.querySelector('.new-subnet-zone')?.value.trim() || undefined,
+        }))
+        .filter(s => s.name && s.ipv4_cidr);
+
+    if (toAdd.length === 0) {
+        showToast(TOAST_TYPES.WARNING, '추가할 Subnet이 없습니다.');
+        return;
+    }
+
+    const spinner = document.getElementById('edit-save-spinner');
+    const btn = document.querySelector('#edit-mode-cards .btn-primary');
+    spinner?.classList.remove('d-none');
+    if (btn) btn.disabled = true;
+
+    let successCount = 0, failCount = 0;
+    for (const subnet of toAdd) {
+        try {
+            await vpcApi().createSubnet(AppState.ns, vnetName, subnet);
+            successCount++;
+        } catch (err) {
+            failCount++;
+            console.error(`Subnet ${subnet.name} 추가 실패:`, err);
+        }
+    }
+
+    spinner?.classList.add('d-none');
+    if (btn) btn.disabled = false;
+
+    if (failCount > 0) {
+        showToast(TOAST_TYPES.WARNING, `${successCount}개 추가 완료, ${failCount}개 실패`);
+    } else {
+        showToast(TOAST_TYPES.SUCCESS, `Subnet ${successCount}개 추가 완료`);
+    }
+
+    // 상세 갱신 후 view 모드로 복귀
+    const detail = await vpcApi().get(AppState.ns, vnetName);
+    if (detail) {
+        AppState.resources.selected = detail;
+        renderDetail(detail);
+    }
+    cancelEditMode();
+    await loadVNetList();
 }
 
 export async function confirmDeleteVNet() {
@@ -427,4 +576,9 @@ webconsolejs['pages/settings/environment/cloudresources/networks'] = {
     executeCreateVNet,
     hideDetail,
     confirmDeleteVNet,
+    showEditMode,
+    cancelEditMode,
+    addEditSubnetRow,
+    deleteSubnet,
+    saveVNet,
 };

@@ -75,6 +75,7 @@
             <div class="card-header">
               <h3 class="card-title">VPC 상세 — <span id="detail-name" class="text-primary"></span></h3>
               <div class="card-options">
+                <button class="btn btn-sm btn-outline-secondary me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].showEditMode()">Edit</button>
                 <button class="btn btn-sm btn-outline-danger me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].confirmDeleteVNet()">Delete</button>
                 <a href="#" class="card-options-remove" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].hideDetail()">
                   <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
@@ -122,6 +123,68 @@
                     <tbody id="detail-subnet-tbody"></tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- Edit Mode Panel -->
+    <div id="edit-mode-cards" class="collapse">
+      <div class="row row-cards mt-2">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">VPC 편집 — <span id="edit-name" class="text-primary"></span></h3>
+              <div class="card-options">
+                <button class="btn btn-sm btn-secondary me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].cancelEditMode()">Cancel</button>
+                <button class="btn btn-sm btn-primary" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].saveVNet()">
+                  <span id="edit-save-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                  Save
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Read-only 정보 -->
+              <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                  <label class="form-label text-muted">Name <span class="badge bg-secondary-lt ms-1">read-only</span></label>
+                  <input type="text" class="form-control form-control-sm bg-light" id="edit-vnet-name" readonly>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label text-muted">Connection <span class="badge bg-secondary-lt ms-1">read-only</span></label>
+                  <input type="text" class="form-control form-control-sm bg-light" id="edit-vnet-connection" readonly>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label text-muted">CIDR Block <span class="badge bg-secondary-lt ms-1">read-only</span></label>
+                  <input type="text" class="form-control form-control-sm bg-light" id="edit-vnet-cidr" readonly>
+                </div>
+              </div>
+
+              <!-- Subnet 편집 -->
+              <div class="mt-2">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h4 class="mb-0">Subnet 목록</h4>
+                  <button type="button" class="btn btn-sm btn-outline-primary"
+                    onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].addEditSubnetRow()">
+                    + Add Subnet
+                  </button>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-sm table-vcenter">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>CIDR</th>
+                        <th>Zone</th>
+                        <th>CSP ID</th>
+                        <th style="width:60px"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="edit-subnet-tbody"></tbody>
+                  </table>
+                </div>
+                <!-- 새 Subnet 추가 행 -->
+                <div id="edit-new-subnet-list"></div>
               </div>
             </div>
           </div>
