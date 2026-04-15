@@ -24,11 +24,13 @@ func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return errors.NewUnauthorized("Invalid token")
 		}
 
-		// DB에서 세션 확인
-		sessionRepo := repository.NewSessionRepository(repository.GetDB())
-		exists, err := sessionRepo.Exists(claims.UserID)
-		if err != nil || !exists {
-			return errors.NewUnauthorized("Session not found")
+		// DB에서 세션 확인 (DB 사용 가능 시)
+		if db := repository.GetDB(); db != nil {
+			sessionRepo := repository.NewSessionRepository(db)
+			exists, err := sessionRepo.Exists(claims.UserID)
+			if err != nil || !exists {
+				return errors.NewUnauthorized("Session not found")
+			}
 		}
 
 		// Context에 사용자 정보 설정
