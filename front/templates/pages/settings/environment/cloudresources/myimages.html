@@ -1,1 +1,124 @@
-{{ partial("underdevelop.html") | raw }}
+<div class="page-body">
+  <div class="container-xl">
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My VM Images</h3>
+              <div class="card-actions btn-actions">
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/myimages'].refreshImageList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-body pb-0">
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <select class="form-select" id="image-ns-filter">
+                    <option value="">All Namespaces</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select class="form-select" id="image-provider-filter">
+                    <option value="">All Providers</option>
+                    <option value="AWS">AWS</option>
+                    <option value="GCP">GCP</option>
+                    <option value="AZURE">Azure</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select class="form-select" id="image-os-filter">
+                    <option value="">All OS</option>
+                    <option value="Linux">Linux</option>
+                    <option value="Windows">Windows</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <button class="btn btn-primary w-100"
+                    onclick="webconsolejs['pages/settings/environment/cloudresources/myimages'].applyFilter()">
+                    Filter
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-table table-responsive" style="max-height: 500px; overflow: hidden">
+              <div id="image-table" class="image-table-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div id="image-detail-panel" class="row row-cards mt-2" style="display:none">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                Image Detail
+                <span id="image-detail-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                  [<span id="image-detail-name-text"></span>]
+                </span>
+              </h3>
+              <div class="card-actions">
+                <a class="btn-action" onclick="webconsolejs['pages/settings/environment/cloudresources/myimages'].hideDetail()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icon-tabler-x">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M18 6l-12 12"></path>
+                    <path d="M6 6l12 12"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Image ID</div>
+                  <div class="datagrid-content" id="detail-image-id">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Image Name</div>
+                  <div class="datagrid-content" id="detail-image-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="detail-image-provider">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Region</div>
+                  <div class="datagrid-content" id="detail-image-region">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">OS</div>
+                  <div class="datagrid-content" id="detail-image-os">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Architecture</div>
+                  <div class="datagrid-content" id="detail-image-arch">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Status</div>
+                  <div class="datagrid-content" id="detail-image-status">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Created At</div>
+                  <div class="datagrid-content" id="detail-image-created">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ javascriptTag("pages/settings/environment/cloudresources/myimages.js") | raw }}

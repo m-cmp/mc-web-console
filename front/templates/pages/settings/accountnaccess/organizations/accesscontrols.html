@@ -1,1 +1,143 @@
-{{ partial("underdevelop.html") | raw }}
+<div class="page-body">
+  <div class="container-xl">
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <!-- Access Policy List -->
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Access Controls</h3>
+              <div class="card-actions btn-actions">
+                <button class="btn btn-primary btn-sm"
+                  data-bs-toggle="modal" data-bs-target="#access-control-create-modal">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icon-tabler-plus">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M12 5l0 14"></path>
+                    <path d="M5 12l14 0"></path>
+                  </svg>
+                  Add Policy
+                </button>
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/accountnaccess/organizations/accesscontrols'].refreshList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+              <div id="accesscontrol-table" class="accesscontrol-table-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div id="accesscontrol-detail-panel" class="row row-cards mt-2" style="display:none">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                Policy Detail
+                <span id="accesscontrol-detail-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                  [<span id="accesscontrol-detail-name-text"></span>]
+                </span>
+              </h3>
+              <div class="card-actions btn-actions">
+                <button class="btn btn-sm btn-outline-danger"
+                  onclick="webconsolejs['pages/settings/accountnaccess/organizations/accesscontrols'].deleteSelected()">
+                  Delete
+                </button>
+                <a class="btn-action" onclick="webconsolejs['pages/settings/accountnaccess/organizations/accesscontrols'].hideDetail()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icon-tabler-x">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M18 6l-12 12"></path>
+                    <path d="M6 6l12 12"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="datagrid">
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">Policy ID</div>
+                      <div class="datagrid-content" id="detail-policy-id">-</div>
+                    </div>
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">Policy Name</div>
+                      <div class="datagrid-content" id="detail-policy-name">-</div>
+                    </div>
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">Effect</div>
+                      <div class="datagrid-content" id="detail-policy-effect">-</div>
+                    </div>
+                    <div class="datagrid-item">
+                      <div class="datagrid-title">Created At</div>
+                      <div class="datagrid-content" id="detail-policy-created">-</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h5>Permissions</h5>
+                  <div id="detail-policy-permissions" class="mt-2">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Access Control Modal -->
+<div class="modal modal-blur fade" id="access-control-create-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Access Control Policy</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="access-control-create-form">
+          <div class="mb-3">
+            <label class="form-label required">Policy Name</label>
+            <input type="text" class="form-control" id="create-policy-name" placeholder="e.g., read-only-ns" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Effect</label>
+            <select class="form-select" id="create-policy-effect" required>
+              <option value="">Select Effect</option>
+              <option value="Allow">Allow</option>
+              <option value="Deny">Deny</option>
+            </select>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="create-policy-description" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary"
+          onclick="webconsolejs['pages/settings/accountnaccess/organizations/accesscontrols'].createPolicy()">
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{{ javascriptTag("common/utils/formvalidation.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/accesscontrols.js") | raw }}

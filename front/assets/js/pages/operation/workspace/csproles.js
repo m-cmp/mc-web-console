@@ -1144,8 +1144,18 @@ function clearFilter() {
   }
 }
 
-// 페이지 로드 시 초기화 (mci.js와 동일한 패턴)
-document.addEventListener("DOMContentLoaded", initCspRoles);
+// 페이지 로드 시 초기화 (Roles 페이지와 동일한 패턴)
+document.addEventListener("DOMContentLoaded", async function () {
+  // 페이지 헤더에 Add CSP Role 버튼 추가
+  if (typeof webconsolejs !== 'undefined' && webconsolejs['partials/layout/navigatePages']) {
+    webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(
+      null,
+      "Add CSP Role",
+      "showAddCspRoleModal(event)"
+    );
+  }
+  await initCspRoles();
+});
 
 // 해당 화면에서 최초 설정하는 function
 async function initCspRoles() {
@@ -1155,33 +1165,34 @@ async function initCspRoles() {
 }
 
 // CSP Role 추가 모달 표시
-function showAddCspRoleModal() {
+async function showAddCspRoleModal() {
+  // 폼 초기화
+  document.getElementById('addCspRoleForm').reset();
+
+  // CSP Type 드롭다운 로드
+  await loadCspTypeOptions();
+
   const modal = new bootstrap.Modal(document.getElementById('addCspRoleModal'));
   modal.show();
-
-  // Provider 목록 로드
-  loadCspRoleProviders();
-
-  // 검색 이벤트 리스너 추가
-  document.getElementById('addCspRoleSearch').addEventListener('input', filterAvailableCspRoles);
-  document.getElementById('addCspRoleProvider').addEventListener('change', loadAvailableCspRoles);
 }
 
-// CSP Role Provider 목록 로드
-async function loadCspRoleProviders() {
+// CSP Type 드롭다운 로드
+async function loadCspTypeOptions() {
   try {
     const providers = await window.webconsolejs["common/api/services/csproles_api"].getCspProviders();
-    const select = document.getElementById('addCspRoleProvider');
-    select.innerHTML = '<option value="">Select CSP Provider</option>';
+    const select = document.getElementById('addCspType');
+    select.innerHTML = '<option value="">Select CSP Type</option>';
 
-    providers.forEach(provider => {
-      const option = document.createElement('option');
-      option.value = provider;
-      option.textContent = provider.toUpperCase();
-      select.appendChild(option);
-    });
+    if (providers && providers.length > 0) {
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = typeof provider === 'object' ? provider.provider : provider;
+        option.textContent = option.value.toUpperCase();
+        select.appendChild(option);
+      });
+    }
   } catch (error) {
-    console.error("Error loading provider list:", error);
+    console.error("Error loading CSP type list:", error);
   }
 }
 
@@ -1402,51 +1413,46 @@ async function saveEditedCspRole() {
   }
 }
 
-// 선택된 CSP Role 추가
+// CSP Role 추가
 async function addSelectedCspRole() {
-  const name = document.getElementById('addCspRoleName').value.trim();
+  const cspType = document.getElementById('addCspType').value.trim();
+  const cspRoleName = document.getElementById('addCspRoleName').value.trim();
   const description = document.getElementById('addCspRoleDescription').value.trim();
-  const trustPolicyText = document.getElementById('addCspRoleTrustPolicy').value.trim();
+  const idpIdentifier = document.getElementById('addCspIdpIdentifier').value.trim();
+  const iamIdentifier = document.getElementById('addCspIamIdentifier').value.trim();
+  const iamRoleId = document.getElementById('addCspIamRoleId').value.trim();
+  const path = document.getElementById('addCspPath').value.trim();
 
   // 필수 필드 검증
-  if (!name || !description || !trustPolicyText) {
-    alert('Please fill in all required fields');
+  if (!cspType || !cspRoleName) {
+    alert('CSP Type and CSP Role Name are required.');
     return;
   }
 
   try {
-    // Trust Policy JSON 파싱 검증
-    let trustPolicy;
-    try {
-      trustPolicy = JSON.parse(trustPolicyText);
-    } catch (error) {
-      alert('Invalid JSON format in Trust Policy. Please check your JSON syntax.');
-      return;
-    }
-
-    // 기획서 요구사항에 맞는 데이터 구조
     const roleData = {
-      name: name,
+      cspRoleName: cspRoleName,
       description: description,
-      trust_policy: trustPolicy
+      cspType: cspType,
+      idpIdentifier: idpIdentifier,
+      iamIdentifier: iamIdentifier,
+      iamRoleId: iamRoleId,
+      path: path
     };
 
     const result = await window.webconsolejs["common/api/services/csproles_api"].createCspRole(roleData);
 
-    if (result.success) {
+    if (result) {
       alert('CSP Role added successfully');
 
       // 모달 닫기
       const modal = bootstrap.Modal.getInstance(document.getElementById('addCspRoleModal'));
       modal.hide();
 
-      // 폼 초기화
-      document.getElementById('addCspRoleForm').reset();
-
       // CSP Role 목록 새로고침
       await refreshCspRolesList();
     } else {
-      throw new Error(result.message || 'Failed to add CSP Role');
+      throw new Error('Failed to add CSP Role');
     }
   } catch (error) {
     console.error("Error adding CSP Role:", error);

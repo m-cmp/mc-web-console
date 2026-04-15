@@ -1,1 +1,121 @@
-{{ partial("underdevelop.html") | raw }}
+<div class="page-body">
+  <div class="container-xl">
+    <div class="row row-cards">
+      <!-- Log Collection Configuration -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Log Collection Configuration</h3>
+            <div class="card-actions btn-actions">
+              <a class="btn-action"
+                onclick="webconsolejs['pages/operations/analytics/eventsntraces/logconfig'].refreshList()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <!-- Workload selector -->
+              <div class="col-md-4">
+                <label for="logconfig-mci-select" class="form-label">Workload (MCI)</label>
+                <select class="form-select" id="logconfig-mci-select">
+                  <option value="">Select Workload</option>
+                </select>
+              </div>
+              <!-- Target selector -->
+              <div class="col-md-4">
+                <label for="logconfig-target-select" class="form-label">Target Server</label>
+                <select class="form-select" id="logconfig-target-select">
+                  <option value="">Select Server</option>
+                </select>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-primary w-100"
+                  onclick="webconsolejs['pages/operations/analytics/eventsntraces/logconfig'].loadLogConfig()">
+                  Load Config
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config Table -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Log Config Entries</h3>
+            <div class="card-actions btn-actions">
+              <button class="btn btn-sm btn-primary"
+                data-bs-toggle="modal" data-bs-target="#logconfig-add-modal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon icon-tabler icon-tabler-plus">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M12 5l0 14"></path>
+                  <path d="M5 12l14 0"></path>
+                </svg>
+                Add Config
+              </button>
+            </div>
+          </div>
+          <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+            <div id="logconfig-table" class="logconfig-table-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Log Config Modal -->
+<div class="modal modal-blur fade" id="logconfig-add-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Log Config</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="logconfig-add-form">
+          <div class="mb-3">
+            <label class="form-label required">Log Path</label>
+            <input type="text" class="form-control" id="logconfig-path" placeholder="/var/log/app/*.log" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Log Type</label>
+            <select class="form-select" id="logconfig-type" required>
+              <option value="">Select Type</option>
+              <option value="system">System</option>
+              <option value="application">Application</option>
+              <option value="security">Security</option>
+            </select>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tag</label>
+            <input type="text" class="form-control" id="logconfig-tag" placeholder="app-server">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary"
+          onclick="webconsolejs['pages/operations/analytics/eventsntraces/logconfig'].addLogConfig()">
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/utils/formvalidation.js") | raw }}
+{{ javascriptTag("pages/operations/analytics/eventsntraces/logconfig.js") | raw }}
+{{ javascriptTag("common/api/services/mci_api.js") | raw }}

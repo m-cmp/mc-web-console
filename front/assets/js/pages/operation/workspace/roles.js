@@ -726,10 +726,10 @@ const UIManager = {
     // 카드 상태 업데이트
     AppState.ui.cardStates.platform = { visible: hasPlatform, expanded: false };
     AppState.ui.cardStates.workspace = { visible: hasWorkspace, expanded: false };
-    AppState.ui.cardStates.csp = { visible: hasCsp, expanded: false };
+    AppState.ui.cardStates.csp = { visible: true, expanded: false };
 
-    // 토글 버튼 표시/숨김 설정
-    this.setCardToggleVisibility(hasPlatform, hasWorkspace, hasCsp);
+    // 토글 버튼 표시/숨김 설정 (CSP는 항상 표시)
+    this.setCardToggleVisibility(hasPlatform, hasWorkspace, true);
 
     // 모든 카드 접기
     this.collapseAllCards();
@@ -1175,17 +1175,15 @@ const TableManager = {
         });
       }
 
-      // CSP 역할 매핑 정보 업데이트 (비동기 처리)
-      if (hasCsp) {
-        updateCspRoleMapping(selectedRole.id).catch(error => {
-          console.error("failed to update CSP Role Mapping:", error);
-          // CSP 역할 매핑 업데이트 실패 시에도 view-mode는 계속 유지
-          // 테이블을 빈 배열로 설정하여 UI가 깨지지 않도록 함
-          if (AppState.tables.cspRoleMappingTable) {
-            AppState.tables.cspRoleMappingTable.setData([]);
-          }
-        });
-      }
+      // CSP 역할 매핑 정보 업데이트 (비동기 처리, CSP 타입 여부와 관계없이 항상 실행)
+      updateCspRoleMapping(selectedRole.id).catch(error => {
+        console.error("failed to update CSP Role Mapping:", error);
+        // CSP 역할 매핑 업데이트 실패 시에도 view-mode는 계속 유지
+        // 테이블을 빈 배열로 설정하여 UI가 깨지지 않도록 함
+        if (AppState.tables.cspRoleMappingTable) {
+          AppState.tables.cspRoleMappingTable.setData([]);
+        }
+      });
     }
   },
 
@@ -2988,13 +2986,10 @@ async function populateEditForm(role) {
     }
   }
 
-  // CSP 권한 설정
-  if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.CSP)) {
-    UIManager.toggleEditCard('csp', true);
-    // CSP Role Name 드롭다운은 사용자가 직접 선택하도록 초기화
-  }
+  // CSP 카드는 항상 펼침 (CSP role_subs 여부와 관계없이 매핑 편집 가능)
+  UIManager.toggleEditCard('csp', true);
 
-  // CSP 매핑 테이블은 권한과 관계없이 항상 초기화 (Edit 모드에서 CSP Role 카드를 사용할 수 있도록)
+  // CSP 매핑 테이블 항상 초기화
   initCspRoleMappingEditTable(role.id);
 }
 
@@ -3526,9 +3521,9 @@ webconsolejs['pages/operation/workspace/roles'].assignUser = assignUser;
 // Create 모드에서 CSP Role의 Policy 목록 보기
 async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
   try {
-    
-    // Policy 목록 조회
-    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
+
+    // Policy 목록 조회 (cspType을 provider로 전달하여 올바른 provider의 policy 반환)
+    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId, cspType);
     
     // Policy 목록을 표시할 컨테이너 찾기 또는 생성
     let policyContainer = document.getElementById('create-csp-role-policies-container');
@@ -3557,9 +3552,9 @@ async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
 // Edit 모드에서 CSP Role의 Policy 목록 보기
 async function viewEditCspRolePolicies(roleId, cspType, roleName) {
   try {
-    
-    // Policy 목록 조회
-    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
+
+    // Policy 목록 조회 (cspType을 provider로 전달하여 올바른 provider의 policy 반환)
+    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId, cspType);
     
     // Policy 목록을 표시할 컨테이너 찾기 또는 생성
     let policyContainer = document.getElementById('edit-csp-role-policies-container');
