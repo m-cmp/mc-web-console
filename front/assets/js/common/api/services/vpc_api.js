@@ -11,13 +11,12 @@ export async function getAllVNet(nsId, query = {}) {
   const filterKey = Array.isArray(query.filterKey) ? query.filterKey.map(String) : [];
   const filterVal = Array.isArray(query.filterVal) ? query.filterVal.map(String) : [];
 
-  const queryParams = {
-    filterKey,
-    filterVal
-  };
-  if (option !== undefined) {
-    queryParams.option = option;
-  }
+  // QueryParams는 map[string]string — 배열을 직접 넣으면 Go Bind 실패로 pathParams까지 소실됨
+  // filterKey/filterVal이 비어있으면 queryParams에 포함하지 않음
+  const queryParams = {};
+  if (option !== undefined) queryParams.option = option;
+  if (filterKey.length > 0) queryParams.filterKey = filterKey.join(',');
+  if (filterVal.length > 0) queryParams.filterVal = filterVal.join(',');
 
   const controller = '/api/mc-infra-manager/GetAllVNet';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
