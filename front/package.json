@@ -25,6 +25,7 @@
     "gridstack": "^7.3.0",
     "jquery": "^3.6.0",
     "jquery-ujs": "^1.2.2",
+    "js-yaml": "^4.1.1",
     "jstree": "^3.3.17",
     "jsvectormap": "^1.5.3",
     "list.js": "^2.3.1",
