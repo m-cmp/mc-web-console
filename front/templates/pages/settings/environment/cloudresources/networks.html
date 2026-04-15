@@ -7,12 +7,85 @@
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">네트워크 (VPC) 목록</h3>
+              <div class="card-options ms-auto d-flex gap-2">
+                <button id="import-vnet-btn" class="btn btn-sm btn-secondary"
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].openImportVNetModal()">
+                  Import VNet
+                </button>
+                <button class="btn btn-sm btn-outline-secondary"
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].loadVNetList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm me-1" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+                  </svg>
+                  Refresh
+                </button>
+              </div>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body">
+              <!-- Filter 영역 -->
+              <div class="row g-2 mb-3 align-items-end" id="vnet-filter-area">
+                <div class="col-md-4">
+                  <label class="form-label mb-1">Connection</label>
+                  <select id="filter-connection" class="form-select form-select-sm"
+                    onchange="webconsolejs['pages/settings/environment/cloudresources/networks'].applyFilter()">
+                    <option value="">전체</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label mb-1">이름 검색</label>
+                  <input id="filter-name" type="text" class="form-control form-control-sm"
+                    placeholder="VPC 이름 검색..."
+                    oninput="webconsolejs['pages/settings/environment/cloudresources/networks'].applyFilter()">
+                </div>
+              </div>
               <div id="vnet-list-table"></div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create VPC 모달 -->
+<div class="modal modal-blur fade" id="create-vpc-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">VPC 생성</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Connection</label>
+          <select class="form-select" id="create-vpc-connection"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">VPC 이름</label>
+          <input type="text" class="form-control" id="create-vpc-name" placeholder="예: my-vpc">
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">IPv4 CIDR</label>
+          <input type="text" class="form-control" id="create-vpc-cidr" placeholder="예: 10.0.0.0/16">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Subnet 목록</label>
+          <div id="create-vpc-subnet-list"></div>
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
+            onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].addSubnetRow()">
+            + Add Subnet
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" id="create-vpc-execute-btn"
+          onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].executeCreateVNet()">
+          <span id="create-vpc-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          생성
+        </button>
       </div>
     </div>
   </div>
@@ -75,5 +148,6 @@
   </div>
 </div>
 
+{{ javascriptTag("common/api/services/vpc_api.js") | raw }}
 {{ javascriptTag("common/api/services/import_api.js") | raw }}
 {{ javascriptTag("pages/settings/environment/cloudresources/networks.js") | raw }}
