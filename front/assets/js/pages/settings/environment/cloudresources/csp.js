@@ -16,6 +16,10 @@ function api() {
   return webconsolejs['common/api/services/cspimport_api'];
 }
 
+function httpStatus(err) {
+  return err?.response?.status;
+}
+
 // ── Dropdowns ─────────────────────────────────────────────────────────────────
 
 async function loadDropdowns() {
@@ -230,6 +234,7 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
   const selectedRows = AppState.table ? AppState.table.getSelectedData() : [];
   let successCount = 0;
   let failCount = 0;
+  let conflictCount = 0;
   const errors = [];
 
   // vNet: 선택 항목 건별 등록
@@ -240,8 +245,12 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
         await api().registerVNet(nsId, connectionName, row.cspResourceId, row.refNameOrId);
         successCount++;
       } catch (e) {
-        failCount++;
-        errors.push(`vNet ${row.cspResourceId}: ${e?.response?.data?.message || e.message}`);
+        if (httpStatus(e) === 409) {
+          conflictCount++;
+        } else {
+          failCount++;
+          errors.push(`vNet ${row.cspResourceId}: ${e?.response?.data?.message || e.message}`);
+        }
       }
     }
   }
@@ -252,8 +261,12 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
       await api().registerCspNativeResources(nsId, connectionName, ['securityGroup']);
       successCount++;
     } catch (e) {
-      failCount++;
-      errors.push(`securityGroup: ${e?.response?.data?.message || e.message}`);
+      if (httpStatus(e) === 409) {
+        conflictCount++;
+      } else {
+        failCount++;
+        errors.push(`securityGroup: ${e?.response?.data?.message || e.message}`);
+      }
     }
   }
 
@@ -263,8 +276,12 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
       await api().registerCspNativeResources(nsId, connectionName, ['sshKey']);
       successCount++;
     } catch (e) {
-      failCount++;
-      errors.push(`sshKey: ${e?.response?.data?.message || e.message}`);
+      if (httpStatus(e) === 409) {
+        conflictCount++;
+      } else {
+        failCount++;
+        errors.push(`sshKey: ${e?.response?.data?.message || e.message}`);
+      }
     }
   }
 
@@ -280,16 +297,38 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
         })));
         successCount++;
       } catch (e) {
-        failCount++;
-        errors.push(`VM: ${e?.response?.data?.message || e.message}`);
+        if (httpStatus(e) === 409) {
+          conflictCount++;
+        } else {
+          failCount++;
+          errors.push(`VM: ${e?.response?.data?.message || e.message}`);
+        }
       }
     }
   }
 
-  const msg = failCount === 0
-    ? `Registration complete. ${successCount} item(s) registered.`
-    : `Partial success: ${successCount} succeeded, ${failCount} failed.\n${errors.join('\n')}`;
-  alert(msg);
+  const parts = [];
+  if (successCount > 0) {
+    parts.push(`Registration complete. ${successCount} item(s) registered.`);
+  }
+  if (conflictCount > 0) {
+    parts.push(`${conflictCount} skipped (already registered).`);
+  }
+  if (failCount > 0) {
+    parts.push(`Partial success: ${failCount} failed.\n${errors.join('\n')}`);
+  }
+  if (parts.length === 0) {
+    parts.push('No registration performed (check selections).');
+  }
+  alert(parts.join('\n\n'));
+
+  if (conflictCount > 0 && webconsolejs['common/util']?.showToast) {
+    webconsolejs['common/util'].showToast(
+      `${conflictCount} already registered (skipped).`,
+      'info',
+      4000
+    );
+  }
 
   // 완료 후 재조회
   await loadAllUnmanaged();

@@ -19,7 +19,7 @@ async function call(operationId, opts = {}) {
  */
 export async function getConnConfigList() {
   const res = await call('GetConnConfigList');
-  return res?.data?.responseData?.connectionConfig || [];
+  return res?.data?.responseData?.connectionconfig || [];
 }
 
 /**

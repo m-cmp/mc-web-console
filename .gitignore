@@ -80,6 +80,7 @@ bin/.env
 
 # conf
 conf/.env
+conf/.env.local
 conf/selfiamauthsetting.yaml
 conf/selfiamuser.dat
 conf/serverinfo

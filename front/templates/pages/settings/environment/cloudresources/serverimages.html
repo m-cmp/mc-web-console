@@ -7,8 +7,7 @@
           <div class="card-header">
             <h3 class="card-title">Server Image List</h3>
             <div class="card-options ms-auto d-flex gap-2 align-items-center">
-              <label class="form-label mb-0 me-1">Namespace</label>
-              <select id="ns-selector" class="form-select form-select-sm" style="width:180px"></select>
+              <span id="serverimages-context-label" class="text-secondary small"></span>
             </div>
           </div>
           <div class="card-body p-0">
@@ -77,10 +76,6 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label required">Namespace</label>
-          <select id="modal-ns" class="form-select"></select>
-        </div>
-        <div class="mb-3">
           <label class="form-label required">Image Name</label>
           <input type="text" id="modal-imageName" class="form-control" placeholder="my-image">
         </div>
@@ -122,3 +117,6 @@
     </div>
   </div>
 </div>
+
+{{ javascriptTag("common/api/services/serverimage_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/serverimages.js") | raw }}
