@@ -4,26 +4,34 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { showToast, TOAST_TYPES } from "../../../../common/utils/toast.js";
 
-const vpcApi  = () => webconsolejs["common/api/services/vpc_api"];
+const vpcApi    = () => webconsolejs["common/api/services/vpc_api"];
 const importApi = () => webconsolejs["common/api/services/import_api"];
 
 // ─── 상태 ─────────────────────────────────────────────────────────────────
-let _currentNsId = null;
-let _allVNets    = [];   // 전체 목록 캐시 (필터 적용 전)
-let _table       = null; // Tabulator 인스턴스
+const AppState = {
+    ns: '',
+    tables: { vnetTable: null },
+};
+
 let _unmanagedVNets = [];
 
 // ─── 페이지 초기화 ────────────────────────────────────────────────────────
 
-document.addEventListener("DOMContentLoaded", async function () {
-    _currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
+// 프로젝트 변경 시 재조회
+$('#select-current-project').on('change', async function () {
+    if (this.value === '') return;
+    const project = webconsolejs['common/api/services/workspace_api'].getCurrentProject();
+    AppState.ns = project?.NsId || '';
+    if (AppState.ns) await loadVNetList();
+});
 
+document.addEventListener('DOMContentLoaded', async function () {
     // page-header: + Create VPC 버튼
     const btnList = document.getElementById('page-header-btn-list');
     if (btnList) {
         btnList.innerHTML = `
-            <button type="button" class="btn btn-primary" id="create-vpc-btn"
-              onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].openCreateVNetModal()">
+            <button type="button" class="btn btn-primary"
+              data-bs-toggle="modal" data-bs-target="#create-vpc-modal">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                 stroke-linecap="round" stroke-linejoin="round">
@@ -34,118 +42,97 @@ document.addEventListener("DOMContentLoaded", async function () {
             </button>`;
     }
 
-    // 테이블 toolbar 버튼 상태 초기화
-    _syncToolbarState();
+    const selectedWorkspaceProject = await webconsolejs['partials/layout/navbar'].workspaceProjectInit();
+    webconsolejs['partials/layout/modal'].checkWorkspaceSelection(selectedWorkspaceProject);
 
-    // VNet 목록 로드
-    if (_currentNsId) {
+    AppState.ns = selectedWorkspaceProject.nsId || '';
+    initFilter();
+
+    if (selectedWorkspaceProject.projectId !== '') {
         await loadVNetList();
     }
-
-    // 프로젝트 변경 시 재조회
-    document.getElementById('select-current-project')?.addEventListener('change', async () => {
-        _currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-        _syncToolbarState();
-        if (_currentNsId) await loadVNetList();
-    });
 });
-
-function _syncToolbarState() {
-    const importBtn = document.getElementById('import-vnet-btn');
-    const createBtn = document.getElementById('create-vpc-btn');
-    if (importBtn) {
-        importBtn.disabled = !_currentNsId;
-        importBtn.title = _currentNsId ? 'CSP 미관리 VNet 임포트' : '프로젝트를 먼저 선택하세요';
-    }
-    if (createBtn) {
-        createBtn.disabled = !_currentNsId;
-    }
-}
 
 // ─── VNet 목록 로드 ──────────────────────────────────────────────────────
 
 export async function loadVNetList() {
-    _currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-    if (!_currentNsId) return;
+    if (!AppState.ns) return;
     try {
-        const data = await vpcApi().getAllVNet(_currentNsId);
-        _allVNets = data?.vNet || (Array.isArray(data) ? data : []);
-        renderFilterConnections(_allVNets);
-        renderVNetTable(_allVNets);
+        const data = await vpcApi().getAllVNet(AppState.ns);
+        const vNets = data?.vNet || (Array.isArray(data) ? data : []);
+        if (AppState.tables.vnetTable) {
+            AppState.tables.vnetTable.replaceData(vNets);
+        } else {
+            initTable(vNets);
+        }
     } catch (err) {
         console.error('VNet 목록 조회 실패:', err);
         showToast(TOAST_TYPES.ERROR, 'VNet 목록 조회에 실패했습니다.');
     }
 }
 
-// ─── 테이블 Filter ────────────────────────────────────────────────────────
+// ─── Tabulator 테이블 ─────────────────────────────────────────────────────
 
-function renderFilterConnections(vNets) {
-    const sel = document.getElementById('filter-connection');
-    if (!sel) return;
-    const current = sel.value;
-    const connections = [...new Set(vNets.map(v => v.connectionName).filter(Boolean))].sort();
-    sel.innerHTML = '<option value="">전체</option>' +
-        connections.map(c => `<option value="${c}"${c === current ? ' selected' : ''}>${c}</option>`).join('');
-}
-
-export function applyFilter() {
-    const connFilter = document.getElementById('filter-connection')?.value || '';
-    const nameFilter = (document.getElementById('filter-name')?.value || '').toLowerCase();
-    const filtered = _allVNets.filter(v => {
-        const matchConn = !connFilter || v.connectionName === connFilter;
-        const matchName = !nameFilter || (v.name || '').toLowerCase().includes(nameFilter);
-        return matchConn && matchName;
-    });
-    _table?.setData(filtered);
-}
-
-// ─── Tabulator 테이블 렌더링 ──────────────────────────────────────────────
-
-function renderVNetTable(vNets) {
-    if (_table) {
-        _table.setData(vNets);
-        return;
-    }
-    _table = new Tabulator("#vnet-list-table", {
+function initTable(vNets) {
+    AppState.tables.vnetTable = new Tabulator('#vnet-list-table', {
         data: vNets,
-        layout: "fitColumns",
-        placeholder: "등록된 VNet이 없습니다.",
-        pagination: true,
+        layout: 'fitColumns',
+        placeholder: '등록된 VNet이 없습니다.',
+        pagination: 'local',
         paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
+        paginationCounter: 'rows',
+        movableColumns: true,
+        initialSort: [{ column: 'name', dir: 'asc' }],
         columns: [
-            { title: "이름",           field: "name",           widthGrow: 2, sorter: "string" },
-            { title: "Connection",     field: "connectionName", widthGrow: 1, sorter: "string" },
-            { title: "CIDR",           field: "cidrBlock",      widthGrow: 1 },
-            { title: "Subnet 수",      field: "subnetInfoList",
+            { title: '이름',           field: 'name',           widthGrow: 2, sorter: 'string' },
+            { title: 'Connection',     field: 'connectionName', widthGrow: 1, sorter: 'string' },
+            { title: 'CIDR',           field: 'cidrBlock',      widthGrow: 1 },
+            { title: 'Subnet 수',      field: 'subnetInfoList',
               formatter: (cell) => `${(cell.getValue() || []).length}개`,
-              hozAlign: "center", width: 100 },
-            { title: "CSP Resource ID", field: "cspResourceId", widthGrow: 2 },
+              hozAlign: 'center', width: 100 },
+            { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
+    });
+}
+
+// ─── Filter (Tabulator 내장 setFilter) ───────────────────────────────────
+
+function initFilter() {
+    const fieldEl = document.getElementById('filter-field');
+    const typeEl  = document.getElementById('filter-type');
+    const valueEl = document.getElementById('filter-value');
+    if (!fieldEl || !typeEl || !valueEl) return;
+
+    function updateFilter() {
+        const field = fieldEl.value;
+        const type  = typeEl.value;
+        if (field && AppState.tables.vnetTable) {
+            AppState.tables.vnetTable.setFilter(field, type, valueEl.value);
+        }
+    }
+
+    fieldEl.addEventListener('change', updateFilter);
+    typeEl.addEventListener('change', updateFilter);
+    valueEl.addEventListener('keyup', updateFilter);
+
+    document.getElementById('filter-clear').addEventListener('click', function () {
+        fieldEl.value = '';
+        typeEl.value  = 'like';
+        valueEl.value = '';
+        if (AppState.tables.vnetTable) AppState.tables.vnetTable.clearFilter();
     });
 }
 
 // ─── Create VPC 모달 ─────────────────────────────────────────────────────
 
-export async function openCreateVNetModal() {
-    _currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-    if (!_currentNsId) {
-        showToast(TOAST_TYPES.WARNING, '프로젝트를 먼저 선택하세요.');
-        return;
-    }
-
-    // 폼 초기화
+document.getElementById('create-vpc-modal')?.addEventListener('show.bs.modal', async function () {
     document.getElementById('create-vpc-name').value = '';
     document.getElementById('create-vpc-cidr').value = '';
     document.getElementById('create-vpc-subnet-list').innerHTML = '';
-
     await _loadConnectionOptions('create-vpc-connection');
-    // 기본 subnet row 1개 추가
     addSubnetRow();
-
-    new bootstrap.Modal(document.getElementById('create-vpc-modal')).show();
-}
+});
 
 export function addSubnetRow() {
     const list = document.getElementById('create-vpc-subnet-list');
@@ -170,31 +157,28 @@ export function addSubnetRow() {
 
 export async function executeCreateVNet() {
     const connectionName = document.getElementById('create-vpc-connection').value;
-    const name = document.getElementById('create-vpc-name').value.trim();
-    const cidrBlock = document.getElementById('create-vpc-cidr').value.trim();
+    const name           = document.getElementById('create-vpc-name').value.trim();
+    const cidrBlock      = document.getElementById('create-vpc-cidr').value.trim();
 
     if (!connectionName || !name || !cidrBlock) {
         showToast(TOAST_TYPES.WARNING, 'Connection, VPC 이름, CIDR은 필수입니다.');
         return;
     }
 
-    // Subnet 목록 수집
     const subnetInfoList = [];
     document.querySelectorAll('#create-vpc-subnet-list .subnet-row').forEach(row => {
         const subName = row.querySelector('.subnet-name')?.value.trim();
         const subCidr = row.querySelector('.subnet-cidr')?.value.trim();
-        if (subName && subCidr) {
-            subnetInfoList.push({ name: subName, ipv4_cidr: subCidr });
-        }
+        if (subName && subCidr) subnetInfoList.push({ name: subName, ipv4_cidr: subCidr });
     });
 
     const spinner = document.getElementById('create-vpc-spinner');
-    const btn = document.getElementById('create-vpc-execute-btn');
+    const btn     = document.getElementById('create-vpc-execute-btn');
     spinner.classList.remove('d-none');
     btn.disabled = true;
 
     try {
-        await vpcApi().create(_currentNsId, { connectionName, name, cidrBlock, subnetInfoList });
+        await vpcApi().create(AppState.ns, { connectionName, name, cidrBlock, subnetInfoList });
         showToast(TOAST_TYPES.SUCCESS, `VPC "${name}" 생성 완료`);
         bootstrap.Modal.getInstance(document.getElementById('create-vpc-modal'))?.hide();
         await loadVNetList();
@@ -210,20 +194,20 @@ export async function executeCreateVNet() {
 // ─── Import VNet 모달 ─────────────────────────────────────────────────────
 
 export async function openImportVNetModal() {
-    _currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-    if (!_currentNsId) {
+    const project = webconsolejs['common/api/services/workspace_api'].getCurrentProject();
+    AppState.ns = project?.NsId || '';
+    if (!AppState.ns) {
         showToast(TOAST_TYPES.WARNING, '프로젝트를 먼저 선택하세요.');
         return;
     }
 
-    document.getElementById('import-vnet-project').value = _currentNsId;
+    document.getElementById('import-vnet-project').value = AppState.ns;
     document.getElementById('import-vnet-list-area').classList.add('d-none');
     document.getElementById('import-vnet-empty').classList.add('d-none');
     document.getElementById('import-vnet-tbody').innerHTML = '';
     _unmanagedVNets = [];
 
     await _loadConnectionOptions('import-vnet-connection');
-
     new bootstrap.Modal(document.getElementById('import-vnet-modal')).show();
 }
 
@@ -231,8 +215,8 @@ async function _loadConnectionOptions(selectId) {
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">선택하세요</option>';
     try {
-        const result = await webconsolejs["common/api/http"].commonAPIPost(
-            "/api/mc-infra-manager/GetConnConfigList", {}
+        const result = await webconsolejs['common/api/http'].commonAPIPost(
+            '/api/mc-infra-manager/GetConnConfigList', {}
         );
         const list = result?.data?.responseData?.connectionconfig || [];
         for (const conn of list) {
@@ -260,15 +244,15 @@ export async function loadUnmanagedVNets() {
     try {
         const [cspVNets, registeredVNets] = await Promise.all([
             importApi().getCspVNets(connectionName),
-            importApi().getRegisteredVNets(_currentNsId),
+            importApi().getRegisteredVNets(AppState.ns),
         ]);
 
         const registeredIds = new Set(registeredVNets.map(v => v.cspResourceId));
         const unmanaged = cspVNets.filter(v => !registeredIds.has(v.id || v.cspResourceId));
-        const alreadyManaged = cspVNets.filter(v => registeredIds.has(v.id || v.cspResourceId));
+        const managed   = cspVNets.filter(v =>  registeredIds.has(v.id || v.cspResourceId));
 
         _unmanagedVNets = unmanaged;
-        _renderUnmanagedVNetTable(unmanaged, alreadyManaged);
+        _renderUnmanagedVNetTable(unmanaged, managed);
     } catch (err) {
         console.error('미관리 VNet 조회 실패:', err);
         showToast(TOAST_TYPES.ERROR, '미관리 VNet 조회에 실패했습니다: ' + (err.message || ''));
@@ -297,7 +281,6 @@ function _renderUnmanagedVNetTable(unmanaged, managed) {
             <td><span class="badge bg-warning-lt">● 미관리</span></td>`;
         tbody.appendChild(tr);
     }
-
     for (const v of managed) {
         const tr = document.createElement('tr');
         tr.className = 'text-muted';
@@ -311,7 +294,6 @@ function _renderUnmanagedVNetTable(unmanaged, managed) {
     }
 
     document.getElementById('import-vnet-list-area').classList.remove('d-none');
-
     document.getElementById('import-vnet-select-all').onchange = function () {
         document.querySelectorAll('.import-vnet-check').forEach(cb => cb.checked = this.checked);
     };
@@ -327,25 +309,18 @@ export async function executeImportVNets() {
     }
 
     const spinner = document.getElementById('import-vnet-spinner');
-    const btn = document.getElementById('import-vnet-execute-btn');
+    const btn     = document.getElementById('import-vnet-execute-btn');
     spinner.classList.remove('d-none');
     btn.disabled = true;
 
     let successCount = 0, skipCount = 0, failCount = 0;
-
     for (const cb of checked) {
-        const cspResourceId = cb.dataset.id;
-        const name = cb.dataset.name;
         try {
-            await importApi().registerCspVNet(_currentNsId, connectionName, cspResourceId, name);
+            await importApi().registerCspVNet(AppState.ns, connectionName, cb.dataset.id, cb.dataset.name);
             successCount++;
         } catch (err) {
-            if (err.response?.status === 409) {
-                skipCount++;
-            } else {
-                failCount++;
-                console.error(`VNet ${name} 등록 실패:`, err);
-            }
+            err.response?.status === 409 ? skipCount++ : failCount++;
+            if (err.response?.status !== 409) console.error(`VNet ${cb.dataset.name} 등록 실패:`, err);
         }
     }
 
@@ -355,21 +330,19 @@ export async function executeImportVNets() {
     let msg = `VNet ${successCount}개 등록 완료`;
     if (skipCount > 0) msg += `, ${skipCount}개 이미 등록됨`;
     if (failCount > 0) msg += `, ${failCount}개 실패`;
-
     showToast(failCount > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS, msg);
+
     bootstrap.Modal.getInstance(document.getElementById('import-vnet-modal'))?.hide();
     await loadVNetList();
 }
 
 // ─── webconsolejs 등록 ────────────────────────────────────────────────────
-if (typeof webconsolejs === "undefined") { window.webconsolejs = {}; }
-webconsolejs["pages/settings/environment/cloudresources/networks"] = {
+if (typeof webconsolejs === 'undefined') { window.webconsolejs = {}; }
+webconsolejs['pages/settings/environment/cloudresources/networks'] = {
     loadVNetList,
-    applyFilter,
-    openCreateVNetModal,
-    addSubnetRow,
-    executeCreateVNet,
     openImportVNetModal,
     loadUnmanagedVNets,
     executeImportVNets,
+    addSubnetRow,
+    executeCreateVNet,
 };
