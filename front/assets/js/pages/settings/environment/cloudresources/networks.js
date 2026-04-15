@@ -84,15 +84,14 @@ async function loadConnectionOptions(selectId) {
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">선택하세요</option>';
     try {
-        // CSP 계정 목록에서 connectionName 가져오기
         const result = await webconsolejs["common/api/http"].commonAPIPost(
-            "/api/mc-iam-manager/ListCspAccounts", {}
+            "/api/mc-infra-manager/GetConnConfigList", {}
         );
-        const accounts = result?.data?.responseData?.items || [];
-        for (const acc of accounts) {
+        const list = result?.data?.responseData?.connectionconfig || [];
+        for (const conn of list) {
             const opt = document.createElement('option');
-            opt.value = acc.connectionName || acc.name;
-            opt.textContent = acc.name;
+            opt.value = conn.configName;
+            opt.textContent = conn.configName;
             select.appendChild(opt);
         }
     } catch (err) {
