@@ -50,3 +50,20 @@ export async function del(nsId, name) {
   });
   return response?.data;
 }
+
+export async function createSubnet(nsId, vnetId, body) {
+  const controller = '/api/mc-infra-manager/PostSubnet';
+  const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
+    pathParams: { nsId, vNetId: vnetId },
+    request: body
+  });
+  return response?.data;
+}
+
+export async function delSubnet(nsId, vnetId, subnetId) {
+  const controller = '/api/mc-infra-manager/DelSubnet';
+  const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
+    pathParams: { nsId, vNetId: vnetId, subnetId }
+  });
+  return response?.data;
+}
