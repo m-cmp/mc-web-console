@@ -66,6 +66,69 @@
         </div>
       </div>
     </div>
+
+    <!-- Detail Panel -->
+    <div id="view-mode-cards" class="collapse">
+      <div class="row row-cards mt-2">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">VPC 상세 — <span id="detail-name" class="text-primary"></span></h3>
+              <div class="card-options">
+                <button class="btn btn-sm btn-outline-danger me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].confirmDeleteVNet()">Delete</button>
+                <a href="#" class="card-options-remove" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].hideDetail()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M18 6l-12 12"/><path d="M6 6l12 12"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Name</div>
+                  <div class="datagrid-content" id="detail-vnet-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Connection</div>
+                  <div class="datagrid-content" id="detail-vnet-connection">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CIDR Block</div>
+                  <div class="datagrid-content" id="detail-vnet-cidr">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CSP Resource ID</div>
+                  <div class="datagrid-content"><code id="detail-vnet-csp-id">-</code></div>
+                </div>
+              </div>
+
+              <!-- Subnet 목록 -->
+              <div class="mt-3">
+                <h4 class="mb-2">Subnet 목록</h4>
+                <div id="detail-subnet-empty" class="text-muted small d-none">등록된 Subnet이 없습니다.</div>
+                <div class="table-responsive" id="detail-subnet-table-wrap">
+                  <table class="table table-sm table-vcenter">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>CIDR</th>
+                        <th>Zone</th>
+                        <th>CSP ID</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detail-subnet-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
