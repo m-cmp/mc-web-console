@@ -20,10 +20,10 @@ function unwrapResponse(response) {
 // ─── CloudOS ──────────────────────────────────────────────────────────
 
 export async function listCloudOS() {
-    const controller = "/api/mc-infra-connector/List-Cloudos";
+    const controller = "/api/mc-infra-manager/GetProviderList";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
     const data = unwrapResponse(response);
-    return (data && data.cloudos) ? data.cloudos : [];
+    return (data && data.output) ? data.output : [];
 }
 
 // ─── Credential ───────────────────────────────────────────────────────
