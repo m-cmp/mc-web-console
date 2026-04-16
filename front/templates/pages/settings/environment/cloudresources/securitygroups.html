@@ -145,16 +145,17 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label required">Connection</label>
-          <select class="form-select" id="create-sg-connection"></select>
+          <label class="form-label required">VPC</label>
+          <select class="form-select" id="create-sg-vnet-select"></select>
+          <div class="form-text text-muted">VPC를 선택하면 Connection이 자동 설정됩니다.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-muted">Connection <span class="badge bg-secondary-lt ms-1">자동</span></label>
+          <input type="text" class="form-control bg-light" id="create-sg-connection-display" readonly placeholder="VPC 선택 시 자동 채움">
         </div>
         <div class="mb-3">
           <label class="form-label required">SG 이름</label>
           <input type="text" class="form-control" id="create-sg-name" placeholder="예: my-sg">
-        </div>
-        <div class="mb-3">
-          <label class="form-label required">VPC 이름</label>
-          <input type="text" class="form-control" id="create-sg-vnet" placeholder="예: my-vpc">
         </div>
         <div class="mb-2">
           <label class="form-label">방화벽 규칙</label>
@@ -210,6 +211,7 @@
   </div>
 </div>
 
+{{ javascriptTag("common/api/services/vpc_api.js") | raw }}
 {{ javascriptTag("common/api/services/securitygroup_api.js") | raw }}
 {{ javascriptTag("common/api/services/import_api.js") | raw }}
 {{ javascriptTag("pages/settings/environment/cloudresources/securitygroups.js") | raw }}
