@@ -1,4 +1,5 @@
 import 'jstree';
+import jsyaml from 'js-yaml';
 
 // webconsolejs 네임스페이스 초기화
 if (typeof webconsolejs === 'undefined') {
@@ -356,11 +357,160 @@ window.confirmDeleteMenu = async function () {
     await MenuManager.delete(menu.id);
 };
 
+// parentId 의존성 기준으로 메뉴 정렬 (위상 정렬: root → children 순서)
+function sortMenusByDependency(menus) {
+    const result = [];
+    const visited = new Set();
+    const map = new Map(menus.map(m => [m.id, m]));
+
+    function visit(menu) {
+        if (visited.has(menu.id)) return;
+        if (menu.parentId && map.has(menu.parentId) && !visited.has(menu.parentId)) {
+            visit(map.get(menu.parentId));
+        }
+        visited.add(menu.id);
+        result.push(menu);
+    }
+
+    menus.forEach(m => visit(m));
+    return result;
+}
+
+// Export: 포맷(json/yaml)과 파일명을 받아 다운로드
+window.exportMenus = async function(format, filename) {
+    try {
+        const menus = await webconsolejs["common/api/services/menus_api"].listMenusTree();
+        const payload = {
+            version: "1.0",
+            exported_at: new Date().toISOString(),
+            menus: menus || []
+        };
+        let content, mimeType;
+        if (format === "yaml") {
+            content = jsyaml.dump(payload);
+            mimeType = "application/x-yaml";
+        } else {
+            content = JSON.stringify(payload, null, 2);
+            mimeType = "application/json";
+        }
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error("Export failed:", err);
+        alert("메뉴 Export에 실패했습니다.");
+    }
+};
+
+// Export 모달 저장 버튼 핸들러
+window.doExportMenus = async function() {
+    const format = document.querySelector('input[name="export-format"]:checked').value;
+    const filename = (document.getElementById('export-menus-filename').value || `menu-export.${format}`).trim();
+    bootstrap.Modal.getInstance(document.getElementById('export-menus-modal')).hide();
+    await exportMenus(format, filename);
+};
+
+// 포맷 선택 변경 시 파일명 확장자 자동 갱신
+window.updateExportFilename = function() {
+    const format = document.querySelector('input[name="export-format"]:checked').value;
+    const input = document.getElementById('export-menus-filename');
+    input.value = input.value.replace(/\.(json|yaml|yml)$/i, '') + '.' + format;
+};
+
+// Import: JSON 또는 YAML 파일 파싱 후 메뉴 upsert 적용
+window.importMenus = async function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    input.value = '';
+
+    let data;
+    try {
+        const text = await file.text();
+        if (file.name.match(/\.(yaml|yml)$/i)) {
+            data = jsyaml.load(text);
+        } else {
+            data = JSON.parse(text);
+        }
+    } catch (e) {
+        alert("유효하지 않은 파일입니다. JSON 또는 YAML 형식을 확인하세요.");
+        return;
+    }
+
+    const menus = data.menus || (Array.isArray(data) ? data : null);
+    if (!menus || !Array.isArray(menus)) {
+        alert("메뉴 데이터를 찾을 수 없습니다. (menus 배열 필드가 필요합니다)");
+        return;
+    }
+
+    if (!confirm(`총 ${menus.length}개의 메뉴를 Import합니다.\n현재 메뉴 구성이 교체될 수 있습니다. 계속하시겠습니까?`)) return;
+
+    const existing = await webconsolejs["common/api/services/menus_api"].listMenusTree();
+    const existingIds = new Set((existing || []).map(m => m.id));
+    const sorted = sortMenusByDependency(menus);
+
+    let created = 0, updated = 0, failed = 0;
+    for (const menu of sorted) {
+        try {
+            if (existingIds.has(menu.id)) {
+                await webconsolejs["common/api/services/menus_api"].updateMenu(menu.id, menu);
+                updated++;
+            } else {
+                await webconsolejs["common/api/services/menus_api"].createMenu(menu);
+                created++;
+            }
+        } catch (e) {
+            console.error("Import item failed:", menu.id, e);
+            failed++;
+        }
+    }
+
+    const body = document.getElementById('import-menus-result-body');
+    if (body) {
+        body.innerHTML = `
+            <p>Import가 완료되었습니다.</p>
+            ${created > 0 ? `<p><strong>${created}</strong>개 메뉴 생성됨</p>` : ''}
+            ${updated > 0 ? `<p><strong>${updated}</strong>개 메뉴 업데이트됨</p>` : ''}
+            ${failed > 0 ? `<p class="text-danger"><strong>${failed}</strong>개 실패</p>` : ''}`;
+    }
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('import-menus-result-modal')).show();
+
+    await MenuManager.loadTree();
+};
+
 // 페이지 초기화
 document.addEventListener("DOMContentLoaded", async function () {
     const btnList = document.getElementById('page-header-btn-list');
     if (btnList) {
         btnList.innerHTML = `
+            <label class="btn btn-outline-secondary mb-0" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                  viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                  <path d="M7 9l5 -5l5 5"></path>
+                  <path d="M12 4l0 12"></path>
+                </svg>
+                Import
+                <input type="file" id="import-menus-file" accept=".json,.yaml,.yml"
+                       style="display:none;" onchange="importMenus(this)" />
+            </label>
+            <button type="button" class="btn btn-outline-secondary"
+                    data-bs-toggle="modal" data-bs-target="#export-menus-modal">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                  viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                  <path d="M7 11l5 5l5 -5"></path>
+                  <path d="M12 4l0 12"></path>
+                </svg>
+                Export
+            </button>
             <button type="button" class="btn btn-primary" onclick="openCreateRootMenuModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                   viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -371,6 +521,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                 </svg>
                 Add Root Menu
             </button>`;
+    }
+
+    // Export 모달 열릴 때 파일명 초기화
+    const exportModal = document.getElementById('export-menus-modal');
+    if (exportModal) {
+        exportModal.addEventListener('show.bs.modal', () => {
+            const date = new Date().toISOString().slice(0, 10);
+            document.getElementById('export-menus-filename').value = `menu-${date}.json`;
+            document.getElementById('export-format-json').checked = true;
+        });
     }
 
     await Promise.all([
