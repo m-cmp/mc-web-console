@@ -6,6 +6,7 @@ import { showToast, TOAST_TYPES } from "../../../../common/utils/toast.js";
 
 const sgApi     = () => webconsolejs["common/api/services/securitygroup_api"];
 const importApi = () => webconsolejs["common/api/services/import_api"];
+const vpcApi    = () => webconsolejs["common/api/services/vpc_api"];
 
 // ─── 상태 ─────────────────────────────────────────────────────────────────
 const AppState = {
@@ -211,9 +212,9 @@ function initFilter() {
 
 document.getElementById('create-sg-modal')?.addEventListener('show.bs.modal', async function () {
     document.getElementById('create-sg-name').value = '';
-    document.getElementById('create-sg-vnet').value = '';
+    document.getElementById('create-sg-connection-display').value = '';
     document.getElementById('create-sg-rule-list').innerHTML = '';
-    await _loadConnectionOptions('create-sg-connection');
+    await _loadVNetOptions('create-sg-vnet-select', AppState.ns);
     addFirewallRuleRow();
 });
 
@@ -256,12 +257,13 @@ export function addFirewallRuleRow() {
 }
 
 export async function executeCreateSG() {
-    const connectionName = document.getElementById('create-sg-connection').value;
+    const vNetEl         = document.getElementById('create-sg-vnet-select');
+    const vNetId         = vNetEl?.value || '';
+    const connectionName = document.getElementById('create-sg-connection-display').value.trim();
     const name           = document.getElementById('create-sg-name').value.trim();
-    const vNetId         = document.getElementById('create-sg-vnet').value.trim();
 
-    if (!connectionName || !name || !vNetId) {
-        showToast(TOAST_TYPES.WARNING, 'Connection, SG 이름, VPC 이름은 필수입니다.');
+    if (!vNetId || !connectionName || !name) {
+        showToast(TOAST_TYPES.WARNING, 'VPC 선택과 SG 이름은 필수입니다.');
         return;
     }
 
@@ -333,6 +335,37 @@ export async function executeImportSG() {
         showToast(TOAST_TYPES.ERROR, 'SecurityGroup Import 실패: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
+    }
+}
+
+async function _loadVNetOptions(selectId, ns) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = '<option value="">-- VPC 선택 --</option>';
+    if (!ns) return;
+    try {
+        const data  = await vpcApi().getAllVNet(ns);
+        const vNets = data?.vNet || (Array.isArray(data) ? data : []);
+        if (vNets.length === 0) {
+            const opt = document.createElement('option');
+            opt.disabled = true;
+            opt.textContent = '등록된 VPC가 없습니다.';
+            select.appendChild(opt);
+            return;
+        }
+        for (const v of vNets) {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.dataset.connection = v.connectionName || '';
+            opt.textContent = `${v.name} (${v.connectionName || '-'})`;
+            select.appendChild(opt);
+        }
+        select.onchange = function () {
+            const chosen = this.options[this.selectedIndex];
+            document.getElementById('create-sg-connection-display').value =
+                chosen?.dataset?.connection || '';
+        };
+    } catch (err) {
+        console.error('VPC 목록 로드 실패:', err);
     }
 }
 
