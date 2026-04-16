@@ -1,17 +1,177 @@
 <div class="page-body">
   <div class="container-xl">
-    <div id="index" class="section">
-      <div class="row row-cards">
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">SecurityGroup 목록</h3>
+            <div class="card-options ms-auto d-flex gap-2">
+              <!-- Import SG -->
+              <a class="btn-action" type="button" title="CSP 미관리 SecurityGroup 임포트"
+                onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].openImportSGModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                  <path d="M7 11l5 5l5 -5"/>
+                  <path d="M12 4l0 12"/>
+                </svg>
+              </a>
+              <!-- Filter toggle -->
+              <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filter-body" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M5.5 5h13a1 1 0 0 1 .5 1.5L14 12L14 19L10 16L10 12L5 6.5a1 1 0 0 1 .5 -1.5"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Filter Panel -->
+          <div class="collapse" id="filter-body">
+            <div class="card-body border-bottom py-3">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <label class="form-label mb-1">Field</label>
+                  <select id="filter-field" class="form-select form-select-sm">
+                    <option value="">-- select --</option>
+                    <option value="name">Name</option>
+                    <option value="connectionName">Connection</option>
+                    <option value="vNetId">VPC</option>
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <label class="form-label mb-1">Type</label>
+                  <select id="filter-type" class="form-select form-select-sm">
+                    <option value="like">like</option>
+                    <option value="=">=</option>
+                    <option value="!=">!=</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label class="form-label mb-1">Value</label>
+                  <input type="text" id="filter-value" class="form-control form-control-sm" placeholder="filter...">
+                </div>
+                <div class="col-auto">
+                  <button id="filter-clear" class="btn btn-sm btn-outline-secondary">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div id="sg-list-table"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div id="view-mode-cards" class="collapse">
+      <div class="row row-cards mt-2">
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">SecurityGroup 목록</h3>
+              <h3 class="card-title">SecurityGroup 상세 — <span id="detail-name" class="text-primary"></span></h3>
+              <div class="card-options">
+                <button class="btn btn-sm btn-outline-danger me-1"
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].confirmDeleteSG()">Delete</button>
+                <a href="#" class="card-options-remove"
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].hideDetail()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M18 6l-12 12"/><path d="M6 6l12 12"/>
+                  </svg>
+                </a>
+              </div>
             </div>
-            <div class="card-body p-0">
-              <div id="sg-list-table"></div>
+            <div class="card-body">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Name</div>
+                  <div class="datagrid-content" id="detail-sg-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Connection</div>
+                  <div class="datagrid-content" id="detail-sg-connection">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">VPC</div>
+                  <div class="datagrid-content" id="detail-sg-vnet">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CSP Resource ID</div>
+                  <div class="datagrid-content"><code id="detail-sg-csp-id">-</code></div>
+                </div>
+              </div>
+
+              <!-- Firewall Rules -->
+              <div class="mt-3">
+                <h4 class="mb-2">방화벽 규칙</h4>
+                <div id="detail-rule-empty" class="text-muted small d-none">등록된 규칙이 없습니다.</div>
+                <div class="table-responsive" id="detail-rule-table-wrap">
+                  <table class="table table-sm table-vcenter">
+                    <thead>
+                      <tr>
+                        <th>Direction</th>
+                        <th>Protocol</th>
+                        <th>From Port</th>
+                        <th>To Port</th>
+                        <th>CIDR</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detail-rule-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Create SecurityGroup 모달 -->
+<div class="modal modal-blur fade" id="create-sg-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">SecurityGroup 생성</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Connection</label>
+          <select class="form-select" id="create-sg-connection"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">SG 이름</label>
+          <input type="text" class="form-control" id="create-sg-name" placeholder="예: my-sg">
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">VPC 이름</label>
+          <input type="text" class="form-control" id="create-sg-vnet" placeholder="예: my-vpc">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">방화벽 규칙</label>
+          <div id="create-sg-rule-list"></div>
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
+            onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].addFirewallRuleRow()">
+            + Add Rule
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" id="create-sg-execute-btn"
+          onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].executeCreateSG()">
+          <span id="create-sg-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          생성
+        </button>
       </div>
     </div>
   </div>
@@ -50,5 +210,6 @@
   </div>
 </div>
 
+{{ javascriptTag("common/api/services/securitygroup_api.js") | raw }}
 {{ javascriptTag("common/api/services/import_api.js") | raw }}
 {{ javascriptTag("pages/settings/environment/cloudresources/securitygroups.js") | raw }}
