@@ -4,10 +4,11 @@
       <div class="col-12">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">SecurityGroup 목록</h3>
+            <h3 class="card-title">SecurityGroup List</h3>
             <div class="card-options ms-auto d-flex gap-2">
               <!-- Import SG -->
               <a class="btn-action" type="button" title="CSP 미관리 SecurityGroup 임포트"
+                title="Import unregistered SecurityGroups from CSP"
                 onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].openImportSGModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
                   stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -73,7 +74,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">SecurityGroup 상세 — <span id="detail-name" class="text-primary"></span></h3>
+              <h3 class="card-title">SecurityGroup Detail — <span id="detail-name" class="text-primary"></span></h3>
               <div class="card-options">
                 <button class="btn btn-sm btn-outline-danger me-1"
                   onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].confirmDeleteSG()">Delete</button>
@@ -88,6 +89,7 @@
               </div>
             </div>
             <div class="card-body">
+              <!-- Basic Info -->
               <div class="datagrid">
                 <div class="datagrid-item">
                   <div class="datagrid-title">Name</div>
@@ -102,28 +104,69 @@
                   <div class="datagrid-content" id="detail-sg-vnet">-</div>
                 </div>
                 <div class="datagrid-item">
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="detail-sg-provider">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Region</div>
+                  <div class="datagrid-content" id="detail-sg-region">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Zone</div>
+                  <div class="datagrid-content" id="detail-sg-zone">-</div>
+                </div>
+              </div>
+              <!-- Identity Info -->
+              <div class="datagrid mt-3">
+                <div class="datagrid-item">
                   <div class="datagrid-title">CSP Resource ID</div>
                   <div class="datagrid-content"><code id="detail-sg-csp-id">-</code></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CSP Resource Name</div>
+                  <div class="datagrid-content"><code id="detail-sg-csp-name">-</code></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">UID</div>
+                  <div class="datagrid-content"><code id="detail-sg-uid">-</code></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Description</div>
+                  <div class="datagrid-content" id="detail-sg-description">-</div>
                 </div>
               </div>
 
               <!-- Firewall Rules -->
               <div class="mt-3">
-                <h4 class="mb-2">방화벽 규칙</h4>
-                <div id="detail-rule-empty" class="text-muted small d-none">등록된 규칙이 없습니다.</div>
+                <h4 class="mb-2">Firewall Rules</h4>
+                <div id="detail-rule-empty" class="text-muted small d-none">No firewall rules registered.</div>
                 <div class="table-responsive" id="detail-rule-table-wrap">
                   <table class="table table-sm table-vcenter">
                     <thead>
                       <tr>
                         <th>Direction</th>
                         <th>Protocol</th>
-                        <th>From Port</th>
-                        <th>To Port</th>
+                        <th>Port</th>
                         <th>CIDR</th>
                       </tr>
                     </thead>
                     <tbody id="detail-rule-tbody"></tbody>
                   </table>
+                </div>
+              </div>
+
+              <!-- CSP Detail Info (keyValueList) -->
+              <div class="mt-3">
+                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none"
+                  data-bs-toggle="collapse" data-bs-target="#detail-kv-collapse">
+                  CSP Detail Info ▾
+                </button>
+                <div class="collapse" id="detail-kv-collapse">
+                  <div class="table-responsive mt-1">
+                    <table class="table table-sm table-vcenter">
+                      <tbody id="detail-kv-tbody"></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,25 +183,25 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">SecurityGroup 생성</h5>
+        <h5 class="modal-title">Create SecurityGroup</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
           <label class="form-label required">VPC</label>
           <select class="form-select" id="create-sg-vnet-select"></select>
-          <div class="form-text text-muted">VPC를 선택하면 Connection이 자동 설정됩니다.</div>
+          <div class="form-text text-muted">Selecting a VPC will auto-fill the Connection.</div>
         </div>
         <div class="mb-3">
-          <label class="form-label text-muted">Connection <span class="badge bg-secondary-lt ms-1">자동</span></label>
-          <input type="text" class="form-control bg-light" id="create-sg-connection-display" readonly placeholder="VPC 선택 시 자동 채움">
+          <label class="form-label text-muted">Connection <span class="badge bg-secondary-lt ms-1">auto</span></label>
+          <input type="text" class="form-control bg-light" id="create-sg-connection-display" readonly placeholder="Auto-filled when VPC is selected">
         </div>
         <div class="mb-3">
-          <label class="form-label required">SG 이름</label>
-          <input type="text" class="form-control" id="create-sg-name" placeholder="예: my-sg">
+          <label class="form-label required">SG Name</label>
+          <input type="text" class="form-control" id="create-sg-name" placeholder="e.g. my-sg">
         </div>
         <div class="mb-2">
-          <label class="form-label">방화벽 규칙</label>
+          <label class="form-label">Firewall Rules</label>
           <div id="create-sg-rule-list"></div>
           <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
             onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].addFirewallRuleRow()">
@@ -167,11 +210,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="create-sg-execute-btn"
           onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].executeCreateSG()">
           <span id="create-sg-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          생성
+          Create
         </button>
       </div>
     </div>
@@ -183,28 +226,28 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">SecurityGroup 임포트</h5>
+        <h5 class="modal-title">Import SecurityGroup</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info mb-3">
-          선택된 Connection의 미등록 SecurityGroup 전체가 현재 프로젝트에 등록됩니다.
+          All unregistered SecurityGroups for the selected Connection will be imported into the current project.
         </div>
         <div class="mb-3">
           <label class="form-label">Connection</label>
           <select class="form-select" id="import-sg-connection"></select>
         </div>
         <div class="mb-2">
-          <label class="form-label">대상 프로젝트</label>
+          <label class="form-label">Target Project</label>
           <input type="text" class="form-control" id="import-sg-project" readonly>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary"
           onclick="webconsolejs['pages/settings/environment/cloudresources/securitygroups'].executeImportSG()">
           <span id="import-sg-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          Import 실행
+          Import
         </button>
       </div>
     </div>

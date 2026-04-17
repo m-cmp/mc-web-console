@@ -66,7 +66,7 @@ export async function loadSGList() {
         }
     } catch (err) {
         console.error('SecurityGroup 목록 조회 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'SecurityGroup 목록 조회에 실패했습니다.');
+        showToast(TOAST_TYPES.ERROR, 'Failed to load SecurityGroup list.');
     }
 }
 
@@ -76,7 +76,7 @@ function initTable(items) {
     AppState.tables.sgTable = new Tabulator('#sg-list-table', {
         data: items,
         layout: 'fitColumns',
-        placeholder: '등록된 SecurityGroup이 없습니다.',
+        placeholder: 'No SecurityGroups registered.',
         pagination: 'local',
         paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
@@ -84,13 +84,13 @@ function initTable(items) {
         movableColumns: true,
         initialSort: [{ column: 'name', dir: 'asc' }],
         columns: [
-            { title: '이름',         field: 'name',           widthGrow: 2, sorter: 'string' },
+            { title: 'Name',         field: 'name',           widthGrow: 2, sorter: 'string' },
             { title: 'Connection',   field: 'connectionName', widthGrow: 1, sorter: 'string' },
             { title: 'VPC',          field: 'vNetId',         widthGrow: 1 },
-            { title: '규칙 수',       field: 'firewallRules',
+            { title: 'Rules',        field: 'firewallRules',
               formatter: (cell) => {
                   const rules = cell.getValue() || [];
-                  return `${rules.length}개`;
+                  return `${rules.length}`;
               },
               hozAlign: 'center', width: 90 },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
@@ -117,15 +117,24 @@ function initTable(items) {
 // ─── Detail Panel ─────────────────────────────────────────────────────────
 
 function renderDetail(data) {
-    document.getElementById('detail-name').textContent         = data.name || '-';
-    document.getElementById('detail-sg-name').textContent      = data.name || '-';
+    document.getElementById('detail-name').textContent          = data.name || '-';
+    document.getElementById('detail-sg-name').textContent       = data.name || '-';
     document.getElementById('detail-sg-connection').textContent = data.connectionName || '-';
-    document.getElementById('detail-sg-vnet').textContent      = data.vNetId || '-';
-    document.getElementById('detail-sg-csp-id').textContent    = data.cspResourceId || '-';
+    document.getElementById('detail-sg-vnet').textContent       = data.vNetId || '-';
+    document.getElementById('detail-sg-csp-id').textContent     = data.cspResourceId || '-';
+    document.getElementById('detail-sg-csp-name').textContent   = data.cspResourceName || '-';
+    document.getElementById('detail-sg-uid').textContent        = data.uid || '-';
+    document.getElementById('detail-sg-description').textContent = data.description || '-';
 
-    const rules = data.firewallRules || data.securityRuleList || [];
-    const tbody    = document.getElementById('detail-rule-tbody');
-    const emptyEl  = document.getElementById('detail-rule-empty');
+    const cc = data.connectionConfig;
+    document.getElementById('detail-sg-provider').textContent = cc?.providerName || '-';
+    document.getElementById('detail-sg-region').textContent   = cc?.regionZoneInfo?.assignedRegion || '-';
+    document.getElementById('detail-sg-zone').textContent     = cc?.regionZoneInfo?.assignedZone || '-';
+
+    // Firewall Rules
+    const rules     = data.firewallRules || data.securityRuleList || [];
+    const tbody     = document.getElementById('detail-rule-tbody');
+    const emptyEl   = document.getElementById('detail-rule-empty');
     const tableWrap = document.getElementById('detail-rule-table-wrap');
 
     tbody.innerHTML = '';
@@ -136,18 +145,31 @@ function renderDetail(data) {
         emptyEl.classList.add('d-none');
         tableWrap.classList.remove('d-none');
         for (const r of rules) {
-            const dirBadge = r.direction === 'inbound'
+            const dir      = (r.Direction || r.direction || '').toLowerCase();
+            const dirBadge = dir === 'inbound'
                 ? '<span class="badge bg-blue-lt">inbound</span>'
                 : '<span class="badge bg-orange-lt">outbound</span>';
+            const protocol = r.Protocol || r.ipProtocol || r.IPProtocol || '-';
+            const port     = (r.Port !== undefined ? r.Port : (r.fromPort !== undefined ? r.fromPort : null));
+            const portText = port === null ? '-' : (port === '' ? 'ALL' : port);
+            const cidr     = r.CIDR || r.cidr || '-';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${dirBadge}</td>
-                <td>${r.ipProtocol || r.IPProtocol || '-'}</td>
-                <td>${r.fromPort || '-'}</td>
-                <td>${r.toPort || '-'}</td>
-                <td><code>${r.cidr || '-'}</code></td>`;
+                <td>${protocol}</td>
+                <td>${portText}</td>
+                <td><code>${cidr}</code></td>`;
             tbody.appendChild(tr);
         }
+    }
+
+    // keyValueList
+    const kvTbody = document.getElementById('detail-kv-tbody');
+    kvTbody.innerHTML = '';
+    for (const kv of (data.keyValueList || [])) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="text-muted" style="width:40%">${kv.key}</td><td>${kv.value || '-'}</td>`;
+        kvTbody.appendChild(tr);
     }
 }
 
@@ -168,15 +190,15 @@ export function hideDetail() {
 export async function confirmDeleteSG() {
     const selected = AppState.resources.selected;
     if (!selected) return;
-    if (!confirm(`SecurityGroup "${selected.name}"을 삭제하시겠습니까?`)) return;
+    if (!confirm(`Delete SecurityGroup "${selected.name}"?`)) return;
     try {
         await sgApi().del(AppState.ns, selected.name);
-        showToast(TOAST_TYPES.SUCCESS, `SecurityGroup "${selected.name}" 삭제 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `SecurityGroup "${selected.name}" deleted.`);
         hideDetail();
         await loadSGList();
     } catch (err) {
-        console.error('SG 삭제 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'SecurityGroup 삭제에 실패했습니다: ' + (err.message || ''));
+        console.error('Delete SG failed:', err);
+        showToast(TOAST_TYPES.ERROR, 'Failed to delete SecurityGroup: ' + (err.message || ''));
     }
 }
 
@@ -210,10 +232,13 @@ function initFilter() {
 
 // ─── Create SG 모달 ───────────────────────────────────────────────────────
 
-document.getElementById('create-sg-modal')?.addEventListener('show.bs.modal', async function () {
+document.getElementById('create-sg-modal')?.addEventListener('hidden.bs.modal', function () {
     document.getElementById('create-sg-name').value = '';
     document.getElementById('create-sg-connection-display').value = '';
     document.getElementById('create-sg-rule-list').innerHTML = '';
+});
+
+document.getElementById('create-sg-modal')?.addEventListener('show.bs.modal', async function () {
     await _loadVNetOptions('create-sg-vnet-select', AppState.ns);
     addFirewallRuleRow();
 });
@@ -239,15 +264,15 @@ export function addFirewallRuleRow() {
         </div>
         <div class="col-md-2">
           <input type="text" class="form-control form-control-sm rule-from-port"
-            placeholder="From Port">
+            placeholder="e.g. 0">
         </div>
         <div class="col-md-2">
           <input type="text" class="form-control form-control-sm rule-to-port"
-            placeholder="To Port">
+            placeholder="e.g. 65535">
         </div>
         <div class="col-md-3">
           <input type="text" class="form-control form-control-sm rule-cidr"
-            placeholder="CIDR (예: 0.0.0.0/0)">
+            placeholder="CIDR (e.g. 0.0.0.0/0)">
         </div>
         <div class="col-md-1">
           <button type="button" class="btn btn-sm btn-outline-danger w-100"
@@ -263,21 +288,32 @@ export async function executeCreateSG() {
     const name           = document.getElementById('create-sg-name').value.trim();
 
     if (!vNetId || !connectionName || !name) {
-        showToast(TOAST_TYPES.WARNING, 'VPC 선택과 SG 이름은 필수입니다.');
+        showToast(TOAST_TYPES.WARNING, 'VPC and SG name are required.');
         return;
     }
 
     const firewallRules = [];
+    let ruleError = false;
     document.querySelectorAll('#create-sg-rule-list .sg-rule-row').forEach(row => {
         const direction  = row.querySelector('.rule-direction')?.value;
-        const ipProtocol = row.querySelector('.rule-protocol')?.value;
+        const protocol   = row.querySelector('.rule-protocol')?.value.toUpperCase();
         const fromPort   = row.querySelector('.rule-from-port')?.value.trim();
         const toPort     = row.querySelector('.rule-to-port')?.value.trim();
         const cidr       = row.querySelector('.rule-cidr')?.value.trim();
-        if (ipProtocol && cidr) {
-            firewallRules.push({ direction, ipProtocol, fromPort, toPort, cidr });
-        }
+        if (!protocol && !cidr) return;
+        const needsPort = protocol !== 'ICMP' && protocol !== 'ALL';
+        if (needsPort && (!fromPort || !toPort)) { ruleError = true; return; }
+        if (!cidr) { ruleError = true; return; }
+        const ports = needsPort
+            ? (fromPort === toPort ? fromPort : `${fromPort}-${toPort}`)
+            : '';
+        firewallRules.push({ Direction: direction, Protocol: protocol, Ports: ports, CIDR: cidr });
     });
+
+    if (ruleError) {
+        showToast(TOAST_TYPES.WARNING, 'TCP/UDP rules require From Port, To Port, and CIDR.');
+        return;
+    }
 
     const spinner = document.getElementById('create-sg-spinner');
     const btn     = document.getElementById('create-sg-execute-btn');
@@ -286,12 +322,12 @@ export async function executeCreateSG() {
 
     try {
         await sgApi().create(AppState.ns, { connectionName, name, vNetId, firewallRules });
-        showToast(TOAST_TYPES.SUCCESS, `SecurityGroup "${name}" 생성 완료`);
-        bootstrap.Modal.getInstance(document.getElementById('create-sg-modal'))?.hide();
+        showToast(TOAST_TYPES.SUCCESS, `SecurityGroup "${name}" created.`);
+        document.querySelector('#create-sg-modal .btn-close')?.click();
         await loadSGList();
     } catch (err) {
-        console.error('SG 생성 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'SecurityGroup 생성에 실패했습니다: ' + (err.message || ''));
+        console.error('Create SG failed:', err);
+        showToast(TOAST_TYPES.ERROR, 'Failed to create SecurityGroup: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
         btn.disabled = false;
@@ -303,7 +339,7 @@ export async function executeCreateSG() {
 export async function openImportSGModal() {
     AppState.ns = webconsolejs['common/api/services/workspace_api'].getCurrentProject()?.NsId || '';
     if (!AppState.ns) {
-        showToast(TOAST_TYPES.WARNING, '프로젝트를 먼저 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select a project first.');
         return;
     }
     document.getElementById('import-sg-project').value = AppState.ns;
@@ -314,7 +350,7 @@ export async function openImportSGModal() {
 export async function executeImportSG() {
     const connectionName = document.getElementById('import-sg-connection').value;
     if (!connectionName) {
-        showToast(TOAST_TYPES.WARNING, 'Connection을 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select a Connection.');
         return;
     }
 
@@ -327,12 +363,12 @@ export async function executeImportSG() {
         const failed = result?.registerationOverview?.failed || 0;
         showToast(
             failed > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
-            `SecurityGroup ${count}개 등록 완료${failed > 0 ? `, ${failed}개 실패` : ''}`
+            `${count} SecurityGroup(s) imported${failed > 0 ? `, ${failed} failed` : ''}`
         );
         bootstrap.Modal.getInstance(document.getElementById('import-sg-modal'))?.hide();
         await loadSGList();
     } catch (err) {
-        showToast(TOAST_TYPES.ERROR, 'SecurityGroup Import 실패: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to import SecurityGroups: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
     }
@@ -340,15 +376,18 @@ export async function executeImportSG() {
 
 async function _loadVNetOptions(selectId, ns) {
     const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">-- VPC 선택 --</option>';
-    if (!ns) return;
+    if (!ns) {
+        select.innerHTML = '<option value="">-- Select VPC --</option>';
+        return;
+    }
     try {
         const data  = await vpcApi().getAllVNet(ns);
+        select.innerHTML = '<option value="">-- Select VPC --</option>';
         const vNets = data?.vNet || (Array.isArray(data) ? data : []);
         if (vNets.length === 0) {
             const opt = document.createElement('option');
             opt.disabled = true;
-            opt.textContent = '등록된 VPC가 없습니다.';
+            opt.textContent = 'No VPCs registered.';
             select.appendChild(opt);
             return;
         }
@@ -371,7 +410,7 @@ async function _loadVNetOptions(selectId, ns) {
 
 async function _loadConnectionOptions(selectId) {
     const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">선택하세요</option>';
+    select.innerHTML = '<option value="">-- Select --</option>';
     try {
         const result = await webconsolejs['common/api/http'].commonAPIPost(
             '/api/mc-infra-manager/GetConnConfigList', {}
