@@ -4554,6 +4554,8 @@ serviceActions:
 
         Get available options by /recommendSpecOptions for filtering and prioritizing
         specs in RecommendSpec API'
+      requestCoerce:
+        limit: int
     RecommendSpecOptions:
       method: get
       resourcePath: /recommendSpecOptions
@@ -4807,10 +4809,6 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/resources/spec/{specId}
       description: "Delete spec"
-    GetProviderList:
-      method: get
-      resourcePath: /provider
-      description: "List all registered cloud providers (aws, azure, gcp, ...)"
     SetBastionNodesWithMci:
       method: put
       resourcePath: /ns/{nsId}/mci/{mciId}/vm/{targetVmId}/bastion/{bastionMciId}/{bastionVmId}
