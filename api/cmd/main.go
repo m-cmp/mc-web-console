@@ -97,6 +97,9 @@ func main() {
 	authProtected.POST("/logout", handler.Logout)
 	authProtected.GET("/userinfo", handler.UserInfo)
 
+	// 단일 세그먼트 내부 핸들러
+	api.POST("/disklookup", handler.DiskLookup)
+
 	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
 	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시
 	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController)

@@ -29,9 +29,10 @@ type AuthConfig struct {
 
 // ActionSpec API 액션 스펙
 type ActionSpec struct {
-	Method       string `mapstructure:"method"`
-	ResourcePath string `mapstructure:"resourcePath"`
-	Description  string `mapstructure:"description"`
+	Method        string            `mapstructure:"method"`
+	ResourcePath  string            `mapstructure:"resourcePath"`
+	Description   string            `mapstructure:"description"`
+	RequestCoerce map[string]string `mapstructure:"requestCoerce"` // "fieldName" → "int"|"float"|"bool"
 }
 
 // LoadApiSpec conf/api.yaml 파일 로드

@@ -458,7 +458,7 @@ export async function getRecommendVmInfo() {
 						"val": [lat + "/" + lon]
 					}
 				],
-				"weight": "0.3"
+				"weight": 0.3
 			};
 			priorityArr.push(priorityPolicy);
 		}
@@ -466,7 +466,7 @@ export async function getRecommendVmInfo() {
 		// 비용 우선순위 (낮은 시간당 비용 우선)
 		var costPriorityPolicy = {
 			"metric": "costPerHour",
-			"weight": "1.0"
+			"weight": 1.0
 		};
 		priorityArr.push(costPriorityPolicy);
 	}
@@ -475,21 +475,25 @@ export async function getRecommendVmInfo() {
 			"filter": {
 				"policy": policyArr
 			},
-			"limit": "1000",
+			"limit": 1000,
 			"priority": {
 				"policy": priorityArr,
 			}
 		}
 	}
 	
+	$("#spec-table-loading").removeClass("d-none");
+	$("#spec-table").addClass("d-none");
 	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+	$("#spec-table-loading").addClass("d-none");
+	$("#spec-table").removeClass("d-none");
 	//var specList = response.data.responseData
 	if (respData.status.code != 200) {
 		console.error(e)
 		// TODO : Error 표시
 		return
 	}
-	recommendVmSpecListObj = respData.responseData	
+	recommendVmSpecListObj = respData.responseData
 	recommendTable.setData(recommendVmSpecListObj)
 
 }
