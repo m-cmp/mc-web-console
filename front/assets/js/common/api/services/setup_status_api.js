@@ -111,64 +111,11 @@ export async function rerunLoadAssets() {
   return await proxyPost(infraUrl('LoadAssets'), {});
 }
 
-/**
- * Workspace Mapping Re-sync — 1_setup_auto.sh map_workspace_projects와 동일.
- * 첫 workspace에 모든 project id를 일괄 매핑 (`POST /api/workspaces/assign/projects`).
- *
- * @returns {Promise<{ status:number, data:any }>} assignWorkspaceProjects 응답 또는 사전 검증 실패 응답
- */
-export async function assignAllProjectsToFirstWorkspace() {
-  // 1) workspace + project 목록 사전 조회
-  const [wsResp, projResp] = await Promise.all([
-    proxyPost(iamUrl('listWorkspaces'), {}),
-    proxyPost(iamUrl('listProjects'),   {}),
-  ]);
-
-  const workspaces = unwrapArrayFromAxios(wsResp);
-  const projects   = unwrapArrayFromAxios(projResp);
-
-  if (workspaces.length === 0) {
-    return synthError(409, 'no workspace registered — workspace 먼저 생성 필요');
-  }
-  if (projects.length === 0) {
-    return synthError(409, 'no project registered — sync_projects 먼저 실행 필요');
-  }
-
-  // 2) 첫 workspace에 모든 project id 매핑 (1_setup_auto.sh와 동일 정책)
-  const workspaceId = String(workspaces[0].id ?? workspaces[0].ID ?? '');
-  if (!workspaceId) {
-    return synthError(500, 'first workspace has no id field');
-  }
-  const projectIds = projects
-    .map((p) => p && (p.id ?? p.ID))
-    .filter((v) => v !== undefined && v !== null)
-    .map(String);
-
-  // BFF SubsystemAnyController는 CommonRequest 래퍼를 풀어서 .Request 만 backend로 forward한다.
-  // wrapper 없이 flat으로 보내면 commonRequest.Request == nil → 빈 body 전달 → 400.
-  return await proxyPost(iamUrl('assignWorkspaceProjects'), {
-    request: { workspaceId, projectIds },
-  });
-}
-
-// resync 단계에서만 쓰는 axios 응답 → 배열 unwrap (file 상단 helper와 동일 정책)
-function unwrapArrayFromAxios(resp) {
-  if (!resp || !resp.data) return [];
-  const data = Object.prototype.hasOwnProperty.call(resp.data, 'responseData')
-    ? resp.data.responseData
-    : resp.data;
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.responseData)) return data.responseData;
-  return [];
-}
-
-// runAction이 status>=400을 에러로 처리하므로 같은 모양으로 합성
-function synthError(status, message) {
-  return {
-    status,
-    data: { status: { code: status, message }, message },
-  };
-}
+// (removed) assignAllProjectsToFirstWorkspace
+// 미할당 project 의 default workspace 매핑은 mc-iam-manager의 SyncProjectsWithInfraManager
+// (env DEFAULT_WORKSPACE_NAME 기반) 가 책임진다. 임의 매핑은 운영 ▶ Workspace 페이지
+// (workspaces.js의 createWPmapping/updateWPmappings/delete*)가 담당. Setup Status 카드의
+// Re-sync ▶ Workspace Mapping 버튼은 위 두 책임과 중복이므로 제거.
 
 // ─── Public: 부분 새로고침용 단건 조회 ───────────────────────────────
 

@@ -1213,10 +1213,6 @@ serviceActions:
       method: post
       resourcePath: /api/setup/sync-projects
       description: "mc-infra-manager의 namespace 목록을 가져와 project 테이블과 동기화 (1_setup_auto.sh sync_projects와 동일). FR-006-08 Re-sync."
-    assignWorkspaceProjects:
-      method: post
-      resourcePath: /api/workspaces/assign/projects
-      description: "워크스페이스에 프로젝트 일괄 매핑 (1_setup_auto.sh map_workspace_projects와 동일). FR-006-08 Re-sync. body: {workspaceId, projectIds:[...]}."
   mc-infra-manager:
     GetInfraReadyzInit:
       method: put
