@@ -835,6 +835,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     // 등록 폼 이벤트 초기화
     initCreateFormEvents();
 
+    // Setup Status 섹션 초기화 (FR-CLOUD-ADMIN-006-08)
+    // — Readyz/CspAccounts 와 완전 독립. await 하지 않고 즉시 시작하여
+    //   상위 await 흐름이 stuck 되어도 본 섹션은 카드별로 그려진다.
+    try {
+        const setupSection = webconsolejs['pages/settings/environment/cloudsps/setup_status_section'];
+        if (setupSection && typeof setupSection.init === 'function') {
+            setupSection.init().catch((e) => {
+                console.warn('[cloudoverview] setup_status_section init failed:', e);
+            });
+        }
+    } catch (e) {
+        console.warn('[cloudoverview] setup_status_section init failed (sync):', e);
+    }
+
     // 목록 초기화
     await initCspAccounts();
 
