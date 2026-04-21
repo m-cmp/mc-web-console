@@ -364,7 +364,12 @@ function mergeWsMapping(prev, partial) {
   const allMappedProjectIds = new Set();
   for (const row of wsProjs) {
     if (!row) continue;
-    const wid = String(row.workspace_id ?? row.workspaceId ?? row.WorkspaceID ?? row.WorkspaceId ?? '');
+    // listWorkspaceProjects 응답은 [{id, name, projects:[...]}, ...] 형태로
+    // workspace 자체의 `id`가 곧 workspaceId. 그 외 평탄/래핑 형태도 커버.
+    const wid = String(
+      row.id ?? row.ID ??
+      row.workspace_id ?? row.workspaceId ?? row.WorkspaceID ?? row.WorkspaceId ?? ''
+    );
     if (!wid) continue;
     if (!wsToProj.has(wid)) wsToProj.set(wid, new Set());
     const bucket = wsToProj.get(wid);
