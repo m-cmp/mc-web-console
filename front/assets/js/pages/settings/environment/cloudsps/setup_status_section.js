@@ -879,8 +879,9 @@ function renderWorkspaceMappingCard(wsMap) {
     banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ 등록된 workspace가 없습니다. mc-iam-manager에 workspace를 먼저 생성해야 합니다.</div>';
   } else if (projectTotal > 0 && mappedTotal < projectTotal) {
     banner = `<div class="alert alert-warning py-2 mb-2 small">
-      ⚠️ 미매핑 project ${unmapped.length}건 — <strong>Re-sync ▶ Workspace Mapping</strong>로 첫 workspace에 일괄 매핑할 수 있습니다.
-      <span class="text-muted">(1_setup_auto.sh map_workspace_projects와 동일 정책)</span>
+      ⚠️ 미매핑 project ${unmapped.length}건 — Re-sync ▶ Projects 시 default workspace
+      (<code>env DEFAULT_WORKSPACE_NAME</code>)에 자동 매핑됩니다. 특정 workspace로 임의 매핑이 필요하면
+      <a href="/operation/workspace/workspaces" class="alert-link">운영 ▶ Workspace 페이지</a>에서 진행하세요.
     </div>`;
   }
 
@@ -901,9 +902,9 @@ function renderWorkspaceMappingCard(wsMap) {
     <div class="card-header py-2 d-flex align-items-center">
       <h4 class="card-title mb-0">Workspace Mapping <span class="text-muted small ms-2">(⑥ map_workspace_projects)</span></h4>
       <div class="ms-auto">
-        <button id="setup-resync-wsmapping-btn" class="btn btn-sm btn-outline-primary">
-          Re-sync ▶ Workspace Mapping
-        </button>
+        <a href="/operation/workspace/workspaces" class="btn btn-sm btn-outline-secondary">
+          운영 ▶ Workspace 페이지
+        </a>
       </div>
     </div>
     <div class="card-body">
@@ -942,14 +943,6 @@ function renderWorkspaceMappingCard(wsMap) {
       </details>` : ''}
     </div>
   </div>`;
-  bindClick('setup-resync-wsmapping-btn', () => runAction('wsMapping', api().assignAllProjectsToFirstWorkspace, async () => {
-    const partial = await api().fetchWorkspaceMappingOnly();
-    if (!State.lastViewModel) return refresh();
-    const merged = mergeWsMapping(State.lastViewModel, partial);
-    State.lastViewModel = merged;
-    renderSetupSequence(merged.setupSequence);
-    renderWorkspaceMappingCard(merged.wsMapping);
-  }));
 }
 
 // ─── 카드 4: Credentials (cb-tumblebug GetCredentialHolderList 기반) ─
@@ -1188,7 +1181,6 @@ function setActionsDisabled(disabled) {
     'setup-resync-menu-btn',
     'setup-resync-api-btn',
     'setup-resync-projects-card-btn',
-    'setup-resync-wsmapping-btn',
     'setup-rerun-loadassets-btn',
   ];
   ids.forEach((id) => {
