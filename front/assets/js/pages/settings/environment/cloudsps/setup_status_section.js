@@ -129,21 +129,322 @@ function emptyViewModel() {
   };
 }
 
-// 8개 카드 영역에 즉시 spinner 렌더
+// 8개 카드 영역에 카드별 구조 skeleton + 헤더 spinner 렌더
+// 카드 본체(타이틀/메트릭 라벨/표 헤더)는 즉시 보여주고, 값 자리에는
+// Bootstrap5 placeholder bar + 헤더 우측에 'Fetching…' 소형 spinner를 둔다.
+// 데이터 도착 시 render*Card()가 el.innerHTML 통째 교체로 자연스럽게 사라진다.
 function renderAllLoading() {
-  const cardIds = [
-    'setup-sequence-card',
-    'setup-roles-card',
-    'setup-menu-card',
-    'setup-api-card',
-    'setup-projects-card',
-    'setup-wsmapping-card',
-    'setup-credentials-card',
-    'setup-loadassets-card',
-  ];
-  cardIds.forEach((id) => renderLoadingSkeleton(id));
+  renderSequenceSkeleton();
+  renderRolesSkeleton();
+  renderMenuSkeleton();
+  renderApiSkeleton();
+  renderProjectsSkeleton();
+  renderWorkspaceMappingSkeleton();
+  renderCredentialsSkeleton();
+  renderLoadAssetsSkeleton();
 }
 
+// 카드 헤더 우측 소형 spinner ('Fetching…') — 모든 skeleton 공통
+function fetchingSpinnerHTML() {
+  return `<span class="text-muted small ms-auto d-inline-flex align-items-center">
+    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+    Fetching…
+  </span>`;
+}
+
+// placeholder bar — col-* 만 다르게
+function placeholderBar(colCls = 'col-6') {
+  return `<span class="placeholder ${colCls}"></span>`;
+}
+
+// 메트릭(라벨 + placeholder) 칸 1개
+function skeletonMetric(label, mdCols = 3, barCol = 'col-6') {
+  return `<div class="col-md-${mdCols}">
+    <div class="text-muted small">${escapeHtml(label)}</div>
+    <div class="fs-3 fw-medium placeholder-glow">${placeholderBar(barCol)}</div>
+  </div>`;
+}
+
+// ── ① Setup Sequence skeleton ─────────────────────────────────────
+function renderSequenceSkeleton() {
+  const el = document.getElementById('setup-sequence-card');
+  if (!el) return;
+  const rows = Object.keys(STEP_LABELS).map((key) => `<tr>
+    <td class="fw-medium">${STEP_LABELS[key]}</td>
+    <td class="placeholder-glow">${placeholderBar('col-8')}</td>
+    <td class="placeholder-glow">${placeholderBar('col-10')}</td>
+  </tr>`).join('');
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">Setup Sequence (1_setup_auto.sh)</h4>
+      <div class="card-subtitle text-muted small ms-3">각 단계 상세는 아래 카드 참고</div>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-vcenter card-table mb-0">
+        <thead><tr>
+          <th style="width:260px">Step</th>
+          <th style="width:120px">Status</th>
+          <th>Detail</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ── ② Roles skeleton ──────────────────────────────────────────────
+function renderRolesSkeleton() {
+  const el = document.getElementById('setup-roles-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">Roles <span class="text-muted small ms-2">(② init_predefined_roles)</span></h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('등록 role 건수', 3, 'col-4')}
+        ${skeletonMetric('기대 role 건수', 3, 'col-4')}
+        <div class="col-md-6">
+          <div class="text-muted small">기대 vs 등록</div>
+          <div class="placeholder-glow">
+            <span class="placeholder col-2 me-2"></span>
+            <span class="placeholder col-2 me-2"></span>
+            <span class="placeholder col-2 me-2"></span>
+            <span class="placeholder col-2"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ③ Menu skeleton ───────────────────────────────────────────────
+function renderMenuSkeleton() {
+  const el = document.getElementById('setup-menu-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">Menu Settings</h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('등록 메뉴 건수', 3, 'col-4')}
+        ${skeletonMetric('원본 yaml 도달', 3, 'col-6')}
+        ${skeletonMetric('Last-Modified / ETag', 6, 'col-10')}
+        <div class="col-12">
+          <div class="text-muted small">URL</div>
+          <div class="small placeholder-glow">${placeholderBar('col-12')}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ④ API skeleton ────────────────────────────────────────────────
+function renderApiSkeleton() {
+  const el = document.getElementById('setup-api-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">API Settings</h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('등록 API 건수', 3, 'col-4')}
+        ${skeletonMetric('서비스(BaseURL) 수', 3, 'col-4')}
+        ${skeletonMetric('원본 yaml 도달', 3, 'col-6')}
+        ${skeletonMetric('Last-Modified', 3, 'col-8')}
+        <div class="col-12">
+          <div class="text-muted small">URL</div>
+          <div class="small placeholder-glow">${placeholderBar('col-12')}</div>
+        </div>
+        <div class="col-12 mt-2">
+          <div class="text-muted small mb-1">등록 서비스 BaseURL 목록</div>
+          <div class="table-responsive">
+            <table class="table table-sm table-vcenter mb-0">
+              <thead><tr><th>Service</th><th>BaseURL</th><th style="width:120px">Version</th></tr></thead>
+              <tbody>
+                <tr class="placeholder-glow">
+                  <td>${placeholderBar('col-6')}</td><td>${placeholderBar('col-10')}</td><td>${placeholderBar('col-4')}</td>
+                </tr>
+                <tr class="placeholder-glow">
+                  <td>${placeholderBar('col-6')}</td><td>${placeholderBar('col-10')}</td><td>${placeholderBar('col-4')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ⑤ Projects skeleton ───────────────────────────────────────────
+function renderProjectsSkeleton() {
+  const el = document.getElementById('setup-projects-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">Projects <span class="text-muted small ms-2">(⑤ sync_projects)</span></h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('등록 project 건수', 3, 'col-4')}
+        <div class="col-md-9">
+          <div class="text-muted small">설명</div>
+          <div class="small">mc-infra-manager의 namespace 1:1 매핑. NsId가 비어있으면 mc-infra-manager 측 ns 미등록 또는 sync 누락.</div>
+        </div>
+      </div>
+      <div class="table-responsive mt-2">
+        <table class="table table-sm table-vcenter mb-0">
+          <thead><tr>
+            <th style="width:80px">ID</th><th>Name</th>
+            <th style="width:160px">NsId</th><th>Description</th>
+          </tr></thead>
+          <tbody>
+            <tr class="placeholder-glow">
+              <td>${placeholderBar('col-4')}</td><td>${placeholderBar('col-6')}</td>
+              <td>${placeholderBar('col-6')}</td><td>${placeholderBar('col-10')}</td>
+            </tr>
+            <tr class="placeholder-glow">
+              <td>${placeholderBar('col-4')}</td><td>${placeholderBar('col-6')}</td>
+              <td>${placeholderBar('col-6')}</td><td>${placeholderBar('col-10')}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ⑥ Workspace Mapping skeleton ─────────────────────────────────
+function renderWorkspaceMappingSkeleton() {
+  const el = document.getElementById('setup-wsmapping-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">Workspace Mapping <span class="text-muted small ms-2">(⑥ map_workspace_projects)</span></h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('Workspace 수', 3, 'col-4')}
+        ${skeletonMetric('매핑된 project', 3, 'col-6')}
+        ${skeletonMetric('미매핑 project', 3, 'col-4')}
+        ${skeletonMetric('상태', 3, 'col-6')}
+      </div>
+      <div class="table-responsive mt-2">
+        <table class="table table-sm table-vcenter mb-0">
+          <thead><tr>
+            <th style="width:80px">ID</th><th>Name</th>
+            <th style="width:120px" class="text-end">매핑 project 수</th><th>Description</th>
+          </tr></thead>
+          <tbody>
+            <tr class="placeholder-glow">
+              <td>${placeholderBar('col-4')}</td><td>${placeholderBar('col-6')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td><td>${placeholderBar('col-10')}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ⑦ Credentials skeleton ────────────────────────────────────────
+function renderCredentialsSkeleton() {
+  const el = document.getElementById('setup-credentials-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">Credentials
+        <span class="text-muted small ms-2">(GetCredentialHolderList @ cb-tumblebug)</span>
+      </h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('Holder 수', 3, 'col-4')}
+        ${skeletonMetric('Verified Connection', 3, 'col-6')}
+        <div class="col-md-6">
+          <div class="text-muted small">Provider별 holder</div>
+          <div class="placeholder-glow">
+            <span class="placeholder col-2 me-2"></span>
+            <span class="placeholder col-2 me-2"></span>
+            <span class="placeholder col-2"></span>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive mt-2">
+        <table class="table table-sm table-vcenter mb-0">
+          <thead><tr>
+            <th>Holder</th><th>Providers</th>
+            <th style="width:140px" class="text-end">Verified / Total</th>
+            <th style="width:80px" class="text-end">Verify%</th>
+          </tr></thead>
+          <tbody>
+            <tr class="placeholder-glow">
+              <td>${placeholderBar('col-6')}</td><td>${placeholderBar('col-8')}</td>
+              <td class="text-end">${placeholderBar('col-6')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ⑧ loadAssets skeleton ─────────────────────────────────────────
+function renderLoadAssetsSkeleton() {
+  const el = document.getElementById('setup-loadassets-card');
+  if (!el) return;
+  el.innerHTML = `<div class="card border">
+    <div class="card-header py-2 d-flex align-items-center">
+      <h4 class="card-title mb-0">loadAssets
+        <span class="text-muted small ms-2">(GetAssetsSummary @ ns: system)</span>
+      </h4>
+      ${fetchingSpinnerHTML()}
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        ${skeletonMetric('Spec 적재', 3, 'col-4')}
+        ${skeletonMetric('Image 적재', 3, 'col-4')}
+        ${skeletonMetric('Priced / Unpriced', 3, 'col-8')}
+        ${skeletonMetric('상태', 3, 'col-6')}
+      </div>
+      <div class="table-responsive mt-2">
+        <table class="table table-sm table-vcenter mb-0">
+          <thead><tr>
+            <th>Provider</th>
+            <th class="text-end" style="width:100px">Spec</th>
+            <th class="text-end" style="width:100px">Priced</th>
+            <th class="text-end" style="width:100px">Unpriced</th>
+            <th class="text-end" style="width:80px">Priced%</th>
+            <th class="text-end" style="width:100px">Image</th>
+          </tr></thead>
+          <tbody>
+            <tr class="placeholder-glow">
+              <td>${placeholderBar('col-6')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td>
+              <td class="text-end">${placeholderBar('col-4')}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// fallback (혹시 카드 ID가 추가되어도 generic spinner 로 대응 가능하도록 보존)
 function renderLoadingSkeleton(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
