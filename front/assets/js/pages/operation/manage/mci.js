@@ -616,6 +616,10 @@ function executeWithToast(apiCall, successMessage, errorMessage) {
 
 // mci life cycle 변경
 export function changeMciLifeCycle(type) {
+  if (window.currentMciId == undefined || window.currentMciId == "") {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select an MCI')
+    return;
+  }
   executeWithToast(
     () => webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, window.currentMciId, window.currentNsId),
     `MCI ${type} completed successfully`,

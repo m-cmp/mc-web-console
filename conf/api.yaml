@@ -4554,6 +4554,8 @@ serviceActions:
 
         Get available options by /recommendSpecOptions for filtering and prioritizing
         specs in RecommendSpec API'
+      requestCoerce:
+        limit: int
     RecommendSpecOptions:
       method: get
       resourcePath: /recommendSpecOptions
