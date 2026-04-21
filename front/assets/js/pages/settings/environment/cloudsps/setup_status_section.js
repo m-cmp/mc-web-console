@@ -319,7 +319,9 @@ function mergeProjectsCard(prev, partial) {
   const items = list.map((p) => ({
     id: p.id ?? p.ID ?? '',
     name: p.name ?? p.Name ?? '',
-    nsId: p.NsId ?? p.nsId ?? p.ns_id ?? '',
+    // mc-iam-manager model.Project의 JSON 태그가 `nsid` (소문자/단일어)이므로 우선 그것부터 본다.
+    // 다른 표기(NsId/nsId/ns_id)는 다른 컴포넌트에서 올 가능성에 대비한 fallback.
+    nsId: p.nsid ?? p.NsId ?? p.nsId ?? p.ns_id ?? '',
     description: p.description ?? p.Description ?? '',
   }));
   next.projects = {
@@ -394,7 +396,8 @@ function mergeWsMapping(prev, partial) {
     .map((p) => ({
       id: p.id ?? p.ID ?? '',
       name: p.name ?? p.Name ?? '',
-      nsId: p.NsId ?? p.nsId ?? p.ns_id ?? '',
+      // model.Project JSON 태그 = `nsid`. 위 mergeProjectsCard 주석 참고.
+      nsId: p.nsid ?? p.NsId ?? p.nsId ?? p.ns_id ?? '',
     }));
 
   next.wsMapping = {
