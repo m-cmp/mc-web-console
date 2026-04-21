@@ -144,9 +144,10 @@ export async function assignAllProjectsToFirstWorkspace() {
     .filter((v) => v !== undefined && v !== null)
     .map(String);
 
+  // BFF SubsystemAnyController는 CommonRequest 래퍼를 풀어서 .Request 만 backend로 forward한다.
+  // wrapper 없이 flat으로 보내면 commonRequest.Request == nil → 빈 body 전달 → 400.
   return await proxyPost(iamUrl('assignWorkspaceProjects'), {
-    workspaceId,
-    projectIds,
+    request: { workspaceId, projectIds },
   });
 }
 
