@@ -199,7 +199,7 @@
                       <input class="form-check-input" type="radio" name="provider-radio" value="partial" onchange="syncToggleProvider()">
                       <span class="form-check-label">부분 선택</span>
                     </label>
-                    <div id="provider-cb-group" class="d-flex gap-3 flex-wrap" style="display:none!important"></div>
+                    <div id="provider-cb-group" class="d-flex gap-3 flex-wrap"></div>
                   </div>
                 </div>
 
@@ -215,13 +215,13 @@
                       <input class="form-check-input" type="radio" name="restype-radio" value="partial" onchange="syncToggleResType()">
                       <span class="form-check-label">부분 선택</span>
                     </label>
-                    <div id="restype-cb-group" class="d-flex gap-3 flex-wrap" style="display:none!important">
-                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="vNet"><span class="form-check-label">vNet</span></label>
-                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="securityGroup"><span class="form-check-label">Security Group</span></label>
-                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="sshKey"><span class="form-check-label">SSH Key</span></label>
-                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="node"><span class="form-check-label">Node</span></label>
-                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="dataDisk"><span class="form-check-label">Data Disk</span></label>
-                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="customImage"><span class="form-check-label">Custom Image</span></label>
+                    <div id="restype-cb-group" class="d-flex gap-3 flex-wrap">
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="vNet" disabled><span class="form-check-label">vNet</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="securityGroup" disabled><span class="form-check-label">Security Group</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="sshKey" disabled><span class="form-check-label">SSH Key</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="node" disabled><span class="form-check-label">Node</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="dataDisk" disabled><span class="form-check-label">Data Disk</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="customImage" disabled><span class="form-check-label">Custom Image</span></label>
                     </div>
                   </div>
                 </div>

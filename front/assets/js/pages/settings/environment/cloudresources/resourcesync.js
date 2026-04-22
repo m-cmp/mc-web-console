@@ -369,12 +369,13 @@ window.syncFilterTable = function (val) {
 // ── 동기화 실행 카드: Provider / ResType toggles ──────────────────────────────
 
 // 동기화 실행 섹션의 provider 체크박스 — 조회 결과에서 추출
+// 기본: disabled + unchecked — "부분 선택" 라디오 클릭 시 활성화
 function populateSyncProviderCheckboxes() {
   const providers = [...new Set(AppState.overviewRows.map(r => getProvider(r.connectionName)))].sort();
   const group = document.getElementById('provider-cb-group');
   group.innerHTML = providers.map(p =>
     `<label class="form-check mb-0">
-       <input class="form-check-input sync-provider-cb" type="checkbox" value="${p}" checked>
+       <input class="form-check-input sync-provider-cb" type="checkbox" value="${p}" disabled>
        <span class="form-check-label">${p.toUpperCase()}</span>
      </label>`
   ).join('');
@@ -382,12 +383,12 @@ function populateSyncProviderCheckboxes() {
 
 window.syncToggleProvider = function () {
   const partial = document.querySelector('input[name="provider-radio"]:checked')?.value === 'partial';
-  document.getElementById('provider-cb-group').style.setProperty('display', partial ? 'flex' : 'none', 'important');
+  document.querySelectorAll('.sync-provider-cb').forEach(cb => { cb.disabled = !partial; });
 };
 
 window.syncToggleResType = function () {
   const partial = document.querySelector('input[name="restype-radio"]:checked')?.value === 'partial';
-  document.getElementById('restype-cb-group').style.setProperty('display', partial ? 'flex' : 'none', 'important');
+  document.querySelectorAll('.sync-type-cb').forEach(cb => { cb.disabled = !partial; });
 };
 
 // ── 동기화 실행 ───────────────────────────────────────────────────────────────
