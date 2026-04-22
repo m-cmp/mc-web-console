@@ -73,14 +73,14 @@ function syncUpdateConnCheckboxes() {
   group.innerHTML = providers.map(p => `
     <div class="mb-2 w-100">
       <label class="form-check mb-1">
-        <input class="form-check-input qry-provider-group-cb" type="checkbox" value="${p}" checked
+        <input class="form-check-input qry-provider-group-cb" type="checkbox" value="${p}"
                onchange="syncToggleProviderConns('${p}', this.checked)">
         <span class="form-check-label fw-semibold text-uppercase">${p}</span>
       </label>
       <div class="ms-3 d-flex gap-3 flex-wrap">
         ${byProvider[p].map(conn =>
           `<label class="form-check mb-0">
-             <input class="form-check-input qry-conn-cb" type="checkbox" value="${conn}" data-provider="${p}" checked>
+             <input class="form-check-input qry-conn-cb" type="checkbox" value="${conn}" data-provider="${p}">
              <span class="form-check-label small">${conn}</span>
            </label>`
         ).join('')}
