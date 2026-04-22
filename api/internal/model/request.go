@@ -4,7 +4,7 @@ package model
 // Buffalo의 CommonRequest와 동일한 구조 유지
 type CommonRequest struct {
 	PathParams  map[string]string      `json:"pathParams"`
-	QueryParams map[string]string      `json:"queryParams"`
+	QueryParams map[string]interface{} `json:"queryParams"`
 	Request     map[string]interface{} `json:"request"`
 }
 
@@ -12,7 +12,7 @@ type CommonRequest struct {
 func NewCommonRequest() *CommonRequest {
 	return &CommonRequest{
 		PathParams:  make(map[string]string),
-		QueryParams: make(map[string]string),
+		QueryParams: make(map[string]interface{}),
 		Request:     make(map[string]interface{}),
 	}
 }
@@ -24,7 +24,7 @@ func (r *CommonRequest) GetPathParam(key string) (string, bool) {
 }
 
 // GetQueryParam QueryParams에서 값 조회
-func (r *CommonRequest) GetQueryParam(key string) (string, bool) {
+func (r *CommonRequest) GetQueryParam(key string) (interface{}, bool) {
 	val, exists := r.QueryParams[key]
 	return val, exists
 }
