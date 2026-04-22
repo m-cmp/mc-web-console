@@ -258,7 +258,7 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
   // securityGroup: Connection 단위 일괄
   if (targetTypes.includes('securityGroup')) {
     try {
-      await api().registerCspNativeResources(nsId, connectionName, ['securityGroup']);
+      await api().registerCspNativeResources(nsId, { connectionName }, ['securityGroup']);
       successCount++;
     } catch (e) {
       if (httpStatus(e) === 409) {
@@ -273,7 +273,7 @@ async function submitImmediate(nsId, connectionName, targetTypes, mciName) {
   // sshKey: Connection 단위 일괄
   if (targetTypes.includes('sshKey')) {
     try {
-      await api().registerCspNativeResources(nsId, connectionName, ['sshKey']);
+      await api().registerCspNativeResources(nsId, { connectionName }, ['sshKey']);
       successCount++;
     } catch (e) {
       if (httpStatus(e) === 409) {

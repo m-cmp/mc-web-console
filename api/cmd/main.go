@@ -97,8 +97,6 @@ func main() {
 	authProtected.POST("/logout", handler.Logout)
 	authProtected.GET("/userinfo", handler.UserInfo)
 
-	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
-	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시
 	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController)
 
 	// 테스트 엔드포인트들
