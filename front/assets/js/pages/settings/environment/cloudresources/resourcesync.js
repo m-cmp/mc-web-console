@@ -36,10 +36,9 @@ window.syncShowTab = function (tab, link) {
 
 window.syncOnProviderModeChange = function () {
   const partial = document.querySelector('input[name="query-provider-radio"]:checked')?.value === 'partial';
-  const providerGroup = document.getElementById('qry-provider-cb-group');
-  const connSection   = document.getElementById('qry-conn-section');
+  const connSection = document.getElementById('qry-conn-section');
 
-  providerGroup.style.setProperty('display', partial ? 'flex' : 'none', 'important');
+  document.querySelectorAll('.qry-provider-cb').forEach(cb => { cb.disabled = !partial; });
   connSection.style.display = partial ? '' : 'none';
 
   if (partial) syncUpdateConnCheckboxes();
@@ -102,12 +101,13 @@ window.syncSelectAllConn = function (checked) {
 };
 
 // Provider 체크박스 초기 생성 (allConnections 로드 후 호출)
+// 기본: disabled + unchecked — "부분 선택" 라디오 클릭 시 활성화
 function populateQueryProviderCheckboxes() {
   const providers = [...new Set(AppState.allConnections.map(c => getProvider(c.configName)))].sort();
   const group = document.getElementById('qry-provider-cb-group');
   group.innerHTML = providers.map(p =>
     `<label class="form-check mb-0">
-       <input class="form-check-input qry-provider-cb" type="checkbox" value="${p}" checked onchange="syncOnProviderChange()">
+       <input class="form-check-input qry-provider-cb" type="checkbox" value="${p}" disabled onchange="syncOnProviderChange()">
        <span class="form-check-label">${p.toUpperCase()}</span>
      </label>`
   ).join('');
@@ -392,6 +392,31 @@ window.syncToggleResType = function () {
 
 // ── 동기화 실행 ───────────────────────────────────────────────────────────────
 
+// connectionName에서 provider, region 추출
+// e.g. "aws-ap-northeast-2" → { provider: "aws", region: "ap-northeast-2" }
+function getProviderRegion(connectionName) {
+  const parts = connectionName.split('-');
+  return {
+    provider: parts[0],
+    region:   parts.slice(1).join('-'),
+  };
+}
+
+// 연결 목록 → 중복 제거된 { provider, region } 필터 배열 반환
+function buildFilters(connNames) {
+  const seen = new Set();
+  const filters = [];
+  for (const name of connNames) {
+    const { provider, region } = getProviderRegion(name);
+    const key = `${provider}|${region}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      filters.push({ provider, region });
+    }
+  }
+  return filters;
+}
+
 window.syncExecute = async function () {
   const nsId = document.getElementById('sync-ns').value;
   if (!nsId) { alert('먼저 Namespace를 선택하세요.'); return; }
@@ -405,48 +430,56 @@ window.syncExecute = async function () {
     types = ['vNet', 'securityGroup', 'sshKey', 'vm', 'dataDisk', 'customImage'];
   }
 
-  let targetConns;
+  // 대상 connection 결정 → provider/region 필터 목록 생성
+  let filters;
   const selectedRows = AppState.overviewTable ? AppState.overviewTable.getSelectedData() : [];
   if (selectedRows.length > 0) {
-    targetConns = selectedRows.map(r => r.connectionName);
+    filters = buildFilters(selectedRows.map(r => r.connectionName));
   } else {
     const providerPartial = document.querySelector('input[name="provider-radio"]:checked')?.value === 'partial';
     if (providerPartial) {
       const selProviders = new Set(
         Array.from(document.querySelectorAll('.sync-provider-cb:checked')).map(c => c.value)
       );
-      targetConns = AppState.overviewRows
+      const conns = AppState.overviewRows
         .filter(r => selProviders.has(getProvider(r.connectionName)))
         .map(r => r.connectionName);
+      filters = buildFilters(conns);
     } else {
-      targetConns = AppState.overviewRows.map(r => r.connectionName);
+      filters = [{}]; // 전체 — provider/region 필터 없음
     }
   }
 
-  if (!confirm(`동기화를 실행합니다.\nNS: ${nsId}\n자원 유형: ${types.join(', ')}\n\n계속하시겠습니까?`)) return;
+  const filterDesc = filters.length === 1 && !filters[0].provider
+    ? '전체'
+    : filters.map(f => `${f.provider}/${f.region}`).join(', ');
+
+  if (!confirm(`동기화를 실행합니다.\nNS: ${nsId}\n대상: ${filterDesc}\n자원 유형: ${types.join(', ')}\n\n계속하시겠습니까?`)) return;
 
   const statusEl = document.getElementById('sync-exec-status');
   statusEl.className = 'text-secondary small';
-  statusEl.textContent = '동기화 실행 중… (시간이 걸릴 수 있습니다)';
+  statusEl.textContent = `동기화 실행 중… (${filters.length}개 요청)`;
 
   AppState.lastSyncResult = [];
-  try {
-    // API는 필터에 관계없이 전체 connection을 대상으로 실행됨 → 1회 호출
-    const result = await api().registerCspNativeResources(nsId, {}, types);
-    AppState.lastSyncResult = [{ success: true, data: result }];
+  let totalSucceeded = 0;
+  let totalFailed = 0;
 
-    const ov = result?.registerationOverview || {};
-    const failed    = ov.failed || 0;
-    const succeeded = Object.entries(ov)
-      .filter(([k]) => k !== 'failed' && k !== 'nlb')
-      .reduce((s, [, v]) => s + (Number(v) || 0), 0);
-    statusEl.className = failed > 0 ? 'text-warning small' : 'text-success small';
-    statusEl.textContent = `완료: ${succeeded}개 등록, ${failed}개 실패`;
-  } catch (e) {
-    AppState.lastSyncResult = [{ success: false, error: e?.response?.data?.message || e.message }];
-    statusEl.className = 'text-danger small';
-    statusEl.textContent = `실패: ${e?.response?.data?.message || e.message}`;
+  for (const filter of filters) {
+    try {
+      const result = await api().registerCspNativeResources(nsId, filter, types);
+      AppState.lastSyncResult.push({ success: true, filter, data: result });
+      const ov = result?.registerationOverview || {};
+      totalFailed    += ov.failed || 0;
+      totalSucceeded += Object.entries(ov)
+        .filter(([k]) => k !== 'failed' && k !== 'nlb')
+        .reduce((s, [, v]) => s + (Number(v) || 0), 0);
+    } catch (e) {
+      AppState.lastSyncResult.push({ success: false, filter, error: e?.response?.data?.message || e.message });
+    }
   }
+
+  statusEl.className = totalFailed > 0 ? 'text-warning small' : 'text-success small';
+  statusEl.textContent = `완료: ${totalSucceeded}개 등록, ${totalFailed}개 실패`;
 
   const resultTabLink = document.querySelector('#sync-tabs .nav-item:last-child .nav-link');
   syncShowTab('result', resultTabLink);
@@ -480,46 +513,60 @@ function renderResultTab() {
     return;
   }
 
-  const entry = AppState.lastSyncResult[0];
-  if (!entry.success) {
-    empty.style.display   = '';
+  const hasSuccess = AppState.lastSyncResult.some(r => r.success);
+  if (!hasSuccess) {
+    empty.style.display = '';
     content.style.display = 'none';
-    document.getElementById('result-empty').textContent = `동기화 실패: ${entry.error}`;
+    document.getElementById('result-empty').textContent =
+      `동기화 실패: ${AppState.lastSyncResult.map(r => r.error).join(', ')}`;
     return;
   }
 
   empty.style.display   = 'none';
   content.style.display = '';
 
-  const data     = entry.data || {};
-  const globalOv = data.registerationOverview || {};
-  const elapsed  = data.elapsedTime ?? '';
-  const avail    = data.availableConnection ?? '';
+  // 전체 결과 집계 (다중 호출 합산)
+  let totalSucceeded = 0;
+  let totalFailed    = 0;
+  let totalElapsed   = 0;
+  let totalAvail     = 0;
 
-  const failed    = globalOv.failed || 0;
-  const succeeded = Object.entries(globalOv)
-    .filter(([k]) => k !== 'failed' && k !== 'nlb')
-    .reduce((s, [, v]) => s + (Number(v) || 0), 0);
-
-  document.getElementById('result-elapsed').textContent = elapsed ? `소요 시간: ${elapsed}초` : '';
-  document.getElementById('result-summary').innerHTML = `
-    <span class="text-secondary small">가용 커넥션: <strong>${avail}</strong></span>
-    <span class="text-success small">등록 성공: <strong>${succeeded}</strong></span>
-    ${failed > 0 ? `<span class="text-danger small">실패: <strong>${failed}</strong></span>` : ''}
-  `;
-
-  // 각 connection별 output[] 문자열 파싱 → flat row 배열
   const rows = [];
-  const connResults = Array.isArray(data.registerationResult) ? data.registerationResult : [];
-  for (const connResult of connResults) {
-    const connName = connResult.connectionName || '';
-    const outputs  = connResult.registerationOutputs?.output || [];
-    if (outputs.length === 0) {
-      rows.push({ connectionName: connName, resourceType: '—', resourceId: '(결과 없음)', status: '—', message: '', _failed: false });
-    } else {
-      outputs.forEach(str => rows.push(parseOutputString(str, connName)));
+  for (const entry of AppState.lastSyncResult) {
+    if (!entry.success) {
+      const filterLabel = entry.filter?.provider
+        ? `${entry.filter.provider}/${entry.filter.region}`
+        : '전체';
+      rows.push({ connectionName: filterLabel, resourceType: '—', resourceId: entry.error, status: 'Error', message: '', _failed: true });
+      continue;
+    }
+    const data     = entry.data || {};
+    const globalOv = data.registerationOverview || {};
+    totalFailed    += globalOv.failed || 0;
+    totalSucceeded += Object.entries(globalOv)
+      .filter(([k]) => k !== 'failed' && k !== 'nlb')
+      .reduce((s, [, v]) => s + (Number(v) || 0), 0);
+    totalElapsed   += data.elapsedTime || 0;
+    totalAvail     += data.availableConnection || 0;
+
+    const connResults = Array.isArray(data.registerationResult) ? data.registerationResult : [];
+    for (const connResult of connResults) {
+      const connName = connResult.connectionName || '';
+      const outputs  = connResult.registerationOutputs?.output || [];
+      if (outputs.length === 0) {
+        rows.push({ connectionName: connName, resourceType: '—', resourceId: '(결과 없음)', status: '—', message: '', _failed: false });
+      } else {
+        outputs.forEach(str => rows.push(parseOutputString(str, connName)));
+      }
     }
   }
+
+  document.getElementById('result-elapsed').textContent = totalElapsed ? `소요 시간: ${totalElapsed}초` : '';
+  document.getElementById('result-summary').innerHTML = `
+    <span class="text-secondary small">가용 커넥션: <strong>${totalAvail}</strong></span>
+    <span class="text-success small">등록 성공: <strong>${totalSucceeded}</strong></span>
+    ${totalFailed > 0 ? `<span class="text-danger small">실패: <strong>${totalFailed}</strong></span>` : ''}
+  `;
 
   if (AppState.resultTable) {
     AppState.resultTable.destroy();
