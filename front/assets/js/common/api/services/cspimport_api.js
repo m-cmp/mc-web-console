@@ -46,6 +46,15 @@ export async function inspectResources(connectionName, resourceType) {
   return res?.data?.responseData;
 }
 
+/**
+ * 전체 커넥션 자원 현황 요약 조회 (Resource Sync 대시보드용)
+ * GET /inspectResourcesOverview
+ */
+export async function getResourcesOverview() {
+  const res = await call('InspectResourcesOverview');
+  return res?.data?.responseData;
+}
+
 // ── Register ─────────────────────────────────────────────────────────────────
 
 /**
@@ -61,16 +70,16 @@ export async function registerVNet(nsId, connectionName, cspResourceId, name) {
 }
 
 /**
- * SecurityGroup / sshKey / DataDisk 일괄 등록 (Connection 단위)
- * POST /registerCspResources?option=securityGroup&option=sshKey&...
+ * CSP 자원 등록 (신규 API: provider/region/zone 기반)
+ * POST /registerCspResources?option=vNet&option=securityGroup&...
  * @param {string} nsId
- * @param {string} connectionName
- * @param {string[]} options  e.g. ['securityGroup'], ['sshKey'], ['dataDisk']
+ * @param {{ provider: string, region?: string, zone?: string }} filter
+ * @param {string[]} resourceTypes  e.g. ['vNet','securityGroup','sshKey']
  */
-export async function registerCspNativeResources(nsId, connectionName, options) {
+export async function registerCspNativeResources(nsId, filter, resourceTypes) {
   const res = await call('RegisterCspNativeResources', {
-    queryParams: { option: options },
-    request: { nsId, connectionName },
+    queryParams: resourceTypes?.length ? { option: resourceTypes } : undefined,
+    request: { nsId, ...filter },
   });
   return res?.data?.responseData;
 }
