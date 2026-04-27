@@ -225,10 +225,10 @@ export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_A
     specId: config.commonSpec,
     imageId: config.commonImage,
     name: config.name,
-    subGroupSize: config.subGroupSize,
+    subGroupSize: parseInt(config.subGroupSize) || 1,
     connectionName: config.connectionName,
     description: config.description,
-    rootDiskSize: config.rootDiskSize,
+    rootDiskSize: (config.rootDiskSize !== "" && config.rootDiskSize !== undefined) ? parseInt(config.rootDiskSize) : 0,
     rootDiskType: config.rootDiskType,
     label: config.label || {},
     vmUserPassword: config.vmUserPassword || ""
@@ -274,10 +274,10 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     specId: config.commonSpec,
     imageId: config.commonImage,
     name: config.name,
-    subGroupSize: config.subGroupSize,
+    subGroupSize: parseInt(config.subGroupSize) || 1,
     connectionName: config.connectionName,
     description: config.description,
-    rootDiskSize: config.rootDiskSize,
+    rootDiskSize: (config.rootDiskSize !== "" && config.rootDiskSize !== undefined) ? parseInt(config.rootDiskSize) : 0,
     rootDiskType: config.rootDiskType
   }));
 
@@ -365,7 +365,7 @@ export async function searchImage(nsId, searchParams) {
     request: searchParams
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "Searchimage";
+  var controller = "/api/" + "mc-infra-manager/" + "SearchImage";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
