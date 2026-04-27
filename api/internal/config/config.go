@@ -14,6 +14,15 @@ type Config struct {
 	MCIAM           MCIAMConfig
 	ApiSpec         *ApiSpec
 	RegistryCache   RegistryCacheInterface
+	SetupYaml       SetupYamlConfig
+}
+
+// SetupYamlConfig FR-CLOUD-ADMIN-006-08용 raw yaml 도달성 확인 설정
+type SetupYamlConfig struct {
+	// MCWEBCONSOLE_MENUYAML mc-web-console 메뉴 정의 yaml의 raw URL
+	McWebconsoleMenuYaml string
+	// MCADMINCLI_APIYAML mc-admin-cli api 카탈로그 yaml의 raw URL
+	McAdmincliApiYaml string
 }
 
 // RegistryCacheInterface proxy.go가 의존하는 캐시 인터페이스 (순환 import 방지).
@@ -72,6 +81,10 @@ func Load() (*Config, error) {
 		MCIAM: MCIAMConfig{
 			Use:       getEnv("MCIAM_USE", "false") == "true",
 			TicketUse: getEnv("MCIAM_TICKET_USE", "false") == "true",
+		},
+		SetupYaml: SetupYamlConfig{
+			McWebconsoleMenuYaml: getEnv("MCWEBCONSOLE_MENUYAML", ""),
+			McAdmincliApiYaml:    getEnv("MCADMINCLI_APIYAML", ""),
 		},
 	}
 

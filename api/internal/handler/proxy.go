@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"mc_web_console_api/internal/config"
@@ -94,6 +95,9 @@ func SubsystemAnyController(c echo.Context) error {
 	// 요청 바디
 	var bodyBytes []byte
 	if commonRequest.Request != nil {
+		if len(effectiveActionSpec.RequestCoerce) > 0 {
+			coerceRequestFields(commonRequest.Request, effectiveActionSpec.RequestCoerce)
+		}
 		bodyBytes, _ = json.Marshal(commonRequest.Request)
 	}
 
@@ -172,4 +176,33 @@ func buildAuthHeader(c echo.Context, service *config.Service) string {
 		}
 	}
 	return ""
+}
+
+// coerceRequestFields whitelist 방식으로 요청 바디의 특정 필드 타입을 변환한다.
+// coerceMap: 필드명 → "int"|"float"|"bool". 선언되지 않은 필드는 건드리지 않는다.
+func coerceRequestFields(req map[string]interface{}, coerceMap map[string]string) {
+	for key, targetType := range coerceMap {
+		val, ok := req[key]
+		if !ok {
+			continue
+		}
+		strVal, ok := val.(string)
+		if !ok {
+			continue
+		}
+		switch targetType {
+		case "int":
+			if n, err := strconv.Atoi(strVal); err == nil {
+				req[key] = n
+			}
+		case "float":
+			if f, err := strconv.ParseFloat(strVal, 64); err == nil {
+				req[key] = f
+			}
+		case "bool":
+			if b, err := strconv.ParseBool(strVal); err == nil {
+				req[key] = b
+			}
+		}
+	}
 }
