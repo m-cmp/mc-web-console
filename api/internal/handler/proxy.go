@@ -73,12 +73,21 @@ func SubsystemAnyController(c echo.Context) error {
 		resourcePath = strings.ReplaceAll(resourcePath, "{"+k+"}", v)
 	}
 
-	// QueryParams 추가
+	// QueryParams 추가 (string 또는 []interface{} 배열 모두 처리)
 	targetURL := effectiveBaseURL + resourcePath
 	if len(commonRequest.QueryParams) > 0 {
 		params := []string{}
 		for k, v := range commonRequest.QueryParams {
-			params = append(params, k+"="+v)
+			switch val := v.(type) {
+			case string:
+				params = append(params, k+"="+val)
+			case []interface{}:
+				for _, item := range val {
+					params = append(params, k+"="+fmt.Sprint(item))
+				}
+			default:
+				params = append(params, k+"="+fmt.Sprint(val))
+			}
 		}
 		targetURL += "?" + strings.Join(params, "&")
 	}
