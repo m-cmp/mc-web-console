@@ -11,6 +11,9 @@
           <li class="nav-item">
             <a class="nav-link" href="#" onclick="syncShowTab('result', this); return false;">동기화 결과</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-nssync-link" href="#" onclick="syncShowTab('nssync', this); return false;">NS 동기화</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -263,6 +266,40 @@
               <div class="card-body p-0">
                 <div id="sync-result-table"></div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NS 동기화 탭 ──────────────────────────────────────────────── -->
+    <div id="tab-nssync" style="display:none;">
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">동기화 차이 조회</h3>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="nsSyncQuery()">조회</button>
+            </div>
+            <div class="card-body" id="nssync-diff-area">
+              <p class="text-muted">조회 버튼을 눌러 Namespace ↔ Project 불일치 현황을 확인하세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row row-cards" id="nssync-apply-card" style="display:none;">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">동기화 적용</h3>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">대상 Workspace</label>
+                <select id="nssync-workspace-sel" class="form-select" style="max-width:320px;"></select>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="nsSyncApply()">적용</button>
+              <div id="nssync-apply-result" class="mt-3"></div>
             </div>
           </div>
         </div>

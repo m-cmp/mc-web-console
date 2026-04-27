@@ -27,6 +27,7 @@ function api() {
 window.syncShowTab = function (tab, link) {
   document.getElementById('tab-overview').style.display = tab === 'overview' ? '' : 'none';
   document.getElementById('tab-result').style.display   = tab === 'result'   ? '' : 'none';
+  document.getElementById('tab-nssync').style.display   = tab === 'nssync'   ? '' : 'none';
   document.querySelectorAll('#sync-tabs .nav-link').forEach(a => a.classList.remove('active'));
   if (link) link.classList.add('active');
   if (tab === 'result') renderResultTab();
@@ -393,14 +394,18 @@ window.syncToggleResType = function () {
 
 // ── 동기화 실행 ───────────────────────────────────────────────────────────────
 
-// connectionName에서 provider, region 추출
-// e.g. "aws-ap-northeast-2" → { provider: "aws", region: "ap-northeast-2" }
+// connectionName → { provider, region } — allConnections의 regionZoneInfo 우선 사용
+// string split 방식은 "alibaba-us-east-1-us-east-1b" → region="us-east-1-us-east-1b" 오파싱 발생
 function getProviderRegion(connectionName) {
-  const parts = connectionName.split('-');
-  return {
-    provider: parts[0],
-    region:   parts.slice(1).join('-'),
-  };
+  const conn = AppState.allConnections.find(c => c.configName === connectionName);
+  if (conn) {
+    return {
+      provider: conn.providerName,
+      region:   conn.regionZoneInfo?.assignedRegion || '',
+    };
+  }
+  // fallback: provider만 추출 (region 필터 없음)
+  return { provider: connectionName.split('-')[0], region: '' };
 }
 
 // 연결 목록 → 중복 제거된 { provider, region } 필터 배열 반환
@@ -550,7 +555,11 @@ function renderResultTab() {
     totalElapsed   += data.elapsedTime || 0;
     totalAvail     += data.availableConnection || 0;
 
-    const connResults = Array.isArray(data.registerationResult) ? data.registerationResult : [];
+    // 단일 connection 응답 ({ connectionName, registerationOutputs })과
+    // 다중 connection 응답 ({ registerationResult: [...] }) 두 형태 모두 처리
+    const connResults = Array.isArray(data.registerationResult)
+      ? data.registerationResult
+      : data.connectionName ? [data] : [];
     for (const connResult of connResults) {
       const connName = connResult.connectionName || '';
       const outputs  = connResult.registerationOutputs?.output || [];
@@ -604,13 +613,117 @@ function renderResultTab() {
 // ── NS 드롭다운 ───────────────────────────────────────────────────────────────
 
 async function loadNsDropdown() {
-  const nsList = await api().getAllNs().catch(() => []);
   const sel = document.getElementById('sync-ns');
+  const wsApi = webconsolejs['common/api/services/workspace_api'];
+  const curWs = wsApi.getCurrentWorkspace();
+  if (curWs?.Id) {
+    const projects = await wsApi.getUserProjectList(curWs.Id).catch(() => []);
+    const nsIds = projects.map(p => p.nsid || p.NsId).filter(Boolean);
+    if (nsIds.length > 0) {
+      nsIds.forEach(id => sel.appendChild(new Option(id, id)));
+      return;
+    }
+  }
+  const nsList = await api().getAllNs().catch(() => []);
   nsList.forEach(n => {
     const id = n.id || n.nsId || n.name || String(n);
     sel.appendChild(new Option(id, id));
   });
 }
+
+// ── NS 동기화 ─────────────────────────────────────────────────────────────────
+
+window.nsSyncQuery = async function () {
+  const area = document.getElementById('nssync-diff-area');
+  area.innerHTML = '<p>조회 중...</p>';
+  const diff = await api().getProjectSyncDiff().catch(() => null);
+  if (!diff) {
+    area.innerHTML = '<p class="text-danger">조회 실패 — API 연결을 확인하세요.</p>';
+    return;
+  }
+  renderNsSyncDiff(diff);
+};
+
+function renderNsSyncDiff(diff) {
+  const missing    = diff.missingProjects    || [];
+  const unassigned = diff.unassignedProjects || [];
+  const hasIssue   = missing.length > 0 || unassigned.length > 0;
+  let html = '';
+  if (!hasIssue) {
+    html = '<p class="text-success fw-semibold">동기화 상태 정상 — 모든 Namespace가 Workspace에 할당되어 있습니다.</p>';
+  } else {
+    if (missing.length > 0) {
+      html += `<h6 class="mb-2">Project 미생성 Namespace (${missing.length}건)</h6>
+      <table class="table table-sm table-bordered mb-3">
+        <thead class="table-light"><tr><th>NS ID</th><th>NS Name</th></tr></thead>
+        <tbody>${missing.map(r => `<tr><td>${r.nsId}</td><td>${r.nsName || ''}</td></tr>`).join('')}</tbody>
+      </table>`;
+    }
+    if (unassigned.length > 0) {
+      html += `<h6 class="mb-2">Workspace 미할당 Project (${unassigned.length}건)</h6>
+      <table class="table table-sm table-bordered mb-3">
+        <thead class="table-light"><tr><th>Project ID</th><th>Name</th><th>NS ID</th></tr></thead>
+        <tbody>${unassigned.map(r => `<tr><td>${r.id}</td><td>${r.name}</td><td>${r.nsId || ''}</td></tr>`).join('')}</tbody>
+      </table>`;
+    }
+  }
+  document.getElementById('nssync-diff-area').innerHTML = html;
+  const applyCard = document.getElementById('nssync-apply-card');
+  if (hasIssue) {
+    loadNsSyncWorkspaceDropdown();
+    applyCard.style.display = '';
+  } else {
+    applyCard.style.display = 'none';
+  }
+}
+
+async function loadNsSyncWorkspaceDropdown() {
+  const sel = document.getElementById('nssync-workspace-sel');
+  sel.innerHTML = '';
+  const wsApi = webconsolejs['common/api/services/workspace_api'];
+  const list = typeof wsApi.getWorkspaceList === 'function'
+    ? await wsApi.getWorkspaceList().catch(() => [])
+    : [];
+  if (list.length === 0) {
+    const cur = wsApi.getCurrentWorkspace();
+    if (cur?.Id) sel.appendChild(new Option(cur.Name || cur.Id, cur.Id));
+    return;
+  }
+  list.forEach(ws => sel.appendChild(new Option(ws.name || ws.Name || ws.id, ws.id || ws.Id)));
+}
+
+window.nsSyncApply = async function () {
+  const workspaceId = document.getElementById('nssync-workspace-sel').value;
+  if (!workspaceId) { alert('Workspace를 선택하세요.'); return; }
+  const resultDiv = document.getElementById('nssync-apply-result');
+  resultDiv.innerHTML = '<p>적용 중...</p>';
+
+  const diff = await api().getProjectSyncDiff().catch(() => null);
+  if (!diff) { resultDiv.innerHTML = '<p class="text-danger">차이 조회 실패</p>'; return; }
+
+  const nsIds = [
+    ...(diff.missingProjects    || []).map(r => r.nsId),
+    ...(diff.unassignedProjects || []).map(r => r.nsId),
+  ].filter(Boolean);
+
+  if (nsIds.length === 0) {
+    resultDiv.innerHTML = '<p class="text-success">적용할 항목이 없습니다.</p>';
+    return;
+  }
+
+  const result = await api().applyProjectSync(workspaceId, nsIds).catch(() => null);
+  if (!result) { resultDiv.innerHTML = '<p class="text-danger">적용 실패</p>'; return; }
+
+  resultDiv.innerHTML = `
+    <ul class="list-unstyled mb-0">
+      <li>생성: <strong>${(result.created || []).length}</strong>건</li>
+      <li>할당: <strong>${(result.assigned || []).length}</strong>건</li>
+      <li>스킵: <strong>${(result.skipped || []).length}</strong>건</li>
+      <li>실패: <strong>${(result.failed  || []).length}</strong>건</li>
+    </ul>`;
+
+  await window.nsSyncQuery();
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 

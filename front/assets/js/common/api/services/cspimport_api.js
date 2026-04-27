@@ -161,3 +161,31 @@ export async function resumeSchedule(jobId) {
 export async function deleteSchedule(jobId) {
   return call('DeleteScheduleRegisterCspResources', { pathParams: { jobId } });
 }
+
+// ── NS Sync (IAM) ─────────────────────────────────────────────────────────────
+
+const IAM_BASE = '/api/mc-iam-manager/';
+
+async function iamCall(operationId, opts = {}) {
+  return webconsolejs['common/api/http'].commonAPIPost(IAM_BASE + operationId, opts);
+}
+
+/**
+ * Infra NS ↔ IAM Project 동기화 차이 조회
+ * GET /api/setup/projects/sync-diff
+ */
+export async function getProjectSyncDiff() {
+  const res = await iamCall('GetProjectSyncDiff');
+  return res?.data?.responseData || { missingProjects: [], unassignedProjects: [] };
+}
+
+/**
+ * NS 동기화 적용 — Project 생성 + Workspace 할당
+ * POST /api/setup/projects/sync
+ * @param {string} workspaceId
+ * @param {string[]} nsIds
+ */
+export async function applyProjectSync(workspaceId, nsIds) {
+  const res = await iamCall('ApplyProjectSync', { request: { workspaceId, nsIds } });
+  return res?.data?.responseData || {};
+}

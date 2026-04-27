@@ -1197,6 +1197,14 @@ serviceActions:
       method: post
       resourcePath: /api/csp-accounts/id/{accountId}/deactivate
       description: CSP 계정 비활성화
+    GetProjectSyncDiff:
+      method: get
+      resourcePath: /api/setup/projects/sync-diff
+      description: "Infra NS ↔ IAM Project 동기화 차이 조회"
+    ApplyProjectSync:
+      method: post
+      resourcePath: /api/setup/projects/sync
+      description: "nsIds + workspaceId를 받아 Project 생성 + Workspace 할당"
   mc-infra-manager:
     GetInfraReadyzInit:
       method: put
