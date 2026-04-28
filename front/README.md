@@ -1,23 +1,52 @@
-# Welcome to Buffalo
+# MC Web Console Front
 
-Thank you for choosing Buffalo for your web development needs.
+Echo 기반 웹 콘솔 프론트엔드입니다.
 
-## Starting the Application
+## 사전 요구사항
 
-Buffalo ships with a command that will watch your application and automatically rebuild the Go binary and any assets for you. To do that run the "buffalo dev" command:
+- Go 1.25+
+- Node.js 18+
+- npm
 
-```console
-buffalo dev
+## 로컬 실행
+
+### 1. 프론트엔드 에셋 빌드
+
+```bash
+npm install
+npm run build
 ```
 
-If you point your browser to [http://127.0.0.1:3000](http://127.0.0.1:3000) you should see a "Welcome to Buffalo!" page.
+### 2. Go 서버 실행
 
-**Congratulations!** You now have your Buffalo application up and running.
+```bash
+go run ./cmd/app/main.go
+```
 
-## What Next?
+기본 주소: [http://127.0.0.1:3001](http://127.0.0.1:3001)
 
-We recommend you heading over to [http://gobuffalo.io](http://gobuffalo.io) and reviewing all of the great documentation there.
+## 개발 시 에셋 감시
 
-Good luck!
+에셋 변경 시 자동 빌드:
 
-[Powered by Buffalo](http://gobuffalo.io)
+```bash
+npm run dev
+```
+
+별도 터미널에서 Go 서버를 실행하세요.
+
+## Docker 빌드
+
+```bash
+docker build -t mc-web-console-front .
+docker run -p 3001:3001 mc-web-console-front
+```
+
+## 환경 변수
+
+| 변수 | 기본값 | 설명 |
+|------|--------|------|
+| FRONT_ADDR | 0.0.0.0 | 서버 바인드 주소 |
+| FRONT_PORT | 3001 | 서버 포트 |
+| API_ADDR | localhost | 백엔드 API 주소 |
+| API_PORT | 3000 | 백엔드 API 포트 |

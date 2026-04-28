@@ -8,62 +8,226 @@
     border: 1px solid #e0e6ed;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
-  
-  // 트리 노드 기본
+
+  // jsTree 기본: .jstree-node는 block — flex로 바꾸면 32px.png 세로/가지 선 배경이 깨짐
+  .jstree-default .jstree-node,
+  .jstree.jstree-default .jstree-node,
+  .jstree-default > .jstree-container-ul .jstree-node,
+  .jstree-node,
+  li.jstree-node {
+    display: block !important;
+    min-height: 24px !important;
+    height: auto !important;
+    line-height: 24px !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    white-space: nowrap;
+  }
+  .jstree-node > .jstree-ocl,
+  .jstree-node > .jstree-anchor {
+    margin: 0 !important;
+    vertical-align: top;
+  }
+  .jstree-node > .jstree-ocl {
+    display: inline-block !important;
+  }
+  .jstree-node > .jstree-anchor {
+    padding: 0 8px !important;
+    white-space: nowrap;
+  }
+
+  // 체크박스(.jstree-checkbox)는 테마 스프라이트 24×24 기준 — anchor를 18px로 고정하면
+  // 잘리거나 보이지 않는 것처럼 보일 수 있음
+  .jstree-default .jstree-anchor,
   .jstree-anchor {
     color: #333;
-    padding: 4px 8px;
+    padding: 0 8px !important;
+    line-height: 24px !important;
+    min-height: 24px !important;
+    height: auto !important;
     border-radius: 4px;
-    display: flex;
+    display: inline-flex !important;
     align-items: center;
     gap: 6px;
     text-decoration: none;
-  
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    vertical-align: top;
+  }
+
+  .jstree-anchor {
     &:hover {
       background-color: #f0f4f8;
       color: #0054a6;
     }
-  
+
     &.jstree-clicked {
       background-color: #e6f0ff;
       color: #0054a6;
       font-weight: 500;
     }
   }
-  
-  // 아이콘 스타일
-  .jstree-themeicon {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
+
+  // Tabler 커스텀 아이콘(폰트 등)용 — ocl·체크박스는 32px.png 24×24 그리드 유지 (트리 선·+/-)
+  .jstree-default .jstree-icon:not(.jstree-checkbox):not(.jstree-ocl),
+  .jstree-icon:not(.jstree-checkbox):not(.jstree-ocl) {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    vertical-align: middle !important;
+    background-color: transparent !important;
+    box-sizing: border-box !important;
   }
-  
-  // 체크박스 커스터마이징
-  .jstree-checkbox {
-    margin-right: 6px;
-    transform: scale(1.1);
-  }
-  
-  // 노드 간 간격
-  .jstree-node {
-    margin-bottom: 0px;
-  }
-  
-  // 하위 노드 들여쓰기
-  .jstree-children {
-    margin-left: 12px;
-  }
-  
-  // 전체 행 하이라이트 (wholerow plugin용)
-  .jstree-wholerow {
-    border-radius: 4px;
-    height: 28px;
+  .jstree-icon:empty:not(.jstree-checkbox):not(.jstree-ocl) {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
   }
 
+  // 펼침/접힘: 테마 스프라이트 그대로 (오버라이드 제거)
+  .jstree-default .jstree-ocl {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    line-height: 24px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    background-image: url('~jstree/src/themes/default/32px.png') !important;
+    background-color: transparent !important;
+  }
+  // themeicon(폴더 등)이 하얗게 보일 때 대비 — 배경을 더 진하게, 행 높이 추가 금지
+  .jstree-themeicon {
+    width: 16px !important;
+    height: 16px !important;
+    max-height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+    background-image: none !important;
+    background-color: rgba(0, 0, 0, 0.15) !important;
+    border-radius: 2px;
+  }
+
+  // 체크박스: jsTree default 테마 스프라이트(32px.png)의 background-position은
+  // .jstree-default .jstree-icon 기본 크기(24×24)에 맞춰져 있음.
+  // 위의 공통 .jstree-icon 18×18 강제 시 스프라이트가 잘려 체크/빈 칸이 구분 안 되는
+  // 작은 네모(또는 얼룩)로만 보이는 현상이 남 — 체크박스만 원래 그리드 크기 유지.
+  .jstree-checkbox.jstree-icon,
+  .jstree-icon.jstree-checkbox {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    max-height: 24px !important;
+    line-height: 24px !important;
+    margin-right: 6px;
+    flex-shrink: 0;
+    // style.css의 상대 url("32px.png")가 번들/배포 경로에서 깨질 때 대비
+    background-image: url('~jstree/src/themes/default/32px.png') !important;
+    background-repeat: no-repeat !important;
+  }
+
+  // 들여쓰기: 테마 margin-left(24px)와 겹치지 않게 과도한 추가 margin 피함
+  .jstree-node > .jstree-children {
+    display: block;
+  }
+  .jstree-children {
+    margin-left: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+  }
+
+  // 전체 행(wholerow) 높이 — 행 간격 축소
+  .jstree-default .jstree-wholerow,
+  .jstree-wholerow {
+    min-height: 24px !important;
+    height: auto !important;
+    border-radius: 4px;
+  }
+
+  // max-width: 768px — jstree responsive 테마는 40px 스프라이트 사용
+  @media (max-width: 768px) {
+    .jstree-default-responsive .jstree-checkbox.jstree-icon,
+    .jstree-default-responsive .jstree-icon.jstree-checkbox {
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      max-height: 40px !important;
+      line-height: 40px !important;
+      background-image: url('~jstree/src/themes/default/40px.png') !important;
+    }
+  }
+
+// li.jstree-node에 margin:0 !important를 주면 테마의 margin-left(깊이 들여쓰기·세로선)가 막혀 계층이 한 줄로 보임
 .jstree,
-.jstree ul,
-.jstree li {
+.jstree ul {
   list-style: none !important;
-  margin: 5;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.jstree li:not(.jstree-node) {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.jstree li.jstree-node {
+  list-style: none !important;
+  padding: 0 !important;
+}
+
+// Roles — Platform access 트리: Tabler reboot `ul { padding-left: 2rem }`·UA 불릿이 남거나
+// `.jstree-no-checkboxes`로 체크박스가 숨겨진 경우에도 ID 특이도로 복구
+#platform-menu-edit-tree.jstree,
+#platform-menu-create-tree.jstree,
+#platform-menu-tree.jstree {
+  ul,
+  ol,
+  li {
+    list-style: none !important;
+    list-style-type: none !important;
+    list-style-image: none !important;
+  }
+
+  > ul.jstree-container-ul,
+  ul.jstree-children {
+    padding-left: 0 !important;
+  }
+
+  // 테마: .jstree-default .jstree-no-checkboxes .jstree-checkbox { display: none !important; }
+  .jstree-checkbox.jstree-icon {
+    display: inline-flex !important;
+    visibility: visible !important;
+    box-sizing: border-box !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    border: 1px solid rgba(0, 84, 166, 0.22);
+    border-radius: 2px;
+    background-image: url('~jstree/src/themes/default/32px.png') !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #platform-menu-edit-tree.jstree.jstree-default-responsive .jstree-checkbox.jstree-icon,
+  #platform-menu-create-tree.jstree.jstree-default-responsive .jstree-checkbox.jstree-icon,
+  #platform-menu-tree.jstree.jstree-default-responsive .jstree-checkbox.jstree-icon {
+    min-width: 40px !important;
+    min-height: 40px !important;
+    background-image: url('~jstree/src/themes/default/40px.png') !important;
+  }
 }

@@ -1,1 +1,188 @@
-<%= partial("underdevelop.html") %>
+<div class="page-body">
+  <div class="container-xl">
+    <div class="row row-cards">
+      <!-- Threshold Policy List -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Threshold Policies</h3>
+            <div class="card-actions btn-actions">
+              <button class="btn btn-sm btn-primary"
+                data-bs-toggle="modal" data-bs-target="#threshold-create-modal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon icon-tabler icon-tabler-plus">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M12 5l0 14"></path>
+                  <path d="M5 12l14 0"></path>
+                </svg>
+                Add Policy
+              </button>
+              <a class="btn-action"
+                onclick="webconsolejs['pages/operations/analytics/eventsntraces/thresholdconfig'].refreshList()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+            <div id="threshold-table" class="threshold-table-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div id="threshold-detail-panel" class="col-12" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              Policy Detail
+              <span id="threshold-detail-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                [<span id="threshold-detail-name-text"></span>]
+              </span>
+            </h3>
+            <div class="card-actions btn-actions">
+              <button class="btn btn-sm btn-outline-warning"
+                onclick="webconsolejs['pages/operations/analytics/eventsntraces/thresholdconfig'].editSelected()">
+                Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger"
+                onclick="webconsolejs['pages/operations/analytics/eventsntraces/thresholdconfig'].deleteSelected()">
+                Delete
+              </button>
+              <a class="btn-action" onclick="webconsolejs['pages/operations/analytics/eventsntraces/thresholdconfig'].hideDetail()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon icon-tabler icon-tabler-x">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M18 6l-12 12"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="datagrid">
+              <div class="datagrid-item">
+                <div class="datagrid-title">Policy ID</div>
+                <div class="datagrid-content" id="detail-threshold-id">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Policy Name</div>
+                <div class="datagrid-content" id="detail-threshold-name">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Metric</div>
+                <div class="datagrid-content" id="detail-threshold-metric">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Operator</div>
+                <div class="datagrid-content" id="detail-threshold-operator">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Threshold Value</div>
+                <div class="datagrid-content" id="detail-threshold-value">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Severity</div>
+                <div class="datagrid-content" id="detail-threshold-severity">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Duration (s)</div>
+                <div class="datagrid-content" id="detail-threshold-duration">-</div>
+              </div>
+              <div class="datagrid-item">
+                <div class="datagrid-title">Status</div>
+                <div class="datagrid-content" id="detail-threshold-status">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Threshold Modal -->
+<div class="modal modal-blur fade" id="threshold-create-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Threshold Policy</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="threshold-create-form">
+          <div class="mb-3">
+            <label class="form-label required">Policy Name</label>
+            <input type="text" class="form-control" id="create-threshold-name" placeholder="e.g., high-cpu-alert" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Metric</label>
+            <select class="form-select" id="create-threshold-metric" required>
+              <option value="">Select Metric</option>
+              <option value="cpu">CPU Usage (%)</option>
+              <option value="memory">Memory Usage (%)</option>
+              <option value="disk">Disk Usage (%)</option>
+              <option value="network_in">Network In (bytes/s)</option>
+              <option value="network_out">Network Out (bytes/s)</option>
+            </select>
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Operator</label>
+              <select class="form-select" id="create-threshold-operator" required>
+                <option value="">Select</option>
+                <option value="gt">&gt; Greater than</option>
+                <option value="gte">&gt;= Greater or equal</option>
+                <option value="lt">&lt; Less than</option>
+                <option value="lte">&lt;= Less or equal</option>
+              </select>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Threshold Value</label>
+              <input type="number" class="form-control" id="create-threshold-value" min="0" required>
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Severity</label>
+              <select class="form-select" id="create-threshold-severity" required>
+                <option value="">Select</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Duration (seconds)</label>
+              <input type="number" class="form-control" id="create-threshold-duration" min="0" value="60">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary"
+          onclick="webconsolejs['pages/operations/analytics/eventsntraces/thresholdconfig'].createPolicy()">
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/utils/formvalidation.js") | raw }}
+{{ javascriptTag("pages/operations/analytics/eventsntraces/thresholdconfig.js") | raw }}
+{{ javascriptTag("common/api/services/eventalarm_api.js") | raw }}

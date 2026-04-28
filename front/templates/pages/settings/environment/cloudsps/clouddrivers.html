@@ -1,0 +1,136 @@
+<div class="page-body">
+  <div class="container-xl">
+
+    <!-- DRIVER LIST SECTION -->
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Cloud Drivers</h3>
+              <div class="card-actions btn-actions">
+
+                <!-- action dropdown -->
+                <div class="dropdown">
+                  <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M6 9l6 6l6 -6"></path>
+                    </svg>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <a class="dropdown-item" href="#"
+                      data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this, 'Delete Driver', 'Would you like to delete the selected driver(s)?', 'pages/settings/environment/cloudsps/clouddrivers.deleteDrivers')">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M4 7l16 0"></path>
+                        <path d="M10 11l0 6"></path>
+                        <path d="M14 11l0 6"></path>
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                      </svg>
+                      Delete
+                    </a>
+                  </div>
+                </div>
+
+                <!-- refresh -->
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/clouddrivers'].refreshDriverList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+              <div id="driver-table" class="driver-table-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 모드 — 드라이버 상세 정보 -->
+      <div id="view-mode-cards" class="collapse bg-secondary-lt">
+        <div class="card" id="driver-info-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              Driver Info
+              <span id="driver-info-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                [<span id="driver-info-name-text"></span>]
+              </span>
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="row p-4 mb-2" style="background-color:#f8f9fa; border-radius:8px; border:1px solid #e9ecef">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Driver Name</div>
+                  <div class="datagrid-content" id="driver-info-drivername"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="driver-info-provider"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Driver Library</div>
+                  <div class="datagrid-content" id="driver-info-lib"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD DRIVER SECTION -->
+      <div id="drivercreate" class="collapse">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Add Cloud Driver</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label required">Driver Name</label>
+                  <input type="text" class="form-control" id="create-driver-name" placeholder="e.g. aws-driver-v1">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label required">Provider Name</label>
+                  <select class="form-select" id="create-driver-provider">
+                    <option value="">Select Provider</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label required">Driver Library File Name</label>
+                  <input type="text" class="form-control" id="create-driver-lib" placeholder="e.g. aws-driver-v2.so">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <a href="#drivercreate" class="btn btn-outline-secondary me-2"
+              data-bs-toggle="collapse" data-bs-target="#drivercreate">Cancel</a>
+            <button class="btn btn-primary"
+              onclick="webconsolejs['pages/settings/environment/cloudsps/clouddrivers'].createDriver()">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /index section -->
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/clouddriver_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/clouddrivers.js") | raw }}

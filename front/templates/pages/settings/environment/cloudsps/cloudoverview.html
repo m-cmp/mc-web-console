@@ -1,1 +1,420 @@
-<%= partial("underdevelop.html") %>
+<div class="page-body">
+  <div class="container-xl">
+
+    <!-- CSP ACCOUNT LIST SECTION -->
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">List of Cloud Service Providers</h3>
+              <div class="card-actions btn-actions">
+
+                <!-- filter toggle -->
+                <a class="btn-action" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#csp-filterbody" aria-expanded="false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"></path>
+                  </svg>
+                </a>
+
+                <!-- action dropdown -->
+                <div class="dropdown">
+                  <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M6 9l6 6l6 -6"></path>
+                    </svg>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <a class="dropdown-item" href="#"
+                      data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this, 'Delete CSP Account', 'Would you like to delete the selected CSP account(s)?', 'pages/settings/environment/cloudsps/cloudoverview.deleteCspAccounts')">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M4 7l16 0"></path>
+                        <path d="M10 11l0 6"></path>
+                        <path d="M14 11l0 6"></path>
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                      </svg>
+                      Delete
+                    </a>
+                  </div>
+                </div>
+
+                <!-- refresh -->
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].refreshCspList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- Filter 영역 -->
+            <div id="csp-filterbody" class="accordion-collapse collapse">
+              <div class="accordion-body p-3 row">
+                <div class="col-sm-12 col-md-3 row mb-1">
+                  <div class="col-4 col-form-label d-flex justify-content-end">CSP Type</div>
+                  <select class="col form-select" id="csp-filter-type">
+                    <option value="">All</option>
+                    <option value="aws">AWS</option>
+                    <option value="gcp">GCP</option>
+                    <option value="azure">Azure</option>
+                  </select>
+                </div>
+                <div class="col-sm-12 col-md-3 row mb-1">
+                  <div class="col-4 col-form-label d-flex justify-content-end">Status</div>
+                  <select class="col form-select" id="csp-filter-status">
+                    <option value="">All</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+                <div class="col-auto d-flex align-items-end mb-1">
+                  <a id="csp-filter-clear" class="btn btn-icon" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M18 6l-12 12"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+              <div id="csp-accounts-table" class="csp-accounts-table-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 모드 — CSP 상세 정보 -->
+      <div id="view-mode-cards" class="collapse bg-secondary-lt">
+        <div class="card" id="csp-info-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              CSP Account Info
+              <span id="csp-info-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                [<span id="csp-info-name-text"></span>]
+              </span>
+            </h3>
+            <div class="card-actions btn-actions">
+              <button class="btn btn-outline-secondary" onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].validateSelectedCsp()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M5 12l5 5l10 -10"></path>
+                </svg>
+                Validate
+              </button>
+              <button id="csp-toggle-status-btn" class="btn btn-outline-warning"
+                onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].toggleSelectedCspStatus()">
+                Deactivate
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row p-4 mb-2" style="background-color:#f8f9fa; border-radius:8px; border:1px solid #e9ecef">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Name</div>
+                  <div class="datagrid-content" id="csp-info-name"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CSP Type</div>
+                  <div class="datagrid-content" id="csp-info-type"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Status</div>
+                  <div class="datagrid-content" id="csp-info-status"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Description</div>
+                  <div class="datagrid-content" id="csp-info-description"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Created At</div>
+                  <div class="datagrid-content" id="csp-info-created"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Updated At</div>
+                  <div class="datagrid-content" id="csp-info-updated"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD CSP SECTION -->
+      <div id="cspcreate" class="collapse">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Add CSP Account</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label required">CSP Type</label>
+                  <select class="form-select" id="create-csp-type">
+                    <option value="">Select CSP Type</option>
+                    <option value="aws">AWS</option>
+                    <option value="gcp">GCP</option>
+                    <option value="azure">Azure</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label required">Account Name</label>
+                  <input type="text" class="form-control" id="create-csp-name" placeholder="e.g. my-aws-account">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <input type="text" class="form-control" id="create-csp-description" placeholder="Optional description">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <!-- AWS fields -->
+                <div id="create-fields-aws" style="display:none">
+                  <div class="mb-3">
+                    <label class="form-label required">Access Key ID</label>
+                    <input type="text" class="form-control" id="create-aws-access-key" placeholder="AKIAIOSFODNN7EXAMPLE">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Secret Access Key</label>
+                    <input type="password" class="form-control" id="create-aws-secret-key" placeholder="Secret Access Key">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Default Region</label>
+                    <input type="text" class="form-control" id="create-aws-region" placeholder="ap-northeast-2">
+                  </div>
+                </div>
+                <!-- GCP fields -->
+                <div id="create-fields-gcp" style="display:none">
+                  <div class="mb-3">
+                    <label class="form-label required">Project ID</label>
+                    <input type="text" class="form-control" id="create-gcp-project-id" placeholder="my-gcp-project">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Client Email</label>
+                    <input type="text" class="form-control" id="create-gcp-client-email" placeholder="sa@project.iam.gserviceaccount.com">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Private Key</label>
+                    <textarea class="form-control" id="create-gcp-private-key" rows="4" placeholder="-----BEGIN RSA PRIVATE KEY-----"></textarea>
+                  </div>
+                </div>
+                <!-- Azure fields -->
+                <div id="create-fields-azure" style="display:none">
+                  <div class="mb-3">
+                    <label class="form-label required">Subscription ID</label>
+                    <input type="text" class="form-control" id="create-azure-subscription-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Tenant ID</label>
+                    <input type="text" class="form-control" id="create-azure-tenant-id" placeholder="Tenant ID">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Client ID</label>
+                    <input type="text" class="form-control" id="create-azure-client-id" placeholder="Client ID">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required">Client Secret</label>
+                    <input type="password" class="form-control" id="create-azure-client-secret" placeholder="Client Secret">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <a href="#cspcreate" class="btn btn-outline-secondary me-2"
+              data-bs-toggle="collapse" data-bs-target="#cspcreate">Cancel</a>
+            <button class="btn btn-primary"
+              onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].createCspAccount()">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /index section -->
+
+    <!-- READYZ SECTION -->
+    <div id="readyz-section" class="row row-cards mt-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Readyz</h3>
+            <div class="card-subtitle text-muted">Framework health check and initialization</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary" onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runAllReadyz()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="icon me-1">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M7 4v16l13 -8z"></path>
+                </svg>
+                Run All
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+              <thead>
+                <tr>
+                  <th style="width:160px">Framework</th>
+                  <th>BaseURL</th>
+                  <th style="width:140px">Status</th>
+                  <th style="width:220px">Actions</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="readyz-table-body">
+                <!-- JS에서 동적 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /readyz section -->
+
+    <!-- SETUP STATUS SECTION (FR-CLOUD-ADMIN-006-08) -->
+    <div id="setup-status-section" class="row row-cards mt-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Setup Status</h3>
+            <div class="card-subtitle text-muted">
+              Pre-onboarding setup verification — 1_setup_auto.sh 7-step result, menu/api yaml reachability, credentials, loadAssets
+            </div>
+            <div class="card-actions">
+              <button id="setup-refresh-all-btn" class="btn btn-sm btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+                Refresh All
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- 섹션 레벨 오류 배너 (refresh/action 실패 시 표시) -->
+            <div id="setup-status-error" class="d-none"></div>
+            <!-- 5개 카드 -->
+            <div id="setup-sequence-card" class="mb-3"></div>
+            <div id="setup-roles-card" class="mb-3"></div>
+            <div id="setup-menu-card" class="mb-3"></div>
+            <div id="setup-api-card" class="mb-3"></div>
+            <div id="setup-projects-card" class="mb-3"></div>
+            <div id="setup-wsmapping-card" class="mb-3"></div>
+            <div id="setup-credentials-card" class="mb-3"></div>
+            <div id="setup-loadassets-card" class="mb-3"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /setup status section -->
+
+  </div>
+</div>
+
+<!-- CSP 자원 동기화 팝업 (RQ-CLOUD-ADMIN-007) -->
+<div class="modal modal-blur fade" id="sync-csp-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">CSP 자원 동기화</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- 대상 프로젝트 (읽기전용) -->
+        <div class="mb-3">
+          <label class="form-label">대상 프로젝트</label>
+          <input type="text" class="form-control" id="sync-target-project" readonly>
+        </div>
+        <!-- CSP 계정 선택 -->
+        <div class="mb-3">
+          <label class="form-label">CSP 계정</label>
+          <select class="form-select" id="sync-connection-select">
+            <option value="">전체 계정</option>
+          </select>
+        </div>
+        <!-- 자원 유형 선택 -->
+        <div class="mb-3">
+          <label class="form-label">동기화할 자원 유형 <span class="text-muted">(복수 선택 가능)</span></label>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="vNet" checked>
+                <span class="form-check-label">VNet (VPC)</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="securityGroup" checked>
+                <span class="form-check-label">SecurityGroup</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="sshKey" checked>
+                <span class="form-check-label">SSH Key</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="vm" checked>
+                <span class="form-check-label">VM</span>
+              </label>
+            </div>
+            <div class="col-6">
+              <label class="form-check">
+                <input class="form-check-input sync-resource-type" type="checkbox" value="dataDisk" checked>
+                <span class="form-check-label">DataDisk</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- 결과 영역 (실행 후 표시) -->
+        <div id="sync-result" class="d-none">
+          <hr>
+          <label class="form-label">동기화 결과</label>
+          <div id="sync-result-body"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" id="sync-execute-btn"
+          onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].executeSyncCspResources()">
+          <span id="sync-execute-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          동기화 실행
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }}
+{{ javascriptTag("common/api/services/import_api.js") | raw }}
+{{ javascriptTag("common/api/services/readyz_api.js") | raw }}
+{{ javascriptTag("common/api/services/setup_status_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/setup_status_section.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}

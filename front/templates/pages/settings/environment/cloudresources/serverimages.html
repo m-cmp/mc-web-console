@@ -1,0 +1,122 @@
+<div class="page-body">
+  <div class="container-xl">
+
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Server Image List</h3>
+            <div class="card-options ms-auto d-flex gap-2 align-items-center">
+              <span id="serverimages-context-label" class="text-secondary small"></span>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div id="image-table"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-mode-cards" class="collapse">
+      <div class="row row-cards mt-2">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Image Info — <span id="detail-name" class="text-primary"></span></h3>
+              <div class="card-options">
+                <button class="btn btn-sm btn-ghost-danger" onclick="deleteImage()">Delete</button>
+                <a href="#" class="card-options-remove" onclick="hideDetail()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M18 6l-12 12"></path><path d="M6 6l12 12"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Image Name</div>
+                  <div class="datagrid-content" id="detail-imageName">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">OS Type</div>
+                  <div class="datagrid-content" id="detail-osType">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Architecture</div>
+                  <div class="datagrid-content" id="detail-architecture">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">CspImageId</div>
+                  <div class="datagrid-content" id="detail-cspImageId">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Namespace</div>
+                  <div class="datagrid-content" id="detail-ns">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal modal-blur fade" id="create-image-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Register Server Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Image Name</label>
+          <input type="text" id="modal-imageName" class="form-control" placeholder="my-image">
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">CSP Image Name</label>
+          <div class="input-group">
+            <input type="text" id="modal-cspImageName" class="form-control" placeholder="Select from popup" readonly>
+            <button class="btn btn-outline-secondary" type="button" onclick="openImageSelectPopup()">Select</button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Connection Name</label>
+          <input type="text" id="modal-connectionName" class="form-control" readonly placeholder="(auto-filled from popup)">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitRegisterImage()">Register</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Select Popup -->
+<div class="modal modal-blur fade" id="image-select-popup" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Image from CSP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Connection</label>
+          <select id="popup-connection" class="form-select" onchange="loadImageList(this.value)"></select>
+        </div>
+        <div id="popup-image-table"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/serverimage_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/serverimages.js") | raw }}

@@ -181,13 +181,19 @@ export function setPrjSelectBox(projectList, curProjectId) {
   defaultOpt.textContent = "Please select a project";
   projectListselectBox.appendChild(defaultOpt);
 
-  for (const p in projectList) {
+  const list = projectList || [];
+  for (const p in list) {
     const opt = document.createElement("option");
-    opt.value = projectList[p].id;
-    opt.textContent = projectList[p].name;
+    const row = list[p];
+    opt.value = row.id;
+    opt.textContent = row.name;
+    const infraNs = row.nsid || row.NsId || "";
+    if (infraNs) {
+      opt.setAttribute("data-nsid", infraNs);
+    }
     projectListselectBox.appendChild(opt);
 
-    if (curProjectId != undefined && curProjectId != "" && projectList[p].id == curProjectId) {
+    if (curProjectId != undefined && curProjectId != "" && row.id == curProjectId) {
       opt.setAttribute("selected", "selected");
     }
   }
@@ -221,7 +227,7 @@ export async function createWorkspace(name, description, projects = null) {
 export async function getAllWorksaceList() {
   const controller = '/api/mc-iam-manager/listWorkspaces'
   const response = await webconsolejs["common/api/http"].commonAPIPost(controller, null, null)
-  return response.data.responseData
+  return response?.data?.responseData || []
 }
 
 export async function getWorkspaceById(wsId) {
@@ -305,8 +311,8 @@ export async function getUsers() {
 export async function getUsersById(userId) {
   const controller = '/api/mc-iam-manager/getUserByID'
   var data = {
-    queryParams: {
-      userid: userId,
+    pathParams: {
+      userId: userId.toString(),
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -314,7 +320,7 @@ export async function getUsersById(userId) {
     data,
     null
   )
-  return response.data.responseData
+  return response?.data?.responseData || null
 }
 
 // handle roles
@@ -482,7 +488,7 @@ export async function getWorkspaceUserRoleMappingListByWorkspaceId(wsId) {
   const controller = '/api/mc-iam-manager/listUsersAndRolesByWorkspaces'
   var data = {
     pathParams: {
-      workspaceId: wsId,
+      workspaceId: wsId.toString(),
     },
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -546,11 +552,11 @@ export async function updateWPmappings(wsId, projectsIdsArr) {
 
 export async function deleteWorkspaceProjectMappingById(wsId, projectsId) {
   const controller = '/api/mc-iam-manager/removeWorkspaceFromProject'
+  const projectsIdsArr = (Array.isArray(projectsId) ? projectsId : [projectsId]).map(id => id.toString())
   var data = {
-
     request: {
-      workspaceId: wsId, 
-      projectIds: projectsId
+      workspaceId: wsId.toString(),
+      projectIds: projectsIdsArr
     }
   };
   const response = await webconsolejs["common/api/http"].commonAPIPost(

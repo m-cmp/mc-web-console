@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+{{ partial("partials/layout/header.html") | raw }}
+
+  <body>
+    <!-- theme js -->
+    {{ javascriptTag("common/theme/themeMode.js") | raw }}
+    {{ javascriptTag("common/theme/tabler.js") | raw }}
+    {{ javascriptTag("common/theme/tablerHelper.js") | raw }}
+    
+
+    <div class="page">
+
+      {{ partial("partials/layout/sidebar.html") | raw }}
+      {{ partial("partials/layout/navbar.html") | raw }}
+      
+      <div class="page-wrapper">
+
+        <!-- Page header -->
+        {{ partial("partials/layout/pageheader.html") | raw }}
+
+        <!-- Page body -->
+        {{ partial("partials/layout/flash.html") | raw }}
+        {{ pageContent | raw }}
+        {{ partial("partials/layout/modal.html") | raw }}
+        <div id="loader" class="section active">
+          <div class="page page-center">
+            <div class="container container-slim py-4">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <a href="." class="navbar-brand navbar-brand-autodark"><img src="/assets/static/logo/logo-small.svg" height="36" alt=""></a>
+                    </div>
+                    <div class="text-secondary mb-3">Preparing page</div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar progress-bar-indeterminate"></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- footer -->
+        {{ partial("partials/layout/footer.html") | raw }}
+      </div>
+      
+    </div>
+  
+  <!-- common js-->
+  {{ javascriptTag("application.js") | raw }}
+  {{ javascriptTag("common/util.js") | raw }}
+  {{ javascriptTag("common/api/http.js") | raw }}
+  {{ javascriptTag("common/cookie/authcookie.js") | raw }}
+  {{ javascriptTag("common/storage/localstorage.js") | raw }}
+  {{ javascriptTag("common/storage/sessionstorage.js") | raw }}
+  {{ javascriptTag("partials/layout/navigatePages.js") | raw }}
+  {{ javascriptTag("partials/layout/modal.js") | raw }}
+  {{ javascriptTag("common/utils/toast.js") | raw }}
+
+  </body>
+
+  <script>
+    // 페이지 길이에 따라 동적으로 변하는 포커스를 유지하기 위해 아래 코드 삽입.
+    let maxHeight = window.innerHeight;
+    function updateMaxHeight() {
+      const currentHeight = document.body.scrollHeight;
+      if (currentHeight > maxHeight) {
+        maxHeight = currentHeight;
+      }
+      document.body.style.minHeight = maxHeight + "px";
+    }
+    window.addEventListener("resize", updateMaxHeight);
+    window.addEventListener("load", updateMaxHeight);
+    const observer = new MutationObserver(updateMaxHeight);
+    observer.observe(document.body, { childList: true, subtree: true });
+  </script>
+
+</html>

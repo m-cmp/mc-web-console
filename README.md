@@ -145,7 +145,7 @@ http://<YOUR_ADDRESS>:3001/auth/login
 
 MC-WEB-CONSOLE has been successfully deployed if the screen below is visible during the access to the web of the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/f0f57dac-70e0-4782-9dfe-1b756397554c/0fd7bc19-b439-48a1-8910-98d2e15593a5/image.png)
+![image.png](https://private-user-images.githubusercontent.com/78469943/584510105-4f707fac-9ee6-4f68-91a1-8d6e51815b60.png)
 
 ---
 
@@ -179,20 +179,20 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
     $ git clone <https://github.com/m-cmp/mc-web-console.git>
     ```
     
-    - web_console_api
-        
+    - api
+
         ```bash
-        $ cd mc-web-console/mc_web_console_api
-        $ buffalo build
+        $ cd mc-web-console/api
+        $ go build ./...
         ```
-        
-    - web_console_front
-        
+
+    - front
+
         ```bash
         $ cd mc-web-console/front
         $ npm install
-        $ yarn install
-        $ buffalo build
+        $ npm run build
+        $ go build ./cmd/app
         ```
         
 
@@ -217,11 +217,11 @@ mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형
     ```bash
     $ cd <YourFolderName>/api
     $ source ../conf/.env
-    $ buffalo dev
+    $ go run ./cmd
     ```
-    
+
     ```bash
     $ cd <YourFolderName>/front
     $ source ../conf/.env
-    $ buffalo dev
+    $ go run ./cmd/app
     ```

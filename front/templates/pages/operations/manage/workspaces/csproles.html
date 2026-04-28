@@ -198,35 +198,7 @@
                       <div
                         class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
                       >
-                        <a
-                          class="dropdown-item"
-                          href="#"
-                          data-bs-toggle="modal"
-                          data-bs-target="#addCspRoleModal"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="icon dropdown-item-icon"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            fill="none"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          >
-                            <path
-                              stroke="none"
-                              d="M0 0h24v24H0z"
-                              fill="none"
-                            ></path>
-                            <path d="M12 5l0 14"></path>
-                            <path d="M5 12l14 0"></path>
-                          </svg>
-                          Add CSP Role
-                        </a>
-                        <a
+                        <
                           class="dropdown-item"
                           href="#"
                           onclick="syncCspRoles()"
@@ -1243,53 +1215,86 @@
       </div>
       <div class="modal-body">
         <form id="addCspRoleForm">
-          <!-- 기획서 요구사항: name, description, trust_policy만 필요 -->
-          <div class="mb-3">
-            <label class="form-label required">Role Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="addCspRoleName"
-              placeholder="Enter role name"
-              required
-            />
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">CSP Type</label>
+                <select class="form-select" id="addCspType" required>
+                  <option value="">Select CSP Type</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">CSP Role Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addCspRoleName"
+                  placeholder="Enter CSP role name"
+                  required
+                />
+              </div>
+            </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label required">Description</label>
+            <label class="form-label">Description</label>
             <textarea
               class="form-control"
               id="addCspRoleDescription"
-              rows="3"
+              rows="2"
               placeholder="Enter role description"
-              required
             ></textarea>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label required">Trust Policy</label>
-            <textarea
-              class="form-control"
-              id="addCspRoleTrustPolicy"
-              rows="8"
-              placeholder='Enter trust policy JSON, e.g.:
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": ["ec2.amazonaws.com"]
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}'
-              required
-            ></textarea>
-            <div class="form-hint">
-              Enter a valid JSON trust policy. This defines which services can
-              assume this role.
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">IDP Identifier</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addCspIdpIdentifier"
+                  placeholder="Enter IDP identifier"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">IAM Identifier</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addCspIamIdentifier"
+                  placeholder="Enter IAM identifier"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">IAM Role ID</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addCspIamRoleId"
+                  placeholder="Enter IAM role ID"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Path</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addCspPath"
+                  placeholder="e.g. /"
+                />
+              </div>
             </div>
           </div>
         </form>
@@ -1743,8 +1748,7 @@
 </div>
 
 <!-- pageloader -->
-<%= partial("partials/layout/pageloader.html") %>
+{{ partial("partials/layout/pageloader.html") | raw }}
 
 <!-- javascript -->
-<%= javascriptTag("common/api/services/csproles_api.js") %> <%=
-javascriptTag("pages/operation/workspace/csproles.js") %>
+{{ javascriptTag("common/api/services/csproles_api.js") | raw }} {{ javascriptTag("pages/operation/workspace/csproles.js") | raw }}

@@ -286,7 +286,4 @@
   </div>
 </div>
 
-<%= javascriptTag("pages/operation/manage/eventalarm.js") %> <%=
-javascriptTag("partials/operation/manage/server_monitoring.js") %> <%=
-javascriptTag("common/api/services/eventalarm_api.js") %> <%=
-javascriptTag("common/api/services/monitoring_api.js") %>
+{{ javascriptTag("pages/operation/manage/eventalarm.js") | raw }} {{ javascriptTag("partials/operation/manage/server_monitoring.js") | raw }} {{ javascriptTag("common/api/services/eventalarm_api.js") | raw }} {{ javascriptTag("common/api/services/monitoring_api.js") | raw }}

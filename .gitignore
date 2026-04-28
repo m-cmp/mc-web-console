@@ -68,6 +68,7 @@ front/dist/
 front/generated/
 front/.vendor/
 front/.pnp.*
+front/test-results/
 
 front-backup/*
 
@@ -79,6 +80,7 @@ bin/.env
 
 # conf
 conf/.env
+conf/.env.local
 conf/selfiamauthsetting.yaml
 conf/selfiamuser.dat
 conf/serverinfo
@@ -89,3 +91,8 @@ scripts/container-volume
 conf/api.yaml
 bin/mc-web-console-front
 node_modules
+
+# git worktrees
+.worktrees/
+front/test-results/
+.claude/

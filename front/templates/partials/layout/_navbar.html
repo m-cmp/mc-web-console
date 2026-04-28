@@ -115,10 +115,9 @@
 
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-                <span class="avatar avatar-sm" style="background-image: url(/#)"></span>
-                <div class="d-none d-xl-block ps-2">
-                    <!-- <div class="mt-1 small text-secondary">UI Designer</div> -->
-                </div>
+                <span class="avatar avatar-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /></svg>
+                </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                 <!-- <a href="#" class="dropdown-item">Status</a> -->
@@ -126,6 +125,8 @@
                 <!-- <a href="#" class="dropdown-item">Feedback</a> -->
                 <!-- <div class="dropdown-divider"></div> -->
                 <!-- <a href="./settings.html" class="dropdown-item">Settings</a> -->
+                <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#change-password-modal">Change Password</button>
+                <div class="dropdown-divider"></div>
                 <button id="logoutbtn" class="dropdown-item">Logout</a>
                 </div>
             </div>
@@ -161,5 +162,38 @@
     </div>
 </header>
 
-<%= javascriptTag("partials/layout/navbar.js") %>
-<%= javascriptTag("common/api/services/workspace_api.js") %>
+{{ javascriptTag("partials/layout/navbar.js") | raw }}
+{{ javascriptTag("common/api/services/workspace_api.js") | raw }}
+{{ javascriptTag("pages/auth/changepassword.js") | raw }}
+
+<!-- Change Password Modal -->
+<div class="modal modal-blur fade" id="change-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="change-password-form">
+          <div class="mb-3">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="change-password-current" placeholder="Enter current password" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-control" id="change-password-new" placeholder="Enter new password" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="change-password-confirm" placeholder="Confirm new password" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="changeMyPassword()">Change Password</button>
+      </div>
+    </div>
+  </div>
+</div>

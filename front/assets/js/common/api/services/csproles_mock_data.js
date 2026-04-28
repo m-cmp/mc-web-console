@@ -1032,20 +1032,23 @@ function handleDeleteCspPolicy(data) {
 // 특정 Role에 바인딩된 Policies 조회
 function handleGetPoliciesByRoleId(data) {
     const roleId = data?.pathParams?.roleId;
-    
+    const requestedProvider = data?.provider || null;
+
     // Role ID로 직접 찾기
     let roleBindings = mockData.bindings.filter(b => b.role_id === roleId && b.status === 'active');
-    
-    // Role ID로 찾지 못한 경우, Role Name으로 찾기 (동적 바인딩)
+
+    // Role ID로 찾지 못한 경우 동적 바인딩 생성
     if (roleBindings.length === 0) {
-        // AWS-AdminRole에 대한 기본 Policy 바인딩 생성
         if (roleId && roleId.toString().length > 10) { // 실제 생성된 Role ID인 경우
-            const awsPolicies = mockData.policies.filter(p => p.provider === 'aws');
-            roleBindings = awsPolicies.map((policy, index) => ({
-                binding_id: `binding-aws-dynamic-${index + 1}`,
+            // mockData.roles에서 해당 role의 provider 확인
+            const role = mockData.roles.find(r => r.id === roleId);
+            const provider = role?.provider || requestedProvider || 'aws';
+            const providerPolicies = mockData.policies.filter(p => p.provider === provider);
+            roleBindings = providerPolicies.map((policy, index) => ({
+                binding_id: `binding-${provider}-dynamic-${index + 1}`,
                 role_id: roleId,
                 policy_id: policy.id,
-                provider: 'aws',
+                provider: provider,
                 status: 'active',
                 created_at: new Date().toISOString()
             }));
