@@ -726,10 +726,10 @@ const UIManager = {
     // 카드 상태 업데이트
     AppState.ui.cardStates.platform = { visible: hasPlatform, expanded: false };
     AppState.ui.cardStates.workspace = { visible: hasWorkspace, expanded: false };
-    AppState.ui.cardStates.csp = { visible: hasCsp, expanded: false };
+    AppState.ui.cardStates.csp = { visible: true, expanded: false };
 
-    // 토글 버튼 표시/숨김 설정
-    this.setCardToggleVisibility(hasPlatform, hasWorkspace, hasCsp);
+    // 토글 버튼 표시/숨김 설정 (CSP는 항상 표시)
+    this.setCardToggleVisibility(hasPlatform, hasWorkspace, true);
 
     // 모든 카드 접기
     this.collapseAllCards();
@@ -1175,17 +1175,15 @@ const TableManager = {
         });
       }
 
-      // CSP 역할 매핑 정보 업데이트 (비동기 처리)
-      if (hasCsp) {
-        updateCspRoleMapping(selectedRole.id).catch(error => {
-          console.error("failed to update CSP Role Mapping:", error);
-          // CSP 역할 매핑 업데이트 실패 시에도 view-mode는 계속 유지
-          // 테이블을 빈 배열로 설정하여 UI가 깨지지 않도록 함
-          if (AppState.tables.cspRoleMappingTable) {
-            AppState.tables.cspRoleMappingTable.setData([]);
-          }
-        });
-      }
+      // CSP 역할 매핑 정보 업데이트 (비동기 처리, CSP 타입 여부와 관계없이 항상 실행)
+      updateCspRoleMapping(selectedRole.id).catch(error => {
+        console.error("failed to update CSP Role Mapping:", error);
+        // CSP 역할 매핑 업데이트 실패 시에도 view-mode는 계속 유지
+        // 테이블을 빈 배열로 설정하여 UI가 깨지지 않도록 함
+        if (AppState.tables.cspRoleMappingTable) {
+          AppState.tables.cspRoleMappingTable.setData([]);
+        }
+      });
     }
   },
 
@@ -1481,7 +1479,7 @@ function toggleCards(showPlatform = false, showWorkspace = false, showCsp = fals
 
 
 
-function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
+function convertToJstreeFormat(menuData) {
   let result = [];
   if (!Array.isArray(menuData)) return result;
 
@@ -1489,34 +1487,18 @@ function convertToJstreeFormat(menuData, parentId = "#", level = 0) {
   const topLevelMenus = menuData.filter(menu => menu.parentId === "home");
 
   topLevelMenus.forEach(menu => {
-    result = result.concat(processMenuNode(menu, menuData, "#", 0));
+    result = result.concat(processMenuNode(menu, menuData, '#'));
   });
 
   return result;
 }
 
-function processMenuNode(menu, allMenus, parentId, level) {
+function processMenuNode(menu, allMenus, parentId) {
   let result = [];
 
-  // 계층 단계에 따라 아이콘 결정
-  let icon = "ti ti-menu"; // 기본 아이콘
-
-  if (level === 0) {
-    // 최상위 노드 (Operations, Settings)
-    icon = "ti ti-folder";
-  } else if (level === 1) {
-    // 2차 노드들
-    icon = "ti ti-folder-open";
-  } else if (level === 2) {
-    // 3차 노드들
-    icon = "ti ti-layout-grid";
-  } else if (level === 3) {
-    // 4차 노드들
-    icon = "ti ti-settings";
-  } else if (level >= 4) {
-    // 5차 이상 노드들
-    icon = "ti ti-click";
-  }
+  const isActionMenu = !!(menu.is_action ?? menu.isAction);
+  // Organizations menus.js와 동일: isAction 구분을 Platform access 트리에 반영 (BUG-002)
+  const icon = isActionMenu ? 'ti ti-file-text' : 'ti ti-folder';
 
   // jstree 노드 객체 생성
   const node = {
@@ -1527,7 +1509,7 @@ function processMenuNode(menu, allMenus, parentId, level) {
     icon: icon,
     data: {
       menunumber: menu.menu_number || menu.menunumber,
-      isAction: menu.is_action || menu.isAction,
+      isAction: isActionMenu,
       priority: menu.priority
     }
   };
@@ -1538,7 +1520,7 @@ function processMenuNode(menu, allMenus, parentId, level) {
 
   // 하위 메뉴가 있으면 재귀적으로 처리
   childMenus.forEach(childMenu => {
-    result = result.concat(processMenuNode(childMenu, allMenus, menu.id, level + 1));
+    result = result.concat(processMenuNode(childMenu, allMenus, menu.id));
   });
 
   return result;
@@ -1573,6 +1555,7 @@ async function initPlatformMenuTree() {
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
+          "visible": true,
           "keep_selected_style": true,
           "three_state": false
         },
@@ -1585,8 +1568,12 @@ async function initPlatformMenuTree() {
 
       // View 모드 체크박스를 readonly로 만들기 위한 CSS 적용
       $("#platform-menu-tree").on("ready.jstree", function () {
+        const inst = $('#platform-menu-tree').jstree(true);
+        if (inst && inst.show_checkboxes) {
+          inst.show_checkboxes();
+        }
         // 모든 노드를 펼쳐놓기
-        $('#platform-menu-tree').jstree(true).open_all();
+        inst.open_all();
 
         // 체크박스를 readonly로 만들기
         $("#platform-menu-tree .jstree-checkbox").css({
@@ -1649,6 +1636,7 @@ async function initPlatformMenuCreateTree() {
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
+          "visible": true,
           "keep_selected_style": true,
           "three_state": true,
           "cascade": "up"
@@ -1661,11 +1649,15 @@ async function initPlatformMenuCreateTree() {
       });
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-create-tree").on("ready.jstree", function () {
+        const inst = $('#platform-menu-create-tree').jstree(true);
+        if (inst && inst.show_checkboxes) {
+          inst.show_checkboxes();
+        }
         // 모든 노드를 펼쳐놓기
-        $('#platform-menu-create-tree').jstree(true).open_all();
+        inst.open_all();
 
-        // 펼치기/접기 아이콘 숨기기
-        $('#platform-menu-create-tree .jstree-ocl').hide();
+        // ocl을 display:none/visibility:hidden 하면 32px.png 가로/접점 스프라이트가 사라져 트리 선이 깨짐
+        // 펼침 막기는 아래 click.jstree 핸들러로만 처리
 
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-create-tree').on('click.jstree', function (e, data) {
@@ -1718,6 +1710,7 @@ async function initPlatformMenuEditTree() {
         },
         "plugins": ["types", "checkbox"],
         "checkbox": {
+          "visible": true,
           "keep_selected_style": true,
           "three_state": true,
           "cascade": "up"
@@ -1731,11 +1724,12 @@ async function initPlatformMenuEditTree() {
 
       // 트리 초기화 완료 후 이벤트 바인딩
       $("#platform-menu-edit-tree").on("ready.jstree", function () {
+        const inst = $('#platform-menu-edit-tree').jstree(true);
+        if (inst && inst.show_checkboxes) {
+          inst.show_checkboxes();
+        }
         // 모든 노드를 펼쳐놓기
-        $('#platform-menu-edit-tree').jstree(true).open_all();
-
-        // 펼치기/접기 아이콘 숨기기
-        $('#platform-menu-edit-tree .jstree-ocl').hide();
+        inst.open_all();
 
         // 노드 클릭 시 펼치기/접기 방지
         $('#platform-menu-edit-tree').on('click.jstree', function (e, data) {
@@ -2992,13 +2986,10 @@ async function populateEditForm(role) {
     }
   }
 
-  // CSP 권한 설정
-  if (role.role_subs && Utils.hasRoleType(role.role_subs, CONSTANTS.ROLE_TYPES.CSP)) {
-    UIManager.toggleEditCard('csp', true);
-    // CSP Role Name 드롭다운은 사용자가 직접 선택하도록 초기화
-  }
+  // CSP 카드는 항상 펼침 (CSP role_subs 여부와 관계없이 매핑 편집 가능)
+  UIManager.toggleEditCard('csp', true);
 
-  // CSP 매핑 테이블은 권한과 관계없이 항상 초기화 (Edit 모드에서 CSP Role 카드를 사용할 수 있도록)
+  // CSP 매핑 테이블 항상 초기화
   initCspRoleMappingEditTable(role.id);
 }
 
@@ -3530,9 +3521,9 @@ webconsolejs['pages/operation/workspace/roles'].assignUser = assignUser;
 // Create 모드에서 CSP Role의 Policy 목록 보기
 async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
   try {
-    
-    // Policy 목록 조회
-    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
+
+    // Policy 목록 조회 (cspType을 provider로 전달하여 올바른 provider의 policy 반환)
+    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId, cspType);
     
     // Policy 목록을 표시할 컨테이너 찾기 또는 생성
     let policyContainer = document.getElementById('create-csp-role-policies-container');
@@ -3561,9 +3552,9 @@ async function viewCreateCspRolePolicies(roleId, cspType, roleName) {
 // Edit 모드에서 CSP Role의 Policy 목록 보기
 async function viewEditCspRolePolicies(roleId, cspType, roleName) {
   try {
-    
-    // Policy 목록 조회
-    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId);
+
+    // Policy 목록 조회 (cspType을 provider로 전달하여 올바른 provider의 policy 반환)
+    const policies = await window.webconsolejs["common/api/services/csproles_api"].getPoliciesByRoleId(roleId, cspType);
     
     // Policy 목록을 표시할 컨테이너 찾기 또는 생성
     let policyContainer = document.getElementById('edit-csp-role-policies-container');

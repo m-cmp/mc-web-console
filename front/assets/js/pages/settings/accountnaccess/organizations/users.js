@@ -255,6 +255,19 @@ const UIManager = {
       DOM.userInfoEnabled.textContent = enabled ? 'Enabled' : 'Disabled';
     }
 
+    // Enable/Disable 토글 버튼 업데이트
+    const toggleBtn = document.getElementById('user-status-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.style.display = 'inline-block';
+      if (enabled) {
+        toggleBtn.textContent = 'Disable';
+        toggleBtn.className = 'btn btn-sm btn-outline-danger';
+      } else {
+        toggleBtn.textContent = 'Enable';
+        toggleBtn.className = 'btn btn-sm btn-outline-success';
+      }
+    }
+
     // User Info 제목에 유저 이름 표시
     if (DOM.userInfoUsername && DOM.userInfoUsernameText) {
       const fullName = `${firstName} ${lastName}`.trim();
@@ -270,6 +283,8 @@ const UIManager = {
     if (DOM.userInfoEmail) DOM.userInfoEmail.textContent = "";
     if (DOM.userInfoEnabled) DOM.userInfoEnabled.textContent = "";
     if (DOM.userInfoUsername) DOM.userInfoUsername.style.display = 'none';
+    const toggleBtn = document.getElementById('user-status-toggle-btn');
+    if (toggleBtn) toggleBtn.style.display = 'none';
     
     // 역할 목록 초기화
     this.clearRoleLists();
@@ -775,6 +790,41 @@ window.removeUserWorkspace = async function(workspaceId) {
   }
 };
 
+// 사용자 활성화/비활성화 토글
+window.toggleUserStatus = async function() {
+  const user = AppState.users.selectedUser;
+  if (!user) {
+    alert('Please select a user.');
+    return;
+  }
+
+  const enabled = user.enabled !== undefined ? user.enabled :
+                  user.Enabled !== undefined ? user.Enabled :
+                  user.status === 'active' || user.Status === 'active';
+
+  if (enabled) {
+    alert('Disable is not yet supported.');
+    return;
+  }
+
+  if (!confirm(`Enable user "${user.userName || user.username || user.id}"?`)) {
+    return;
+  }
+
+  try {
+    const response = await webconsolejs["common/api/services/users_api"].updateUserStatus(user.id, 'approved');
+    if (response && (response.status === 204 || response.status === 200)) {
+      alert('User enabled successfully.');
+      await initUsers();
+    } else {
+      alert('Failed to enable user.');
+    }
+  } catch (error) {
+    console.error('Error toggling user status:', error);
+    alert('An error occurred: ' + error.message);
+  }
+};
+
 // 선택된 유저들 삭제 (roles.js의 deleteRole과 동일한 패턴)
 window.deleteUsers = async function() {
   
@@ -836,6 +886,12 @@ async function getSelectedUserData(userID) {
       console.error("Failed to load workspace information:", workspaceError);
       // Workspace 정보 로드 실패 시 빈 배열로 설정
       updateWorkspaceInfo([]);
+    }
+    // 그룹 정보 로드
+    try {
+      await loadUserGroups(userID);
+    } catch (groupError) {
+      console.error("Failed to load group information:", groupError);
     }
   } catch (error) {
     console.error("Failed to load user information:", error);
@@ -931,6 +987,10 @@ function setupEventListeners() {
 // 초기화 함수
 async function initUsers() {
   try {
+    // 0. 뷰 상태 초기화 (패널/선택 상태 리셋)
+    UIManager.hideViewMode();
+    AppState.users.selectedUser = null;
+
     // 1. 테이블 초기화
     await TableManager.initUsersTable();
 
@@ -1031,6 +1091,61 @@ function goBackToUserList() {
   }
 }
 
+// 비밀번호 재설정 모달 열기
+window.openResetPasswordModal = function() {
+  if (!AppState.users.selectedUser) {
+    alert('Please select a user.');
+    return;
+  }
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('reset-password-modal'));
+  modal.show();
+};
+
+// 비밀번호 재설정 실행
+window.resetUserPassword = async function() {
+  if (!AppState.users.selectedUser) {
+    alert('Please select a user.');
+    return;
+  }
+
+  const newPassword = document.getElementById('reset-password-new').value;
+  const confirmPassword = document.getElementById('reset-password-confirm').value;
+
+  if (!newPassword || newPassword.trim() === '') {
+    alert('Please enter a new password.');
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    alert('Password must be at least 8 characters.');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    alert('Passwords do not match.');
+    return;
+  }
+
+  try {
+    const response = await webconsolejs["common/api/services/users_api"].resetUserPassword(
+      AppState.users.selectedUser.id,
+      newPassword
+    );
+
+    if (response && (response.status === 200 || response.status === 204 || response.data?.success)) {
+      alert('Password reset successfully.');
+      const modal = bootstrap.Modal.getInstance(document.getElementById('reset-password-modal'));
+      if (modal) modal.hide();
+      document.getElementById('reset-password-form').reset();
+    } else {
+      alert('Failed to reset password: ' + (response?.data?.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    alert('Error resetting password: ' + error.message);
+  }
+};
+
 // DOMContentLoaded 이벤트 리스너 등록
 document.addEventListener("DOMContentLoaded", async function () {
   
@@ -1048,3 +1163,137 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.error("Error occurred during initialization:", error);
   }
 });
+
+// ===== 그룹(Organization) 관련 함수 =====
+
+// 사용자의 소속 그룹 목록 로드 및 렌더링
+async function loadUserGroups(userId) {
+    try {
+        const groups = await webconsolejs["common/api/services/groups_api"].getUserGroups(userId);
+        renderUserGroupsList(groups || []);
+    } catch (error) {
+        console.error("Error loading user groups:", error);
+        renderUserGroupsList([]);
+    }
+}
+
+// 사용자 그룹 목록 렌더링
+function renderUserGroupsList(groups) {
+    const container = document.getElementById('user-groups-list');
+    if (!container) return;
+
+    if (!groups || groups.length === 0) {
+        container.innerHTML = '<p class="text-muted">No groups assigned.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Path</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${groups.map(g => `
+                    <tr>
+                        <td>${g.name || '-'}</td>
+                        <td><code>${g.organization_code || '-'}</code></td>
+                        <td class="text-muted small">${g.path || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeUserGroupById(${g.id})">
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// 사용자에게 그룹 할당
+window.addUserGroup = async function() {
+    if (!AppState.users.selectedUser) {
+        alert("Please select a user first.");
+        return;
+    }
+
+    // 전체 그룹 목록 로드
+    let allGroups = [];
+    try {
+        allGroups = await webconsolejs["common/api/services/groups_api"].getGroupList() || [];
+    } catch (error) {
+        console.error("Error loading group list:", error);
+    }
+
+    // 그룹 선택 모달 채우기
+    const select = document.getElementById('assign-group-select');
+    if (select) {
+        select.innerHTML = '<option value="">Select a group</option>';
+        allGroups.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = g.name + (g.organization_code ? ` (${g.organization_code})` : '');
+            select.appendChild(opt);
+        });
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('assign-group-modal'));
+    modal.show();
+};
+
+// 그룹 할당 제출
+window.submitAssignGroup = async function() {
+    if (!AppState.users.selectedUser) return;
+
+    const select = document.getElementById('assign-group-select');
+    if (!select || !select.value) {
+        alert("Please select a group.");
+        return;
+    }
+
+    const orgId = parseInt(select.value);
+    try {
+        await webconsolejs["common/api/services/groups_api"].assignUserGroups(
+            AppState.users.selectedUser.id,
+            [orgId]
+        );
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('assign-group-modal'));
+        if (modal) modal.hide();
+
+        alert("Group assigned successfully.");
+        await loadUserGroups(AppState.users.selectedUser.id);
+    } catch (error) {
+        console.error("Error assigning group:", error);
+        alert("Failed to assign group: " + (error.message || "Unknown error"));
+    }
+};
+
+// 사용자에서 그룹 제거
+window.removeUserGroupById = async function(orgId) {
+    if (!AppState.users.selectedUser) return;
+
+    if (!confirm("Are you sure you want to remove this group assignment?")) return;
+
+    try {
+        await webconsolejs["common/api/services/groups_api"].removeUserGroup(
+            AppState.users.selectedUser.id,
+            orgId
+        );
+        alert("Group removed successfully.");
+        await loadUserGroups(AppState.users.selectedUser.id);
+    } catch (error) {
+        console.error("Error removing group:", error);
+        // BUG-E6: 없는 매핑 삭제 → 400, 이미 제거된 것으로 처리
+        if (error.response && error.response.status === 400) {
+            await loadUserGroups(AppState.users.selectedUser.id);
+        } else {
+            alert("Failed to remove group: " + (error.message || "Unknown error"));
+        }
+    }
+};

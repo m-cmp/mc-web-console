@@ -1,5 +1,5 @@
 {
-  "name": "buffalo",
+  "name": "mc-web-console-front",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -7,7 +7,7 @@
     "dev": "webpack --watch",
     "build": "webpack --mode production --progress"
   },
-  "repository": "github.com/gobuffalo/buffalo",
+  "repository": "github.com/m-cmp/mc-web-console",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.12.0",
     "@melloware/coloris": "^0.19.1",
@@ -22,8 +22,10 @@
     "countup.js": "^2.8.0",
     "dropzone": "^6.0.0-beta.2",
     "fslightbox": "^3.4.1",
+    "gridstack": "^7.3.0",
     "jquery": "^3.6.0",
     "jquery-ujs": "^1.2.2",
+    "js-yaml": "^4.1.1",
     "jstree": "^3.3.17",
     "jsvectormap": "^1.5.3",
     "list.js": "^2.3.1",
@@ -35,21 +37,20 @@
     "star-rating.js": "^4.3.0",
     "tabulator-tables": "^5.6.1",
     "tinymce": "^6.8.3",
-    "tom-select": "^2.3.1",
-    "xterm-addon-fit": "^0.8.0",
-    "yarn": "^1.22.22"
+    "tom-select": "^2.3.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
+    "@playwright/test": "^1.58.2",
     "autoprefixer": "^9.7.6",
     "babel-loader": "^8.1.0",
     "copy-webpack-plugin": "~6.4.1",
     "css-loader": "~3.5.1",
     "expose-loader": "^3.0.0",
     "file-loader": "~6.0.0",
-    "glob": "^7.2.0",
+    "glob": "^13.0.0",
     "gopherjs-loader": "^0.0.1",
     "mini-css-extract-plugin": "^2.0.0",
     "npm-install-webpack-plugin": "4.0.5",
@@ -63,6 +64,5 @@
     "webpack-cli": "^4.0.0",
     "webpack-livereload-plugin": "^3.0.0",
     "webpack-manifest-plugin": "^4.0.0"
-  },
-  "packageManager": "yarn@4.5.1"
+  }
 }

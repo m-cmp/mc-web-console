@@ -11,6 +11,7 @@ export function commonModal(elm, title, content, func, argument) {
     document.getElementById(`${form}-content`).innerText = content
     document.getElementById(`${form}-confirm-btn`).onclick = function () {
         const executefunction = `webconsolejs["${funcArr[0]}"].${funcArr[1]}('${argument}')`;
+        modalHide(form);
         eval(executefunction);
     };
 }
@@ -57,8 +58,8 @@ export function commonShowDefaultModal(title, content) {
 // modalId = ex)'spec-search'
 export function modalHide(modalId) {
     var myModalEl = document.getElementById(modalId);
-    var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instance
-    modal.hide();
+    var modal = bootstrap.Modal.getInstance(myModalEl);
+    if (modal) modal.hide();
 }
 
 // workspace selection 여부 확인 function

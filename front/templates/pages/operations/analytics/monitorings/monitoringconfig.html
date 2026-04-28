@@ -157,7 +157,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <%= partial("partials/operations/analytics/monitorings/monitoringconfigtabcards.html") %>
+                        {{ partial("partials/operations/analytics/monitorings/monitoringconfigtabcards.html") | raw }}
                     </div>
                 </div>
             </div>
@@ -166,10 +166,10 @@
     </div>
 
     <!-- pageloader-->
-    <%= partial("partials/layout/pageloader.html") %>
+    {{ partial("partials/layout/pageloader.html") | raw }}
 
 </div>
 
-<%= javascriptTag("pages/operation/analytics/monitoringconfig.js") %>
-<%= javascriptTag("common/api/services/monitoring_api.js") %>
-<%= javascriptTag("common/api/services/mci_api.js") %>
+{{ javascriptTag("pages/operation/analytics/monitoringconfig.js") | raw }}
+{{ javascriptTag("common/api/services/monitoring_api.js") | raw }}
+{{ javascriptTag("common/api/services/mci_api.js") | raw }}

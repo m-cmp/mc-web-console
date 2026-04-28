@@ -10,7 +10,8 @@
 // tabulator Custom CSS
 @import "./tabulator_for_tabler.scss";
 
-// jstree Custom CSS
+// jsTree: 기본 테마 직후 프로젝트 오버라이드 (체크박스 스프라이트·행 높이 등, Tabler 다음)
+@import "~jstree/src/themes/default/style.css";
 @import "./jstree_for_tabler.scss";
 
 // tomselect Custom CSS

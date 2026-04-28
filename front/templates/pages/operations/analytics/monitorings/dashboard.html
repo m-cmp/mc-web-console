@@ -1,0 +1,124 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@7.3.0/dist/gridstack.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@7.3.0/dist/gridstack-extra.min.css" />
+<style>
+  .grid-stack-item-content {
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .grid-stack-item-content > .card {
+    display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;
+  }
+  .grid-stack-item-content > .card > .card-header {
+    flex-shrink: 0;
+  }
+  .grid-stack-item-content > .card > .card-body {
+    flex: 1; min-height: 0; overflow: hidden; position: relative;
+    padding: 4px !important;
+  }
+  .grid-stack-item-content > .card > .card-body > div {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  }
+  /* ApexCharts 내부 여백 최소화 */
+  .grid-stack-item-content .apexcharts-canvas { width: 100% !important; }
+  .grid-stack-item-content .apexcharts-legend { padding: 0 !important; }
+</style>
+
+<div class="page-body">
+  <div class="container-xl">
+    <div class="row row-cards">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Monitoring Dashboard / Workload</h3>
+            <div class="card-actions">
+              <button class="btn btn-primary btn-sm" id="btn-add-widget"><i class="ti ti-plus"></i> Add Widget</button>
+              <button class="btn btn-outline-secondary btn-sm" id="btn-save-layout"><i class="ti ti-device-floppy"></i> Save</button>
+              <button class="btn btn-outline-danger btn-sm" id="btn-reset-layout"><i class="ti ti-refresh"></i> Reset</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-stack" id="dashboard-grid"></div>
+            <div class="empty d-none" id="empty-dashboard">
+              <div class="empty-icon"><i class="ti ti-chart-area-line" style="font-size:3rem;color:#206bc4;"></i></div>
+              <p class="empty-title mt-3">No widgets configured</p>
+              <p class="empty-subtitle text-muted">Add widgets to build your monitoring dashboard.</p>
+              <div class="empty-action"><button class="btn btn-primary" id="btn-add-widget-empty"><i class="ti ti-plus"></i> Add Widget</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 위젯 카탈로그 모달 -->
+<div class="modal modal-blur fade" id="widgetCatalogModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Add Widget</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs mb-3" id="catalog-category-tabs">
+          <li class="nav-item"><a class="nav-link active" href="#" data-category="all">All</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-category="compute">Compute</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-category="storage">Storage</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-category="network">Network</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-category="etc">Etc</a></li>
+        </ul>
+        <div class="row" id="catalog-widget-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 자원 선택 모달 -->
+<div class="modal modal-blur fade" id="resourceSelectorModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Select Target Resource</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="resource-widget-type" />
+        <div class="mb-3"><label class="form-label required">Namespace</label><select class="form-select" id="resource-ns-select"><option value="">Select</option></select></div>
+        <div class="mb-3"><label class="form-label required">MCI (Workload)</label><select class="form-select" id="resource-mci-select"><option value="">Select</option></select></div>
+        <div class="mb-3"><label class="form-label required">VM</label><select class="form-select" id="resource-vm-select"><option value="">Select</option></select></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="webconsolejs['pages/operation/analytics/dashboard'].confirmAddWidget()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 위젯 설정 모달 -->
+<div class="modal modal-blur fade" id="widgetConfigModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Widget Settings</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="config-widget-id" />
+        <div class="mb-3"><label class="form-label">Time Range</label><select class="form-select" id="config-range-select"></select></div>
+        <div class="mb-3"><label class="form-label">Refresh Interval</label><select class="form-select" id="config-refresh-select"></select></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="webconsolejs['pages/operation/analytics/dashboard'].applyWidgetConfig()">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 위젯 삭제 확인 모달 -->
+<div class="modal modal-blur fade" id="confirmRemoveModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Remove Widget</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body"><input type="hidden" id="remove-widget-id" /><p>Are you sure you want to remove this widget?</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="webconsolejs['pages/operation/analytics/dashboard'].executeRemoveWidget()">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("pages/operation/analytics/dashboard.js") | raw }}
+{{ javascriptTag("common/api/services/mci_api.js") | raw }}
+{{ javascriptTag("common/api/services/monitoring_api.js") | raw }}

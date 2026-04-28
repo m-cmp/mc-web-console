@@ -1,5 +1,3 @@
-<%= contentFor("content") %>
-
 <div class="page-body">
   <div class="container-xl">
     <!-- USER LIST SECTION -->
@@ -370,6 +368,18 @@
               </span>
             </h3>
             <div class="card-actions btn-actions">
+              <button
+                class="btn btn-outline-secondary"
+                onclick="openResetPasswordModal()"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"></path>
+                  <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path>
+                  <path d="M8 11v-4a4 4 0 1 1 8 0v4"></path>
+                </svg>
+                Reset Password
+              </button>
               <a
                 href="#edit_user"
                 class="btn btn-outline-warning"
@@ -427,7 +437,10 @@
                 </div>
                 <div class="datagrid-item">
                   <div class="datagrid-title">Status</div>
-                  <div class="datagrid-content" id="user-info-enabled"></div>
+                  <div class="datagrid-content d-flex align-items-center gap-2">
+                    <span id="user-info-enabled"></span>
+                    <button id="user-status-toggle-btn" class="btn btn-sm" style="display:none" onclick="toggleUserStatus()"></button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -633,6 +646,10 @@
         </div>
       </div>
     </div>
+
+    <!-- Assigned Groups Section -->
+    {{ partial("partials/settings/users/_user_info_edit.html") | raw }}
+
   </div>
 </div>
 
@@ -795,7 +812,7 @@
 </div>
 
 <!-- pageloader -->
-<%= partial("partials/layout/pageloader.html") %>
+{{ partial("partials/layout/pageloader.html") | raw }}
 
 <!-- Custom Styles -->
 <style>
@@ -891,6 +908,6 @@
   }
 </style>
 
+
 <!-- javascript -->
-<%= javascriptTag("common/api/services/users_api.js") %> <%=
-javascriptTag("pages/settings/accountnaccess/organizations/users.js") %>
+{{ javascriptTag("common/api/services/users_api.js") | raw }} {{ javascriptTag("common/api/services/groups_api.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}

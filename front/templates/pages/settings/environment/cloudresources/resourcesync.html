@@ -1,0 +1,313 @@
+<div class="page-body">
+  <div class="container-xl">
+
+    <!-- 탭 네비게이션 -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <ul class="nav nav-tabs" id="sync-tabs">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" onclick="syncShowTab('overview', this); return false;">동기화 현황</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="syncShowTab('result', this); return false;">동기화 결과</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-nssync-link" href="#" onclick="syncShowTab('nssync', this); return false;">NS 동기화</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── 동기화 현황 탭 ──────────────────────────────────────────────── -->
+    <div id="tab-overview">
+
+      <!-- 조회 조건 카드 -->
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">조회 조건</h3>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+
+                <!-- Provider -->
+                <div class="col-12">
+                  <label class="form-label">Provider</label>
+                  <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="query-provider-radio" value="all" checked onchange="syncOnProviderModeChange()">
+                      <span class="form-check-label">전체</span>
+                    </label>
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="query-provider-radio" value="partial" onchange="syncOnProviderModeChange()">
+                      <span class="form-check-label">부분 선택</span>
+                    </label>
+                    <div id="qry-provider-cb-group" class="d-flex gap-3 flex-wrap">
+                      <!-- 동적 생성 -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Connection (부분 선택 시 표시) -->
+                <div id="qry-conn-section" class="col-12" style="display:none">
+                  <label class="form-label">Connection
+                    <span class="ms-2">
+                      <a href="#" class="text-secondary small" onclick="syncSelectAllConn(true); return false;">전체 선택</a>
+                      /
+                      <a href="#" class="text-secondary small" onclick="syncSelectAllConn(false); return false;">전체 해제</a>
+                    </span>
+                  </label>
+                  <div id="qry-conn-cb-group" class="border rounded p-2" style="max-height:200px; overflow-y:auto; background:#f8f9fa">
+                    <span class="text-secondary small">Provider를 먼저 선택하세요</span>
+                  </div>
+                </div>
+
+                <!-- 자원 유형 -->
+                <div class="col-12">
+                  <label class="form-label">자원 유형</label>
+                  <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="query-restype-radio" value="all" checked onchange="syncOnResTypeModeChange()">
+                      <span class="form-check-label">전체</span>
+                    </label>
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="query-restype-radio" value="partial" onchange="syncOnResTypeModeChange()">
+                      <span class="form-check-label">부분 선택</span>
+                    </label>
+                    <div id="qry-restype-cb-group" class="d-flex gap-3 flex-wrap" style="display:none!important">
+                      <label class="form-check mb-0"><input class="form-check-input qry-restype-cb" type="checkbox" value="vNet"><span class="form-check-label">vNet</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input qry-restype-cb" type="checkbox" value="securityGroup"><span class="form-check-label">Security Group</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input qry-restype-cb" type="checkbox" value="sshKey"><span class="form-check-label">SSH Key</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input qry-restype-cb" type="checkbox" value="node"><span class="form-check-label">Node</span></label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 조회 버튼 -->
+                <div class="col-12 d-flex align-items-center gap-2">
+                  <button class="btn btn-primary" onclick="syncQuery()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+                    조회
+                  </button>
+                  <span id="qry-status" class="text-secondary small"></span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 현황 테이블 카드 -->
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">CSP 자원 동기화 현황</h3>
+              <div class="card-options ms-auto d-flex align-items-center gap-2">
+                <span id="sync-elapsed" class="text-secondary small"></span>
+                <div class="input-group input-group-sm" style="width:200px">
+                  <span class="input-group-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+                  </span>
+                  <input type="text" id="sync-table-search" class="form-control" placeholder="Connection 검색" oninput="syncFilterTable(this.value)">
+                </div>
+              </div>
+            </div>
+            <div id="sync-overview-loading" class="card-footer text-center text-secondary small py-2" style="display:none">
+              <div class="spinner-border spinner-border-sm me-1"></div>
+              자원 현황 조회 중… (시간이 걸릴 수 있습니다)
+            </div>
+            <div id="sync-summary" class="card-body border-bottom py-2" style="display:none">
+              <div class="d-flex gap-4 flex-wrap">
+                <span class="text-secondary small">조회된 커넥션: <strong id="sum-total"></strong></span>
+                <span class="text-secondary small">정상 연결: <strong id="sum-avail"></strong></span>
+                <span class="text-danger small">미등록 자원 있는 커넥션: <strong id="sum-unsynced"></strong></span>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div id="sync-overview-table"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection 상세 카드 (행 클릭 시 표시) -->
+      <div id="sync-detail-card" class="row row-cards mb-3" style="display:none">
+        <div class="col-12">
+          <div class="card border-primary">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon text-primary me-1" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Connection 상세: <span id="detail-conn-name" class="text-primary"></span>
+              </h3>
+              <div class="card-options ms-auto">
+                <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('sync-detail-card').style.display='none'">✕</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-vcenter table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>자원 유형</th>
+                    <th class="text-center">TB 등록</th>
+                    <th class="text-center">CSP 전체</th>
+                    <th class="text-center">미등록</th>
+                    <th class="text-center">상태</th>
+                  </tr>
+                </thead>
+                <tbody id="detail-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 동기화 실행 카드 -->
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">동기화 실행</h3>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+
+                <!-- Namespace -->
+                <div class="col-md-4">
+                  <label class="form-label required">Namespace</label>
+                  <select id="sync-ns" class="form-select">
+                    <option value="">Select Namespace</option>
+                  </select>
+                </div>
+
+                <!-- 대상 Connection (테이블 선택 표시) -->
+                <div class="col-md-8">
+                  <label class="form-label">대상 Connection</label>
+                  <div id="sync-selected-conn" class="form-control bg-light text-secondary" style="min-height:38px; font-size:0.875rem">
+                    현황 테이블에서 Connection을 선택하세요 (미선택 시 전체 대상)
+                  </div>
+                </div>
+
+                <!-- 대상 Provider -->
+                <div class="col-12">
+                  <label class="form-label">대상 Provider</label>
+                  <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="provider-radio" value="all" checked onchange="syncToggleProvider()">
+                      <span class="form-check-label">전체</span>
+                    </label>
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="provider-radio" value="partial" onchange="syncToggleProvider()">
+                      <span class="form-check-label">부분 선택</span>
+                    </label>
+                    <div id="provider-cb-group" class="d-flex gap-3 flex-wrap"></div>
+                  </div>
+                </div>
+
+                <!-- 자원 유형 -->
+                <div class="col-12">
+                  <label class="form-label">자원 유형</label>
+                  <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="restype-radio" value="all" checked onchange="syncToggleResType()">
+                      <span class="form-check-label">전체</span>
+                    </label>
+                    <label class="form-check mb-0">
+                      <input class="form-check-input" type="radio" name="restype-radio" value="partial" onchange="syncToggleResType()">
+                      <span class="form-check-label">부분 선택</span>
+                    </label>
+                    <div id="restype-cb-group" class="d-flex gap-3 flex-wrap">
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="vNet" disabled><span class="form-check-label">vNet</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="securityGroup" disabled><span class="form-check-label">Security Group</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="sshKey" disabled><span class="form-check-label">SSH Key</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="node" disabled><span class="form-check-label">Node</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="dataDisk" disabled><span class="form-check-label">Data Disk</span></label>
+                      <label class="form-check mb-0"><input class="form-check-input sync-type-cb" type="checkbox" value="customImage" disabled><span class="form-check-label">Custom Image</span></label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 실행 버튼 -->
+                <div class="col-12 d-flex gap-2 align-items-center">
+                  <button class="btn btn-primary" onclick="syncExecute()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 4v16l13 -8z"/></svg>
+                    동기화 실행
+                  </button>
+                  <span id="sync-exec-status" class="text-secondary small"></span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 동기화 결과 탭 ──────────────────────────────────────────────── -->
+    <div id="tab-result" style="display:none">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">동기화 실행 결과</h3>
+              <div class="card-options ms-auto">
+                <span id="result-elapsed" class="text-secondary small"></span>
+              </div>
+            </div>
+            <div id="result-empty" class="card-body text-center text-secondary py-5">
+              동기화 실행 후 결과가 표시됩니다.
+            </div>
+            <div id="result-content" style="display:none">
+              <div class="card-body border-bottom py-2">
+                <div class="d-flex gap-4 flex-wrap" id="result-summary"></div>
+              </div>
+              <div class="card-body p-0">
+                <div id="sync-result-table"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NS 동기화 탭 ──────────────────────────────────────────────── -->
+    <div id="tab-nssync" style="display:none;">
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">동기화 차이 조회</h3>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="nsSyncQuery()">조회</button>
+            </div>
+            <div class="card-body" id="nssync-diff-area">
+              <p class="text-muted">조회 버튼을 눌러 Namespace ↔ Project 불일치 현황을 확인하세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row row-cards" id="nssync-apply-card" style="display:none;">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">동기화 적용</h3>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">대상 Workspace</label>
+                <select id="nssync-workspace-sel" class="form-select" style="max-width:320px;"></select>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="nsSyncApply()">적용</button>
+              <div id="nssync-apply-result" class="mt-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/cspimport_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudresources/resourcesync.js") | raw }}

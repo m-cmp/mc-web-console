@@ -169,9 +169,7 @@ function refreshDisplay() {
 // table의 특정 row만 갱신
 function refreshRowData(rowId, newData) {
   const selectedRows = mciListTable.getSelectedData().map(row => row.id);
-  //TODO: providerIMG
-  // newData.getData().vm[0].providerName = "aws";
-  //mciListTable.updateData(totalMciListObj);
+  // newData includes the full MCI object (with vm array) so providerFormatter reads correctly
   mciListTable.updateData([{ id: rowId, ...newData }])
     .then(() => {
       // 갱신 후 선택 상태 복원
@@ -456,7 +454,10 @@ export async function getSelectedMciData() {
 
     var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, window.currentMciId)
     if (mciResp.status.code != 200) {
-      // failed.  // TODO : Error Popup 처리
+      webconsolejs["common/utils/toast"].showToast(
+        webconsolejs["common/utils/toast"].TOAST_TYPES.ERROR,
+        `MCI 조회 실패: ${mciResp.status.message || window.currentMciId}`
+      );
       return;
     }
 
@@ -509,29 +510,30 @@ function setMciInfoData(mciData) {
 
     var mciStatusCell = "";
 
-    // if (mciStatus.includes("Running")) {
     if (mciStatus === "Running") {
       mciStatusCell =
         '<div class="bg-green-lt card" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
-        '  <span class="text-green-lt" style="font-size: 12px;">Running</span>' +
+        '  <span class="text-green" style="font-size: 12px;">Running</span>' +
         '</div>';
-      // } else if (mciStatus.includes("Suspended")) {
     } else if (mciStatus === "Suspended") {
       mciStatusCell =
         '<div class="card bg-yellow-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
-        '  <span class="text-red-lt" style="font-size: 12px;">Stopped</span>' +
+        '  <span class="text-yellow" style="font-size: 12px;">Stopped</span>' +
         '</div>';
-      // } else if (mciStatus.includes("Terminated")) {
     } else if (mciStatus === "Terminated") {
       mciStatusCell =
         '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
-        '  <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>' +
+        '  <span class="text-muted" style="font-size: 12px;">Terminated</span>' +
         '</div>';
-      // } else if (mciStatus.includes("Failed")) {
+    } else if (mciStatus === "Failed") {
+      mciStatusCell =
+        '<div class="card bg-red-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
+        '  <span class="text-red" style="font-size: 12px;">Failed</span>' +
+        '</div>';
     } else {
       mciStatusCell =
         '<div class="card bg-muted-lt" style="border: 0px; display: inline-block; padding: 5px 10px; text-align: left;">' +
-        '  <span class="text-muted-lt" style="font-size: 12px;">' + mciStatus + '</span>' +
+        '  <span class="text-muted" style="font-size: 12px;">' + mciStatus + '</span>' +
         '</div>';
     }
 
@@ -614,6 +616,10 @@ function executeWithToast(apiCall, successMessage, errorMessage) {
 
 // mci life cycle 변경
 export function changeMciLifeCycle(type) {
+  if (window.currentMciId == undefined || window.currentMciId == "") {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select an MCI')
+    return;
+  }
   executeWithToast(
     () => webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, window.currentMciId, window.currentNsId),
     `MCI ${type} completed successfully`,
@@ -1568,12 +1574,15 @@ function setToTalMciStatus() {
       var aMci = totalMciListObj[mciIndex];
 
       var aMciStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateMciStatusCount(aMci);
-      //console.log("aMci.id : ", aMci.id);
-      //console.log("mciStatusMap ::: ", aMciStatusCountMap);
       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
     }
   } catch (e) {
   }
+  // 마지막 갱신 시각 표시
+  const updatedAt = new Date().toLocaleTimeString();
+  const el = document.getElementById("mci_status_updated_at");
+  if (el) el.textContent = updatedAt;
+
   displayMciStatusArea();
 }
 
@@ -1976,48 +1985,48 @@ function statusFormatter(cell) {
 
   if (mciDispStatus === "running") {
     mciStatusCell = `
-      <div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-green-lt" style="font-size: 12px;">Running</span>
+      <div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-green" style="font-size: 12px;">Running</span>
       </div>`;
   } else if (mciDispStatus === "running-ing") {
     mciStatusCell = `
-      <div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-green-lt" style="font-size: 12px;">running</span>
+      <div class="bg-green-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-green" style="font-size: 12px;">Starting…</span>
       </div>`;
   } else if (mciDispStatus === "stopped") {
     mciStatusCell = `
-      <div class="bg-yellow-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-red-lt" style="font-size: 12px;">Stopped</span>
+      <div class="bg-yellow-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-yellow" style="font-size: 12px;">Stopped</span>
       </div>`;
   } else if (mciDispStatus === "stopped-ing") {
     mciStatusCell = `
-      <div class="bg-yellow-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-red-lt" style="font-size: 12px;">Stopped</span>
+      <div class="bg-yellow-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-yellow" style="font-size: 12px;">Stopping…</span>
       </div>`;
   } else if (mciDispStatus === "terminated") {
     mciStatusCell = `
-      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>
+      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-muted" style="font-size: 12px;">Terminated</span>
       </div>`;
   } else if (mciDispStatus === "terminated-ing") {
     mciStatusCell = `
-      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-muted-lt" style="font-size: 12px;">Terminated</span>
+      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-muted" style="font-size: 12px;">Terminating…</span>
       </div>`;
   } else if (mciDispStatus === "failed") {
     mciStatusCell = `
-      <div class="bg-red-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-red-lt" style="font-size: 12px;">Failed</span>
+      <div class="bg-red-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-red" style="font-size: 12px;">Failed</span>
       </div>`;
   } else if (mciDispStatus === "etc") {
     mciStatusCell = `
-      <div class="bg-azure-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-azure-lt" style="font-size: 12px;">ETC</span>
+      <div class="bg-azure-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-azure" style="font-size: 12px;">ETC</span>
       </div>`;
   } else {
     mciStatusCell = `
-      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 80px; height: 25px;">
-        <span class="text-muted-lt" style="font-size: 12px;">Unknown</span>
+      <div class="bg-muted-lt card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="text-muted" style="font-size: 12px;">${mciDispStatus || 'Unknown'}</span>
       </div>`;
   }
 

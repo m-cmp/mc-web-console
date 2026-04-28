@@ -1,5 +1,5 @@
 const Webpack = require("webpack");
-const Glob = require("glob");
+const { globSync } = require("glob");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
@@ -9,12 +9,11 @@ const LiveReloadPlugin = require("webpack-livereload-plugin");
 const configurator = {
   entries: function(){
     var entries = {
-      application: [
-        './assets/css/application.scss',
-      ],
+      // application.js: jQuery expose, Bootstrap 등 전역 JS — jstree 스타일은 application.scss에서 @import
+      application: ['./assets/js/application.js', './assets/css/application.scss'],
     }
-    // Glob.sync("./assets/*/*.*").forEach((entry) => {
-    Glob.sync("./assets/*/*/*.*").forEach((entry) => {
+    // globSync("./assets/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -31,25 +30,7 @@ const configurator = {
 
       entries[key].push(entry)
     })
-    Glob.sync("./assets/*/*/*/*.*").forEach((entry) => {
-      if (entry === './assets/css/application.scss') {
-        return
-      }
-
-      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
-      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
-        return
-      }
-
-      if( entries[key] == null) {
-        entries[key] = [entry]
-        return
-      }
-
-      entries[key].push(entry)
-    })
-
-    Glob.sync("./assets/*/*/*/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -67,7 +48,7 @@ const configurator = {
       entries[key].push(entry)
     })
 
-    Glob.sync("./assets/*/*/*/*/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -85,7 +66,25 @@ const configurator = {
       entries[key].push(entry)
     })
 
-    Glob.sync("./assets/*/*/*/*/*/*/*.*").forEach((entry) => {
+    globSync("assets/*/*/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
+      if (entry === './assets/css/application.scss') {
+        return
+      }
+
+      let key = entry.replace(/(\.\/assets\/(src|js|css|go)\/)|\.(ts|js|s[ac]ss|go)/g, '')
+      if(key.startsWith("_") || (/(ts|js|s[ac]ss|go)$/i).test(entry) == false) {
+        return
+      }
+
+      if( entries[key] == null) {
+        entries[key] = [entry]
+        return
+      }
+
+      entries[key].push(entry)
+    })
+
+    globSync("assets/*/*/*/*/*/*/*.*").map(e => `./${e}`).forEach((entry) => {
       if (entry === './assets/css/application.scss') {
         return
       }
@@ -141,7 +140,7 @@ const configurator = {
             MiniCssExtractPlugin.loader,
             { loader: "css-loader", options: {sourceMap: true}},
             { loader: "postcss-loader", options: {sourceMap: true}},
-            { loader: "sass-loader", options: {sourceMap: true}}
+            { loader: "sass-loader", options: {sourceMap: true, sassOptions: {quietDeps: true, silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin', 'color-functions']}}}
           ]
         },
         { test: /\.tsx?$/, use: "ts-loader", exclude: /node_modules/},
@@ -155,9 +154,8 @@ const configurator = {
   },
 
   buildConfig: function(){
-    // NOTE: If you are having issues with this not being set "properly", make
-    // sure your GO_ENV is set properly as `buffalo build` overrides NODE_ENV
-    // with whatever GO_ENV is set to or "development".
+    // NOTE: NODE_ENV is used for build mode. When building via Go/CI, set NODE_ENV
+    // explicitly (e.g. NODE_ENV=production) if needed.
     const env = process.env.NODE_ENV || "development";
 
     var config = {

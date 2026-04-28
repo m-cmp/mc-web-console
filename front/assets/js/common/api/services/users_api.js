@@ -40,6 +40,26 @@ export async function getUserByName(username) {
     return response.data.responseData;
 }
 
+export async function resetUserPassword(userId, newPassword) {
+    const controller = "/api/mc-iam-manager/ResetUserPassword";
+    const data = {
+        pathParams: { "userId": userId.toString() },
+        request: { newPassword }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response;
+}
+
+export async function updateUserStatus(userId, status) {
+    const controller = "/api/mc-iam-manager/UpdateUserStatus";
+    const data = {
+        pathParams: { "userId": userId.toString() },
+        request: { status: status }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response;
+}
+
 export async function getUserWorkspacesByUserID(userId) {
     const controller = "/api/mc-iam-manager/Getuserworkspacesbyuserid";
     // var controller = "/api/" + "/mc-iam-manager/" + "Getuserworkspacesbyuserid";

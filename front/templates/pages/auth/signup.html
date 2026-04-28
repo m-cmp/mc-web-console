@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>M-CMP : mc-web-console - Sign Up</title>
+    <link rel="icon" href="/assets/favicon.ico">
+    {{ stylesheetTag("application.css") | raw }}
+</head>
+<body>
+  <div class="page page-center" >
+    <div class="container container-tight py-4">
+
+      <div class="text-center mb-4">
+        <a class="navbar-brand navbar-brand-autodark">
+          <div class="row">
+            <div>
+              <img src="/assets/static/logo/mcmp.svg" width="150" >
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="card card-md">
+        <div class="card-body">
+          <h2 class="h2 text-center mb-4">Create your account</h2>
+
+          <div id="error-message" class="alert alert-danger" style="display:none;"></div>
+
+          <div id="signup-form">
+            <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-control" id="email" placeholder="Your email address" autocomplete="off" required>
+              <div id="email-error" style="display:none; color:red; font-size:0.85em;"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" id="password" placeholder="Your password" autocomplete="off" required>
+              <div id="password-error" style="display:none; color:red; font-size:0.85em;"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-control" id="firstName" placeholder="Your first name" autocomplete="off" required>
+              <div id="firstName-error" style="display:none; color:red; font-size:0.85em;"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="lastName" placeholder="Your last name" autocomplete="off" required>
+              <div id="lastName-error" style="display:none; color:red; font-size:0.85em;"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Organization <span class="text-muted">(선택 사항)</span></label>
+              <input type="text" class="form-control" id="organization" placeholder="Your organization" autocomplete="off">
+            </div>
+
+            <div class="form-footer">
+              <button id="signupbtn" class="btn btn-primary w-100">Sign Up</button>
+            </div>
+          </div>
+
+          <div id="success-message" style="display:none;">
+            <div class="alert alert-success">
+              <h4>가입 신청이 완료되었습니다.</h4>
+              <p>관리자 승인 후 로그인하실 수 있습니다.<br>승인 완료 시 등록하신 이메일로 안내드립니다.</p>
+            </div>
+            <div class="form-footer">
+              <button id="go-login-btn" class="btn btn-primary w-100">로그인 페이지로 이동</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="text-center text-secondary mt-3">
+        이미 계정이 있으신가요? <a href="/auth/login">로그인</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- common JS -->
+  {{ javascriptTag("application.js") | raw }}
+  {{ javascriptTag("common/theme/tabler.js") | raw }}
+  {{ javascriptTag("common/util.js") | raw }}
+  {{ javascriptTag("common/api/http.js") | raw }}
+  {{ javascriptTag("common/cookie/authcookie.js") | raw }}
+  {{ javascriptTag("common/storage/localstorage.js") | raw }}
+  {{ javascriptTag("common/storage/sessionstorage.js") | raw }}
+
+  <!-- page JS -->
+  {{ javascriptTag("pages/auth/signup.js") | raw }}
+</body>
+</html>
