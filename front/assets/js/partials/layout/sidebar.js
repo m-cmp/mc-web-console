@@ -43,7 +43,7 @@ function generateMenuHTML(menus) {
             html += ` </li>`
             if (category.menus && category.menus.length > 0) {
                 category.menus.forEach(menu => {
-                    if (menu.menus === null){
+                    if (!menu.menus || menu.menus.length === 0){
                         html +=`<li class="nav-item">`
                         html +=`<a class="nav-link" ${stringToBool(menu.isAction) ? `href="/webconsole/${title.id}/${category.id}/${menu.id}"` : ""}" name="sidebar_${menu.id}">`
                         html +=`<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
@@ -52,7 +52,7 @@ function generateMenuHTML(menus) {
                         html +=`</li>`
                     }else {
                         html += `<li class="nav-item box-link dropdown" name="sidebar_${menu.id}">`;
-                        html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${stringToBool(menu.isAction) ? `/webconsole/${title.id}/${category.id}/${menu.id}` : "#navbar-extra"}" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">`;
+                        html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${stringToBool(menu.isAction) ? `/webconsole/${title.id}/${category.id}/${menu.id}` : "#navbar-extra"}" role="button" aria-expanded="false">`;
                         html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
                         html += `<span class="nav-link-title">${menu.displayName}</span>`;
                         html += `</div>`;
