@@ -19,7 +19,6 @@ export async function GetApiHosts(frameworkName){
     const framework = getapihostsresponse.data.responseData[frameworkName];
     if (framework && framework.BaseURL) {
         return framework.BaseURL;
-    } else {
-        return 'Framework not found';
     }
+    return null;
 }

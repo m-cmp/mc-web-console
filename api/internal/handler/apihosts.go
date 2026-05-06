@@ -32,6 +32,11 @@ func GetApiHosts(c echo.Context) error {
 
 	apiHosts := make(map[string]ServiceNoAuth)
 
+	// api.yaml을 기본값으로 사용 (레지스트리 미등록 서비스도 포함)
+	for k, v := range cfg.ApiSpec.Services {
+		apiHosts[k] = ServiceNoAuth{BaseURL: v.BaseURL}
+	}
+
 	if cfg.MCIAM.Use && cfg.RegistryCache != nil {
 		cached := cfg.RegistryCache.GetAllServices()
 		if cached == nil {
@@ -41,12 +46,11 @@ func GetApiHosts(c echo.Context) error {
 			}
 			cached = cfg.RegistryCache.GetAllServices()
 		}
+		// 레지스트리 값으로 override (BaseURL이 있는 경우만)
 		for k, v := range cached {
-			apiHosts[k] = ServiceNoAuth{BaseURL: v.BaseURL}
-		}
-	} else {
-		for k, v := range cfg.ApiSpec.Services {
-			apiHosts[k] = ServiceNoAuth{BaseURL: v.BaseURL}
+			if v.BaseURL != "" {
+				apiHosts[k] = ServiceNoAuth{BaseURL: v.BaseURL}
+			}
 		}
 	}
 

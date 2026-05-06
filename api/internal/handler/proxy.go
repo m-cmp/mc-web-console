@@ -47,6 +47,16 @@ func SubsystemAnyController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
 	}
 
+	// MCIAM_USE=true이고 캐시가 비어 있으면 ListMcmpApisServices 자동 갱신
+	// (UpdateFrameworkService 후 invalidate된 캐시를 복원)
+	if cfg.MCIAM.Use && cfg.RegistryCache != nil {
+		if allSvcs := cfg.RegistryCache.GetAllServices(); allSvcs == nil {
+			if err := refreshRegistryCache(cfg, c); err != nil {
+				log.Printf("[SubsystemAnyController] cache refresh failed: %v", err)
+			}
+		}
+	}
+
 	// BaseURL: 캐시 우선 → 없으면 api.yaml BaseURL (mc-iam-manager 고정 주소)
 	effectiveBaseURL := service.BaseURL
 	// ActionSpec: 캐시 우선 → 없으면 api.yaml ActionSpec
