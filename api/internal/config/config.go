@@ -9,12 +9,13 @@ import (
 
 // Config 전체 애플리케이션 설정
 type Config struct {
-	Server          ServerConfig
-	Database        DatabaseConfig
-	MCIAM           MCIAMConfig
-	ApiSpec         *ApiSpec
-	RegistryCache   RegistryCacheInterface
-	SetupYaml       SetupYamlConfig
+	Server             ServerConfig
+	Database           DatabaseConfig
+	MCIAM              MCIAMConfig
+	ApiSpec            *ApiSpec
+	RegistryCache      RegistryCacheInterface
+	SetupYaml          SetupYamlConfig
+	IframeTargetIsHost bool // IFRAME_TARGET_IS_HOST 환경변수
 }
 
 // SetupYamlConfig FR-CLOUD-ADMIN-006-08용 raw yaml 도달성 확인 설정
@@ -32,6 +33,8 @@ type RegistryCacheInterface interface {
 	GetBaseURL(subsystem, operationId string) string
 	// GetActionSpec 캐시의 ServiceActions에서 ActionSpec 반환. nil 이면 api.yaml ActionSpec 사용.
 	GetActionSpec(subsystem, operationId string) *ActionSpec
+	// GetAllServices 캐시의 전체 서비스 목록 반환. 캐시 없음/만료이면 nil 반환.
+	GetAllServices() map[string]Service
 	Store(responseData interface{})
 	Invalidate()
 }
@@ -86,6 +89,7 @@ func Load() (*Config, error) {
 			McWebconsoleMenuYaml: getEnv("MCWEBCONSOLE_MENUYAML", ""),
 			McAdmincliApiYaml:    getEnv("MCADMINCLI_APIYAML", ""),
 		},
+		IframeTargetIsHost: getEnv("IFRAME_TARGET_IS_HOST", "false") == "true",
 	}
 
 	// API 스펙 로드
