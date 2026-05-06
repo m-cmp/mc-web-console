@@ -498,9 +498,9 @@ const ReadyzManager = {
     /** mc-iam-manager에서 framework 서비스 주소 로드 + 동적 목록 빌드 */
     async loadFrameworkServices() {
         try {
-            const services = await readyzApi().listFrameworkServices();
+            const { services, serviceActions } = await readyzApi().listFrameworkServices();
             AppState.frameworkServices = services || {};
-            AppState.frameworkList = readyzApi().buildFrameworkList(AppState.frameworkServices);
+            AppState.frameworkList = readyzApi().buildFrameworkList(AppState.frameworkServices, serviceActions);
         } catch (e) {
             console.warn('loadFrameworkServices failed:', e.message);
             AppState.frameworkServices = {};

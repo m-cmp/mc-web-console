@@ -42,9 +42,26 @@ func SubsystemAnyController(c echo.Context) error {
 	// api.yaml에서 기본 Service + ActionSpec 조회 (fallback 및 Auth 설정 소스)
 	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
 	if err != nil {
-		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
-		msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
-		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+		// MCIAM_USE=true이면 RegistryCache에서 ActionSpec 조회 시도
+		// (mc-iam-manager 레지스트리에만 있고 api.yaml에 없는 action 대응)
+		if cfg.MCIAM.Use && cfg.RegistryCache != nil {
+			if allSvcs := cfg.RegistryCache.GetAllServices(); allSvcs == nil {
+				_ = refreshRegistryCache(cfg, c)
+			}
+			if cachedSpec := cfg.RegistryCache.GetActionSpec(subsystemName, operationId); cachedSpec != nil {
+				if svc, svcErr := cfg.ApiSpec.GetService(subsystemName); svcErr == nil {
+					service = svc
+					actionSpec = cachedSpec
+					err = nil
+					log.Printf("[RegistryCache] ActionSpec fallback for %s/%s", subsystemName, operationId)
+				}
+			}
+		}
+		if err != nil {
+			log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
+			msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
+			return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+		}
 	}
 
 	// MCIAM_USE=true이고 캐시가 비어 있으면 ListMcmpApisServices 자동 갱신

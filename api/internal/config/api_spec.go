@@ -53,6 +53,18 @@ func LoadApiSpec(path string) (*ApiSpec, error) {
 	return &apiSpec, nil
 }
 
+// GetService subsystem 서비스 정보만 조회 (action 불필요 시 사용)
+func (a *ApiSpec) GetService(subsystem string) (*Service, error) {
+	subsystemLower := strings.ToLower(subsystem)
+	for key, svc := range a.Services {
+		if strings.ToLower(key) == subsystemLower {
+			s := svc
+			return &s, nil
+		}
+	}
+	return nil, fmt.Errorf("service not found: %s", subsystem)
+}
+
 // GetAction subsystem과 operationId로 액션 조회
 func (a *ApiSpec) GetAction(subsystem, operationId string) (*Service, *ActionSpec, error) {
 	// 소문자로 변환하여 매칭 (Buffalo 호환)

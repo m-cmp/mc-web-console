@@ -25,20 +25,24 @@ const READYZ_EXCLUDE = new Set(['mc-web-console', 'mc-infra-connector']);
 /**
  * ListMcmpApisServices 응답(services 맵)으로부터 readyz 대상 프레임워크 목록 생성
  * @param {Object} services - { "mc-infra-manager": { BaseURL, Version }, ... }
+ * @param {Object} serviceActions - { "mc-infra-manager": { "Getreadyz": { Method, ResourcePath }, ... }, ... }
  * @returns {Array<{ name, subsystem, operationId, initOperationId }>}
  */
-export function buildFrameworkList(services) {
+export function buildFrameworkList(services, serviceActions = {}) {
     return Object.keys(services)
         .filter(name => !READYZ_EXCLUDE.has(name))
         .sort()
         .map(name => {
-            const mapping = READYZ_OPERATIONID_MAP[name] || { operationId: null, initOperationId: null };
-            return {
-                name,
-                subsystem: name,
-                operationId: mapping.operationId,
-                initOperationId: mapping.initOperationId,
-            };
+            // ServiceActions에서 ResourcePath가 /readyz로 끝나는 action 자동 탐색
+            const actions = serviceActions[name] || {};
+            const readyzEntry = Object.entries(actions).find(([, spec]) =>
+                spec.ResourcePath && spec.ResourcePath.split('?')[0].split('/').pop() === 'readyz'
+            );
+            const operationId = readyzEntry
+                ? readyzEntry[0]
+                : (READYZ_OPERATIONID_MAP[name]?.operationId || null);
+            const initOperationId = READYZ_OPERATIONID_MAP[name]?.initOperationId || null;
+            return { name, subsystem: name, operationId, initOperationId };
         });
 }
 
@@ -65,14 +69,14 @@ export async function callInit(subsystem, operationId) {
 }
 
 /**
- * mc-iam-manager에서 전체 프레임워크 서비스 목록(BaseURL) 조회
- * @returns {Promise<Object>} { "mc-infra-manager": { Version, BaseURL, Auth }, ... }
+ * mc-iam-manager에서 전체 프레임워크 서비스 목록(BaseURL + ServiceActions) 조회
+ * @returns {Promise<{ services: Object, serviceActions: Object }>}
  */
 export async function listFrameworkServices() {
     const url = `/api/mc-iam-manager/ListMcmpApisServices`;
     const res = await webconsolejs["common/api/http"].commonAPIPost(url, {}, undefined, { loaderType: 'none' });
     const d = res && res.data ? (res.data.responseData || res.data) : {};
-    return d.Services || {};
+    return { services: d.Services || {}, serviceActions: d.ServiceActions || {} };
 }
 
 /**
