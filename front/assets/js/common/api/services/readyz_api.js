@@ -93,6 +93,13 @@ export async function updateFrameworkServiceUrl(serviceName, baseUrl) {
     }, undefined, { loaderType: 'none' });
 }
 
+export async function createFrameworkServiceUrl(serviceName, baseUrl) {
+    const url = `/api/mc-iam-manager/CreateFrameworkService`;
+    return await webconsolejs["common/api/http"].commonAPIPost(url, {
+        request: { name: serviceName, version: "v1", baseUrl: baseUrl, authType: "none", isActive: true },
+    }, undefined, { loaderType: 'none' });
+}
+
 /**
  * readyz 응답에서 상태 파싱
  * ready 필드가 있으면 그 값을 사용, 없으면 HTTP 200 = ok

@@ -11,12 +11,12 @@ services:
       password: null
   mc-iam-manager:
     version: 0.2.11
-    baseurl: http://52.79.163.111:5006
+    baseurl: http://mciam.onecloudcon.com:5006
     auth:
       type: bearer
   mc-infra-manager:
     version: 0.9.11
-    baseurl: http://52.79.163.111:1323/tumblebug
+    baseurl: http://mciam.onecloudcon.com:1323/tumblebug
     auth:
       type: basic
       username: default
@@ -41,6 +41,10 @@ services:
   mc-cost-optimizer:
     version: main
     baseurl: http://cost_optimizer_url:18082
+    auth: null
+  mc-cost-optimizer-fe:
+    version: main
+    baseurl: http://cost_optimizer_fe_url:7780
     auth: null
   mc-data-manager:
     version: main:20240923
@@ -721,6 +725,10 @@ serviceActions:
       method: post
       resourcePath: /api/mcmp-apis/list
       description: "전체 프레임워크 서비스 목록 및 BaseURL 조회."
+    CreateFrameworkService:
+      method: post
+      resourcePath: /api/mcmp-apis
+      description: "프레임워크 서비스 신규 등록. body: {name, version, baseUrl, authType, isActive}"
     UpdateFrameworkService:
       method: put
       resourcePath: /api/mcmp-apis/name/{serviceName}
