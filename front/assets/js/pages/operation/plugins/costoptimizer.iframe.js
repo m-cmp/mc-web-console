@@ -46,10 +46,12 @@ async function loadCostOptimizer() {
             'Settings &gt; Environment &gt; Cloud SPs &gt; Cloud Overview 에서 mc-cost-optimizer-fe URL을 등록해 주세요.</div>';
         return;
     }
-    const domain = window.location.protocol + '//' + window.location.hostname;
-    if (host.startsWith(":")) {
-        host = `${domain}${host}`;
-    }
+    // IFRAME_TARGET_IS_HOST=true 환경에서 :port 형식으로 오던 값에 browser origin을 붙이던 로직.
+    // GetApiHosts가 DB full URL을 그대로 전달하도록 변경되어 비활성화.
+    // const domain = window.location.protocol + '//' + window.location.hostname;
+    // if (host.startsWith(":")) {
+    //     host = `${domain}${host}`;
+    // }
     const data = getCostOptimizerData();
 
     webconsolejs["common/iframe/iframe"].addIframe("costIframe", host, data);

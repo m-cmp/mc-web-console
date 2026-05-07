@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"regexp"
+	// "regexp"
 	"strings"
 
 	"mc_web_console_api/internal/config"
@@ -56,16 +56,19 @@ func GetApiHosts(c echo.Context) error {
 
 	commonResponse := model.CommonResponseStatusOK(apiHosts)
 
-	if cfg.IframeTargetIsHost {
-		re := regexp.MustCompile(`:(\d+.*)`)
-		for fw, host := range apiHosts {
-			if portURLStr := re.FindString(host.BaseURL); portURLStr != "" {
-				host.BaseURL = portURLStr
-				apiHosts[fw] = host
-			}
-		}
-		commonResponse = model.CommonResponseStatusOK(apiHosts)
-	}
+	// IFRAME_TARGET_IS_HOST=true 시 :port/path 형식으로 변환하는 로직.
+	// HTTPS(HSTS) 환경에서 브라우저 protocol이 강제되어 http 서비스 접근 불가 문제로 비활성화.
+	// DB에 외부 접근 가능한 full URL을 그대로 저장하고 전달하는 방식으로 변경.
+	// if cfg.IframeTargetIsHost {
+	// 	re := regexp.MustCompile(`:(\d+.*)`)
+	// 	for fw, host := range apiHosts {
+	// 		if portURLStr := re.FindString(host.BaseURL); portURLStr != "" {
+	// 			host.BaseURL = portURLStr
+	// 			apiHosts[fw] = host
+	// 		}
+	// 	}
+	// 	commonResponse = model.CommonResponseStatusOK(apiHosts)
+	// }
 
 	return c.JSON(commonResponse.Status.Code, commonResponse)
 }
