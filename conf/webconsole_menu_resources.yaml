@@ -120,6 +120,14 @@ menus:
     priority: 2
     menunumber: 1350
 
+  - id: cspaccounts
+    parentid: cloudsps
+    displayname: CSP Accounts
+    restype: menu
+    isaction: false
+    priority: 2
+    menunumber: 1360
+
   - id: cloudresources
     parentid: environment
     displayname: Cloud Resources
