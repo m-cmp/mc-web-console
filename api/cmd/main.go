@@ -99,6 +99,7 @@ func main() {
 
 	// 단일 세그먼트 내부 핸들러
 	api.POST("/disklookup", handler.DiskLookup)
+	api.POST("/getapihosts", handler.GetApiHosts)
 
 	// 관리자 전용 BFF 라우트 (와일드카드보다 먼저 등록되어야 정적 매칭됨)
 	// FR-CLOUD-ADMIN-006-08: 외부 raw YAML 도달성 확인 (CORS 우회 + 토큰 노출 방지)
