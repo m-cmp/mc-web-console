@@ -2,8 +2,15 @@ package handler
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
@@ -88,6 +95,16 @@ func SubsystemAnyController(c echo.Context) error {
 		bodyBytes, _ = json.Marshal(commonRequest.Request)
 	}
 
+	// mc-infra-manager RegisterCredential: 평문 → hybrid encryption 변환
+	if strings.ToLower(subsystemName) == "mc-infra-manager" &&
+		strings.EqualFold(operationId, "RegisterCredential") {
+		encrypted, encErr := encryptCredentialBody(bodyBytes, effectiveBaseURL, service)
+		if encErr != nil {
+			return errors.NewInternalServerError("credential encryption failed", encErr)
+		}
+		bodyBytes = encrypted
+	}
+
 	httpReq, err := http.NewRequest(strings.ToUpper(effectiveActionSpec.Method), targetURL, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return errors.NewInternalServerError("Failed to build request", err)
@@ -98,6 +115,21 @@ func SubsystemAnyController(c echo.Context) error {
 	authHeader := buildAuthHeader(c, service)
 	if authHeader != "" {
 		httpReq.Header.Set("Authorization", authHeader)
+	}
+
+	// mc-infra-manager 전용 헤더 포워딩 (v0.12 x-credential-holder 지원)
+	if strings.ToLower(subsystemName) == "mc-infra-manager" {
+		// 클라이언트 헤더 우선, 없으면 로그인 사용자 role 사용
+		credHolder := c.Request().Header.Get("x-credential-holder")
+		if credHolder == "" {
+			credHolder, _ = c.Get("role").(string)
+		}
+		if credHolder != "" {
+			httpReq.Header.Set("x-credential-holder", credHolder)
+		}
+		if reqID := c.Request().Header.Get("x-request-id"); reqID != "" {
+			httpReq.Header.Set("x-request-id", reqID)
+		}
 	}
 
 	log.Printf("Proxying %s %s", httpReq.Method, targetURL)
@@ -139,6 +171,138 @@ func SubsystemAnyController(c echo.Context) error {
 
 	commonResp := model.NewCommonResponse(resp.StatusCode, http.StatusText(resp.StatusCode), responseData)
 	return c.JSON(resp.StatusCode, commonResp)
+}
+
+// publicKeyResponse GET /credential/publicKey 응답 구조
+type publicKeyResponse struct {
+	PublicKey       string `json:"publicKey"`
+	PublicKeyTokenId string `json:"publicKeyTokenId"`
+}
+
+// plainCredentialRequest 프론트에서 전달하는 평문 credential 요청 구조
+type plainCredentialRequest struct {
+	CredentialHolder     string              `json:"credentialHolder"`
+	ProviderName         string              `json:"providerName"`
+	CredentialKeyValueList []credentialKV    `json:"credentialKeyValueList"`
+}
+
+type credentialKV struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// encryptedCredentialRequest mc-infra-manager RegisterCredential 암호화된 요청 구조
+type encryptedCredentialRequest struct {
+	CredentialHolder               string         `json:"credentialHolder"`
+	ProviderName                   string         `json:"providerName"`
+	CredentialKeyValueList         []credentialKV `json:"credentialKeyValueList"`
+	EncryptedClientAesKeyByPublicKey string        `json:"encryptedClientAesKeyByPublicKey"`
+	PublicKeyTokenId               string         `json:"publicKeyTokenId"`
+}
+
+// encryptCredentialBody 평문 credential payload를 hybrid encryption으로 변환한다.
+// 1. GET /credential/publicKey → RSA 공개키 획득
+// 2. AES-256-GCM 키 생성, credentialKeyValueList[].value 암호화
+// 3. RSA-OAEP(SHA-256)으로 AES 키 암호화 → base64
+func encryptCredentialBody(plainBody []byte, baseURL string, service *config.Service) ([]byte, error) {
+	// 1. 공개키 조회
+	pkURL := baseURL + "/credential/publicKey"
+	pkReq, err := http.NewRequest(http.MethodGet, pkURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("build publicKey request: %w", err)
+	}
+	// Basic auth 적용
+	if service.Auth.Type == "basic" && service.Auth.Username != "" {
+		encoded := base64.StdEncoding.EncodeToString([]byte(service.Auth.Username + ":" + service.Auth.Password))
+		pkReq.Header.Set("Authorization", "Basic "+encoded)
+	}
+	pkResp, err := (&http.Client{}).Do(pkReq)
+	if err != nil {
+		return nil, fmt.Errorf("get publicKey: %w", err)
+	}
+	defer pkResp.Body.Close()
+	pkBody, _ := io.ReadAll(pkResp.Body)
+
+	var pkData publicKeyResponse
+	if err := json.Unmarshal(pkBody, &pkData); err != nil {
+		return nil, fmt.Errorf("parse publicKey response: %w", err)
+	}
+	if pkData.PublicKey == "" {
+		return nil, fmt.Errorf("empty publicKey from mc-infra-manager")
+	}
+
+	// 2. RSA 공개키 파싱
+	block, _ := pem.Decode([]byte(pkData.PublicKey))
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM publicKey")
+	}
+	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("parse RSA publicKey: %w", err)
+	}
+	rsaPub, ok := pubInterface.(*rsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("publicKey is not RSA")
+	}
+
+	// 3. 평문 요청 파싱
+	var plain plainCredentialRequest
+	if err := json.Unmarshal(plainBody, &plain); err != nil {
+		return nil, fmt.Errorf("parse plain credential body: %w", err)
+	}
+
+	// 4. AES-256 키 생성
+	aesKey := make([]byte, 32)
+	if _, err := rand.Read(aesKey); err != nil {
+		return nil, fmt.Errorf("generate AES key: %w", err)
+	}
+
+	// 5. credentialKeyValueList[].value AES-256-GCM 암호화
+	encryptedKVList := make([]credentialKV, len(plain.CredentialKeyValueList))
+	for i, kv := range plain.CredentialKeyValueList {
+		cipherText, err := aesGCMEncrypt(aesKey, []byte(kv.Value))
+		if err != nil {
+			return nil, fmt.Errorf("encrypt credential value [%s]: %w", kv.Key, err)
+		}
+		encryptedKVList[i] = credentialKV{
+			Key:   kv.Key,
+			Value: base64.StdEncoding.EncodeToString(cipherText),
+		}
+	}
+
+	// 6. AES 키를 RSA-OAEP(SHA-256)으로 암호화
+	encAESKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, rsaPub, aesKey, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RSA-OAEP encrypt AES key: %w", err)
+	}
+
+	// 7. 암호화된 payload 구성
+	encrypted := encryptedCredentialRequest{
+		CredentialHolder:                plain.CredentialHolder,
+		ProviderName:                    plain.ProviderName,
+		CredentialKeyValueList:          encryptedKVList,
+		EncryptedClientAesKeyByPublicKey: base64.StdEncoding.EncodeToString(encAESKey),
+		PublicKeyTokenId:                pkData.PublicKeyTokenId,
+	}
+	return json.Marshal(encrypted)
+}
+
+// aesGCMEncrypt AES-256-GCM 암호화. 반환값: nonce(12B) + ciphertext
+func aesGCMEncrypt(key, plaintext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, err
+	}
+	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
+	return ciphertext, nil
 }
 
 // buildAuthHeader api.yaml의 auth 타입에 따라 Authorization 헤더 값 반환

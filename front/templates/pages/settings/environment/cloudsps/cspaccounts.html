@@ -5,9 +5,9 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Credential Holders</h3>
+              <h3 class="card-title">CSP Accounts</h3>
               <div class="card-actions btn-actions">
-                <!-- Register button -->
+                <!-- Add button -->
                 <button class="btn btn-primary btn-sm"
                   data-bs-toggle="modal" data-bs-target="#credential-create-modal">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -17,11 +17,11 @@
                     <path d="M12 5l0 14"></path>
                     <path d="M5 12l14 0"></path>
                   </svg>
-                  Register Credential
+                  Add CSP Account
                 </button>
                 <!-- Refresh -->
                 <a class="btn-action"
-                  onclick="webconsolejs['pages/settings/environment/cloudsps/credentials'].refreshCredentialList()">
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/cspaccounts'].refreshCredentialList()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
@@ -45,13 +45,37 @@
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">
-                Credential Holder Detail
+                CSP Account Detail
                 <span id="credential-detail-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
                   [<span id="credential-detail-name-text"></span>]
                 </span>
               </h3>
               <div class="card-actions btn-actions">
-                <a class="btn-action" onclick="webconsolejs['pages/settings/environment/cloudsps/credentials'].hideDetail()">
+                <button class="btn btn-sm btn-outline-warning"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/cspaccounts'].validateSelected()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M5 12l5 5l10 -10"></path>
+                  </svg>
+                  Validate
+                </button>
+                <button class="btn btn-sm btn-outline-danger"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/cspaccounts'].deleteSelected()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M4 7l16 0"></path>
+                    <path d="M10 11l0 6"></path>
+                    <path d="M14 11l0 6"></path>
+                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                  </svg>
+                  Delete
+                </button>
+                <a class="btn-action" onclick="webconsolejs['pages/settings/environment/cloudsps/cspaccounts'].hideDetail()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     class="icon icon-tabler icon-tabler-x">
@@ -65,24 +89,28 @@
             <div class="card-body">
               <div class="datagrid">
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Credential Holder</div>
-                  <div class="datagrid-content" id="detail-holder-id">-</div>
+                  <div class="datagrid-title">Account ID</div>
+                  <div class="datagrid-content" id="detail-cred-id">-</div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Providers</div>
-                  <div class="datagrid-content" id="detail-holder-provider">-</div>
+                  <div class="datagrid-title">Name</div>
+                  <div class="datagrid-content" id="detail-cred-name">-</div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Connections</div>
-                  <div class="datagrid-content" id="detail-holder-connections">-</div>
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="detail-cred-provider">-</div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Verified Connections</div>
-                  <div class="datagrid-content" id="detail-holder-verified">-</div>
+                  <div class="datagrid-title">Status</div>
+                  <div class="datagrid-content" id="detail-cred-status">-</div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Default</div>
-                  <div class="datagrid-content" id="detail-holder-default">-</div>
+                  <div class="datagrid-title">Active</div>
+                  <div class="datagrid-content" id="detail-cred-active">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Created At</div>
+                  <div class="datagrid-content" id="detail-cred-created">-</div>
                 </div>
               </div>
             </div>
@@ -93,64 +121,48 @@
   </div>
 </div>
 
-<!-- Register Credential Modal -->
+<!-- Create CSP Account Modal -->
 <div class="modal modal-blur fade" id="credential-create-modal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Register Credential</h5>
+        <h5 class="modal-title">Add CSP Account</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="credential-create-form">
           <div class="mb-3">
-            <label class="form-label required">Credential Holder</label>
-            <input type="text" class="form-control" id="create-holder-name"
-              placeholder="e.g., admin, role01" required>
+            <label class="form-label required">Account Name</label>
+            <input type="text" class="form-control" id="create-cred-name" placeholder="e.g., my-aws-prod" required>
             <div class="invalid-feedback"></div>
-            <small class="form-text text-muted">Holder name (matches x-credential-holder header).</small>
           </div>
           <div class="mb-3">
             <label class="form-label required">CSP Provider</label>
-            <select class="form-select" id="create-holder-provider" required>
+            <select class="form-select" id="create-cred-provider" required>
               <option value="">Select Provider</option>
-              <option value="aws">AWS</option>
-              <option value="gcp">GCP</option>
-              <option value="azure">Azure</option>
-              <option value="alibaba">Alibaba</option>
-              <option value="ncp">NCP</option>
-              <option value="nhncloud">NHN Cloud</option>
-              <option value="ktcloud">KT Cloud</option>
+              <option value="AWS">AWS</option>
+              <option value="GCP">GCP</option>
+              <option value="AZURE">Azure</option>
             </select>
             <div class="invalid-feedback"></div>
           </div>
           <div class="mb-3">
-            <label class="form-label required">Credential Key-Value List</label>
-            <div id="kv-list-container"></div>
-            <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
-              onclick="webconsolejs['pages/settings/environment/cloudsps/credentials'].addKvRow()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 5l0 14"></path>
-                <path d="M5 12l14 0"></path>
-              </svg>
-              Add Key-Value
-            </button>
-            <small class="form-text text-muted d-block mt-1">
-              Credentials are encrypted (RSA-OAEP + AES-256) before being sent to the server.
-            </small>
+            <label class="form-label required">Credential Data (JSON)</label>
+            <textarea class="form-control font-monospace" id="create-cred-data" rows="6"
+              placeholder='{"accessKey": "...", "secretKey": "..."}' required></textarea>
+            <div class="invalid-feedback"></div>
+            <small class="form-text text-muted">Enter provider-specific credential fields as JSON.</small>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary"
-          onclick="webconsolejs['pages/settings/environment/cloudsps/credentials'].registerCredential()">
-          Register
+          onclick="webconsolejs['pages/settings/environment/cloudsps/cspaccounts'].createCredential()">
+          Create
         </button>
       </div>
     </div>
   </div>
 </div>
-{{ javascriptTag("common/api/services/credential_holder_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/credentials.js") | raw }}
+{{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }} {{ javascriptTag("common/utils/formvalidation.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/cspaccounts.js") | raw }}
