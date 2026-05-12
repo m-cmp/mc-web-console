@@ -98,22 +98,7 @@ func main() {
 	authProtected.GET("/userinfo", handler.UserInfo)
 
 	// getapihosts: 서비스별 BaseURL 반환 (iframe.js 등에서 플러그인 주소 조회용)
-	// iframe.js: responseData[frameworkName].BaseURL 으로 접근하므로 {BaseURL: string} 형태로 반환
-	api.POST("/getapihosts", func(c echo.Context) error {
-		cfg, _ := c.Get("config").(*config.Config)
-		if cfg == nil {
-			return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
-		}
-		type ServiceHost struct {
-			BaseURL string `json:"BaseURL"`
-		}
-		hosts := make(map[string]ServiceHost)
-		for name, svc := range cfg.ApiSpec.Services {
-			hosts[name] = ServiceHost{BaseURL: svc.BaseURL}
-		}
-		resp := model.CommonResponseStatusOK(hosts)
-		return c.JSON(resp.Status.Code, resp)
-	})
+	api.POST("/getapihosts", handler.GetApiHosts)
 
 	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
 	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시
