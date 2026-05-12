@@ -143,9 +143,7 @@ http://<YOUR_ADDRESS>:3001/auth/login
 
 ```
 
-MC-WEB-CONSOLE has been successfully deployed if the screen below is visible during the access to the web of the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
-
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/f0f57dac-70e0-4782-9dfe-1b756397554c/0fd7bc19-b439-48a1-8910-98d2e15593a5/image.png)
+MC-WEB-CONSOLE has been successfully deployed if the login screen is displayed when accessing the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
 
 ---
 

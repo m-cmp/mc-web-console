@@ -208,6 +208,14 @@ menus:
     priority: 2
     menunumber: 1590
 
+  - id: resourcesync
+    parentid: cloudresources
+    displayname: Resource Sync
+    restype: menu
+    isaction: true
+    priority: 3
+    menunumber: 1595
+
   - id: cloudrescatalogs
     parentid: environment
     displayname: Cloud Res Catalogs

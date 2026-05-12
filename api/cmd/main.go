@@ -97,8 +97,16 @@ func main() {
 	authProtected.POST("/logout", handler.Logout)
 	authProtected.GET("/userinfo", handler.UserInfo)
 
-	// getapihosts: 서비스별 BaseURL 반환 (iframe.js 등에서 플러그인 주소 조회용)
+	// 단일 세그먼트 내부 핸들러
+	api.POST("/disklookup", handler.DiskLookup)
 	api.POST("/getapihosts", handler.GetApiHosts)
+
+	// 관리자 전용 BFF 라우트 (와일드카드보다 먼저 등록되어야 정적 매칭됨)
+	// FR-CLOUD-ADMIN-006-08: 외부 raw YAML 도달성 확인 (CORS 우회 + 토큰 노출 방지)
+	// 인증 모델: SubsystemAnyController와 동일 — front Buffalo의 IsTokenExistMiddleware(cookie 검증)
+	// 가 1차 게이트 역할을 하므로 BFF는 별도 JWT 검증을 수행하지 않는다.
+	adminBFF := api.Group("/admin")
+	adminBFF.GET("/setup-yaml-check", handler.GetSetupYamlCheck)
 
 	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
 	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시

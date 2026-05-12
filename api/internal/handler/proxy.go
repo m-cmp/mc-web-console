@@ -49,9 +49,36 @@ func SubsystemAnyController(c echo.Context) error {
 	// api.yaml에서 기본 Service + ActionSpec 조회 (fallback 및 Auth 설정 소스)
 	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
 	if err != nil {
-		log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
-		msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
-		return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+		// MCIAM_USE=true이면 RegistryCache에서 ActionSpec 조회 시도
+		// (mc-iam-manager 레지스트리에만 있고 api.yaml에 없는 action 대응)
+		if cfg.MCIAM.Use && cfg.RegistryCache != nil {
+			if allSvcs := cfg.RegistryCache.GetAllServices(); allSvcs == nil {
+				_ = refreshRegistryCache(cfg, c)
+			}
+			if cachedSpec := cfg.RegistryCache.GetActionSpec(subsystemName, operationId); cachedSpec != nil {
+				if svc, svcErr := cfg.ApiSpec.GetService(subsystemName); svcErr == nil {
+					service = svc
+					actionSpec = cachedSpec
+					err = nil
+					log.Printf("[RegistryCache] ActionSpec fallback for %s/%s", subsystemName, operationId)
+				}
+			}
+		}
+		if err != nil {
+			log.Printf("GetAction error: subsystem=%s operationId=%s err=%v", subsystemName, operationId, err)
+			msg := fmt.Sprintf("API not found: %s/%s (%s)", subsystemName, operationId, err.Error())
+			return c.JSON(http.StatusNotFound, model.CommonResponseStatusNotFound(msg))
+		}
+	}
+
+	// MCIAM_USE=true이고 캐시가 비어 있으면 ListMcmpApisServices 자동 갱신
+	// (UpdateFrameworkService 후 invalidate된 캐시를 복원)
+	if cfg.MCIAM.Use && cfg.RegistryCache != nil {
+		if allSvcs := cfg.RegistryCache.GetAllServices(); allSvcs == nil {
+			if err := refreshRegistryCache(cfg, c); err != nil {
+				log.Printf("[SubsystemAnyController] cache refresh failed: %v", err)
+			}
+		}
 	}
 
 	// BaseURL: 캐시 우선 → 없으면 api.yaml BaseURL (mc-iam-manager 고정 주소)
@@ -80,20 +107,21 @@ func SubsystemAnyController(c echo.Context) error {
 		resourcePath = strings.ReplaceAll(resourcePath, "{"+k+"}", v)
 	}
 
-	// QueryParams 추가
+	// QueryParams 추가 (string 또는 []interface{} 배열 모두 처리)
 	targetURL := effectiveBaseURL + resourcePath
 	if len(commonRequest.QueryParams) > 0 {
-		queryParams := commonRequest.QueryParams
-		if len(commonRequest.QueryParamTypes) > 0 {
-			coerced, err := coerceQueryParams(commonRequest.QueryParams, commonRequest.QueryParamTypes)
-			if err != nil {
-				return c.JSON(http.StatusBadRequest, model.CommonResponseStatusBadRequest(err.Error()))
+		params := []string{}
+		for k, v := range commonRequest.QueryParams {
+			switch val := v.(type) {
+			case string:
+				params = append(params, k+"="+val)
+			case []interface{}:
+				for _, item := range val {
+					params = append(params, k+"="+fmt.Sprint(item))
+				}
+			default:
+				params = append(params, k+"="+fmt.Sprint(val))
 			}
-			queryParams = coerced
-		}
-		params := make([]string, 0, len(queryParams))
-		for k, v := range queryParams {
-			params = append(params, k+"="+v)
 		}
 		targetURL += "?" + strings.Join(params, "&")
 	}
@@ -101,6 +129,9 @@ func SubsystemAnyController(c echo.Context) error {
 	// 요청 바디
 	var bodyBytes []byte
 	if commonRequest.Request != nil {
+		if len(effectiveActionSpec.RequestCoerce) > 0 {
+			coerceRequestFields(commonRequest.Request, effectiveActionSpec.RequestCoerce)
+		}
 		bodyBytes, _ = json.Marshal(commonRequest.Request)
 	}
 
@@ -314,42 +345,6 @@ func aesGCMEncrypt(key, plaintext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// coerceQueryParams queryParamTypes 기반으로 string 값을 검증·정규화한다.
-// 타입 변환 실패 시 error 반환 → 호출자가 400 응답.
-func coerceQueryParams(params map[string]string, typeMap map[string]string) (map[string]string, error) {
-	result := make(map[string]string, len(params))
-	for k, v := range params {
-		targetType, hasType := typeMap[k]
-		if !hasType {
-			result[k] = v
-			continue
-		}
-		switch targetType {
-		case "int":
-			n, err := strconv.Atoi(v)
-			if err != nil {
-				return nil, fmt.Errorf("queryParam %q: cannot convert %q to int", k, v)
-			}
-			result[k] = strconv.Itoa(n)
-		case "float":
-			f, err := strconv.ParseFloat(v, 64)
-			if err != nil {
-				return nil, fmt.Errorf("queryParam %q: cannot convert %q to float", k, v)
-			}
-			result[k] = strconv.FormatFloat(f, 'f', -1, 64)
-		case "bool":
-			b, err := strconv.ParseBool(v)
-			if err != nil {
-				return nil, fmt.Errorf("queryParam %q: cannot convert %q to bool", k, v)
-			}
-			result[k] = strconv.FormatBool(b)
-		default:
-			result[k] = v
-		}
-	}
-	return result, nil
-}
-
 // buildAuthHeader api.yaml의 auth 타입에 따라 Authorization 헤더 값 반환
 func buildAuthHeader(c echo.Context, service *config.Service) string {
 	switch service.Auth.Type {
@@ -372,4 +367,33 @@ func buildAuthHeader(c echo.Context, service *config.Service) string {
 		}
 	}
 	return ""
+}
+
+// coerceRequestFields whitelist 방식으로 요청 바디의 특정 필드 타입을 변환한다.
+// coerceMap: 필드명 → "int"|"float"|"bool". 선언되지 않은 필드는 건드리지 않는다.
+func coerceRequestFields(req map[string]interface{}, coerceMap map[string]string) {
+	for key, targetType := range coerceMap {
+		val, ok := req[key]
+		if !ok {
+			continue
+		}
+		strVal, ok := val.(string)
+		if !ok {
+			continue
+		}
+		switch targetType {
+		case "int":
+			if n, err := strconv.Atoi(strVal); err == nil {
+				req[key] = n
+			}
+		case "float":
+			if f, err := strconv.ParseFloat(strVal, 64); err == nil {
+				req[key] = f
+			}
+		case "bool":
+			if b, err := strconv.ParseBool(strVal); err == nil {
+				req[key] = b
+			}
+		}
+	}
 }

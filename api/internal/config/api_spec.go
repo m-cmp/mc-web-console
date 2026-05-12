@@ -29,9 +29,10 @@ type AuthConfig struct {
 
 // ActionSpec API 액션 스펙
 type ActionSpec struct {
-	Method       string `mapstructure:"method"`
-	ResourcePath string `mapstructure:"resourcePath"`
-	Description  string `mapstructure:"description"`
+	Method        string            `mapstructure:"method"`
+	ResourcePath  string            `mapstructure:"resourcePath"`
+	Description   string            `mapstructure:"description"`
+	RequestCoerce map[string]string `mapstructure:"requestCoerce"` // "fieldName" → "int"|"float"|"bool"
 }
 
 // LoadApiSpec conf/api.yaml 파일 로드
@@ -50,6 +51,18 @@ func LoadApiSpec(path string) (*ApiSpec, error) {
 	}
 
 	return &apiSpec, nil
+}
+
+// GetService subsystem 서비스 정보만 조회 (action 불필요 시 사용)
+func (a *ApiSpec) GetService(subsystem string) (*Service, error) {
+	subsystemLower := strings.ToLower(subsystem)
+	for key, svc := range a.Services {
+		if strings.ToLower(key) == subsystemLower {
+			s := svc
+			return &s, nil
+		}
+	}
+	return nil, fmt.Errorf("service not found: %s", subsystem)
 }
 
 // GetAction subsystem과 operationId로 액션 조회
