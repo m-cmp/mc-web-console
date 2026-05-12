@@ -75,7 +75,7 @@ const LogConfigManager = {
                 : { nsId: 'system' };
             const nsId = (workspace && workspace.nsId) ? workspace.nsId : 'system';
             const respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
-            const mciList = (respMciList && respMciList.mci) ? respMciList.mci : [];
+            const mciList = (respMciList && respMciList.infra) ? respMciList.infra : [];
 
             if (DOM.mciSelect) {
                 DOM.mciSelect.innerHTML = '<option value="">Select Workload</option>';

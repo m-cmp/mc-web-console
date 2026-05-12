@@ -1330,11 +1330,13 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/resources/image
       description: Delete all images
-    DelAllMci:
+    DelAllInfra:
+
       method: delete
       resourcePath: /ns/{nsId}/infra
       description: Delete all MCIs
-    DelAllMciPolicy:
+    DelAllInfraPolicy:
+
       method: delete
       resourcePath: /ns/{nsId}/policy/infra
       description: Delete all MCI policies
@@ -1400,15 +1402,18 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/resources/image/{imageId}
       description: Delete image
-    DelMci:
+    DelInfra:
+
       method: delete
       resourcePath: /ns/{nsId}/infra/{mciId}
       description: Delete MCI
-    DelMciPolicy:
+    DelInfraPolicy:
+
       method: delete
       resourcePath: /ns/{nsId}/policy/infra/{mciId}
       description: Delete MCI Policy
-    DelMciVm:
+    DelInfraNode:
+
       method: delete
       resourcePath: /ns/{nsId}/infra/{mciId}/node/{vmId}
       description: Delete VM in specified MCI
@@ -1454,7 +1459,8 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/k8sCluster
       description: Delete all K8sClusters
-    DeleteAllMciDynamicTemplate:
+    DeleteAllInfraDynamicTemplate:
+
       method: delete
       resourcePath: /ns/{nsId}/template/infra
       description: Delete all MCI Dynamic Templates in a namespace.
@@ -1500,7 +1506,8 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}
       description: Remove a K8sNodeGroup
-    DeleteMciDynamicTemplate:
+    DeleteInfraDynamicTemplate:
+
       method: delete
       resourcePath: /ns/{nsId}/template/infra/{templateId}
       description: Delete a specific MCI Dynamic Template.
@@ -1742,7 +1749,8 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/deregisterResource/dataDisk/{dataDiskId}
       description: Deregister Data Disk from Spider and TB without deleting the actual CSP resource
-    DeregisterMciVm:
+    DeregisterInfraNode:
+
       method: delete
       resourcePath: /ns/{nsId}/deregisterResource/infra/{mciId}/node/{vmId}
       description: Deregister VM from Spider and TB without deleting the actual CSP resource
@@ -1939,17 +1947,20 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/k8sCluster
       description: List all K8sClusters or K8sClusters' ID
-    GetAllMci:
+    GetAllInfra:
+
       method: get
       resourcePath: /ns/{nsId}/infra
       description: List all MCIs or MCIs' ID
-    GetAllMciDynamicTemplate:
+    GetAllInfraDynamicTemplate:
+
       method: get
       resourcePath: /ns/{nsId}/template/infra
       description: 'List all MCI Dynamic Templates in a namespace.
 
         Optionally filter by keyword matching against template name or description (case-insensitive).'
-    GetAllMciPolicy:
+    GetAllInfraPolicy:
+
       method: get
       resourcePath: /ns/{nsId}/policy/infra
       description: List all MCI policies
@@ -2033,7 +2044,8 @@ serviceActions:
       method: get
       resourcePath: /cloudInfo
       description: Get cloud information
-    GetCmdMciStream:
+    GetCmdInfraStream:
+
       method: get
       resourcePath: /ns/{nsId}/stream/cmd/infra/{mciId}
       description: 'Subscribe to Server-Sent Events (SSE) for real-time command execution logs.
@@ -2061,11 +2073,13 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/control/k8sCluster/{k8sClusterId}
       description: Control the creation of K8sCluster (continue, withdraw)
-    GetControlMci:
+    GetControlInfra:
+
       method: get
       resourcePath: /ns/{nsId}/control/infra/{mciId}
       description: Control the lifecycle of MCI (refine, suspend, resume, reboot, terminate)
-    GetControlMciVm:
+    GetControlInfraNode:
+
       method: get
       resourcePath: /ns/{nsId}/control/infra/{mciId}/node/{vmId}
       description: Control the lifecycle of VM (suspend, resume, reboot, terminate)
@@ -2149,39 +2163,48 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/benchmarkLatency/infra/{mciId}
       description: Run MCI benchmark for network latency
-    GetMci:
+    GetInfra:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}
       description: 'Get MCI object (option: status, accessInfo, vmId)'
-    GetMciAssociatedResources:
+    GetInfraAssociatedResources:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/associatedResources
       description: Get associated resource ID list for a given MCI (VNet, Subnet, SecurityGroup, SSHKey, etc.)
-    GetMciDynamicTemplate:
+    GetInfraDynamicTemplate:
+
       method: get
       resourcePath: /ns/{nsId}/template/infra/{templateId}
       description: Retrieve a specific MCI Dynamic Template by ID.
-    GetMciExecutionTasks:
+    GetInfraExecutionTasks:
+
       method: get
       resourcePath: /ns/{nsId}/cmd/infra/{mciId}/task
       description: List all running and completed execution tasks for a specific MCI. These tasks can be cancelled if still in progress. The task list is based on persistent VM command status records.
-    GetMciGroupIds:
+    GetInfraGroupIds:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/nodegroup
       description: List SubGroup IDs in a specified MCI
-    GetMciGroupVms:
+    GetInfraGroupNodes:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/nodegroup/{subgroupId}
       description: List VMs with a SubGroup label in a specified MCI
-    GetMciHandlingCommandCount:
+    GetInfraHandlingCommandCount:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/handlingCount
       description: Get the number of commands currently in 'Handling' status for all VMs in an MCI. Returns per-VM counts and total count.
-    GetMciPolicy:
+    GetInfraPolicy:
+
       method: get
       resourcePath: /ns/{nsId}/policy/infra/{mciId}
       description: Get MCI Policy
-    GetMciReqFromMci:
+    GetInfraReqFromInfra:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/configCopy
       description: 'Reconstruct an MCI dynamic creation request body from an existing MCI''s information.
@@ -2196,7 +2219,8 @@ serviceActions:
         When the `template` query parameter is provided, the extracted configuration is
 
         saved as a reusable MCI Dynamic Template with the given name.'
-    GetMciVm:
+    GetInfraNode:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/node/{vmId}
       description: Get VM in specified MCI
@@ -2540,7 +2564,8 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/vpn/{vpnId}
       description: Get resource info of a site-to-site VPN
-    GetSitesInMci:
+    GetSitesInInfra:
+
       method: get
       resourcePath: /ns/{nsId}/infra/{mciId}/site
       description: Get sites in MCI
@@ -2766,7 +2791,8 @@ serviceActions:
         This API is provided as an exceptional and limited function for specific purposes such as migration.
 
         Kubernetes resource information required as input for this API is not currently provided, and its availability in the future is uncertain.'
-    PostCmdMci:
+    PostCmdInfra:
+
       method: post
       resourcePath: /ns/{nsId}/cmd/infra/{mciId}
       description: 'Send a command to specified MCI. Use query parameters to target specific subGroup or VM.
@@ -2784,7 +2810,8 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/resources/dataDisk
       description: Create Data Disk
-    PostDownloadFileFromMciVm:
+    PostDownloadFileFromInfraNode:
+
       method: post
       resourcePath: /ns/{nsId}/downloadFile/infra/{mciId}/node/{vmId}
       description: 'Download a file from a specific VM in MCI via SCP through bastion host.
@@ -2800,7 +2827,8 @@ serviceActions:
         This API is provided as an exceptional and limited function for specific purposes such as migration.
 
         Kubernetes resource information required as input for this API is not currently provided, and its availability in the future is uncertain.'
-    PostFileToMci:
+    PostFileToInfra:
+
       method: post
       resourcePath: /ns/{nsId}/transferFile/infra/{mciId}
       description: 'Transfer a file to specified MCI to the specified path.
@@ -2844,11 +2872,13 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/resources/image
       description: Register image
-    PostInstallBenchmarkAgentToMci:
+    PostInstallBenchmarkAgentToInfra:
+
       method: post
       resourcePath: /ns/{nsId}/installBenchmarkAgent/infra/{mciId}
       description: Install the benchmark agent to specified MCI
-    PostInstallMonitorAgentToMci:
+    PostInstallMonitorAgentToInfra:
+
       method: post
       resourcePath: /ns/{nsId}/monitoring/install/infra/{mciId}
       description: Install monitoring agent (CB-Dragonfly agent) to MCI
@@ -2932,7 +2962,8 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/mcSwNlb
       description: Create a special purpose MCI for NLB and depoly and setting SW NLB
-    PostMci:
+    PostInfra:
+
       method: post
       resourcePath: /ns/{nsId}/infra
       description: 'Create MCI with detailed VM specifications and resource configuration.
@@ -2990,7 +3021,8 @@ serviceActions:
         - Sufficient CSP quotas and permissions
 
         - Network connectivity between components'
-    PostMciDynamic:
+    PostInfraDynamic:
+
       method: post
       resourcePath: /ns/{nsId}/infraDynamic
       description: 'Create multi-cloud infrastructure dynamically using common specifications and images with automatic resource discovery and optimization.
@@ -3124,7 +3156,8 @@ serviceActions:
         - Real-time status tracking and progress updates
 
         - Automatic resource labeling and metadata management'
-    PostMciDynamicCheckRequest:
+    PostInfraDynamicCheckRequest:
+
       method: post
       resourcePath: /infraDynamicCheckRequest
       description: '**⚠️ DEPRECATED: This endpoint is deprecated and will be removed in a future version. Please use `/mciDynamicReview` instead for comprehensive validation and cost estimation.**
@@ -3216,7 +3249,8 @@ serviceActions:
         3. Use `/mciDynamicReview` for detailed cost estimation and final validation
 
         4. Proceed with `/mciDynamic` using validated configuration'
-    PostMciDynamicFromTemplate:
+    PostInfraDynamicFromTemplate:
+
       method: post
       resourcePath: /ns/{nsId}/infra/template/{templateId}
       description: 'Create a new MCI by applying an MCI Dynamic Template.
@@ -3233,7 +3267,8 @@ serviceActions:
         - `description` (optional): Overrides the template''s description
 
         - All other configuration (specs, images, subgroups) comes from the template'
-    PostMciDynamicReview:
+    PostInfraDynamicReview:
+
       method: post
       resourcePath: /ns/{nsId}/infraDynamicReview
       description: 'Review and validate MCI dynamic request comprehensively before actual provisioning.
@@ -3276,7 +3311,8 @@ serviceActions:
         - Configuration optimization
 
         - Multi-cloud resource planning'
-    PostMciDynamicSubGroupVmReview:
+    PostInfraDynamicNodeGroupNodeReview:
+
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/nodeGroupDynamicReview
       description: 'Review and validate a VM dynamic addition request for an existing MCI before actual provisioning.
@@ -3330,7 +3366,8 @@ serviceActions:
         - Configuration optimization before deployment
 
         - Risk assessment for VM addition to existing infrastructure'
-    PostMciDynamicTemplate:
+    PostInfraDynamicTemplate:
+
       method: post
       resourcePath: /ns/{nsId}/template/infra
       description: 'Create a reusable MCI Dynamic Template. Templates store MCI dynamic creation
@@ -3352,15 +3389,18 @@ serviceActions:
 
 
         Templates can be created manually or extracted from existing MCIs.'
-    PostMciPolicy:
+    PostInfraPolicy:
+
       method: post
       resourcePath: /ns/{nsId}/policy/infra/{mciId}
       description: Create MCI Automation policy
-    PostMciSnapshot:
+    PostInfraSnapshot:
+
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/snapshot
       description: Create snapshots for the first running VM in each subgroup of an MCI in parallel
-    PostMciSubGroupDynamic:
+    PostInfraNodeGroupDynamic:
+
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/nodeGroupDynamic
       description: 'Dynamically add new virtual machines to an existing MCI using common specifications and automated resource management.
@@ -3447,7 +3487,8 @@ serviceActions:
         - Monitoring and logging are automatically configured
 
         - Application deployment and configuration management can proceed immediately'
-    PostMciSubGroupScaleOut:
+    PostInfraNodeGroupScaleOut:
+
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/nodegroup/{subgroupId}
       description: 'Horizontally scale an existing VM subgroup by adding more identical instances for increased capacity.
@@ -3553,7 +3594,8 @@ serviceActions:
         - Verify application clustering and session management handle new instances
 
         - Consider database connection limits and other resource constraints'
-    PostMciVm:
+    PostInfraNode:
+
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/node
       description: 'Create and add a group of identical virtual machines (subgroup) to an existing MCI using detailed specifications.
@@ -3646,7 +3688,8 @@ serviceActions:
         - Can be scaled out further or individual VMs can be managed separately
 
         - Supports all standard CB-Tumblebug VM lifecycle operations'
-    PostMciVmSnapshot:
+    PostInfraNodeSnapshot:
+
       method: post
       resourcePath: /ns/{nsId}/infra/{mciId}/node/{vmId}/snapshot
       description: Snapshot VM and create a Custom Image Object using the Snapshot
@@ -3909,7 +3952,8 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/resources/vNet/{vNetId}/subnet
       description: Create Subnet
-    PostSystemMci:
+    PostSystemInfra:
+
       method: post
       resourcePath: /systemInfra
       description: 'Create specialized MCI instances for CB-Tumblebug system operations and infrastructure probing.
@@ -4066,7 +4110,8 @@ serviceActions:
       method: put
       resourcePath: /ns/{nsId}/resources/image/{imageId}
       description: Update image
-    PutMciAssociatedSecurityGroups:
+    PutInfraAssociatedSecurityGroups:
+
       method: put
       resourcePath: /ns/{nsId}/infra/{mciId}/associatedSecurityGroups
       description: 'Update all Security Groups associated with a given MCI. The firewall rules of all Security Groups will be synchronized to match the requested set.
@@ -4107,7 +4152,8 @@ serviceActions:
         - All existing rules not in the request (including default ICMP, etc.) will be deleted.
 
         - Metadata (name, description, etc.) is not changed.'
-    PutMciDynamicTemplate:
+    PutInfraDynamicTemplate:
+
       method: put
       resourcePath: /ns/{nsId}/template/infra/{templateId}
       description: Update an existing MCI Dynamic Template.
@@ -4338,7 +4384,8 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/infra/{mciId}/bastion/{bastionVmId}
       description: Remove a bastion VM from all vNets
-    RemoveBastionNodesWithMci:
+    RemoveBastionNodesWithInfra:
+
       method: delete
       resourcePath: /ns/{nsId}/infra/{mciId}/bastion/{bastionMciId}/{bastionVmId}
       description: Remove a specific cross-MCI bastion from all vNets of the target MCI
@@ -4374,10 +4421,6 @@ serviceActions:
       method: put
       resourcePath: /ns/{nsId}/infra/{mciId}/node/{targetVmId}/bastion/{bastionVmId}
       description: "Set bastion nodes for a VM"
-    Postmcidynamic:
-      method: post
-      resourcePath: /ns/{nsId}/infraDynamic
-      description: "Create MCI Dynamically from common spec and image"
     Inspectresourcesoverview:
       method: get
       resourcePath: /inspectResourcesOverview
@@ -4394,10 +4437,6 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}
       description: "Remove a K8sNodeGroup"
-    Getsitesinmci:
-      method: get
-      resourcePath: /ns/{nsId}/infra/{mciId}/site
-      description: "Get sites in MCI"
     Getalldatadisk:
       method: get
       resourcePath: /ns/{nsId}/resources/dataDisk
@@ -4470,7 +4509,8 @@ serviceActions:
       method: delete
       resourcePath: /ns/{nsId}/resources/spec/{specId}
       description: "Delete spec"
-    SetBastionNodesWithMci:
+    SetBastionNodesWithInfra:
+
       method: put
       resourcePath: /ns/{nsId}/infra/{mciId}/node/{targetVmId}/bastion/{bastionMciId}/{bastionVmId}
       description: Set bastion nodes for a target VM, specifying a bastion VM that belongs to a different MCI within the same namespace (cross-MCI bastion). This allows, for example, an AWS VM to serve as a bastion for an OpenStack VM.
@@ -4593,7 +4633,8 @@ serviceActions:
       method: post
       resourcePath: /updateImagesFromAsset
       description: Update image information based on the cloudimage.csv asset file
-    PostFileAndCmdToMci:
+    PostFileAndCmdToInfra:
+
       method: post
       resourcePath: /ns/{nsId}/transferFileAndCmd/infra/{infraId}
       description: 'Transfer a file and execute commands on all nodes in the Infra. (v0.12.9 갱신: /ns/{nsId}/mci/{mciId}/fileAndCmd → /ns/{nsId}/transferFileAndCmd/infra/{infraId})'
