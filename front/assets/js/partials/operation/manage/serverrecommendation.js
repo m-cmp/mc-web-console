@@ -458,7 +458,7 @@ export async function getRecommendVmInfo() {
 						"val": [lat + "/" + lon]
 					}
 				],
-				"weight": "0.3"
+				"weight": 0.3
 			};
 			priorityArr.push(priorityPolicy);
 		}
@@ -466,7 +466,7 @@ export async function getRecommendVmInfo() {
 		// 비용 우선순위 (낮은 시간당 비용 우선)
 		var costPriorityPolicy = {
 			"metric": "costPerHour",
-			"weight": "1.0"
+			"weight": 1.0
 		};
 		priorityArr.push(costPriorityPolicy);
 	}
@@ -475,7 +475,7 @@ export async function getRecommendVmInfo() {
 			"filter": {
 				"policy": policyArr
 			},
-			"limit": "1000",
+			"limit": 1000,
 			"priority": {
 				"policy": priorityArr,
 			}

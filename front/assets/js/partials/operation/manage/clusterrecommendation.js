@@ -319,7 +319,7 @@ export async function getRecommendVmInfo() {
 				]
 			}
 		],
-		"weight": "0.3"
+		"weight": 0.3
 	}
 	priorityArr.push(priorityPolicy)
 	const data = {
@@ -327,7 +327,7 @@ export async function getRecommendVmInfo() {
 			"filter": {
 				"policy": policyArr
 			},
-			"limit": "1000",
+			"limit": 1000,
 			"priority": {
 				"policy": priorityArr,
 			}
@@ -402,7 +402,7 @@ async function availableVMImageBySpec(id) {
 		}
 	}
 
-	var controller = "/api/" + "mc-infra-manager/" + "Postmcidynamiccheckrequest";
+	var controller = "/api/" + "mc-infra-manager/" + "PostInfraDynamicCheckRequest";
 	const response = await webconsolejs["common/api/http"].commonAPIPost(
 		controller,
 		data

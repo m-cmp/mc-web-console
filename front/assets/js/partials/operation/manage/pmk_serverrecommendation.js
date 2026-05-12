@@ -244,7 +244,7 @@ export async function getRecommendVmInfoPmk() {
 					key: "coordinateClose",
 					val: [lat + "/" + lon]
 				}],
-				weight: "0.3"
+				weight: 0.3
 			});
 
 		}
@@ -255,7 +255,7 @@ export async function getRecommendVmInfoPmk() {
 				filter: {
 					policy: policyArr
 				},
-				limit: "1000",
+				limit: 1000,
 				priority: {
 					policy: priorityArr
 				}
