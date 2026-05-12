@@ -3,9 +3,10 @@ package model
 // CommonRequest 모든 API 요청의 공통 구조
 // Buffalo의 CommonRequest와 동일한 구조 유지
 type CommonRequest struct {
-	PathParams  map[string]string      `json:"pathParams"`
-	QueryParams map[string]string      `json:"queryParams"`
-	Request     map[string]interface{} `json:"request"`
+	PathParams      map[string]string      `json:"pathParams"`
+	QueryParams     map[string]string      `json:"queryParams"`
+	QueryParamTypes map[string]string      `json:"queryParamTypes,omitempty"` // 필드명 → "int"|"float"|"bool"
+	Request         map[string]interface{} `json:"request"`
 }
 
 // NewCommonRequest 새로운 CommonRequest 생성

@@ -15,6 +15,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"mc_web_console_api/internal/config"
@@ -82,8 +83,16 @@ func SubsystemAnyController(c echo.Context) error {
 	// QueryParams 추가
 	targetURL := effectiveBaseURL + resourcePath
 	if len(commonRequest.QueryParams) > 0 {
-		params := []string{}
-		for k, v := range commonRequest.QueryParams {
+		queryParams := commonRequest.QueryParams
+		if len(commonRequest.QueryParamTypes) > 0 {
+			coerced, err := coerceQueryParams(commonRequest.QueryParams, commonRequest.QueryParamTypes)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, model.CommonResponseStatusBadRequest(err.Error()))
+			}
+			queryParams = coerced
+		}
+		params := make([]string, 0, len(queryParams))
+		for k, v := range queryParams {
 			params = append(params, k+"="+v)
 		}
 		targetURL += "?" + strings.Join(params, "&")
@@ -303,6 +312,42 @@ func aesGCMEncrypt(key, plaintext []byte) ([]byte, error) {
 	}
 	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
 	return ciphertext, nil
+}
+
+// coerceQueryParams queryParamTypes 기반으로 string 값을 검증·정규화한다.
+// 타입 변환 실패 시 error 반환 → 호출자가 400 응답.
+func coerceQueryParams(params map[string]string, typeMap map[string]string) (map[string]string, error) {
+	result := make(map[string]string, len(params))
+	for k, v := range params {
+		targetType, hasType := typeMap[k]
+		if !hasType {
+			result[k] = v
+			continue
+		}
+		switch targetType {
+		case "int":
+			n, err := strconv.Atoi(v)
+			if err != nil {
+				return nil, fmt.Errorf("queryParam %q: cannot convert %q to int", k, v)
+			}
+			result[k] = strconv.Itoa(n)
+		case "float":
+			f, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				return nil, fmt.Errorf("queryParam %q: cannot convert %q to float", k, v)
+			}
+			result[k] = strconv.FormatFloat(f, 'f', -1, 64)
+		case "bool":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				return nil, fmt.Errorf("queryParam %q: cannot convert %q to bool", k, v)
+			}
+			result[k] = strconv.FormatBool(b)
+		default:
+			result[k] = v
+		}
+	}
+	return result, nil
 }
 
 // buildAuthHeader api.yaml의 auth 타입에 따라 Authorization 헤더 값 반환
