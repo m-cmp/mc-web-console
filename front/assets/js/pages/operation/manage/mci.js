@@ -118,7 +118,7 @@ export async function refreshMciList() {
 // getMciList 호출 성공 시
 async function getMciListCallbackSuccess(caller, mciList) {
 
-  window.totalMciListObj = mciList.mci;
+  window.totalMciListObj = mciList.infra;
 
   // Update label key dropdown with actual keys from MCI data
   updateLabelKeyDropdown();

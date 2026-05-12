@@ -262,34 +262,39 @@ export async function getRecommendVmInfoPmk() {
 			}
 		};
 		
-		// PMK용 Spec 추천 API 호출 (기존 MCI API 사용)
-		const result = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
-		
-		if (result && result.status && result.status.code === 200) {
-			const specData = result.responseData;
-			
-			// 전역 변수에 데이터 저장 (필터링용)
-			recommendVmSpecListObjPmk = specData;
-			
-			// 테이블에 데이터 표시 (기존 MCI 방식과 동일)
-			if (specData && specData.length > 0) {
-				// 테이블이 존재하는지 확인
-				if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
-					recommendTablePmk.setData(specData);
+		const loadingEl = document.getElementById('spec-search-loading-pmk');
+		if (loadingEl) loadingEl.style.display = 'block';
+		try {
+			// PMK용 Spec 추천 API 호출 (기존 MCI API 사용)
+			const result = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+
+			if (result && result.status && result.status.code === 200) {
+				const specData = result.responseData;
+
+				// 전역 변수에 데이터 저장 (필터링용)
+				recommendVmSpecListObjPmk = specData;
+
+				// 테이블에 데이터 표시 (기존 MCI 방식과 동일)
+				if (specData && specData.length > 0) {
+					if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
+						recommendTablePmk.setData(specData);
+					}
+				} else {
+					if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
+						recommendTablePmk.setData([]);
+					}
 				}
 			} else {
+				console.error("Failed to call PMK Spec recommendation API:", result);
+				recommendVmSpecListObjPmk = [];
 				if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
 					recommendTablePmk.setData([]);
 				}
 			}
-		} else {
-			console.error("Failed to call PMK Spec recommendation API:", result);
-			recommendVmSpecListObjPmk = [];
-			if (recommendTablePmk && typeof recommendTablePmk.setData === 'function') {
-				recommendTablePmk.setData([]);
-			}
+		} finally {
+			if (loadingEl) loadingEl.style.display = 'none';
 		}
-		
+
 	} catch (error) {
 		console.error("Failed to recommend PMK spec:", error);
 		recommendVmSpecListObjPmk = [];

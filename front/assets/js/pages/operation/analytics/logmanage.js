@@ -76,7 +76,7 @@ function getMciListCallbackSuccess(nsId, mciList) {
 
 // MCI 목록을 셀렉트 박스에 설정
 function setMciList(mciList) {
-  var res_item = mciList.mci;
+  var res_item = mciList.infra;
 
   // res_item이 배열인지 확인
   if (Array.isArray(res_item)) {

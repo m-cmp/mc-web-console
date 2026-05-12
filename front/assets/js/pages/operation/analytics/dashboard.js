@@ -118,8 +118,8 @@ async function loadMciList(nsId) {
   if (!nsId) return;
   try {
     var result = await webconsolejs['common/api/services/mci_api'].getMciList(nsId);
-    // getMciList returns responseData which is { mci: [...] } or array
-    var mciList = Array.isArray(result) ? result : (result && result.mci ? result.mci : []);
+    // getMciList returns responseData which is { infra: [...] } or array
+    var mciList = Array.isArray(result) ? result : (result && result.infra ? result.infra : []);
     mciList.forEach(function (mci) {
       var id = mci.id || mci.mciId || mci.name;
       $mciSel.append('<option value="' + id + '">' + (mci.name || id) + '</option>');

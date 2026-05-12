@@ -34,7 +34,7 @@ export async function initMciDashboard(callbackfunction, workspaceProject) {
 function getMciListCallbackSuccess(caller, mciList) {
   
   // totalMciListObj = mciList.mci;
-  totalMciListObj = mciList.mci;
+  totalMciListObj = mciList.infra;
 
   var returnMciListObj = new Object();
 
