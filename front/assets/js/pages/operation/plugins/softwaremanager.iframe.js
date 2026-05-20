@@ -1,40 +1,51 @@
-// 동적으로 workspace와 project 정보를 가져오는 함수
 function getSoftwareManagerData() {
+    const currentWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
+    const currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+    const accessToken = webconsolejs["common/storage/sessionstorage"].getSessionCurrentUserToken();
 
-        const currentWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
-        const currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
-        console.log("Current Workspace:", currentWorkspace);
-        console.log("Current Project:", currentProject);
-        
-        const accessToken = webconsolejs["common/storage/sessionstorage"].getSessionCurrentUserToken();
-        
-        return {
-            accessToken: accessToken,
-            workspaceInfo: {
-                "id": currentWorkspace.Id,
-                "name": currentWorkspace.Name,
-            },
-            projectInfo: {
-                "id": currentProject.Id ,
-                "ns_id": currentProject.NsId,
-                "name": currentProject.Name,
-            },
-            requestOperationId: ""
-        };
+    return {
+        accessToken: accessToken,
+        workspaceInfo: {
+            "id": currentWorkspace.Id,
+            "name": currentWorkspace.Name,
+        },
+        projectInfo: {
+            "id": currentProject.Id,
+            "ns_id": currentProject.NsId,
+            "name": currentProject.Name,
+        },
+        requestOperationId: ""
+    };
 }
 
-document.addEventListener("DOMContentLoaded", async function(){
-    var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-application-manager")
+async function loadSoftwareManager() {
+    const currentWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
+    const currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
 
-    // 포트만 반환된 경우 현재 호스트 이름 추가
-    if (host.startsWith(":")) {
-        const currentHost = window.location.protocol + "//" + window.location.hostname;
-        host = currentHost + host;
+    if (!currentWorkspace || !currentWorkspace.Id || !currentProject || !currentProject.Id) {
+        document.getElementById("targetIframe-sofrwareCatalog").innerHTML =
+            '<div class="alert alert-warning m-3">Workspace와 Project를 선택해 주세요.</div>';
+        return;
     }
 
-    // 동적으로 데이터 가져오기
-    const data = getSoftwareManagerData();
+    var host = await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-application-manager-fe");
+    if (!host) {
+        document.getElementById("targetIframe-sofrwareCatalog").innerHTML =
+            '<div class="alert alert-warning m-3">mc-application-manager-fe 서비스 URL을 찾을 수 없습니다.<br>' +
+            'Settings &gt; Environment에서 mc-application-manager-fe URL을 등록해 주세요.</div>';
+        return;
+    }
 
-    // webconsolejs["common/iframe/iframe"].addIframe("targetIframe-repository", host+"/web/repository/list", data)
-    webconsolejs["common/iframe/iframe"].addIframe("targetIframe-sofrwareCatalog", host+"/web/softwareCatalog", data)
+    const data = getSoftwareManagerData();
+    webconsolejs["common/iframe/iframe"].addIframe("targetIframe-sofrwareCatalog", host + "/web/softwareCatalog", data);
+}
+
+$("#select-current-project").on('change', async function () {
+    let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text };
+    webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);
+    await loadSoftwareManager();
+});
+
+document.addEventListener("DOMContentLoaded", async function () {
+    await loadSoftwareManager();
 });
