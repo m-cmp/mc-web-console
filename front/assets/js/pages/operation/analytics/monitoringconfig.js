@@ -128,7 +128,7 @@ async function initMonitorConfig() {
 // workload 목록 조회 ( mci + pmk )
 async function getWorkloadList(nsId){
   var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
-  var res_item = respMciList.mci
+  var res_item = respMciList.infra
   
   // HTML option 리스트 초기값
   var html = '<option value="">Select</option>'; 

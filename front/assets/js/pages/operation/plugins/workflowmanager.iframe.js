@@ -1,37 +1,51 @@
-// const data = {
-//     projectid: 'mzctestPrj',
-//     workspaceid: 'mzctestWs',
-//     usertoken: 'mzctoken'
-// };
-// 데모환경에서 사용할 예제 데이터 입니다.
-const data = {
-    accessToken: "accesstokenExample",
-    workspaceInfo: {
-        "id": "UUID", // 이부분은 UUID로 별도 정보가 필요할시 해당 ID 를 활용해 IAM 과 연동하시면됩니다.
-        "name": "ws01", // Display 용 이름입니다. 
-        "description": "ws01 desc", // 설명입니다. 
-        "created_at": "UTC",
-        "updated_at": "UTC"
-    },
-    projectInfo: {
-        "id": "UUID",  // 이부분은 UUID로 별도 정보가 필요할시 해당 ID 를 활용해 IAM 과 연동하시면됩니다.
-        "ns_id": "ns01", // 텀블벅 연동 ID 입니다.
-        "name": "ns01", // Display 용 이름입니다. 
-        "description": "ns01 desc", // 설명입니다. 
-        "created_at": "UTC",
-        "updated_at": "UTC"
-    },
-    requestOperationId: ""
-};
+function getWorkflowManagerData() {
+    const currentWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
+    const currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+    const accessToken = webconsolejs["common/storage/sessionstorage"].getSessionCurrentUserToken();
 
-document.addEventListener("DOMContentLoaded", async function(){
-    var host =  await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-workflow-manager")
+    return {
+        accessToken: accessToken,
+        workspaceInfo: {
+            "id": currentWorkspace.Id,
+            "name": currentWorkspace.Name,
+        },
+        projectInfo: {
+            "id": currentProject.Id,
+            "ns_id": currentProject.NsId,
+            "name": currentProject.Name,
+        },
+        requestOperationId: ""
+    };
+}
 
-    // 포트만 반환된 경우 현재 호스트 이름 추가
-    if (host.startsWith(":")) {
-        const currentHost = window.location.protocol + "//" + window.location.hostname;
-        host = currentHost + host;
+async function loadWorkflowManager() {
+    const currentWorkspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
+    const currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+
+    if (!currentWorkspace || !currentWorkspace.Id || !currentProject || !currentProject.Id) {
+        document.getElementById("targetIframe").innerHTML =
+            '<div class="alert alert-warning m-3">Workspace와 Project를 선택해 주세요.</div>';
+        return;
     }
 
-    webconsolejs["common/iframe/iframe"].addIframe("targetIframe", host+"/web/workflow/list", data)
+    var host = await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-workflow-manager-fe");
+    if (!host) {
+        document.getElementById("targetIframe").innerHTML =
+            '<div class="alert alert-warning m-3">mc-workflow-manager-fe 서비스 URL을 찾을 수 없습니다.<br>' +
+            'Settings &gt; Environment에서 mc-workflow-manager-fe URL을 등록해 주세요.</div>';
+        return;
+    }
+
+    const data = getWorkflowManagerData();
+    webconsolejs["common/iframe/iframe"].addIframe("targetIframe", host + "/web/workflow/list", data);
+}
+
+$("#select-current-project").on('change', async function () {
+    let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text };
+    webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);
+    await loadWorkflowManager();
+});
+
+document.addEventListener("DOMContentLoaded", async function () {
+    await loadWorkflowManager();
 });

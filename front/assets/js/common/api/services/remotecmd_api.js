@@ -76,7 +76,7 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
     if (targetType === 'cluster') {
         controller = "/api/" + "mc-infra-manager/" + "Postclusterremotecmd";
     } else {
-        controller = "/api/" + "mc-infra-manager/" + "Postcmdmci";
+        controller = "/api/" + "mc-infra-manager/" + "PostCmdInfra";
     }
 
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
@@ -118,7 +118,7 @@ export async function postFileToMci(nsId, mciId, file, targetPath, targetType, t
     }
     // 'mci' 타입은 query parameter 없음
 
-    const controller = "/api/mc-infra-manager/Postfiletomci";
+    const controller = "/api/mc-infra-manager/PostFileToInfra";
 
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
 

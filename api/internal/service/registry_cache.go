@@ -50,6 +50,25 @@ func (rc *RegistryCache) Store(responseData interface{}) {
 	log.Printf("[RegistryCache] stored %d services (actions: %d)", len(services), len(actions))
 }
 
+// GetAllServices 캐시가 유효한 경우 전체 서비스 목록 반환.
+// 캐시 없음/만료이면 nil 반환.
+func (rc *RegistryCache) GetAllServices() map[string]config.Service {
+	rc.mu.RLock()
+	services := rc.services
+	storedAt := rc.storedAt
+	rc.mu.RUnlock()
+
+	if services == nil || rc.isExpired(storedAt) {
+		return nil
+	}
+
+	result := make(map[string]config.Service, len(services))
+	for k, v := range services {
+		result[k] = v
+	}
+	return result
+}
+
 // Invalidate 캐시 무효화. UpdateFrameworkService 성공 시 호출.
 func (rc *RegistryCache) Invalidate() {
 	rc.mu.Lock()

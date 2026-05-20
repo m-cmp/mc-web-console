@@ -1,0 +1,2375 @@
+[
+  {
+    "operationId": "GetInfraReadyzInit",
+    "method": "PUT",
+    "path": "/readyz/init",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Lookupspeclist",
+    "method": "POST",
+    "path": "/lookupSpecs",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "AddNLBVMs",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb/{nlbId}/node",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "AnalyzeProvisioningRisk",
+    "method": "GET",
+    "path": "/provisioning/risk/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "AnalyzeProvisioningRiskDetailed",
+    "method": "GET",
+    "path": "/provisioning/risk/detailed",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "BulkDeleteGlobalDnsRecord",
+    "method": "DELETE",
+    "path": "/resources/globalDns/records",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CancelExecutionTask",
+    "method": "POST",
+    "path": "/ns/{nsId}/cmd/infra/{mciId}/task/{taskId}/cancel",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CheckHTTPVersion",
+    "method": "GET",
+    "path": "/httpVersion",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CheckK8sNodeGroupsOnK8sCreation",
+    "method": "GET",
+    "path": "/checkK8sNodeGroupsOnK8sCreation",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CheckK8sNodeImageDesignation",
+    "method": "GET",
+    "path": "/checkK8sNodeImageDesignation",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CheckObjectStorage",
+    "method": "HEAD",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}",
+    "status": 405,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CheckResource",
+    "method": "GET",
+    "path": "/ns/{nsId}/checkResource/{resourceType}/{resourceId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ClearAllVmCommandStatus",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/commandStatusAll",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ComplementSshKeyRemoteCommand",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/sshKey/{sshKeyId}/complement",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateObjectStorage",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/objectStorage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateObjectStorageLagacy",
+    "method": "PUT",
+    "path": "/resources/objectStorage/{objectStorageName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateOrUpdateLabel",
+    "method": "PUT",
+    "path": "/label/{labelType}/{uid}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateSharedResource",
+    "method": "POST",
+    "path": "/ns/{nsId}/sharedResource",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllCustomImage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/customImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllDataDisk",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllImage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/image",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllMci",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllMciPolicy",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/policy/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllNLB",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllNs",
+    "method": "DELETE",
+    "path": "/ns",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllSecurityGroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllSharedResources",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/sharedResources",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllSshKey",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/sshKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelAllVNet",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelCustomImage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/customImage/{customImageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelDataDisk",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/dataDisk/{dataDiskId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelFirewallRules",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}/rules",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelImage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/image/{imageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelMci",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelMciPolicy",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/policy/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelMciVm",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelNLB",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb/{nlbId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelNs",
+    "method": "DELETE",
+    "path": "/ns/{nsId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelSecurityGroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelSpec",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/spec/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelSshKey",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/sshKey/{sshKeyId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelSubnet",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}/subnet/{subnetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DelVNet",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteAllK8sCluster",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/k8sCluster",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteAllMciDynamicTemplate",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/template/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteAllRequests",
+    "method": "DELETE",
+    "path": "/requests",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteAllSecurityGroupTemplate",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/template/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteAllVNetTemplate",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/template/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteDataObject",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/object/{objectKey}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteDataObjectLagacy",
+    "method": "DELETE",
+    "path": "/resources/objectStorage/{objectStorageName}/{objectKey}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteDeregisterSubnet",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/vNet/{vNetId}/subnet/{subnetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteDeregisterVNet",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/vNet/{vNetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteGlobalDnsRecord",
+    "method": "DELETE",
+    "path": "/resources/globalDns/record",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteK8sCluster",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteK8sNodeGroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteMciDynamicTemplate",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/template/infra/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteMultipleDataObjectsLagacy",
+    "method": "POST",
+    "path": "/resources/objectStorage/{objectStorageName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteObject",
+    "method": "DELETE",
+    "path": "/object",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteObjectStorageCORS",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/cors",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteObjectStorageCORSLagacy",
+    "method": "DELETE",
+    "path": "/resources/objectStorage/{objectStorageName}/cors",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteObjectStorageLagacy",
+    "method": "DELETE",
+    "path": "/resources/objectStorage/{objectStorageName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteObjects",
+    "method": "DELETE",
+    "path": "/objects",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteProvisioningLog",
+    "method": "DELETE",
+    "path": "/provisioning/log/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteRequest",
+    "method": "DELETE",
+    "path": "/request/{reqId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteScheduleRegisterCspResources",
+    "method": "DELETE",
+    "path": "/registerCspResources/schedule/{jobId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteScheduleRegisterCspResourcesAll",
+    "method": "DELETE",
+    "path": "/registerCspResources/schedule",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteSecurityGroupTemplate",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/template/securityGroup/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteSiteToSiteVpn",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/vpn/{vpnId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteSqlDb",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/sqlDb/{sqlDbId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVNetTemplate",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/template/vNet/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVersionedObject",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/versions/{objectKey}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVersionedObjectLagacy",
+    "method": "DELETE",
+    "path": "/resources/objectStorage/{objectStorageName}/versions/{objectKey}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVmCommandStatus",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/commandStatus/{index}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVmCommandStatusByCriteria",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/commandStatus",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVmSshHostKey",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/sshHostKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeregisterCustomImage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/customImage/{customImageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeregisterDataDisk",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/dataDisk/{dataDiskId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeregisterMciVm",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/infra/{mciId}/node/{vmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeregisterSecurityGroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeregisterSshKey",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/deregisterResource/sshKey/{sshKeyId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ExistObjectStorageLagacy",
+    "method": "HEAD",
+    "path": "/resources/objectStorage/{objectStorageName}",
+    "status": 405,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "FetchImages",
+    "method": "POST",
+    "path": "/fetchImages",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "FetchImagesAsync",
+    "method": "POST",
+    "path": "/fetchImagesAsync",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "FetchPrice",
+    "method": "POST",
+    "path": "/fetchPrice",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "FetchSpecs",
+    "method": "POST",
+    "path": "/fetchSpecs",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "FilterSpecsByRange",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/filterSpecsByRange",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ForwardAnyReqToAny",
+    "method": "POST",
+    "path": "/forward/{path}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GeneratePresignedDownloadURLLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/presigned/download/{objectStorageName}/{objectKey}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GeneratePresignedURL",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/object/{objectKey}/presignedUrl",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GeneratePresignedUploadURLLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/presigned/upload/{objectStorageName}/{objectKey}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllBenchmark",
+    "method": "POST",
+    "path": "/ns/{nsId}/benchmarkAll/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllConfig",
+    "method": "GET",
+    "path": "/config",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllCustomImage",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/customImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllDataDisk",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllImage",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/image",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllK8sCluster",
+    "method": "GET",
+    "path": "/ns/{nsId}/k8sCluster",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllMci",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllMciDynamicTemplate",
+    "method": "GET",
+    "path": "/ns/{nsId}/template/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllMciPolicy",
+    "method": "GET",
+    "path": "/ns/{nsId}/policy/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllNLB",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllNs",
+    "method": "GET",
+    "path": "/ns",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllRequests",
+    "method": "GET",
+    "path": "/requests",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllSecurityGroup",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllSecurityGroupTemplate",
+    "method": "GET",
+    "path": "/ns/{nsId}/template/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllSiteToSiteVpn",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/vpn",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllSqlDb",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/sqlDb",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllSshKey",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/sshKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllSubnet",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}/subnet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllVNet",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAllVNetTemplate",
+    "method": "GET",
+    "path": "/ns/{nsId}/template/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAvailableK8sNodeImage",
+    "method": "GET",
+    "path": "/availableK8sNodeImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAvailableK8sVersion",
+    "method": "GET",
+    "path": "/availableK8sVersion",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAvailableRegionZonesForSpec",
+    "method": "POST",
+    "path": "/availableRegionZonesForSpec",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAvailableRegionZonesForSpecList",
+    "method": "POST",
+    "path": "/availableRegionZonesForSpecList",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetAvailableZonesForSpec",
+    "method": "GET",
+    "path": "/availableZonesForSpec",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetBastionNodes",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{targetVmId}/bastion",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetBenchmark",
+    "method": "POST",
+    "path": "/ns/{nsId}/benchmark/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetCloudInfo",
+    "method": "GET",
+    "path": "/cloudInfo",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetCmdMciStream",
+    "method": "GET",
+    "path": "/ns/{nsId}/stream/cmd/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetConfig",
+    "method": "GET",
+    "path": "/config/{configId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetConnConfig",
+    "method": "GET",
+    "path": "/connConfig/{connConfigName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetConnConfigList",
+    "method": "GET",
+    "path": "/connConfig",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "FilterConnConfigByCredentialHolder",
+    "method": "GET",
+    "path": "/connConfig",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetControlK8sCluster",
+    "method": "GET",
+    "path": "/ns/{nsId}/control/k8sCluster/{k8sClusterId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetControlMci",
+    "method": "GET",
+    "path": "/ns/{nsId}/control/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetControlMciVm",
+    "method": "GET",
+    "path": "/ns/{nsId}/control/infra/{mciId}/node/{vmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetCredentialHolder",
+    "method": "GET",
+    "path": "/credentialHolder/{holderId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetCredentialHolderList",
+    "method": "GET",
+    "path": "/credentialHolder",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetCustomImage",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/customImage/{customImageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetDataDisk",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/dataDisk/{dataDiskId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetDataObjectInfo",
+    "method": "HEAD",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/object/{objectKey}",
+    "status": 405,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetDataObjectInfoLagacy",
+    "method": "HEAD",
+    "path": "/resources/objectStorage/{objectStorageName}/{objectKey}",
+    "status": 405,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetExecutionTask",
+    "method": "GET",
+    "path": "/ns/{nsId}/cmd/infra/{mciId}/task/{taskId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetFetchImagesAsyncResult",
+    "method": "GET",
+    "path": "/fetchImagesResult",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetGlobalDnsRecord",
+    "method": "GET",
+    "path": "/resources/globalDns/record",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetHostedZones",
+    "method": "GET",
+    "path": "/resources/globalDns/hostedZone",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetImage",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/image/{imageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetK8sCluster",
+    "method": "GET",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetK8sClusterInfo",
+    "method": "GET",
+    "path": "/k8sClusterInfo",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetK8sClusterToken",
+    "method": "GET",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/token",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetLabels",
+    "method": "GET",
+    "path": "/label/{labelType}/{uid}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetLatencyBenchmark",
+    "method": "GET",
+    "path": "/ns/{nsId}/benchmarkLatency/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMci",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciAssociatedResources",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/associatedResources",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciDynamicTemplate",
+    "method": "GET",
+    "path": "/ns/{nsId}/template/infra/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciExecutionTasks",
+    "method": "GET",
+    "path": "/ns/{nsId}/cmd/infra/{mciId}/task",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciGroupIds",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/nodegroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciGroupVms",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/nodegroup/{subgroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciHandlingCommandCount",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/handlingCount",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciPolicy",
+    "method": "GET",
+    "path": "/ns/{nsId}/policy/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciReqFromMci",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/configCopy",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMciVm",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetMonitorData",
+    "method": "GET",
+    "path": "/ns/{nsId}/monitoring/infra/{mciId}/metric/{metric}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetNLB",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb/{nlbId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetNLBHealth",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb/{nlbId}/healthz",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetNs",
+    "method": "GET",
+    "path": "/ns/{nsId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObject",
+    "method": "GET",
+    "path": "/object",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorage",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageCORS",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/cors",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageCORSLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/{objectStorageName}/cors",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/{objectStorageName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageLocation",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/location",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageLocationLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/{objectStorageName}/location",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageSupport",
+    "method": "GET",
+    "path": "/objectStorage/support",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageVersioning",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/versioning",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjectStorageVersioningLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/{objectStorageName}/versioning",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetObjects",
+    "method": "GET",
+    "path": "/objects",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetProviderList",
+    "method": "GET",
+    "path": "/provider",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetProvisioningLog",
+    "method": "GET",
+    "path": "/provisioning/log/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetPublicKeyForCredentialEncryption",
+    "method": "GET",
+    "path": "/credential/publicKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetReadyz",
+    "method": "GET",
+    "path": "/readyz",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetRegion",
+    "method": "GET",
+    "path": "/provider/{providerName}/region/{regionName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetRegions",
+    "method": "GET",
+    "path": "/provider/{providerName}/region",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetRequest",
+    "method": "GET",
+    "path": "/request/{reqId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetRequestStatusOfSiteToSiteVpn",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/vpn/{vpnId}/request/{requestId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetRequiredK8sSubnetCount",
+    "method": "GET",
+    "path": "/requiredK8sSubnetCount",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetResourcesByLabelSelector",
+    "method": "GET",
+    "path": "/resources/{labelType}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetScheduleRegisterCspResourcesList",
+    "method": "GET",
+    "path": "/registerCspResources/schedule",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetScheduleRegisterCspResourcesStatus",
+    "method": "GET",
+    "path": "/registerCspResources/schedule/{jobId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSecurityGroup",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSecurityGroupTemplate",
+    "method": "GET",
+    "path": "/ns/{nsId}/template/securityGroup/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSiteToSiteVpn",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/vpn/{vpnId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSitesInMci",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/site",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSpec",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/spec/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSqlDb",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/sqlDb/{sqlDbId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSshKey",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/sshKey/{sshKeyId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSubnet",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}/subnet/{subnetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetSystemLabelInfo",
+    "method": "GET",
+    "path": "/labelInfo",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetVNet",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetVNetTemplate",
+    "method": "GET",
+    "path": "/ns/{nsId}/template/vNet/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetVmCommandStatus",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/commandStatus/{index}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetVmDataDisk",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetVmHandlingCommandCount",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/handlingCount",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "GetVmSshHostKey",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/sshHostKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "InitAllConfig",
+    "method": "DELETE",
+    "path": "/config",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "InitConfig",
+    "method": "DELETE",
+    "path": "/config/{configId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "InspectResources",
+    "method": "POST",
+    "path": "/inspectResources",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "InspectResourcesOverview",
+    "method": "GET",
+    "path": "/inspectResourcesOverview",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListDataObjects",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/object",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListObjectStorages",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListObjectStoragesLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListObjectVersions",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/versions",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListObjectVersionsLagacy",
+    "method": "GET",
+    "path": "/resources/objectStorage/{objectStorageName}/versions",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListVmCommandStatus",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/commandStatus",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "LoadAssets",
+    "method": "GET",
+    "path": "/loadAssets",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "LookupImage",
+    "method": "POST",
+    "path": "/lookupImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "LookupImageList",
+    "method": "POST",
+    "path": "/lookupImages",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "LookupSpec",
+    "method": "POST",
+    "path": "/lookupSpec",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "LookupSpecList",
+    "method": "POST",
+    "path": "/lookupSpecs",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "MergeCSPResourceLabel",
+    "method": "PUT",
+    "path": "/mergeCSPLabel/{labelType}/{uid}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostBuildAgnosticImage",
+    "method": "POST",
+    "path": "/ns/{nsId}/buildAgnosticImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostCmdK8sCluster",
+    "method": "POST",
+    "path": "/ns/{nsId}/cmd/k8sCluster/{k8sClusterId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostCmdMci",
+    "method": "POST",
+    "path": "/ns/{nsId}/cmd/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostConfig",
+    "method": "POST",
+    "path": "/config",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostCustomImage",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/customImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostDataDisk",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostDownloadFileFromMciVm",
+    "method": "POST",
+    "path": "/ns/{nsId}/downloadFile/infra/{mciId}/node/{vmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostFileToK8sCluster",
+    "method": "POST",
+    "path": "/ns/{nsId}/transferFile/k8sCluster/{k8sClusterId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostFileToMci",
+    "method": "POST",
+    "path": "/ns/{nsId}/transferFile/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostFirewallRules",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}/rules",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostImage",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/image",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostInstallBenchmarkAgentToMci",
+    "method": "POST",
+    "path": "/ns/{nsId}/installBenchmarkAgent/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostInstallMonitorAgentToMci",
+    "method": "POST",
+    "path": "/ns/{nsId}/monitoring/install/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostK8sCluster",
+    "method": "POST",
+    "path": "/ns/{nsId}/k8sCluster",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostK8sClusterDynamic",
+    "method": "POST",
+    "path": "/ns/{nsId}/k8sClusterDynamic",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostK8sClusterDynamicCheckRequest",
+    "method": "POST",
+    "path": "/k8sClusterDynamicCheckRequest",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostK8sMultiClusterDynamic",
+    "method": "POST",
+    "path": "/ns/{nsId}/k8sMultiClusterDynamic",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostK8sNodeGroup",
+    "method": "POST",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostK8sNodeGroupDynamic",
+    "method": "POST",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroupDynamic",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMcNLB",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/mcSwNlb",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMci",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciDynamic",
+    "method": "POST",
+    "path": "/ns/{nsId}/infraDynamic",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciDynamicCheckRequest",
+    "method": "POST",
+    "path": "/infraDynamicCheckRequest",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciDynamicFromTemplate",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/template/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciDynamicReview",
+    "method": "POST",
+    "path": "/ns/{nsId}/infraDynamicReview",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciDynamicSubGroupVmReview",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/nodeGroupDynamicReview",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciDynamicTemplate",
+    "method": "POST",
+    "path": "/ns/{nsId}/template/infra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciPolicy",
+    "method": "POST",
+    "path": "/ns/{nsId}/policy/infra/{mciId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciSnapshot",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/snapshot",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciSubGroupDynamic",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/nodeGroupDynamic",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciSubGroupScaleOut",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/nodegroup/{subgroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciVm",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/node",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostMciVmSnapshot",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/snapshot",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostNLB",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostNs",
+    "method": "POST",
+    "path": "/ns",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostRegisterCSPNativeVM",
+    "method": "POST",
+    "path": "/ns/{nsId}/registerCspNode",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostRegisterSubnet",
+    "method": "POST",
+    "path": "/ns/{nsId}/registerCspResource/vNet/{vNetId}/subnet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostRegisterVNet",
+    "method": "POST",
+    "path": "/ns/{nsId}/registerCspResource/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostScheduleRegisterCspResources",
+    "method": "POST",
+    "path": "/registerCspResources/schedule",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSecurityGroup",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSecurityGroupFromTemplate",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/securityGroup/template/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSecurityGroupTemplate",
+    "method": "POST",
+    "path": "/ns/{nsId}/template/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSiteToSiteVpn",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/vpn",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSpec",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/spec",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSpecImagePairReview",
+    "method": "POST",
+    "path": "/specImagePairReview",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSqlDb",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/sqlDb",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSshKey",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/sshKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSubnet",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}/subnet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostSystemMci",
+    "method": "POST",
+    "path": "/systemInfra",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostTestStreamResponse",
+    "method": "POST",
+    "path": "/testStreamResponse",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostUtilToDesignNetwork",
+    "method": "POST",
+    "path": "/util/net/design",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostUtilToDesignVNet",
+    "method": "POST",
+    "path": "/util/vNet/design",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostUtilToValidateNetwork",
+    "method": "POST",
+    "path": "/util/net/validate",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostVNet",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostVNetFromTemplate",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/vNet/template/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostVNetTemplate",
+    "method": "POST",
+    "path": "/ns/{nsId}/template/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostVmDataDisk",
+    "method": "POST",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutChangeK8sNodeGroupAutoscaleSize",
+    "method": "PUT",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}/autoscaleSize",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutDataDisk",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/dataDisk/{dataDiskId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutGlobalDnsRecord",
+    "method": "PUT",
+    "path": "/resources/globalDns/record",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutImage",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/image/{imageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutMciAssociatedSecurityGroups",
+    "method": "PUT",
+    "path": "/ns/{nsId}/infra/{mciId}/associatedSecurityGroups",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutMciDynamicTemplate",
+    "method": "PUT",
+    "path": "/ns/{nsId}/template/infra/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutMonitorAgentStatusInstalled",
+    "method": "PUT",
+    "path": "/ns/{nsId}/monitoring/status/infra/{mciId}/node/{vmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutNs",
+    "method": "PUT",
+    "path": "/ns/{nsId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutScheduleRegisterCspResources",
+    "method": "PUT",
+    "path": "/registerCspResources/schedule/{jobId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutScheduleRegisterCspResourcesPause",
+    "method": "PUT",
+    "path": "/registerCspResources/schedule/{jobId}/pause",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutScheduleRegisterCspResourcesResume",
+    "method": "PUT",
+    "path": "/registerCspResources/schedule/{jobId}/resume",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutSecurityGroup",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutSecurityGroupTemplate",
+    "method": "PUT",
+    "path": "/ns/{nsId}/template/securityGroup/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutSetK8sNodeGroupAutoscaling",
+    "method": "PUT",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}/onAutoscaling",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutSpec",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/spec/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutSshKey",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/sshKey/{sshKeyId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutUpgradeK8sCluster",
+    "method": "PUT",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/upgrade",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutVNetTemplate",
+    "method": "PUT",
+    "path": "/ns/{nsId}/template/vNet/{templateId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PutVmDataDisk",
+    "method": "PUT",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{vmId}/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RecommendK8sNode",
+    "method": "POST",
+    "path": "/k8sClusterRecommendNode",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RecommendSpec",
+    "method": "POST",
+    "path": "/recommendSpec",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RecommendSpecOptions",
+    "method": "GET",
+    "path": "/recommendSpecOptions",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RecordProvisioningEvent",
+    "method": "POST",
+    "path": "/provisioning/event",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RegisterCredential",
+    "method": "POST",
+    "path": "/credential",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RegisterCspNativeResources",
+    "method": "POST",
+    "path": "/registerCspResources",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RegisterCspNativeResourcesAll",
+    "method": "POST",
+    "path": "/registerCspResourcesAll",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RemoveBastionNodes",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/bastion/{bastionVmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RemoveBastionNodesWithMci",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/bastion/{bastionMciId}/{bastionVmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RemoveBastionNodesWithNs",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/bastion/{bastionNsId}/{bastionMciId}/{bastionVmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RemoveLabel",
+    "method": "DELETE",
+    "path": "/label/{labelType}/{uid}/{key}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RemoveNLBVMs",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/infra/{mciId}/nlb/{nlbId}/node",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RestDeleteObjectStorage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RetrieveRegionListFromCsp",
+    "method": "GET",
+    "path": "/regionFromCsp",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SearchImage",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/searchImage",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SearchImageOptions",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/searchImageOptions",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetBastionNodes",
+    "method": "PUT",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{targetVmId}/bastion/{bastionVmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Postmcidynamic",
+    "method": "POST",
+    "path": "/ns/{nsId}/infraDynamic",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Inspectresourcesoverview",
+    "method": "GET",
+    "path": "/inspectResourcesOverview",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Getsecuritygroup",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Delsecuritygroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Deletek8snodegroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Getsitesinmci",
+    "method": "GET",
+    "path": "/ns/{nsId}/infra/{mciId}/site",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Getalldatadisk",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Postdatadisk",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Delalldatadisk",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/dataDisk",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "Createsharedresource",
+    "method": "POST",
+    "path": "/ns/{nsId}/sharedResource",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListVNet",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateVNet",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/vNet",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteVNet",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/vNet/{vNetId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListSecurityGroup",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateSecurityGroup",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/securityGroup",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteSecurityGroup",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/securityGroup/{securityGroupId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListSSHKey",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/sshKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "CreateSSHKey",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/sshKey",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListImage",
+    "method": "GET",
+    "path": "/ns/{nsId}/resources/image",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RegisterImage",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/image",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteImage",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/image/{imageId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "ListSpec",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/filterSpecsByRange",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "RegisterSpec",
+    "method": "POST",
+    "path": "/ns/{nsId}/resources/spec",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "DeleteSpec",
+    "method": "DELETE",
+    "path": "/ns/{nsId}/resources/spec/{specId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetBastionNodesWithMci",
+    "method": "PUT",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{targetVmId}/bastion/{bastionMciId}/{bastionVmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetBastionNodesWithNs",
+    "method": "PUT",
+    "path": "/ns/{nsId}/infra/{mciId}/node/{targetVmId}/bastion/{bastionNsId}/{bastionMciId}/{bastionVmId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetObjectStorageCORS",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/cors",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetObjectStorageCORSLagacy",
+    "method": "PUT",
+    "path": "/resources/objectStorage/{objectStorageName}/cors",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetObjectStorageVersioning",
+    "method": "PUT",
+    "path": "/ns/{nsId}/resources/objectStorage/{osId}/versioning",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetObjectStorageVersioningLagacy",
+    "method": "PUT",
+    "path": "/resources/objectStorage/{objectStorageName}/versioning",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "SetSystemInitialized",
+    "method": "PUT",
+    "path": "/readyz/init",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "TestJWTAuth",
+    "method": "GET",
+    "path": "/auth/test",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "UnsetSystemInitialized",
+    "method": "DELETE",
+    "path": "/readyz/init",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "UpdateExistingSpecListByAvailableRegionZones",
+    "method": "POST",
+    "path": "/ns/{nsId}/updateExistingSpecListByAvailableRegionZones",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "UpdateImagesFromAsset",
+    "method": "POST",
+    "path": "/updateImagesFromAsset",
+    "status": 200,
+    "verdict": "✅ PASS"
+  },
+  {
+    "operationId": "PostFileAndCmdToMci",
+    "method": "POST",
+    "path": "/ns/{nsId}/transferFileAndCmd/infra/{infraId}",
+    "status": 200,
+    "verdict": "✅ PASS"
+  }
+]

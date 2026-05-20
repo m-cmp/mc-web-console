@@ -1,0 +1,136 @@
+<div class="page-body">
+  <div class="container-xl">
+    <div id="index" class="section">
+
+      <!-- 필터 바 -->
+      <div class="row row-cards mb-2">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="row align-items-center g-2">
+                <div class="col-auto">
+                  <label class="form-label mb-0">Credential Holder</label>
+                </div>
+                <div class="col-auto">
+                  <select class="form-select" id="filter-credential-holder" style="min-width: 200px;">
+                    <option value="">All</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메인 테이블 -->
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Connections</h3>
+              <div class="card-actions btn-actions">
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/connections'].refreshConnectionList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-table table-responsive" style="max-height: 450px; overflow: hidden">
+              <div id="connection-table" class="connection-table-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 상세 패널 -->
+      <div id="connection-detail-panel" class="row row-cards mt-2" style="display:none">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                Connection Detail
+                <span id="connection-detail-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                  [<span id="connection-detail-name-text"></span>]
+                </span>
+              </h3>
+              <div class="card-actions btn-actions">
+                <a class="btn-action" onclick="webconsolejs['pages/settings/environment/cloudsps/connections'].hideDetail()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icon-tabler-x">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M18 6l-12 12"></path>
+                    <path d="M6 6l12 12"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Config Name</div>
+                  <div class="datagrid-content" id="detail-config-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Credential Holder</div>
+                  <div class="datagrid-content" id="detail-credential-holder">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Credential Name</div>
+                  <div class="datagrid-content" id="detail-credential-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Driver Name</div>
+                  <div class="datagrid-content" id="detail-driver-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="detail-provider-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Region Zone Info</div>
+                  <div class="datagrid-content" id="detail-region-zone-info-name">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Region ID</div>
+                  <div class="datagrid-content" id="detail-region-id">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Zones</div>
+                  <div class="datagrid-content" id="detail-zones">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Assigned Region</div>
+                  <div class="datagrid-content" id="detail-assigned-region">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Assigned Zone</div>
+                  <div class="datagrid-content" id="detail-assigned-zone">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Verified</div>
+                  <div class="datagrid-content" id="detail-verified">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Region Representative</div>
+                  <div class="datagrid-content" id="detail-region-representative">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/connection_config_api.js") | raw }}
+{{ javascriptTag("common/api/services/credential_holder_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/connections.js") | raw }}

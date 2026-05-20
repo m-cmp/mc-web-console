@@ -1,48 +1,97 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 const DOM = {
-    credentialTable: document.getElementById('credential-table'),
+    holderTable: document.getElementById('credential-table'),
     detailPanel: document.getElementById('credential-detail-panel'),
     detailNameLabel: document.getElementById('credential-detail-name-label'),
     detailNameText: document.getElementById('credential-detail-name-text'),
+    kvContainer: document.getElementById('kv-list-container'),
 };
 
 const AppState = {
-    credentials: [],
-    selectedCredential: null,
-    tables: { credentialTable: null },
+    holders: [],
+    selectedHolder: null,
+    tables: { holderTable: null },
 };
 
 const PROVIDER_BADGE = {
-    AWS: '<span class="badge bg-orange-lt">AWS</span>',
-    GCP: '<span class="badge bg-blue-lt">GCP</span>',
-    AZURE: '<span class="badge bg-indigo-lt">Azure</span>',
+    aws:   '<span class="badge bg-orange-lt">AWS</span>',
+    gcp:   '<span class="badge bg-blue-lt">GCP</span>',
+    azure: '<span class="badge bg-indigo-lt">Azure</span>',
 };
 
 function getProviderBadge(provider) {
     if (!provider) return '-';
-    const key = (provider || '').toUpperCase();
+    const key = (provider || '').toLowerCase();
     return PROVIDER_BADGE[key] || `<span class="badge bg-secondary-lt">${provider}</span>`;
 }
 
-function getActiveBadge(active) {
-    return active
-        ? '<span class="badge bg-success-lt">Active</span>'
-        : '<span class="badge bg-secondary-lt">Inactive</span>';
+function getProvidersBadges(providers) {
+    if (!providers || !Array.isArray(providers) || providers.length === 0) return '-';
+    return providers.map(p => getProviderBadge(p)).join(' ');
 }
+
+function getDefaultBadge(isDefault) {
+    return isDefault
+        ? '<span class="badge bg-blue-lt">Default</span>'
+        : '<span class="badge bg-secondary-lt">Custom</span>';
+}
+
+// ─── KV Row 관리 ──────────────────────────────────────────────────
+
+const KVManager = {
+    addRow(key = '', value = '') {
+        const container = document.getElementById('kv-list-container');
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'row g-2 mb-2 kv-row';
+        row.innerHTML = `
+            <div class="col-5">
+                <input type="text" class="form-control kv-key" placeholder="Key" value="${key}" required>
+            </div>
+            <div class="col-6">
+                <input type="text" class="form-control kv-value" placeholder="Value" value="${value}" required>
+            </div>
+            <div class="col-1 d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.kv-row').remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M18 6l-12 12"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>`;
+        container.appendChild(row);
+    },
+
+    getKVList() {
+        const rows = document.querySelectorAll('#kv-list-container .kv-row');
+        return Array.from(rows).map(row => ({
+            key: row.querySelector('.kv-key').value.trim(),
+            value: row.querySelector('.kv-value').value.trim(),
+        })).filter(kv => kv.key !== '');
+    },
+
+    reset() {
+        const container = document.getElementById('kv-list-container');
+        if (container) container.innerHTML = '';
+        KVManager.addRow();
+    },
+};
 
 // ─── TableManager ──────────────────────────────────────────────────
 
 const TableManager = {
     initTable(data) {
-        if (AppState.tables.credentialTable) {
-            AppState.tables.credentialTable.replaceData(data);
+        if (AppState.tables.holderTable) {
+            AppState.tables.holderTable.replaceData(data);
             return;
         }
-        AppState.tables.credentialTable = new Tabulator('#credential-table', {
+        AppState.tables.holderTable = new Tabulator('#credential-table', {
             data,
             layout: 'fitColumns',
-            placeholder: 'No Credentials Found',
+            placeholder: 'No Credential Holders Found',
             pagination: 'local',
             paginationSize: 10,
             paginationSizeSelector: [10, 20, 50],
@@ -56,24 +105,21 @@ const TableManager = {
                     width: 40,
                     cellClick(e, cell) { cell.getRow().toggleSelect(); },
                 },
-                { title: 'ID', field: 'id', sorter: 'number', width: 80 },
-                { title: 'Name', field: 'name', sorter: 'string' },
+                { title: 'Credential Holder', field: 'credentialHolder', sorter: 'string' },
                 {
-                    title: 'Provider',
-                    field: 'cspType',
-                    formatter(cell) { return getProviderBadge(cell.getValue()); },
+                    title: 'Providers',
+                    field: 'providers',
+                    formatter(cell) { return getProvidersBadges(cell.getValue()); },
                 },
+                { title: 'Connections', field: 'connectionCount', sorter: 'number', hozAlign: 'center', width: 120 },
+                { title: 'Verified', field: 'verifiedConnectionCount', sorter: 'number', hozAlign: 'center', width: 100 },
                 {
-                    title: 'Active',
-                    field: 'isActive',
-                    formatter(cell) { return getActiveBadge(cell.getValue()); },
+                    title: 'Default',
+                    field: 'isDefault',
+                    formatter(cell) { return getDefaultBadge(cell.getValue()); },
                     hozAlign: 'center',
                     width: 100,
                 },
-                { title: 'Created At', field: 'createdAt', sorter: 'string', formatter(cell) {
-                    const v = cell.getValue();
-                    return v ? new Date(v).toLocaleString() : '-';
-                }},
             ],
             rowClick(e, row) {
                 UIManager.showDetail(row.getData());
@@ -85,95 +131,74 @@ const TableManager = {
 // ─── UIManager ──────────────────────────────────────────────────────
 
 const UIManager = {
-    showDetail(cred) {
-        AppState.selectedCredential = cred;
+    showDetail(holder) {
+        AppState.selectedHolder = holder;
 
         if (DOM.detailNameLabel) DOM.detailNameLabel.style.display = '';
-        if (DOM.detailNameText) DOM.detailNameText.textContent = cred.name || '-';
+        if (DOM.detailNameText) DOM.detailNameText.textContent = holder.credentialHolder || '-';
 
-        document.getElementById('detail-cred-id').textContent = cred.id || '-';
-        document.getElementById('detail-cred-name').textContent = cred.name || '-';
-        document.getElementById('detail-cred-provider').innerHTML = getProviderBadge(cred.cspType);
-        document.getElementById('detail-cred-status').textContent = cred.status || '-';
-        document.getElementById('detail-cred-active').innerHTML = getActiveBadge(cred.isActive);
-        document.getElementById('detail-cred-created').textContent = cred.createdAt
-            ? new Date(cred.createdAt).toLocaleString()
-            : '-';
+        document.getElementById('detail-holder-id').textContent = holder.credentialHolder || '-';
+        document.getElementById('detail-holder-provider').innerHTML = getProvidersBadges(holder.providers);
+        document.getElementById('detail-holder-connections').textContent = holder.connectionCount ?? '-';
+        document.getElementById('detail-holder-verified').textContent = holder.verifiedConnectionCount ?? '-';
+        document.getElementById('detail-holder-default').innerHTML = getDefaultBadge(holder.isDefault);
 
         if (DOM.detailPanel) DOM.detailPanel.style.display = '';
     },
 
     hideDetail() {
-        AppState.selectedCredential = null;
+        AppState.selectedHolder = null;
         if (DOM.detailPanel) DOM.detailPanel.style.display = 'none';
     },
 };
 
-// ─── CredentialManager ──────────────────────────────────────────────
+// ─── CredentialHolderManager ──────────────────────────────────────
 
-const CredentialManager = {
-    async loadCredentials() {
+const CredentialHolderManager = {
+    async loadHolders() {
         try {
-            const credentials = await webconsolejs["common/api/services/csp_accounts_api"].listCspAccounts();
-            AppState.credentials = Array.isArray(credentials) ? credentials : [];
-            TableManager.initTable(AppState.credentials);
+            const result = await webconsolejs["common/api/services/credential_holder_api"].getCredentialHolderList();
+            const holders = (result && result.credentialHolderList) ? result.credentialHolderList
+                : Array.isArray(result) ? result : [];
+            AppState.holders = holders;
+            TableManager.initTable(AppState.holders);
         } catch (e) {
-            console.error('자격증명 목록 조회 실패:', e);
+            console.error('CredentialHolder 목록 조회 실패:', e);
             TableManager.initTable([]);
         }
     },
 
-    async createCredential() {
-        const nameEl = document.getElementById('create-cred-name');
-        const providerEl = document.getElementById('create-cred-provider');
-        const dataEl = document.getElementById('create-cred-data');
+    async registerCredential() {
+        const holderEl = document.getElementById('create-holder-name');
+        const providerEl = document.getElementById('create-holder-provider');
 
-        if (!webconsolejs['common/utils/formvalidation'].validateForm('credential-create-form')) return;
+        if (!holderEl.value.trim()) {
+            holderEl.classList.add('is-invalid');
+            return;
+        }
+        if (!providerEl.value) {
+            providerEl.classList.add('is-invalid');
+            return;
+        }
 
-        let credData;
-        try {
-            credData = JSON.parse(dataEl.value);
-        } catch (e) {
-            webconsolejs['common/util'].showToast('Invalid JSON in Credential Data field.', 'error');
-            dataEl.classList.add('is-invalid');
+        const credentialKeyValueList = KVManager.getKVList();
+        if (credentialKeyValueList.length === 0) {
+            webconsolejs['common/util'].showToast('At least one credential key-value pair is required.', 'error');
             return;
         }
 
         try {
-            await webconsolejs["common/api/services/csp_accounts_api"].createCspAccount({
-                name: nameEl.value.trim(),
-                cspType: providerEl.value,
-                credential: credData,
+            await webconsolejs["common/api/services/credential_holder_api"].registerCredential({
+                credentialHolder: holderEl.value.trim(),
+                providerName: providerEl.value,
+                credentialKeyValueList,
             });
-            webconsolejs['common/util'].showToast('Credential created successfully.', 'success');
+            webconsolejs['common/util'].showToast('Credential registered successfully.', 'success');
             bootstrap.Modal.getInstance(document.getElementById('credential-create-modal')).hide();
-            await CredentialManager.loadCredentials();
+            await CredentialHolderManager.loadHolders();
         } catch (e) {
-            console.error('자격증명 생성 실패:', e);
-            webconsolejs['common/util'].showToast('Failed to create credential: ' + e.message, 'error');
-        }
-    },
-
-    async validateSelected() {
-        if (!AppState.selectedCredential) return;
-        try {
-            await webconsolejs["common/api/services/csp_accounts_api"].validateCspAccount(AppState.selectedCredential.id);
-            webconsolejs['common/util'].showToast('Credential validated successfully.', 'success');
-        } catch (e) {
-            webconsolejs['common/util'].showToast('Validation failed: ' + e.message, 'error');
-        }
-    },
-
-    async deleteSelected() {
-        if (!AppState.selectedCredential) return;
-        if (!confirm(`Delete credential "${AppState.selectedCredential.name}"?`)) return;
-        try {
-            await webconsolejs["common/api/services/csp_accounts_api"].deleteCspAccount(AppState.selectedCredential.id);
-            webconsolejs['common/util'].showToast('Credential deleted.', 'success');
-            UIManager.hideDetail();
-            await CredentialManager.loadCredentials();
-        } catch (e) {
-            webconsolejs['common/util'].showToast('Delete failed: ' + e.message, 'error');
+            console.error('Credential 등록 실패:', e);
+            webconsolejs['common/util'].showToast('Failed to register credential: ' + e.message, 'error');
         }
     },
 };
@@ -181,19 +206,15 @@ const CredentialManager = {
 // ─── Public exports ──────────────────────────────────────────────────
 
 export function refreshCredentialList() {
-    CredentialManager.loadCredentials();
+    CredentialHolderManager.loadHolders();
 }
 
-export function createCredential() {
-    CredentialManager.createCredential();
+export function registerCredential() {
+    CredentialHolderManager.registerCredential();
 }
 
-export function validateSelected() {
-    CredentialManager.validateSelected();
-}
-
-export function deleteSelected() {
-    CredentialManager.deleteSelected();
+export function addKvRow() {
+    KVManager.addRow();
 }
 
 export function hideDetail() {
@@ -203,5 +224,6 @@ export function hideDetail() {
 // ─── Init ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-    CredentialManager.loadCredentials();
+    KVManager.reset();
+    CredentialHolderManager.loadHolders();
 });
