@@ -28,15 +28,15 @@ func main() {
 	cfg.RegistryCache = service.NewRegistryCache(60 * time.Second)
 
 	// JWT 시크릿 키 설정 (환경 변수에서 로드, 없으면 기본값)
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := os.Getenv("MC_WEB_CONSOLE_JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "your-secret-key-change-in-production"
-		log.Println("⚠️  JWT_SECRET not set, using insecure default key")
+		log.Println("⚠️  MC_WEB_CONSOLE_JWT_SECRET not set, using insecure default key")
 	}
 	jwt.SetSecretKey(jwtSecret)
 
-	// 데이터베이스 초기화 (DB_HOST 환경변수가 설정된 경우에만 활성화)
-	if os.Getenv("DB_HOST") != "" {
+	// 데이터베이스 초기화 (MC_WEB_CONSOLE_POSTGRES_HOST 환경변수가 설정된 경우에만 활성화)
+	if os.Getenv("MC_WEB_CONSOLE_POSTGRES_HOST") != "" {
 		if err := repository.InitDatabase(cfg); err != nil {
 			log.Fatalf("Failed to initialize database: %v", err)
 		}
@@ -47,7 +47,7 @@ func main() {
 			log.Fatalf("Failed to migrate database: %v", err)
 		}
 	} else {
-		log.Println("⚠️  DB_HOST not configured, running without database (session management disabled)")
+		log.Println("⚠️  MC_WEB_CONSOLE_POSTGRES_HOST not configured, running without database (session management disabled)")
 	}
 
 	// Echo 인스턴스 생성
