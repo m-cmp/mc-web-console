@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
+MC_WEB_CONSOLE_FRONT_PORT="${MC_WEB_CONSOLE_FRONT_PORT:-3017}"
+MC_WEB_CONSOLE_API_SCHEME="${MC_WEB_CONSOLE_API_SCHEME:-https}"
+MC_WEB_CONSOLE_API_ADDR="${MC_WEB_CONSOLE_API_ADDR:-mciam.onecloudcon.com}"
+MC_WEB_CONSOLE_API_PORT="${MC_WEB_CONSOLE_API_PORT:-3000}"
+
+echo "[remote] API backend : $MC_WEB_CONSOLE_API_SCHEME://$MC_WEB_CONSOLE_API_ADDR:$MC_WEB_CONSOLE_API_PORT"
+echo "[remote] Front server: http://0.0.0.0:$MC_WEB_CONSOLE_FRONT_PORT"
+
+if [ "${SKIP_BUILD:-false}" != "true" ]; then
+  echo "[remote] Building frontend..."
+  cd "$ROOT_DIR/front" && npm run build
+fi
+
+cd "$ROOT_DIR/front"
+MC_WEB_CONSOLE_FRONT_PORT=$MC_WEB_CONSOLE_FRONT_PORT \
+MC_WEB_CONSOLE_FRONT_ADDR=0.0.0.0 \
+MC_WEB_CONSOLE_API_SCHEME=$MC_WEB_CONSOLE_API_SCHEME \
+MC_WEB_CONSOLE_API_ADDR=$MC_WEB_CONSOLE_API_ADDR \
+MC_WEB_CONSOLE_API_PORT=$MC_WEB_CONSOLE_API_PORT \
+go run cmd/app/main.go

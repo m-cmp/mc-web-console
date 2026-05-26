@@ -55,13 +55,23 @@ export async function registerCredential(payload, credentialHolder) {
 
 /**
  * Credential Holder 목록 조회
- * credentialHolder API 미배포 버전 대응: connConfig 목록에서 holder를 추출하여 집계
+ * GetCredentialHolderList 우선 호출, 404(미배포) 시 connConfig 집계로 fallback
  * @returns {Array} [{ credentialHolder, providers, connectionCount, verifiedConnectionCount, isDefault }]
  */
 export async function listCredentialHolders() {
+    try {
+        const controller = "/api/mc-infra-manager/GetCredentialHolderList";
+        const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
+        const data = unwrapResponse(response);
+        if (data && data.credentialHolderList) return data.credentialHolderList;
+    } catch (e) {
+        // 404 등 미배포 환경: connConfig 집계로 fallback
+        console.warn('[listCredentialHolders] GetCredentialHolderList 미지원, connConfig 집계로 대체:', e.message);
+    }
+
+    // fallback: connConfig 목록에서 holder 집계
     const conns = await listConnConfigs({ filterVerified: false });
     if (!conns.length) return [];
-
     const holderMap = {};
     for (const conn of conns) {
         const holder = conn.credentialHolder || 'admin';
@@ -72,7 +82,6 @@ export async function listCredentialHolders() {
         holderMap[holder].connectionCount++;
         if (conn.verified) holderMap[holder].verifiedConnectionCount++;
     }
-
     return Object.values(holderMap).map(h => ({
         credentialHolder: h.credentialHolder,
         providers: [...h.providers],
@@ -80,6 +89,18 @@ export async function listCredentialHolders() {
         verifiedConnectionCount: h.verifiedConnectionCount,
         isDefault: h.credentialHolder === 'admin',
     }));
+}
+
+/**
+ * Credential Holder 상세 조회
+ * @param {string} holderId
+ * @returns {object} CredentialHolderInfo
+ */
+export async function getCredentialHolder(holderId) {
+    const controller = "/api/mc-infra-manager/GetCredentialHolder";
+    const data = { pathParams: { holderId } };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return unwrapResponse(response);
 }
 
 // ─── Connection Config ─────────────────────────────────────────────────
@@ -101,7 +122,9 @@ export async function listConnConfigs(filters = {}, credentialHolder) {
     };
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     const result = unwrapResponse(response);
-    return (result && result.connConfig) ? result.connConfig : [];
+    return (result && (result.connConfig || result.connectionconfig))
+        ? (result.connConfig || result.connectionconfig)
+        : [];
 }
 
 /**
@@ -154,14 +177,38 @@ export async function buildEncryptedCredentialPayload(providerName, credentialHo
     }));
 
     // 3. PEM → CryptoKey (RSA-OAEP SHA-256)
+    // mc-infra-manager는 PKCS#1 형식(BEGIN RSA PUBLIC KEY)을 반환함.
+    // Web Crypto API는 SPKI 형식만 지원하므로 PKCS#1 → SPKI 변환 필요.
     const pemBody = publicKeyPem
-        .replace(/-----BEGIN PUBLIC KEY-----/, '')
-        .replace(/-----END PUBLIC KEY-----/, '')
+        .replace(/-----[^-]+-----/g, '')
         .replace(/\s/g, '');
-    const derBuffer = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
+    const pkcs1Der = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
+
+    function derLenBytes(n) {
+        if (n < 0x80) return [n];
+        if (n < 0x100) return [0x81, n];
+        return [0x82, (n >> 8) & 0xff, n & 0xff];
+    }
+
+    let spkiDer;
+    if (publicKeyPem.includes('BEGIN RSA PUBLIC KEY')) {
+        // PKCS#1 → SPKI(SubjectPublicKeyInfo) 래핑
+        const algIdSeq = new Uint8Array([
+            0x30, 0x0d,
+            0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01,
+            0x05, 0x00,
+        ]);
+        const bsPayload = new Uint8Array([0x00, ...pkcs1Der]);
+        const bitString = new Uint8Array([0x03, ...derLenBytes(bsPayload.length), ...bsPayload]);
+        const seqInner = new Uint8Array([...algIdSeq, ...bitString]);
+        spkiDer = new Uint8Array([0x30, ...derLenBytes(seqInner.length), ...seqInner]);
+    } else {
+        spkiDer = pkcs1Der;
+    }
+
     const rsaKey = await crypto.subtle.importKey(
         'spki',
-        derBuffer,
+        spkiDer,
         { name: 'RSA-OAEP', hash: 'SHA-256' },
         false,
         ['encrypt']
