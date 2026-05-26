@@ -53,6 +53,7 @@ const TableManager = {
             paginationSize: 15,
             paginationSizeSelector: [15, 30, 50],
             paginationCounter: 'rows',
+            height: '400px',
             columns: [
                 {
                     formatter: 'rowSelection',
@@ -79,9 +80,9 @@ const TableManager = {
                     width: 110,
                 },
             ],
-            rowClick(e, row) {
-                ConnectionManager.loadDetail(row.getData().configName);
-            },
+        });
+        AppState.tables.connectionTable.on('rowClick', (e, row) => {
+            ConnectionManager.loadDetail(row.getData().configName);
         });
     },
 };
@@ -92,8 +93,12 @@ const UIManager = {
     showDetail(conn) {
         AppState.selectedConnection = conn;
 
-        if (DOM.detailNameLabel) DOM.detailNameLabel.style.display = '';
-        if (DOM.detailNameText) DOM.detailNameText.textContent = conn.configName || '-';
+        const detailPanel = document.getElementById('connection-detail-panel');
+        const detailNameLabel = document.getElementById('connection-detail-name-label');
+        const detailNameText = document.getElementById('connection-detail-name-text');
+
+        if (detailNameLabel) detailNameLabel.style.display = '';
+        if (detailNameText) detailNameText.textContent = conn.configName || '-';
 
         document.getElementById('detail-config-name').textContent = conn.configName || '-';
         document.getElementById('detail-credential-holder').textContent = conn.credentialHolder || '-';
@@ -116,12 +121,13 @@ const UIManager = {
             ? '<span class="badge bg-blue-lt">Yes</span>'
             : '<span class="badge bg-secondary-lt">No</span>';
 
-        if (DOM.detailPanel) DOM.detailPanel.style.display = '';
+        if (detailPanel) detailPanel.style.display = '';
     },
 
     hideDetail() {
         AppState.selectedConnection = null;
-        if (DOM.detailPanel) DOM.detailPanel.style.display = 'none';
+        const detailPanel = document.getElementById('connection-detail-panel');
+        if (detailPanel) detailPanel.style.display = 'none';
     },
 };
 
@@ -169,6 +175,36 @@ const ConnectionManager = {
     },
 };
 
+// ─── FilterManager ──────────────────────────────────────────────────
+
+const FilterManager = {
+    init() {
+        const fieldEl = document.getElementById('connection-filter-field');
+        const typeEl  = document.getElementById('connection-filter-type');
+        const valueEl = document.getElementById('connection-filter-value');
+        if (!fieldEl || !typeEl || !valueEl) return;
+
+        function updateFilter() {
+            const field = fieldEl.value;
+            const type  = typeEl.value;
+            if (field && AppState.tables.connectionTable) {
+                AppState.tables.connectionTable.setFilter(field, type, valueEl.value);
+            }
+        }
+
+        fieldEl.addEventListener('change', updateFilter);
+        typeEl.addEventListener('change', updateFilter);
+        valueEl.addEventListener('keyup', updateFilter);
+
+        document.getElementById('connection-filter-clear')?.addEventListener('click', () => {
+            fieldEl.value = '';
+            typeEl.value  = 'like';
+            valueEl.value = '';
+            if (AppState.tables.connectionTable) AppState.tables.connectionTable.clearFilter();
+        });
+    },
+};
+
 // ─── Public exports ──────────────────────────────────────────────────
 
 export function refreshConnectionList() {
@@ -183,6 +219,7 @@ export function hideDetail() {
 // ─── Init ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    FilterManager.init();
     await ConnectionManager.populateHolderFilter();
     await ConnectionManager.loadConnections('');
 

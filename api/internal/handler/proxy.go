@@ -86,9 +86,11 @@ func SubsystemAnyController(c echo.Context) error {
 	// ActionSpec: 캐시 우선 → 없으면 api.yaml ActionSpec
 	effectiveActionSpec := actionSpec
 	if cfg.RegistryCache != nil {
-		if dynamicURL := cfg.RegistryCache.GetBaseURL(subsystemName, operationId); dynamicURL != "" {
-			log.Printf("[RegistryCache] BaseURL override for %s: %s", subsystemName, dynamicURL)
-			effectiveBaseURL = dynamicURL
+		if cfg.MCIAM.UseRegistryURL {
+			if dynamicURL := cfg.RegistryCache.GetBaseURL(subsystemName, operationId); dynamicURL != "" {
+				log.Printf("[RegistryCache] BaseURL override for %s: %s", subsystemName, dynamicURL)
+				effectiveBaseURL = dynamicURL
+			}
 		}
 		if cachedSpec := cfg.RegistryCache.GetActionSpec(subsystemName, operationId); cachedSpec != nil {
 			effectiveActionSpec = cachedSpec
