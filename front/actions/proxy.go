@@ -11,7 +11,7 @@ var proxy *httputil.ReverseProxy
 
 func init() {
 	var err error
-	ApiBaseHost, err = url.Parse("http://" + API_ADDR + ":" + API_PORT)
+	ApiBaseHost, err = url.Parse(API_SCHEME + "://" + API_ADDR + ":" + API_PORT)
 	if err != nil {
 		panic(err)
 	}

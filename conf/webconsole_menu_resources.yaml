@@ -88,11 +88,11 @@ menus:
     priority: 2
     menunumber: 1310
 
-  - id: regions
+  - id: credentials
     parentid: cloudsps
-    displayname: Regions
+    displayname: Credentials
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1320
 
@@ -100,25 +100,9 @@ menus:
     parentid: cloudsps
     displayname: Connections
     restype: menu
-    isaction: false
-    priority: 2
-    menunumber: 1330
-
-  - id: clouddrivers
-    parentid: cloudsps
-    displayname: Cloud Drivers
-    restype: menu
     isaction: true
     priority: 2
-    menunumber: 1340
-
-  - id: credentials
-    parentid: cloudsps
-    displayname: Credentials
-    restype: menu
-    isaction: false
-    priority: 2
-    menunumber: 1350
+    menunumber: 1330
 
   - id: cspaccounts
     parentid: cloudsps

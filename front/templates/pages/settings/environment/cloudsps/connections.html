@@ -29,6 +29,14 @@
             <div class="card-header">
               <h3 class="card-title">Connections</h3>
               <div class="card-actions btn-actions">
+                <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#connection-filter-body" aria-expanded="false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icon-tabler-filter">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"></path>
+                  </svg>
+                </a>
                 <a class="btn-action"
                   onclick="webconsolejs['pages/settings/environment/cloudsps/connections'].refreshConnectionList()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -41,7 +49,39 @@
                 </a>
               </div>
             </div>
-            <div class="card-table table-responsive" style="max-height: 450px; overflow: hidden">
+            <!-- Filter Panel -->
+            <div class="collapse" id="connection-filter-body">
+              <div class="card-body border-bottom py-3">
+                <div class="row g-2 align-items-end">
+                  <div class="col-auto">
+                    <label class="form-label mb-1">Field</label>
+                    <select id="connection-filter-field" class="form-select form-select-sm">
+                      <option value="">-- select --</option>
+                      <option value="configName">Config Name</option>
+                      <option value="credentialHolder">Credential Holder</option>
+                      <option value="providerName">Provider</option>
+                      <option value="regionZoneInfoName">Region Zone Info</option>
+                    </select>
+                  </div>
+                  <div class="col-auto">
+                    <label class="form-label mb-1">Type</label>
+                    <select id="connection-filter-type" class="form-select form-select-sm">
+                      <option value="like">like</option>
+                      <option value="=">=</option>
+                      <option value="!=">!=</option>
+                    </select>
+                  </div>
+                  <div class="col">
+                    <label class="form-label mb-1">Value</label>
+                    <input type="text" id="connection-filter-value" class="form-control form-control-sm" placeholder="filter...">
+                  </div>
+                  <div class="col-auto">
+                    <button id="connection-filter-clear" class="btn btn-sm btn-outline-secondary">Clear</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-table table-responsive">
               <div id="connection-table" class="connection-table-container"></div>
             </div>
           </div>
