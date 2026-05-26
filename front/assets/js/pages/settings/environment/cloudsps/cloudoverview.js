@@ -468,6 +468,18 @@ export async function saveFrameworkUrl(frameworkName) {
     await ReadyzManager.saveFrameworkUrl(frameworkName);
 }
 
+export function showAddServiceRow() {
+    ReadyzManager.showAddServiceRow();
+}
+
+export async function saveNewService() {
+    await ReadyzManager.saveNewService();
+}
+
+export function cancelAddService() {
+    ReadyzManager.cancelAddService();
+}
+
 export async function toggleSelectedCspStatus() {
     if (!AppState.csp.selectedAccount) return;
 
@@ -498,9 +510,9 @@ const ReadyzManager = {
     /** mc-iam-manager에서 framework 서비스 주소 로드 + 동적 목록 빌드 */
     async loadFrameworkServices() {
         try {
-            const services = await readyzApi().listFrameworkServices();
+            const { services, serviceActions } = await readyzApi().listFrameworkServices();
             AppState.frameworkServices = services || {};
-            AppState.frameworkList = readyzApi().buildFrameworkList(AppState.frameworkServices);
+            AppState.frameworkList = readyzApi().buildFrameworkList(AppState.frameworkServices, serviceActions);
         } catch (e) {
             console.warn('loadFrameworkServices failed:', e.message);
             AppState.frameworkServices = {};
@@ -716,6 +728,59 @@ const ReadyzManager = {
         if (desc && message) desc.textContent = (desc.textContent ? desc.textContent + ' | ' : '') + message;
     },
 
+    /** Add Service 입력 행 표시 */
+    showAddServiceRow() {
+        if (document.getElementById('readyz-add-service-row')) return;
+        const tbody = document.getElementById('readyz-table-body');
+        if (!tbody) return;
+        const row = document.createElement('tr');
+        row.id = 'readyz-add-service-row';
+        row.innerHTML = `
+            <td>
+                <input type="text" class="form-control form-control-sm" id="readyz-add-service-name"
+                    placeholder="Service name" style="min-width:120px">
+            </td>
+            <td colspan="3">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm" id="readyz-add-service-url"
+                        placeholder="http://host:port">
+                    <button class="btn btn-sm btn-primary"
+                        onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].saveNewService()">Save</button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                        onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].cancelAddService()">Cancel</button>
+                </div>
+            </td>
+            <td></td>
+        `;
+        tbody.insertBefore(row, tbody.firstChild);
+        document.getElementById('readyz-add-service-name').focus();
+    },
+
+    /** Add Service 저장 → mc-iam-manager → 테이블 갱신 */
+    async saveNewService() {
+        const nameInput = document.getElementById('readyz-add-service-name');
+        const urlInput = document.getElementById('readyz-add-service-url');
+        if (!nameInput || !urlInput) return;
+        const serviceName = nameInput.value.trim();
+        const serviceUrl = urlInput.value.trim();
+        if (!serviceName) { alert('Service name을 입력하세요.'); nameInput.focus(); return; }
+        if (!serviceUrl) { alert('URL을 입력하세요.'); urlInput.focus(); return; }
+        try {
+            await readyzApi().createFrameworkServiceUrl(serviceName, serviceUrl);
+            this.cancelAddService();
+            await this.loadFrameworkServices();
+            this.renderTable();
+        } catch (e) {
+            alert('서비스 등록 실패: ' + (e.message || String(e)));
+        }
+    },
+
+    /** Add Service 입력 행 취소 */
+    cancelAddService() {
+        const row = document.getElementById('readyz-add-service-row');
+        if (row) row.remove();
+    },
+
     _esc(str) {
         return (str || '').replace(/"/g, '&quot;');
     },
@@ -834,6 +899,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // 등록 폼 이벤트 초기화
     initCreateFormEvents();
+
+    // Setup Status 섹션 초기화 (FR-CLOUD-ADMIN-006-08)
+    // — Readyz/CspAccounts 와 완전 독립. await 하지 않고 즉시 시작하여
+    //   상위 await 흐름이 stuck 되어도 본 섹션은 카드별로 그려진다.
+    try {
+        const setupSection = webconsolejs['pages/settings/environment/cloudsps/setup_status_section'];
+        if (setupSection && typeof setupSection.init === 'function') {
+            setupSection.init().catch((e) => {
+                console.warn('[cloudoverview] setup_status_section init failed:', e);
+            });
+        }
+    } catch (e) {
+        console.warn('[cloudoverview] setup_status_section init failed (sync):', e);
+    }
 
     // 목록 초기화
     await initCspAccounts();

@@ -124,10 +124,10 @@ export async function getMciListSimple(nsId) {
 
     try {
         const response = await webconsolejs["common/api/http"].commonAPIPost(
-            BASE_INFRA + "GetAllMci",
+            BASE_INFRA + "GetAllInfra",
             data
         );
-        return response.data.responseData?.mci || [];
+        return response.data.responseData?.infra || [];
     } catch (e) {
         if (e.response?.status === 404) return [];
         throw e;

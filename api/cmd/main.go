@@ -28,15 +28,15 @@ func main() {
 	cfg.RegistryCache = service.NewRegistryCache(60 * time.Second)
 
 	// JWT 시크릿 키 설정 (환경 변수에서 로드, 없으면 기본값)
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := os.Getenv("MC_WEB_CONSOLE_JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "your-secret-key-change-in-production"
-		log.Println("⚠️  JWT_SECRET not set, using insecure default key")
+		log.Println("⚠️  MC_WEB_CONSOLE_JWT_SECRET not set, using insecure default key")
 	}
 	jwt.SetSecretKey(jwtSecret)
 
-	// 데이터베이스 초기화 (DB_HOST 환경변수가 설정된 경우에만 활성화)
-	if os.Getenv("DB_HOST") != "" {
+	// 데이터베이스 초기화 (MC_WEB_CONSOLE_POSTGRES_HOST 환경변수가 설정된 경우에만 활성화)
+	if os.Getenv("MC_WEB_CONSOLE_POSTGRES_HOST") != "" {
 		if err := repository.InitDatabase(cfg); err != nil {
 			log.Fatalf("Failed to initialize database: %v", err)
 		}
@@ -47,7 +47,7 @@ func main() {
 			log.Fatalf("Failed to migrate database: %v", err)
 		}
 	} else {
-		log.Println("⚠️  DB_HOST not configured, running without database (session management disabled)")
+		log.Println("⚠️  MC_WEB_CONSOLE_POSTGRES_HOST not configured, running without database (session management disabled)")
 	}
 
 	// Echo 인스턴스 생성
@@ -96,6 +96,17 @@ func main() {
 	authProtected.POST("/validate", handler.Validate)
 	authProtected.POST("/logout", handler.Logout)
 	authProtected.GET("/userinfo", handler.UserInfo)
+
+	// 단일 세그먼트 내부 핸들러
+	api.POST("/disklookup", handler.DiskLookup)
+	api.POST("/getapihosts", handler.GetApiHosts)
+
+	// 관리자 전용 BFF 라우트 (와일드카드보다 먼저 등록되어야 정적 매칭됨)
+	// FR-CLOUD-ADMIN-006-08: 외부 raw YAML 도달성 확인 (CORS 우회 + 토큰 노출 방지)
+	// 인증 모델: SubsystemAnyController와 동일 — front Buffalo의 IsTokenExistMiddleware(cookie 검증)
+	// 가 1차 게이트 역할을 하므로 BFF는 별도 JWT 검증을 수행하지 않는다.
+	adminBFF := api.Group("/admin")
+	adminBFF.GET("/setup-yaml-check", handler.GetSetupYamlCheck)
 
 	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
 	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시

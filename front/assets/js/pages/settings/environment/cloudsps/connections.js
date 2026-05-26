@@ -1,176 +1,195 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-const PROVIDER_BADGE_MAP = {
-    aws: 'bg-orange-lt', gcp: 'bg-blue-lt', azure: 'bg-indigo-lt',
-    alibaba: 'bg-red-lt', tencent: 'bg-cyan-lt', ibm: 'bg-dark-lt',
+const DOM = {
+    connectionTable: document.getElementById('connection-table'),
+    detailPanel: document.getElementById('connection-detail-panel'),
+    detailNameLabel: document.getElementById('connection-detail-name-label'),
+    detailNameText: document.getElementById('connection-detail-name-text'),
+    filterSelect: document.getElementById('filter-credential-holder'),
 };
-
-function providerBadge(name) {
-    if (!name) return '-';
-    const lower = name.toLowerCase();
-    const cls = PROVIDER_BADGE_MAP[lower] || 'bg-secondary-lt';
-    return `<span class="badge ${cls}">${name.toUpperCase()}</span>`;
-}
 
 const AppState = {
-    connTable: null,
-    holders: [],
+    connections: [],
+    selectedConnection: null,
+    tables: { connectionTable: null },
 };
 
-// ─── Detail Panel ──────────────────────────────────────────────────────
-
-const DetailPanel = {
-    show(conn) {
-        document.getElementById('conn-detail-name').textContent = `[${conn.configName}]`;
-        document.getElementById('conn-detail-configname').textContent = conn.configName || '-';
-        document.getElementById('conn-detail-provider').innerHTML = providerBadge(conn.providerName);
-        document.getElementById('conn-detail-holder').textContent = conn.credentialHolder || '-';
-        document.getElementById('conn-detail-region').textContent = conn.regionZoneInfo?.assignedRegion || '-';
-        document.getElementById('conn-detail-zone').textContent = conn.regionZoneInfo?.assignedZone || '-';
-        document.getElementById('conn-detail-verified').innerHTML = conn.verified
-            ? '<span class="badge bg-success-lt">Verified</span>'
-            : '<span class="badge bg-danger-lt">Unverified</span>';
-        document.getElementById('conn-detail-representative').innerHTML = conn.regionRepresentative
-            ? '<span class="badge bg-primary-lt">Yes</span>'
-            : '<span class="badge bg-secondary-lt">No</span>';
-        const panel = document.getElementById('conn-detail-panel');
-        bootstrap.Collapse.getOrCreateInstance(panel).show();
-    },
-
-    hide() {
-        bootstrap.Collapse.getOrCreateInstance(document.getElementById('conn-detail-panel')).hide();
-    },
+const PROVIDER_BADGE = {
+    aws:      '<span class="badge bg-orange-lt">AWS</span>',
+    gcp:      '<span class="badge bg-blue-lt">GCP</span>',
+    azure:    '<span class="badge bg-indigo-lt">Azure</span>',
+    alibaba:  '<span class="badge bg-yellow-lt">Alibaba</span>',
+    ncp:      '<span class="badge bg-green-lt">NCP</span>',
+    nhncloud: '<span class="badge bg-cyan-lt">NHN</span>',
+    ktcloud:  '<span class="badge bg-teal-lt">KT</span>',
+    tencent:  '<span class="badge bg-red-lt">Tencent</span>',
 };
 
-// ─── Table ─────────────────────────────────────────────────────────────
+function getProviderBadge(provider) {
+    if (!provider) return '-';
+    const key = (provider || '').toLowerCase();
+    return PROVIDER_BADGE[key] || `<span class="badge bg-secondary-lt">${provider}</span>`;
+}
+
+function getVerifiedBadge(verified) {
+    return verified
+        ? '<span class="badge bg-green-lt">Verified</span>'
+        : '<span class="badge bg-secondary-lt">Unverified</span>';
+}
+
+// ─── TableManager ──────────────────────────────────────────────────
 
 const TableManager = {
-    init(data) {
-        if (AppState.connTable) {
-            AppState.connTable.replaceData(data);
+    initTable(data) {
+        if (AppState.tables.connectionTable) {
+            AppState.tables.connectionTable.replaceData(data);
             return;
         }
-        AppState.connTable = new Tabulator("#connection-table", {
+        AppState.tables.connectionTable = new Tabulator('#connection-table', {
             data,
-            layout: "fitColumns",
-            height: "400px",
-            placeholder: "조건에 맞는 Connection Config가 없습니다.",
+            layout: 'fitColumns',
+            placeholder: 'No Connections Found',
+            pagination: 'local',
+            paginationSize: 15,
+            paginationSizeSelector: [15, 30, 50],
+            paginationCounter: 'rows',
             columns: [
                 {
-                    title: "Config Name",
-                    field: "configName",
-                    headerSort: true,
+                    formatter: 'rowSelection',
+                    titleFormatter: 'rowSelection',
+                    hozAlign: 'center',
+                    headerSort: false,
+                    width: 40,
+                    cellClick(e, cell) { cell.getRow().toggleSelect(); },
                 },
+                { title: 'Config Name', field: 'configName', sorter: 'string' },
+                { title: 'Credential Holder', field: 'credentialHolder', sorter: 'string', width: 160 },
                 {
-                    title: "Provider",
-                    field: "providerName",
-                    width: 120,
-                    formatter: cell => providerBadge(cell.getValue()),
+                    title: 'Provider',
+                    field: 'providerName',
+                    formatter(cell) { return getProviderBadge(cell.getValue()); },
+                    width: 110,
                 },
+                { title: 'Region Zone Info', field: 'regionZoneInfoName', sorter: 'string' },
                 {
-                    title: "Holder",
-                    field: "credentialHolder",
-                    width: 130,
-                },
-                {
-                    title: "Region",
-                    field: "regionZoneInfo",
-                    formatter: cell => {
-                        const v = cell.getValue();
-                        return v?.assignedRegion || '-';
-                    },
-                },
-                {
-                    title: "Zone",
-                    field: "regionZoneInfo",
-                    width: 160,
-                    formatter: cell => {
-                        const v = cell.getValue();
-                        return v?.assignedZone || '-';
-                    },
-                },
-                {
-                    title: "Verified",
-                    field: "verified",
-                    width: 100,
-                    hozAlign: "center",
-                    formatter: cell => cell.getValue()
-                        ? '<span class="badge bg-success-lt">OK</span>'
-                        : '<span class="badge bg-danger-lt">Fail</span>',
-                },
-                {
-                    title: "Rep.",
-                    field: "regionRepresentative",
-                    width: 70,
-                    hozAlign: "center",
-                    formatter: cell => cell.getValue()
-                        ? '<span class="badge bg-primary-lt">★</span>'
-                        : '',
-                    headerTooltip: "Region Representative",
+                    title: 'Verified',
+                    field: 'verified',
+                    formatter(cell) { return getVerifiedBadge(cell.getValue()); },
+                    hozAlign: 'center',
+                    width: 110,
                 },
             ],
-        });
-
-        AppState.connTable.on("rowClick", (e, row) => {
-            DetailPanel.show(row.getData());
+            rowClick(e, row) {
+                ConnectionManager.loadDetail(row.getData().configName);
+            },
         });
     },
 };
 
-// ─── Load & Filter ─────────────────────────────────────────────────────
+// ─── UIManager ──────────────────────────────────────────────────────
 
-async function loadConnections() {
-    const holder = document.getElementById('filter-holder')?.value || '';
-    const verified = document.getElementById('filter-verified')?.checked;
-    const rep = document.getElementById('filter-representative')?.checked;
+const UIManager = {
+    showDetail(conn) {
+        AppState.selectedConnection = conn;
 
-    const filters = {};
-    if (holder) filters.filterCredentialHolder = holder;
-    if (verified !== undefined) filters.filterVerified = verified;
-    if (rep !== undefined) filters.filterRegionRepresentative = rep;
+        if (DOM.detailNameLabel) DOM.detailNameLabel.style.display = '';
+        if (DOM.detailNameText) DOM.detailNameText.textContent = conn.configName || '-';
 
-    try {
-        const conns = await webconsolejs["common/api/services/cloudconnection_api"].listConnConfigs(filters);
-        TableManager.init(conns);
-        DetailPanel.hide();
-    } catch (e) {
-        console.error('Connection Config 조회 실패:', e);
-        webconsolejs["partials/layout/toast"].showToast('Connection 목록을 불러오지 못했습니다.', 'error');
-        TableManager.init([]);
-    }
+        document.getElementById('detail-config-name').textContent = conn.configName || '-';
+        document.getElementById('detail-credential-holder').textContent = conn.credentialHolder || '-';
+        document.getElementById('detail-credential-name').textContent = conn.credentialName || '-';
+        document.getElementById('detail-driver-name').textContent = conn.driverName || '-';
+        document.getElementById('detail-provider-name').innerHTML = getProviderBadge(conn.providerName);
+        document.getElementById('detail-region-zone-info-name').textContent = conn.regionZoneInfoName || '-';
+
+        const regionDetail = conn.regionDetail || {};
+        document.getElementById('detail-region-id').textContent = regionDetail.regionId || '-';
+        const zones = Array.isArray(regionDetail.zones) ? regionDetail.zones.join(', ') : (regionDetail.zones || '-');
+        document.getElementById('detail-zones').textContent = zones;
+
+        const regionZoneInfo = conn.regionZoneInfo || {};
+        document.getElementById('detail-assigned-region').textContent = regionZoneInfo.assignedRegion || '-';
+        document.getElementById('detail-assigned-zone').textContent = regionZoneInfo.assignedZone || '-';
+
+        document.getElementById('detail-verified').innerHTML = getVerifiedBadge(conn.verified);
+        document.getElementById('detail-region-representative').innerHTML = conn.regionRepresentative
+            ? '<span class="badge bg-blue-lt">Yes</span>'
+            : '<span class="badge bg-secondary-lt">No</span>';
+
+        if (DOM.detailPanel) DOM.detailPanel.style.display = '';
+    },
+
+    hideDetail() {
+        AppState.selectedConnection = null;
+        if (DOM.detailPanel) DOM.detailPanel.style.display = 'none';
+    },
+};
+
+// ─── ConnectionManager ──────────────────────────────────────────────
+
+const ConnectionManager = {
+    async loadConnections(credentialHolder = '') {
+        try {
+            const connections = await webconsolejs["common/api/services/connection_config_api"].filterConnConfigByCredentialHolder(credentialHolder);
+            AppState.connections = connections;
+            TableManager.initTable(connections);
+        } catch (e) {
+            console.error('Connection 목록 조회 실패:', e);
+            TableManager.initTable([]);
+        }
+    },
+
+    async loadDetail(configName) {
+        try {
+            const conn = await webconsolejs["common/api/services/connection_config_api"].getConnConfig(configName);
+            if (conn) {
+                UIManager.showDetail(conn);
+            }
+        } catch (e) {
+            console.error('Connection 상세 조회 실패:', e);
+        }
+    },
+
+    async populateHolderFilter() {
+        try {
+            const result = await webconsolejs["common/api/services/credential_holder_api"].getCredentialHolderList();
+            const holders = (result && result.credentialHolderList) ? result.credentialHolderList
+                : Array.isArray(result) ? result : [];
+            const select = DOM.filterSelect;
+            if (!select) return;
+            holders.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h.credentialHolder;
+                opt.textContent = h.credentialHolder;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('CredentialHolder 목록 조회 실패:', e);
+        }
+    },
+};
+
+// ─── Public exports ──────────────────────────────────────────────────
+
+export function refreshConnectionList() {
+    const holder = DOM.filterSelect ? DOM.filterSelect.value : '';
+    ConnectionManager.loadConnections(holder);
 }
 
-async function loadHolderFilter() {
-    try {
-        const holders = await webconsolejs["common/api/services/cloudconnection_api"].listCredentialHolders();
-        AppState.holders = holders;
-        const select = document.getElementById('filter-holder');
-        if (!select) return;
-        select.innerHTML = '<option value="">All Holders</option>';
-        holders.forEach(h => {
-            const opt = document.createElement('option');
-            opt.value = h.credentialHolder;
-            opt.textContent = h.credentialHolder;
-            select.appendChild(opt);
+export function hideDetail() {
+    UIManager.hideDetail();
+}
+
+// ─── Init ──────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await ConnectionManager.populateHolderFilter();
+    await ConnectionManager.loadConnections('');
+
+    if (DOM.filterSelect) {
+        DOM.filterSelect.addEventListener('change', () => {
+            ConnectionManager.loadConnections(DOM.filterSelect.value);
+            UIManager.hideDetail();
         });
-    } catch (e) {
-        console.error('Holder 필터 로드 실패:', e);
     }
-}
-
-// ─── Export ────────────────────────────────────────────────────────────
-
-export async function applyFilters() {
-    await loadConnections();
-}
-
-// ─── DOMContentLoaded ──────────────────────────────────────────────────
-
-document.addEventListener("DOMContentLoaded", async function () {
-    // 필터 변경 시 자동 새로고침
-    document.getElementById('filter-verified')?.addEventListener('change', loadConnections);
-    document.getElementById('filter-representative')?.addEventListener('change', loadConnections);
-
-    await loadHolderFilter();
-    await loadConnections();
 });

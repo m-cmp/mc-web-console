@@ -104,6 +104,14 @@ menus:
     priority: 2
     menunumber: 1330
 
+  - id: cspaccounts
+    parentid: cloudsps
+    displayname: CSP Accounts
+    restype: menu
+    isaction: false
+    priority: 2
+    menunumber: 1360
+
   - id: cloudresources
     parentid: environment
     displayname: Cloud Resources
@@ -183,6 +191,14 @@ menus:
     isaction: true
     priority: 2
     menunumber: 1590
+
+  - id: resourcesync
+    parentid: cloudresources
+    displayname: Resource Sync
+    restype: menu
+    isaction: true
+    priority: 3
+    menunumber: 1595
 
   - id: cloudrescatalogs
     parentid: environment

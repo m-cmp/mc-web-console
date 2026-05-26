@@ -1,30 +1,429 @@
+version: '1.0'
+exported_at: '2026-04-27T07:48:03.033Z'
 menus:
-  - id: depth1
-    parentmenuid: ""
-    displayname: depth1
-    isaction: "false"
-    priority: "0"
-
-  - id: depth2
-    parentmenuid: depth1
-    displayname: depth2
-    isaction: "false"
-    priority: "0"
-
-  - id: depth3
-    parentmenuid: depth2
-    displayname: depth3
-    isaction: "false"
-    priority: "0"
-
-  - id: menu1
-    parentmenuid: depth3
-    displayname: menu1
-    isaction: "true"
-    priority: "0"
-
-  - id: menu2
-    parentmenuid: depth3
-    displayname: menu2
-    isaction: "true"
-    priority: "1"
+  - displayName: Networks
+    id: networks
+    isAction: true
+    menuNumber: 1510
+    parentId: cloudresources
+    priority: 1
+    resType: menu
+  - displayName: Account & Access
+    id: accountnaccess
+    isAction: false
+    menuNumber: 1201
+    parentId: settings
+    priority: 2
+    resType: menu
+  - displayName: Organizations
+    id: organizations
+    isAction: false
+    menuNumber: 1205
+    parentId: accountnaccess
+    priority: 2
+    resType: menu
+  - displayName: Company Info
+    id: companyinfo
+    isAction: false
+    menuNumber: 1212
+    parentId: organizations
+    priority: 2
+    resType: menu
+  - displayName: Users
+    id: users
+    isAction: true
+    menuNumber: 1220
+    parentId: organizations
+    priority: 2
+    resType: menu
+  - displayName: Groups
+    id: groups
+    isAction: true
+    menuNumber: 1225
+    parentId: organizations
+    priority: 2
+    resType: menu
+  - displayName: Approvals
+    id: approvals
+    isAction: true
+    menuNumber: 1230
+    parentId: organizations
+    priority: 2
+    resType: menu
+  - displayName: Access Controls
+    id: accesscontrols
+    isAction: false
+    menuNumber: 1240
+    parentId: organizations
+    priority: 2
+    resType: menu
+  - displayName: Menus
+    id: menus
+    isAction: true
+    menuNumber: 1250
+    parentId: organizations
+    priority: 2
+    resType: menu
+  - displayName: Environment
+    id: environment
+    isAction: false
+    menuNumber: 1301
+    parentId: settings
+    priority: 2
+    resType: menu
+  - displayName: Cloud SPs
+    id: cloudsps
+    isAction: false
+    menuNumber: 1305
+    parentId: environment
+    priority: 2
+    resType: menu
+  - displayName: Cloud Overview
+    id: cloudoverview
+    isAction: true
+    menuNumber: 1310
+    parentId: cloudsps
+    priority: 2
+    resType: menu
+  - displayName: Regions
+    id: regions
+    isAction: true
+    menuNumber: 1320
+    parentId: cloudsps
+    priority: 2
+    resType: menu
+  - displayName: Connections
+    id: connections
+    isAction: true
+    menuNumber: 1330
+    parentId: cloudsps
+    priority: 2
+    resType: menu
+  - displayName: Cloud Drivers
+    id: clouddrivers
+    isAction: true
+    menuNumber: 1340
+    parentId: cloudsps
+    priority: 2
+    resType: menu
+  - displayName: Credentials
+    id: credentials
+    isAction: true
+    menuNumber: 1350
+    parentId: cloudsps
+    priority: 2
+    resType: menu
+  - displayName: Cloud Resources
+    id: cloudresources
+    isAction: false
+    menuNumber: 1405
+    parentId: environment
+    priority: 2
+    resType: menu
+  - displayName: Securitys
+    id: securitygroups
+    isAction: true
+    menuNumber: 1520
+    parentId: cloudresources
+    priority: 2
+    resType: menu
+  - displayName: Cloud Res Catalogs
+    id: cloudrescatalogs
+    isAction: false
+    menuNumber: 1560
+    parentId: environment
+    priority: 2
+    resType: menu
+  - displayName: Workspaces Settings
+    id: workspacessettings
+    isAction: false
+    menuNumber: 1660
+    parentId: environment
+    priority: 2
+    resType: menu
+  - displayName: Allocated Projects
+    id: allocatedprojects
+    isAction: false
+    menuNumber: 1665
+    parentId: workspacessettings
+    priority: 2
+    resType: menu
+  - displayName: Share Members
+    id: sharemembers
+    isAction: false
+    menuNumber: 1666
+    parentId: workspacessettings
+    priority: 2
+    resType: menu
+  - displayName: Access Controls
+    id: allocaterolesws
+    isAction: false
+    menuNumber: 1667
+    parentId: workspacessettings
+    priority: 2
+    resType: menu
+  - displayName: Operations
+    id: operations
+    isAction: false
+    menuNumber: 1700
+    parentId: home
+    priority: 2
+    resType: menu
+  - displayName: Manage
+    id: manage
+    isAction: false
+    menuNumber: 1701
+    parentId: operations
+    priority: 2
+    resType: menu
+  - displayName: Workspaces
+    id: workspaces
+    isAction: true
+    menuNumber: 1710
+    parentId: manage
+    priority: 2
+    resType: menu
+  - displayName: Projects
+    id: projects
+    isAction: false
+    menuNumber: 1720
+    parentId: workspaces
+    priority: 2
+    resType: menu
+  - displayName: Project board
+    id: projectboard
+    isAction: false
+    menuNumber: 1728
+    parentId: workspaces
+    priority: 2
+    resType: menu
+  - displayName: Members
+    id: members
+    isAction: false
+    menuNumber: 1730
+    parentId: workspaces
+    priority: 2
+    resType: menu
+  - displayName: Roles
+    id: roles
+    isAction: true
+    menuNumber: 1740
+    parentId: workspaces
+    priority: 2
+    resType: menu
+  - displayName: CSP Roles
+    id: csproles
+    isAction: true
+    menuNumber: 1741
+    parentId: workspaces
+    priority: 2
+    resType: menu
+  - displayName: Workloads
+    id: workloads
+    isAction: false
+    menuNumber: 1750
+    parentId: manage
+    priority: 2
+    resType: menu
+  - displayName: MCI Workloads
+    id: mciworkloads
+    isAction: true
+    menuNumber: 1760
+    parentId: workloads
+    priority: 2
+    resType: menu
+  - displayName: PMK Workloads
+    id: pmkworkloads
+    isAction: true
+    menuNumber: 1790
+    parentId: workloads
+    priority: 2
+    resType: menu
+  - displayName: Monitorings
+    id: monitorings
+    isAction: false
+    menuNumber: 1905
+    parentId: analytics
+    priority: 2
+    resType: menu
+  - displayName: MCIs Monitoring
+    id: mcismonitoring
+    isAction: true
+    menuNumber: 1910
+    parentId: monitorings
+    priority: 2
+    resType: menu
+  - displayName: 3rd party Monitoring
+    id: 3rdpartymonitoring
+    isAction: false
+    menuNumber: 1930
+    parentId: monitorings
+    priority: 2
+    resType: menu
+  - displayName: Monitoring Config
+    id: monitoringconfig
+    isAction: true
+    menuNumber: 1940
+    parentId: monitorings
+    priority: 2
+    resType: menu
+  - displayName: Events & Traces
+    id: eventsntraces
+    isAction: false
+    menuNumber: 1950
+    parentId: analytics
+    priority: 2
+    resType: menu
+  - displayName: Alarms History
+    id: alarmshistory
+    isAction: true
+    menuNumber: 1960
+    parentId: eventsntraces
+    priority: 2
+    resType: menu
+  - displayName: Threshold Config
+    id: thresholdconfig
+    isAction: true
+    menuNumber: 1970
+    parentId: eventsntraces
+    priority: 2
+    resType: menu
+  - displayName: Log Manage
+    id: logmanage
+    isAction: true
+    menuNumber: 1980
+    parentId: eventsntraces
+    priority: 2
+    resType: menu
+  - displayName: Log Config
+    id: logconfig
+    isAction: true
+    menuNumber: 1990
+    parentId: eventsntraces
+    priority: 2
+    resType: menu
+  - displayName: Event Trace
+    id: eventtrace
+    isAction: false
+    menuNumber: 1996
+    parentId: eventsntraces
+    priority: 2
+    resType: menu
+  - displayName: Cost Analysis
+    id: costanalysis
+    isAction: true
+    menuNumber: 1998
+    parentId: analytics
+    priority: 2
+    resType: menu
+  - displayName: Data Migrations
+    id: datamigrations
+    isAction: true
+    menuNumber: 1998
+    parentId: manage
+    priority: 2
+    resType: menu
+  - displayName: SW Catalogs
+    id: swcatalogs
+    isAction: true
+    menuNumber: 1998
+    parentId: manage
+    priority: 2
+    resType: menu
+  - displayName: Workflows
+    id: workflows
+    isAction: true
+    menuNumber: 1998
+    parentId: manage
+    priority: 2
+    resType: menu
+  - displayName: Specs
+    id: serverspecs
+    isAction: true
+    menuNumber: 1410
+    parentId: cloudresources
+    priority: 3
+    resType: menu
+  - displayName: Images
+    id: serverimages
+    isAction: true
+    menuNumber: 1420
+    parentId: cloudresources
+    priority: 3
+    resType: menu
+  - displayName: Resource Sync
+    id: resourcesync
+    isAction: true
+    menuNumber: 1595
+    parentId: cloudresources
+    priority: 3
+    resType: menu
+  - displayName: Analytics
+    id: analytics
+    isAction: false
+    menuNumber: 1901
+    parentId: operations
+    priority: 3
+    resType: menu
+  - displayName: Settings
+    id: settings
+    isAction: false
+    menuNumber: 1200
+    parentId: home
+    priority: 4
+    resType: menu
+  - displayName: MyImages
+    id: myimages
+    isAction: true
+    menuNumber: 1530
+    parentId: cloudresources
+    priority: 4
+    resType: menu
+  - displayName: SSH Keys
+    id: sshkeys
+    isAction: true
+    menuNumber: 1550
+    parentId: cloudresources
+    priority: 5
+    resType: menu
+  - displayName: Disks
+    id: disks
+    isAction: true
+    menuNumber: 1540
+    parentId: cloudresources
+    priority: 6
+    resType: menu
+  - displayName: VPC Template
+    id: networktemplates
+    isAction: true
+    menuNumber: 0
+    parentId: cloudresources
+    priority: 11
+    resType: menu
+  - displayName: ST4 Root Menu
+    id: st4_root
+    isAction: false
+    menuNumber: 9000
+    priority: 90
+    resType: menu
+  - displayName: ST4 Child 1 (BUG Fixed)
+    id: st4_child1
+    isAction: true
+    menuNumber: 9001
+    parentId: st4_root
+    priority: 91
+    resType: page
+  - displayName: ST4 Child 2
+    id: st4_child2
+    isAction: false
+    menuNumber: 9002
+    parentId: st4_root
+    priority: 92
+    resType: page
+  - displayName: ST4 CRUD Child
+    id: st4_crud_child
+    isAction: true
+    menuNumber: 9501
+    parentId: st4_crud_root
+    priority: 96
+    resType: page

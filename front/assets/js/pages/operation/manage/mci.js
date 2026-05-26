@@ -118,7 +118,7 @@ export async function refreshMciList() {
 // getMciList 호출 성공 시
 async function getMciListCallbackSuccess(caller, mciList) {
 
-  window.totalMciListObj = mciList.mci;
+  window.totalMciListObj = mciList.infra;
 
   // Update label key dropdown with actual keys from MCI data
   updateLabelKeyDropdown();
@@ -616,6 +616,10 @@ function executeWithToast(apiCall, successMessage, errorMessage) {
 
 // mci life cycle 변경
 export function changeMciLifeCycle(type) {
+  if (window.currentMciId == undefined || window.currentMciId == "") {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select an MCI')
+    return;
+  }
   executeWithToast(
     () => webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, window.currentMciId, window.currentNsId),
     `MCI ${type} completed successfully`,

@@ -264,6 +264,14 @@
             <h3 class="card-title">Readyz</h3>
             <div class="card-subtitle text-muted">Framework health check and initialization</div>
             <div class="card-actions">
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].showAddServiceRow()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M12 5l0 14"></path><path d="M5 12l14 0"></path>
+                </svg>
+                Add Service
+              </button>
               <button class="btn btn-sm btn-outline-secondary" onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].runAllReadyz()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -294,6 +302,44 @@
         </div>
       </div>
     </div><!-- /readyz section -->
+
+    <!-- SETUP STATUS SECTION (FR-CLOUD-ADMIN-006-08) -->
+    <div id="setup-status-section" class="row row-cards mt-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Setup Status</h3>
+            <div class="card-subtitle text-muted">
+              Pre-onboarding setup verification — 1_setup_auto.sh 7-step result, menu/api yaml reachability, credentials, loadAssets
+            </div>
+            <div class="card-actions">
+              <button id="setup-refresh-all-btn" class="btn btn-sm btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+                Refresh All
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- 섹션 레벨 오류 배너 (refresh/action 실패 시 표시) -->
+            <div id="setup-status-error" class="d-none"></div>
+            <!-- 5개 카드 -->
+            <div id="setup-sequence-card" class="mb-3"></div>
+            <div id="setup-roles-card" class="mb-3"></div>
+            <div id="setup-menu-card" class="mb-3"></div>
+            <div id="setup-api-card" class="mb-3"></div>
+            <div id="setup-projects-card" class="mb-3"></div>
+            <div id="setup-wsmapping-card" class="mb-3"></div>
+            <div id="setup-credentials-card" class="mb-3"></div>
+            <div id="setup-loadassets-card" class="mb-3"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /setup status section -->
 
   </div>
 </div>
@@ -377,4 +423,6 @@
 {{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }}
 {{ javascriptTag("common/api/services/import_api.js") | raw }}
 {{ javascriptTag("common/api/services/readyz_api.js") | raw }}
+{{ javascriptTag("common/api/services/setup_status_api.js") | raw }}
+{{ javascriptTag("pages/settings/environment/cloudsps/setup_status_section.js") | raw }}
 {{ javascriptTag("pages/settings/environment/cloudsps/cloudoverview.js") | raw }}

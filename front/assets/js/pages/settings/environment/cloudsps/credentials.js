@@ -1,238 +1,229 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-// Provider별 필요한 Credential Key 목록
-const PROVIDER_CREDENTIAL_KEYS = {
-    AWS:     [{ key: 'ClientId', label: 'Access Key ID' }, { key: 'ClientSecret', label: 'Secret Access Key' }],
-    GCP:     [{ key: 'PrivateKey', label: 'Private Key (JSON)' }, { key: 'ClientEmail', label: 'Client Email' }, { key: 'ProjectID', label: 'Project ID' }],
-    AZURE:   [{ key: 'ClientId', label: 'Client ID' }, { key: 'ClientSecret', label: 'Client Secret' }, { key: 'TenantId', label: 'Tenant ID' }, { key: 'SubscriptionId', label: 'Subscription ID' }],
-    ALIBABA: [{ key: 'ClientId', label: 'Access Key ID' }, { key: 'ClientSecret', label: 'Access Key Secret' }],
-    TENCENT: [{ key: 'ClientId', label: 'Secret ID' }, { key: 'ClientSecret', label: 'Secret Key' }],
-    IBM:     [{ key: 'ApiKey', label: 'API Key' }, { key: 'IamToken', label: 'IAM Token' }],
-    NCP:     [{ key: 'ClientId', label: 'Access Key' }, { key: 'ClientSecret', label: 'Secret Key' }],
-    NHN:     [{ key: 'ClientId', label: 'Tenant ID' }, { key: 'ClientSecret', label: 'Password' }, { key: 'Username', label: 'Username' }],
-    OPENSTACK: [{ key: 'ClientId', label: 'Tenant ID' }, { key: 'ClientSecret', label: 'Password' }, { key: 'Username', label: 'Username' }, { key: 'AuthURL', label: 'Auth URL' }],
+const DOM = {
+    holderTable: document.getElementById('credential-table'),
+    detailPanel: document.getElementById('credential-detail-panel'),
+    detailNameLabel: document.getElementById('credential-detail-name-label'),
+    detailNameText: document.getElementById('credential-detail-name-text'),
+    kvContainer: document.getElementById('kv-list-container'),
 };
-
-const PROVIDER_BADGE_MAP = {
-    aws: 'bg-orange-lt', gcp: 'bg-blue-lt', azure: 'bg-indigo-lt',
-    alibaba: 'bg-red-lt', tencent: 'bg-cyan-lt', ibm: 'bg-dark-lt',
-};
-
-function providerBadge(name) {
-    if (!name) return '-';
-    const lower = name.toLowerCase();
-    const cls = PROVIDER_BADGE_MAP[lower] || 'bg-secondary-lt';
-    return `<span class="badge ${cls}">${name.toUpperCase()}</span>`;
-}
 
 const AppState = {
     holders: [],
-    holderTable: null,
+    selectedHolder: null,
+    tables: { holderTable: null },
 };
 
-// ─── CredentialHolder 테이블 ──────────────────────────────────────────
+const PROVIDER_BADGE = {
+    aws:   '<span class="badge bg-orange-lt">AWS</span>',
+    gcp:   '<span class="badge bg-blue-lt">GCP</span>',
+    azure: '<span class="badge bg-indigo-lt">Azure</span>',
+};
+
+function getProviderBadge(provider) {
+    if (!provider) return '-';
+    const key = (provider || '').toLowerCase();
+    return PROVIDER_BADGE[key] || `<span class="badge bg-secondary-lt">${provider}</span>`;
+}
+
+function getProvidersBadges(providers) {
+    if (!providers || !Array.isArray(providers) || providers.length === 0) return '-';
+    return providers.map(p => getProviderBadge(p)).join(' ');
+}
+
+function getDefaultBadge(isDefault) {
+    return isDefault
+        ? '<span class="badge bg-blue-lt">Default</span>'
+        : '<span class="badge bg-secondary-lt">Custom</span>';
+}
+
+// ─── KV Row 관리 ──────────────────────────────────────────────────
+
+const KVManager = {
+    addRow(key = '', value = '') {
+        const container = document.getElementById('kv-list-container');
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'row g-2 mb-2 kv-row';
+        row.innerHTML = `
+            <div class="col-5">
+                <input type="text" class="form-control kv-key" placeholder="Key" value="${key}" required>
+            </div>
+            <div class="col-6">
+                <input type="text" class="form-control kv-value" placeholder="Value" value="${value}" required>
+            </div>
+            <div class="col-1 d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.kv-row').remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M18 6l-12 12"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>`;
+        container.appendChild(row);
+    },
+
+    getKVList() {
+        const rows = document.querySelectorAll('#kv-list-container .kv-row');
+        return Array.from(rows).map(row => ({
+            key: row.querySelector('.kv-key').value.trim(),
+            value: row.querySelector('.kv-value').value.trim(),
+        })).filter(kv => kv.key !== '');
+    },
+
+    reset() {
+        const container = document.getElementById('kv-list-container');
+        if (container) container.innerHTML = '';
+        KVManager.addRow();
+    },
+};
+
+// ─── TableManager ──────────────────────────────────────────────────
 
 const TableManager = {
-    init(data) {
-        if (AppState.holderTable) {
-            AppState.holderTable.replaceData(data);
+    initTable(data) {
+        if (AppState.tables.holderTable) {
+            AppState.tables.holderTable.replaceData(data);
             return;
         }
-        AppState.holderTable = new Tabulator("#credential-holder-table", {
+        AppState.tables.holderTable = new Tabulator('#credential-table', {
             data,
-            layout: "fitColumns",
-            height: "350px",
-            placeholder: "등록된 Credential이 없습니다.",
+            layout: 'fitColumns',
+            placeholder: 'No Credential Holders Found',
+            pagination: 'local',
+            paginationSize: 10,
+            paginationSizeSelector: [10, 20, 50],
+            paginationCounter: 'rows',
             columns: [
-                { title: "Holder", field: "credentialHolder", headerSort: true },
                 {
-                    title: "Providers",
-                    field: "providers",
-                    formatter: cell => {
-                        const providers = cell.getValue() || [];
-                        return providers.map(p => providerBadge(p)).join(' ');
-                    },
+                    formatter: 'rowSelection',
+                    titleFormatter: 'rowSelection',
+                    hozAlign: 'center',
+                    headerSort: false,
+                    width: 40,
+                    cellClick(e, cell) { cell.getRow().toggleSelect(); },
                 },
+                { title: 'Credential Holder', field: 'credentialHolder', sorter: 'string' },
                 {
-                    title: "Connections",
-                    field: "connectionCount",
-                    width: 130,
-                    hozAlign: "center",
-                    formatter: cell => {
-                        const total = cell.getValue() || 0;
-                        const row = cell.getRow().getData();
-                        const verified = row.verifiedConnectionCount || 0;
-                        return `${verified} / ${total}`;
-                    },
-                    headerTooltip: "Verified / Total",
+                    title: 'Providers',
+                    field: 'providers',
+                    formatter(cell) { return getProvidersBadges(cell.getValue()); },
                 },
+                { title: 'Connections', field: 'connectionCount', sorter: 'number', hozAlign: 'center', width: 120 },
+                { title: 'Verified', field: 'verifiedConnectionCount', sorter: 'number', hozAlign: 'center', width: 100 },
                 {
-                    title: "Status",
-                    field: "verifiedConnectionCount",
+                    title: 'Default',
+                    field: 'isDefault',
+                    formatter(cell) { return getDefaultBadge(cell.getValue()); },
+                    hozAlign: 'center',
                     width: 100,
-                    hozAlign: "center",
-                    formatter: (cell, _, row) => {
-                        const data = row.getData ? row.getData() : cell.getRow().getData();
-                        const total = data.connectionCount || 0;
-                        const verified = data.verifiedConnectionCount || 0;
-                        if (total === 0) return '<span class="badge bg-secondary-lt">-</span>';
-                        if (verified === total) return '<span class="badge bg-success-lt">OK</span>';
-                        if (verified > 0) return '<span class="badge bg-warning-lt">Partial</span>';
-                        return '<span class="badge bg-danger-lt">Failed</span>';
-                    },
-                },
-                {
-                    title: "Default",
-                    field: "isDefault",
-                    width: 90,
-                    hozAlign: "center",
-                    formatter: cell => cell.getValue()
-                        ? '<span class="badge bg-primary-lt">Default</span>'
-                        : '',
                 },
             ],
+            rowClick(e, row) {
+                UIManager.showDetail(row.getData());
+            },
         });
     },
 };
 
-// ─── Credential 등록 ──────────────────────────────────────────────────
+// ─── UIManager ──────────────────────────────────────────────────────
 
-const CredentialForm = {
-    /** Provider 선택 시 Key 입력 필드 동적 렌더링 */
-    updateKeyFields(provider) {
-        const container = document.getElementById('cred-key-fields');
-        if (!container) return;
-        const keys = PROVIDER_CREDENTIAL_KEYS[provider?.toUpperCase()] || [];
-        if (!keys.length) {
-            container.innerHTML = '';
+const UIManager = {
+    showDetail(holder) {
+        AppState.selectedHolder = holder;
+
+        if (DOM.detailNameLabel) DOM.detailNameLabel.style.display = '';
+        if (DOM.detailNameText) DOM.detailNameText.textContent = holder.credentialHolder || '-';
+
+        document.getElementById('detail-holder-id').textContent = holder.credentialHolder || '-';
+        document.getElementById('detail-holder-provider').innerHTML = getProvidersBadges(holder.providers);
+        document.getElementById('detail-holder-connections').textContent = holder.connectionCount ?? '-';
+        document.getElementById('detail-holder-verified').textContent = holder.verifiedConnectionCount ?? '-';
+        document.getElementById('detail-holder-default').innerHTML = getDefaultBadge(holder.isDefault);
+
+        if (DOM.detailPanel) DOM.detailPanel.style.display = '';
+    },
+
+    hideDetail() {
+        AppState.selectedHolder = null;
+        if (DOM.detailPanel) DOM.detailPanel.style.display = 'none';
+    },
+};
+
+// ─── CredentialHolderManager ──────────────────────────────────────
+
+const CredentialHolderManager = {
+    async loadHolders() {
+        try {
+            const result = await webconsolejs["common/api/services/credential_holder_api"].getCredentialHolderList();
+            const holders = (result && result.credentialHolderList) ? result.credentialHolderList
+                : Array.isArray(result) ? result : [];
+            AppState.holders = holders;
+            TableManager.initTable(AppState.holders);
+        } catch (e) {
+            console.error('CredentialHolder 목록 조회 실패:', e);
+            TableManager.initTable([]);
+        }
+    },
+
+    async registerCredential() {
+        const holderEl = document.getElementById('create-holder-name');
+        const providerEl = document.getElementById('create-holder-provider');
+
+        if (!holderEl.value.trim()) {
+            holderEl.classList.add('is-invalid');
             return;
         }
-        container.innerHTML = keys.map(({ key, label }) => `
-            <div class="mb-3">
-                <label class="form-label required">${label}</label>
-                <input type="password" class="form-control" id="cred-key-${key}" data-key="${key}" placeholder="${label}" autocomplete="off">
-            </div>
-        `).join('');
-    },
+        if (!providerEl.value) {
+            providerEl.classList.add('is-invalid');
+            return;
+        }
 
-    validate() {
-        const provider = document.getElementById('cred-provider')?.value?.trim();
-        const holder = document.getElementById('cred-holder')?.value?.trim();
-        if (!provider) {
-            webconsolejs["partials/layout/toast"].showToast('Provider를 선택해 주세요.', 'warning');
-            return false;
+        const credentialKeyValueList = KVManager.getKVList();
+        if (credentialKeyValueList.length === 0) {
+            webconsolejs['common/util'].showToast('At least one credential key-value pair is required.', 'error');
+            return;
         }
-        if (!holder || !/^[a-z0-9_]+$/.test(holder)) {
-            webconsolejs["partials/layout/toast"].showToast('Credential Holder는 소문자·숫자·언더스코어만 사용 가능합니다.', 'warning');
-            return false;
-        }
-        const keys = PROVIDER_CREDENTIAL_KEYS[provider.toUpperCase()] || [];
-        for (const { key, label } of keys) {
-            const val = document.getElementById(`cred-key-${key}`)?.value?.trim();
-            if (!val) {
-                webconsolejs["partials/layout/toast"].showToast(`${label}을(를) 입력해 주세요.`, 'warning');
-                return false;
-            }
-        }
-        return true;
-    },
 
-    collectKeyValues(provider) {
-        const keys = PROVIDER_CREDENTIAL_KEYS[provider.toUpperCase()] || [];
-        return keys.map(({ key }) => ({
-            key,
-            value: document.getElementById(`cred-key-${key}`)?.value?.trim() || '',
-        }));
+        try {
+            await webconsolejs["common/api/services/credential_holder_api"].registerCredential({
+                credentialHolder: holderEl.value.trim(),
+                providerName: providerEl.value,
+                credentialKeyValueList,
+            });
+            webconsolejs['common/util'].showToast('Credential registered successfully.', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('credential-create-modal')).hide();
+            await CredentialHolderManager.loadHolders();
+        } catch (e) {
+            console.error('Credential 등록 실패:', e);
+            webconsolejs['common/util'].showToast('Failed to register credential: ' + e.message, 'error');
+        }
     },
 };
 
-async function doSubmitCredential() {
-    if (!CredentialForm.validate()) return;
+// ─── Public exports ──────────────────────────────────────────────────
 
-    const provider = document.getElementById('cred-provider').value.trim();
-    const holder = document.getElementById('cred-holder').value.trim();
-    const keyValueList = CredentialForm.collectKeyValues(provider);
-
-    try {
-        webconsolejs["partials/layout/toast"].showToast('공개키를 발급 중입니다...', 'info');
-
-        // Step 1: 공개키 발급
-        const { tokenId, publicKey } = await webconsolejs["common/api/services/cloudconnection_api"].getPublicKeyForCredential();
-
-        // Step 2 + 3: 암호화 및 등록
-        const payload = await webconsolejs["common/api/services/cloudconnection_api"].buildEncryptedCredentialPayload(
-            provider.toLowerCase(), holder, tokenId, publicKey, keyValueList
-        );
-        await webconsolejs["common/api/services/cloudconnection_api"].registerCredential(payload, holder);
-
-        webconsolejs["partials/layout/toast"].showToast('Credential이 등록되었습니다. 모든 리전에 Connection이 자동 생성됩니다.', 'success');
-        bootstrap.Collapse.getOrCreateInstance(document.getElementById('credential-create-section')).hide();
-        await loadHolders();
-    } catch (e) {
-        console.error('Credential 등록 실패:', e);
-        webconsolejs["partials/layout/toast"].showToast(e.message || 'Credential 등록에 실패했습니다.', 'error');
-    }
+export function refreshCredentialList() {
+    CredentialHolderManager.loadHolders();
 }
 
-async function loadHolders() {
-    try {
-        const holders = await webconsolejs["common/api/services/cloudconnection_api"].listCredentialHolders();
-        AppState.holders = holders;
-        TableManager.init(holders);
-    } catch (e) {
-        console.error('Credential Holder 목록 조회 실패:', e);
-        webconsolejs["partials/layout/toast"].showToast('Credential 목록을 불러오지 못했습니다.', 'error');
-        TableManager.init([]);
-    }
+export function registerCredential() {
+    CredentialHolderManager.registerCredential();
 }
 
-async function loadCloudOS() {
-    try {
-        const cloudos = await webconsolejs["common/api/services/cloudconnection_api"].listCloudOS();
-        const select = document.getElementById('cred-provider');
-        if (!select) return;
-        select.innerHTML = '<option value="">Select Provider</option>';
-        cloudos.forEach(os => {
-            const opt = document.createElement('option');
-            opt.value = os;
-            opt.textContent = os;
-            select.appendChild(opt);
-        });
-        select.addEventListener('change', e => CredentialForm.updateKeyFields(e.target.value));
-    } catch (e) {
-        console.error('CloudOS 목록 조회 실패:', e);
-    }
+export function addKvRow() {
+    KVManager.addRow();
 }
 
-// ─── Export ───────────────────────────────────────────────────────────
-
-export async function refreshHolderList() {
-    await loadHolders();
+export function hideDetail() {
+    UIManager.hideDetail();
 }
 
-export async function submitCredential() {
-    await doSubmitCredential();
-}
+// ─── Init ──────────────────────────────────────────────────────────
 
-// ─── DOMContentLoaded ─────────────────────────────────────────────────
-
-document.addEventListener("DOMContentLoaded", function () {
-    const btnList = document.getElementById('page-header-btn-list');
-    if (btnList) {
-        btnList.innerHTML = `
-            <button type="button" class="btn btn-primary" onclick="
-                bootstrap.Collapse.getOrCreateInstance(document.getElementById('credential-create-section')).toggle()
-            ">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 5l0 14"></path>
-                    <path d="M5 12l14 0"></path>
-                </svg>
-                Add Credential
-            </button>`;
-    }
-
-    loadHolders();
-    loadCloudOS();
+document.addEventListener('DOMContentLoaded', () => {
+    KVManager.reset();
+    CredentialHolderManager.loadHolders();
 });

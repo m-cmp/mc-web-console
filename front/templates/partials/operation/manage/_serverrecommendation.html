@@ -21,19 +21,9 @@
       <div class="modal-body">
         <div class="row">
           <div class="form-group mb-2">
-            <label class="form-label">Priority Option</label>
+            <label class="form-label">Priority Option / Limit (location)</label>
             <div class="row g-2">
-              <div class="col-4">
-                <select
-                  class="form-select"
-                  id="assistRecommendPriorityType"
-                  name="assistRecommendPriorityType"
-                >
-                  <option value="location">Location Priority</option>
-                  <option value="cost">Cost Priority</option>
-                </select>
-              </div>
-              <div class="col-4">
+              <div class="col-6">
                 <input type="hidden" id="latitude" />
                 <input type="hidden" id="longitude" />
                 <select
@@ -42,7 +32,10 @@
                   name="assistRecommendSpecConnectionName"
                   onchange="webconsolejs['partials/operation/manage/serverrecommendation'].showRecommendSpecSetting(this.value)"
                 >
-                  <option value="">Select Connection</option>
+                  <option value="">Select Region</option>
+                  <option value="seoul">Seoul</option>
+                  <option value="london">London</option>
+                  <option value="newyork">NewYork</option>
                 </select>
               </div>
               <div class="col-auto">
@@ -319,6 +312,12 @@
               <option value="ibm">IBM</option>
             </select>
           </div>
+        </div>
+        <div id="spec-search-loading" class="text-center py-3" style="display:none">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="text-secondary mt-2 small">Searching VM specs...</div>
         </div>
         <div class="table-responsive" id="spec-table"></div>
       </div>

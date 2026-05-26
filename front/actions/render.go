@@ -29,12 +29,12 @@ var (
 )
 
 func init() {
-	// FRONT_DEV=true 이면 디스크에서 직접 로딩 (템플릿 수정 시 Go 재시작 불필요)
+	// MC_WEB_CONSOLE_FRONT_DEV=true 이면 디스크에서 직접 로딩 (템플릿 수정 시 Go 재시작 불필요)
 	// 프로덕션에서는 embed.FS 사용 (단일 바이너리 배포)
 	var loader jet.Loader
-	if os.Getenv("FRONT_DEV") == "true" {
+	if os.Getenv("MC_WEB_CONSOLE_FRONT_DEV") == "true" {
 		loader = jet.NewOSFileSystemLoader("./templates")
-		log.Printf("Template loader: disk (FRONT_DEV=true) — template changes take effect on browser refresh")
+		log.Printf("Template loader: disk (MC_WEB_CONSOLE_FRONT_DEV=true) — template changes take effect on browser refresh")
 	} else {
 		var err error
 		loader, err = httpfs.NewLoader(http.FS(templates.FS()))

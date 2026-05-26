@@ -15,8 +15,8 @@ export async function getMciList(nsId) {
     },
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetAllMci";
-  
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllInfra";
+
   try {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
       controller,
@@ -79,7 +79,7 @@ export async function getMci(nsId, mciId) {
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetMci";
+  var controller = "/api/" + "mc-infra-manager/" + "GetInfra";
   
   try {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -117,7 +117,7 @@ export async function getMciVm(nsId, mciId, vmId) {
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "GetMciVm";
+  var controller = "/api/" + "mc-infra-manager/" + "GetInfraNode";
   
   try {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -151,7 +151,7 @@ export function mciLifeCycle(type, currentMciId, nsId) {
       "action": type,
     }
   };
-  let controller = "/api/" + "mc-infra-manager/" + "GetControlMci";
+  let controller = "/api/" + "mc-infra-manager/" + "GetControlInfra";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -170,7 +170,7 @@ export function mciDelete(currentMciId, nsId) {
       option: "force"
     }
   };
-  let controller = "/api/" + "mc-infra-manager/" + "Delmci";
+  let controller = "/api/" + "mc-infra-manager/" + "DelInfra";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -189,7 +189,7 @@ export function vmDelete(mciId, nsId, vmId) {
       "option": "force"
     }
   };
-  let controller = "/api/" + "mc-infra-manager/" + "Delmcivm";
+  let controller = "/api/" + "mc-infra-manager/" + "DelInfraNode";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -210,7 +210,7 @@ export function vmLifeCycle(type, mciId, nsId, vmid) {
       "action": type
     }
   };
-  let controller = "/api/" + "mc-infra-manager/" + "GetControlMciVm";
+  let controller = "/api/" + "mc-infra-manager/" + "GetControlInfraNode";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -225,10 +225,10 @@ export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_A
     specId: config.commonSpec,
     imageId: config.commonImage,
     name: config.name,
-    subGroupSize: config.subGroupSize,
+    subGroupSize: parseInt(config.subGroupSize) || 1,
     connectionName: config.connectionName,
     description: config.description,
-    rootDiskSize: config.rootDiskSize,
+    rootDiskSize: (config.rootDiskSize !== "" && config.rootDiskSize !== undefined) ? parseInt(config.rootDiskSize) : 0,
     rootDiskType: config.rootDiskType,
     label: config.label || {},
     vmUserPassword: config.vmUserPassword || ""
@@ -258,7 +258,7 @@ export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_A
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamicReview";
+  var controller = "/api/" + "mc-infra-manager/" + "PostInfraDynamicReview";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -274,10 +274,10 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     specId: config.commonSpec,
     imageId: config.commonImage,
     name: config.name,
-    subGroupSize: config.subGroupSize,
+    subGroupSize: parseInt(config.subGroupSize) || 1,
     connectionName: config.connectionName,
     description: config.description,
-    rootDiskSize: config.rootDiskSize,
+    rootDiskSize: (config.rootDiskSize !== "" && config.rootDiskSize !== undefined) ? parseInt(config.rootDiskSize) : 0,
     rootDiskType: config.rootDiskType
   }));
 
@@ -302,7 +302,7 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostInfraDynamic";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -339,7 +339,7 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
   }
 
 
-  var controller = "/api/" + "mc-infra-manager/" + "PostMciSubGroupDynamic";
+  var controller = "/api/" + "mc-infra-manager/" + "PostInfraNodeGroupDynamic";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -347,7 +347,7 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
 }
 
 export async function mciRecommendVm(data) {
-  var controller = "/api/" + "mc-infra-manager/" + "recommendSpec";
+  var controller = "/api/" + "mc-infra-manager/" + "RecommendSpec";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -365,7 +365,7 @@ export async function searchImage(nsId, searchParams) {
     request: searchParams
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "Searchimage";
+  var controller = "/api/" + "mc-infra-manager/" + "SearchImage";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -732,7 +732,7 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
     }
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "Postmcisubgroupscaleout";
+  var controller = "/api/" + "mc-infra-manager/" + "PostInfraNodeGroupScaleOut";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -757,7 +757,7 @@ export async function getPolicyList(nsId) {
     },
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "Getallmcipolicy";
+  var controller = "/api/" + "mc-infra-manager/" + "GetAllInfraPolicy";
   
   try {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
@@ -795,7 +795,7 @@ export async function deletePolicy(nsId, mciId) {
       option: "force"
     }
   };
-  let controller = "/api/" + "mc-infra-manager/" + "Delmcipolicy";
+  let controller = "/api/" + "mc-infra-manager/" + "DelInfraPolicy";
   let response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -816,7 +816,7 @@ export async function createPolicy(nsId, mciId, policy) {
       policy: policy
     }
   };
-  let controller = "/api/" + "mc-infra-manager/" + "Postmcipolicy";
+  let controller = "/api/" + "mc-infra-manager/" + "PostInfraPolicy";
   let response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data

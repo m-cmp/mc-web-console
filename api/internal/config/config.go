@@ -9,11 +9,21 @@ import (
 
 // Config 전체 애플리케이션 설정
 type Config struct {
-	Server          ServerConfig
-	Database        DatabaseConfig
-	MCIAM           MCIAMConfig
-	ApiSpec         *ApiSpec
-	RegistryCache   RegistryCacheInterface
+	Server             ServerConfig
+	Database           DatabaseConfig
+	MCIAM              MCIAMConfig
+	ApiSpec            *ApiSpec
+	RegistryCache      RegistryCacheInterface
+	SetupYaml          SetupYamlConfig
+	IframeTargetIsHost bool // IFRAME_TARGET_IS_HOST 환경변수
+}
+
+// SetupYamlConfig FR-CLOUD-ADMIN-006-08용 raw yaml 도달성 확인 설정
+type SetupYamlConfig struct {
+	// MC_WEB_CONSOLE_MENUYAML mc-web-console 메뉴 정의 yaml의 raw URL
+	McWebconsoleMenuYaml string
+	// MC_ADMIN_CLI_APIYAML mc-admin-cli api 카탈로그 yaml의 raw URL
+	McAdmincliApiYaml string
 }
 
 // RegistryCacheInterface proxy.go가 의존하는 캐시 인터페이스 (순환 import 방지).
@@ -23,6 +33,8 @@ type RegistryCacheInterface interface {
 	GetBaseURL(subsystem, operationId string) string
 	// GetActionSpec 캐시의 ServiceActions에서 ActionSpec 반환. nil 이면 api.yaml ActionSpec 사용.
 	GetActionSpec(subsystem, operationId string) *ActionSpec
+	// GetAllServices 캐시의 전체 서비스 목록 반환. 캐시 없음/만료이면 nil 반환.
+	GetAllServices() map[string]Service
 	Store(responseData interface{})
 	Invalidate()
 }
@@ -57,22 +69,27 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		Server: ServerConfig{
-			Port:    getEnv("API_PORT", "3001"),
-			Address: getEnv("API_ADDR", ""),
-			Env:     getEnv("GO_ENV", "development"),
+			Port:    getEnv("MC_WEB_CONSOLE_API_PORT", "3001"),
+			Address: getEnv("MC_WEB_CONSOLE_API_ADDR", ""),
+			Env:     getEnv("MC_WEB_CONSOLE_GO_ENV", "development"),
 		},
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			Port:     getEnv("DB_PORT", "5432"),
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", ""),
-			DBName:   getEnv("DB_NAME", "mc_web_console"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			Host:     getEnv("MC_WEB_CONSOLE_POSTGRES_HOST", "localhost"),
+			Port:     getEnv("MC_WEB_CONSOLE_POSTGRES_PORT", "5432"),
+			User:     getEnv("MC_WEB_CONSOLE_POSTGRES_USER", "postgres"),
+			Password: getEnv("MC_WEB_CONSOLE_POSTGRES_PASSWORD", ""),
+			DBName:   getEnv("MC_WEB_CONSOLE_POSTGRES_DB", "mc_web_console"),
+			SSLMode:  getEnv("MC_WEB_CONSOLE_POSTGRES_SSLMODE", "disable"),
 		},
 		MCIAM: MCIAMConfig{
-			Use:       getEnv("MCIAM_USE", "false") == "true",
-			TicketUse: getEnv("MCIAM_TICKET_USE", "false") == "true",
+			Use:       getEnv("MC_WEB_CONSOLE_USE_IAM", "false") == "true",
+			TicketUse: getEnv("MC_WEB_CONSOLE_USE_TICKET_VALID", "false") == "true",
 		},
+		SetupYaml: SetupYamlConfig{
+			McWebconsoleMenuYaml: getEnv("MC_WEB_CONSOLE_MENUYAML", ""),
+			McAdmincliApiYaml:    getEnv("MC_ADMIN_CLI_APIYAML", ""),
+		},
+		IframeTargetIsHost: getEnv("MC_WEB_CONSOLE_IFRAME_TARGET_IS_HOST", "false") == "true",
 	}
 
 	// API 스펙 로드
