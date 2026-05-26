@@ -54,6 +54,7 @@ async function loadCostOptimizer() {
     // }
     const data = getCostOptimizerData();
 
+    document.getElementById("costIframe").innerHTML = '';
     webconsolejs["common/iframe/iframe"].addIframe("costIframe", host, data);
 }
 
