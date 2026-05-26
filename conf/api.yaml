@@ -11,7 +11,7 @@ services:
       password:
   mc-iam-manager:
     version: 0.2.11
-    baseurl: http://mciam.onecloudcon.com:5006
+    baseurl: http://mciam.onecloudcon.com:5000
     auth:
       type: bearer
   mc-infra-manager:

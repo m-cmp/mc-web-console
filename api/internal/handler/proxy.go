@@ -271,18 +271,30 @@ func encryptCredentialBody(plainBody []byte, baseURL string, service *config.Ser
 		return nil, fmt.Errorf("empty publicKey from mc-infra-manager")
 	}
 
-	// 2. RSA 공개키 파싱
+	// 2. RSA 공개키 파싱 (cb-tumblebug은 PKCS#1 형식 "BEGIN RSA PUBLIC KEY" 반환)
 	block, _ := pem.Decode([]byte(pkData.PublicKey))
 	if block == nil {
 		return nil, fmt.Errorf("failed to decode PEM publicKey")
 	}
-	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("parse RSA publicKey: %w", err)
-	}
-	rsaPub, ok := pubInterface.(*rsa.PublicKey)
-	if !ok {
-		return nil, fmt.Errorf("publicKey is not RSA")
+	var rsaPub *rsa.PublicKey
+	switch block.Type {
+	case "RSA PUBLIC KEY":
+		// PKCS#1 형식
+		rsaPub, err = x509.ParsePKCS1PublicKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("parse PKCS1 RSA publicKey: %w", err)
+		}
+	default:
+		// PKIX/SPKI 형식 (BEGIN PUBLIC KEY)
+		pubInterface, pkixErr := x509.ParsePKIXPublicKey(block.Bytes)
+		if pkixErr != nil {
+			return nil, fmt.Errorf("parse PKIX RSA publicKey: %w", pkixErr)
+		}
+		var ok bool
+		rsaPub, ok = pubInterface.(*rsa.PublicKey)
+		if !ok {
+			return nil, fmt.Errorf("publicKey is not RSA")
+		}
 	}
 
 	// 3. 평문 요청 파싱
@@ -297,10 +309,10 @@ func encryptCredentialBody(plainBody []byte, baseURL string, service *config.Ser
 		return nil, fmt.Errorf("generate AES key: %w", err)
 	}
 
-	// 5. credentialKeyValueList[].value AES-256-GCM 암호화
+	// 5. credentialKeyValueList[].value AES-256-CBC 암호화 (cb-tumblebug 호환)
 	encryptedKVList := make([]credentialKV, len(plain.CredentialKeyValueList))
 	for i, kv := range plain.CredentialKeyValueList {
-		cipherText, err := aesGCMEncrypt(aesKey, []byte(kv.Value))
+		cipherText, err := aesCBCEncrypt(aesKey, []byte(kv.Value))
 		if err != nil {
 			return nil, fmt.Errorf("encrypt credential value [%s]: %w", kv.Key, err)
 		}
@@ -327,22 +339,23 @@ func encryptCredentialBody(plainBody []byte, baseURL string, service *config.Ser
 	return json.Marshal(encrypted)
 }
 
-// aesGCMEncrypt AES-256-GCM 암호화. 반환값: nonce(12B) + ciphertext
-func aesGCMEncrypt(key, plaintext []byte) ([]byte, error) {
+// aesCBCEncrypt AES-256-CBC 암호화 (cb-tumblebug 호환)
+// 반환값: IV(16B) + ciphertext (PKCS7 패딩, 블록 배수)
+func aesCBCEncrypt(key, plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
+	blockSize := block.BlockSize()
+	padding := blockSize - len(plaintext)%blockSize
+	padded := append(plaintext, bytes.Repeat([]byte{byte(padding)}, padding)...)
+	iv := make([]byte, blockSize)
+	if _, err := rand.Read(iv); err != nil {
 		return nil, err
 	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, err
-	}
-	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
-	return ciphertext, nil
+	ciphertext := make([]byte, len(padded))
+	cipher.NewCBCEncrypter(block, iv).CryptBlocks(ciphertext, padded)
+	return append(iv, ciphertext...), nil
 }
 
 // buildAuthHeader api.yaml의 auth 타입에 따라 Authorization 헤더 값 반환
