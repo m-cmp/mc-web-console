@@ -69,7 +69,7 @@ export async function loadVNetList() {
         }
     } catch (err) {
         console.error('VNet 목록 조회 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'VNet 목록 조회에 실패했습니다.');
+        showToast(TOAST_TYPES.ERROR, 'Failed to load VNet list.');
     }
 }
 
@@ -79,7 +79,7 @@ function initTable(vNets) {
     AppState.tables.vnetTable = new Tabulator('#vnet-list-table', {
         data: vNets,
         layout: 'fitColumns',
-        placeholder: '등록된 VNet이 없습니다.',
+        placeholder: 'No registered VNets.',
         pagination: 'local',
         paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
@@ -87,11 +87,11 @@ function initTable(vNets) {
         movableColumns: true,
         initialSort: [{ column: 'name', dir: 'asc' }],
         columns: [
-            { title: '이름',           field: 'name',           widthGrow: 2, sorter: 'string' },
+            { title: 'Name',           field: 'name',           widthGrow: 2, sorter: 'string' },
             { title: 'Connection',     field: 'connectionName', widthGrow: 1, sorter: 'string' },
             { title: 'CIDR',           field: 'cidrBlock',      widthGrow: 1 },
-            { title: 'Subnet 수',      field: 'subnetInfoList',
-              formatter: (cell) => `${(cell.getValue() || []).length}개`,
+            { title: 'Subnet Count',      field: 'subnetInfoList',
+              formatter: (cell) => `${(cell.getValue() || []).length}`,
               hozAlign: 'center', width: 100 },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
@@ -206,7 +206,7 @@ function _renderEditSubnetTable(subnets) {
             <td>
               <button type="button" class="btn btn-sm btn-outline-danger"
                 onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].deleteSubnet('${s.name}')">
-                삭제
+                Delete
               </button>
             </td>`;
         tbody.appendChild(tr);
@@ -221,15 +221,15 @@ export function addEditSubnetRow() {
     row.innerHTML = `
         <div class="col-md-4">
           <input type="text" class="form-control form-control-sm new-subnet-name"
-            placeholder="Subnet 이름 (예: subnet-${idx + 1})">
+            placeholder="Subnet name (e.g. subnet-${idx + 1})">
         </div>
         <div class="col-md-4">
           <input type="text" class="form-control form-control-sm new-subnet-cidr"
-            placeholder="CIDR (예: 10.0.${idx}.0/24)">
+            placeholder="CIDR (e.g. 10.0.${idx}.0/24)">
         </div>
         <div class="col-md-3">
           <input type="text" class="form-control form-control-sm new-subnet-zone"
-            placeholder="Zone (선택)">
+            placeholder="Zone (optional)">
         </div>
         <div class="col-md-1">
           <button type="button" class="btn btn-sm btn-outline-danger w-100"
@@ -241,10 +241,10 @@ export function addEditSubnetRow() {
 export async function deleteSubnet(subnetId) {
     const vnetName = AppState.resources.selected?.name;
     if (!vnetName || !subnetId) return;
-    if (!confirm(`Subnet "${subnetId}"을 삭제하시겠습니까?`)) return;
+    if (!confirm(`Delete Subnet "${subnetId}"?`)) return;
     try {
         await vpcApi().delSubnet(AppState.ns, vnetName, subnetId);
-        showToast(TOAST_TYPES.SUCCESS, `Subnet "${subnetId}" 삭제 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `Subnet "${subnetId}" deleted successfully`);
         // 상태 업데이트 및 UI 갱신
         const detail = await vpcApi().get(AppState.ns, vnetName);
         if (detail) {
@@ -252,8 +252,8 @@ export async function deleteSubnet(subnetId) {
             _renderEditSubnetTable(detail.subnetInfoList || []);
         }
     } catch (err) {
-        console.error('Subnet 삭제 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'Subnet 삭제에 실패했습니다: ' + (err.message || ''));
+        console.error('Subnet Delete 실패:', err);
+        showToast(TOAST_TYPES.ERROR, 'Failed to delete Subnet: ' + (err.message || ''));
     }
 }
 
@@ -271,7 +271,7 @@ export async function saveVNet() {
         .filter(s => s.name && s.ipv4_cidr);
 
     if (toAdd.length === 0) {
-        showToast(TOAST_TYPES.WARNING, '추가할 Subnet이 없습니다.');
+        showToast(TOAST_TYPES.WARNING, 'No Subnets to add.');
         return;
     }
 
@@ -295,9 +295,9 @@ export async function saveVNet() {
     if (btn) btn.disabled = false;
 
     if (failCount > 0) {
-        showToast(TOAST_TYPES.WARNING, `${successCount}개 추가 완료, ${failCount}개 실패`);
+        showToast(TOAST_TYPES.WARNING, `${successCount} added, ${failCount} failed`);
     } else {
-        showToast(TOAST_TYPES.SUCCESS, `Subnet ${successCount}개 추가 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `${successCount} Subnets added successfully`);
     }
 
     // 상세 갱신 후 view 모드로 복귀
@@ -313,15 +313,15 @@ export async function saveVNet() {
 export async function confirmDeleteVNet() {
     const selected = AppState.resources.selected;
     if (!selected) return;
-    if (!confirm(`VPC "${selected.name}"을 삭제하시겠습니까?`)) return;
+    if (!confirm(`Delete VPC "${selected.name}"?`)) return;
     try {
         await vpcApi().del(AppState.ns, selected.name);
-        showToast(TOAST_TYPES.SUCCESS, `VPC "${selected.name}" 삭제 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `VPC "${selected.name}" deleted successfully`);
         hideDetail();
         await loadVNetList();
     } catch (err) {
-        console.error('VPC 삭제 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'VPC 삭제에 실패했습니다: ' + (err.message || ''));
+        console.error('VPC Delete 실패:', err);
+        showToast(TOAST_TYPES.ERROR, 'Failed to delete VPC: ' + (err.message || ''));
     }
 }
 
@@ -371,15 +371,15 @@ export function addSubnetRow() {
     row.innerHTML = `
         <div class="col-md-5">
           <input type="text" class="form-control form-control-sm subnet-name"
-            placeholder="Subnet 이름 (예: subnet-${idx + 1})">
+            placeholder="Subnet name (e.g. subnet-${idx + 1})">
         </div>
         <div class="col-md-5">
           <input type="text" class="form-control form-control-sm subnet-cidr"
-            placeholder="CIDR (예: 10.0.${idx}.0/24)">
+            placeholder="CIDR (e.g. 10.0.${idx}.0/24)">
         </div>
         <div class="col-md-2">
           <button type="button" class="btn btn-sm btn-outline-danger w-100"
-            onclick="this.closest('.subnet-row').remove()">삭제</button>
+            onclick="this.closest('.subnet-row').remove()">Delete</button>
         </div>`;
     list.appendChild(row);
 }
@@ -390,7 +390,7 @@ export async function executeCreateVNet() {
     const cidrBlock      = document.getElementById('create-vpc-cidr').value.trim();
 
     if (!connectionName || !name || !cidrBlock) {
-        showToast(TOAST_TYPES.WARNING, 'Connection, VPC 이름, CIDR은 필수입니다.');
+        showToast(TOAST_TYPES.WARNING, 'Connection, VPC name, and CIDR are required.');
         return;
     }
 
@@ -408,12 +408,12 @@ export async function executeCreateVNet() {
 
     try {
         await vpcApi().create(AppState.ns, { connectionName, name, cidrBlock, subnetInfoList });
-        showToast(TOAST_TYPES.SUCCESS, `VPC "${name}" 생성 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `VPC "${name}" created successfully`);
         bootstrap.Modal.getInstance(document.getElementById('create-vpc-modal'))?.hide();
         await loadVNetList();
     } catch (err) {
         console.error('VPC 생성 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'VPC 생성에 실패했습니다: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to create VPC: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
         btn.disabled = false;
@@ -426,7 +426,7 @@ export async function openImportVNetModal() {
     const project = webconsolejs['common/api/services/workspace_api'].getCurrentProject();
     AppState.ns = project?.NsId || '';
     if (!AppState.ns) {
-        showToast(TOAST_TYPES.WARNING, '프로젝트를 먼저 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select a project first.');
         return;
     }
 
@@ -442,7 +442,7 @@ export async function openImportVNetModal() {
 
 async function _loadConnectionOptions(selectId) {
     const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">선택하세요</option>';
+    select.innerHTML = '<option value="">Select</option>';
     try {
         const result = await webconsolejs['common/api/http'].commonAPIPost(
             '/api/mc-infra-manager/GetConnConfigList', {}
@@ -462,7 +462,7 @@ async function _loadConnectionOptions(selectId) {
 export async function loadUnmanagedVNets() {
     const connectionName = document.getElementById('import-vnet-connection').value;
     if (!connectionName) {
-        showToast(TOAST_TYPES.WARNING, 'Connection을 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select a Connection.');
         return;
     }
 
@@ -484,7 +484,7 @@ export async function loadUnmanagedVNets() {
         _renderUnmanagedVNetTable(unmanaged, managed);
     } catch (err) {
         console.error('미관리 VNet 조회 실패:', err);
-        showToast(TOAST_TYPES.ERROR, '미관리 VNet 조회에 실패했습니다: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to load unmanaged VNets: ' + (err.message || ''));
     } finally {
         document.getElementById('import-vnet-loading').classList.add('d-none');
     }
@@ -507,7 +507,7 @@ function _renderUnmanagedVNetTable(unmanaged, managed) {
             <td>${v.name || v.id}</td>
             <td>${v.cidrBlock || '-'}</td>
             <td><code>${v.id || '-'}</code></td>
-            <td><span class="badge bg-warning-lt">● 미관리</span></td>`;
+            <td><span class="badge bg-warning-lt">● Unmanaged</span></td>`;
         tbody.appendChild(tr);
     }
     for (const v of managed) {
@@ -518,7 +518,7 @@ function _renderUnmanagedVNetTable(unmanaged, managed) {
             <td>${v.name || v.id}</td>
             <td>${v.cidrBlock || '-'}</td>
             <td><code>${v.id || '-'}</code></td>
-            <td><span class="badge bg-success-lt">✓ 등록됨</span></td>`;
+            <td><span class="badge bg-success-lt">✓ Registered</span></td>`;
         tbody.appendChild(tr);
     }
 
@@ -533,7 +533,7 @@ export async function executeImportVNets() {
     const checked = Array.from(document.querySelectorAll('.import-vnet-check:checked'));
 
     if (checked.length === 0) {
-        showToast(TOAST_TYPES.WARNING, 'Import할 VNet을 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select VNets to import.');
         return;
     }
 
@@ -556,9 +556,9 @@ export async function executeImportVNets() {
     spinner.classList.add('d-none');
     btn.disabled = false;
 
-    let msg = `VNet ${successCount}개 등록 완료`;
-    if (skipCount > 0) msg += `, ${skipCount}개 이미 등록됨`;
-    if (failCount > 0) msg += `, ${failCount}개 실패`;
+    let msg = `${successCount} VNets registered successfully`;
+    if (skipCount > 0) msg += `, ${skipCount} already registered`;
+    if (failCount > 0) msg += `, ${failCount} failed`;
     showToast(failCount > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS, msg);
 
     bootstrap.Modal.getInstance(document.getElementById('import-vnet-modal'))?.hide();

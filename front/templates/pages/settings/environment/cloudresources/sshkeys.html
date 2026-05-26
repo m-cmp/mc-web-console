@@ -4,10 +4,10 @@
       <div class="col-12">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">SSH Key 목록</h3>
+            <h3 class="card-title">SSH Key List</h3>
             <div class="card-options ms-auto d-flex gap-2">
               <!-- Import SSH Key -->
-              <a class="btn-action" type="button" title="CSP 미관리 SSH Key 임포트"
+              <a class="btn-action" type="button" title="Import Unmanaged SSH Keys from CSP"
                 onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].openImportSshKeyModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
                   stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -72,7 +72,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">SSH Key 상세 — <span id="detail-name" class="text-primary"></span></h3>
+              <h3 class="card-title">SSH Key Detail — <span id="detail-name" class="text-primary"></span></h3>
               <div class="card-options">
                 <button class="btn btn-sm btn-outline-danger me-1"
                   onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].confirmDeleteSshKey()">Delete</button>
@@ -109,7 +109,7 @@
               <!-- Public Key -->
               <div class="mt-3">
                 <h4 class="mb-2">Public Key</h4>
-                <div id="detail-pubkey-empty" class="text-muted small d-none">없음</div>
+                <div id="detail-pubkey-empty" class="text-muted small d-none">None</div>
                 <pre id="detail-pubkey" class="pre-scrollable bg-light p-2 rounded small" style="max-height:120px;word-break:break-all;white-space:pre-wrap;"></pre>
               </div>
 
@@ -117,10 +117,10 @@
               <div class="mt-3" id="detail-privkey-section" style="display:none">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <h4 class="mb-0">Private Key</h4>
-                  <span class="badge bg-warning-lt">생성 직후에만 확인 가능</span>
+                  <span class="badge bg-warning-lt">Viewable only right after creation</span>
                   <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="toggle-privkey-btn"
                     onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].togglePrivateKey()">
-                    보기
+                    Show
                   </button>
                 </div>
                 <pre id="detail-privkey" class="pre-scrollable bg-light p-2 rounded small"
@@ -140,29 +140,28 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">SSH Key 생성</h5>
+        <h5 class="modal-title">Create SSH Key</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-warning mb-3">
-          <strong>주의:</strong> Private Key는 생성 직후에만 확인할 수 있습니다. 반드시 복사해 두세요.
+          <strong>Warning:</strong> The Private Key is only viewable immediately after creation. Be sure to copy it.
         </div>
         <div class="mb-3">
           <label class="form-label required">Connection</label>
           <select class="form-select" id="create-sshkey-connection"></select>
         </div>
         <div class="mb-3">
-          <label class="form-label required">Key 이름</label>
-          <input type="text" class="form-control" id="create-sshkey-name" placeholder="예: my-ssh-key">
+          <label class="form-label required">Key Name</label>
+          <input type="text" class="form-control" id="create-sshkey-name" placeholder="e.g. my-ssh-key">
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="create-sshkey-execute-btn"
           onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].executeCreateSshKey()">
-          <span id="create-sshkey-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          생성
-        </button>
+          <span id="create-sshkey-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>Create
+          </button>
       </div>
     </div>
   </div>
@@ -173,28 +172,28 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">SSH Key 임포트</h5>
+        <h5 class="modal-title">Import SSH Keys</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info mb-3">
-          선택된 Connection의 미등록 SSH Key 전체가 현재 프로젝트에 등록됩니다.
+          All unregistered SSH Keys for the selected Connection will be registered to the current project.
         </div>
         <div class="mb-3">
           <label class="form-label">Connection</label>
           <select class="form-select" id="import-sshkey-connection"></select>
         </div>
         <div class="mb-2">
-          <label class="form-label">대상 프로젝트</label>
+          <label class="form-label">Target Project</label>
           <input type="text" class="form-control" id="import-sshkey-project" readonly>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary"
           onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].executeImportSshKey()">
           <span id="import-sshkey-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          Import 실행
+          Run Import
         </button>
       </div>
     </div>

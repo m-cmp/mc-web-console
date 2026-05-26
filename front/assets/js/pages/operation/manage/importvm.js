@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
         btn.id = 'import-vm-btn';
         btn.textContent = 'Import VM';
         btn.disabled = !_nsId;
-        btn.title = _nsId ? 'CSP 미관리 VM 임포트' : '프로젝트를 먼저 선택하세요';
+        btn.title = _nsId ? 'Import Unmanaged VMs from CSP' : 'Select a project first';
         btn.onclick = () => openImportVmModal();
         btnList.appendChild(btn);
     }
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 export async function openImportVmModal() {
     _nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-    if (!_nsId) { alert('프로젝트를 먼저 선택하세요.'); return; }
+    if (!_nsId) { alert('Select a project first.'); return; }
 
     _currentStep = 1;
     _selectedVMs = [];
@@ -54,7 +54,7 @@ export async function openImportVmModal() {
 export async function nextStep() {
     if (_currentStep === 1) {
         const checked = Array.from(document.querySelectorAll('.import-vm-check:checked'));
-        if (checked.length === 0) { alert('Import할 VM을 선택하세요.'); return; }
+        if (checked.length === 0) { alert('Please select VMs to import.'); return; }
 
         const connectionName = document.getElementById('import-vm-connection').value;
         _selectedVMs = checked.map(cb => ({
@@ -93,7 +93,7 @@ function showStep(step) {
     });
 
     document.getElementById('import-vm-modal-title').textContent =
-        ['', 'VM Import (1/3 — 대상 VM 선택)', 'VM Import (2/3 — 의존 자원 상태)', 'VM Import (3/3 — Target MCI 설정)'][step];
+        ['', 'VM Import (1/3 — Select Target VM)', 'VM Import (2/3 — Dependent Resource Status)', 'VM Import (3/3 — Configure Target MCI)'][step];
 
     document.getElementById('import-vm-prev-btn').classList.toggle('d-none', step === 1);
     document.getElementById('import-vm-next-btn').classList.toggle('d-none', step === 3);
@@ -104,7 +104,7 @@ function showStep(step) {
 
 export async function loadCspVMs() {
     const connectionName = document.getElementById('import-vm-connection').value;
-    if (!connectionName) { alert('Connection을 선택하세요.'); return; }
+    if (!connectionName) { alert('Please select a Connection.'); return; }
 
     document.getElementById('import-vm-step1-loading').classList.remove('d-none');
     document.getElementById('import-vm-step1-list').classList.add('d-none');
@@ -113,7 +113,7 @@ export async function loadCspVMs() {
         const cspVMs = await importApi().getCspVMs(connectionName);
         renderVMTable(cspVMs, connectionName);
     } catch (err) {
-        showToast(TOAST_TYPES.ERROR, 'VM 목록 조회 실패: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to load VM list: ' + (err.message || ''));
     } finally {
         document.getElementById('import-vm-step1-loading').classList.add('d-none');
     }
@@ -136,7 +136,7 @@ function renderVMTable(vms, connectionName) {
             <td>${vm.name || vm.id}</td>
             <td>${vm.instanceType || '-'}</td>
             <td><code>${vm.id || '-'}</code></td>
-            <td><span class="badge bg-warning-lt">● 미관리</span></td>
+            <td><span class="badge bg-warning-lt">● Unmanaged</span></td>
         `;
         tbody.appendChild(tr);
     }
@@ -152,7 +152,7 @@ function renderVMTable(vms, connectionName) {
 
 async function loadDepResources() {
     const container = document.getElementById('import-vm-dep-table');
-    container.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div> 의존 자원 확인 중...</div>';
+    container.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div> Checking dependent resources...</div>';
 
     try {
         const [registeredVNets, registeredSGs, registeredSshKeys] = await Promise.all([
@@ -192,23 +192,23 @@ async function loadDepResources() {
         }
 
         if (rows.length === 0) {
-            container.innerHTML = '<div class="text-muted">의존 자원 정보를 확인할 수 없습니다. (CSP 조회 결과 미제공)</div>';
+            container.innerHTML = '<div class="text-muted">Cannot check dependent resource info. (No CSP query result provided)</div>';
         } else {
             container.innerHTML = `
                 <table class="table table-sm">
-                  <thead><tr><th>자원 유형</th><th>CSP ID</th><th>상태</th></tr></thead>
+                  <thead><tr><th>Resource Type</th><th>CSP ID</th><th>Status</th></tr></thead>
                   <tbody>${rows.join('')}</tbody>
                 </table>`;
         }
     } catch (err) {
-        container.innerHTML = `<div class="alert alert-warning">의존 자원 상태 확인 실패. Import는 계속 진행할 수 있습니다.</div>`;
+        container.innerHTML = `<div class="alert alert-warning">Failed to check dependent resource status. Import can still proceed.</div>`;
     }
 }
 
 function depRow(type, id, registered) {
     const badge = registered
-        ? '<span class="badge bg-success-lt">✓ 이미 등록됨</span>'
-        : '<span class="badge bg-warning-lt">자동 등록 예정</span>';
+        ? '<span class="badge bg-success-lt">✓ Already Registered</span>'
+        : '<span class="badge bg-warning-lt">Will be auto-registered</span>';
     return `<tr><td>${type}</td><td><code>${id}</code></td><td>${badge}</td></tr>`;
 }
 
@@ -228,7 +228,7 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 async function loadMciRefList() {
     const select = document.getElementById('import-vm-mci-ref');
-    select.innerHTML = '<option value="">기존 MCI 선택 (이름 참조)</option>';
+    select.innerHTML = '<option value="">Select existing MCI (for name reference)</option>';
     try {
         const mciList = await importApi().getMciListSimple(_nsId);
         mciList.forEach(mci => {
@@ -250,7 +250,7 @@ export function toggleMciMode(mode) {
 
 export async function executeImportVMs() {
     const mciName = document.getElementById('import-vm-mci-name').value.trim();
-    if (!mciName) { alert('MCI 이름을 입력하세요.'); return; }
+    if (!mciName) { alert('Please enter an MCI name.'); return; }
 
     const spinner = document.getElementById('import-vm-spinner');
     const btn = document.getElementById('import-vm-execute-btn');
@@ -281,7 +281,7 @@ export async function executeImportVMs() {
 
         showToast(
             failCount > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
-            `VM ${successCount}개 Import 완료 (MCI: ${mciName})${failCount > 0 ? `, ${failCount}개 실패` : ''}`
+            `${successCount} VMs imported (MCI: ${mciName})${failCount > 0 ? `, ${failCount} failed` : ''}`
         );
 
         bootstrap.Modal.getInstance(document.getElementById('import-vm-modal'))?.hide();
@@ -293,11 +293,11 @@ export async function executeImportVMs() {
         }
 
     } catch (err) {
-        const errMsg = err.response?.data?.message || err.message || '알 수 없는 오류';
+        const errMsg = err.response?.data?.message || err.message || 'Unknown error';
         if (err.response?.status === 409) {
-            showToast(TOAST_TYPES.ERROR, `MCI 이름 "${mciName}"이 이미 사용 중입니다. 다른 이름을 입력하세요.`);
+            showToast(TOAST_TYPES.ERROR, `MCI name "${mciName}" is already in use. Please enter a different name.`);
         } else {
-            showToast(TOAST_TYPES.ERROR, 'VM Import 실패: ' + errMsg);
+            showToast(TOAST_TYPES.ERROR, 'VM import failed: ' + errMsg);
         }
     } finally {
         spinner.classList.add('d-none');
@@ -309,7 +309,7 @@ export async function executeImportVMs() {
 
 async function loadConnectionSelect(selectId) {
     const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">선택하세요</option>';
+    select.innerHTML = '<option value="">Select</option>';
     try {
         const result = await webconsolejs["common/api/http"].commonAPIPost("/api/mc-iam-manager/ListCspAccounts", {});
         const accounts = result?.data?.responseData?.items || [];

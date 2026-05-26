@@ -517,7 +517,7 @@ const ReadyzManager = {
             console.warn('loadFrameworkServices failed:', e.message);
             AppState.frameworkServices = {};
         }
-        // API 실패(403/404 등) 또는 빈 응답 시 하드코딩 맵 키로 폴백
+        // API Failed(403/404 등) 또는 빈 응답 시 하드코딩 맵 키로 폴백
         if (!AppState.frameworkList || AppState.frameworkList.length === 0) {
             const fallbackServices = Object.fromEntries(
                 Object.keys(readyzApi().READYZ_OPERATIONID_MAP).map(k => [k, {}])
@@ -610,7 +610,7 @@ const ReadyzManager = {
         if (!input) return;
         const newUrl = input.value.trim();
         if (!newUrl) {
-            alert('BaseURL을 입력하세요.');
+            alert('Please enter a BaseURL.');
             return;
         }
         try {
@@ -631,7 +631,7 @@ const ReadyzManager = {
             // 저장 후 readyz 재검증
             await this.runReadyz(frameworkName);
         } catch (e) {
-            alert('BaseURL 저장 실패: ' + (e.message || String(e)));
+            alert('Failed to save BaseURL: ' + (e.message || String(e)));
         }
     },
 
@@ -665,7 +665,7 @@ const ReadyzManager = {
         if (!fw || !fw.initOperationId) return;
 
         if (!AppState.credentialValid) {
-            alert('Credential 검증이 필요합니다.\nCloud Overview에서 CSP 계정을 선택하고 Validate 버튼을 클릭하세요.');
+            alert('Credential validation required.\nSelect a CSP account in Cloud Overview and click the Validate button.');
             return;
         }
 
@@ -763,15 +763,15 @@ const ReadyzManager = {
         if (!nameInput || !urlInput) return;
         const serviceName = nameInput.value.trim();
         const serviceUrl = urlInput.value.trim();
-        if (!serviceName) { alert('Service name을 입력하세요.'); nameInput.focus(); return; }
-        if (!serviceUrl) { alert('URL을 입력하세요.'); urlInput.focus(); return; }
+        if (!serviceName) { alert('Please enter a service name.'); nameInput.focus(); return; }
+        if (!serviceUrl) { alert('Please enter a URL.'); urlInput.focus(); return; }
         try {
             await readyzApi().createFrameworkServiceUrl(serviceName, serviceUrl);
             this.cancelAddService();
             await this.loadFrameworkServices();
             this.renderTable();
         } catch (e) {
-            alert('서비스 등록 실패: ' + (e.message || String(e)));
+            alert('Failed to register service: ' + (e.message || String(e)));
         }
     },
 
@@ -788,18 +788,18 @@ const ReadyzManager = {
 
 // ─── DOMContentLoaded ────────────────────────────────────────────────
 
-// ─── CSP 자원 동기화 (RQ-CLOUD-ADMIN-007) ────────────────────────────
+// ─── CSP Resource Sync (RQ-CLOUD-ADMIN-007) ────────────────────────────
 
 /**
  * Sync 팝업 오픈 — 현재 Project nsId 표시 + Connection 목록 로드
  */
 export async function openSyncPopup() {
     const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
-    document.getElementById('sync-target-project').value = nsId || '(프로젝트 미선택)';
+    document.getElementById('sync-target-project').value = nsId || '(No project selected)';
 
     // Connection 드롭다운 — CSP 계정 목록으로 채우기
     const select = document.getElementById('sync-connection-select');
-    select.innerHTML = '<option value="">전체 계정</option>';
+    select.innerHTML = '<option value="">All Accounts</option>';
     for (const acc of AppState.csp.list) {
         const opt = document.createElement('option');
         opt.value = acc.connectionName || acc.name;
@@ -820,13 +820,13 @@ export async function openSyncPopup() {
 export async function executeSyncCspResources() {
     const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
     if (!nsId) {
-        alert('프로젝트를 먼저 선택하세요.');
+        alert('Please select a project first.');
         return;
     }
 
     const options = Array.from(document.querySelectorAll('.sync-resource-type:checked')).map(cb => cb.value);
     if (options.length === 0) {
-        alert('동기화할 자원 유형을 하나 이상 선택하세요.');
+        alert('Please select at least one resource type to sync.');
         return;
     }
 
@@ -843,7 +843,7 @@ export async function executeSyncCspResources() {
     } catch (err) {
         console.error('Sync failed:', err);
         document.getElementById('sync-result-body').innerHTML =
-            `<div class="alert alert-danger">동기화 실패: ${err.message || '알 수 없는 오류'}</div>`;
+            `<div class="alert alert-danger">Sync failed: ${err.message || 'Unknown error'}</div>`;
         document.getElementById('sync-result').classList.remove('d-none');
     } finally {
         spinner.classList.add('d-none');
@@ -855,17 +855,17 @@ function renderSyncResult(result) {
     const overview = result?.registerationOverview || {};
     const rows = ['vNet', 'securityGroup', 'sshKey', 'vm', 'dataDisk', 'nlb', 'customImage']
         .filter(k => overview[k] !== undefined)
-        .map(k => `<tr><td>${k}</td><td class="text-end">${overview[k]}개</td></tr>`)
+        .map(k => `<tr><td>${k}</td><td class="text-end">${overview[k]}</td></tr>`)
         .join('');
 
     const failed = overview.failed || 0;
     const failBadge = failed > 0
-        ? `<tr class="text-danger"><td>실패</td><td class="text-end">${failed}개</td></tr>`
+        ? `<tr class="text-danger"><td>Failed</td><td class="text-end">${failed}</td></tr>`
         : '';
 
     document.getElementById('sync-result-body').innerHTML = `
         <table class="table table-sm">
-          <thead><tr><th>자원 유형</th><th class="text-end">등록</th></tr></thead>
+          <thead><tr><th>Resource Type</th><th class="text-end">Registered</th></tr></thead>
           <tbody>${rows}${failBadge}</tbody>
         </table>`;
     document.getElementById('sync-result').classList.remove('d-none');
@@ -890,7 +890,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const nsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId;
     if (!nsId) syncBtn.disabled = true;
-    syncBtn.title = nsId ? '자원 동기화' : '프로젝트를 먼저 선택하세요';
+    syncBtn.title = nsId ? 'Resource Sync' : 'Select a project first';
 
     document.getElementById('page-header-btn-list').appendChild(syncBtn);
 

@@ -12,7 +12,7 @@ function api() {
   return webconsolejs['common/api/services/setup_status_api'];
 }
 
-// ─── 진행 상태 (race condition 방지) ──────────────────────────────
+// ─── 진행 Status (race condition 방지) ──────────────────────────────
 
 const State = {
   inFlightFull: false,
@@ -177,7 +177,7 @@ function renderSequenceSkeleton() {
   el.innerHTML = `<div class="card border">
     <div class="card-header py-2 d-flex align-items-center">
       <h4 class="card-title mb-0">Setup Sequence (1_setup_auto.sh)</h4>
-      <div class="card-subtitle text-muted small ms-3">각 단계 상세는 아래 카드 참고</div>
+      <div class="card-subtitle text-muted small ms-3">See each step card below for details</div>
       ${fetchingSpinnerHTML()}
     </div>
     <div class="table-responsive">
@@ -204,10 +204,10 @@ function renderRolesSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('등록 role 건수', 3, 'col-4')}
-        ${skeletonMetric('기대 role 건수', 3, 'col-4')}
+        ${skeletonMetric('Registered roles', 3, 'col-4')}
+        ${skeletonMetric('Expected roles', 3, 'col-4')}
         <div class="col-md-6">
-          <div class="text-muted small">기대 vs 등록</div>
+          <div class="text-muted small">Expected vs Registered</div>
           <div class="placeholder-glow">
             <span class="placeholder col-2 me-2"></span>
             <span class="placeholder col-2 me-2"></span>
@@ -231,8 +231,8 @@ function renderMenuSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('등록 메뉴 건수', 3, 'col-4')}
-        ${skeletonMetric('원본 yaml 도달', 3, 'col-6')}
+        ${skeletonMetric('Registered menus', 3, 'col-4')}
+        ${skeletonMetric('Source yaml reachable', 3, 'col-6')}
         ${skeletonMetric('Last-Modified / ETag', 6, 'col-10')}
         <div class="col-12">
           <div class="text-muted small">URL</div>
@@ -254,16 +254,16 @@ function renderApiSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('등록 API 건수', 3, 'col-4')}
-        ${skeletonMetric('서비스(BaseURL) 수', 3, 'col-4')}
-        ${skeletonMetric('원본 yaml 도달', 3, 'col-6')}
+        ${skeletonMetric('Registered APIs', 3, 'col-4')}
+        ${skeletonMetric('Services (BaseURL)', 3, 'col-4')}
+        ${skeletonMetric('Source yaml reachable', 3, 'col-6')}
         ${skeletonMetric('Last-Modified', 3, 'col-8')}
         <div class="col-12">
           <div class="text-muted small">URL</div>
           <div class="small placeholder-glow">${placeholderBar('col-12')}</div>
         </div>
         <div class="col-12 mt-2">
-          <div class="text-muted small mb-1">등록 서비스 BaseURL 목록</div>
+          <div class="text-muted small mb-1">Registered service BaseURL list</div>
           <div class="table-responsive">
             <table class="table table-sm table-vcenter mb-0">
               <thead><tr><th>Service</th><th>BaseURL</th><th style="width:120px">Version</th></tr></thead>
@@ -294,10 +294,10 @@ function renderProjectsSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('등록 project 건수', 3, 'col-4')}
+        ${skeletonMetric('Registered projects', 3, 'col-4')}
         <div class="col-md-9">
-          <div class="text-muted small">설명</div>
-          <div class="small">mc-infra-manager의 namespace 1:1 매핑. NsId가 비어있으면 mc-infra-manager 측 ns 미등록 또는 sync 누락.</div>
+          <div class="text-muted small">Description</div>
+          <div class="small">1:1 mapping to mc-infra-manager namespace. Empty NsId means the ns is not registered in mc-infra-manager or sync is missing.</div>
         </div>
       </div>
       <div class="table-responsive mt-2">
@@ -333,16 +333,16 @@ function renderWorkspaceMappingSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('Workspace 수', 3, 'col-4')}
-        ${skeletonMetric('매핑된 project', 3, 'col-6')}
-        ${skeletonMetric('미매핑 project', 3, 'col-4')}
-        ${skeletonMetric('상태', 3, 'col-6')}
+        ${skeletonMetric('Workspaces', 3, 'col-4')}
+        ${skeletonMetric('Mapped projects', 3, 'col-6')}
+        ${skeletonMetric('Unmapped projects', 3, 'col-4')}
+        ${skeletonMetric('Status', 3, 'col-6')}
       </div>
       <div class="table-responsive mt-2">
         <table class="table table-sm table-vcenter mb-0">
           <thead><tr>
             <th style="width:80px">ID</th><th>Name</th>
-            <th style="width:120px" class="text-end">매핑 project 수</th><th>Description</th>
+            <th style="width:120px" class="text-end">Mapped projects</th><th>Description</th>
           </tr></thead>
           <tbody>
             <tr class="placeholder-glow">
@@ -369,10 +369,10 @@ function renderCredentialsSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('Holder 수', 3, 'col-4')}
+        ${skeletonMetric('Holders', 3, 'col-4')}
         ${skeletonMetric('Verified Connection', 3, 'col-6')}
         <div class="col-md-6">
-          <div class="text-muted small">Provider별 holder</div>
+          <div class="text-muted small">Holders by Provider</div>
           <div class="placeholder-glow">
             <span class="placeholder col-2 me-2"></span>
             <span class="placeholder col-2 me-2"></span>
@@ -413,10 +413,10 @@ function renderLoadAssetsSkeleton() {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        ${skeletonMetric('Spec 적재', 3, 'col-4')}
-        ${skeletonMetric('Image 적재', 3, 'col-4')}
+        ${skeletonMetric('Spec loaded', 3, 'col-4')}
+        ${skeletonMetric('Image loaded', 3, 'col-4')}
         ${skeletonMetric('Priced / Unpriced', 3, 'col-8')}
-        ${skeletonMetric('상태', 3, 'col-6')}
+        ${skeletonMetric('Status', 3, 'col-6')}
       </div>
       <div class="table-responsive mt-2">
         <table class="table table-sm table-vcenter mb-0">
@@ -472,7 +472,7 @@ function renderCardError(label, message) {
   if (!el) return;
   el.innerHTML = `<div class="card border border-danger">
     <div class="card-body py-3 small">
-      <strong class="text-danger">${escapeHtml(label)} 카드 로드 실패:</strong>
+      <strong class="text-danger">${escapeHtml(label)} card load failed:</strong>
       ${escapeHtml(message)}
     </div>
   </div>`;
@@ -839,9 +839,9 @@ function renderSectionError(message) {
   if (!banner) return;
   banner.classList.remove('d-none');
   banner.innerHTML = `<div class="alert alert-warning mb-2">
-    <strong>Setup Status 갱신 실패:</strong> ${escapeHtml(message)}
+    <strong>Setup Status refresh failed:</strong> ${escapeHtml(message)}
     <button class="btn btn-sm btn-outline-warning ms-2" onclick="webconsolejs['pages/settings/environment/cloudsps/setup_status_section'].refresh()">
-      재시도
+      Retry
     </button>
   </div>`;
 }
@@ -859,7 +859,7 @@ function renderActionError(label, message) {
   if (!banner) return;
   banner.classList.remove('d-none');
   banner.innerHTML = `<div class="alert alert-danger mb-2">
-    <strong>${escapeHtml(label)} re-sync 실패:</strong> ${escapeHtml(message)}
+    <strong>${escapeHtml(label)} re-sync failed:</strong> ${escapeHtml(message)}
   </div>`;
 }
 
@@ -893,7 +893,7 @@ function renderSetupSequence(seq) {
     <div class="card-header py-2 d-flex align-items-center">
       <h4 class="card-title mb-0">Setup Sequence (1_setup_auto.sh)</h4>
       <div class="card-subtitle text-muted small ms-3">
-        각 단계 상세는 아래 카드 참고
+        See each step card below for details
       </div>
     </div>
     <div class="table-responsive">
@@ -913,12 +913,12 @@ function renderSetupSequence(seq) {
 }
 
 function formatStepDetail(key, step) {
-  if (step.status === 'UNKNOWN') return '응답 누락 또는 권한 부족';
+  if (step.status === 'UNKNOWN') return 'Missing response or insufficient permissions';
   if (typeof step.count === 'number') {
     if (key === 'mapWorkspaceProjects' && typeof step.expected === 'number') {
       return `${step.count} / ${step.expected} mapped`;
     }
-    return `${step.count} 건`;
+    return `${step.count}  items`;
   }
   return '';
 }
@@ -940,14 +940,14 @@ function renderMenuCard(menu) {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">등록 메뉴 건수</div>
+        <div class="col-md-3"><div class="text-muted small">Registered menus</div>
           <div class="fs-3 fw-medium">${menu.registeredCount ?? '-'}</div></div>
-        <div class="col-md-3"><div class="text-muted small">원본 yaml 도달</div>
+        <div class="col-md-3"><div class="text-muted small">Source yaml reachable</div>
           <div>${reachableBadge(menu.sourceUrlReachable, menu.sourceHttpStatus, menu.sourceErrorMessage)}</div></div>
         <div class="col-md-6"><div class="text-muted small">Last-Modified / ETag</div>
           <div class="small">${formatYamlMeta(menu)}</div></div>
         <div class="col-12"><div class="text-muted small">URL</div>
-          <div class="small text-break">${menu.sourceUrl ? escapeHtml(menu.sourceUrl) : '<span class="text-muted">env 미설정</span>'}</div></div>
+          <div class="small text-break">${menu.sourceUrl ? escapeHtml(menu.sourceUrl) : '<span class="text-muted">env not configured</span>'}</div></div>
       </div>
     </div>
   </div>`;
@@ -979,16 +979,16 @@ function renderApiCard(apiVm) {
     </div>
     <div class="card-body">
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">등록 API 건수</div>
+        <div class="col-md-3"><div class="text-muted small">Registered APIs</div>
           <div class="fs-3 fw-medium">${apiVm.registeredCount ?? '-'}</div></div>
-        <div class="col-md-3"><div class="text-muted small">서비스(BaseURL) 수</div>
+        <div class="col-md-3"><div class="text-muted small">Services (BaseURL)</div>
           <div class="fs-3 fw-medium">${apiVm.servicesCount ?? '-'}</div></div>
-        <div class="col-md-3"><div class="text-muted small">원본 yaml 도달</div>
+        <div class="col-md-3"><div class="text-muted small">Source yaml reachable</div>
           <div>${reachableBadge(apiVm.sourceUrlReachable, apiVm.sourceHttpStatus, apiVm.sourceErrorMessage)}</div></div>
         <div class="col-md-3"><div class="text-muted small">Last-Modified</div>
           <div class="small">${formatYamlMeta(apiVm)}</div></div>
         <div class="col-12"><div class="text-muted small">URL</div>
-          <div class="small text-break">${apiVm.sourceUrl ? escapeHtml(apiVm.sourceUrl) : '<span class="text-muted">env 미설정</span>'}</div></div>
+          <div class="small text-break">${apiVm.sourceUrl ? escapeHtml(apiVm.sourceUrl) : '<span class="text-muted">env not configured</span>'}</div></div>
         ${renderServicesTable(apiVm.services)}
       </div>
     </div>
@@ -1019,7 +1019,7 @@ function renderServicesTable(services) {
   return `<div class="col-12 mt-2">
     <details>
       <summary class="text-muted small mb-1" style="cursor:pointer">
-        등록 서비스 BaseURL 목록 (${names.length}건)
+        Registered service BaseURL list (${names.length} items)
       </summary>
       <div class="table-responsive mt-2">
         <table class="table table-sm table-vcenter mb-0">
@@ -1048,17 +1048,17 @@ function renderRolesCard(roles) {
 
   let banner = '';
   if (!roles.fetched) {
-    banner = '<div class="alert alert-secondary py-2 mb-2 small">Getrolelist 응답 누락 — 재시도해주세요.</div>';
+    banner = '<div class="alert alert-secondary py-2 mb-2 small">Getrolelist response missing — please retry.</div>';
   } else if ((roles.missing || []).length > 0) {
     banner = `<div class="alert alert-warning py-2 mb-2 small">
-      ⚠️ 누락 role: <strong>${(roles.missing || []).map(escapeHtml).join(', ')}</strong>
-      — <code>1_setup_auto.sh</code>의 <code>init_predefined_roles</code>를 다시 실행하거나 mc-iam-manager에 수동으로 추가하세요.
-      (현재 통합 Re-sync endpoint는 미제공)
+      ⚠️ Missing roles: <strong>${(roles.missing || []).map(escapeHtml).join(', ')}</strong>
+      — <code>1_setup_auto.sh</code>'s <code>init_predefined_roles</code> again or add them manually in mc-iam-manager.
+      (No integrated Re-sync endpoint available yet)
     </div>`;
   }
 
   const extraNote = (roles.extra || []).length > 0
-    ? `<div class="text-muted small mt-2">추가 등록 role: ${(roles.extra || []).map(escapeHtml).join(', ')}</div>`
+    ? `<div class="text-muted small mt-2">Extra registered roles: ${(roles.extra || []).map(escapeHtml).join(', ')}</div>`
     : '';
 
   const rows = (roles.registered || []).map((r) => `<tr>
@@ -1069,7 +1069,7 @@ function renderRolesCard(roles) {
 
   const detailsBlock = rows
     ? `<details class="mt-2">
-        <summary class="text-muted small mb-1" style="cursor:pointer">등록 role 상세 (${(roles.registered || []).length}건)</summary>
+        <summary class="text-muted small mb-1" style="cursor:pointer">Registered role details (${(roles.registered || []).length} items)</summary>
         <div class="table-responsive mt-2">
           <table class="table table-sm table-vcenter mb-0">
             <thead><tr><th>Name</th><th style="width:200px">role_types</th><th>Description</th></tr></thead>
@@ -1086,11 +1086,11 @@ function renderRolesCard(roles) {
     <div class="card-body">
       ${banner}
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">등록 role 건수</div>
+        <div class="col-md-3"><div class="text-muted small">Registered roles</div>
           <div class="fs-3 fw-medium">${(roles.registered || []).length}</div></div>
-        <div class="col-md-3"><div class="text-muted small">기대 role 건수</div>
+        <div class="col-md-3"><div class="text-muted small">Expected roles</div>
           <div class="fs-3 fw-medium">${expected.length}</div></div>
-        <div class="col-md-6"><div class="text-muted small">기대 vs 등록</div>
+        <div class="col-md-6"><div class="text-muted small">Expected vs Registered</div>
           <div>${chips || '<span class="text-muted">-</span>'}</div></div>
       </div>
       ${extraNote}
@@ -1110,17 +1110,17 @@ function renderProjectsCard(projects) {
 
   let banner = '';
   if (!projects.fetched) {
-    banner = '<div class="alert alert-secondary py-2 mb-2 small">listProjects 응답 누락 — 재시도해주세요.</div>';
+    banner = '<div class="alert alert-secondary py-2 mb-2 small">listProjects response missing — please retry.</div>';
   } else if (items.length === 0) {
-    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ 등록된 project가 없습니다. <strong>Re-sync ▶ Projects</strong>로 mc-infra-manager namespace를 동기화하세요.</div>';
+    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ No registered projects. Sync mc-infra-manager namespaces via <strong>Re-sync ▶ Projects</strong>.</div>';
   } else if (missingNs > 0) {
-    banner = `<div class="alert alert-info py-2 mb-2 small">${missingNs}건의 project가 NsId 없이 등록되어 있습니다.</div>`;
+    banner = `<div class="alert alert-info py-2 mb-2 small">${missingNs} projects are registered without a NsId.</div>`;
   }
 
   const rows = items.map((p) => `<tr>
     <td class="text-muted small">${escapeHtml(String(p.id))}</td>
     <td class="fw-medium">${escapeHtml(p.name)}</td>
-    <td class="small">${p.nsId ? escapeHtml(p.nsId) : '<span class="text-warning">⚠️ 없음</span>'}</td>
+    <td class="small">${p.nsId ? escapeHtml(p.nsId) : '<span class="text-warning">⚠️ None</span>'}</td>
     <td class="text-muted small">${escapeHtml(p.description || '')}</td>
   </tr>`).join('');
 
@@ -1136,13 +1136,13 @@ function renderProjectsCard(projects) {
     <div class="card-body">
       ${banner}
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">등록 project 건수</div>
+        <div class="col-md-3"><div class="text-muted small">Registered projects</div>
           <div class="fs-3 fw-medium">${items.length}</div></div>
-        <div class="col-md-9"><div class="text-muted small">설명</div>
-          <div class="small">mc-infra-manager의 namespace 1:1 매핑. NsId가 비어있으면 mc-infra-manager 측 ns 미등록 또는 sync 누락.</div></div>
+        <div class="col-md-9"><div class="text-muted small">Description</div>
+          <div class="small">1:1 mapping to mc-infra-manager namespace. Empty NsId means the ns is not registered in mc-infra-manager or sync is missing.</div></div>
       </div>
       ${rows ? `<details class="mt-2">
-        <summary class="text-muted small mb-1" style="cursor:pointer">등록 project 상세 (${items.length}건)</summary>
+        <summary class="text-muted small mb-1" style="cursor:pointer">Registered project details (${items.length} items)</summary>
         <div class="table-responsive mt-2">
           <table class="table table-sm table-vcenter mb-0">
             <thead><tr><th style="width:80px">ID</th><th>Name</th><th style="width:160px">NsId</th><th>Description</th></tr></thead>
@@ -1175,14 +1175,14 @@ function renderWorkspaceMappingCard(wsMap) {
 
   let banner = '';
   if (!wsMap.fetched) {
-    banner = '<div class="alert alert-secondary py-2 mb-2 small">listWorkspaces / listWorkspaceProjects 응답 누락 — 재시도해주세요.</div>';
+    banner = '<div class="alert alert-secondary py-2 mb-2 small">listWorkspaces / listWorkspaceProjects response missing — please retry.</div>';
   } else if (workspaces.length === 0) {
-    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ 등록된 workspace가 없습니다. mc-iam-manager에 workspace를 먼저 생성해야 합니다.</div>';
+    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ No registered workspaces. Please create a workspace in mc-iam-manager first.</div>';
   } else if (projectTotal > 0 && mappedTotal < projectTotal) {
     banner = `<div class="alert alert-warning py-2 mb-2 small">
-      ⚠️ 미매핑 project ${unmapped.length}건 — Re-sync ▶ Projects 시 default workspace
-      (<code>env DEFAULT_WORKSPACE_NAME</code>)에 자동 매핑됩니다. 특정 workspace로 임의 매핑이 필요하면
-      <a href="/operation/workspace/workspaces" class="alert-link">운영 ▶ Workspace 페이지</a>에서 진행하세요.
+      ⚠️ ${unmapped.length} unmapped projects — will be auto-mapped to the default workspace on Re-sync ▶ Projects
+      (<code>env DEFAULT_WORKSPACE_NAME</code>). For manual mapping to a specific workspace,
+      <a href="/operation/workspace/workspaces" class="alert-link">go to the <a href="/operation/workspace/workspaces" class="alert-link">Operations ▶ Workspaces page</a>.
     </div>`;
   }
 
@@ -1204,20 +1204,20 @@ function renderWorkspaceMappingCard(wsMap) {
       <h4 class="card-title mb-0">Workspace Mapping <span class="text-muted small ms-2">(⑥ map_workspace_projects)</span></h4>
       <div class="ms-auto">
         <a href="/operation/workspace/workspaces" class="btn btn-sm btn-outline-secondary">
-          운영 ▶ Workspace 페이지
+          Operations ▶ Workspaces
         </a>
       </div>
     </div>
     <div class="card-body">
       ${banner}
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">Workspace 수</div>
+        <div class="col-md-3"><div class="text-muted small">Workspaces</div>
           <div class="fs-3 fw-medium">${workspaces.length}</div></div>
-        <div class="col-md-3"><div class="text-muted small">매핑된 project</div>
+        <div class="col-md-3"><div class="text-muted small">Mapped projects</div>
           <div class="fs-3 fw-medium">${mappedTotal} / ${projectTotal}</div></div>
-        <div class="col-md-3"><div class="text-muted small">미매핑 project</div>
+        <div class="col-md-3"><div class="text-muted small">Unmapped projects</div>
           <div class="fs-3 fw-medium ${unmapped.length > 0 ? 'text-warning' : ''}">${unmapped.length}</div></div>
-        <div class="col-md-3"><div class="text-muted small">상태</div>
+        <div class="col-md-3"><div class="text-muted small">Status</div>
           <div>${statusBadge(
             !wsMap.fetched ? 'UNKNOWN'
               : (projectTotal === 0 ? 'OK'
@@ -1225,16 +1225,16 @@ function renderWorkspaceMappingCard(wsMap) {
           )}</div></div>
       </div>
       ${wsRows ? `<details class="mt-2">
-        <summary class="text-muted small mb-1" style="cursor:pointer">Workspace 목록 (${workspaces.length}건)</summary>
+        <summary class="text-muted small mb-1" style="cursor:pointer">Workspace list (${workspaces.length} items)</summary>
         <div class="table-responsive mt-2">
           <table class="table table-sm table-vcenter mb-0">
-            <thead><tr><th style="width:80px">ID</th><th>Name</th><th style="width:120px" class="text-end">매핑 project 수</th><th>Description</th></tr></thead>
+            <thead><tr><th style="width:80px">ID</th><th>Name</th><th style="width:120px" class="text-end">Mapped projects</th><th>Description</th></tr></thead>
             <tbody>${wsRows}</tbody>
           </table>
         </div>
       </details>` : ''}
       ${unmappedRows ? `<details class="mt-2">
-        <summary class="text-warning small mb-1" style="cursor:pointer">미매핑 project (${unmapped.length}건)</summary>
+        <summary class="text-warning small mb-1" style="cursor:pointer">Unmapped projects (${unmapped.length} items)</summary>
         <div class="table-responsive mt-2">
           <table class="table table-sm table-vcenter mb-0">
             <thead><tr><th style="width:80px">ID</th><th>Name</th><th style="width:160px">NsId</th></tr></thead>
@@ -1266,11 +1266,11 @@ function renderCredentialsCard(cred) {
 
   let banner = '';
   if (!cred.fetched) {
-    banner = '<div class="alert alert-secondary py-2 mb-2 small">GetCredentialHolderList 응답 누락 — mc-infra-manager(cb-tumblebug) 가용성을 확인하세요.</div>';
+    banner = '<div class="alert alert-secondary py-2 mb-2 small">GetCredentialHolderList response missing — check mc-infra-manager(cb-tumblebug) availability.</div>';
   } else if (holders.length === 0) {
-    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ 등록된 credential holder가 없습니다. 온보딩 wizard 진입 전 cb-tumblebug에 credential을 등록하세요.</div>';
+    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ No credential holders registered. Register credentials in cb-tumblebug before entering the onboarding wizard.</div>';
   } else if (cred.inactiveConnectionCount > 0) {
-    banner = `<div class="alert alert-info py-2 mb-2 small">verified ${verifiedConn} / total ${totalConn} connection — ${cred.inactiveConnectionCount}건의 미검증 connection은 온보딩에서 제외될 수 있습니다.</div>`;
+    banner = `<div class="alert alert-info py-2 mb-2 small">verified ${verifiedConn} / total ${totalConn} connection — ${cred.inactiveConnectionCount} unverified connections may be excluded from onboarding.</div>`;
   }
 
   const rows = holders.map((h) => {
@@ -1294,7 +1294,7 @@ function renderCredentialsCard(cred) {
 
   const detailsBlock = rows
     ? `<details class="mt-2" open>
-        <summary class="text-muted small mb-1" style="cursor:pointer">Credential Holder 상세 (${holders.length}건)</summary>
+        <summary class="text-muted small mb-1" style="cursor:pointer">Credential Holder details (${holders.length} items)</summary>
         <div class="table-responsive mt-2">
           <table class="table table-sm table-vcenter mb-0">
             <thead><tr>
@@ -1318,11 +1318,11 @@ function renderCredentialsCard(cred) {
     <div class="card-body">
       ${banner}
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">Holder 수</div>
+        <div class="col-md-3"><div class="text-muted small">Holders</div>
           <div class="fs-3 fw-medium">${holders.length}</div></div>
         <div class="col-md-3"><div class="text-muted small">Verified Connection</div>
           <div class="fs-3 fw-medium">${verifiedConn} / ${totalConn}</div></div>
-        <div class="col-md-6"><div class="text-muted small">Provider별 holder</div>
+        <div class="col-md-6"><div class="text-muted small">Holders by Provider</div>
           <div>${providerChips}</div></div>
       </div>
       ${detailsBlock}
@@ -1342,11 +1342,11 @@ function renderLoadAssetsCard(la) {
 
   let banner = '';
   if (isNotExec) {
-    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ system namespace에 spec/image가 적재되지 않았습니다. <strong>Re-run loadAssets</strong>를 실행하세요.</div>';
+    banner = '<div class="alert alert-warning py-2 mb-2 small">⚠️ Spec/image not loaded in system namespace. Please run <strong>Re-run loadAssets</strong>.</div>';
   } else if (la.status === 'PARTIAL') {
-    banner = '<div class="alert alert-info py-2 mb-2 small">spec 또는 image 중 한쪽만 적재되어 있습니다.</div>';
+    banner = '<div class="alert alert-info py-2 mb-2 small">Only one of spec or image is loaded.</div>';
   } else if (la.status === 'UNKNOWN') {
-    banner = '<div class="alert alert-secondary py-2 mb-2 small">cb-tumblebug GetAssetsSummary 응답 누락 — readyz를 먼저 확인하세요.</div>';
+    banner = '<div class="alert alert-secondary py-2 mb-2 small">cb-tumblebug GetAssetsSummary response missing — check readyz first.</div>';
   }
 
   // Spec priced 비율
@@ -1381,7 +1381,7 @@ function renderLoadAssetsCard(la) {
 
   const providerBlock = providerRows
     ? `<details class="mt-2" open>
-        <summary class="text-muted small mb-1" style="cursor:pointer">Provider별 분포 (${(la.providers || []).length}건)</summary>
+        <summary class="text-muted small mb-1" style="cursor:pointer">Distribution by Provider (${(la.providers || []).length} items)</summary>
         <div class="table-responsive mt-2">
           <table class="table table-sm table-vcenter mb-0">
             <thead><tr>
@@ -1412,9 +1412,9 @@ function renderLoadAssetsCard(la) {
     <div class="card-body">
       ${banner}
       <div class="row g-2">
-        <div class="col-md-3"><div class="text-muted small">Spec 적재</div>
+        <div class="col-md-3"><div class="text-muted small">Spec loaded</div>
           <div class="fs-3 fw-medium">${(la.specCount || 0).toLocaleString()}</div></div>
-        <div class="col-md-3"><div class="text-muted small">Image 적재</div>
+        <div class="col-md-3"><div class="text-muted small">Image loaded</div>
           <div class="fs-3 fw-medium">${(la.imageCount || 0).toLocaleString()}</div></div>
         <div class="col-md-3"><div class="text-muted small">Priced / Unpriced</div>
           <div class="fs-3 fw-medium">
@@ -1423,7 +1423,7 @@ function renderLoadAssetsCard(la) {
             <span class="${(la.unpricedSpecCount || 0) > 0 ? 'text-warning' : 'text-muted'}">${(la.unpricedSpecCount || 0).toLocaleString()}</span>
           </div>
           <div class="small ${pricedCls}">${pricedRatio}% priced</div></div>
-        <div class="col-md-3"><div class="text-muted small">상태</div>
+        <div class="col-md-3"><div class="text-muted small">Status</div>
           <div>${statusBadge(la.status)}</div></div>
       </div>
       ${providerBlock}
@@ -1464,7 +1464,7 @@ function reachableBadge(reachable, httpStatus, errorMessage) {
   if (httpStatus) {
     return `<span class="badge bg-danger-lt">❌ HTTP ${httpStatus}</span>`;
   }
-  return '<span class="badge bg-secondary-lt">env 미설정</span>';
+  return '<span class="badge bg-secondary-lt">env not configured</span>';
 }
 
 function formatYamlMeta(card) {

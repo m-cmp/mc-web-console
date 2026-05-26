@@ -4,10 +4,10 @@
       <div class="col-12">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">네트워크 (VPC) 목록</h3>
+            <h3 class="card-title">Network (VPC) List</h3>
             <div class="card-options ms-auto d-flex gap-2">
               <!-- Import VNet -->
-              <a class="btn-action" type="button" title="CSP 미관리 VNet 임포트"
+              <a class="btn-action" type="button" title="Import Unmanaged VNets from CSP"
                 onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].openImportVNetModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
                   stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -73,7 +73,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">VPC 상세 — <span id="detail-name" class="text-primary"></span></h3>
+              <h3 class="card-title">VPC Detail — <span id="detail-name" class="text-primary"></span></h3>
               <div class="card-options">
                 <button class="btn btn-sm btn-outline-secondary me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].showEditMode()">Edit</button>
                 <button class="btn btn-sm btn-outline-danger me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].confirmDeleteVNet()">Delete</button>
@@ -106,10 +106,10 @@
                 </div>
               </div>
 
-              <!-- Subnet 목록 -->
+              <!-- Subnet List -->
               <div class="mt-3">
-                <h4 class="mb-2">Subnet 목록</h4>
-                <div id="detail-subnet-empty" class="text-muted small d-none">등록된 Subnet이 없습니다.</div>
+                <h4 class="mb-2">Subnet List</h4>
+                <div id="detail-subnet-empty" class="text-muted small d-none">No registered Subnets.</div>
                 <div class="table-responsive" id="detail-subnet-table-wrap">
                   <table class="table table-sm table-vcenter">
                     <thead>
@@ -136,7 +136,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">VPC 편집 — <span id="edit-name" class="text-primary"></span></h3>
+              <h3 class="card-title">Edit VPC — <span id="edit-name" class="text-primary"></span></h3>
               <div class="card-options">
                 <button class="btn btn-sm btn-secondary me-1" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].cancelEditMode()">Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].saveVNet()">
@@ -165,7 +165,7 @@
               <!-- Subnet 편집 -->
               <div class="mt-2">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                  <h4 class="mb-0">Subnet 목록</h4>
+                  <h4 class="mb-0">Subnet List</h4>
                   <button type="button" class="btn btn-sm btn-outline-primary"
                     onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].addEditSubnetRow()">
                     + Add Subnet
@@ -202,7 +202,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">VPC 생성</h5>
+        <h5 class="modal-title">Create VPC</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -211,15 +211,15 @@
           <select class="form-select" id="create-vpc-connection"></select>
         </div>
         <div class="mb-3">
-          <label class="form-label required">VPC 이름</label>
-          <input type="text" class="form-control" id="create-vpc-name" placeholder="예: my-vpc">
+          <label class="form-label required">VPC Name</label>
+          <input type="text" class="form-control" id="create-vpc-name" placeholder="e.g. my-vpc">
         </div>
         <div class="mb-3">
           <label class="form-label required">IPv4 CIDR</label>
-          <input type="text" class="form-control" id="create-vpc-cidr" placeholder="예: 10.0.0.0/16">
+          <input type="text" class="form-control" id="create-vpc-cidr" placeholder="e.g. 10.0.0.0/16">
         </div>
         <div class="mb-2">
-          <label class="form-label">Subnet 목록</label>
+          <label class="form-label">Subnet List</label>
           <div id="create-vpc-subnet-list"></div>
           <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
             onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].addSubnetRow()">
@@ -228,12 +228,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="create-vpc-execute-btn"
           onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].executeCreateVNet()">
-          <span id="create-vpc-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          생성
-        </button>
+          <span id="create-vpc-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>Create
+          </button>
       </div>
     </div>
   </div>
@@ -244,7 +243,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">미관리 VNet 임포트</h5>
+        <h5 class="modal-title">Import Unmanaged VNets</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -255,11 +254,11 @@
           </div>
           <div class="col-4">
             <button class="btn btn-secondary w-100"
-              onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].loadUnmanagedVNets()">조회</button>
+              onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].loadUnmanagedVNets()">Query</button>
           </div>
         </div>
         <div class="mb-2">
-          <label class="form-label">대상 프로젝트</label>
+          <label class="form-label">Target Project</label>
           <input type="text" class="form-control" id="import-vnet-project" readonly>
         </div>
         <div id="import-vnet-list-area" class="d-none">
@@ -268,10 +267,10 @@
               <thead>
                 <tr>
                   <th style="width:40px"><input type="checkbox" id="import-vnet-select-all" class="form-check-input"></th>
-                  <th>VNet명</th>
+                  <th>VNet Name</th>
                   <th>CIDR</th>
                   <th>CSP ID</th>
-                  <th>상태</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody id="import-vnet-tbody"></tbody>
@@ -281,14 +280,14 @@
         <div id="import-vnet-loading" class="text-center py-3 d-none">
           <div class="spinner-border text-primary" role="status"></div>
         </div>
-        <div id="import-vnet-empty" class="text-center text-muted py-3 d-none">미관리 VNet이 없습니다.</div>
+        <div id="import-vnet-empty" class="text-center text-muted py-3 d-none">No unmanaged VNets found.</div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="import-vnet-execute-btn"
           onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].executeImportVNets()">
           <span id="import-vnet-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          선택 항목 Import
+          Import Selected
         </button>
       </div>
     </div>

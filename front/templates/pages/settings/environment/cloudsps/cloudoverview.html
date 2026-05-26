@@ -349,25 +349,25 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">CSP 자원 동기화</h5>
+        <h5 class="modal-title">CSP Resource Sync</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- 대상 프로젝트 (읽기전용) -->
+        <!-- Target Project (읽기전용) -->
         <div class="mb-3">
-          <label class="form-label">대상 프로젝트</label>
+          <label class="form-label">Target Project</label>
           <input type="text" class="form-control" id="sync-target-project" readonly>
         </div>
-        <!-- CSP 계정 선택 -->
+        <!-- CSP Account 선택 -->
         <div class="mb-3">
-          <label class="form-label">CSP 계정</label>
+          <label class="form-label">CSP Account</label>
           <select class="form-select" id="sync-connection-select">
-            <option value="">전체 계정</option>
+            <option value="">All Accounts</option>
           </select>
         </div>
         <!-- 자원 유형 선택 -->
         <div class="mb-3">
-          <label class="form-label">동기화할 자원 유형 <span class="text-muted">(복수 선택 가능)</span></label>
+          <label class="form-label">Resource Types to Sync <span class="text-muted">(multiple selection allowed)</span></label>
           <div class="row g-2">
             <div class="col-6">
               <label class="form-check">
@@ -404,16 +404,16 @@
         <!-- 결과 영역 (실행 후 표시) -->
         <div id="sync-result" class="d-none">
           <hr>
-          <label class="form-label">동기화 결과</label>
+          <label class="form-label">Sync Result</label>
           <div id="sync-result-body"></div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="sync-execute-btn"
           onclick="webconsolejs['pages/settings/environment/cloudsps/cloudoverview'].executeSyncCspResources()">
           <span id="sync-execute-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          동기화 실행
+          Run Sync
         </button>
       </div>
     </div>
