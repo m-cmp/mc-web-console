@@ -2819,6 +2819,9 @@ async function saveRole() {
       // 헤더 클릭 이벤트 리스너 재설정 (DOM 재생성 후 이벤트 연결)
       setupHeaderClickEvents();
 
+      // 사이드바 메뉴 즉시 갱신 (역할 메뉴 권한 변경 반영)
+      await webconsolejs["common/api/services/menus_api"].refreshAvailableMenus();
+
       // 페이지를 맨 위로 스크롤
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3220,6 +3223,9 @@ async function updateRole() {
 
       // 헤더 클릭 이벤트 리스너 재설정 (DOM 재생성 후 이벤트 연결)
       setupHeaderClickEvents();
+
+      // 사이드바 메뉴 즉시 갱신 (역할 메뉴 권한 변경 반영)
+      await webconsolejs["common/api/services/menus_api"].refreshAvailableMenus();
 
       // 페이지를 맨 위로 스크롤
       window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -71,6 +71,7 @@ const MenuManager = {
             AppState.menus.selectedMenu = null;
             UIManager.hideDetailPanel();
             await this.loadTree();
+            await webconsolejs["common/api/services/menus_api"].refreshAvailableMenus();
         } catch (error) {
             console.error("Error creating menu:", error);
             alert("Failed to create menu: " + (error.message || error));
@@ -86,6 +87,7 @@ const MenuManager = {
                 AppState.menus.selectedMenu = updated;
                 UIManager.showDetailPanel(updated);
             }
+            await webconsolejs["common/api/services/menus_api"].refreshAvailableMenus();
         } catch (error) {
             console.error("Error updating menu:", error);
             alert("Failed to update menu: " + (error.message || error));
@@ -98,6 +100,7 @@ const MenuManager = {
             AppState.menus.selectedMenu = null;
             UIManager.hideDetailPanel();
             await this.loadTree();
+            await webconsolejs["common/api/services/menus_api"].refreshAvailableMenus();
         } catch (error) {
             console.error("Error deleting menu:", error);
             alert("Failed to delete menu: " + (error.message || error));
