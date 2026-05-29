@@ -40,6 +40,14 @@ menus:
     priority: 2
     menunumber: 1220
 
+  - id: groups
+    parentid: organizations
+    displayname: Groups
+    restype: menu
+    isaction: true
+    priority: 2
+    menunumber: 1225
+
   - id: approvals
     parentid: organizations
     displayname: Approvals
