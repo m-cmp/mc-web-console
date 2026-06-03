@@ -62,8 +62,6 @@ export async function updateUserStatus(userId, status) {
 
 export async function getUserWorkspacesByUserID(userId) {
     const controller = "/api/mc-iam-manager/Getuserworkspacesbyuserid";
-    // var controller = "/api/" + "/mc-iam-manager/" + "Getuserworkspacesbyuserid";
-
     const data = {
         pathParams: {
             "userId": userId.toString()
@@ -71,4 +69,51 @@ export async function getUserWorkspacesByUserID(userId) {
     }
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     return response.data.responseData;
+}
+
+export async function updateUser(userId, userData) {
+    const controller = "/api/mc-iam-manager/Updateuser";
+    const data = {
+        pathParams: { "userId": userId.toString() },
+        request: userData
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response;
+}
+
+export async function deleteUser(userId) {
+    const controller = "/api/mc-iam-manager/Deleteuser";
+    const data = {
+        pathParams: { "userId": userId.toString() }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response;
+}
+
+export async function addUserRole(userId, roleData) {
+    const controller = "/api/mc-iam-manager/assignPlatformRole";
+    const data = {
+        request: {
+            userId: userId.toString(),
+            roleId: roleData.roleId ? roleData.roleId.toString() : undefined,
+            roleName: roleData.roleName,
+            roleType: roleData.roleType || "platform",
+            workspaceId: roleData.workspaceId ? roleData.workspaceId.toString() : "1"
+        }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response;
+}
+
+export async function removeUserRole(userId, roleId) {
+    const controller = "/api/mc-iam-manager/removePlatformRole";
+    const data = {
+        request: {
+            userId: userId.toString(),
+            roleId: roleId.toString(),
+            roleType: "platform"
+        }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return response;
 }
