@@ -41,3 +41,45 @@ export async function listRoles() {
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, {});
     return response.data.responseData;
 }
+
+// 역할 메뉴 권한 변경 후 사이드바를 즉시 갱신하기 위해 호출.
+// GetAllAvailableMenus를 재조회하여 localStorage를 갱신하고
+// refresh-sidebar 이벤트를 dispatch하면 sidebar.js가 updatemenu()를 재호출한다.
+export async function refreshAvailableMenus() {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+        "/api/mc-iam-manager/GetAllAvailableMenus"
+    );
+    const menuList = response?.data?.responseData;
+    if (!menuList) return;
+
+    const menuMap = new Map();
+    menuList.forEach(menu => menuMap.set(menu.id, { ...menu, menus: [] }));
+    const rootMenus = [];
+    menuList.forEach(menu => {
+        const node = menuMap.get(menu.id);
+        if (menu.parentId === 'home' || !menu.parentId) {
+            rootMenus.push(node);
+        } else {
+            const parent = menuMap.get(menu.parentId);
+            if (parent) {
+                parent.menus.push(node);
+            } else {
+                // 부모가 응답에 없는 orphaned 노드 → 루트로 처리
+                rootMenus.push(node);
+            }
+        }
+    });
+    const sortMenus = (menus) => {
+        menus.sort((a, b) =>
+            a.priority !== b.priority ? a.priority - b.priority : a.menuNumber - b.menuNumber
+        );
+        menus.forEach(m => { if (m.menus?.length > 0) sortMenus(m.menus); });
+    };
+    sortMenus(rootMenus);
+
+    // 응답 자체가 빈 배열이면 기존 사이드바 유지 (실수로 localStorage 소거 방지)
+    if (menuList.length === 0) return;
+
+    webconsolejs["common/storage/localstorage"].setMenuLocalStorage(rootMenus);
+    document.dispatchEvent(new CustomEvent('refresh-sidebar'));
+}
