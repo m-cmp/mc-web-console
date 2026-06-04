@@ -61,7 +61,12 @@ export async function refreshAvailableMenus() {
             rootMenus.push(node);
         } else {
             const parent = menuMap.get(menu.parentId);
-            if (parent) parent.menus.push(node);
+            if (parent) {
+                parent.menus.push(node);
+            } else {
+                // 부모가 응답에 없는 orphaned 노드 → 루트로 처리
+                rootMenus.push(node);
+            }
         }
     });
     const sortMenus = (menus) => {
@@ -71,6 +76,9 @@ export async function refreshAvailableMenus() {
         menus.forEach(m => { if (m.menus?.length > 0) sortMenus(m.menus); });
     };
     sortMenus(rootMenus);
+
+    // 응답 자체가 빈 배열이면 기존 사이드바 유지 (실수로 localStorage 소거 방지)
+    if (menuList.length === 0) return;
 
     webconsolejs["common/storage/localstorage"].setMenuLocalStorage(rootMenus);
     document.dispatchEvent(new CustomEvent('refresh-sidebar'));

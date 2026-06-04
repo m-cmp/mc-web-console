@@ -76,15 +76,17 @@ function convertToMenuTree(menuList) {
     const rootMenus = [];
     menuList.forEach(menu => {
         const menuNode = menuMap.get(menu.id);
-        
+
         if (menu.parentId === 'home' || !menu.parentId) {
             // 최상위 메뉴
             rootMenus.push(menuNode);
         } else {
-            // 하위 메뉴
+            // 하위 메뉴 — 부모가 응답에 없으면(orphaned) 루트로 처리
             const parentMenu = menuMap.get(menu.parentId);
             if (parentMenu) {
                 parentMenu.menus.push(menuNode);
+            } else {
+                rootMenus.push(menuNode);
             }
         }
     });
