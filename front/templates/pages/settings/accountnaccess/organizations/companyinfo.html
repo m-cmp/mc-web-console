@@ -1,0 +1,86 @@
+<div class="page-body">
+  <div class="container-xl">
+    <div class="row row-cards">
+      <div class="col-12 col-md-8">
+
+        <!-- Info Card -->
+        <div class="card" id="companyinfo-view-card">
+          <div class="card-header">
+            <h3 class="card-title">Organization Info</h3>
+            <div class="card-actions btn-actions">
+              <button class="btn btn-outline-warning" id="companyinfo-edit-btn" onclick="companyInfoPage.enterEditMode()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
+                  <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
+                  <path d="M16 5l3 3"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="companyinfo-loading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status"></div>
+            </div>
+            <div id="companyinfo-data" style="display:none;">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Name</div>
+                  <div class="datagrid-content" id="ci-name"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Code</div>
+                  <div class="datagrid-content"><code id="ci-code"></code></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Level</div>
+                  <div class="datagrid-content" id="ci-level"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Path</div>
+                  <div class="datagrid-content" id="ci-path"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Description</div>
+                  <div class="datagrid-content" id="ci-description"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Members</div>
+                  <div class="datagrid-content" id="ci-user-count"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Card -->
+        <div class="card" id="companyinfo-edit-card" style="display:none;">
+          <div class="card-header">
+            <h3 class="card-title">Edit Organization Info</h3>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label required">Name</label>
+              <input type="text" class="form-control" id="ci-edit-name" placeholder="Organization name" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" id="ci-edit-description" rows="3" placeholder="Organization description"></textarea>
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <button type="button" class="btn btn-secondary me-2" onclick="companyInfoPage.cancelEdit()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="companyInfoPage.saveEdit()">Save</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ partial("partials/layout/pageloader.html") | raw }}
+
+{{ javascriptTag("common/api/services/groups_api.js") | raw }}
+{{ javascriptTag("pages/settings/accountnaccess/organizations/companyinfo.js") | raw }}

@@ -4,19 +4,19 @@
 services:
   mc-infra-connector:
     version: 0.9.4
-    baseurl: http://spider_url:1024/spider
+    baseurl: http://mciam.onecloudcon.com:1024/spider
     auth:
       type: basic
       username:
       password:
   mc-iam-manager:
     version: 0.2.11
-    baseurl: http://mciam.onecloudcon.com:5006
+    baseurl: http://mciam.onecloudcon.com:5000
     auth:
       type: bearer
   mc-infra-manager:
     version: 0.12.9
-    baseurl: http://52.79.163.111:1323/tumblebug
+    baseurl: http://mciam.onecloudcon.com:1323/tumblebug
     auth:
       type: basic
       username: default
@@ -28,39 +28,39 @@ services:
       type: bearer
   mc-observability:
     version: main
-    baseurl: http://observability_url:18080
+    baseurl: http://mciam.onecloudcon.com:18080
     auth:
   mc-application-manager:
     version: main
-    baseurl: http://localhost:18084
+    baseurl: http://mciam.onecloudcon.com:18084
     auth:
   mc-application-manager-fe:
     version: main
-    baseurl: http://application_manager_fe_url:18084
+    baseurl: http://mciam.onecloudcon.com:18084
     auth:
   mc-workflow-manager:
     version: main
-    baseurl: http://workflow_url:18083
+    baseurl: http://mciam.onecloudcon.com:18083
     auth:
   mc-workflow-manager-fe:
     version: main
-    baseurl: http://workflow_manager_fe_url:18083
+    baseurl: http://mciam.onecloudcon.com:18083
     auth:
   mc-cost-optimizer:
     version: main
-    baseurl: http://cost_optimizer_url:18082
+    baseurl: http://mciam.onecloudcon.com:18082
     auth: null
   mc-cost-optimizer-fe:
     version: main
-    baseurl: http://cost_optimizer_fe_url:7780
+    baseurl: http://mciam.onecloudcon.com:7780
     auth: null
   mc-data-manager:
     version: main:20240923
-    baseurl: http://localhost:3300
+    baseurl: http://mciam.onecloudcon.com:3300
     auth:
   mc-data-manager-fe:
     version: main
-    baseurl: http://data_manager_fe_url:3300
+    baseurl: http://mciam.onecloudcon.com:3300
     auth:
 serviceActions:
   mc-infra-connector:
@@ -879,11 +879,11 @@ serviceActions:
       description: 해당 프레임워크 역할에 할당된 메뉴 리스트를 반환합니다.
     Deleteuser:
       method: delete
-      resourcePath: /api/user/id/{userid}
+      resourcePath: /api/users/id/{userId}
       description: 사용자를 삭제합니다.
     Updateuser:
       method: put
-      resourcePath: /api/user/id/{userid}
+      resourcePath: /api/users/id/{userId}
       description: 사용자 정보를 업데이트 합니다.
     Createworkspace:
       method: post
@@ -1058,6 +1058,10 @@ serviceActions:
       method: post
       resourcePath: /api/roles/assign/platform-role
       description: Platform Role 할당
+    removePlatformRole:
+      method: delete
+      resourcePath: /api/roles/unassign/platform-role
+      description: 사용자에게서 Platform Role 제거
     UpdateUserStatus:
       method: post
       resourcePath: /api/users/id/{userId}/status
@@ -1110,6 +1114,14 @@ serviceActions:
       method: delete
       resourcePath: /api/users/id/{userId}/organizations/{organizationId}
       description: 사용자 그룹 제거
+    assignGroupPlatformRole:
+      method: post
+      resourcePath: /api/groups/id/{groupId}/platform-roles
+      description: 그룹에 Platform Role 할당
+    getGroupPlatformRoles:
+      method: get
+      resourcePath: /api/groups/id/{groupId}/platform-roles
+      description: 그룹의 Platform Role 목록 조회
     listCspAccounts:
       method: post
       resourcePath: /api/csp-accounts/list

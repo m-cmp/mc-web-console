@@ -58,8 +58,9 @@ type DatabaseConfig struct {
 
 // MCIAMConfig MC-IAM 설정
 type MCIAMConfig struct {
-	Use       bool
-	TicketUse bool
+	Use           bool
+	TicketUse     bool
+	UseRegistryURL bool
 }
 
 // Load 설정 로드
@@ -82,8 +83,9 @@ func Load() (*Config, error) {
 			SSLMode:  getEnv("MC_WEB_CONSOLE_POSTGRES_SSLMODE", "disable"),
 		},
 		MCIAM: MCIAMConfig{
-			Use:       getEnv("MC_WEB_CONSOLE_USE_IAM", "false") == "true",
-			TicketUse: getEnv("MC_WEB_CONSOLE_USE_TICKET_VALID", "false") == "true",
+			Use:            getEnv("MC_WEB_CONSOLE_USE_IAM", "false") == "true",
+			TicketUse:      getEnv("MC_WEB_CONSOLE_USE_TICKET_VALID", "false") == "true",
+			UseRegistryURL: getEnv("MC_WEB_CONSOLE_USE_REGISTRY_URL", "true") == "true",
 		},
 		SetupYaml: SetupYamlConfig{
 			McWebconsoleMenuYaml: getEnv("MC_WEB_CONSOLE_MENUYAML", ""),

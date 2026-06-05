@@ -14,6 +14,17 @@ const AppState = {
     tables: { holderTable: null },
 };
 
+// cb-spider가 각 Provider별로 기대하는 Credential key 이름 목록
+const PROVIDER_KEYS = {
+    aws:       ['ClientId', 'ClientSecret'],
+    gcp:       ['ClientEmail', 'PrivateKey', 'ProjectID'],
+    azure:     ['ClientId', 'ClientSecret', 'TenantId', 'SubscriptionId'],
+    alibaba:   ['ClientId', 'ClientSecret'],
+    ncp:       ['ClientId', 'ClientSecret'],
+    nhncloud:  ['ClientId', 'ClientSecret', 'TenantId'],
+    ktcloud:   ['ClientId', 'ClientSecret'],
+};
+
 const PROVIDER_BADGE = {
     aws:   '<span class="badge bg-orange-lt">AWS</span>',
     gcp:   '<span class="badge bg-blue-lt">GCP</span>',
@@ -121,9 +132,9 @@ const TableManager = {
                     width: 100,
                 },
             ],
-            rowClick(e, row) {
-                UIManager.showDetail(row.getData());
-            },
+        });
+        AppState.tables.holderTable.on('rowClick', (e, row) => {
+            UIManager.showDetail(row.getData());
         });
     },
 };
@@ -134,8 +145,12 @@ const UIManager = {
     showDetail(holder) {
         AppState.selectedHolder = holder;
 
-        if (DOM.detailNameLabel) DOM.detailNameLabel.style.display = '';
-        if (DOM.detailNameText) DOM.detailNameText.textContent = holder.credentialHolder || '-';
+        const detailPanel = document.getElementById('credential-detail-panel');
+        const detailNameLabel = document.getElementById('credential-detail-name-label');
+        const detailNameText = document.getElementById('credential-detail-name-text');
+
+        if (detailNameLabel) detailNameLabel.style.display = '';
+        if (detailNameText) detailNameText.textContent = holder.credentialHolder || '-';
 
         document.getElementById('detail-holder-id').textContent = holder.credentialHolder || '-';
         document.getElementById('detail-holder-provider').innerHTML = getProvidersBadges(holder.providers);
@@ -143,12 +158,13 @@ const UIManager = {
         document.getElementById('detail-holder-verified').textContent = holder.verifiedConnectionCount ?? '-';
         document.getElementById('detail-holder-default').innerHTML = getDefaultBadge(holder.isDefault);
 
-        if (DOM.detailPanel) DOM.detailPanel.style.display = '';
+        if (detailPanel) detailPanel.style.display = '';
     },
 
     hideDetail() {
         AppState.selectedHolder = null;
-        if (DOM.detailPanel) DOM.detailPanel.style.display = 'none';
+        const detailPanel = document.getElementById('credential-detail-panel');
+        if (detailPanel) detailPanel.style.display = 'none';
     },
 };
 
@@ -226,4 +242,20 @@ export function hideDetail() {
 document.addEventListener('DOMContentLoaded', () => {
     KVManager.reset();
     CredentialHolderManager.loadHolders();
+
+    // Provider 선택 시 cb-spider 기대 key 이름으로 KV 행 자동 채우기
+    const providerSelect = document.getElementById('create-holder-provider');
+    if (providerSelect) {
+        providerSelect.addEventListener('change', () => {
+            const keys = PROVIDER_KEYS[providerSelect.value];
+            const container = document.getElementById('kv-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            if (keys && keys.length > 0) {
+                keys.forEach(key => KVManager.addRow(key, ''));
+            } else {
+                KVManager.addRow();
+            }
+        });
+    }
 });

@@ -22,6 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     setActiveMenu();
 
+    document.addEventListener("refresh-sidebar", function () {
+        updatemenu();
+    });
+
 });
 
 function updatemenu(){

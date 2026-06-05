@@ -120,24 +120,41 @@ const UserManager = {
 
   // 폼 데이터 수집
   collectFormData() {
-    const email = document.getElementById('create-user-email').value;
-    return {
-      username: email, // email을 username으로 사용
-      email: email,
+    const username = document.getElementById('create-user-username').value.trim();
+    const email = document.getElementById('create-user-email').value.trim();
+    // const password = document.getElementById('create-user-password').value;
+    const data = {
+      username,
+      email,
       firstName: document.getElementById('create-user-firstname').value,
       lastName: document.getElementById('create-user-lastname').value,
       enabled: document.getElementById('create-user-enabled').checked,
       emailVerified: false // 고정값
     };
+    // if (password && password.trim() !== '') {
+    //   data.password = password.trim();
+    // }
+    return data;
   },
 
   // 유효성 검증
   validateUserData(userData) {
     const errors = [];
-    
-    if (!userData.email || userData.email.trim() === '') {
+
+    const username = (userData.username || '').trim();
+    const email = (userData.email || '').trim();
+
+    if (!username) {
+      errors.push('User ID is required');
+    } else if (username.includes('@')) {
+      errors.push('User ID must not be an email address');
+    } else if (email && username === email) {
+      errors.push('User ID must differ from email address');
+    }
+
+    if (!email) {
       errors.push('Email is required');
-    } else if (!this.isValidEmail(userData.email)) {
+    } else if (!this.isValidEmail(email)) {
       errors.push('Invalid email format');
     }
     
@@ -148,7 +165,11 @@ const UserManager = {
     if (!userData.lastName || userData.lastName.trim() === '') {
       errors.push('Last name is required');
     }
-    
+
+    // if (userData.password && userData.password.length < 8) {
+    //   errors.push('Password must be at least 8 characters');
+    // }
+
     return errors;
   },
 
@@ -353,7 +374,7 @@ const UIManager = {
       descriptionsElement.innerHTML = '<span class="text-muted">-</span>';
       actionsElement.innerHTML = `
         <div class="btn-list justify-content-center">
-          <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('${roleType}')" title="Add ${roleType} role">
+          <button class="btn btn-outline-primary btn-sm" onclick="openAddUserRoleModal('${roleType}')" title="Add ${roleType} role">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path d="M12 5l0 14"></path>
@@ -387,7 +408,7 @@ const UIManager = {
       actionsElement.innerHTML = `
         <div class="btn-list justify-content-center">
           ${removeButtons}
-          <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('${roleType}')" title="Add ${roleType} role">
+          <button class="btn btn-outline-primary btn-sm" onclick="openAddUserRoleModal('${roleType}')" title="Add ${roleType} role">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path d="M12 5l0 14"></path>
@@ -566,39 +587,60 @@ const ModalManager = {
   // 역할 타입별 역할 목록 로드
   async loadRolesByType(roleType) {
     try {
-      
-      let roles = [];
-      if (webconsolejs["common/api/services/roles_api"]) {
-        switch (roleType) {
-          case 'platform':
-            roles = await webconsolejs["common/api/services/roles_api"].getRoleList();
-            break;
-          case 'workspace':
-            roles = await webconsolejs["common/api/services/roles_api"].getRoleList();
-            break;
-          case 'csp':
-            roles = await webconsolejs["common/api/services/roles_api"].getRoleList();
-            break;
-        }
-      } else {
-        console.error("roles_api service not found");
+      if (!webconsolejs['common/api/services/roles_api']) {
+        console.error('roles_api service not found');
+        return;
       }
-      
+
+      const allRoles = await webconsolejs['common/api/services/roles_api'].getRoleList();
+      const roles = this.filterRolesByType(allRoles || [], roleType);
       this.populateRoleSelect(roles);
     } catch (error) {
-      console.error("Failed to load role list:", error);
+      console.error('Failed to load role list:', error);
     }
+  },
+
+  getRoleTypes(role) {
+    if (Array.isArray(role.role_types) && role.role_types.length > 0) {
+      return role.role_types;
+    }
+    if (Array.isArray(role.roleTypes) && role.roleTypes.length > 0) {
+      return role.roleTypes;
+    }
+
+    const roleSubs = role.role_subs || role.roleSubs || [];
+    return roleSubs
+      .map((sub) => sub.role_type || sub.roleType)
+      .filter(Boolean);
+  },
+
+  filterRolesByType(roles, roleType) {
+    if (!roleType) {
+      return roles;
+    }
+
+    const normalizedType = roleType.toLowerCase();
+    return roles.filter((role) => {
+      const roleTypes = this.getRoleTypes(role);
+      return roleTypes.some((type) => String(type).toLowerCase() === normalizedType);
+    });
   },
 
   // 역할 선택 드롭다운 채우기
   populateRoleSelect(roles) {
     if (!DOM.roleMappingRole) return;
-    
+
     DOM.roleMappingRole.innerHTML = '<option value="">Select role</option>';
-    roles.forEach(role => {
+    roles.forEach((role) => {
+      const roleId = role.id ?? role.roleId ?? role.ID;
+      const roleName = role.name ?? role.roleName ?? '';
+      if (!roleId) {
+        return;
+      }
+
       const option = document.createElement('option');
-      option.value = role.id;
-      option.textContent = role.name;
+      option.value = roleId;
+      option.textContent = roleName;
       DOM.roleMappingRole.appendChild(option);
     });
   }
@@ -651,7 +693,7 @@ window.createUser = async function() {
     firstName: document.getElementById('add-user-firstname').value,
     lastName: document.getElementById('add-user-lastname').value,
     email: document.getElementById('add-user-email').value,
-    password: document.getElementById('add-user-password').value,
+    // password: document.getElementById('add-user-password').value,
     enabled: document.getElementById('add-user-enabled').checked
   };
 
@@ -673,7 +715,7 @@ window.createUser = async function() {
   }
 };
 
-window.addUserRole = async function() {
+window.submitUserRoleMapping = async function() {
   if (!AppState.users.selectedUser) {
     Utils.showAlert('Please select a user.');
     return;
@@ -688,46 +730,65 @@ window.addUserRole = async function() {
   }
 
   try {
+    const workspaceApi = webconsolejs['common/api/services/workspace_api'];
+    const currentWorkspace = workspaceApi?.getCurrentWorkspace?.();
+    const workspaceId = currentWorkspace?.Id ?? currentWorkspace?.id ?? '1';
+
     await UserManager.addUserRole(AppState.users.selectedUser.id, {
       roleType: roleType,
-      roleId: roleId
+      roleId: roleId,
+      workspaceId: workspaceId.toString()
     });
-    
-    // 모달 닫기
+
     const modal = bootstrap.Modal.getInstance(DOM.addRoleMappingModal);
     if (modal) modal.hide();
-    
-    // 폼 초기화
+
     document.getElementById('add-role-mapping-form').reset();
-    
-    // 유저 상세 정보 새로고침
-    if (AppState.users.selectedUser) {
-      const userDetails = await UserManager.loadUserDetails(AppState.users.selectedUser.id);
-      if (userDetails) {
-        UIManager.updateRoleLists(
-          userDetails.platformRoles || [],
-          userDetails.workspaceRoles || [],
-          userDetails.cspRoles || []
-        );
+
+    Utils.showAlert('Role added successfully.');
+
+    const userList = await UserManager.loadUsers();
+    AppState.users.list = userList || [];
+    const selectedUserId = AppState.users.selectedUser.id;
+    const updatedUser = AppState.users.list.find((user) => user.id === selectedUserId);
+
+    if (updatedUser) {
+      AppState.users.selectedUser = updatedUser;
+      UIManager.updateRoleLists(
+        updatedUser.platform_roles || updatedUser.platformRoles || [],
+        updatedUser.workspace_roles || updatedUser.workspaceRoles || [],
+        updatedUser.csp_roles || updatedUser.cspRoles || []
+      );
+    }
+
+    if (roleType === 'workspace') {
+      try {
+        const workspaceData = await webconsolejs['common/api/services/users_api']
+          .getUserWorkspacesByUserID(selectedUserId);
+        updateWorkspaceInfo(workspaceData);
+      } catch (workspaceError) {
+        console.error('Failed to refresh workspace information:', workspaceError);
       }
     }
-    
+
   } catch (error) {
     console.error('Error adding role:', error);
+    Utils.showAlert(error.message || 'Failed to add role.');
   }
 };
 
-window.addUserRole = async function(roleType) {
+window.openAddUserRoleModal = async function(roleType) {
   if (!AppState.users.selectedUser) {
     Utils.showAlert('Please select a user.');
     return;
   }
 
-  // 역할 타입 설정
   setRoleType(roleType);
-  
-  // 모달 열기
-  const modal = new bootstrap.Modal(document.getElementById('add-role-mapping-modal'));
+
+  let modal = bootstrap.Modal.getInstance(DOM.addRoleMappingModal);
+  if (!modal) {
+    modal = new bootstrap.Modal(DOM.addRoleMappingModal);
+  }
   modal.show();
 };
 
@@ -925,7 +986,7 @@ function updateWorkspaceInfo(workspaceData) {
     descriptionsElement.innerHTML = '<span class="text-muted">-</span>';
     actionsElement.innerHTML = `
       <div class="btn-list justify-content-center">
-        <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('workspace')" title="Add Workspace role">
+        <button class="btn btn-outline-primary btn-sm" onclick="openAddUserRoleModal('workspace')" title="Add Workspace role">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
             <path d="M12 5l0 14"></path>
@@ -962,7 +1023,7 @@ function updateWorkspaceInfo(workspaceData) {
     actionsElement.innerHTML = `
       <div class="btn-list justify-content-center">
         ${removeButtons}
-        <button class="btn btn-outline-primary btn-sm" onclick="addUserRole('workspace')" title="Add Workspace role">
+        <button class="btn btn-outline-primary btn-sm" onclick="openAddUserRoleModal('workspace')" title="Add Workspace role">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
             <path d="M12 5l0 14"></path>
