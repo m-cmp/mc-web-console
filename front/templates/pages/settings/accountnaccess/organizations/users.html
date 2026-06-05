@@ -482,7 +482,7 @@
                           <div class="btn-list justify-content-center">
                             <button
                               class="btn btn-outline-primary btn-sm"
-                              onclick="addUserRole('platform')"
+                              onclick="openAddUserRoleModal('platform')"
                               title="Add Platform role"
                             >
                               <svg
@@ -549,7 +549,7 @@
                           <div class="btn-list justify-content-center">
                             <button
                               class="btn btn-outline-primary btn-sm"
-                              onclick="addUserRole('workspace')"
+                              onclick="openAddUserRoleModal('workspace')"
                               title="Add Workspace role"
                             >
                               <svg
@@ -610,7 +610,7 @@
                           <div class="btn-list justify-content-center">
                             <button
                               class="btn btn-outline-primary btn-sm"
-                              onclick="addUserRole('csp')"
+                              onclick="openAddUserRoleModal('csp')"
                               title="Add CSP role"
                             >
                               <svg
@@ -691,6 +691,18 @@
             </div>
           </div>
           <div class="mb-3">
+            <label class="form-label required">User ID</label>
+            <input
+              type="text"
+              class="form-control"
+              id="create-user-username"
+              placeholder="Login ID (e.g. abc)"
+              autocomplete="off"
+              required
+            />
+            <small class="form-hint">로그인 ID — email 과 별도 (예: abc / abc@abc.com)</small>
+          </div>
+          <div class="mb-3">
             <label class="form-label required">Email</label>
             <input
               type="email"
@@ -700,6 +712,7 @@
               required
             />
           </div>
+          <!-- Password: IAM CreateUser 미반영 — Reset Password 로 설정
           <div class="mb-3">
             <label class="form-label">Password</label>
             <input
@@ -709,6 +722,7 @@
               placeholder="Enter password"
             />
           </div>
+          -->
           <div class="mb-3">
             <label class="form-check form-switch">
               <input
@@ -760,6 +774,7 @@
     </div>
   </div>
 </div>
+</div>
 
 <!-- Add Role Mapping Modal -->
 <div
@@ -803,7 +818,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Cancel
         </button>
-        <button type="button" class="btn btn-primary" onclick="addUserRole()">
+        <button type="button" class="btn btn-primary" onclick="submitUserRoleMapping()">
           Add Role
         </button>
       </div>
@@ -910,4 +925,8 @@
 
 
 <!-- javascript -->
-{{ javascriptTag("common/api/services/users_api.js") | raw }} {{ javascriptTag("common/api/services/groups_api.js") | raw }} {{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}
+{{ javascriptTag("common/api/services/users_api.js") | raw }}
+{{ javascriptTag("common/api/services/groups_api.js") | raw }}
+{{ javascriptTag("common/api/services/roles_api.js") | raw }}
+{{ javascriptTag("common/api/services/workspace_api.js") | raw }}
+{{ javascriptTag("pages/settings/accountnaccess/organizations/users.js") | raw }}
