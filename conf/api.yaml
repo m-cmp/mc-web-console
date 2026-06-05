@@ -1114,6 +1114,14 @@ serviceActions:
       method: delete
       resourcePath: /api/users/id/{userId}/organizations/{organizationId}
       description: 사용자 그룹 제거
+    assignGroupPlatformRole:
+      method: post
+      resourcePath: /api/groups/id/{groupId}/platform-roles
+      description: 그룹에 Platform Role 할당
+    getGroupPlatformRoles:
+      method: get
+      resourcePath: /api/groups/id/{groupId}/platform-roles
+      description: 그룹의 Platform Role 목록 조회
     listCspAccounts:
       method: post
       resourcePath: /api/csp-accounts/list
