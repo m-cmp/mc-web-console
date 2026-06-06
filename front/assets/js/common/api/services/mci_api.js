@@ -75,7 +75,7 @@ export async function getMci(nsId, mciId) {
   const data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId
+      infraId: mciId
     }
   }
 
@@ -112,7 +112,7 @@ export async function getMciVm(nsId, mciId, vmId) {
   const data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
       vmId: vmId
     }
   }
@@ -145,7 +145,7 @@ export function mciLifeCycle(type, currentMciId, nsId) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: currentMciId,
+      infraId: currentMciId,
     },
     queryParams: {
       "action": type,
@@ -164,7 +164,7 @@ export function mciDelete(currentMciId, nsId) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: currentMciId,
+      infraId: currentMciId,
     },
     queryParams: {
       option: "force"
@@ -182,7 +182,7 @@ export function vmDelete(mciId, nsId, vmId) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
       vmId: vmId
     },
     queryParams: {
@@ -203,7 +203,7 @@ export function vmLifeCycle(type, mciId, nsId, vmid) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
       vmId: vmid
     },
     queryParams: {
@@ -323,7 +323,7 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
   const data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
     },
     request: {
       "imageId": obj.commonImage,
@@ -724,7 +724,7 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
   var data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
       subgroupId: subgroupId
     },
     Request: {
@@ -789,7 +789,7 @@ export async function deletePolicy(nsId, mciId) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
     },
     queryParams: {
       option: "force"
@@ -810,7 +810,7 @@ export async function createPolicy(nsId, mciId, policy) {
   let data = {
     pathParams: {
       nsId: nsId,
-      mciId: mciId,
+      infraId: mciId,
     },
     Request: {
       policy: policy
