@@ -160,7 +160,7 @@ function refreshDisplay() {
       var aMci = window.totalMciListObj[mciIndex];
 
       if (window.currentMciId == aMci.id) {
-        displayServerStatusList(window.currentMciId, aMci.vm)
+        displayServerStatusList(window.currentMciId, aMci.node)
         break;
       }
     }
@@ -181,8 +181,8 @@ function refreshRowData(rowId, newData) {
     });
 
 
-  displayServerStatusList(rowId, newData.vm)
-  displayServerGroupStatusList(rowId, newData.vm)
+  displayServerStatusList(rowId, newData.node)
+  displayServerGroupStatusList(rowId, newData.node)
 }
 
 // Policy Info 상태 초기화 함수
@@ -506,7 +506,7 @@ function setMciInfoData(mciData) {
     // var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
     // var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
     var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCI에 사용 된 provider
-    var totalvmCount = mciData.vm.length; //mci의 vm개수
+    var totalvmCount = (mciData.node || []).length; //mci의 node개수
 
     var mciStatusCell = "";
 
@@ -708,6 +708,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function displayServerStatusList(mciID, vmList) {
   var mciName = mciID;
   var vmLi = "";
+  if (!vmList || vmList.length === 0) {
+    $("#mci_server_info_box").empty();
+    return;
+  }
   vmList.sort();
 
   vmList.forEach((aVm) => {
@@ -1039,10 +1043,10 @@ export async function vmDetailInfo(vmId) {
       aMci = totalMciListObj[mciIndex];
 
       if (aMci.id == currentMciId) {
-        for (var vmIndex in aMci.vm) {
-          var tempVms = aMci.vm
+        for (var vmIndex in aMci.node) {
+          var tempVms = aMci.node
           if (currentVmId == tempVms.id) {
-            aMci.vm[vmIndex] = aVm;
+            aMci.node[vmIndex] = aVm;
             break;
           }
         }
@@ -1055,12 +1059,12 @@ export async function vmDetailInfo(vmId) {
     clearServerInfo();
 
 
-    if (!aMci || !aMci.vm) {
+    if (!aMci || !aMci.node) {
       return;
     }
 
     var mciName = aMci.name;
-    var vmList = aMci.vm;
+    var vmList = aMci.node;
 
     var vmExist = false;
     var data = new Object();
@@ -1265,10 +1269,10 @@ export async function subGroup_vmDetailInfo(vmId) {
       aMci = totalMciListObj[mciIndex];
 
       if (aMci.id == currentMciId) {
-        for (var vmIndex in aMci.vm) {
-          var tempVms = aMci.vm
+        for (var vmIndex in aMci.node) {
+          var tempVms = aMci.node
           if (currentVmId == tempVms.id) {
-            aMci.vm[vmIndex] = aVm;
+            aMci.node[vmIndex] = aVm;
             break;
           }
         }
@@ -1281,13 +1285,13 @@ export async function subGroup_vmDetailInfo(vmId) {
     clearServerInfo();
 
 
-    if (!aMci || !aMci.vm) {
-      console.error("aMci or vmList is not defined");
+    if (!aMci || !aMci.node) {
+      console.error("aMci or nodeList is not defined");
       return;
     }
 
     var mciName = aMci.name;
-    var vmList = aMci.vm;
+    var vmList = aMci.node;
 
     var vmExist = false;
     var data = new Object();
@@ -2036,7 +2040,7 @@ function statusFormatter(cell) {
 // provider를 table에서 표시하기 위해 감싸기
 function providerFormatter(data) {
   var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
-    data.getData().vm
+    data.getData().node
   );
   var mciProviderCell = "";
   vmCloudConnectionMap.forEach((value, key) => {
@@ -2056,7 +2060,7 @@ function providerFormatter(data) {
 function providerFormatterString(data) {
 
   var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
-    data.getData().vm
+    data.getData().node
   );
 
   var mciProviderCell = "";
@@ -2338,7 +2342,7 @@ function providerFilter(data) {
   // equal only
   if (typeEl.value == "=") {
     var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
-      data.vm
+      data.node
     );
     var valueElValue = valueEl.value;
     if (valueElValue != "") {
