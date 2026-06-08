@@ -253,7 +253,7 @@ export async function mciDynamicReview(mciName, mciDesc, Express_Server_Config_A
         "command": command,
         "userName": "cb-user"
       },
-      "subGroups": subGroups,
+      "nodeGroups": subGroups,
       "systemLabel": ""
     }
   }
@@ -293,7 +293,7 @@ export async function mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, ns
     Request: {
       "name": mciName,
       "description": mciDesc,
-      "subGroups": subGroups,
+      "nodeGroups": subGroups,
       "policyOnPartialFailure": policyOnPartialFailure,
       "postCommand": {
         "command": command,
