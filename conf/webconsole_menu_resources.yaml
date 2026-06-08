@@ -52,7 +52,7 @@ menus:
     parentid: organizations
     displayname: Approvals
     restype: menu
-    isaction: false
+    isaction: true
     priority: 2
     menunumber: 1230
 
