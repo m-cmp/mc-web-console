@@ -992,7 +992,7 @@ export async function editeWorkspace() {
   await webconsolejs["common/api/services/workspace_api"].updateWorkspaceById(wsid, description);
   const updateWPmappingsResp = await webconsolejs["common/api/services/workspace_api"].updateWPmappings(wsid, multiprojects);
   if (!updateWPmappingsResp.success) {
-    webconsolejs['partials/layout/modal'].commonShowDefaultModal("ERROR", "중복 할당된 프로젝트가 존재합니다.")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal("ERROR", "Duplicate project assignment detected.")
   } else {
     location.reload()
   }

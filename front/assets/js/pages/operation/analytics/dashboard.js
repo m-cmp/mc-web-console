@@ -1,5 +1,5 @@
 /**
- * dashboard.js — 커스터마이징 모니터링 대시보드 메인 로직
+ * dashboard.js — Customizable monitoring Dashboard main logic
  */
 
 import { GridStack } from 'gridstack';
@@ -133,7 +133,7 @@ $(document).on('change', '#resource-ns-select', async function () {
 
 $(document).on('change', '#resource-mci-select', async function () {
   var nsId = $('#resource-ns-select').val(), mciId = $(this).val();
-  var $vmSel = $('#resource-vm-select').empty().append('<option value="">선택</option>');
+  var $vmSel = $('#resource-vm-select').empty().append('<option value="">Select</option>');
   if (!nsId || !mciId) return;
   try {
     var mciData = await webconsolejs['common/api/services/mci_api'].getMci(nsId, mciId);
@@ -170,8 +170,8 @@ function addWidgetToGrid(widgetId, widgetDef, config) {
     '<h3 class="card-title" style="font-size:0.85rem;"><i class="' + widgetDef.icon + '" style="color:' + widgetDef.color + '"></i> ' +
     widgetDef.name + '<small class="text-muted ms-2">' + (config.vmId || '') + '</small></h3>' +
     '<div class="card-actions">' +
-    '<button class="btn btn-ghost-secondary btn-icon btn-sm widget-config-btn" data-widget-id="' + widgetId + '" title="설정"><i class="ti ti-settings"></i></button>' +
-    '<button class="btn btn-ghost-danger btn-icon btn-sm widget-remove-btn" data-widget-id="' + widgetId + '" title="삭제"><i class="ti ti-x"></i></button>' +
+    '<button class="btn btn-ghost-secondary btn-icon btn-sm widget-config-btn" data-widget-id="' + widgetId + '" title="Settings"><i class="ti ti-settings"></i></button>' +
+    '<button class="btn btn-ghost-danger btn-icon btn-sm widget-remove-btn" data-widget-id="' + widgetId + '" title="Delete"><i class="ti ti-x"></i></button>' +
     '</div></div>' +
     '<div class="card-body p-2" style="min-height:0;overflow:hidden;"><div id="' + chartId + '" style="width:100%;height:100%;"></div></div>' +
     '</div></div></div>';
@@ -286,7 +286,7 @@ function updateEmptyState() {
 function showToast(type, message) {
   var bg = type === 'success' ? 'bg-success' : type === 'warning' ? 'bg-warning' : 'bg-danger';
   var $t = $('<div class="toast show position-fixed bottom-0 end-0 m-3" role="alert" style="z-index:9999;">' +
-    '<div class="toast-header ' + bg + ' text-white"><strong class="me-auto">대시보드</strong>' +
+    '<div class="toast-header ' + bg + ' text-white"><strong class="me-auto">Dashboard</strong>' +
     '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div>' +
     '<div class="toast-body">' + message + '</div></div>');
   $('body').append($t);

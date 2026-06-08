@@ -67,7 +67,7 @@ function syncUpdateConnCheckboxes() {
 
   const providers = Object.keys(byProvider).sort();
   if (providers.length === 0) {
-    group.innerHTML = '<span class="text-secondary small">선택된 Provider에 해당하는 Connection이 없습니다</span>';
+    group.innerHTML = '<span class="text-secondary small">No Connections available for the selected Provider</span>';
     return;
   }
 
@@ -133,7 +133,7 @@ function getSelectedQueryTypes() {
 
 window.syncQuery = async function () {
   const resourceTypes = getSelectedQueryTypes();
-  if (resourceTypes.length === 0) { alert('자원 유형을 하나 이상 선택하세요.'); return; }
+  if (resourceTypes.length === 0) { alert('Please select at least one resource type.'); return; }
 
   const mode = document.querySelector('input[name="query-provider-radio"]:checked')?.value;
 
@@ -141,18 +141,18 @@ window.syncQuery = async function () {
     await queryAll();
   } else {
     const selectedConns = Array.from(document.querySelectorAll('.qry-conn-cb:checked')).map(c => c.value);
-    if (selectedConns.length === 0) { alert('Connection을 하나 이상 선택하세요.'); return; }
+    if (selectedConns.length === 0) { alert('Please select at least one Connection.'); return; }
     await queryPartial(selectedConns, resourceTypes);
   }
 };
 
-// 전체 조회: InspectResourcesOverview
+// All 조회: InspectResourcesOverview
 async function queryAll() {
   const statusEl = document.getElementById('qry-status');
   const loading  = document.getElementById('sync-overview-loading');
   const summary  = document.getElementById('sync-summary');
 
-  statusEl.textContent = '조회 중…';
+  statusEl.textContent = 'Querying...';
   loading.style.display = '';
   summary.style.display = 'none';
 
@@ -191,7 +191,7 @@ async function queryAll() {
     document.getElementById('sum-total').textContent    = data.registeredConnection ?? AppState.overviewRows.length;
     document.getElementById('sum-avail').textContent    = data.availableConnection  ?? AppState.overviewRows.length;
     document.getElementById('sum-unsynced').textContent = unsyncedCount;
-    document.getElementById('sync-elapsed').textContent = data.elapsedTime ? `조회 시간: ${data.elapsedTime}초` : '';
+    document.getElementById('sync-elapsed').textContent = data.elapsedTime ? `Query time: ${data.elapsedTime}s` : '';
     summary.style.display = '';
 
     populateSyncProviderCheckboxes();
@@ -199,7 +199,7 @@ async function queryAll() {
     statusEl.textContent = '';
   } catch (e) {
     loading.style.display = 'none';
-    statusEl.textContent = '조회 실패';
+    statusEl.textContent = 'Query failed';
     console.error('InspectResourcesOverview failed', e);
     renderOverviewTable([], []);
   }
@@ -213,7 +213,7 @@ async function queryPartial(connections, resourceTypes) {
 
   loading.style.display = '';
   summary.style.display = 'none';
-  statusEl.textContent = `0 / ${connections.length * resourceTypes.length} 조회 중…`;
+  statusEl.textContent = `0 / ${connections.length * resourceTypes.length} Querying...`;
 
   AppState.overviewRaw = [];
   const connMap = {};
@@ -243,7 +243,7 @@ async function queryPartial(connections, resourceTypes) {
           .catch(e => { console.warn(`InspectResources failed: ${conn}/${rt}`, e); })
           .finally(() => {
             done++;
-            statusEl.textContent = `${done} / ${connections.length * resourceTypes.length} 조회 중…`;
+            statusEl.textContent = `${done} / ${connections.length * resourceTypes.length} Querying...`;
           })
       );
     }
@@ -289,7 +289,7 @@ function renderOverviewTable(data, resourceTypes) {
   AppState.overviewTable = new Tabulator('#sync-overview-table', {
     data,
     layout: 'fitColumns',
-    placeholder: '조회 버튼을 클릭하여 현황을 조회하세요.',
+    placeholder: 'Click the Query button to fetch the status.',
     pagination: 'local',
     paginationSize: 10,
     selectable: true,
@@ -310,7 +310,7 @@ function renderOverviewTable(data, resourceTypes) {
   AppState.overviewTable.on('rowSelectionChanged', (rows) => {
     const el = document.getElementById('sync-selected-conn');
     if (!rows || rows.length === 0) {
-      el.textContent = '현황 테이블에서 Connection을 선택하세요 (미선택 시 전체 대상)';
+      el.textContent = 'Select a Connection from the status table (all if none selected)';
       el.className = 'form-control bg-light text-secondary';
     } else {
       el.textContent = rows.map(r => r.connectionName).join(', ');
@@ -338,8 +338,8 @@ function renderDetailCard(rowData, resourceTypes) {
     let badge;
     if (typeof onOnly === 'number') {
       badge = onOnly > 0
-        ? `<span class="badge bg-warning text-dark">${onOnly}개 미등록</span>`
-        : `<span class="badge bg-success">동기화됨</span>`;
+        ? `<span class="badge bg-warning text-dark">${onOnly} unregistered</span>`
+        : `<span class="badge bg-success">Synced</span>`;
     } else {
       badge = `<span class="text-secondary small">-</span>`;
     }
@@ -425,13 +425,13 @@ function buildFilters(connNames) {
 
 window.syncExecute = async function () {
   const nsId = document.getElementById('sync-ns').value;
-  if (!nsId) { alert('먼저 Namespace를 선택하세요.'); return; }
+  if (!nsId) { alert('Please select a Namespace first.'); return; }
 
   const restypePartial = document.querySelector('input[name="restype-radio"]:checked')?.value === 'partial';
   let types;
   if (restypePartial) {
     types = Array.from(document.querySelectorAll('.sync-type-cb:checked')).map(c => c.value);
-    if (types.length === 0) { alert('자원 유형을 하나 이상 선택하세요.'); return; }
+    if (types.length === 0) { alert('Please select at least one resource type.'); return; }
   } else {
     types = ['vNet', 'securityGroup', 'sshKey', 'vm', 'dataDisk', 'customImage'];
   }
@@ -452,19 +452,19 @@ window.syncExecute = async function () {
         .map(r => r.connectionName);
       filters = buildFilters(conns);
     } else {
-      filters = [{}]; // 전체 — provider/region 필터 없음
+      filters = [{}]; // All — provider/region 필터 없음
     }
   }
 
   const filterDesc = filters.length === 1 && !filters[0].provider
-    ? '전체'
+    ? 'All'
     : filters.map(f => `${f.provider}/${f.region}`).join(', ');
 
-  if (!confirm(`동기화를 실행합니다.\nNS: ${nsId}\n대상: ${filterDesc}\n자원 유형: ${types.join(', ')}\n\n계속하시겠습니까?`)) return;
+  if (!confirm(`Running sync.\nNS: ${nsId}\nTarget: ${filterDesc}\nResource Type: ${types.join(', ')}\n\nDo you want to continue?`)) return;
 
   const statusEl = document.getElementById('sync-exec-status');
   statusEl.className = 'text-secondary small';
-  statusEl.textContent = `동기화 실행 중… (${filters.length}개 요청)`;
+  statusEl.textContent = `Running sync... (${filters.length} requests)`;
 
   AppState.lastSyncResult = [];
   let totalSucceeded = 0;
@@ -485,7 +485,7 @@ window.syncExecute = async function () {
   }
 
   statusEl.className = totalFailed > 0 ? 'text-warning small' : 'text-success small';
-  statusEl.textContent = `완료: ${totalSucceeded}개 등록, ${totalFailed}개 실패`;
+  statusEl.textContent = `Completed: ${totalSucceeded} registered, ${totalFailed} failed`;
 
   const resultTabLink = document.querySelector('#sync-tabs .nav-item:last-child .nav-link');
   syncShowTab('result', resultTabLink);
@@ -524,14 +524,14 @@ function renderResultTab() {
     empty.style.display = '';
     content.style.display = 'none';
     document.getElementById('result-empty').textContent =
-      `동기화 실패: ${AppState.lastSyncResult.map(r => r.error).join(', ')}`;
+      `Sync failed: ${AppState.lastSyncResult.map(r => r.error).join(', ')}`;
     return;
   }
 
   empty.style.display   = 'none';
   content.style.display = '';
 
-  // 전체 결과 집계 (다중 호출 합산)
+  // All 결과 집계 (다중 호출 합산)
   let totalSucceeded = 0;
   let totalFailed    = 0;
   let totalElapsed   = 0;
@@ -542,7 +542,7 @@ function renderResultTab() {
     if (!entry.success) {
       const filterLabel = entry.filter?.provider
         ? `${entry.filter.provider}/${entry.filter.region}`
-        : '전체';
+        : 'All';
       rows.push({ connectionName: filterLabel, resourceType: '—', resourceId: entry.error, status: 'Error', message: '', _failed: true });
       continue;
     }
@@ -564,18 +564,18 @@ function renderResultTab() {
       const connName = connResult.connectionName || '';
       const outputs  = connResult.registerationOutputs?.output || [];
       if (outputs.length === 0) {
-        rows.push({ connectionName: connName, resourceType: '—', resourceId: '(결과 없음)', status: '—', message: '', _failed: false });
+        rows.push({ connectionName: connName, resourceType: '—', resourceId: '(no result)', status: '—', message: '', _failed: false });
       } else {
         outputs.forEach(str => rows.push(parseOutputString(str, connName)));
       }
     }
   }
 
-  document.getElementById('result-elapsed').textContent = totalElapsed ? `소요 시간: ${totalElapsed}초` : '';
+  document.getElementById('result-elapsed').textContent = totalElapsed ? `Elapsed: ${totalElapsed}s` : '';
   document.getElementById('result-summary').innerHTML = `
-    <span class="text-secondary small">가용 커넥션: <strong>${totalAvail}</strong></span>
-    <span class="text-success small">등록 성공: <strong>${totalSucceeded}</strong></span>
-    ${totalFailed > 0 ? `<span class="text-danger small">실패: <strong>${totalFailed}</strong></span>` : ''}
+    <span class="text-secondary small">Available connections: <strong>${totalAvail}</strong></span>
+    <span class="text-success small">Registered: <strong>${totalSucceeded}</strong></span>
+    ${totalFailed > 0 ? `<span class="text-danger small">Failed: <strong>${totalFailed}</strong></span>` : ''}
   `;
 
   if (AppState.resultTable) {
@@ -588,7 +588,7 @@ function renderResultTab() {
     layout: 'fitColumns',
     pagination: 'local',
     paginationSize: 20,
-    placeholder: '등록된 자원이 없습니다.',
+    placeholder: 'No registered resources found.',
     rowFormatter: (row) => {
       if (row.getData()._failed) row.getElement().classList.add('table-danger');
     },
@@ -635,10 +635,10 @@ async function loadNsDropdown() {
 
 window.nsSyncQuery = async function () {
   const area = document.getElementById('nssync-diff-area');
-  area.innerHTML = '<p>조회 중...</p>';
+  area.innerHTML = '<p>Querying...</p>';
   const diff = await api().getProjectSyncDiff().catch(() => null);
   if (!diff) {
-    area.innerHTML = '<p class="text-danger">조회 실패 — API 연결을 확인하세요.</p>';
+    area.innerHTML = '<p class="text-danger">Query failed — Check API connection.</p>';
     return;
   }
   renderNsSyncDiff(diff);
@@ -650,17 +650,17 @@ function renderNsSyncDiff(diff) {
   const hasIssue   = missing.length > 0 || unassigned.length > 0;
   let html = '';
   if (!hasIssue) {
-    html = '<p class="text-success fw-semibold">동기화 상태 정상 — 모든 Namespace가 Workspace에 할당되어 있습니다.</p>';
+    html = '<p class="text-success fw-semibold">Sync status OK — all Namespaces are assigned to a Workspace.</p>';
   } else {
     if (missing.length > 0) {
-      html += `<h6 class="mb-2">Project 미생성 Namespace (${missing.length}건)</h6>
+      html += `<h6 class="mb-2">Namespaces without Project (${missing.length} items)</h6>
       <table class="table table-sm table-bordered mb-3">
         <thead class="table-light"><tr><th>NS ID</th><th>NS Name</th></tr></thead>
         <tbody>${missing.map(r => `<tr><td>${r.nsId}</td><td>${r.nsName || ''}</td></tr>`).join('')}</tbody>
       </table>`;
     }
     if (unassigned.length > 0) {
-      html += `<h6 class="mb-2">Workspace 미할당 Project (${unassigned.length}건)</h6>
+      html += `<h6 class="mb-2">Projects not assigned to Workspace (${unassigned.length} items)</h6>
       <table class="table table-sm table-bordered mb-3">
         <thead class="table-light"><tr><th>Project ID</th><th>Name</th><th>NS ID</th></tr></thead>
         <tbody>${unassigned.map(r => `<tr><td>${r.id}</td><td>${r.name}</td><td>${r.nsId || ''}</td></tr>`).join('')}</tbody>
@@ -694,12 +694,12 @@ async function loadNsSyncWorkspaceDropdown() {
 
 window.nsSyncApply = async function () {
   const workspaceId = document.getElementById('nssync-workspace-sel').value;
-  if (!workspaceId) { alert('Workspace를 선택하세요.'); return; }
+  if (!workspaceId) { alert('Please select a Workspace.'); return; }
   const resultDiv = document.getElementById('nssync-apply-result');
-  resultDiv.innerHTML = '<p>적용 중...</p>';
+  resultDiv.innerHTML = '<p>Applying...</p>';
 
   const diff = await api().getProjectSyncDiff().catch(() => null);
-  if (!diff) { resultDiv.innerHTML = '<p class="text-danger">차이 조회 실패</p>'; return; }
+  if (!diff) { resultDiv.innerHTML = '<p class="text-danger">Diff query failed</p>'; return; }
 
   const nsIds = [
     ...(diff.missingProjects    || []).map(r => r.nsId),
@@ -707,19 +707,19 @@ window.nsSyncApply = async function () {
   ].filter(Boolean);
 
   if (nsIds.length === 0) {
-    resultDiv.innerHTML = '<p class="text-success">적용할 항목이 없습니다.</p>';
+    resultDiv.innerHTML = '<p class="text-success">Nothing to apply.</p>';
     return;
   }
 
   const result = await api().applyProjectSync(workspaceId, nsIds).catch(() => null);
-  if (!result) { resultDiv.innerHTML = '<p class="text-danger">적용 실패</p>'; return; }
+  if (!result) { resultDiv.innerHTML = '<p class="text-danger">Apply failed</p>'; return; }
 
   resultDiv.innerHTML = `
     <ul class="list-unstyled mb-0">
-      <li>생성: <strong>${(result.created || []).length}</strong>건</li>
-      <li>할당: <strong>${(result.assigned || []).length}</strong>건</li>
-      <li>스킵: <strong>${(result.skipped || []).length}</strong>건</li>
-      <li>실패: <strong>${(result.failed  || []).length}</strong>건</li>
+      <li>Created: <strong>${(result.created || []).length}</strong> items</li>
+      <li>Assigned: <strong>${(result.assigned || []).length}</strong> items</li>
+      <li>Skipped: <strong>${(result.skipped || []).length}</strong> items</li>
+      <li>Failed: <strong>${(result.failed  || []).length}</strong> items</li>
     </ul>`;
 
   await window.nsSyncQuery();

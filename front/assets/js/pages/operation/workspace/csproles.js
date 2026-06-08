@@ -274,7 +274,7 @@ function displayCspRolePolicies(policies) {
           <path d="M12 9h.01"></path>
           <path d="M11 12h1v4h1"></path>
         </svg>
-        <div class="mt-2">이 CSP Role에 연결된 정책이 없습니다.</div>
+        <div class="mt-2">No policies linked to this CSP Role.</div>
       </div>
     `;
     return;

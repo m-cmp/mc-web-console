@@ -5,7 +5,7 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">DataDisk 목록</h3>
+              <h3 class="card-title">DataDisk List</h3>
             </div>
             <div class="card-body p-0">
               <div id="datadisk-list-table"></div>
@@ -22,28 +22,28 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">DataDisk 임포트</h5>
+        <h5 class="modal-title">Import DataDisk</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info mb-3">
-          선택된 Connection의 미등록 DataDisk 전체가 현재 프로젝트에 등록됩니다.
+          All unregistered DataDisks for the selected Connection will be registered to the current project.
         </div>
         <div class="mb-3">
           <label class="form-label">Connection</label>
           <select class="form-select" id="import-datadisk-connection"></select>
         </div>
         <div class="mb-2">
-          <label class="form-label">대상 프로젝트</label>
+          <label class="form-label">Target Project</label>
           <input type="text" class="form-control" id="import-datadisk-project" readonly>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary"
           onclick="webconsolejs['pages/settings/environment/cloudresources/datadisk'].executeImportDisk()">
           <span id="import-datadisk-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
-          Import 실행
+          Run Import
         </button>
       </div>
     </div>

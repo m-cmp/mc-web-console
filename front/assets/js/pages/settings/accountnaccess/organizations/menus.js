@@ -405,7 +405,7 @@ window.exportMenus = async function(format, filename) {
         URL.revokeObjectURL(url);
     } catch (err) {
         console.error("Export failed:", err);
-        alert("메뉴 Export에 실패했습니다.");
+        alert("Menu export failed.");
     }
 };
 
@@ -439,17 +439,17 @@ window.importMenus = async function(input) {
             data = JSON.parse(text);
         }
     } catch (e) {
-        alert("유효하지 않은 파일입니다. JSON 또는 YAML 형식을 확인하세요.");
+        alert("Invalid file. Please check the JSON or YAML format.");
         return;
     }
 
     const menus = data.menus || (Array.isArray(data) ? data : null);
     if (!menus || !Array.isArray(menus)) {
-        alert("메뉴 데이터를 찾을 수 없습니다. (menus 배열 필드가 필요합니다)");
+        alert("Menu data not found. (a 'menus' array field is required)");
         return;
     }
 
-    if (!confirm(`총 ${menus.length}개의 메뉴를 Import합니다.\n현재 메뉴 구성이 교체될 수 있습니다. 계속하시겠습니까?`)) return;
+    if (!confirm(`Total ${menus.length} menus will be imported.\nCurrent menu configuration may be replaced. Continue?`)) return;
 
     const existing = await webconsolejs["common/api/services/menus_api"].listMenusTree();
     const existingIds = new Set((existing || []).map(m => m.id));
@@ -474,10 +474,10 @@ window.importMenus = async function(input) {
     const body = document.getElementById('import-menus-result-body');
     if (body) {
         body.innerHTML = `
-            <p>Import가 완료되었습니다.</p>
-            ${created > 0 ? `<p><strong>${created}</strong>개 메뉴 생성됨</p>` : ''}
-            ${updated > 0 ? `<p><strong>${updated}</strong>개 메뉴 업데이트됨</p>` : ''}
-            ${failed > 0 ? `<p class="text-danger"><strong>${failed}</strong>개 실패</p>` : ''}`;
+            <p>Import completed.</p>
+            ${created > 0 ? `<p><strong>${created}</strong> menus created</p>` : ''}
+            ${updated > 0 ? `<p><strong>${updated}</strong> menus updated</p>` : ''}
+            ${failed > 0 ? `<p class="text-danger"><strong>${failed}</strong> failed</p>` : ''}`;
     }
     bootstrap.Modal.getOrCreateInstance(document.getElementById('import-menus-result-modal')).show();
 

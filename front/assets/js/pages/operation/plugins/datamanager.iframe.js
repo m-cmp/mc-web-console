@@ -24,15 +24,15 @@ async function loadDataManager() {
 
     if (!currentWorkspace || !currentWorkspace.Id || !currentProject || !currentProject.Id) {
         document.getElementById("targetIframe").innerHTML =
-            '<div class="alert alert-warning m-3">Workspace와 Project를 선택해 주세요.</div>';
+            '<div class="alert alert-warning m-3">Please select a Workspace and Project.</div>';
         return;
     }
 
     var host = await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-data-manager-fe");
     if (!host) {
         document.getElementById("targetIframe").innerHTML =
-            '<div class="alert alert-warning m-3">mc-data-manager-fe 서비스 URL을 찾을 수 없습니다.<br>' +
-            'Settings &gt; Environment에서 mc-data-manager-fe URL을 등록해 주세요.</div>';
+            '<div class="alert alert-warning m-3">mc-data-manager-fe service URL not found.<br>' +
+            'Please register the mc-data-manager-fe URL in Settings &gt; Environment.</div>';
         return;
     }
 
