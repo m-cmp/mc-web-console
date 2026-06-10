@@ -456,7 +456,7 @@ export async function getSelectedMciData() {
     if (mciResp.status.code != 200) {
       webconsolejs["common/utils/toast"].showToast(
         webconsolejs["common/utils/toast"].TOAST_TYPES.ERROR,
-        `MCI 조회 실패: ${mciResp.status.message || window.currentMciId}`
+        `MCI query failed: ${mciResp.status.message || window.currentMciId}`
       );
       return;
     }

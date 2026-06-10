@@ -35,15 +35,15 @@ async function loadCostOptimizer() {
 
     if (!currentWorkspace || !currentWorkspace.Id || !currentProject || !currentProject.Id) {
         document.getElementById("costIframe").innerHTML =
-            '<div class="alert alert-warning m-3">Workspace와 Project를 선택해 주세요.</div>';
+            '<div class="alert alert-warning m-3">Please select a Workspace and Project.</div>';
         return;
     }
 
     var host = await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-cost-optimizer-fe");
     if (!host) {
         document.getElementById("costIframe").innerHTML =
-            '<div class="alert alert-warning m-3">mc-cost-optimizer-fe 서비스 URL을 찾을 수 없습니다.<br>' +
-            'Settings &gt; Environment &gt; Cloud SPs &gt; Cloud Overview 에서 mc-cost-optimizer-fe URL을 등록해 주세요.</div>';
+            '<div class="alert alert-warning m-3">mc-cost-optimizer-fe service URL not found.<br>' +
+            'Please register the mc-cost-optimizer-fe URL in Settings &gt; Environment &gt; Cloud SPs &gt; Cloud Overview.</div>';
         return;
     }
     // IFRAME_TARGET_IS_HOST=true 환경에서 :port 형식으로 오던 값에 browser origin을 붙이던 로직.

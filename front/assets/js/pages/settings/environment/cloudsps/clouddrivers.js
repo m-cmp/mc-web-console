@@ -83,7 +83,7 @@ const DriverManager = {
             TableManager.initTable(drivers);
         } catch (e) {
             console.error('드라이버 목록 조회 실패:', e);
-            webconsolejs["partials/layout/toast"].showToast('드라이버 목록을 불러오지 못했습니다.', 'error');
+            webconsolejs["partials/layout/toast"].showToast('Failed to load driver list.', 'error');
             TableManager.initTable([]);
         }
     },
@@ -111,7 +111,7 @@ const DriverManager = {
         const lib = document.getElementById('create-driver-lib')?.value?.trim();
 
         if (!name || !provider || !lib) {
-            webconsolejs["partials/layout/toast"].showToast('모든 필드를 입력해 주세요.', 'warning');
+            webconsolejs["partials/layout/toast"].showToast('Please fill in all fields.', 'warning');
             return;
         }
 
@@ -121,31 +121,31 @@ const DriverManager = {
                 ProviderName: provider,
                 DriverLibFileName: lib,
             });
-            webconsolejs["partials/layout/toast"].showToast('드라이버가 등록되었습니다.', 'success');
+            webconsolejs["partials/layout/toast"].showToast('Driver registered successfully.', 'success');
             bootstrap.Collapse.getOrCreateInstance(document.getElementById('drivercreate')).hide();
             await this.loadDrivers();
         } catch (e) {
             console.error('드라이버 등록 실패:', e);
-            webconsolejs["partials/layout/toast"].showToast(e.message || '드라이버 등록에 실패했습니다.', 'error');
+            webconsolejs["partials/layout/toast"].showToast(e.message || 'Failed to register driver.', 'error');
         }
     },
 
     async deleteDrivers() {
         if (!checked_array.length) {
-            webconsolejs["partials/layout/toast"].showToast('삭제할 드라이버를 선택해 주세요.', 'warning');
+            webconsolejs["partials/layout/toast"].showToast('Please select a driver to delete.', 'warning');
             return;
         }
         try {
             for (const driver of checked_array) {
                 await webconsolejs["common/api/services/clouddriver_api"].unregisterCloudDriver(driver.DriverName);
             }
-            webconsolejs["partials/layout/toast"].showToast('선택된 드라이버가 삭제되었습니다.', 'success');
+            webconsolejs["partials/layout/toast"].showToast('Selected driver deleted successfully.', 'success');
             checked_array = [];
             UIManager.hideViewMode();
             await this.loadDrivers();
         } catch (e) {
             console.error('드라이버 삭제 실패:', e);
-            webconsolejs["partials/layout/toast"].showToast(e.message || '드라이버 삭제에 실패했습니다.', 'error');
+            webconsolejs["partials/layout/toast"].showToast(e.message || 'Failed to delete driver.', 'error');
         }
     },
 };

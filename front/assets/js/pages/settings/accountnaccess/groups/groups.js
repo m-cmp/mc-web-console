@@ -27,7 +27,7 @@ const GroupManager = {
             if (webconsolejs && webconsolejs['common/util'] && webconsolejs['common/util'].showToast) {
                 const d = error.response && error.response.data;
                 const msg = (d && (d.status && d.status.message)) || (d && d.message) || error.message || 'Group tree load failed.';
-                webconsolejs['common/util'].showToast('그룹 트리 조회 오류: ' + msg, 'error');
+                webconsolejs['common/util'].showToast('Group tree query error: ' + msg, 'error');
             }
         }
     },
@@ -42,7 +42,7 @@ const GroupManager = {
             if (webconsolejs && webconsolejs['common/util'] && webconsolejs['common/util'].showToast) {
                 const d = error.response && error.response.data;
                 const msg = (d && (d.status && d.status.message)) || (d && d.message) || error.message || 'Group list load failed.';
-                webconsolejs['common/util'].showToast('그룹 목록 조회 오류: ' + msg, 'error');
+                webconsolejs['common/util'].showToast('Group list query error: ' + msg, 'error');
             }
         }
     },
@@ -101,9 +101,9 @@ const GroupManager = {
             const msg = error.response && error.response.data && error.response.data.error
                 ? error.response.data.error
                 : (error.message || "");
-            if (msg.includes("하위 그룹") || msg.includes("하위 조직")) {
+            if (msg.includes("sub-group") || msg.includes("sub-organization")) {
                 alert("Cannot delete: Please remove child groups first.");
-            } else if (msg.includes("소속 사용자")) {
+            } else if (msg.includes("assigned user")) {
                 alert("Cannot delete: Please remove assigned users first.");
             } else {
                 alert("Failed to delete group: " + msg);

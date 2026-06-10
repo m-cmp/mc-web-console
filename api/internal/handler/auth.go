@@ -272,7 +272,7 @@ func Signup(c echo.Context) error {
 
 	// 로컬 모드에서는 회원가입 미지원
 	return c.JSON(http.StatusServiceUnavailable, map[string]interface{}{
-		"error": "현재 환경에서는 회원가입을 지원하지 않습니다.",
+		"error": "Sign-up is not supported in this environment.",
 	})
 }
 

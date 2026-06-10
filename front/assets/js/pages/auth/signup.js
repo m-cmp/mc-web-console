@@ -35,22 +35,22 @@ function validateSignupForm(email, password, firstName, lastName) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
-        showFieldError("email", "유효한 이메일 주소를 입력해 주세요.");
+        showFieldError("email", "Please enter a valid email address.");
         isValid = false;
     }
 
     if (!password || password.length < 8) {
-        showFieldError("password", "비밀번호는 8자 이상이어야 합니다.");
+        showFieldError("password", "Password must be at least 8 characters.");
         isValid = false;
     }
 
     if (!firstName || firstName.length < 1) {
-        showFieldError("firstName", "이름을 입력해 주세요.");
+        showFieldError("firstName", "Please enter your first name.");
         isValid = false;
     }
 
     if (!lastName || lastName.length < 1) {
-        showFieldError("lastName", "성을 입력해 주세요.");
+        showFieldError("lastName", "Please enter your last name.");
         isValid = false;
     }
 
@@ -92,11 +92,11 @@ document.addEventListener("DOMContentLoaded", function() {
             if (res.data && res.data.success === true) {
                 showSuccessState(res.data.redirectUrl);
             } else {
-                showError((res.data && res.data.error) || "가입 처리 중 오류가 발생했습니다.");
+                showError((res.data && res.data.error) || "An error occurred during registration.");
             }
         } catch (error) {
             console.error("Signup error:", error);
-            showError("가입 처리 중 오류가 발생했습니다.");
+            showError("An error occurred during registration.");
         } finally {
             signupBtn.disabled = false;
         }

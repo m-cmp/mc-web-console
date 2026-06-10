@@ -66,7 +66,7 @@ export async function loadKeyList() {
         }
     } catch (err) {
         console.error('SSH Key 목록 조회 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'SSH Key 목록 조회에 실패했습니다.');
+        showToast(TOAST_TYPES.ERROR, 'Failed to load SSH Key list.');
     }
 }
 
@@ -76,7 +76,7 @@ function initTable(items) {
     AppState.tables.keyTable = new Tabulator('#sshkey-list-table', {
         data: items,
         layout: 'fitColumns',
-        placeholder: '등록된 SSH Key가 없습니다.',
+        placeholder: 'No registered SSH Keys.',
         pagination: 'local',
         paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
@@ -84,7 +84,7 @@ function initTable(items) {
         movableColumns: true,
         initialSort: [{ column: 'name', dir: 'asc' }],
         columns: [
-            { title: '이름',        field: 'name',           widthGrow: 2, sorter: 'string' },
+            { title: 'Name',        field: 'name',           widthGrow: 2, sorter: 'string' },
             { title: 'Connection',  field: 'connectionName', widthGrow: 1, sorter: 'string' },
             { title: 'Fingerprint', field: 'fingerprint',    widthGrow: 2 },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
@@ -136,7 +136,7 @@ function renderDetail(data, privateKey) {
         privSection.style.display = '';
         document.getElementById('detail-privkey').textContent = privateKey;
         document.getElementById('detail-privkey').style.filter = 'blur(4px)';
-        document.getElementById('toggle-privkey-btn').textContent = '보기';
+        document.getElementById('toggle-privkey-btn').textContent = 'Show';
         AppState.ui.privKeyVisible = false;
     } else {
         privSection.style.display = 'none';
@@ -162,7 +162,7 @@ export function togglePrivateKey() {
     AppState.ui.privKeyVisible = !AppState.ui.privKeyVisible;
     preEl.style.filter    = AppState.ui.privKeyVisible ? 'none' : 'blur(4px)';
     preEl.style.userSelect = AppState.ui.privKeyVisible ? 'text' : 'none';
-    btnEl.textContent = AppState.ui.privKeyVisible ? '숨기기' : '보기';
+    btnEl.textContent = AppState.ui.privKeyVisible ? 'Hide' : 'Show';
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────
@@ -170,15 +170,15 @@ export function togglePrivateKey() {
 export async function confirmDeleteSshKey() {
     const selected = AppState.resources.selected;
     if (!selected) return;
-    if (!confirm(`SSH Key "${selected.name}"을 삭제하시겠습니까?`)) return;
+    if (!confirm(`SSH Key "${selected.name}" — confirm delete?`)) return;
     try {
         await sshKeyApi().del(AppState.ns, selected.name);
-        showToast(TOAST_TYPES.SUCCESS, `SSH Key "${selected.name}" 삭제 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `SSH Key "${selected.name}" deleted successfully`);
         hideDetail();
         await loadKeyList();
     } catch (err) {
         console.error('SSH Key 삭제 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'SSH Key 삭제에 실패했습니다: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to delete SSH Key: ' + (err.message || ''));
     }
 }
 
@@ -222,7 +222,7 @@ export async function executeCreateSshKey() {
     const name           = document.getElementById('create-sshkey-name').value.trim();
 
     if (!connectionName || !name) {
-        showToast(TOAST_TYPES.WARNING, 'Connection과 Key 이름은 필수입니다.');
+        showToast(TOAST_TYPES.WARNING, 'Connection and Key name are required.');
         return;
     }
 
@@ -234,7 +234,7 @@ export async function executeCreateSshKey() {
     try {
         const result = await sshKeyApi().create(AppState.ns, { connectionName, name });
         const created = result?.responseData || result;
-        showToast(TOAST_TYPES.SUCCESS, `SSH Key "${name}" 생성 완료`);
+        showToast(TOAST_TYPES.SUCCESS, `SSH Key "${name}" created successfully`);
         bootstrap.Modal.getInstance(document.getElementById('create-sshkey-modal'))?.hide();
 
         // Private Key는 생성 응답에만 포함 — 즉시 상세 패널에 표시
@@ -249,7 +249,7 @@ export async function executeCreateSshKey() {
         showDetail();
     } catch (err) {
         console.error('SSH Key 생성 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'SSH Key 생성에 실패했습니다: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to create SSH Key: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
         btn.disabled = false;
@@ -261,7 +261,7 @@ export async function executeCreateSshKey() {
 export async function openImportSshKeyModal() {
     AppState.ns = webconsolejs['common/api/services/workspace_api'].getCurrentProject()?.NsId || '';
     if (!AppState.ns) {
-        showToast(TOAST_TYPES.WARNING, '프로젝트를 먼저 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select a project first.');
         return;
     }
     document.getElementById('import-sshkey-project').value = AppState.ns;
@@ -272,7 +272,7 @@ export async function openImportSshKeyModal() {
 export async function executeImportSshKey() {
     const connectionName = document.getElementById('import-sshkey-connection').value;
     if (!connectionName) {
-        showToast(TOAST_TYPES.WARNING, 'Connection을 선택하세요.');
+        showToast(TOAST_TYPES.WARNING, 'Please select a Connection.');
         return;
     }
 
@@ -285,12 +285,12 @@ export async function executeImportSshKey() {
         const failed = result?.registerationOverview?.failed || 0;
         showToast(
             failed > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
-            `SSH Key ${count}개 등록 완료${failed > 0 ? `, ${failed}개 실패` : ''}`
+            `SSH Key ${count} registered successfully${failed > 0 ? `, ${failed} failed` : ''}`
         );
         bootstrap.Modal.getInstance(document.getElementById('import-sshkey-modal'))?.hide();
         await loadKeyList();
     } catch (err) {
-        showToast(TOAST_TYPES.ERROR, 'SSH Key Import 실패: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'SSH Key import failed: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
     }
@@ -298,7 +298,7 @@ export async function executeImportSshKey() {
 
 async function _loadConnectionOptions(selectId) {
     const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">선택하세요</option>';
+    select.innerHTML = '<option value="">Select</option>';
     try {
         const result = await webconsolejs['common/api/http'].commonAPIPost(
             '/api/mc-infra-manager/GetConnConfigList', {}
