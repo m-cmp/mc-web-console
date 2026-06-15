@@ -20,9 +20,12 @@ const PROVIDER_KEYS = {
     gcp:       ['ClientEmail', 'PrivateKey', 'ProjectID'],
     azure:     ['ClientId', 'ClientSecret', 'TenantId', 'SubscriptionId'],
     alibaba:   ['ClientId', 'ClientSecret'],
+    ibm:       ['ApiKey', 'S3AccessKey', 'S3SecretKey'],
     ncp:       ['ClientId', 'ClientSecret'],
-    nhncloud:  ['ClientId', 'ClientSecret', 'TenantId'],
-    ktcloud:   ['ClientId', 'ClientSecret'],
+    nhn:       ['IdentityEndpoint', 'Username', 'Password', 'DomainName', 'TenantId'],
+    kt:        ['IdentityEndpoint', 'Username', 'Password', 'DomainName', 'ProjectID'],
+    openstack: ['IdentityEndpoint', 'Username', 'Password', 'DomainName', 'ProjectID'],
+    tencent:   ['SecretId', 'SecretKey'],
 };
 
 const PROVIDER_BADGE = {
