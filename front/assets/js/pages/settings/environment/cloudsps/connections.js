@@ -20,8 +20,10 @@ const PROVIDER_BADGE = {
     azure:    '<span class="badge bg-indigo-lt">Azure</span>',
     alibaba:  '<span class="badge bg-yellow-lt">Alibaba</span>',
     ncp:      '<span class="badge bg-green-lt">NCP</span>',
-    nhncloud: '<span class="badge bg-cyan-lt">NHN</span>',
-    ktcloud:  '<span class="badge bg-teal-lt">KT</span>',
+    ibm:      '<span class="badge bg-purple-lt">IBM</span>',
+    nhn:      '<span class="badge bg-cyan-lt">NHN</span>',
+    kt:       '<span class="badge bg-teal-lt">KT</span>',
+    openstack: '<span class="badge bg-red-lt">OpenStack</span>',
     tencent:  '<span class="badge bg-red-lt">Tencent</span>',
 };
 
