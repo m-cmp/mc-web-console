@@ -113,7 +113,7 @@ export async function getMciVm(nsId, mciId, vmId) {
     pathParams: {
       nsId: nsId,
       infraId: mciId,
-      vmId: vmId
+      nodeId: vmId
     }
   }
 
