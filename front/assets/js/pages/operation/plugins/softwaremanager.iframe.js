@@ -37,6 +37,13 @@ async function loadSoftwareManager() {
     }
 
     const data = getSoftwareManagerData();
+
+    // mc-application-manager API URL을 레지스트리에서 직접 조회하여 전달
+    var apiHost = await webconsolejs["common/iframe/iframe"].GetApiHosts("mc-application-manager");
+    if (apiHost) {
+        data.apiBaseUrl = apiHost;
+    }
+
     webconsolejs["common/iframe/iframe"].addIframe("targetIframe-sofrwareCatalog", host + "/web/softwareCatalog", data);
 }
 

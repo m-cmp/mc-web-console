@@ -53,7 +53,7 @@
 | 42 | 사용자 관리 | 역할 선택 | 사용자에게 할당할 역할을 선택할 수 있는가 |  |  |
 | 43 | 사용자 관리 | 사용자 할당 | 선택한 사용자가 Workspace에 할당되는가 |  |  |
 | 44 | 사용자 관리 | 사용자 제거 | Users 탭에서 사용자 제거가 동작하는가 |  |  |
-| 45 | 사용자 관리 | API 호출 | createWorkspaceUserRoleMappingByName, deleteWorkspaceUserRoleMapping API가 호출되는가 |  |  |
+| 45 | 사용자 관리 | API 호출 | assignWorkspaceRole (POST /api/roles/assign/workspace-role), removeWorkspaceRole (DELETE /api/roles/unassign/workspace-role) API가 호출되는가 |  |  |
 | 46 | 테이블 기능 | 정렬 | 컬럼 클릭 시 정렬이 동작하는가 |  |  |
 | 47 | 테이블 기능 | 페이징 | 페이지 네비게이션이 정상 동작하는가 |  |  |
 | 48 | 테이블 기능 | 행 선택 | 체크박스를 통한 다중 선택이 동작하는가 |  |  |

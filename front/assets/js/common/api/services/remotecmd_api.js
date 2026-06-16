@@ -10,7 +10,7 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
         data = {
             pathParams: {
                 nsId: nsid,
-                mciId: resourceId
+                infraId: resourceId
             },
             queryParams: {
                 vmId: targetId
@@ -25,7 +25,7 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
         data = {
             pathParams: {
                 nsId: nsid,
-                mciId: resourceId
+                infraId: resourceId
             },
             queryParams: {
                 subGroupId: targetId
@@ -36,11 +36,11 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
             }
         };
     } else if (targetType === 'mci') {
-        // MCI 로직 - queryParams 불필요 (pathParams에 이미 mciId 포함)
+        // MCI 로직 - queryParams 불필요 (pathParams에 이미 infraId 포함)
         data = {
             pathParams: {
                 nsId: nsid,
-                mciId: resourceId
+                infraId: resourceId
             },
             Request: {
                 command: cmdarr,
@@ -97,7 +97,7 @@ export async function postFileToMci(nsId, mciId, file, targetPath, targetType, t
     let data = {
         pathParams: {
             nsId: nsId,
-            mciId: mciId
+            infraId: mciId
         },
         request: {
             path: targetPath,
