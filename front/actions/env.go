@@ -11,6 +11,9 @@ var API_SCHEME string
 var API_ADDR string
 var API_PORT string
 var SESSION_SECRET string
+var INFRA_MANAGER_URL string
+var INFRA_MANAGER_USER string
+var INFRA_MANAGER_PASS string
 
 func init() {
 	// Get environment variables with defaults
@@ -20,6 +23,9 @@ func init() {
 	API_ADDR = getEnvOrDefault("MC_WEB_CONSOLE_API_ADDR", "localhost")
 	API_PORT = getEnvOrDefault("MC_WEB_CONSOLE_API_PORT", "3000")
 	SESSION_SECRET = getEnvOrDefault("MC_WEB_CONSOLE_SESSION_SECRET", "mc-web-console-secret-key")
+	INFRA_MANAGER_URL = getEnvOrDefault("MC_WEB_CONSOLE_INFRA_MANAGER_URL", "http://localhost:1323/tumblebug")
+	INFRA_MANAGER_USER = getEnvOrDefault("MC_WEB_CONSOLE_INFRA_MANAGER_USER", "default")
+	INFRA_MANAGER_PASS = getEnvOrDefault("MC_WEB_CONSOLE_INFRA_MANAGER_PASS", "default")
 }
 
 func getEnvOrDefault(key, defaultValue string) string {

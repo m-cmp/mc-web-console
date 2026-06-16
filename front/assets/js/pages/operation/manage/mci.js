@@ -2611,7 +2611,7 @@ async function loadPolicyData() {
 // API 응답을 테이블 형식으로 가공
 function transformPolicyResponse(resp) {
   const list = [];
-  resp.mciPolicy.forEach(mci => {
+  resp.infraPolicy.forEach(mci => {
     const { Id: mciId, Name: mciName, actionLog, description } = mci;
 
     mci.policy.forEach(pol => {
