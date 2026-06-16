@@ -76,6 +76,7 @@ func App() *echo.Echo {
 		api := app.Group("/api")
 		// Specific handlers must be registered before the wildcard
 		api.POST("/mc-infra-manager/PostFileToInfra", PostFileToInfraHandler)
+		api.POST("/mc-infra-manager/PostCmdInfra", PostCmdInfraHandler)
 		api.Any("/*", ApiCaller)
 
 		// Static file serving - serve webpack build output from public directory
