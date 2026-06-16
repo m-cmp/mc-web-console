@@ -604,8 +604,22 @@ function setPmkInfoData(pmkData) {
         const kubeconfigEl = document.getElementById("cluster_info_kubeconfig");
         if (kubeconfigEl) {
             if (pmkKubeConfig && pmkKubeConfig !== "N/A") {
-                kubeconfigEl.innerHTML =
-                    `<a href="#" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(${JSON.stringify(pmkKubeConfig)}).then(()=>{ this.textContent='Copied!'; setTimeout(()=>{ this.textContent='Copy KubeConfig'; }, 1500); }); return false;">Copy KubeConfig</a>`;
+                const btn = document.createElement('a');
+                btn.href = '#';
+                btn.className = 'btn btn-sm btn-outline-secondary';
+                btn.textContent = 'Copy KubeConfig';
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navigator.clipboard.writeText(pmkKubeConfig).then(() => {
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => { btn.textContent = 'Copy KubeConfig'; }, 1500);
+                    }).catch(() => {
+                        btn.textContent = 'Copy failed';
+                        setTimeout(() => { btn.textContent = 'Copy KubeConfig'; }, 1500);
+                    });
+                });
+                kubeconfigEl.innerHTML = '';
+                kubeconfigEl.appendChild(btn);
             } else {
                 kubeconfigEl.textContent = "N/A";
             }
