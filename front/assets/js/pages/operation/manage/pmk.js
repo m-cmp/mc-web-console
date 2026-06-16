@@ -90,6 +90,9 @@ $("#select-current-project").on('change', async function () {
         "NsId": nsFromAttr || (opt ? opt.textContent : '')
     };
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
+    selectedWorkspaceProject.projectId = project.Id;
+    selectedWorkspaceProject.projectName = project.Name;
+    selectedWorkspaceProject.nsId = project.NsId;
     // Using direct API call with default page loader for project change
     var respPmkList = await webconsolejs["common/api/services/pmk_api"].getClusterList(project.NsId);
     getPmkListCallbackSuccess(project.NsId, respPmkList);
