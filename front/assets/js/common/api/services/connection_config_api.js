@@ -31,7 +31,7 @@ function unwrapResponse(response) {
  * @returns {Array} connectionconfig 배열
  */
 export async function filterConnConfigByCredentialHolder(credentialHolder = '') {
-    const controller = "/api/mc-infra-manager/FilterConnConfigByCredentialHolder";
+    const controller = "/api/mc-infra-manager/GetConnConfigList";
     const data = {};
     if (credentialHolder) {
         data.queryParams = { filterCredentialHolder: credentialHolder };
