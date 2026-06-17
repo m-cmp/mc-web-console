@@ -612,8 +612,8 @@ function initUserAddSeletor(users) {
 
   users.forEach(user => {
     let option = document.createElement('option');
-    option.value = user;
-    option.text = user;
+    option.value = user.id;       // numeric userId (string) — assignWorkspaceRole 요구
+    option.text = user.username;
     selectElement.add(option);
   });
 
@@ -635,23 +635,23 @@ function initUserAddSeletor(users) {
   });
 }
 
-// function initUserAddRoleSeletor(roles) {
-//   var selectElement = document.getElementById('user-modal-add-roleselector');
-//   if (selectElement.tomselect) {
-//     selectElement.tomselect.destroy();
-//   }
-//   selectElement.innerHTML = '';
-//   let option = document.createElement('option');
-//   option.value = "";
-//   option.text = "select Role";
-//   selectElement.add(option);
-//   roles.forEach(role => {
-//     let option = document.createElement('option');
-//     option.value = role.id;
-//     option.text = role.name;
-//     selectElement.add(option);
-//   });
-// }
+function initUserAddRoleSeletor(roles) {
+  var selectElement = document.getElementById('user-modal-add-roleselector');
+  if (selectElement.tomselect) {
+    selectElement.tomselect.destroy();
+  }
+  selectElement.innerHTML = '';
+  let option = document.createElement('option');
+  option.value = "";
+  option.text = "select Role";
+  selectElement.add(option);
+  roles.forEach(role => {
+    let option = document.createElement('option');
+    option.value = role.id;
+    option.text = role.name;
+    selectElement.add(option);
+  });
+}
 
 function updateSummary() {
   document.getElementById('workspaces_count').textContent = workspaceListInfoSummary.workspaceCount;
@@ -749,6 +749,7 @@ async function setWokrspaceUserTableData(wsId) {
     username: userInfo.username,
     name: userInfo.username,
     role: userInfo.role_name,
+    role_id: userInfo.role_id,
     // TODO: Approved(enabled) 항목은 workspace 초대/수락 기능 추가 시 반영
     //       사용자를 workspace에 초대(invited)하고 초대받은 사용자가 수락(accepted)하는 상태값 표시
     //       현재 해당 상태 필드 미제공 (listUsersAndRolesByWorkspaces 응답에 없음)
@@ -1159,38 +1160,47 @@ export async function addWorkspaceProject() {
 //// User Tab Modal
 export async function addUserModalInit() {
   const resp = await webconsolejs["common/api/services/workspace_api"].getWorkspaceUserRoleMappingListByWorkspaceId(currentClickedWorkspaceId);
-  var wsUser = Array.isArray(resp.userinfo) && resp.userinfo.length > 0
-    ? resp.userinfo.map(item => item.userid)
-    : [];
-  var allUserIds = Array.isArray(listData.userList) && listData.userList.length > 0
-    ? listData.userList.map(item => item.username)
-    : [];
-  var availUser = allUserIds.filter(item => !wsUser.includes(item))
+  const mappingData = resp.responseData || resp;
+  const mappingArray = Array.isArray(mappingData) ? mappingData : (Array.isArray(resp.userinfo) ? resp.userinfo : []);
+  var wsUsernames = mappingArray.map(item => item.username || item.userid).filter(Boolean);
+  var allUsers = Array.isArray(listData.userList) ? listData.userList : [];
+  var availUser = allUsers
+    .filter(item => !wsUsernames.includes(item.username))
+    .map(item => ({ id: String(item.id), username: item.username }));
   initUserAddSeletor(availUser)
 
-
-  // const roleResp = await webconsolejs["common/api/services/workspace_api"].getRoleList();
-  // initUserAddRoleSeletor(roleResp)
+  const roleResp = await webconsolejs["common/api/services/workspace_api"].getRoleList();
+  initUserAddRoleSeletor(roleResp)
 
   var modal = new bootstrap.Modal(document.getElementById('user-modal-add'));
   modal.show();
 }
 
-// export async function assignUser() {
-//   var usersSelector = document.getElementById('user-modal-add-userselector');
-//   var roleId = document.getElementById('user-modal-add-roleselector').value;
-//   var users = Array.from(usersSelector.selectedOptions, option => option.value);
-//   users.forEach(async function (user) {
-//     const resp = await webconsolejs["common/api/services/workspace_api"].createWorkspaceUserRoleMappingByName(currentClickedWorkspaceId, roleId, user);
-//   })
-//   location.reload()
-// }
+export async function assignUser() {
+  var usersSelector = document.getElementById('user-modal-add-userselector');
+  var roleId = document.getElementById('user-modal-add-roleselector').value;
+  var users = Array.from(usersSelector.selectedOptions, option => option.value);
+  if (!roleId) {
+    webconsolejs["common/util"].showToast("Please select a role.", 'error');
+    return;
+  }
+  for (const user of users) {
+    await webconsolejs["common/api/services/workspace_api"].createWorkspaceUserRoleMappingByName(currentClickedWorkspaceId, roleId, user);
+  }
+  const modal = bootstrap.Modal.getInstance(document.getElementById('user-modal-add'));
+  if (modal) modal.hide();
+  await setWokrspaceUserTableData(currentClickedWorkspaceId);
+}
 
 export async function deassignUser() {
-  checked_userRolemapping_array.forEach(async function name(user) {
-    const resp = await webconsolejs["common/api/services/workspace_api"].deleteWorkspaceUserRoleMapping(currentClickedWorkspaceId, user.username);
-  })
-  location.reload()
+  for (const user of checked_userRolemapping_array) {
+    await webconsolejs["common/api/services/workspace_api"].removeWorkspaceUserRoleMapping(
+      currentClickedWorkspaceId,
+      user.role_id,
+      user.id,
+    );
+  }
+  await setWokrspaceUserTableData(currentClickedWorkspaceId);
 }
 
 // tableaction area end
