@@ -1062,6 +1062,14 @@ serviceActions:
       method: delete
       resourcePath: /api/roles/unassign/platform-role
       description: 사용자에게서 Platform Role 제거
+    assignWorkspaceRole:
+      method: post
+      resourcePath: /api/roles/assign/workspace-role
+      description: Workspace Role 할당
+    removeWorkspaceRole:
+      method: delete
+      resourcePath: /api/roles/unassign/workspace-role
+      description: 사용자에게서 Workspace Role 제거
     UpdateUserStatus:
       method: post
       resourcePath: /api/users/id/{userId}/status
