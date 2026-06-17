@@ -204,7 +204,7 @@ export function vmLifeCycle(type, mciId, nsId, vmid) {
     pathParams: {
       nsId: nsId,
       infraId: mciId,
-      vmId: vmid
+      nodeId: vmid
     },
     queryParams: {
       "action": type
