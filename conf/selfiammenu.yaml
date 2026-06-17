@@ -239,82 +239,89 @@ menus:
     parentId: workloads
     priority: 2
     resType: menu
-  - displayName: Monitorings
-    id: monitorings
-    isAction: false
-    menuNumber: 1905
-    parentId: analytics
-    priority: 2
-    resType: menu
-  - displayName: MCIs Monitoring
-    id: mcismonitoring
-    isAction: true
-    menuNumber: 1910
-    parentId: monitorings
-    priority: 2
-    resType: menu
-  - displayName: 3rd party Monitoring
-    id: 3rdpartymonitoring
-    isAction: false
-    menuNumber: 1930
-    parentId: monitorings
-    priority: 2
-    resType: menu
-  - displayName: Monitoring Config
-    id: monitoringconfig
-    isAction: true
-    menuNumber: 1940
-    parentId: monitorings
-    priority: 2
-    resType: menu
-  - displayName: Events & Traces
-    id: eventsntraces
-    isAction: false
-    menuNumber: 1950
-    parentId: analytics
-    priority: 2
-    resType: menu
-  - displayName: Alarms History
-    id: alarmshistory
-    isAction: true
-    menuNumber: 1960
-    parentId: eventsntraces
-    priority: 2
-    resType: menu
-  - displayName: Threshold Config
-    id: thresholdconfig
-    isAction: true
-    menuNumber: 1970
-    parentId: eventsntraces
-    priority: 2
-    resType: menu
-  - displayName: Log Manage
-    id: logmanage
-    isAction: true
-    menuNumber: 1980
-    parentId: eventsntraces
-    priority: 2
-    resType: menu
-  - displayName: Log Config
-    id: logconfig
-    isAction: true
-    menuNumber: 1990
-    parentId: eventsntraces
-    priority: 2
-    resType: menu
-  - displayName: Event Trace
-    id: eventtrace
-    isAction: false
-    menuNumber: 1996
-    parentId: eventsntraces
-    priority: 2
-    resType: menu
+  # - displayName: Monitorings
+  #   id: monitorings
+  #   isAction: false
+  #   menuNumber: 1905
+  #   parentId: analytics
+  #   priority: 2
+  #   resType: menu
+  # - displayName: MCIs Monitoring
+  #   id: mcismonitoring
+  #   isAction: true
+  #   menuNumber: 1910
+  #   parentId: monitorings
+  #   priority: 2
+  #   resType: menu
+  # - displayName: 3rd party Monitoring
+  #   id: 3rdpartymonitoring
+  #   isAction: false
+  #   menuNumber: 1930
+  #   parentId: monitorings
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Monitoring Config
+  #   id: monitoringconfig
+  #   isAction: true
+  #   menuNumber: 1940
+  #   parentId: monitorings
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Events & Traces
+  #   id: eventsntraces
+  #   isAction: false
+  #   menuNumber: 1950
+  #   parentId: analytics
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Alarms History
+  #   id: alarmshistory
+  #   isAction: true
+  #   menuNumber: 1960
+  #   parentId: eventsntraces
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Threshold Config
+  #   id: thresholdconfig
+  #   isAction: true
+  #   menuNumber: 1970
+  #   parentId: eventsntraces
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Log Manage
+  #   id: logmanage
+  #   isAction: true
+  #   menuNumber: 1980
+  #   parentId: eventsntraces
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Log Config
+  #   id: logconfig
+  #   isAction: true
+  #   menuNumber: 1990
+  #   parentId: eventsntraces
+  #   priority: 2
+  #   resType: menu
+  # - displayName: Event Trace
+  #   id: eventtrace
+  #   isAction: false
+  #   menuNumber: 1996
+  #   parentId: eventsntraces
+  #   priority: 2
+  #   resType: menu
   - displayName: Cost Analysis
     id: costanalysis
     isAction: true
     menuNumber: 1998
     parentId: analytics
     priority: 2
+    resType: menu
+  - displayName: Monitorings
+    id: observability
+    isAction: true
+    menuNumber: 1999
+    parentId: analytics
+    priority: 3
     resType: menu
   - displayName: Data Migrations
     id: datamigrations

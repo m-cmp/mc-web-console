@@ -368,85 +368,85 @@ menus:
     priority: 3
     menunumber: 1901
 
-  - id: monitorings
-    parentid: analytics
-    displayname: Monitorings
-    restype: menu
-    isaction: false
-    priority: 2
-    menunumber: 1905
+  # - id: monitorings
+  #   parentid: analytics
+  #   displayname: Monitorings
+  #   restype: menu
+  #   isaction: false
+  #   priority: 2
+  #   menunumber: 1905
 
-  - id: mcismonitoring
-    parentid: monitorings
-    displayname: MCIs Monitoring
-    restype: menu
-    isaction: true
-    priority: 2
-    menunumber: 1910
+  # - id: mcismonitoring
+  #   parentid: monitorings
+  #   displayname: MCIs Monitoring
+  #   restype: menu
+  #   isaction: true
+  #   priority: 2
+  #   menunumber: 1910
 
-  - id: 3rdpartymonitoring
-    parentid: monitorings
-    displayname: 3rd party Monitoring
-    restype: menu
-    isaction: false
-    priority: 2
-    menunumber: 1930
+  # - id: 3rdpartymonitoring
+  #   parentid: monitorings
+  #   displayname: 3rd party Monitoring
+  #   restype: menu
+  #   isaction: false
+  #   priority: 2
+  #   menunumber: 1930
 
-  - id: monitoringconfig
-    parentid: monitorings
-    displayname: Monitoring Config
-    restype: menu
-    isaction: true
-    priority: 2
-    menunumber: 1940
+  # - id: monitoringconfig
+  #   parentid: monitorings
+  #   displayname: Monitoring Config
+  #   restype: menu
+  #   isaction: true
+  #   priority: 2
+  #   menunumber: 1940
 
-  - id: eventsntraces
-    parentid: analytics
-    displayname: Events & Traces
-    restype: menu
-    isaction: false
-    priority: 2
-    menunumber: 1950
+  # - id: eventsntraces
+  #   parentid: analytics
+  #   displayname: Events & Traces
+  #   restype: menu
+  #   isaction: false
+  #   priority: 2
+  #   menunumber: 1950
 
-  - id: alarmshistory
-    parentid: eventsntraces
-    displayname: Alarms History
-    restype: menu
-    isaction: true
-    priority: 2
-    menunumber: 1960
+  # - id: alarmshistory
+  #   parentid: eventsntraces
+  #   displayname: Alarms History
+  #   restype: menu
+  #   isaction: true
+  #   priority: 2
+  #   menunumber: 1960
 
-  - id: thresholdconfig
-    parentid: eventsntraces
-    displayname: Threshold Config
-    restype: menu
-    isaction: true
-    priority: 2
-    menunumber: 1970
+  # - id: thresholdconfig
+  #   parentid: eventsntraces
+  #   displayname: Threshold Config
+  #   restype: menu
+  #   isaction: true
+  #   priority: 2
+  #   menunumber: 1970
 
-  - id: logmanage
-    parentid: eventsntraces
-    displayname: Log Manage
-    restype: menu
-    isaction: true
-    priority: 2
-    menunumber: 1980
+  # - id: logmanage
+  #   parentid: eventsntraces
+  #   displayname: Log Manage
+  #   restype: menu
+  #   isaction: true
+  #   priority: 2
+  #   menunumber: 1980
 
-  - id: logconfig
-    parentid: eventsntraces
-    displayname: Log Config
-    restype: menu
-    isaction: true
-    priority: 2
-    menunumber: 1990
+  # - id: logconfig
+  #   parentid: eventsntraces
+  #   displayname: Log Config
+  #   restype: menu
+  #   isaction: true
+  #   priority: 2
+  #   menunumber: 1990
 
-  - id: eventtrace
-    parentid: eventsntraces
-    displayname: Event Trace
-    restype: menu
-    isaction: false
-    priority: 2
-    menunumber: 1996
+  # - id: eventtrace
+  #   parentid: eventsntraces
+  #   displayname: Event Trace
+  #   restype: menu
+  #   isaction: false
+  #   priority: 2
+  #   menunumber: 1996
 
   - id: costanalysis
     parentid: analytics
@@ -455,3 +455,11 @@ menus:
     isaction: true
     priority: 2
     menunumber: 1998
+
+  - id: observability
+    parentid: analytics
+    displayname: Monitorings
+    restype: menu
+    isaction: true
+    priority: 3
+    menunumber: 1999

@@ -59,3 +59,25 @@ export async function GetApiHosts(frameworkName){
     }
     return null;
 }
+
+// mc-observability-fe 미등록 시 mc-observability(manager) URL에서 fe URL(18080) 유도
+function deriveObservabilityFeUrl(managerBaseURL) {
+    return managerBaseURL
+        .replace('mc-observability-manager', 'mc-observability-fe')
+        .replace('mc-observability-front', 'mc-observability-fe')
+        .replace('mc-observability:', 'mc-observability-fe:');
+}
+
+export async function GetObservabilityFeHost() {
+    const frontHost = await GetApiHosts('mc-observability-fe');
+    if (frontHost) {
+        return frontHost;
+    }
+
+    const managerHost = await GetApiHosts('mc-observability');
+    if (!managerHost) {
+        return null;
+    }
+
+    return resolveIframeUrl(deriveObservabilityFeUrl(managerHost));
+}
