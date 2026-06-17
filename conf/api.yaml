@@ -2100,12 +2100,12 @@ serviceActions:
     GetControlInfra:
 
       method: get
-      resourcePath: /ns/{nsId}/control/infra/{mciId}
+      resourcePath: /ns/{nsId}/control/infra/{infraId}
       description: Control the lifecycle of MCI (refine, suspend, resume, reboot, terminate)
     GetControlInfraNode:
 
       method: get
-      resourcePath: /ns/{nsId}/control/infra/{mciId}/node/{vmId}
+      resourcePath: /ns/{nsId}/control/infra/{infraId}/node/{nodeId}
       description: Control the lifecycle of VM (suspend, resume, reboot, terminate)
     GetCredentialHolder:
       method: get
