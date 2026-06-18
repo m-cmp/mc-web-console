@@ -24,8 +24,13 @@ function resolveIframeUrl(baseURL) {
 
         const isIpAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(urlObj.hostname);
 
-        // Docker 내부 hostname (점 없음) 또는 IP 주소: 브라우저 hostname + protocol로 대체
-        if (!urlObj.hostname.includes('.') || isIpAddress) {
+        // IP 주소: 명시적으로 설정된 주소이므로 그대로 사용
+        if (isIpAddress) {
+            return baseURL;
+        }
+
+        // Docker 내부 hostname (점 없음): 브라우저 hostname + protocol로 대체
+        if (!urlObj.hostname.includes('.')) {
             if (isLocalhost) {
                 return 'http://' + window.location.hostname + port + path;
             }
@@ -58,4 +63,26 @@ export async function GetApiHosts(frameworkName){
         return resolveIframeUrl(framework.BaseURL);
     }
     return null;
+}
+
+// mc-observability-fe 미등록 시 mc-observability(manager) URL에서 fe URL(18080) 유도
+function deriveObservabilityFeUrl(managerBaseURL) {
+    return managerBaseURL
+        .replace('mc-observability-manager', 'mc-observability-fe')
+        .replace('mc-observability-front', 'mc-observability-fe')
+        .replace('mc-observability:', 'mc-observability-fe:');
+}
+
+export async function GetObservabilityFeHost() {
+    const frontHost = await GetApiHosts('mc-observability-fe');
+    if (frontHost) {
+        return frontHost;
+    }
+
+    const managerHost = await GetApiHosts('mc-observability');
+    if (!managerHost) {
+        return null;
+    }
+
+    return resolveIframeUrl(deriveObservabilityFeUrl(managerHost));
 }

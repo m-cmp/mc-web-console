@@ -50,4 +50,5 @@ mc-web-console,thresholdconfigmenu,TRUE,,,TRUE,
 mc-web-console,logmanagemenu,TRUE,,,TRUE,TRUE
 mc-web-console,logconfigmenu,TRUE,,,TRUE,
 mc-web-console,eventtracemenu,TRUE,,,TRUE,
+mc-web-console,observabilitymenu,TRUE,,,TRUE,TRUE
 mc-web-console,costanalysismenu,TRUE,TRUE,TRUE,,

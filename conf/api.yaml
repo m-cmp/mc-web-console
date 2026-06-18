@@ -11,7 +11,7 @@ services:
       password:
   mc-iam-manager:
     version: 0.2.11
-    baseurl: http://mciam.onecloudcon.com:5006
+    baseurl: http://15.164.139.37:5000
     auth:
       type: bearer
   mc-infra-manager:
@@ -28,7 +28,11 @@ services:
       type: bearer
   mc-observability:
     version: main
-    baseurl: http://observability_url:18080
+    baseurl: http://15.164.139.37:18080
+    auth:
+  mc-observability-fe:
+    version: main
+    baseurl: https://15.164.139.37:18081
     auth:
   mc-application-manager:
     version: main
