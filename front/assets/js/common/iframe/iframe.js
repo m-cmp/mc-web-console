@@ -24,8 +24,13 @@ function resolveIframeUrl(baseURL) {
 
         const isIpAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(urlObj.hostname);
 
-        // Docker 내부 hostname (점 없음) 또는 IP 주소: 브라우저 hostname + protocol로 대체
-        if (!urlObj.hostname.includes('.') || isIpAddress) {
+        // IP 주소: 명시적으로 설정된 주소이므로 그대로 사용
+        if (isIpAddress) {
+            return baseURL;
+        }
+
+        // Docker 내부 hostname (점 없음): 브라우저 hostname + protocol로 대체
+        if (!urlObj.hostname.includes('.')) {
             if (isLocalhost) {
                 return 'http://' + window.location.hostname + port + path;
             }
