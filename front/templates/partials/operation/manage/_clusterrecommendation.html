@@ -78,6 +78,68 @@
             </div>
           </div>
         </div>
+        <div class="row mt-2">
+          <div class="col-12">
+            <label class="form-label mb-1">Cloud Provider</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="spec-provider-all-cluster" value="all" checked
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderAllChangeCluster(this)">
+                <label class="form-check-label fw-semibold" for="spec-provider-all-cluster">All</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-aws-cluster" value="aws"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-aws-cluster">AWS</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-azure-cluster" value="azure"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-azure-cluster">Azure</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-alibaba-cluster" value="alibaba"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-alibaba-cluster">Alibaba</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-gcp-cluster" value="gcp"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-gcp-cluster">GCP</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-tencent-cluster" value="tencent"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-tencent-cluster">Tencent</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-ncp-cluster" value="ncp"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-ncp-cluster">NCP</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-nhn-cluster" value="nhn"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-nhn-cluster">NHN</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-ibm-cluster" value="ibm"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-ibm-cluster">IBM</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-kt-cluster" value="kt"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-kt-cluster">KT</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check-cluster" type="checkbox" id="spec-provider-openstack-cluster" value="openstack"
+                  onchange="webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster()">
+                <label class="form-check-label" for="spec-provider-openstack-cluster">OpenStack</label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="accordion">

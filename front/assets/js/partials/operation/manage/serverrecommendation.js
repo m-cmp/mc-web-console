@@ -13,6 +13,16 @@ export function initServerRecommendation(callbackfunction) {
 	if (callbackfunction != undefined) {
 		returnFunction = callbackfunction;
 	}
+
+	// 팝업 열릴 때마다 provider 체크박스 초기화 (All 체크, 나머지 해제)
+	const modalEl = document.getElementById('spec-search');
+	if (modalEl) {
+		modalEl.addEventListener('shown.bs.modal', function () {
+			document.querySelectorAll('.spec-provider-check').forEach(cb => cb.checked = false);
+			const allCb = document.getElementById('spec-provider-all');
+			if (allCb) allCb.checked = true;
+		});
+	}
 }
 
 function initRecommendSpecTable() {
@@ -388,6 +398,19 @@ export async function getRecommendVmInfo() {
 		policyArr.push(filterPolicy)
 	}
 
+	// provider filter
+	const allProviderChecked = document.getElementById('spec-provider-all')?.checked !== false;
+	if (!allProviderChecked) {
+		const selectedProviders = [...document.querySelectorAll('.spec-provider-check:checked')]
+			.map(cb => cb.value);
+		if (selectedProviders.length > 0) {
+			policyArr.push({
+				"metric": "providerName",
+				"condition": selectedProviders.map(p => ({ "operator": "==", "operand": p }))
+			});
+		}
+	}
+
 	//
 	var priorityArr = new Array();
 
@@ -538,24 +561,34 @@ async function availableVMImageBySpec(id) {
 }
 */
 
-// 프로바이더별 필터링 기능
 export function filterByProvider(provider) {
-	
 	if (!recommendVmSpecListObj || recommendVmSpecListObj.length === 0) {
-		console.error("No data to filter - no search results available");
 		return;
 	}
-	
 	if (provider === "") {
-		// 모든 프로바이더 표시
 		recommendTable.setData(recommendVmSpecListObj);
 	} else {
-		// 선택된 프로바이더만 필터링
 		var filteredData = recommendVmSpecListObj.filter(function(item) {
 			return item.providerName && item.providerName.toLowerCase() === provider.toLowerCase();
 		});
 		recommendTable.setData(filteredData);
 	}
+}
+
+export function onProviderAllChange(allCheckbox) {
+	if (allCheckbox.checked) {
+		document.querySelectorAll('.spec-provider-check').forEach(cb => cb.checked = false);
+	} else {
+		// All을 직접 해제하면 아무것도 선택 안 된 상태 방지 — All로 복원
+		const anyChecked = [...document.querySelectorAll('.spec-provider-check')].some(cb => cb.checked);
+		if (!anyChecked) allCheckbox.checked = true;
+	}
+}
+
+export function onProviderCheckChange() {
+	const anyChecked = [...document.querySelectorAll('.spec-provider-check')].some(cb => cb.checked);
+	const allCb = document.getElementById('spec-provider-all');
+	if (allCb) allCb.checked = !anyChecked;
 }
 
 // 전역 객체에 함수 등록
@@ -571,3 +604,5 @@ webconsolejs['partials/operation/manage/serverrecommendation'].getRecommendVmInf
 webconsolejs['partials/operation/manage/serverrecommendation'].applySpecInfo = applySpecInfo;
 webconsolejs['partials/operation/manage/serverrecommendation'].showRecommendSpecSetting = showRecommendSpecSetting;
 webconsolejs['partials/operation/manage/serverrecommendation'].filterByProvider = filterByProvider;
+webconsolejs['partials/operation/manage/serverrecommendation'].onProviderAllChange = onProviderAllChange;
+webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange = onProviderCheckChange;
