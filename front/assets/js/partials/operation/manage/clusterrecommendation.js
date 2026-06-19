@@ -457,3 +457,17 @@ async function availableVMImageBySpec(id) {
 
 	return imageIds[0]
 }
+
+if (typeof webconsolejs === 'undefined') {
+	webconsolejs = {};
+}
+if (typeof webconsolejs['partials/operation/manage/clusterrecommendation'] === 'undefined') {
+	webconsolejs['partials/operation/manage/clusterrecommendation'] = {};
+}
+
+webconsolejs['partials/operation/manage/clusterrecommendation'].initClusterRecommendation = initClusterRecommendation;
+webconsolejs['partials/operation/manage/clusterrecommendation'].getRecommendVmInfo = getRecommendVmInfo;
+webconsolejs['partials/operation/manage/clusterrecommendation'].applySpecInfo = applySpecInfo;
+webconsolejs['partials/operation/manage/clusterrecommendation'].showRecommendSpecSetting = showRecommendSpecSetting;
+webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderAllChangeCluster = onProviderAllChangeCluster;
+webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster = onProviderCheckChangeCluster;
