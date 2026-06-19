@@ -66,6 +66,68 @@
             </div>
           </div>
         </div>
+        <div class="row mt-2">
+          <div class="col-12">
+            <label class="form-label mb-1">Cloud Provider</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="spec-provider-all" value="all" checked
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderAllChange(this)">
+                <label class="form-check-label fw-semibold" for="spec-provider-all">All</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-aws" value="aws"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-aws">AWS</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-azure" value="azure"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-azure">Azure</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-alibaba" value="alibaba"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-alibaba">Alibaba</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-gcp" value="gcp"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-gcp">GCP</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-tencent" value="tencent"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-tencent">Tencent</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-ncp" value="ncp"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-ncp">NCP</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-nhn" value="nhn"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-nhn">NHN</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-ibm" value="ibm"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-ibm">IBM</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-kt" value="kt"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-kt">KT</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input spec-provider-check" type="checkbox" id="spec-provider-openstack" value="openstack"
+                  onchange="webconsolejs['partials/operation/manage/serverrecommendation'].onProviderCheckChange()">
+                <label class="form-check-label" for="spec-provider-openstack">OpenStack</label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="accordion">
