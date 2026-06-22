@@ -13,15 +13,18 @@ export function initServerRecommendationPmk(callbackfunction) {
 	if (callbackfunction != undefined) {
 		returnFunctionPmk = callbackfunction;
 	}
-	
-	// 모달 열기 이벤트 리스너 등록
-	setupServerModalEventsPmk();
-}
 
-// PMK용 서버 추천 모달 이벤트 설정
-function setupServerModalEventsPmk() {
-	// Provider 옵션은 HTML partial component로 이미 렌더링됨
-	// 추가 초기화가 필요한 경우 여기에 작성
+	// 팝업 열릴 때마다 선택된 provider를 배지에 표시
+	const modalEl = document.getElementById('spec-search-pmk');
+	if (modalEl) {
+		modalEl.addEventListener('shown.bs.modal', function () {
+			const provider = document.getElementById('cluster_provider_dynamic')?.value || '';
+			const badge = document.getElementById('spec-provider-badge-pmk');
+			const hidden = document.getElementById('spec-provider-value-pmk');
+			if (badge) badge.textContent = provider;
+			if (hidden) hidden.value = provider;
+		});
+	}
 }
 
 function initRecommendSpecTablePmk() {
@@ -234,7 +237,16 @@ export async function getRecommendVmInfoPmk() {
 			}
 			policyArr.push(filterPolicy)
 		}
-		
+
+		// provider 필터 - 폼에서 선택된 provider 값 적용
+		const selectedProvider = document.getElementById('spec-provider-value-pmk')?.value;
+		if (selectedProvider) {
+			policyArr.push({
+				"metric": "providerName",
+				"condition": [{ "operator": "==", "operand": selectedProvider }]
+			});
+		}
+
 		// 우선순위 정책 설정
 		const priorityArr = [];
 		if (lat && lon) {

@@ -13,6 +13,16 @@ export function initClusterRecommendation(callbackfunction) {
 	if (callbackfunction != undefined) {
 		returnFunction = callbackfunction;
 	}
+
+	// 팝업 열릴 때마다 provider 체크박스 초기화 (All 체크, 나머지 해제)
+	const modalEl = document.getElementById('image-search');
+	if (modalEl) {
+		modalEl.addEventListener('shown.bs.modal', function () {
+			document.querySelectorAll('.spec-provider-check-cluster').forEach(cb => cb.checked = false);
+			const allCb = document.getElementById('spec-provider-all-cluster');
+			if (allCb) allCb.checked = true;
+		});
+	}
 }
 
 function initRecommendSpecTable() {
@@ -305,6 +315,19 @@ export async function getRecommendVmInfo() {
 		policyArr.push(filterPolicy)
 	}
 
+	// provider filter
+	const allProviderCheckedCluster = document.getElementById('spec-provider-all-cluster')?.checked !== false;
+	if (!allProviderCheckedCluster) {
+		const selectedProviders = [...document.querySelectorAll('.spec-provider-check-cluster:checked')]
+			.map(cb => cb.value);
+		if (selectedProviders.length > 0) {
+			policyArr.push({
+				"metric": "providerName",
+				"condition": selectedProviders.map(p => ({ "operator": "==", "operand": p }))
+			});
+		}
+	}
+
 	//
 	var priorityArr = new Array();
 
@@ -341,7 +364,6 @@ export async function getRecommendVmInfo() {
 		return
 	}
 
-	// TODO : 선택된 provider 필터
 	recommendVmSpecListObj = respData.responseData
 
 	recommendTable.setData(recommendVmSpecListObj)
@@ -387,6 +409,21 @@ export function showRecommendSpecSetting(value) {
 }
 
 
+export function onProviderAllChangeCluster(allCheckbox) {
+	if (allCheckbox.checked) {
+		document.querySelectorAll('.spec-provider-check-cluster').forEach(cb => cb.checked = false);
+	} else {
+		const anyChecked = [...document.querySelectorAll('.spec-provider-check-cluster')].some(cb => cb.checked);
+		if (!anyChecked) allCheckbox.checked = true;
+	}
+}
+
+export function onProviderCheckChangeCluster() {
+	const anyChecked = [...document.querySelectorAll('.spec-provider-check-cluster')].some(cb => cb.checked);
+	const allCb = document.getElementById('spec-provider-all-cluster');
+	if (allCb) allCb.checked = !anyChecked;
+}
+
 // TODO: 스펙 선택 시 사용가능한 이미지의 개수가 두개 이상일 때 선택하는 UI 추가 구현 필요
 async function availableVMImageBySpec(id) {
 
@@ -420,3 +457,17 @@ async function availableVMImageBySpec(id) {
 
 	return imageIds[0]
 }
+
+if (typeof webconsolejs === 'undefined') {
+	webconsolejs = {};
+}
+if (typeof webconsolejs['partials/operation/manage/clusterrecommendation'] === 'undefined') {
+	webconsolejs['partials/operation/manage/clusterrecommendation'] = {};
+}
+
+webconsolejs['partials/operation/manage/clusterrecommendation'].initClusterRecommendation = initClusterRecommendation;
+webconsolejs['partials/operation/manage/clusterrecommendation'].getRecommendVmInfo = getRecommendVmInfo;
+webconsolejs['partials/operation/manage/clusterrecommendation'].applySpecInfo = applySpecInfo;
+webconsolejs['partials/operation/manage/clusterrecommendation'].showRecommendSpecSetting = showRecommendSpecSetting;
+webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderAllChangeCluster = onProviderAllChangeCluster;
+webconsolejs['partials/operation/manage/clusterrecommendation'].onProviderCheckChangeCluster = onProviderCheckChangeCluster;
