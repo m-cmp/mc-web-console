@@ -43,14 +43,14 @@ type SetupYamlCheckResult struct {
 }
 
 // GetSetupYamlCheck FR-CLOUD-ADMIN-006-08 setup yaml 도달성 확인 핸들러.
-//
-// query param "which"는 "menu"|"api" 중 하나여야 한다.
-//   - menu → MCWEBCONSOLE_MENUYAML
-//   - api  → MCADMINCLI_APIYAML
-//
-// 환경 변수가 비어있으면 400 BadRequest.
-// HEAD/GET 호출 자체가 실패해도 ResponseData는 채워서 200으로 반환한다.
-// (프론트 카드는 reachable=false + errorMessage로 그대로 표시할 수 있어야 함)
+// @Summary     Setup YAML reachability check
+// @Description Probe external raw YAML URLs (menu or api catalog) for admin setup status
+// @Tags        admin
+// @Produce     json
+// @Param       which query string true "Target YAML" Enums(menu, api)
+// @Success     200 {object} model.CommonResponse{responseData=SetupYamlCheckResult}
+// @Failure     400 {object} model.CommonResponse
+// @Router      /api/admin/setup-yaml-check [get]
 func GetSetupYamlCheck(c echo.Context) error {
 	which := strings.ToLower(strings.TrimSpace(c.QueryParam("which")))
 	if which != "menu" && which != "api" {

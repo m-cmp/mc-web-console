@@ -12,13 +12,15 @@
 ## E2E 스냅샷 동기화
 
 E2E 테스트 코드의 canonical source는 [mcmp-e2e](https://github.com/m-cmp/mcmp-e2e)입니다.
-`e2e-snapshot/`은 외부 배포용 mirror이며, 수정은 mcmp-e2e에서 한 뒤 sync 스크립트로 반영합니다.
+`e2e-snapshot/`은 외부 배포용 mirror이며, **mcmp-e2e** 저장소에서 sync 스크립트로 반영합니다.
 
 ```bash
-./scripts/sync-e2e-snapshot.sh
+# mcmp-e2e 저장소에서 실행
+./scripts/sync-to-mc-web-console.sh
 ```
 
 ## API 문서
 
 - Swagger UI: [docs/api/index.html](api/index.html) (GitHub Pages)
 - OpenAPI spec: [docs/api/swagger.json](api/swagger.json)
+- spec 재생성: `./scripts/generate-swagger.sh` (swag CLI 필요)

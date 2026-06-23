@@ -26,8 +26,22 @@ import (
 )
 
 // SubsystemAnyController Buffalo SubsystemAnyController 호환 프록시 핸들러
-// POST /api/:subsystemName/:operationId
-// conf/api.yaml의 serviceActions를 기반으로 백엔드 서비스에 프록시
+// @Summary     Proxy to backend service
+// @Description Forward request to backend service defined in conf/api.yaml by subsystemName and operationId
+// @Tags        proxy
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       subsystemName path string true "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)"
+// @Param       operationId path string true "Operation ID from api.yaml serviceActions"
+// @Param       body body object false "Request payload forwarded to backend"
+// @Success     200 {object} object
+// @Failure     404 {object} model.CommonResponse
+// @Router      /api/{subsystemName}/{operationId} [post]
+// @Router      /api/{subsystemName}/{operationId} [get]
+// @Router      /api/{subsystemName}/{operationId} [put]
+// @Router      /api/{subsystemName}/{operationId} [delete]
+// @Router      /api/{subsystemName}/{operationId} [patch]
 func SubsystemAnyController(c echo.Context) error {
 	subsystemName := c.Param("subsystemName")
 	operationId := c.Param("operationId")
