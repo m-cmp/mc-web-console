@@ -209,7 +209,7 @@ if (reviewData.creationViable) {
 5. 오류 메시지에 VM 정보, 이미지 정보, 구체적인 오류 내용이 모두 포함되어 있는지 확인
 
 **관련 문서**:
-- `doc/test/014_Azure_VM_Creation_test.md` (시도 4 실패 기록)
+- `docs/manual-testing/014_Azure_VM_Creation_test.md` (시도 4 실패 기록)
 
 ---
 
@@ -274,7 +274,7 @@ if (window.selectedSpecInfo) {
 - NCP: 숫자 형식
 
 **관련 문서**:
-- `doc/test/014_Azure_VM_Creation_test.md` (시도 5-7 실패 기록 - AWS/Alibaba 이미지 혼재)
+- `docs/manual-testing/014_Azure_VM_Creation_test.md` (시도 5-7 실패 기록 - AWS/Alibaba 이미지 혼재)
 
 ---
 

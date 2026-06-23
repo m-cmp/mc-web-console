@@ -336,7 +336,7 @@ webconsolejs["common/util"].showToast('Missing required fields for node creation
 ## 관련 문서
 
 - API 문서: `conf/api.yaml` - Postk8snodegroup
-- 이전 수정: `doc/fix/004_add_spec_name_column.md`
+- 이전 수정: `docs/development/fix/004_add_spec_name_column.md`
 
 ## 작성자
 

@@ -642,7 +642,7 @@ Invalid parameters for PMK deletion: {nsId: "", k8sClusterId: ""}
 
 ## 관련 문서
 
-- `doc/fix/005_fix_postk8snodegroup_validation.md` - NodeGroup 생성 validation
+- `docs/development/fix/005_fix_postk8snodegroup_validation.md` - NodeGroup 생성 validation
 - API 문서: `conf/api.yaml` - Deletek8scluster, Deletek8snodegroup
 - Modal 템플릿: `front/templates/partials/layout/_modal.html`
 

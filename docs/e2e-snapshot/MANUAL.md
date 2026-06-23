@@ -1,6 +1,6 @@
 # deploy/ 테스트 관리 매뉴얼
 
-> 관련 문서: [README.md](../README.md) · [definitions/GUIDE.md](../definitions/GUIDE.md) · [integration/SCENARIOS.md](../integration/SCENARIOS.md)
+> 이 스냅샷: [README.md](README.md) · canonical source: [mcmp-e2e/deploy/](https://github.com/m-cmp/mcmp-e2e/tree/main/deploy)
 
 이 문서는 `deploy/` 폴더의 TC·시나리오·파라미터 관리 방법을 처음 접하는 사람도 따라할 수 있도록 작성한 실무 안내서다.
 

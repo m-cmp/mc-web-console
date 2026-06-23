@@ -12,6 +12,15 @@ The MC-WEB-CONSOLE multi-cloud management portal and open interfaces include sev
     - 멀티 클라우드 관리 플랫폼 일반 사용자 포털
     - 멀티 클라우드 관리 플랫폼 관리자 포털
 
+## Documentation
+
+프로젝트 문서는 [docs/](docs/) 폴더에 역할별로 정리되어 있습니다.
+
+- [API (Swagger)](docs/api/index.html)
+- [개발 기록 (bug/fix)](docs/development/)
+- [수동 테스트](docs/manual-testing/)
+- [E2E 스냅샷 (mcmp-e2e mirror)](docs/e2e-snapshot/)
+
 ---
 
 ## Quick Start with docker

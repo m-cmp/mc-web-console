@@ -29,7 +29,7 @@
   - ❌ **NCP**: 숫자 형식 (예: 23214590) - Azure에서 사용 불가
 
 **참조**: 
-- Bug #005: `doc/bug/buglist.md` 참조
+- Bug #005: `docs/development/bug/buglist.md` 참조
 - 관련 파일: `front/assets/js/partials/operation/manage/imagerecommendation.js`
 
 **우회 방법**:
@@ -219,5 +219,5 @@
 - Azure VM 생성 테스트는 실제 환경에서 수행 필요
 - 성공/실패 이미지 정보는 테스트 후 이 문서에 업데이트
 - Image ID가 "ami-"로 시작하는 것은 AWS 이미지이므로 Azure 테스트에서는 제외
-- **테스트 자동화 스크립트**: `doc/test/azure_vm_test_automation.js` (브라우저 콘솔에서 실행 가능)
+- **테스트 자동화 스크립트**: `docs/manual-testing/azure_vm_test_automation.js` (브라우저 콘솔에서 실행 가능)
 

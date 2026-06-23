@@ -208,7 +208,7 @@ await testAzureImages();
 ## Phase 4: 결과 문서화
 
 ### 4.1 성공한 조합 문서화
-`doc/test/014_Azure_VM_Creation_test.md` 파일 업데이트
+`docs/manual-testing/014_Azure_VM_Creation_test.md` 파일 업데이트
 
 ### 4.2 권장 사항 작성
 - 가장 안정적인 Spec + Image 조합
@@ -317,7 +317,7 @@ await testAzureImages();
 4. **문제**: Azure koreacentral의 이미지가 시스템에 등록되어 있지 않음
 
 **이전 테스트 기록과 일치**:
-- `doc/test/014_Azure_VM_Creation_test.md`의 시도 2-7에서도 같은 문제 발생
+- `docs/manual-testing/014_Azure_VM_Creation_test.md`의 시도 2-7에서도 같은 문제 발생
 - 모달에서 검색 시 AWS (ami-*), Alibaba (*.vhd), NCP (숫자) 이미지만 표시됨
 - Azure 전용 이미지 (img-*) 형식은 찾을 수 없었음
 
@@ -412,9 +412,9 @@ await testAzureImages();
 
 ## 생성된 파일
 
-- `doc/test/015_Azure_Image_Search_Plan.md` - 이 파일 (테스트 계획 및 결과)
-- `doc/test/azure_image_search_script.js` - Image 검색 자동화 스크립트
-- `doc/bug/buglist.md` - 업데이트됨 (Bug #007, #008 추가)
+- `docs/manual-testing/015_Azure_Image_Search_Plan.md` - 이 파일 (테스트 계획 및 결과)
+- `docs/manual-testing/azure_image_search_script.js` - Image 검색 자동화 스크립트
+- `docs/development/bug/buglist.md` - 업데이트됨 (Bug #007, #008 추가)
 
 ---
 
@@ -533,7 +533,7 @@ koreacentral에는 아직 **369개의 Azure spec**이 더 있습니다 (price < 
 ---
 
 ## 참고 문서
-- `doc/test/014_Azure_VM_Creation_test.md` - 기존 테스트 기록
-- `doc/bug/buglist.md` - 알려진 이슈
+- `docs/manual-testing/014_Azure_VM_Creation_test.md` - 기존 테스트 기록
+- `docs/development/bug/buglist.md` - 알려진 이슈
 - `front/assets/js/partials/operation/manage/imagerecommendation.js` - Image 검색 로직
 
