@@ -10,6 +10,7 @@ let projectListselectBox = document.getElementById("select-current-project");
 let workspaceRefreshBtn = document.getElementById("refresh-user-ws-prj")// ws prj refresh 버튼
 
 document.addEventListener('DOMContentLoaded', async function () {
+    webconsolejs['common/cookie/authcookie'].startProactiveTokenRefresh();
     await workspaceProjectInit() // workspace select box, project select box 초기화 from local storage
     if (workspaceListselectBox.value === ""){
         workspaceListselectBox.classList.add('is-invalid');
@@ -149,6 +150,7 @@ export async function workspaceProjectInit() {
 
 
 document.getElementById("logoutbtn").addEventListener('click', async function () {
+    webconsolejs['common/cookie/authcookie'].stopProactiveTokenRefresh();
     destroyAccessToken()
     sessionStorage.clear();
     window.location = "/auth/logout"
