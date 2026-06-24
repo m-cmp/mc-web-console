@@ -20,6 +20,7 @@ document.getElementById("loginbtn").addEventListener('click',async function () {
             await webconsolejs["common/cookie/authcookie"].updateCookieAccessToken(response.data.access_token);
             await webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserToken();
             await webconsolejs["common/storage/sessionstorage"].setSessionCurrentUserRefreshToken();
+            webconsolejs["common/cookie/authcookie"].startProactiveTokenRefresh();
         } catch (error) {
             console.error("Error saving tokens:", error);
             alert("Token save failed: " + error.message);
