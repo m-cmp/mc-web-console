@@ -157,7 +157,7 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
       }
       // 401 Unauthorized는 토큰 만료 또는 인증 실패
       if (error.response && error.response.status === 401) {
-        const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
+        const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken({ force: true });
         if (authrefreshStatus) {
           console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
           return commonAPIPost(url, data, true, options);
@@ -194,24 +194,6 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         }
         webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
         return error;
-      }
-      // 기타 HTTP 에러
-      if (error.response && (error.response.status !== 200)) {
-        const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken();
-        if (authrefreshStatus) {
-          console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
-          return commonAPIPost(url, data, true, options);
-        } else {
-          // Loader 종료 / End loader
-          if (loaderType === 'toast' && toastId) {
-            hideAPIProgressToast(toastId, false);
-          } else if (loaderType === 'page') {
-            deactivePageLoader();
-          }
-          // 토큰 갱신 실패 시 에러 메시지만 표시하고 로그인 페이지로 리다이렉트하지 않음
-          webconsolejs["common/util"].showToast("An error occurred. Please try again later.", 'error');
-          return error;
-        }
       }
     }
     

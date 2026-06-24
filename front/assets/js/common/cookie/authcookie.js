@@ -1,16 +1,15 @@
-const DEFAULT_REFRESH_BUFFER_MS = 5 * 60 * 1000;
-const MIN_SCHEDULE_DELAY_MS = 30 * 1000;
-const DEFAULT_ACCESS_TTL_MS = 25 * 60 * 1000;
+const DEFAULT_PROACTIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 let proactiveRefreshTimer = null;
 let refreshInFlight = null;
 let nextProactiveRefreshAt = null;
+let lastRefreshAtMs = 0;
 
-function getRefreshBufferMs() {
-  if (typeof window !== 'undefined' && window.__MCWC_TOKEN_REFRESH_BUFFER_MS > 0) {
-    return window.__MCWC_TOKEN_REFRESH_BUFFER_MS;
+function getProactiveRefreshIntervalMs() {
+  if (typeof window !== 'undefined' && window.__MCWC_TOKEN_REFRESH_INTERVAL_MS > 0) {
+    return window.__MCWC_TOKEN_REFRESH_INTERVAL_MS;
   }
-  return DEFAULT_REFRESH_BUFFER_MS;
+  return DEFAULT_PROACTIVE_REFRESH_INTERVAL_MS;
 }
 
 function isValidJWT(token) {
@@ -39,21 +38,6 @@ function getCookie(name) {
   return null;
 }
 
-function decodeJwtPayload(token) {
-  if (!isValidJWT(token)) {
-    return null;
-  }
-
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
-    return JSON.parse(atob(padded));
-  } catch (error) {
-    console.error('Failed to decode JWT payload:', error);
-    return null;
-  }
-}
-
 function getAccessTokenFromCookie() {
   return getCookie('Authorization');
 }
@@ -71,6 +55,16 @@ function syncSessionTokens() {
   webconsolejs['common/storage/sessionstorage'].setSessionCurrentUserRefreshToken();
 }
 
+function hasValidAuthTokens() {
+  const accessToken = getAccessTokenFromCookie();
+  const refreshToken = getRefreshTokenFromCookie();
+
+  return Boolean(
+    accessToken && refreshToken
+      && isValidJWT(accessToken) && isValidJWT(refreshToken),
+  );
+}
+
 export async function updateCookieAccessToken(accessToken) {
   let now = new Date();
   now.setTime(now.getTime() + (24 * 60 * 60 * 1000));
@@ -83,22 +77,9 @@ export async function updateCookieRefreshToken(refreshToken) {
   document.cookie = `RefreshToken=${refreshToken}; path=/; expires=${now.toUTCString()};`;
 }
 
-function computeProactiveRefreshDelayMs(accessToken) {
-  const payload = decodeJwtPayload(accessToken);
-  const bufferMs = getRefreshBufferMs();
-  const nowMs = Date.now();
-
-  if (payload && payload.exp) {
-    const refreshAtMs = (payload.exp * 1000) - bufferMs;
-    return Math.max(refreshAtMs - nowMs, MIN_SCHEDULE_DELAY_MS);
-  }
-
-  return Math.max(DEFAULT_ACCESS_TTL_MS - bufferMs, MIN_SCHEDULE_DELAY_MS);
-}
-
 export function stopProactiveTokenRefresh() {
   if (proactiveRefreshTimer) {
-    clearTimeout(proactiveRefreshTimer);
+    clearInterval(proactiveRefreshTimer);
     proactiveRefreshTimer = null;
   }
   nextProactiveRefreshAt = null;
@@ -125,7 +106,6 @@ async function runProactiveTokenRefresh() {
     }
 
     console.log('[authcookie] proactive refresh succeeded');
-    scheduleProactiveTokenRefresh();
     return true;
   })();
 
@@ -137,49 +117,29 @@ async function runProactiveTokenRefresh() {
 }
 
 export function scheduleProactiveTokenRefresh() {
-  stopProactiveTokenRefresh();
-
-  const accessToken = getAccessTokenFromCookie();
-  const refreshToken = getRefreshTokenFromCookie();
-
-  if (!accessToken || !refreshToken) {
-    return;
-  }
-
-  if (!isValidJWT(accessToken) || !isValidJWT(refreshToken)) {
-    return;
-  }
-
-  const delayMs = computeProactiveRefreshDelayMs(accessToken);
-  nextProactiveRefreshAt = Date.now() + delayMs;
-
-  proactiveRefreshTimer = setTimeout(() => {
-    runProactiveTokenRefresh();
-  }, delayMs);
-
-  console.log(
-    `[authcookie] proactive refresh scheduled in ${Math.round(delayMs / 1000)}s`,
-  );
+  startProactiveTokenRefresh();
 }
 
 export function startProactiveTokenRefresh() {
-  const accessToken = getAccessTokenFromCookie();
-  if (!accessToken) {
+  if (proactiveRefreshTimer) {
     return;
   }
 
-  const payload = decodeJwtPayload(accessToken);
-  const bufferMs = getRefreshBufferMs();
-  const expiresSoon = payload && payload.exp
-    ? (payload.exp * 1000) - Date.now() <= bufferMs
-    : false;
+  if (!hasValidAuthTokens()) {
+    return;
+  }
 
-  if (expiresSoon) {
+  const intervalMs = getProactiveRefreshIntervalMs();
+  nextProactiveRefreshAt = Date.now() + intervalMs;
+
+  proactiveRefreshTimer = setInterval(() => {
+    nextProactiveRefreshAt = Date.now() + intervalMs;
     runProactiveTokenRefresh();
-    return;
-  }
+  }, intervalMs);
 
-  scheduleProactiveTokenRefresh();
+  console.log(
+    `[authcookie] proactive refresh interval: every ${Math.round(intervalMs / 1000)}s`,
+  );
 }
 
 export function isProactiveTokenRefreshActive() {
@@ -194,7 +154,18 @@ export async function runProactiveTokenRefreshNow() {
   return runProactiveTokenRefresh();
 }
 
-export async function refreshCookieAccessToken() {
+export async function refreshCookieAccessToken(options = {}) {
+  const force = options.force === true;
+  const intervalMs = getProactiveRefreshIntervalMs();
+  const nowMs = Date.now();
+
+  if (!force && lastRefreshAtMs > 0 && (nowMs - lastRefreshAtMs) < intervalMs) {
+    console.log(
+      `[authcookie] refresh skipped (last refresh ${Math.round((nowMs - lastRefreshAtMs) / 1000)}s ago)`,
+    );
+    return true;
+  }
+
   const controller = '/api/auth/refresh';
   const refreshToken = getRefreshTokenFromCookie();
 
@@ -252,7 +223,7 @@ export async function refreshCookieAccessToken() {
     }
 
     syncSessionTokens();
-    scheduleProactiveTokenRefresh();
+    lastRefreshAtMs = Date.now();
     return true;
   } catch (error) {
     console.error('ERROR during token refresh:', error);
