@@ -751,7 +751,7 @@ function displayServerStatusList(mciID, vmList) {
 // subGroup 단위로 묶음
 function groupBySubGroup(vmList) {
   const grouped = vmList.reduce((acc, vm) => {
-    const key = vm.subGroupId;
+    const key = vm.nodeGroupId;
     if (!acc[key]) acc[key] = [];
     acc[key].push(vm);
     return acc;
@@ -1034,7 +1034,7 @@ export async function vmDetailInfo(vmId) {
   try {
     var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
-    var subGroupId = aVm.subGroupId
+    var subGroupId = aVm.nodeGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
     // 전체를 관리하는 obj 갱신
