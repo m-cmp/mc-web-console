@@ -243,7 +243,7 @@ export async function getAvailableK8sClusterVersion(providerName, regionName) {
     }
   }
 
-  var controller = "/api/" + "mc-infra-manager/" + "Getavailablek8sclusterversion";
+  var controller = "/api/" + "mc-infra-manager/" + "GetAvailableK8sVersion";
   const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
@@ -479,7 +479,7 @@ export async function getAvailablek8sClusterNodeImage(providerName, regionName) 
     },
   };
 
-  var controller = "/api/" + "mc-infra-manager/" + "Getavailablek8sclusternodeimage";
+  var controller = "/api/" + "mc-infra-manager/" + "GetAvailableK8sNodeImage";
   const response = webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data

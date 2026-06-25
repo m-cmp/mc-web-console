@@ -336,7 +336,7 @@ async function updateConfigurationFilltering() {
 		$("#cluster_cloudconnection").empty();
 		$("#cluster_cloudconnection").append(html);
 
-		checkAvailableK8sClusterVersion(selectedProvider, selectedRegion);
+		checkAvailableK8sClusterVersion(selectedProvider, regionName);
 	}
 
 }
