@@ -183,7 +183,7 @@ export function vmDelete(mciId, nsId, vmId) {
     pathParams: {
       nsId: nsId,
       infraId: mciId,
-      vmId: vmId
+      nodeId: vmId
     },
     queryParams: {
       "option": "force"
@@ -725,7 +725,10 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
     pathParams: {
       nsId: nsId,
       infraId: mciId,
-      subgroupId: subgroupId
+      nodegroupId: subgroupId
+    },
+    queryParams: {
+      async: "true"
     },
     Request: {
       "numVMsToAdd": numVMsToAdd,
@@ -733,13 +736,9 @@ export async function postScaleOutSubGroup(nsId, mciId, subgroupId, numVMsToAdd)
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "PostInfraNodeGroupScaleOut";
-  const response = await webconsolejs["common/api/http"].commonAPIPost(
-    controller,
-    data
-  )
-
-  alert("Creation request completed");
-  window.location = "/webconsole/operations/manage/workloads/mciworkloads"
+  webconsolejs["common/api/http"].commonAPIPost(controller, data)
+    .catch(err => console.error("ScaleOut background error:", err));
+  return { status: "requested" }
 
 }
 

@@ -570,8 +570,12 @@ function updateMciLabelsTab(mciData) {
 
 // mci 삭제
 export function deleteMci() {
+  const deletingMciId = window.currentMciId;
+  window.currentMciId = "";
+  webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"));
+  mciListTable.deselectRow();
   executeWithToast(
-    () => webconsolejs["common/api/services/mci_api"].mciDelete(window.currentMciId, window.currentNsId),
+    () => webconsolejs["common/api/services/mci_api"].mciDelete(deletingMciId, window.currentNsId),
     "MCI deleted successfully",
     "MCI deletion failed"
   ).then(() => {
@@ -581,8 +585,10 @@ export function deleteMci() {
 
 // vm 삭제
 export function deleteVm() {
+  const deletingVmId = currentVmId;
+  resetDefaultTabSelections();
   executeWithToast(
-    () => webconsolejs["common/api/services/mci_api"].vmDelete(window.currentMciId, window.currentNsId, currentVmId),
+    () => webconsolejs["common/api/services/mci_api"].vmDelete(window.currentMciId, window.currentNsId, deletingVmId),
     "VM deleted successfully",
     "VM deletion failed"
   ).then(() => {
@@ -751,7 +757,7 @@ function displayServerStatusList(mciID, vmList) {
 // subGroup 단위로 묶음
 function groupBySubGroup(vmList) {
   const grouped = vmList.reduce((acc, vm) => {
-    const key = vm.subGroupId;
+    const key = vm.nodeGroupId;
     if (!acc[key]) acc[key] = [];
     acc[key].push(vm);
     return acc;
@@ -1034,7 +1040,7 @@ export async function vmDetailInfo(vmId) {
   try {
     var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
-    var subGroupId = aVm.subGroupId
+    var subGroupId = aVm.nodeGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
     // 전체를 관리하는 obj 갱신
@@ -2156,39 +2162,15 @@ function providerFormatterString(data) {
     btnOk.className = 'btn btn-primary btn-sm ms-3';
     btnOk.textContent = 'Apply';
     btnOk.addEventListener('click', () => {
-      var numVMsToAdd = inputBox.value
+      var numVMsToAdd = parseInt(inputBox.value, 10)
       
       // 로딩 프로그레스 토스트 표시
       webconsolejs["common/utils/toast"].showProgressToast("ScaleOut", "processing");
       
-      // API 호출
-      var response = webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(window.currentNsId, currentMciId, currentSubGroupId, numVMsToAdd)
-        .then(async response => {
-
-          var mciData = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, currentMciId);
-          refreshRowData(currentMciId, mciData.responseData);
-          const groupTabLink = document.querySelector('a[href="#tabs-mci-group"]');
-          if (groupTabLink) bootstrap.Tab.getOrCreateInstance(groupTabLink).show();
-
-          // 4) 해당 서브그룹 체크 & Scale 폼 열기
-          //    (displayServerGroupStatusList 내부에서 checkbox, currentGroupedVmList 세팅됨)
-          // displayServerGroupStatusList(currentMciId, mciData.responseData);
-          const chk = document.querySelector(`#checkbox_vmGroup_${currentSubGroupId}`);
-          if (chk) {
-            chk.checked = true;
-            // collapse 토글
-            bsCollapse.show();
-            toggleBtn.setAttribute('aria-expanded', 'true');
-          }
-          
-          // API 성공 시 토스트 제거
-          webconsolejs["common/utils/toast"].hideProgressToast();
-        })
-        .catch(error => {
-          console.error('ScaleOut API call failed:', error);
-          // API 실패 시 토스트 제거
-          webconsolejs["common/utils/toast"].hideProgressToast();
-        });
+      // API 호출 (fire-and-forget: tumblebug ScaleOut은 VM 생성 완료까지 수분 소요)
+      webconsolejs["common/api/services/mci_api"].postScaleOutSubGroup(window.currentNsId, currentMciId, currentSubGroupId, numVMsToAdd);
+      webconsolejs["common/utils/toast"].hideProgressToast();
+      alert(`ScaleOut 요청이 접수되었습니다.\nVM 생성이 완료되면 Group 탭을 새로고침하세요.`);
 
     });
     li.appendChild(btnOk);

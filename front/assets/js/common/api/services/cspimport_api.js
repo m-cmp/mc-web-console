@@ -127,7 +127,7 @@ export async function deregisterSshKey(nsId, sshKeyId) {
 
 /** VM(MCI) 등록 해제 */
 export async function deregisterMciVm(nsId, mciId, vmId) {
-  return call('DeregisterMciVm', { pathParams: { nsId, mciId, vmId } });
+  return call('DeregisterInfraNode', { pathParams: { nsId, infraId: mciId, nodeId: vmId } });
 }
 
 // ── Schedule ─────────────────────────────────────────────────────────────────
