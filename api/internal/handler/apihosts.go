@@ -22,9 +22,13 @@ type ServiceNoAuth struct {
 }
 
 // GetApiHosts POST /api/getapihosts
-// MCIAM_USE=false: api.yaml Services에서 추출
-// MCIAM_USE=true:  RegistryCache 우선, 미적재 시 ListMcmpApisServices 호출 후 반환
-// IFRAME_TARGET_IS_HOST=true: BaseURL을 :port/path 형식으로 변환
+// @Summary     Get API hosts
+// @Description Return backend service BaseURL map from api.yaml and registry cache
+// @Tags        bff
+// @Security    BearerAuth
+// @Produce     json
+// @Success     200 {object} model.CommonResponse
+// @Router      /api/getapihosts [post]
 func GetApiHosts(c echo.Context) error {
 	cfg, _ := c.Get("config").(*config.Config)
 	if cfg == nil {
