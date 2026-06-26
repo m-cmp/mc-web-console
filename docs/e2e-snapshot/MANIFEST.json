@@ -1,7 +1,0 @@
-{
-  "sourceRepo": "m-cmp/mcmp-e2e",
-  "sourcePath": "deploy/",
-  "sourceCommit": "441fcd67a336a74e21771baf1b302cf9e56e7b48",
-  "syncedAt": "2026-06-23",
-  "note": "Canonical source is mcmp-e2e. Run scripts/sync-to-mc-web-console.sh from mcmp-e2e root."
-}
