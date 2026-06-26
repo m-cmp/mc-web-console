@@ -129,7 +129,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
 
   // 생성요청했으므로 결과를 기다리지 않고 pmkList로 보냄
   // webconsolejs["common/util"].changePage("PmkMng", urlParamMap)
-  window.location = "/webconsole/operations/manage/workloads/pmkwls"
+  window.location = "/webconsole/operations/manage/workloads/pmkworkloads"
 }
 
 export async function getVpcList(connectionName, nsId) {
