@@ -1699,6 +1699,19 @@ export async function deployPmkDynamic() {
                 webconsolejs['common/util'].showToast('Please input NodeGroup name', 'warning');
                 return;
             }
+            // AutoScaling On일 때만 min/max 포함
+            const autoScalingVal = $("#nodegroup_autoscaling_dynamic").val();
+            createData.onAutoScaling = autoScalingVal || "false";
+            if (autoScalingVal === "true") {
+                const minNodeSize = $("#nodegroup_minnodesize_dynamic").val();
+                const maxNodeSize = $("#nodegroup_maxnodesize_dynamic").val();
+                if (!minNodeSize || !maxNodeSize) {
+                    webconsolejs['common/util'].showToast('Min/Max Node Size is required when AutoScaling is On', 'warning');
+                    return;
+                }
+                createData.minNodeSize = parseInt(minNodeSize, 10);
+                createData.maxNodeSize = parseInt(maxNodeSize, 10);
+            }
         }
 
         // available k8sversion 조회        
@@ -1952,6 +1965,16 @@ function setupDesiredNodeSizeButtons() {
     // 기존 이벤트 핸들러 제거
     $(document).off('click', '#nodegroup_configuration_dynamic .input-number-decrement');
     $(document).off('click', '#nodegroup_configuration_dynamic .input-number-increment');
+    $(document).off('change', '#nodegroup_autoscaling_dynamic');
+
+    // AutoScaling 변경 시 min/max 활성화 제어
+    $(document).on('change', '#nodegroup_autoscaling_dynamic', function () {
+        if ($(this).val() === 'true') {
+            $('#nodegroup_minnodesize_dynamic, #nodegroup_maxnodesize_dynamic').prop('disabled', false);
+        } else {
+            $('#nodegroup_minnodesize_dynamic, #nodegroup_maxnodesize_dynamic').val('').prop('disabled', true);
+        }
+    });
 
     // 새로운 이벤트 핸들러 등록
     $(document).on('click', '#nodegroup_configuration_dynamic .input-number-decrement', function (e) {

@@ -88,25 +88,31 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
 
   // NodeGroupList가 있으면 추가 (조건부로 추가)
   if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
-    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => ({
-      desiredNodeSize: group.desiredNodeSize,
-      imageId: group.imageId,
-      maxNodeSize: group.maxNodeSize,
-      minNodeSize: group.minNodeSize,
-      name: group.name,
-      onAutoScaling: group.onAutoScaling,
-      rootDiskSize: group.rootDiskSize,
-      rootDiskType: group.rootDiskType,
-      specId: group.specId,
-      sshKeyId: group.sshKeyId
-    }));
+    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => {
+      const ng = {
+        desiredNodeSize: parseInt(group.desiredNodeSize, 10) || 0,
+        imageId: group.imageId,
+        maxNodeSize: parseInt(group.maxNodeSize, 10) || 0,
+        minNodeSize: parseInt(group.minNodeSize, 10) || 0,
+        name: group.name,
+        onAutoScaling: String(group.onAutoScaling),
+        rootDiskType: group.rootDiskType,
+        specId: group.specId,
+        sshKeyId: group.sshKeyId
+      };
+      const rootDiskSize = parseInt(group.rootDiskSize, 10);
+      if (!isNaN(rootDiskSize) && rootDiskSize > 0) {
+        ng.rootDiskSize = rootDiskSize;
+      }
+      return ng;
+    });
   }
 
   const data = {
     pathParams: {
       "nsId": selectedNsId
     },
-    Request: {
+    request: {
       "connectionName": obj['connectionName'],
       "name": obj['name'],
       "description": obj['description'],
