@@ -95,7 +95,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
         maxNodeSize: parseInt(group.maxNodeSize, 10) || 0,
         minNodeSize: parseInt(group.minNodeSize, 10) || 0,
         name: group.name,
-        onAutoScaling: group.onAutoScaling === true || group.onAutoScaling === 'true',
+        onAutoScaling: String(group.onAutoScaling),
         rootDiskType: group.rootDiskType,
         specId: group.specId,
         sshKeyId: group.sshKeyId
