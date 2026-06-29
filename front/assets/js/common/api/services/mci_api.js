@@ -332,8 +332,8 @@ export async function vmDynamic(mciId, nsId, Express_Server_Config_Arr) {
       "description": obj.description,
       // "label": "",
       "name": obj.name,
-      "subGroupSize": obj.subGroupSize,
-      "rootDiskSize": obj.rootDiskSize,
+      "subGroupSize": parseInt(obj.subGroupSize) || 1,
+      "rootDiskSize": (obj.rootDiskSize !== "" && obj.rootDiskSize !== undefined) ? parseInt(obj.rootDiskSize) : 0,
       "rootDiskType": obj.rootDiskType,
     }
   }
