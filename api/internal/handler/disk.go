@@ -64,6 +64,16 @@ var diskTypeTable = []diskTypeInfo{
 	},
 }
 
+// DiskLookup returns CSP disk type metadata for VM creation forms.
+// @Summary     Disk type lookup
+// @Description Lookup root disk types and size ranges by cloud provider
+// @Tags        bff
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       request body diskLookupReq true "Provider filter (optional)"
+// @Success     200 {object} model.CommonResponse
+// @Router      /api/disklookup [post]
 func DiskLookup(c echo.Context) error {
 	var req diskLookupReq
 	if err := c.Bind(&req); err != nil {

@@ -18,7 +18,9 @@ export function initServerRecommendationPmk(callbackfunction) {
 	const modalEl = document.getElementById('spec-search-pmk');
 	if (modalEl) {
 		modalEl.addEventListener('shown.bs.modal', function () {
-			const provider = document.getElementById('cluster_provider_dynamic')?.value || '';
+			const provider = document.getElementById('cluster_provider_dynamic')?.value
+				|| document.getElementById('cluster_provider')?.value
+				|| '';
 			const badge = document.getElementById('spec-provider-badge-pmk');
 			const hidden = document.getElementById('spec-provider-value-pmk');
 			if (badge) badge.textContent = provider;

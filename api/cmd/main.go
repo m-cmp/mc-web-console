@@ -1,3 +1,16 @@
+// mc-web-console BFF API server.
+//
+// @title           mc-web-console API
+// @version         1.0.0
+// @description     mc-web-console BFF API server (Echo). Auth, disk lookup, admin BFF, and multi-cloud proxy via /api/{subsystemName}/{operationId}.
+// @host            localhost:3100
+// @BasePath        /
+// @schemes         http
+//
+// @securityDefinitions.apikey BearerAuth
+// @in              header
+// @name            Authorization
+// @description     JWT Bearer token (Authorization header or AccessToken cookie)
 package main
 
 import (
@@ -72,6 +85,12 @@ func main() {
 	})
 
 	// Health check 엔드포인트
+	// @Summary     Health check
+	// @Description Server readiness probe
+	// @Tags        system
+	// @Produce     json
+	// @Success     200 {object} map[string]interface{}
+	// @Router      /readyz [get]
 	e.GET("/readyz", func(c echo.Context) error {
 		return c.JSON(200, map[string]interface{}{
 			"status":      "OK",
@@ -113,6 +132,11 @@ func main() {
 	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController)
 
 	// 테스트 엔드포인트들
+	// @Summary     Hello
+	// @Tags        test
+	// @Produce     json
+	// @Success     200 {object} map[string]interface{}
+	// @Router      /api/hello [get]
 	api.GET("/hello", func(c echo.Context) error {
 		requestID := middleware.GetRequestID(c)
 		return c.JSON(200, map[string]interface{}{

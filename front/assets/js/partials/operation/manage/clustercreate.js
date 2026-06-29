@@ -18,6 +18,7 @@ function setupDesiredNodeSizeButtons() {
 	// 기존 이벤트 핸들러 제거 (중복 방지)
 	$(document).off('click', '#nodegroup_configuration .input-number-decrement');
 	$(document).off('click', '#nodegroup_configuration .input-number-increment');
+	$(document).off('change', '#node_autoscaling');
 	$(document).off('change', '#node_minnodesize');
 	$(document).off('change', '#node_maxnodesize');
 
@@ -48,6 +49,16 @@ function setupDesiredNodeSizeButtons() {
 		// maxNodeSize 이하로 유지
 		if (currentValue < maxNodeSize) {
 			input.val(currentValue + 1);
+		}
+	});
+
+	// AutoScaling 변경 시 min/max 활성화 제어
+	$(document).on('change', '#node_autoscaling', function () {
+		const val = $(this).val();
+		if (val === 'true') {
+			$('#node_minnodesize, #node_maxnodesize').prop('disabled', false);
+		} else {
+			$('#node_minnodesize, #node_maxnodesize').val('').prop('disabled', true);
 		}
 	});
 
@@ -810,15 +821,18 @@ export async function createCluster() {
 // }
 export function clusterFormDone_btn() {
 	// 1. 필수 필드 검증
+	const isAutoScalingOn = $('#node_autoscaling').val() === 'true';
 	var requiredFields = [
 		{ id: '#node_name', message: 'NodeGroup name is required' },
 		{ id: '#node_specid', message: 'Spec is required' },
 		{ id: '#node_imageid', message: 'Image is required' },
-		{ id: '#node_minnodesize', message: 'Min Node Size is required' },
-		{ id: '#node_maxnodesize', message: 'Max Node Size is required' },
 		{ id: '#node_sshkey', message: 'SSH Key is required' },
 		{ id: '#node_autoscaling', message: 'AutoScaling option is required' }
 	];
+	if (isAutoScalingOn) {
+		requiredFields.push({ id: '#node_minnodesize', message: 'Min Node Size is required' });
+		requiredFields.push({ id: '#node_maxnodesize', message: 'Max Node Size is required' });
+	}
 	
 	for (var field of requiredFields) {
 		if (!$(field.id).val() || $(field.id).val().trim() === '') {
@@ -876,8 +890,6 @@ export function clusterFormDone_btn() {
     var nodeGroupData = {
         "desiredNodeSize": desiredNodeSize || "",
         "imageId": imageId || "",
-        "maxNodeSize": maxNodeSize || "",
-        "minNodeSize": minNodeSize || "",
         "name": nodeGroupName,
         "onAutoScaling": onAutoScaling || "false",
         "rootDiskSize": rootDiskSize || "",
@@ -885,6 +897,11 @@ export function clusterFormDone_btn() {
         "specId": specId || "",
         "sshKeyId": sshKeyId || ""
     };
+    // AutoScaling On일 때만 min/max 포함
+    if (onAutoScaling === "true") {
+        nodeGroupData["maxNodeSize"] = maxNodeSize || "";
+        nodeGroupData["minNodeSize"] = minNodeSize || "";
+    }
 
     if (nodeGroupName) {
         cluster_form["k8sNodeGroupList"] = [nodeGroupData];
@@ -1062,12 +1079,18 @@ export function view_ngForm(cnt){
 		$("#node_specid").val(nodeGroupData.specId || "");
 		$("#node_commonSpecId").val(nodeGroupData.specId || "");
 		$("#node_imageid").val(nodeGroupData.imageId || "");
-		$("#node_minnodesize").val(nodeGroupData.minNodeSize || "");
-		$("#node_maxnodesize").val(nodeGroupData.maxNodeSize || "");
+		const editAutoScalingOn = (nodeGroupData.onAutoScaling || "false") === "true";
+		$("#node_autoscaling").val(nodeGroupData.onAutoScaling || "false");
+		if (editAutoScalingOn) {
+			$('#node_minnodesize, #node_maxnodesize').prop('disabled', false);
+			$("#node_minnodesize").val(nodeGroupData.minNodeSize || "");
+			$("#node_maxnodesize").val(nodeGroupData.maxNodeSize || "");
+		} else {
+			$('#node_minnodesize, #node_maxnodesize').val('').prop('disabled', true);
+		}
 		$("#node_sshkey").val(nodeGroupData.sshKeyId || "");
 		$("#node_rootdisk").val(nodeGroupData.rootDiskType || "");
 		$("#node_rootdisksize").val(nodeGroupData.rootDiskSize || "");
-		$("#node_autoscaling").val(nodeGroupData.onAutoScaling || "false");
 		$("#node_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
 		
 		// Hidden 필드에도 설정
