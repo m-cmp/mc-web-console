@@ -16,7 +16,7 @@ services:
       type: bearer
   mc-infra-manager:
     version: 0.12.9
-    baseurl: http://52.79.163.111:1323/tumblebug
+    baseurl: http://15.164.139.37:1323/tumblebug
     auth:
       type: basic
       username: default
