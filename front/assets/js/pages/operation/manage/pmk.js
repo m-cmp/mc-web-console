@@ -1618,39 +1618,47 @@ export async function deployPmkDynamic() {
                 return;
             }
         } else {
-            // NodeGroup이 없는 경우: CSP별 하드코딩된 값 사용
-            const selectedProvider = clusterData.provider.toLowerCase();
+            // NodeGroup이 없는 경우: API를 통해 동적으로 spec과 image 가져오기
+            const providerName = clusterData.provider;
+            const regionMatch = clusterData.region.match(/\[.*?\]\s*(.+)/);
+            const regionName = regionMatch ? regionMatch[1] : '';
 
-            switch (selectedProvider) {
-                case 'aws':
-                    commonSpec = "aws+ap-northeast-2+t3a.xlarge";
-                    commonImage = "default";
-                    break;
-                case 'alibaba':
-                    //commonSpec = "alibaba+ap-northeast-2+ecs.g6e.xlarge";// tb에 미등록된 spec임.
-                    commonSpec = "alibaba+ap-northeast-2+ecs.t6-c1m4.xlarge";
-                    //commonImage = "alibaba+ubuntu_22_04_arm64_20g_alibase_20250625.vhd";
-                    //commonImage = "alibaba+ubuntu_20_04_arm64_20g_alibase_20250625.vhd";
-                    commonImage = "ubuntu_20_04_arm64_20g_alibase_20250625.vhd";
-                    //commonImage = "alibaba+ubuntu_22_04_x64_20G_alibase_20250722.vhd";
-                    break;
-                case 'azure':
-                    commonSpec = "azure+koreacentral+standard_b4ms";
-                    commonImage = "default";
-                    break;
-                case 'nhn':
-                    commonSpec = "nhncloud+kr1+m2.c4m8";
-                    commonImage = "nhncloud+kr1+ubuntu20.04container";
-                    break;
-                case 'tencent':
-                    commonSpec = "tencent+ap-seoul+s5.medium2";
-                    commonImage = "img-487zeit5";
-                    break;
-                default:
-                    // 기타 CSP는 빈값으로 설정
-                    commonSpec = "";
-                    commonImage = "";
-                    break;
+            if (!providerName || !regionName) {
+                webconsolejs['common/util'].showToast('Please select both Provider and Region', 'warning');
+                return;
+            }
+
+            const specsResponse = await webconsolejs["common/api/services/pmk_api"]
+                .getAvailableK8sClusterVersion(providerName, regionName);
+
+            const imagesResponse = await webconsolejs["common/api/services/pmk_api"]
+                .getAvailablek8sClusterNodeImage(providerName, regionName);
+
+            if (specsResponse && specsResponse.data && specsResponse.data.responseData) {
+                const specs = specsResponse.data.responseData;
+                if (Array.isArray(specs) && specs.length > 0) {
+                    commonSpec = specs[0];
+                } else if (typeof specs === 'object' && specs.version) {
+                    commonSpec = specs.version[0] || "";
+                }
+            }
+
+            if (imagesResponse && imagesResponse.data && imagesResponse.data.responseData) {
+                const images = imagesResponse.data.responseData;
+                if (Array.isArray(images) && images.length > 0) {
+                    commonImage = images[0];
+                } else if (typeof images === 'object' && images.image) {
+                    commonImage = images.image[0] || "default";
+                }
+            }
+
+            if (!commonImage || commonImage === "") {
+                commonImage = "default";
+            }
+
+            if (!commonSpec || commonSpec === "") {
+                webconsolejs['common/util'].showToast('Could not retrieve K8s specification for the selected Provider and Region', 'error');
+                return;
             }
         }
 

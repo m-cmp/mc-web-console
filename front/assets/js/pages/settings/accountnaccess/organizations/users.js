@@ -886,6 +886,57 @@ window.toggleUserStatus = async function() {
   }
 };
 
+// =============================================================================
+// Export Functions (webconsolejs에 자동 등록되는 함수들)
+// =============================================================================
+
+// HTML: onclick="webconsolejs['partials/layout/modal'].commonModal(..., 'pages/settings/accountnaccess/organizations/users.deleteUser')"
+// Modal Confirm 버튼 클릭 시 실행됨
+export function deleteUser() {
+  if (!AppState.users.selectedUser) {
+    webconsolejs["common/utils/toast"].showToast(
+      webconsolejs["common/utils/toast"].TOAST_TYPES.WARNING,
+      'No user selected for deletion.'
+    );
+    return;
+  }
+
+  executeWithToast(
+    () => webconsolejs["common/api/services/users_api"].deleteUser(AppState.users.selectedUser.id),
+    "User deleted successfully",
+    "User deletion failed"
+  ).then(() => {
+    UIManager.hideViewMode();
+    initUsers();
+  });
+}
+
+function executeWithToast(apiCall, successMessage, errorMessage) {
+  webconsolejs["common/utils/toast"].showProgressToast("API", "processing");
+
+  return apiCall()
+    .then(response => {
+      webconsolejs["common/utils/toast"].hideProgressToast();
+      webconsolejs["common/utils/toast"].showToast(
+        webconsolejs["common/utils/toast"].TOAST_TYPES.SUCCESS,
+        successMessage
+      );
+      return response;
+    })
+    .catch(error => {
+      webconsolejs["common/utils/toast"].hideProgressToast();
+      webconsolejs["common/utils/toast"].showToast(
+        webconsolejs["common/utils/toast"].TOAST_TYPES.ERROR,
+        errorMessage
+      );
+      throw error;
+    });
+}
+
+// =============================================================================
+// Window Global Functions (window 객체에 직접 등록되는 함수들)
+// =============================================================================
+
 // 선택된 유저들 삭제 (roles.js의 deleteRole과 동일한 패턴)
 window.deleteUsers = async function() {
   
