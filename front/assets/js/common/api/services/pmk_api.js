@@ -486,12 +486,11 @@ export async function getAvailablek8sClusterNodeImage(providerName, regionName) 
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "GetAvailableK8sNodeImage";
-  const response = webconsolejs["common/api/http"].commonAPIPost(
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
-  var imageList = response
-  return imageList
+  return response.data.responseData
 
 
 }
