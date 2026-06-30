@@ -392,11 +392,11 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
 
   var obj = Create_Node_Config_Arr[0];
   
-  // 2. 필수 필드 검증
-  if (!obj.name || !obj.specId || !obj.imageId || !obj.sshKeyId || !obj.minNodeSize || !obj.maxNodeSize || !obj.onAutoScaling) {
+  // 2. 필수 필드 검증 (min/maxNodeSize는 autoScaling OFF 시 없을 수 있으므로 제외)
+  if (!obj.name || !obj.specId || !obj.imageId) {
     console.error('Missing required fields:', obj);
     webconsolejs["common/util"].showToast('Missing required fields for node creation', 'error');
-    return;
+    return false;
   }
 
   // 3. 데이터 준비 (기본값 포함)
@@ -406,13 +406,13 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr) {
       k8sClusterId: k8sClusterId,
     },
     request: {
-      "desiredNodeSize": obj.desiredNodeSize || "1",
+      "desiredNodeSize": parseInt(obj.desiredNodeSize) || 1,
       "imageId": obj.imageId,
-      "maxNodeSize": obj.maxNodeSize || obj.desiredNodeSize || "1",
-      "minNodeSize": obj.minNodeSize || obj.desiredNodeSize || "1",
+      "maxNodeSize": parseInt(obj.maxNodeSize) || parseInt(obj.desiredNodeSize) || 1,
+      "minNodeSize": parseInt(obj.minNodeSize) || parseInt(obj.desiredNodeSize) || 1,
       "name": obj.name,
       "onAutoScaling": obj.onAutoScaling || "false",
-      "rootDiskSize": obj.rootDiskSize || "",
+      "rootDiskSize": parseInt(obj.rootDiskSize) || 0,
       "rootDiskType": obj.rootDiskType || "",
       "specId": obj.specId,
       "sshKeyId": obj.sshKeyId
@@ -486,14 +486,43 @@ export async function getAvailablek8sClusterNodeImage(providerName, regionName) 
   };
 
   var controller = "/api/" + "mc-infra-manager/" + "GetAvailableK8sNodeImage";
-  const response = webconsolejs["common/api/http"].commonAPIPost(
+  const response = await webconsolejs["common/api/http"].commonAPIPost(
     controller,
     data
   )
-  var imageList = response
-  return imageList
+  return response.data.responseData
 
 
+}
+
+// connectionName에 맞는 K8s 노드 spec을 동적 조회 (RecommendK8sNode)
+// connectionName이 일치하는 첫 번째 specId를 반환; 없거나 오류 시 ""
+export async function getRecommendedK8sSpecId(connectionName) {
+  const data = {
+    request: {
+      limit: 200
+    }
+  };
+
+  var controller = "/api/" + "mc-infra-manager/" + "RecommendK8sNode";
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      controller,
+      data
+    );
+
+    if (!response || !response.data || !response.data.responseData) {
+      return "";
+    }
+
+    const specs = response.data.responseData;
+    if (!Array.isArray(specs)) return "";
+
+    const matched = specs.find(spec => spec.connectionName === connectionName);
+    return matched ? (matched.id || "") : "";
+  } catch (e) {
+    return "";
+  }
 }
 
 // // MCIS 상태를 UI에서 표현하는 방식으로 변경

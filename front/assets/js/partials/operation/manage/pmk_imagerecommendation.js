@@ -54,11 +54,22 @@ export function selectOSTypePmk(osType) {
 export function updateGPUStatusPmk() {
 	var gpuCheckbox = document.getElementById('assist_gpu_image-pmk');
 	var gpuValue = document.getElementById('gpu_image_value-pmk');
-	
+
 	if (gpuCheckbox.checked) {
 		gpuValue.value = 'true';
 	} else {
 		gpuValue.value = 'false';
+	}
+}
+
+export function updateK8sStatusPmk() {
+	var k8sCheckbox = document.getElementById('assist_k8s_image-pmk');
+	var k8sValue = document.getElementById('k8s_image_value-pmk');
+
+	if (k8sCheckbox.checked) {
+		k8sValue.value = 'true';
+	} else {
+		k8sValue.value = 'false';
 	}
 }
 
@@ -192,7 +203,8 @@ export async function getRecommendImageInfoPmk() {
 
 	var osType = $("#assist_os_type-pmk").val()
 	var isGPUImage = $("#gpu_image_value-pmk").val()
-	
+	var isK8sImage = $("#k8s_image_value-pmk").val()
+
 	// 전역 변수에서 정보 가져오기
 	var specId = window.selectedPmkSpecInfo.id; // spec의 전체 ID (예: "aws+ap-northeast-2+t2.small")
 	var provider = window.selectedPmkSpecInfo.provider;
@@ -206,18 +218,21 @@ export async function getRecommendImageInfoPmk() {
 
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
-			providerName: provider,              // 개별 전달
-			regionName: region,                  // 개별 전달
-			matchedSpecId: specId,               // 유지
-			// isKubernetesImage: true,             // PMK 필수
+			providerName: provider,
+			regionName: region,
+			matchedSpecId: specId,
 			maxResults: 100
 		};
-		
+
 		// 선택적 파라미터
 		if (osType && osType.trim() !== "") {
 			searchParams.osType = osType.trim();
 		}
-		
+
+		if (isK8sImage === "true") {
+			searchParams.isKubernetesImage = true;
+		}
+
 		// GPU 이미지가 필요한 경우에만 추가
 		if (isGPUImage === "true") {
 			searchParams.isGPUImage = true;
@@ -383,6 +398,9 @@ if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].setImageS
 }
 if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].filterByProviderPmk) {
 	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].filterByProviderPmk = filterByProviderPmk;
+}
+if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateK8sStatusPmk) {
+	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateK8sStatusPmk = updateK8sStatusPmk;
 }
 if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk) {
 	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk = updateGPUStatusPmk;

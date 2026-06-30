@@ -1605,109 +1605,87 @@ export async function deployPmkDynamic() {
     const isNodeGroupVisible = nodeGroupForm && nodeGroupForm.style.display !== "none";
 
     try {
-        // 사전 검증을 위한 commonSpec 결정
         let commonSpec = "";
         let commonImage = "";
+        let k8sVersion = "";
 
         if (isNodeGroupVisible) {
-            // NodeGroup이 있는 경우: 선택된 spec 사용
+            // NodeGroup이 있는 경우: 선택된 spec으로 사전 검증 후 배포
             commonSpec = $("#nodegroup_commonSpecId_dynamic").val();
             commonImage = $("#nodegroup_image_dynamic").val();
             if (!commonSpec) {
                 webconsolejs['common/util'].showToast('Please select NodeGroup spec', 'warning');
                 return;
             }
+
+            const checkResult = await webconsolejs["common/api/services/pmk_api"].checkK8sClusterDynamic(
+                selectedWorkspaceProject.nsId,
+                commonSpec
+            );
+            if (!checkResult || checkResult.status !== 200) {
+                webconsolejs['common/util'].showToast('Failed to pre-validate. Please check the settings', 'error');
+                return;
+            }
         } else {
-            // NodeGroup이 없는 경우: API를 통해 동적으로 spec과 image 가져오기
+            // NodeGroup이 없는 경우: K8s 버전 + specId 동적 조회 후 control plane만 생성
             const providerName = clusterData.provider;
             const regionMatch = clusterData.region.match(/\[.*?\]\s*(.+)/);
-            const regionName = regionMatch ? regionMatch[1] : '';
+            const regionName = regionMatch ? regionMatch[1].trim() : '';
 
             if (!providerName || !regionName) {
                 webconsolejs['common/util'].showToast('Please select both Provider and Region', 'warning');
                 return;
             }
 
-            const specsResponse = await webconsolejs["common/api/services/pmk_api"]
+            // K8s 버전 조회
+            const versions = await webconsolejs["common/api/services/pmk_api"]
                 .getAvailableK8sClusterVersion(providerName, regionName);
-
-            const imagesResponse = await webconsolejs["common/api/services/pmk_api"]
-                .getAvailablek8sClusterNodeImage(providerName, regionName);
-
-            if (specsResponse && specsResponse.data && specsResponse.data.responseData) {
-                const specs = specsResponse.data.responseData;
-                if (Array.isArray(specs) && specs.length > 0) {
-                    commonSpec = specs[0];
-                } else if (typeof specs === 'object' && specs.version) {
-                    commonSpec = specs.version[0] || "";
-                }
+            if (versions && Array.isArray(versions) && versions.length > 0) {
+                k8sVersion = versions[0].id || "";
             }
 
-            if (imagesResponse && imagesResponse.data && imagesResponse.data.responseData) {
-                const images = imagesResponse.data.responseData;
-                if (Array.isArray(images) && images.length > 0) {
-                    commonImage = images[0];
-                } else if (typeof images === 'object' && images.image) {
-                    commonImage = images.image[0] || "default";
-                }
+            // provider 컨텍스트용 specId: RecommendK8sNode 조회 → 없으면 CSP별 하드코딩 fallback
+            commonSpec = await webconsolejs["common/api/services/pmk_api"]
+                .getRecommendedK8sSpecId(clusterData.connection);
+            if (!commonSpec) {
+                const K8S_DEFAULT_SPEC = {
+                    'aws':     't3.medium',
+                    'azure':   'Standard_B2s',
+                    'gcp':     'n1-standard-2',
+                    'alibaba': 'ecs.c1.small',
+                    'ncp':     'SVR.VSVR.STAND.C002.M004.NET.SSD.B050.G002',
+                    'nhncloud': 'm2.c4m8',
+                    'ibm':     'cx2-4x8',
+                };
+                const sepIdx = clusterData.connection.indexOf('-');
+                const csp = clusterData.connection.substring(0, sepIdx).toLowerCase();
+                const region = clusterData.connection.substring(sepIdx + 1);
+                const instanceType = K8S_DEFAULT_SPEC[csp] || 't3.medium';
+                commonSpec = `${csp}+${region}+${instanceType}`;
             }
 
-            if (!commonImage || commonImage === "") {
-                commonImage = "default";
-            }
-
-            if (!commonSpec || commonSpec === "") {
-                webconsolejs['common/util'].showToast('Could not retrieve K8s specification for the selected Provider and Region', 'error');
-                return;
-            }
+            commonImage = "default";
         }
 
-        // 사전 검증 API 호출 (동기 - 결과 확인 필요)
-        const checkResult = await webconsolejs["common/api/services/pmk_api"].checkK8sClusterDynamic(
-            selectedWorkspaceProject.nsId,
-            commonSpec
-        );
+        // 클러스터 생성 데이터 준비
+        const createData = {
+            imageId: commonImage || "default",
+            specId: commonSpec,
+            connectionName: clusterData.connection,
+            name: clusterData.name,
+            nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""
+        };
 
-        if (!checkResult || checkResult.status !== 200) {
-            webconsolejs['common/util'].showToast('Failed to pre-validate. Please check the settings', 'error');
-            return;
-        }
-
-        // 실제 클러스터 생성 데이터 준비
-        let createData;
-
-        // Azure provider인 경우 테스트용 하드코딩된 값 사용
-        if (clusterData.provider.toLowerCase() === 'azure') {
-            createData = {
-                imageId: "default",
-                specId: "azure+koreacentral+standard_b4ms",
-                name: clusterData.name, // 폼에서 입력한 값 사용
-                nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : "k8sng01" // 폼에서 입력한 값이 있으면 사용, 없으면 기본값
-            };
-        } else {
-            // 다른 provider는 기존 로직 사용
-            createData = {
-                imageId: commonImage,
-                specId: commonSpec,
-                connectionName: clusterData.connection,
-                name: clusterData.name,
-                nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""
-            };
-        }
-
-        // commonImage가 없으면 "default"로 설정
-        if (!createData.commonImage || createData.commonImage === "") {
-            createData.commonImage = "default";
+        if (k8sVersion) {
+            createData.version = k8sVersion;
         }
 
         // NodeGroup이 있는 경우 추가 정보 설정
         if (isNodeGroupVisible) {
-            // NodeGroup 필수 필드 검증
             if (!createData.nodeGroupName) {
                 webconsolejs['common/util'].showToast('Please input NodeGroup name', 'warning');
                 return;
             }
-            // AutoScaling On일 때만 min/max 포함
             const autoScalingVal = $("#nodegroup_autoscaling_dynamic").val();
             createData.onAutoScaling = autoScalingVal || "false";
             if (autoScalingVal === "true") {
@@ -1721,33 +1699,6 @@ export async function deployPmkDynamic() {
                 createData.maxNodeSize = parseInt(maxNodeSize, 10);
             }
         }
-
-        // available k8sversion 조회        
-        if(clusterData.provider.toLowerCase() === 'alibaba'){
-            //createData.k8sVersion = "1.33.3-aliyun.1";
-            //createData.k8sVersion = "1.33";//(사용못함 format 안맞음)
-            //createData.k8sVersion = "1.31.9-aliyun.1";// 
-            //createData.k8sVersion = "1.22.15-aliyun.1";
-            // createData.k8sVersion = "1.32.7-aliyun.1";
-            createData.k8sVersion = "1.32.7-aliyun.1";
-        }
-        // const k8sVersionList = await webconsolejs["common/api/services/pmk_api"].getAvailableK8sVersionList(
-        //     selectedWorkspaceProject.nsId
-        // );
-        // if (k8sVersionList && k8sVersionList.status === 200) {
-        //     console.log(k8sVersionList);
-        // }
-        // // 가져온 k8sversion 중 가장 최신 버전 선택
-        // if (k8sVersionList && k8sVersionList.data && k8sVersionList.data.responseData && k8sVersionList.data.responseData.length > 0) {
-        //     const latestK8sVersion = k8sVersionList.data.responseData[0];
-        //     if (!latestK8sVersion) {
-        //         if(clusterData.provider.toLowerCase() === 'alibaba'){
-        //             latestK8sVersion = "1.33.3-aliyun.1";
-        //         }
-        //     }else{
-        //         createData.k8sVersion = latestK8sVersion;
-        //     }
-        // }
 
         // 동적 클러스터 생성 API 호출 (비동기 - 결과를 기다리지 않음)
         webconsolejs["common/api/services/pmk_api"].createK8sClusterDynamic(
