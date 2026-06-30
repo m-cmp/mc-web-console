@@ -110,27 +110,41 @@
                   <option value="ubuntu 22.04">Ubuntu 22.04</option>
                 </datalist>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-2">
                 <label class="form-label">is GPU Image</label>
-                <div class="row g-2">
-                  <div class="col">
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="assist_gpu_image-pmk"
-                        name="assist_gpu_image-pmk"
-                        onchange="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk()"
-                      />
-                      <input type="hidden" id="gpu_image_value-pmk" value="false" />
-                    </div>
-                  </div>
-                  <div class="col-auto">
-                    <a
-                      class="btn btn-icon"
-                      aria-label="Button"
-                      onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].getRecommendImageInfoPmk()"
-                    >
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="assist_gpu_image-pmk"
+                    name="assist_gpu_image-pmk"
+                    onchange="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk()"
+                  />
+                  <input type="hidden" id="gpu_image_value-pmk" value="false" />
+                </div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">is Kubernetes Image</label>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="assist_k8s_image-pmk"
+                    name="assist_k8s_image-pmk"
+                    checked
+                    onchange="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateK8sStatusPmk()"
+                  />
+                  <input type="hidden" id="k8s_image_value-pmk" value="true" />
+                </div>
+              </div>
+              <div class="col-md-auto">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                  <a
+                    class="btn btn-icon"
+                    aria-label="Button"
+                    onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].getRecommendImageInfoPmk()"
+                  >
                       <!-- Download SVG icon from http://tabler-icons.io/i/search -->
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -156,9 +170,9 @@
                       </svg>
                     </a>
                   </div>
-                </div>
               </div>
             </div>
+
           </div>
         </div>
         <div class="row mb-2"></div>
