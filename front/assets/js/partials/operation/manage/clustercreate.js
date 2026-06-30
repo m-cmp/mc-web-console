@@ -432,6 +432,7 @@ export async function displayNewNodeForm() {
 					webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
 				);
 			}
+			// provider 필터는 pmk_serverrecommendation.js의 shown.bs.modal 핸들러가 selectedPmkObj로 처리
 		});
 	}
 

@@ -20,6 +20,7 @@ export function initServerRecommendationPmk(callbackfunction) {
 		modalEl.addEventListener('shown.bs.modal', function () {
 			const provider = document.getElementById('cluster_provider_dynamic')?.value
 				|| document.getElementById('cluster_provider')?.value
+				|| webconsolejs["pages/operation/manage/pmk"]?.selectedPmkObj?.[0]?.provider
 				|| '';
 			const badge = document.getElementById('spec-provider-badge-pmk');
 			const hidden = document.getElementById('spec-provider-value-pmk');
