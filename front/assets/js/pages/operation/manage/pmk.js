@@ -1627,21 +1627,43 @@ export async function deployPmkDynamic() {
                 return;
             }
         } else {
-            // NodeGroup이 없는 경우: K8s 버전만 동적 조회 (EKS control plane만 생성)
+            // NodeGroup이 없는 경우: K8s 버전 + specId 동적 조회 후 control plane만 생성
             const providerName = clusterData.provider;
             const regionMatch = clusterData.region.match(/\[.*?\]\s*(.+)/);
-            const regionName = regionMatch ? regionMatch[1] : '';
+            const regionName = regionMatch ? regionMatch[1].trim() : '';
 
             if (!providerName || !regionName) {
                 webconsolejs['common/util'].showToast('Please select both Provider and Region', 'warning');
                 return;
             }
 
+            // K8s 버전 조회
             const versions = await webconsolejs["common/api/services/pmk_api"]
                 .getAvailableK8sClusterVersion(providerName, regionName);
             if (versions && Array.isArray(versions) && versions.length > 0) {
                 k8sVersion = versions[0].id || "";
             }
+
+            // provider 컨텍스트용 specId: RecommendK8sNode 조회 → 없으면 CSP별 하드코딩 fallback
+            commonSpec = await webconsolejs["common/api/services/pmk_api"]
+                .getRecommendedK8sSpecId(clusterData.connection);
+            if (!commonSpec) {
+                const K8S_DEFAULT_SPEC = {
+                    'aws':     't3.medium',
+                    'azure':   'Standard_B2s',
+                    'gcp':     'n1-standard-2',
+                    'alibaba': 'ecs.c1.small',
+                    'ncp':     'SVR.VSVR.STAND.C002.M004.NET.SSD.B050.G002',
+                    'nhncloud': 'm2.c4m8',
+                    'ibm':     'cx2-4x8',
+                };
+                const sepIdx = clusterData.connection.indexOf('-');
+                const csp = clusterData.connection.substring(0, sepIdx).toLowerCase();
+                const region = clusterData.connection.substring(sepIdx + 1);
+                const instanceType = K8S_DEFAULT_SPEC[csp] || 't3.medium';
+                commonSpec = `${csp}+${region}+${instanceType}`;
+            }
+
             commonImage = "default";
         }
 
@@ -1654,7 +1676,6 @@ export async function deployPmkDynamic() {
             nodeGroupName: isNodeGroupVisible ? $("#nodegroup_name_dynamic").val() : ""
         };
 
-        // NodeGroup 없는 경우 동적 조회한 K8s 버전 설정
         if (k8sVersion) {
             createData.version = k8sVersion;
         }

@@ -486,14 +486,14 @@ export async function createNode() {
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	var k8sClusterId = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj[0].id
 	
-	// NodeGroup 생성 요청만 보내고 결과를 기다리지 않음 (fire and forget)
-	webconsolejs["common/api/services/pmk_api"].createNode(
-		k8sClusterId, 
-		selectedNsId, 
+	const result = await webconsolejs["common/api/services/pmk_api"].createNode(
+		k8sClusterId,
+		selectedNsId,
 		Create_Node_Config_Arr
 	);
-	
-	// 즉시 메시지 표시
+
+	if (result === false) return;
+
 	webconsolejs['common/util'].showToast('NodeGroup creation request has been sent', 'info');
 	
 	// NodeGroup Configuration 폼 닫기
