@@ -134,6 +134,16 @@ function showConfirmModal({ title, bodyHtml, confirmLabel }) {
     });
 }
 
+// 단발 실행 모달의 입력/결과 섹션 전환 (mci·nodegroup 전용).
+// 대화형 vm 터미널은 이 섹션을 쓰지 않는다.
+function setCommandSections(targetType, showResults) {
+    if (targetType !== 'mci' && targetType !== 'nodegroup') return;
+    const inputSection = document.getElementById(`${targetType}-command-input-section`);
+    const resultsSection = document.getElementById(`${targetType}-command-results-section`);
+    if (inputSection) inputSection.style.display = showResults ? 'none' : 'block';
+    if (resultsSection) resultsSection.style.display = showResults ? 'block' : 'none';
+}
+
 // 터미널 관련 함수들
 export async function initTerminal(id, nsId, mciId, targetId, targetType) {
     let fileContents = [];
@@ -370,24 +380,23 @@ export async function initBatchCommandTerminal(id, nsId, mciId, targetId, target
     }
 
     // targetType에 따라 다른 ID 사용
-    let commandInputId, executeButtonId, executeAgainButtonId, inputSectionId, resultsSectionId;
+    let commandInputId, executeButtonId, executeAgainButtonId;
 
     if (targetType === 'mci') {
         commandInputId = 'mci-command-input';
         executeButtonId = 'mci-execute-command-btn';
         executeAgainButtonId = 'mci-execute-again-btn';
-        inputSectionId = 'mci-command-input-section';
-        resultsSectionId = 'mci-command-results-section';
     } else if (targetType === 'nodegroup') {
         commandInputId = 'nodegroup-command-input';
         executeButtonId = 'nodegroup-execute-command-btn';
         executeAgainButtonId = 'nodegroup-execute-again-btn';
-        inputSectionId = 'nodegroup-command-input-section';
-        resultsSectionId = 'nodegroup-command-results-section';
     } else {
         console.error('initBatchCommandTerminal: Invalid targetType:', targetType);
         return;
     }
+
+    // 이전 실행의 결과 화면이 남아 있지 않도록 입력 화면으로 되돌린다
+    setCommandSections(targetType, false);
 
     // 명령어 실행 버튼 이벤트 리스너 설정
     const executeButton = document.getElementById(executeButtonId);
@@ -403,11 +412,8 @@ export async function initBatchCommandTerminal(id, nsId, mciId, targetId, target
                 return;
             }
 
-            // 입력 섹션 숨기고 결과 섹션 표시
-            document.getElementById(inputSectionId).style.display = 'none';
-            document.getElementById(resultsSectionId).style.display = 'block';
-
-            // 명령어 실행
+            // 결과 섹션 전환은 실행 확인 후에 executeBatchCommand 가 처리한다
+            // (여기서 먼저 숨기면 확인 모달에서 취소했을 때 입력창이 사라진다)
             await executeBatchCommand(command, nsId, mciId, targetId, targetType);
         });
     }
@@ -431,6 +437,9 @@ export async function executeBatchCommand(command, nsId, mciId, targetId, target
     if (!confirmed) {
         return;
     }
+
+    // 확인된 뒤에만 결과 섹션으로 전환한다
+    setCommandSections(targetType, true);
 
     try {
         // 1. 진행 상태 표시
@@ -1446,24 +1455,19 @@ window.executeCommandAgain = function () {
     }
 
     // targetType에 따라 다른 ID 사용
-    let commandInputId, inputSectionId, resultsSectionId;
+    let commandInputId;
 
     if (targetType === 'mci') {
         commandInputId = 'mci-command-input';
-        inputSectionId = 'mci-command-input-section';
-        resultsSectionId = 'mci-command-results-section';
     } else if (targetType === 'nodegroup') {
         commandInputId = 'nodegroup-command-input';
-        inputSectionId = 'nodegroup-command-input-section';
-        resultsSectionId = 'nodegroup-command-results-section';
     } else {
         console.error('executeCommandAgain: Invalid targetType:', targetType);
         return;
     }
 
     // 결과 섹션 숨기고 입력 섹션 표시
-    document.getElementById(resultsSectionId).style.display = 'none';
-    document.getElementById(inputSectionId).style.display = 'block';
+    setCommandSections(targetType, false);
 
     // 명령어 입력 필드에 이전 명령어 설정하고 포커스
     const commandInput = document.getElementById(commandInputId);
