@@ -2102,7 +2102,7 @@ serviceActions:
       description: Query verified zones for a spec based on connection configs. Returns zones that are both verified and available for the specified spec. For Alibaba Cloud, additional CSP API filtering is applied.
     GetBastionNodes:
       method: get
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion
       description: Get bastion nodes for a VM
     GetBenchmark:
       method: post
@@ -4434,16 +4434,16 @@ serviceActions:
         - New: `POST /registerCspResources` with `{"connectionName": "", "nsId": "default", "mciNamePrefix": "mci-all"}`'
     RemoveBastionNodes:
       method: delete
-      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionNodeId}
       description: Remove a bastion VM from all vNets
     RemoveBastionNodesWithInfra:
 
       method: delete
-      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionInfraId}/{bastionNodeId}
       description: Remove a specific cross-MCI bastion from all vNets of the target MCI
     RemoveBastionNodesWithNs:
       method: delete
-      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionNsId}/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionNsId}/{bastionInfraId}/{bastionNodeId}
       description: Remove a specific cross-namespace bastion from all vNets of the target MCI
     RemoveLabel:
       method: delete
@@ -4471,7 +4471,7 @@ serviceActions:
       description: Get all available options for image search fields
     SetBastionNodes:
       method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion/{bastionNodeId}
       description: "Set bastion nodes for a VM"
     Inspectresourcesoverview:
       method: get
@@ -4508,11 +4508,11 @@ serviceActions:
     SetBastionNodesWithInfra:
 
       method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion/{bastionInfraId}/{bastionNodeId}
       description: Set bastion nodes for a target VM, specifying a bastion VM that belongs to a different MCI within the same namespace (cross-MCI bastion). This allows, for example, an AWS VM to serve as a bastion for an OpenStack VM.
     SetBastionNodesWithNs:
       method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion/{bastionNsId}/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion/{bastionNsId}/{bastionInfraId}/{bastionNodeId}
       description: Set bastion nodes for a target VM, specifying a bastion VM that belongs to a different namespace and MCI (cross-namespace bastion). This allows, for example, a VM in a shared-services namespace to act as a bastion for VMs in other namespaces.
     SetObjectStorageCORS:
       method: put
