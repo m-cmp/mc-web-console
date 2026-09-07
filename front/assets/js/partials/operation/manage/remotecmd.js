@@ -5,10 +5,134 @@ import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
 import { Dropzone } from 'dropzone';
 import { showCommandProgressToast, hideProgressToast, showProgressToast, showRetryProgressToast, showRetrySuccessToast, showRetryErrorToast } from '../../../common/utils/toast.js';
-import { postRemoteCmd, postFileToMci } from '../../../common/api/services/remotecmd_api.js';
+import { postRemoteCmd, postFileToMci, MAX_TRANSFER_FILE_SIZE, MAX_TRANSFER_FILE_SIZE_LABEL, formatFileSize } from '../../../common/api/services/remotecmd_api.js';
 
 let terminalInstance = null;
 let dropzoneInstance = null;
+
+// 파괴적이거나 되돌릴 수 없는 명령 패턴.
+// 차단이 아니라 확인 모달에 경고를 덧붙이는 용도 — false positive가 실행을 막지 않게 한다.
+const DANGEROUS_COMMAND_PATTERNS = [
+    // 플래그에 r 또는 f 가 있는 rm 만 매칭 (단순 `rm file.txt` 는 오탐이라 제외)
+    { pattern: /\brm\s+(-{1,2}[a-zA-Z-]*\s+)*-{1,2}[a-zA-Z-]*[rf]/, label: 'Recursive/forced file deletion (rm)' },
+    { pattern: /\bmkfs(\.\w+)?\b/, label: 'Filesystem creation (mkfs) — destroys existing data' },
+    { pattern: /\bdd\s+.*\bof=/, label: 'Raw disk write (dd of=)' },
+    { pattern: /\bfdisk\b|\bparted\b|\bsgdisk\b/, label: 'Disk partitioning (fdisk/parted/sgdisk)' },
+    { pattern: /\b(shutdown|poweroff|halt|reboot|init\s+0|init\s+6)\b/, label: 'Node shutdown or reboot' },
+    { pattern: /\bsystemctl\s+(stop|disable|mask)\b/, label: 'Service stop/disable (systemctl)' },
+    { pattern: /\b(userdel|groupdel)\b/, label: 'User or group deletion' },
+    { pattern: /\bchmod\s+(-R\s+)?0*777\b/, label: 'World-writable permission change (chmod 777)' },
+    { pattern: />\s*\/dev\/[sh]d[a-z]/, label: 'Redirect to a raw block device' },
+    { pattern: /\bcrontab\s+-r\b/, label: 'Crontab removal (crontab -r)' },
+    { pattern: /\biptables\s+-F\b|\bufw\s+disable\b/, label: 'Firewall flush/disable' },
+    { pattern: /:\(\)\s*\{.*\}\s*;\s*:/, label: 'Fork bomb' },
+];
+
+// HTML 삽입 전 이스케이프 (명령어·노드 ID를 그대로 렌더링하지 않는다)
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// 실행 대상 노드 해석.
+// vm은 지정한 노드 1대, nodegroup은 해당 그룹의 노드, mci는 Infra 전체 노드가 대상이다.
+async function resolveTargetNodes(nsId, mciId, targetId, targetType) {
+    if (targetType === 'vm') {
+        return { nodeIds: targetId ? [targetId] : [], resolved: true };
+    }
+
+    try {
+        const response = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+        const nodes = (response && response.responseData && response.responseData.node) || [];
+        const targetNodes = (targetType === 'nodegroup' && targetId)
+            ? nodes.filter(node => node.nodeGroupId === targetId)
+            : nodes;
+        return { nodeIds: targetNodes.map(node => node.id).filter(Boolean), resolved: true };
+    } catch (error) {
+        console.error('Failed to resolve target nodes:', error);
+        return { nodeIds: [], resolved: false };
+    }
+}
+
+// 대상 범위를 사람이 읽는 문장으로 변환
+function describeTargetScope(targetType, targetId, mciId, nodeInfo) {
+    const scope = targetType === 'vm'
+        ? `Node <code>${escapeHtml(targetId)}</code>`
+        : targetType === 'nodegroup'
+            ? `NodeGroup <code>${escapeHtml(targetId)}</code> of Infra <code>${escapeHtml(mciId)}</code>`
+            : `Infra <code>${escapeHtml(mciId)}</code> (all NodeGroups)`;
+
+    if (!nodeInfo.resolved) {
+        return { scope, countText: 'Target node count could not be verified.', nodeIds: [] };
+    }
+
+    const count = nodeInfo.nodeIds.length;
+    const countText = count === 1 ? 'This will run on 1 node.' : `This will run on ${count} nodes.`;
+    return { scope, countText, nodeIds: nodeInfo.nodeIds };
+}
+
+// 대상 노드 목록 렌더링 (많으면 앞 10개만 표시)
+function renderNodeList(nodeIds) {
+    if (nodeIds.length === 0) return '';
+    const shown = nodeIds.slice(0, 10).map(id => `<span class="badge bg-secondary me-1">${escapeHtml(id)}</span>`).join('');
+    const rest = nodeIds.length > 10 ? `<span class="text-muted small">and ${nodeIds.length - 10} more</span>` : '';
+    return `<div class="mb-3">${shown}${rest}</div>`;
+}
+
+// Promise 기반 확인 모달. 확인 시 true, 취소·닫기 시 false를 반환한다.
+function showConfirmModal({ title, bodyHtml, confirmLabel }) {
+    return new Promise(resolve => {
+        const modalId = 'remotecmdConfirmModal';
+
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            const existingInstance = bootstrap.Modal.getInstance(existingModal);
+            if (existingInstance) existingInstance.dispose();
+            existingModal.remove();
+        }
+
+        const modalHtml = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${escapeHtml(title)}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">${bodyHtml}</div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="${modalId}-confirm-btn">${escapeHtml(confirmLabel)}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        const modalElement = document.getElementById(modalId);
+        const modal = new bootstrap.Modal(modalElement);
+        let confirmed = false;
+
+        modalElement.querySelector(`#${modalId}-confirm-btn`).addEventListener('click', () => {
+            confirmed = true;
+            modal.hide();
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            modal.dispose();
+            modalElement.remove();
+            resolve(confirmed);
+        });
+
+        modal.show();
+    });
+}
 
 // 터미널 관련 함수들
 export async function initTerminal(id, nsId, mciId, targetId, targetType) {
@@ -101,8 +225,17 @@ export async function initTerminal(id, nsId, mciId, targetId, targetType) {
                 maxFilesize: 10, // 10MB
                 clickable: true, // 클릭 가능하도록 명시적 설정
                 init: function () {
+                    const dz = this;
                     this.on("addedfile", function (file) {
                         if (file instanceof File) {
+                            // 크기 검증 — Dropzone의 maxFilesize는 에러 표시만 하고
+                            // addedfile 콜백은 그대로 호출되므로 여기서 직접 걸러낸다
+                            if (file.size > MAX_TRANSFER_FILE_SIZE) {
+                                dz.removeFile(file);
+                                alert(`"${file.name}" is ${formatFileSize(file.size)}, which exceeds the ${MAX_TRANSFER_FILE_SIZE_LABEL} transfer limit.`);
+                                return;
+                            }
+
                             // 중복 파일 체크
                             const isDuplicate = fileContents.some(existingFile =>
                                 existingFile.name === file.name && existingFile.size === file.size
@@ -287,6 +420,18 @@ export async function initBatchCommandTerminal(id, nsId, mciId, targetId, target
 
 // 명령어 실행 및 UI 처리
 export async function executeBatchCommand(command, nsId, mciId, targetId, targetType) {
+    // 0. 실행 전 가드 — 입력 검증 후 대상 노드 수를 보여주고 사용자 확인을 받는다
+    const validation = validateCommandInput(command);
+    if (!validation.valid) {
+        showCommandError(command, new Error(validation.message));
+        return;
+    }
+
+    const confirmed = await confirmCommandExecution(command, nsId, mciId, targetId, targetType, validation.dangerous);
+    if (!confirmed) {
+        return;
+    }
+
     try {
         // 1. 진행 상태 표시
         showCommandProgressToast(command, 'executing');
@@ -397,39 +542,20 @@ export async function retryVMCommand(vmId, resultIndex) {
 
 // 파일 전송 및 UI 처리
 export async function transferFilesToMci(files, targetPath, nsId, mciId, targetType, targetId) {
-    // VM 타입인 경우 기존 방식 사용 (파일별로 개별 처리)
-    if (targetType === 'vm') {
-        const results = [];
-
-        for (const file of files) {
-            try {
-                // 1. 로딩 상태 표시
-                showTransferProgress(file.name, 'uploading');
-
-                // 2. PostFileToMci API 호출
-                const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
-
-                // 3. 진행 상태 토스트 숨기기
-                hideProgressToast();
-
-                // 4. 결과 저장 (모달 표시하지 않음)
-                results.push({ fileName: file.name, result: result });
-
-            } catch (error) {
-                // 5. 진행 상태 토스트 숨기기
-                hideProgressToast();
-
-                // 6. 에러 저장
-                results.push({ fileName: file.name, error: error });
-            }
-        }
-
-        // 7. VM 타입용 결과 표시 (한 번만)
-        showTransferResultsForVM(results);
+    // 0. 전송 전 가드 — 크기 초과 파일을 걸러내고 대상 노드 수를 확인받는다
+    const oversized = Array.from(files).filter(file => file.size > MAX_TRANSFER_FILE_SIZE);
+    if (oversized.length > 0) {
+        const names = oversized.map(file => `${file.name} (${formatFileSize(file.size)})`).join(', ');
+        alert(`These files exceed the ${MAX_TRANSFER_FILE_SIZE_LABEL} transfer limit and cannot be sent: ${names}`);
         return;
     }
 
-    // NodeGroup이나 MCI 타입인 경우 새로운 방식 사용
+    const confirmed = await confirmFileTransfer(files, targetPath, nsId, mciId, targetId, targetType);
+    if (!confirmed) {
+        return;
+    }
+
+    // 대상 타입과 무관하게 파일별로 순차 전송한다 (결과 표시 함수만 다름)
     const results = [];
 
     for (const file of files) {
@@ -443,7 +569,7 @@ export async function transferFilesToMci(files, targetPath, nsId, mciId, targetT
             // 3. 진행 상태 토스트 숨기기
             hideProgressToast();
 
-            // 4. 결과 저장
+            // 4. 결과 저장 (모달은 전체 완료 후 한 번만 표시)
             results.push({ fileName: file.name, result: result });
 
         } catch (error) {
@@ -456,153 +582,95 @@ export async function transferFilesToMci(files, targetPath, nsId, mciId, targetT
     }
 
     // 7. 전체 결과 표시 (한 번만)
-    showTransferResults(results);
-}
-
-// 파일 전송 함수 (단일 파일용)
-export async function transferFileToMci(file, targetPath, nsId, mciId, targetType, targetId) {
-    // 1. 로딩 상태 표시
-    showTransferProgress(file.name, 'uploading');
-
-    try {
-        // 2. PostFileToMci API 호출
-        const result = await postFileToMci(nsId, mciId, file, targetPath, targetType, targetId);
-
-        // 3. 진행 상태 토스트 숨기기
-        hideProgressToast();
-
-        // 4. 결과 표시
-        showTransferResult(file.name, result);
-
-    } catch (error) {
-        // 5. 진행 상태 토스트 숨기기
-        hideProgressToast();
-
-        // 6. 에러 표시
-        showTransferError(file.name, error);
+    if (targetType === 'vm') {
+        showTransferResultsForVM(results);
+    } else {
+        showTransferResults(results);
     }
 }
 
-// 데이터 변환/유틸리티 함수들
-export function formatCommandResult(result) {
-    // API 응답을 UI 표시용으로 변환
-    if (!result || !result.results) {
-        return { success: false, message: 'No results available' };
-    }
+// 실행 전 검증/확인 함수들
 
-    const successCount = result.results.filter(r => !r.error || r.error === '').length;
-    const totalCount = result.results.length;
-
-    return {
-        success: successCount === totalCount,
-        successCount,
-        totalCount,
-        results: result.results
-    };
-}
-
+// 명령어 입력 검증.
+// 위험 명령은 차단하지 않고 dangerous로 표시만 한다 — 차단은 정당한 운영 명령까지 막는다.
 export function validateCommandInput(command) {
     if (!command || typeof command !== 'string') {
-        return { valid: false, message: 'Command must be a non-empty string' };
+        return { valid: false, message: 'Command must be a non-empty string', dangerous: [] };
     }
 
     const trimmedCommand = command.trim();
     if (trimmedCommand === '') {
-        return { valid: false, message: 'Command cannot be empty' };
+        return { valid: false, message: 'Command cannot be empty', dangerous: [] };
     }
 
-    // 위험한 명령어 체크 (선택적)
-    const dangerousCommands = ['rm -rf', 'sudo rm', 'format', 'fdisk'];
-    const isDangerous = dangerousCommands.some(cmd => trimmedCommand.toLowerCase().includes(cmd));
-    
-    if (isDangerous) {
-        return { valid: false, message: 'Potentially dangerous command detected' };
-    }
+    const dangerous = DANGEROUS_COMMAND_PATTERNS
+        .filter(entry => entry.pattern.test(trimmedCommand))
+        .map(entry => entry.label);
 
-    return { valid: true };
+    return { valid: true, dangerous };
 }
 
-export function buildCommandData(nsid, resourceId, targetId, cmdarr, targetType) {
-    let data;
+// 원격 명령 실행 확인 모달 — 대상 범위·노드 수·명령어·위험 경고를 함께 보여준다
+export async function confirmCommandExecution(command, nsId, mciId, targetId, targetType, dangerous = []) {
+    const nodeInfo = await resolveTargetNodes(nsId, mciId, targetId, targetType);
+    const { scope, countText, nodeIds } = describeTargetScope(targetType, targetId, mciId, nodeInfo);
 
-    if (targetType === 'vm') {
-        data = {
-            pathParams: {
-                nsId: nsid,
-                mciId: resourceId
-            },
-            queryParams: {
-                vmId: targetId
-            },
-            Request: {
-                command: cmdarr,
-                userName: "cb-user"
-            }
-        };
-    } else if (targetType === 'nodegroup') {
-        data = {
-            pathParams: {
-                nsId: nsid,
-                mciId: resourceId
-            },
-            queryParams: {
-                subGroupId: targetId
-            },
-            Request: {
-                command: cmdarr,
-                userName: "cb-user"
-            }
-        };
-    } else if (targetType === 'mci') {
-        data = {
-            pathParams: {
-                nsId: nsid,
-                mciId: resourceId
-            },
-            Request: {
-                command: cmdarr,
-                userName: "cb-user"
-            }
-        };
+    if (nodeInfo.resolved && nodeIds.length === 0) {
+        alert('No target node was found for this command.');
+        return false;
     }
 
-    return data;
+    const warningHtml = dangerous.length > 0
+        ? `<div class="alert alert-danger py-2">
+               <strong>Potentially destructive command detected</strong>
+               <ul class="mb-0 ps-3">${dangerous.map(label => `<li>${escapeHtml(label)}</li>`).join('')}</ul>
+           </div>`
+        : '';
+
+    const bodyHtml = `
+        <p class="mb-1">Target: ${scope}</p>
+        <p class="fw-bold ${nodeIds.length > 1 ? 'text-danger' : ''}">${escapeHtml(countText)}</p>
+        ${renderNodeList(nodeIds)}
+        <p class="mb-1">Command:</p>
+        <pre class="bg-light border rounded p-2 mb-3" style="max-height: 180px; overflow: auto;">${escapeHtml(command)}</pre>
+        ${warningHtml}
+    `;
+
+    const confirmLabel = nodeIds.length > 0
+        ? (nodeIds.length === 1 ? 'Run on 1 node' : `Run on ${nodeIds.length} nodes`)
+        : 'Run command';
+
+    return showConfirmModal({ title: 'Confirm Remote Command', bodyHtml, confirmLabel });
 }
 
-export function convertFileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+// 파일 전송 확인 모달 — 명령 실행과 같은 이유로 대상 노드 수를 먼저 확인받는다
+export async function confirmFileTransfer(files, targetPath, nsId, mciId, targetId, targetType) {
+    const nodeInfo = await resolveTargetNodes(nsId, mciId, targetId, targetType);
+    const { scope, countText, nodeIds } = describeTargetScope(targetType, targetId, mciId, nodeInfo);
 
-export function buildFileTransferData(nsId, mciId, file, targetPath, targetType, targetId) {
-    let data = {
-        pathParams: {
-            nsId: nsId,
-            mciId: mciId
-        },
-        request: {
-            path: targetPath,
-            file: {
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                data: null // base64 데이터는 별도로 설정
-            }
-        }
-    };
-
-    // targetType에 따른 query parameter 추가
-    if (targetType === 'nodegroup' && targetId) {
-        data.queryParams = { subGroupId: targetId };
-    } else if (targetType === 'vm' && targetId) {
-        data.queryParams = { vmId: targetId };
+    if (nodeInfo.resolved && nodeIds.length === 0) {
+        alert('No target node was found for this file transfer.');
+        return false;
     }
 
-    return data;
+    const fileListHtml = Array.from(files)
+        .map(file => `<li><code>${escapeHtml(file.name)}</code> <span class="text-muted small">${escapeHtml(formatFileSize(file.size))}</span></li>`)
+        .join('');
+
+    const bodyHtml = `
+        <p class="mb-1">Target: ${scope}</p>
+        <p class="fw-bold ${nodeIds.length > 1 ? 'text-danger' : ''}">${escapeHtml(countText)}</p>
+        ${renderNodeList(nodeIds)}
+        <p class="mb-1">Destination path: <code>${escapeHtml(targetPath || '(not set)')}</code></p>
+        <p class="mb-1">Files:</p>
+        <ul class="mb-0">${fileListHtml}</ul>
+    `;
+
+    const confirmLabel = nodeIds.length > 0
+        ? (nodeIds.length === 1 ? 'Transfer to 1 node' : `Transfer to ${nodeIds.length} nodes`)
+        : 'Transfer files';
+
+    return showConfirmModal({ title: 'Confirm File Transfer', bodyHtml, confirmLabel });
 }
 
 // UI 표시 함수들
@@ -971,14 +1039,6 @@ function showTransferResults(results) {
     showTransferResultsModal(results, successFiles, totalFiles);
 }
 
-function showTransferResult(fileName, result) {
-    const successCount = result.filter(r => r.err === null).length;
-    const totalCount = result.length;
-
-    // 상세 결과를 모달로 표시
-    showTransferResultModal(fileName, result, successCount, totalCount);
-}
-
 function showTransferResultsModal(results, successFiles, totalFiles) {
     // 기존 모달 제거
     const existingModal = document.getElementById('transferResultsModal');
@@ -1251,8 +1311,17 @@ function initFileTransfer(targetType, nsId, mciId, targetId) {
                 maxFilesize: 10, // 10MB
                 clickable: true,
                 init: function () {
+                    const dz = this;
                     this.on("addedfile", function (file) {
                         if (file instanceof File) {
+                            // 크기 검증 — Dropzone의 maxFilesize는 에러 표시만 하고
+                            // addedfile 콜백은 그대로 호출되므로 여기서 직접 걸러낸다
+                            if (file.size > MAX_TRANSFER_FILE_SIZE) {
+                                dz.removeFile(file);
+                                alert(`"${file.name}" is ${formatFileSize(file.size)}, which exceeds the ${MAX_TRANSFER_FILE_SIZE_LABEL} transfer limit.`);
+                                return;
+                            }
+
                             // 중복 파일 체크
                             const isDuplicate = fileContents.some(existingFile =>
                                 existingFile.name === file.name && existingFile.size === file.size

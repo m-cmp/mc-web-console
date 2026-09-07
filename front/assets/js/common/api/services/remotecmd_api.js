@@ -1,6 +1,13 @@
 // Remote Command API Service
 // 순수 API 호출 함수들만 포함
 
+// mc-infra-manager(cb-tumblebug) rejects transfers larger than 10MB.
+// Enforced here before base64 encoding so an oversized file fails immediately
+// instead of after the whole encode/upload round trip. front/actions/upload.go
+// applies the same limit on the server side.
+export const MAX_TRANSFER_FILE_SIZE = 10 * 1024 * 1024;
+export const MAX_TRANSFER_FILE_SIZE_LABEL = '10MB';
+
 // 원격 명령어 실행 API
 export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetType) {
     let data;
@@ -13,7 +20,7 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
                 infraId: resourceId
             },
             queryParams: {
-                vmId: targetId
+                nodeId: targetId
             },
             Request: {
                 command: cmdarr,
@@ -28,7 +35,7 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
                 infraId: resourceId
             },
             queryParams: {
-                subGroupId: targetId
+                nodeGroupId: targetId
             },
             Request: {
                 command: cmdarr,
@@ -58,6 +65,11 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
 
 // 파일 전송 API
 export async function postFileToMci(nsId, mciId, file, targetPath, targetType, targetId = null) {
+    // 인코딩 전 크기 검증 — 초과 파일은 여기서 즉시 실패시킨다
+    if (file.size > MAX_TRANSFER_FILE_SIZE) {
+        throw new Error(`"${file.name}" is ${formatFileSize(file.size)}, which exceeds the ${MAX_TRANSFER_FILE_SIZE_LABEL} transfer limit.`);
+    }
+
     // 파일을 base64로 인코딩
     const fileBase64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -84,9 +96,9 @@ export async function postFileToMci(nsId, mciId, file, targetPath, targetType, t
 
     // targetType에 따른 query parameter 추가
     if (targetType === 'nodegroup' && targetId) {
-        data.queryParams = { subGroupId: targetId };
+        data.queryParams = { nodeGroupId: targetId };
     } else if (targetType === 'vm' && targetId) {
-        data.queryParams = { vmId: targetId };
+        data.queryParams = { nodeId: targetId };
     }
     // 'mci' 타입은 query parameter 없음
 
@@ -107,4 +119,12 @@ export async function postFileToMci(nsId, mciId, file, targetPath, targetType, t
     } else {
         return response;
     }
+}
+
+// 파일 크기를 사람이 읽는 단위로 변환 (검증 메시지용)
+export function formatFileSize(bytes) {
+    if (!Number.isFinite(bytes) || bytes < 0) return 'unknown size';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
