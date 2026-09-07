@@ -4385,6 +4385,10 @@ serviceActions:
       method: post
       resourcePath: /credential
       description: This API registers credential information using hybrid encryption. The process involves compressing and encrypting sensitive data with AES-256, encrypting the AES key with a 4096-bit RSA public key (retrieved via `GET /credential/publicKey`), and using OAEP padding with SHA-256. All values, including the AES key, must be base64 encoded before sending, and the public key token ID must be included in the request.
+    RegisterCspDefinition:
+      method: post
+      resourcePath: /cloudInfo/{providerName}
+      description: Register a CSP definition (driver, cloud platform, regions with zones) at runtime. CB-Tumblebug registers the driver and regions with CB-Spider on behalf of the caller. Credentials must be registered separately via RegisterCredential before the CSP becomes usable.
     RegisterCspNativeResources:
       method: post
       resourcePath: /registerCspResources
@@ -4617,6 +4621,10 @@ serviceActions:
       method: get
       resourcePath: /auth/test
       description: Test JWT authentication
+    UnregisterCspDefinition:
+      method: delete
+      resourcePath: /cloudInfo/{providerName}
+      description: Remove a runtime-registered CSP definition. Only definitions registered at runtime can be removed; built-in providers loaded from CB-Tumblebug's asset config are rejected.
     UnsetSystemInitialized:
       method: delete
       resourcePath: /readyz/init
