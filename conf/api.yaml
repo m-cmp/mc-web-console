@@ -1223,10 +1223,6 @@ serviceActions:
       resourcePath: /api/setup/sync-projects
       description: "mc-infra-manager의 namespace 목록을 가져와 project 테이블과 동기화 (1_setup_auto.sh sync_projects와 동일). FR-006-08 Re-sync."
   mc-infra-manager:
-    GetInfraReadyzInit:
-      method: put
-      resourcePath: /readyz/init
-      description: "mc-infra-manager 초기화. credential valid 선행 필요. image/spec 등 초기 데이터 로드."
     Lookupspeclist:
       method: post
       resourcePath: /lookupSpecs
@@ -2137,10 +2133,6 @@ serviceActions:
       method: get
       resourcePath: /connConfig
       description: List all registered ConnConfig
-    FilterConnConfigByCredentialHolder:
-      method: get
-      resourcePath: /connConfig
-      description: Filter connection configs by credential holder name (queryParams.filterCredentialHolder)
     GetControlK8sCluster:
       method: get
       resourcePath: /ns/{nsId}/control/k8sCluster/{k8sClusterId}
@@ -4513,62 +4505,6 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/sharedResource
       description: "Create shared resources for MC-Infra"
-    ListVNet:
-      method: get
-      resourcePath: /ns/{nsId}/resources/vNet
-      description: "List all VNets in a namespace"
-    CreateVNet:
-      method: post
-      resourcePath: /ns/{nsId}/resources/vNet
-      description: "Create VNet"
-    DeleteVNet:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/vNet/{vNetId}
-      description: "Delete VNet"
-    ListSecurityGroup:
-      method: get
-      resourcePath: /ns/{nsId}/resources/securityGroup
-      description: "List all Security Groups in a namespace"
-    CreateSecurityGroup:
-      method: post
-      resourcePath: /ns/{nsId}/resources/securityGroup
-      description: "Create Security Group"
-    DeleteSecurityGroup:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/securityGroup/{securityGroupId}
-      description: "Delete Security Group"
-    ListSSHKey:
-      method: get
-      resourcePath: /ns/{nsId}/resources/sshKey
-      description: "List all SSH Keys in a namespace"
-    CreateSSHKey:
-      method: post
-      resourcePath: /ns/{nsId}/resources/sshKey
-      description: "Create SSH Key"
-    ListImage:
-      method: get
-      resourcePath: /ns/{nsId}/resources/image
-      description: "List all images in a namespace"
-    RegisterImage:
-      method: post
-      resourcePath: /ns/{nsId}/resources/image
-      description: "Register image in a namespace"
-    DeleteImage:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/image/{imageId}
-      description: "Delete image"
-    ListSpec:
-      method: post
-      resourcePath: /ns/{nsId}/resources/filterSpecsByRange
-      description: "List all specs in a namespace"
-    RegisterSpec:
-      method: post
-      resourcePath: /ns/{nsId}/resources/spec
-      description: "Register spec in a namespace"
-    DeleteSpec:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/spec/{specId}
-      description: "Delete spec"
     SetBastionNodesWithInfra:
 
       method: put

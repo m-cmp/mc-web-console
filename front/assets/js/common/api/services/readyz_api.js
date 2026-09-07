@@ -8,7 +8,7 @@
  */
 export const READYZ_OPERATIONID_MAP = {
     'mc-iam-manager':        { operationId: 'Readyz',            initOperationId: null },
-    'mc-infra-manager':      { operationId: 'Getreadyz',         initOperationId: 'GetInfraReadyzInit' },
+    'mc-infra-manager':      { operationId: 'Getreadyz',         initOperationId: 'SetSystemInitialized' },
     'mc-observability':      { operationId: 'GetObsReadyz',      initOperationId: null },
     'mc-application-manager':{ operationId: 'GetAppMgrReadyz',   initOperationId: null },
     'mc-workflow-manager':   { operationId: 'GetWorkflowReadyz', initOperationId: null },
