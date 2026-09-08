@@ -4,7 +4,7 @@
     <div id="index" class="section">
       <div class="row row-cards">
         <div class="col-md-7">
-          {{ partial("partials/operation/manage/mci_status_summary.html") | raw }}
+          {{ partial("partials/operation/manage/infra_status_summary.html") | raw }}
         </div>
 
         <div class="col-md-5">
@@ -151,7 +151,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot Infra ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'reboot')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'reboot')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -181,7 +181,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'suspend')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'suspend')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -211,7 +211,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume Infra ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'resume')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'resume')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -241,7 +241,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate Infra ?', 'pages/operation/manage/mci.changeMciLifeCycle', 'terminate')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'terminate')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -274,7 +274,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciDelete', 'Would you like to delete Infra ?', 'pages/operation/manage/mci.deleteMci')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciDelete', 'Would you like to delete Infra ?', 'pages/operation/manage/infraworkloads.deleteMci')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -302,7 +302,7 @@
                     </a>
                     <a
                       class="dropdown-item"
-                      onclick="webconsolejs['pages/operation/manage/mci'].openSaveAsTemplateModal()"
+                      onclick="webconsolejs['pages/operation/manage/infraworkloads'].openSaveAsTemplateModal()"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -331,7 +331,7 @@
                     </a>
                     <a
                       class="dropdown-item"
-                      onclick="webconsolejs['pages/operation/manage/mci'].exportInfraAsJson()"
+                      onclick="webconsolejs['pages/operation/manage/infraworkloads'].exportInfraAsJson()"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -363,7 +363,7 @@
                 <!-- refresh -->
                 <a
                   class="btn-action"
-                  onclick="webconsolejs['pages/operation/manage/mci'].refreshMciList()"
+                  onclick="webconsolejs['pages/operation/manage/infraworkloads'].refreshMciList()"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -580,7 +580,7 @@
           </div>
         </div>
         <div class="col-md-12">
-          {{ partial("partials/operation/manage/mciinfo.html") | raw }}
+          {{ partial("partials/operation/manage/infrainfo.html") | raw }}
         </div>
       </div>
     </div>
@@ -588,7 +588,7 @@
     <!-- MCI CREATE -->
 
     <!-- TODO : divide to express, simple, expert form  -->
-    <div id="mcicreate" class="section">
+    <div id="infracreate" class="section">
       <form id="express_form">
         <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
         <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
@@ -702,7 +702,7 @@
                     type="button"
                     class="btn"
                     id="mci_label_add_btn"
-                    onclick="webconsolejs['partials/operation/manage/mcicreate'].addInfraLabel()"
+                    onclick="webconsolejs['partials/operation/manage/infracreate'].addInfraLabel()"
                   >
                     Add
                   </button>
@@ -717,7 +717,7 @@
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="mci_plusVmIcon"
-                        onclick="webconsolejs['partials/operation/manage/mcicreate'].displayNewServerForm()"
+                        onclick="webconsolejs['partials/operation/manage/infracreate'].displayNewServerForm()"
                       >
                         + NodeGroup
                       </li>
@@ -731,7 +731,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['partials/operation/manage/mcicreate'].deployMci()"
+                onclick="webconsolejs['partials/operation/manage/infracreate'].deployMci()"
               >
                 Deploy
               </button>
@@ -847,7 +847,7 @@
                       <li
                         class="removebullet btn btn-secondary-lt"
                         id="vm_plusVmIcon"
-                        onclick="webconsolejs['partials/operation/manage/mcicreate'].displayNewServerForm()"
+                        onclick="webconsolejs['partials/operation/manage/infracreate'].displayNewServerForm()"
                       >
                         + Node
                       </li>
@@ -861,7 +861,7 @@
               <button
                 type=""
                 class="btn btn-primary"
-                onclick="webconsolejs['partials/operation/manage/mcicreate'].deployVm()"
+                onclick="webconsolejs['partials/operation/manage/infracreate'].deployVm()"
               >
                 Deploy
               </button>
@@ -1170,7 +1170,7 @@
                           <select
                             class="form-select"
                             name="policy_rootDiskType"
-                            onchange="webconsolejs['partials/operation/manage/mcicreate'].changeDiskSize(this.value)"
+                            onchange="webconsolejs['partials/operation/manage/infracreate'].changeDiskSize(this.value)"
                             id="policy_ep_root_disk_type"
                           >
                             <option value="">Select Root Disk Type</option>
@@ -1239,7 +1239,7 @@
           <button
             type=""
             class="btn btn-primary"
-            onclick="webconsolejs['pages/operation/manage/mci'].deployPolicy()"
+            onclick="webconsolejs['pages/operation/manage/infraworkloads'].deployPolicy()"
           >
             Deploy
           </button>
@@ -1407,11 +1407,11 @@
 </div>
 
 <!-- add server : server configuration -->
-{{ partial("partials/operation/manage/mcicreate.html") | raw }}
+{{ partial("partials/operation/manage/infracreate.html") | raw }}
 
 <!-- add server : spec-search -->
 {{ partial("partials/operation/manage/serverrecommendation.html") | raw }}
-<!-- image-search 모달은 mcicreate.html partial이 이미 포함 — 직접 include 시 #image-search 중복 렌더링됨 -->
+<!-- image-search 모달은 infracreate.html partial이 이미 포함 — 직접 include 시 #image-search 중복 렌더링됨 -->
 <!-- add server : cspimagelist -->
 {{ partial("partials/operation/manage/cspimagelist.html") | raw }}
 <!-- add server : cspspeclist -->
@@ -1494,7 +1494,7 @@
         <button
           type="button"
           class="btn btn-primary"
-          onclick="webconsolejs['pages/operation/manage/mci'].saveLabels()"
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].saveLabels()"
         >
           Save
         </button>
@@ -1780,7 +1780,7 @@
           type="button"
           id="btn-add-nodegroup-to-form"
           class="btn btn-outline-primary"
-          onclick="webconsolejs['partials/operation/manage/mcicreate'].addTemplateToForm()"
+          onclick="webconsolejs['partials/operation/manage/infracreate'].addTemplateToForm()"
         >
           Add NodeGroup
         </button>
@@ -1788,7 +1788,7 @@
           type="button"
           id="btn-deploy-from-template"
           class="btn btn-primary"
-          onclick="webconsolejs['partials/operation/manage/mcicreate'].deployFromSelectedTemplate()"
+          onclick="webconsolejs['partials/operation/manage/infracreate'].deployFromSelectedTemplate()"
         >
           Deploy from Template
         </button>
@@ -1826,7 +1826,7 @@
           class="form-control"
           id="import-nodegroups-json-file"
           accept=".json"
-          onchange="webconsolejs['partials/operation/manage/mcicreate'].handleImportJsonFileChange(this)"
+          onchange="webconsolejs['partials/operation/manage/infracreate'].handleImportJsonFileChange(this)"
         />
 
         <!-- 파싱된 NodeGroups 미리보기 -->
@@ -1863,7 +1863,7 @@
           id="btn-add-imported-nodegroups"
           class="btn btn-primary"
           disabled
-          onclick="webconsolejs['partials/operation/manage/mcicreate'].applyImportedNodeGroups()"
+          onclick="webconsolejs['partials/operation/manage/infracreate'].applyImportedNodeGroups()"
         >
           Add NodeGroup(s)
         </button>
@@ -1895,7 +1895,7 @@
         <button
           type="button"
           class="btn btn-primary"
-          onclick="webconsolejs['pages/operation/manage/mci'].executeSaveAsTemplate()"
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].executeSaveAsTemplate()"
         >
           Save
         </button>
@@ -1953,7 +1953,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" id="node-attach-disk-execute-btn"
-          onclick="webconsolejs['pages/operation/manage/mci'].executeAttachDiskToNode()">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].executeAttachDiskToNode()">
           <span id="node-attach-disk-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>Attach
         </button>
       </div>
@@ -1963,7 +1963,7 @@
 
 <!-- pageloader-->
 {{ partial("partials/layout/pageloader.html") | raw }}
-{{ javascriptTag("pages/operation/manage/mci.js") | raw }}
+{{ javascriptTag("pages/operation/manage/infraworkloads.js") | raw }}
 {{ javascriptTag("common/api/services/infra_api.js") | raw }}
 {{ javascriptTag("common/api/services/disk_api.js") | raw }}
 {{ javascriptTag("common/api/services/vmimage_api.js") | raw }}

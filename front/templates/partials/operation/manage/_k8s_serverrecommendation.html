@@ -30,7 +30,7 @@
                   class="form-select"
                   id="assistRecommendSpecConnectionName-pmk"
                   name="assistRecommendSpecConnectionName-pmk"
-                  onchange="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].showRecommendSpecSettingPmk(this.value)"
+                  onchange="webconsolejs['partials/operation/manage/k8s_serverrecommendation'].showRecommendSpecSettingPmk(this.value)"
                 >
                   <option value="">Select Region</option>
                   <option value="seoul">Seoul</option>
@@ -42,7 +42,7 @@
                 <a
                   class="btn btn-icon"
                   aria-label="Button"
-                  onclick="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].getRecommendVmInfoPmk()"
+                  onclick="webconsolejs['partials/operation/manage/k8s_serverrecommendation'].getRecommendVmInfoPmk()"
                 >
                   <!-- Download SVG icon from http://tabler-icons.io/i/search -->
                   <svg
@@ -187,7 +187,7 @@
               class="form-select form-select-sm"
               id="spec-provider-filter-pmk"
               name="spec-provider-filter-pmk"
-              onchange="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].filterByProviderPmk(this.value)"
+              onchange="webconsolejs['partials/operation/manage/k8s_serverrecommendation'].filterByProviderPmk(this.value)"
             >
               {{ partial("partials/common/provider_select.html") | raw }}
             </select>
@@ -208,7 +208,7 @@
             type="submit"
             class="btn btn-info"
             data-bs-dismiss="modal"
-            onclick="webconsolejs['partials/operation/manage/pmk_serverrecommendation'].applySpecInfoPmk()"
+            onclick="webconsolejs['partials/operation/manage/k8s_serverrecommendation'].applySpecInfoPmk()"
           >
             Apply
           </button>

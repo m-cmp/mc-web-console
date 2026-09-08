@@ -51,14 +51,14 @@ async function initMci() {
   initMciTable(); // init tabulator
 
   try {
-    webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();
+    webconsolejs["partials/operation/manage/infracreate"].initMciCreate();
 
-    const targetSection = "mcicreate";
+    const targetSection = "infracreate";
     const createBtnName = "Add Infra";
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
 
     // Add Node(Extend VM) 플로우가 남긴 Data Disk attach pending job 재개 (WEB-TECH-014)
-    webconsolejs["partials/operation/manage/mcicreate"].resumePendingDiskAttachJobs();
+    webconsolejs["partials/operation/manage/infracreate"].resumePendingDiskAttachJobs();
   } catch (e) {
     console.error(e);
   }
@@ -88,7 +88,7 @@ async function initMci() {
   });
   const nlbTabEl = document.querySelector('a[data-bs-toggle="tab"][href="#tabs-mci-nlb"]');
   nlbTabEl?.addEventListener('shown.bs.tab', function (event) {
-    webconsolejs['partials/operation/manage/mcinlb']?.loadMciNlbList(false);
+    webconsolejs['partials/operation/manage/infranlb']?.loadMciNlbList(false);
   });
 
   // 모든 탭 전환 시 선택 상태 초기화
@@ -273,7 +273,7 @@ function resetTabSelectionStates(hiddenTab) {
   } else if (hiddenTab === '#tabs-mci-labels') {
     resetLabelsTabSelections();
   } else if (hiddenTab === '#tabs-mci-nlb') {
-    webconsolejs['partials/operation/manage/mcinlb']?.hideDetail();
+    webconsolejs['partials/operation/manage/infranlb']?.hideDetail();
   }
 }
 
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //     var vmDispStatus = webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(vmStatus); // vmStatus set
 //     var vmStatusClass = webconsolejs["common/api/services/infra_api"].getVmStatusStyleClass(vmDispStatus) // vmStatus 별로 상태 색상 set
 
-//     vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/mci\'].vmDetailInfo(\'' + vmID +'\')"><span class="text-dark-fg">' + vmName + '</span></li>';
+//     vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/infraworkloads\'].vmDetailInfo(\'' + vmID +'\')"><span class="text-dark-fg">' + vmName + '</span></li>';
 
 // //     vmLi += '<div class="form-selectgroup-label d-flex align-items-center p-3">'
 // //   '<div class="me-3">'
@@ -804,13 +804,13 @@ function displayServerStatusList(mciID, vmList) {
       <li id="server_status_icon_${vmID}" 
           class="card ${vmStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vm', '${vmID}')">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].toggleCheck('vm', '${vmID}')">
         
         <input type="checkbox" 
                id="checkbox_vm_${vmID}" 
                class="vm-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vm', '${vmID}')" 
+               onchange="webconsolejs['pages/operation/manage/infraworkloads'].handleCheck('vm', '${vmID}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${vmName}</span>
@@ -823,7 +823,7 @@ function displayServerStatusList(mciID, vmList) {
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   if (currentVmId) {
-    webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
+    webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentVmId);
   }
 }
 
@@ -859,13 +859,13 @@ function displayServerGroupStatusList(mciID, vmList) {
       <li id="serverGroup_status_icon_${nodeGroupId}" 
           class="card ${vmGroupStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vmGroup', '${nodeGroupId}')">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].toggleCheck('vmGroup', '${nodeGroupId}')">
         
         <input type="checkbox" 
                id="checkbox_vmGroup_${nodeGroupId}" 
                class="vmgroup-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vmGroup', '${nodeGroupId}')" 
+               onchange="webconsolejs['pages/operation/manage/infraworkloads'].handleCheck('vmGroup', '${nodeGroupId}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${nodeGroupId}(${vmCount})</span>
@@ -878,7 +878,7 @@ function displayServerGroupStatusList(mciID, vmList) {
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   // if (currentVmGroupId) {
-  //   webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmGroupId);
+  //   webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentVmGroupId);
   // }
 }
 
@@ -905,7 +905,7 @@ export function handleCheck(type, id) {
       }
       selectedVmId = id;
       currentVmId = id;
-      webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
+      webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentVmId);
     } else {
       selectedVmId = null;
       // 선택된 VM이 없다면 ServerInfo를 접음
@@ -981,7 +981,7 @@ export function handleCheck(type, id) {
         }
         selectedNodeGroupVmId = id;
         currentNodeGroupVmId = id;
-        webconsolejs['pages/operation/manage/mci'].nodeGroup_vmDetailInfo(currentNodeGroupVmId);
+        webconsolejs['pages/operation/manage/infraworkloads'].nodeGroup_vmDetailInfo(currentNodeGroupVmId);
         // Server Info 토글 (c 버튼 역할)
         const div = document.getElementById("nodeGroup_vm_info");
         if (div && !div.classList.contains("active")) {
@@ -1071,13 +1071,13 @@ function vmListInNodeGroup(nodeGroupId) {
       <li id="nodegroup_vm_status_icon_${vmID}" 
           class="card ${vmStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('nodegroup_vm', '${vmID}')">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].toggleCheck('nodegroup_vm', '${vmID}')">
         
         <input type="checkbox" 
                id="checkbox_nodegroup_vm_${vmID}" 
                class="vm-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('nodegroup_vm', '${vmID}')" 
+               onchange="webconsolejs['pages/operation/manage/infraworkloads'].handleCheck('nodegroup_vm', '${vmID}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${vmName}</span>
@@ -1090,7 +1090,7 @@ function vmListInNodeGroup(nodeGroupId) {
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   // if (currentNodeGroupVmId) {
-  //   webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentNodeGroupVmId);
+  //   webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentNodeGroupVmId);
   // }
   // displayServerStatusList(currentMciId, groupedVmList.vms);
 }
@@ -1570,10 +1570,10 @@ async function renderBlockDeviceSection(context) {
       ? '<span class="text-muted">No attached disks</span>'
       : disks.map((d) => `<div class="mb-1">${d.name || d.id}
           <a class="btn btn-sm btn-outline-warning ms-1"
-             onclick="webconsolejs['pages/operation/manage/mci'].confirmDetachDisk('${context}','${d.id || d.name}')">Detach</a>
+             onclick="webconsolejs['pages/operation/manage/infraworkloads'].confirmDetachDisk('${context}','${d.id || d.name}')">Detach</a>
         </div>`).join('')
     el.innerHTML += `<a class="btn btn-sm btn-outline-primary mt-1"
-        onclick="webconsolejs['pages/operation/manage/mci'].openAttachDiskModal('${context}')">+ Attach Disk</a>`
+        onclick="webconsolejs['pages/operation/manage/infraworkloads'].openAttachDiskModal('${context}')">+ Attach Disk</a>`
   } catch (err) {
     console.error('Block device 조회 실패:', err)
     el.innerHTML = '<span class="text-danger">Failed to load disks</span>'
@@ -1683,7 +1683,7 @@ export async function executeAttachDiskToNode() {
 export function confirmDetachDisk(context, dataDiskId) {
   webconsolejs['partials/layout/modal'].commonConfirmModal(
     'commonDefaultModal', 'Detach Disk', `Detach disk "${dataDiskId}"?`,
-    'pages/operation/manage/mci.executeDetachDiskFromNode', `${context}|${dataDiskId}`
+    'pages/operation/manage/infraworkloads.executeDetachDiskFromNode', `${context}|${dataDiskId}`
   )
 }
 
@@ -2166,7 +2166,7 @@ function initMciTable() {
       this.selectRow(tempcurmciID);
       
       window.currentMciId = tempcurmciID;
-      webconsolejs['partials/operation/manage/mcinlb']?.resetForMciSwitch();
+      webconsolejs['partials/operation/manage/infranlb']?.resetForMciSwitch();
       // MCI 변경 시 이전 VM 선택 상태 초기화
       currentVmId = "";
       selectedVmId = null;

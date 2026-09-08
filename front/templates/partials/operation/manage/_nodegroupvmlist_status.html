@@ -132,7 +132,7 @@
               class="dropdown-item"
               data-bs-toggle="modal"
               data-bs-target="#commonDefaultModal"
-              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmReboot', 'Would you like to reboot the node ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'reboot')"
+              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmReboot', 'Would you like to reboot the node ?', 'pages/operation/manage/infraworkloads.changeVmLifeCycle', 'reboot')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +158,7 @@
               class="dropdown-item"
               data-bs-toggle="modal"
               data-bs-target="#commonDefaultModal"
-              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmSuspend', 'Would you like to suspend the node ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'suspend')"
+              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmSuspend', 'Would you like to suspend the node ?', 'pages/operation/manage/infraworkloads.changeVmLifeCycle', 'suspend')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -184,7 +184,7 @@
               class="dropdown-item"
               data-bs-toggle="modal"
               data-bs-target="#commonDefaultModal"
-              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmResume', 'Would you like to resume the node ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'resume')"
+              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmResume', 'Would you like to resume the node ?', 'pages/operation/manage/infraworkloads.changeVmLifeCycle', 'resume')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -210,7 +210,7 @@
               class="dropdown-item"
               data-bs-toggle="modal"
               data-bs-target="#commonDefaultModal"
-              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmTerminate', 'Would you like to terminate the node ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'terminate')"
+              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmTerminate', 'Would you like to terminate the node ?', 'pages/operation/manage/infraworkloads.changeVmLifeCycle', 'terminate')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -238,7 +238,7 @@
             <a
               class="dropdown-item"
               href="#addserver"
-              onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+              onclick="webconsolejs['partials/operation/manage/infracreate'].addNewVirtualMachine()"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -264,7 +264,7 @@
               class="dropdown-item"
               data-bs-toggle="modal"
               data-bs-target="#commonDefaultModal"
-              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete Node ?', 'pages/operation/manage/mci.deleteVm')"
+              onclick="webconsolejs['partials/layout/modal'].commonModal(this,'VmDelete', 'Would you like to delete Node ?', 'pages/operation/manage/infraworkloads.deleteVm')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -313,7 +313,7 @@
         <!-- refresh -->
         <a
           class="btn-action"
-          onclick="webconsolejs['pages/operation/manage/mci'].getSelectedMciData()"
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].getSelectedMciData()"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -336,7 +336,7 @@
         <a
           href="#addserver"
           class="btn btn-outline-primary"
-          onclick="webconsolejs['partials/operation/manage/mcicreate'].addNewVirtualMachine()"
+          onclick="webconsolejs['partials/operation/manage/infracreate'].addNewVirtualMachine()"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

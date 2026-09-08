@@ -555,9 +555,9 @@ async function dispatchNodeGroupsConcurrently(controller, k8sClusterId, nsId, co
       webconsolejs["common/util"].showToast('Failed to create node group: ' + failedNames.join(', '), 'error');
     }
     // 결과 수신 시점에 목록 갱신 (생성 접수 반영)
-    if (webconsolejs["pages/operation/manage/pmk"] &&
-        typeof webconsolejs["pages/operation/manage/pmk"].refreshPmkList === 'function') {
-      webconsolejs["pages/operation/manage/pmk"].refreshPmkList();
+    if (webconsolejs["pages/operation/manage/k8sworkloads"] &&
+        typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
+      webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
     }
   });
 
@@ -608,9 +608,9 @@ async function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, config
   }
 
   // 결과 수신 시점에 목록 갱신 (생성 접수 반영)
-  if (webconsolejs["pages/operation/manage/pmk"] &&
-      typeof webconsolejs["pages/operation/manage/pmk"].refreshPmkList === 'function') {
-    webconsolejs["pages/operation/manage/pmk"].refreshPmkList();
+  if (webconsolejs["pages/operation/manage/k8sworkloads"] &&
+      typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
+    webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
   }
   return responses;
 }

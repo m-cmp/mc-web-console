@@ -45,14 +45,14 @@ const PMK_LOADER_CONFIG = {
 const PmkApiHelper = {
   // 조회 작업 / Fetch operations
   async getClusterList(nsId) {
-    return await webconsolejs["common/api/services/pmk_api"].getClusterList(
+    return await webconsolejs["common/api/services/k8s_api"].getClusterList(
       nsId,
       PMK_LOADER_CONFIG.fetch.clusterList
     );
   },
   
   async getClusterDetail(nsId, clusterId) {
-    return await webconsolejs["common/api/services/pmk_api"].getCluster(
+    return await webconsolejs["common/api/services/k8s_api"].getCluster(
       nsId,
       clusterId,
       PMK_LOADER_CONFIG.fetch.clusterDetail
@@ -61,7 +61,7 @@ const PmkApiHelper = {
 
   // CSP-native auth 방식 kubeconfig — CSP에 따라 실패/미지원일 수 있음, 호출부에서 N/A 처리
   async getClusterKubeconfig(nsId, clusterId) {
-    return await webconsolejs["common/api/services/pmk_api"].getClusterKubeconfig(
+    return await webconsolejs["common/api/services/k8s_api"].getClusterKubeconfig(
       nsId,
       clusterId,
       PMK_LOADER_CONFIG.fetch.kubeconfig
@@ -71,14 +71,14 @@ const PmkApiHelper = {
   // 삭제·변경 작업 / Delete, Update operations
   // 로더 옵션을 넘기지 않는다 — 추적되는 요청이라 api 함수가 loaderType을 'none'으로 강제한다
   async deleteCluster(nsId, clusterId) {
-    return await webconsolejs["common/api/services/pmk_api"].pmkDelete(
+    return await webconsolejs["common/api/services/k8s_api"].pmkDelete(
       nsId,
       clusterId
     );
   },
 
   async deleteNodeGroup(nsId, clusterId, nodeGroupName) {
-    return await webconsolejs["common/api/services/pmk_api"].nodeGroupDelete(
+    return await webconsolejs["common/api/services/k8s_api"].nodeGroupDelete(
       nsId,
       clusterId,
       nodeGroupName
@@ -86,7 +86,7 @@ const PmkApiHelper = {
   },
 
   async setNodeGroupAutoscaling(nsId, clusterId, nodeGroupName, onAutoScaling) {
-    return await webconsolejs["common/api/services/pmk_api"].setNodeGroupAutoscaling(
+    return await webconsolejs["common/api/services/k8s_api"].setNodeGroupAutoscaling(
       nsId,
       clusterId,
       nodeGroupName,
@@ -95,7 +95,7 @@ const PmkApiHelper = {
   },
 
   async changeNodeGroupAutoscaleSize(nsId, clusterId, nodeGroupName, sizes) {
-    return await webconsolejs["common/api/services/pmk_api"].changeNodeGroupAutoscaleSize(
+    return await webconsolejs["common/api/services/k8s_api"].changeNodeGroupAutoscaleSize(
       nsId,
       clusterId,
       nodeGroupName,
@@ -118,7 +118,7 @@ $("#select-current-project").on('change', async function () {
     selectedWorkspaceProject.projectName = project.Name;
     selectedWorkspaceProject.nsId = project.NsId;
     // Using direct API call with default page loader for project change
-    var respPmkList = await webconsolejs["common/api/services/pmk_api"].getClusterList(project.NsId);
+    var respPmkList = await webconsolejs["common/api/services/k8s_api"].getClusterList(project.NsId);
     getPmkListCallbackSuccess(project.NsId, respPmkList);
 })
 
@@ -1097,10 +1097,10 @@ function setPmkInfoData(pmkData, kubeconfigText) {
         var pmkKubeConfigSupported = pmkKubeConfigNote.hasOwnProperty(pmkProviderLower);
         var pmkKubeConfig = (pmkKubeConfigSupported && kubeconfigText) ? kubeconfigText : "N/A";
 
-        // webconsolejs["common/api/services/pmk_api"].getPmkInfoProviderNames(pmkData); // PMK에 사용된 provider
+        // webconsolejs["common/api/services/k8s_api"].getPmkInfoProviderNames(pmkData); // PMK에 사용된 provider
         // var pmkDescription = clusterData.description;
-        // var pmkDispStatus = webconsolejs["common/api/services/pmk_api"].getPmkStatusFormatter(pmkStatus);
-        // var pmkStatusIcon = webconsolejs["common/api/services/pmk_api"].getPmkStatusIconFormatter(pmkDispStatus);
+        // var pmkDispStatus = webconsolejs["common/api/services/k8s_api"].getPmkStatusFormatter(pmkStatus);
+        // var pmkStatusIcon = webconsolejs["common/api/services/k8s_api"].getPmkStatusIconFormatter(pmkDispStatus);
         // var totalNodeGroupCount = (clusterDetailData.NodeGroupList == null) ? 0 : clusterDetailData.NodeGroupList.length;
 
         $("#cluster_info_name").text(pmkName);
@@ -1211,7 +1211,7 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
             var nodeIDParts = nodeID.split("/");
             nodeID = nodeIDParts[nodeIDParts.length - 1];
         }
-        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus);
+        var nodeStatusClass = webconsolejs["common/api/services/k8s_api"].getVmStatusStyleClass(nodeStatus);
 
         // 텍스트 길이 제한 (10자 초과 시 ... 표시)
         var displayName = nodeName.length > 10 ? nodeName.substring(0, 10) + '...' : nodeName;
@@ -1227,14 +1227,14 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
                    min-width: 150px; 
                    min-height: 60px;
                    cursor: pointer;" 
-            onclick="webconsolejs['pages/operation/manage/pmk'].toggleNodeCheck('${pmkID}', '${nodeID}')"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].toggleNodeCheck('${pmkID}', '${nodeID}')"
             title="${nodeName}">
           
           <input type="checkbox" 
                  id="node_checkbox_${nodeID}" 
                  class="vm-checkbox" 
                  style="width: 20px; height: 20px; margin-right: 15px; flex-shrink: 0;" 
-                 onchange="webconsolejs['pages/operation/manage/pmk'].handleNodeCheck('${pmkID}', '${nodeID}')">
+                 onchange="webconsolejs['pages/operation/manage/k8sworkloads'].handleNodeCheck('${pmkID}', '${nodeID}')">
           
           <span class="text-dark-fg" 
                 style="overflow: hidden; 
@@ -1288,7 +1288,7 @@ export function handleNodeCheck(pmkID, nodeID) {
         // 마지막 선택된 Node ID와 비교하여 Node를 찾음
         var aNodeObject = JSON.stringify(nodeList.find(node => node.ParsedSystemId === lastSelectedNodeID));
 
-        webconsolejs['pages/operation/manage/pmk'].nodeGroupDetailInfo(pmkID, aNodeObject, lastSelectedNodeID);
+        webconsolejs['pages/operation/manage/k8sworkloads'].nodeGroupDetailInfo(pmkID, aNodeObject, lastSelectedNodeID);
     } else {
         // 선택된 Node가 없다면 NodeGroupInfo를 접음
         clearServerInfo();
@@ -1373,7 +1373,7 @@ function displayNodeStatusList(nodeData) {
         var nodeId = aNode.SystemId
         var nodeName = aNode.NameId
         var nodeStatus = nodeData.Status
-        var nodeStatusClass = webconsolejs["common/api/services/pmk_api"].getVmStatusStyleClass(nodeStatus)
+        var nodeStatusClass = webconsolejs["common/api/services/k8s_api"].getVmStatusStyleClass(nodeStatus)
 
         nodeLi += '<li id="node_status_icon_' + nodeId + '" class="card ' + nodeStatusClass + '"><span class="text-dark-fg">' + nodeName + '</span></li>';
 
@@ -1530,7 +1530,7 @@ function setToTalPmkStatus() {
         for (var pmkIndex in totalPmkListObj) {
             var aPmk = totalPmkListObj[pmkIndex];
 
-            var aPmkStatusCountMap = webconsolejs["common/api/services/pmk_api"].calculatePmkStatusCount(aPmk);
+            var aPmkStatusCountMap = webconsolejs["common/api/services/k8s_api"].calculatePmkStatusCount(aPmk);
             totalPmkStatusMap.set(aPmk.id, aPmkStatusCountMap);
         }
     } catch (e) {
@@ -1545,7 +1545,7 @@ function setTotalClusterStatus() {
     try {
         for (var pmkIndex in totalPmkListObj) {
             var aPmk = totalPmkListObj[pmkIndex];
-            var vmStatusCountMap = webconsolejs["common/api/services/pmk_api"].calculateVmStatusCount(aPmk);
+            var vmStatusCountMap = webconsolejs["common/api/services/k8s_api"].calculateVmStatusCount(aPmk);
             totalVmStatusMap.set(aPmk.id, vmStatusCountMap);
         }
     } catch (e) {
@@ -1770,7 +1770,7 @@ function toggleRowSelection(id) {
 
 // 상태값을 table에서 표시하기 위해 감싸기
 function statusFormatter(cell) {
-    var pmkDispStatus = webconsolejs["common/api/services/pmk_api"].getPmkStatusFormatter(
+    var pmkDispStatus = webconsolejs["common/api/services/k8s_api"].getPmkStatusFormatter(
         cell.getData().status
     ); // 화면 표시용 status
     var pmkStatusCell =
@@ -1801,7 +1801,7 @@ function providerFormatter(data) {
 // table에서 provider 이름으로 필터링 하기 위해
 function providerFormatterString(data) {
 
-    var vmCloudConnectionMap = webconsolejs["common/api/services/pmk_api"].calculateConnectionCount(
+    var vmCloudConnectionMap = webconsolejs["common/api/services/k8s_api"].calculateConnectionCount(
         data.getData().vm
     );
 
@@ -1830,7 +1830,7 @@ function providerFilter(data) {
     // case type like, equal, not eual
     // equal only
     if (typeEl.value == "=") {
-        var vmCloudConnectionMap = webconsolejs["common/api/services/pmk_api"].calculateConnectionCount(
+        var vmCloudConnectionMap = webconsolejs["common/api/services/k8s_api"].calculateConnectionCount(
             data.vm
         );
         var valueElValue = valueEl.value;
@@ -1934,7 +1934,7 @@ async function loadFormDynamicData() {
     try {
         // Provider 목록은 HTML partial component로 이미 렌더링됨
         // Region 목록 로드 (백그라운드, 로더 없음)
-        const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' });
+        const regionList = await webconsolejs["common/api/services/k8s_api"].getRegionList({ loaderType: 'none' });
         if (regionList && Array.isArray(regionList)) {
             let html = '<option value="">Select Region</option>';
             regionList.forEach(region => {
@@ -1948,7 +1948,7 @@ async function loadFormDynamicData() {
         }
 
         // Cloud Connection 목록 로드 (백그라운드, 로더 없음)
-        const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' });
+        const cloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' });
         if (cloudConnection && Array.isArray(cloudConnection)) {
             const connectionNames = cloudConnection.map(item => item.configName).sort();
 
@@ -1997,7 +1997,7 @@ async function updateFormDynamicConfigurationFiltering() {
     if (selectedProvider !== "" && selectedRegion === "") {
         try {
             // Region 필터링 - 선택된 Provider의 Region만 표시 (백그라운드, 로더 없음)
-            const regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' });
+            const regionList = await webconsolejs["common/api/services/k8s_api"].getRegionList({ loaderType: 'none' });
             if (regionList && Array.isArray(regionList)) {
                 const filteredRegions = regionList.filter(region =>
                     region.ProviderName && region.ProviderName.toUpperCase() === selectedProvider
@@ -2015,7 +2015,7 @@ async function updateFormDynamicConfigurationFiltering() {
             }
 
             // Connection 필터링 - 선택된 Provider의 Connection만 표시 (백그라운드, 로더 없음)
-            const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' });
+            const cloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' });
             if (cloudConnection && Array.isArray(cloudConnection)) {
                 const lowerSelectedProvider = selectedProvider.toLowerCase();
                 const filteredConnections = cloudConnection.filter(connection =>
@@ -2048,7 +2048,7 @@ async function updateFormDynamicConfigurationFiltering() {
             const regionName = selectedRegion.replace(cspRegex, '').trim();
 
             if (provider && regionName) {
-                const cloudConnection = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' });
+                const cloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' });
                 if (cloudConnection && Array.isArray(cloudConnection)) {
                     // Provider + Region으로 정확한 Connection 필터링
                     const filteredConnections = cloudConnection.filter(connection => {
@@ -2189,7 +2189,7 @@ export async function deployPmkDynamic() {
                 return;
             }
 
-            const checkResult = await webconsolejs["common/api/services/pmk_api"].checkK8sClusterDynamic(
+            const checkResult = await webconsolejs["common/api/services/k8s_api"].checkK8sClusterDynamic(
                 selectedWorkspaceProject.nsId,
                 commonSpec
             );
@@ -2209,14 +2209,14 @@ export async function deployPmkDynamic() {
             }
 
             // K8s 버전 조회
-            const versions = await webconsolejs["common/api/services/pmk_api"]
+            const versions = await webconsolejs["common/api/services/k8s_api"]
                 .getAvailableK8sClusterVersion(providerName, regionName);
             if (versions && Array.isArray(versions) && versions.length > 0) {
                 k8sVersion = versions[0].id || "";
             }
 
             // provider 컨텍스트용 specId: RecommendK8sNode를 connectionName으로 서버 사이드 필터링하여 조회
-            commonSpec = await webconsolejs["common/api/services/pmk_api"]
+            commonSpec = await webconsolejs["common/api/services/k8s_api"]
                 .getRecommendedK8sSpecId(clusterData.connection);
             if (!commonSpec) {
                 // 하드코딩된 fallback 스펙은 리전마다 유효성이 달라 항상 실패할 수 있으므로 사용하지 않는다.
@@ -2266,7 +2266,7 @@ export async function deployPmkDynamic() {
 
         // 동적 클러스터 생성 API 호출 (비동기 - requestId toast로 상태 표시)
         // 결과는 기다리지 않지만 rejection은 관측한다 — 그러지 않으면 실패를 사용자가 알 수 없다
-        webconsolejs["common/api/services/pmk_api"].createK8sClusterDynamic(
+        webconsolejs["common/api/services/k8s_api"].createK8sClusterDynamic(
             selectedWorkspaceProject.nsId,
             createData
         ).catch(function (error) {
@@ -2340,8 +2340,8 @@ export function showRecommendSpecSettingPmk(value) {
 export async function getRecommendVmInfoPmk() {
     try {
         // 새로운 PMK용 Spec 추천 함수 호출
-        if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-            await webconsolejs["partials/operation/manage/pmk_serverrecommendation"].getRecommendVmInfoPmk();
+        if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+            await webconsolejs["partials/operation/manage/k8s_serverrecommendation"].getRecommendVmInfoPmk();
         } else {
             console.error("PMK Server recommendation module not found");
             alert("K8s Node recommendation module not found");
@@ -2391,13 +2391,13 @@ function setupPmkSpecModalEvents() {
     }
 }
 
-// PMK용 Spec 테이블 초기화 - pmk_serverrecommendation.js에서 처리하므로 제거
+// PMK용 Spec 테이블 초기화 - k8s_serverrecommendation.js에서 처리하므로 제거
 // function initPmkSpecTable() { ... } - 중복 제거
 
-// PMK용 선택된 행 업데이트 - pmk_serverrecommendation.js에서 처리하므로 제거  
+// PMK용 선택된 행 업데이트 - k8s_serverrecommendation.js에서 처리하므로 제거  
 // function updatePmkSelectedRows(data) { ... } - 중복 제거
 
-// PMK용 Spec 정보 적용 - pmk_serverrecommendation.js에서 처리하므로 제거
+// PMK용 Spec 정보 적용 - k8s_serverrecommendation.js에서 처리하므로 제거
 // export function applyPmkSpecInfo() { ... } - 중복 제거
 
 // PMK용 Image 모달 검증 및 열기
@@ -2437,8 +2437,8 @@ export function validateAndOpenImageModalPmk(event) {
 
     try {
         // PMK용 이미지 선택 콜백 함수 설정
-        if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
-            webconsolejs["partials/operation/manage/pmk_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
+        if (webconsolejs["partials/operation/manage/k8s_imagerecommendation"]) {
+            webconsolejs["partials/operation/manage/k8s_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
                 // PMK 폼의 이미지 필드에 설정
                 $("#nodegroup_image_dynamic").val(selectedImage.name || selectedImage.cspImageName || "");
             });
@@ -2530,8 +2530,8 @@ function setupDesiredNodeSizeButtons() {
 export function filterByProviderPmk(provider) {
     try {
         // 새로운 PMK용 Provider 필터링 함수 호출
-        if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-            webconsolejs["partials/operation/manage/pmk_serverrecommendation"].filterByProviderPmk(provider);
+        if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+            webconsolejs["partials/operation/manage/k8s_serverrecommendation"].filterByProviderPmk(provider);
         } else {
             console.error("PMK Server recommendation module not found");
         }
@@ -2577,40 +2577,40 @@ if (typeof webconsolejs === 'undefined') {
     webconsolejs = {};
 }
 
-if (typeof webconsolejs['pages/operation/manage/pmk'] === 'undefined') {
-    webconsolejs['pages/operation/manage/pmk'] = {};
+if (typeof webconsolejs['pages/operation/manage/k8sworkloads'] === 'undefined') {
+    webconsolejs['pages/operation/manage/k8sworkloads'] = {};
 }
 
 // PMK 관련 함수들 등록
-webconsolejs['pages/operation/manage/pmk'].initPmk = initPmk;
-webconsolejs['pages/operation/manage/pmk'].refreshPmkList = refreshPmkList;
-webconsolejs['pages/operation/manage/pmk'].getSelectedPmkData = getSelectedPmkData;
-webconsolejs['pages/operation/manage/pmk'].getSelectedClusterContext = getSelectedClusterContext;
-webconsolejs['pages/operation/manage/pmk'].deletePmk = deletePmk;
-webconsolejs['pages/operation/manage/pmk'].deleteNodeGroup = deleteNodeGroup;
-webconsolejs['pages/operation/manage/pmk'].openAutoscalingModal = openAutoscalingModal;
-webconsolejs['pages/operation/manage/pmk'].applyAutoscaling = applyAutoscaling;
-webconsolejs['pages/operation/manage/pmk'].openAutoscaleSizeModal = openAutoscaleSizeModal;
-webconsolejs['pages/operation/manage/pmk'].applyAutoscaleSize = applyAutoscaleSize;
-webconsolejs['pages/operation/manage/pmk'].exportNodeGroups = exportNodeGroups;
-webconsolejs['pages/operation/manage/pmk'].importNodeGroups = importNodeGroups;
-webconsolejs['pages/operation/manage/pmk'].toggleNodeCheck = toggleNodeCheck;
-webconsolejs['pages/operation/manage/pmk'].handleNodeCheck = handleNodeCheck;
-webconsolejs['pages/operation/manage/pmk'].nodeGroupDetailInfo = nodeGroupDetailInfo;
-webconsolejs['pages/operation/manage/pmk'].toggleExpertCreation = toggleExpertCreation;
-webconsolejs['pages/operation/manage/pmk'].initFormDynamic = initFormDynamic;
-webconsolejs['pages/operation/manage/pmk'].changeCloudConnectionDynamic = changeCloudConnectionDynamic;
-webconsolejs['pages/operation/manage/pmk'].onProviderChangeDynamic = onProviderChangeDynamic;
-webconsolejs['pages/operation/manage/pmk'].showNodeGroupFormDynamic = showNodeGroupFormDynamic;
-webconsolejs['pages/operation/manage/pmk'].hideNodeGroupFormDynamic = hideNodeGroupFormDynamic;
-webconsolejs['pages/operation/manage/pmk'].deployPmkDynamic = deployPmkDynamic;
-webconsolejs['pages/operation/manage/pmk'].showRecommendSpecSettingPmk = showRecommendSpecSettingPmk;
-webconsolejs['pages/operation/manage/pmk'].getRecommendVmInfoPmk = getRecommendVmInfoPmk;
-// webconsolejs['pages/operation/manage/pmk'].applyPmkSpecInfo = applyPmkSpecInfo; // 중복 제거 - pmk_serverrecommendation.js에서 처리
-webconsolejs['pages/operation/manage/pmk'].validateAndOpenImageModalPmk = validateAndOpenImageModalPmk;
-webconsolejs['pages/operation/manage/pmk'].setupPmkSpecModalEvents = setupPmkSpecModalEvents; // PMK Spec 모달 이벤트 리스너 등록
-webconsolejs['pages/operation/manage/pmk'].filterByProviderPmk = filterByProviderPmk; // PMK용 Provider 필터링 함수 등록
-webconsolejs['pages/operation/manage/pmk'].callbackPmkServerRecommendation = callbackPmkServerRecommendation; // PMK용 Server Recommendation 콜백 함수 등록
+webconsolejs['pages/operation/manage/k8sworkloads'].initPmk = initPmk;
+webconsolejs['pages/operation/manage/k8sworkloads'].refreshPmkList = refreshPmkList;
+webconsolejs['pages/operation/manage/k8sworkloads'].getSelectedPmkData = getSelectedPmkData;
+webconsolejs['pages/operation/manage/k8sworkloads'].getSelectedClusterContext = getSelectedClusterContext;
+webconsolejs['pages/operation/manage/k8sworkloads'].deletePmk = deletePmk;
+webconsolejs['pages/operation/manage/k8sworkloads'].deleteNodeGroup = deleteNodeGroup;
+webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscalingModal = openAutoscalingModal;
+webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaling = applyAutoscaling;
+webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscaleSizeModal = openAutoscaleSizeModal;
+webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaleSize = applyAutoscaleSize;
+webconsolejs['pages/operation/manage/k8sworkloads'].exportNodeGroups = exportNodeGroups;
+webconsolejs['pages/operation/manage/k8sworkloads'].importNodeGroups = importNodeGroups;
+webconsolejs['pages/operation/manage/k8sworkloads'].toggleNodeCheck = toggleNodeCheck;
+webconsolejs['pages/operation/manage/k8sworkloads'].handleNodeCheck = handleNodeCheck;
+webconsolejs['pages/operation/manage/k8sworkloads'].nodeGroupDetailInfo = nodeGroupDetailInfo;
+webconsolejs['pages/operation/manage/k8sworkloads'].toggleExpertCreation = toggleExpertCreation;
+webconsolejs['pages/operation/manage/k8sworkloads'].initFormDynamic = initFormDynamic;
+webconsolejs['pages/operation/manage/k8sworkloads'].changeCloudConnectionDynamic = changeCloudConnectionDynamic;
+webconsolejs['pages/operation/manage/k8sworkloads'].onProviderChangeDynamic = onProviderChangeDynamic;
+webconsolejs['pages/operation/manage/k8sworkloads'].showNodeGroupFormDynamic = showNodeGroupFormDynamic;
+webconsolejs['pages/operation/manage/k8sworkloads'].hideNodeGroupFormDynamic = hideNodeGroupFormDynamic;
+webconsolejs['pages/operation/manage/k8sworkloads'].deployPmkDynamic = deployPmkDynamic;
+webconsolejs['pages/operation/manage/k8sworkloads'].showRecommendSpecSettingPmk = showRecommendSpecSettingPmk;
+webconsolejs['pages/operation/manage/k8sworkloads'].getRecommendVmInfoPmk = getRecommendVmInfoPmk;
+// webconsolejs['pages/operation/manage/k8sworkloads'].applyPmkSpecInfo = applyPmkSpecInfo; // 중복 제거 - k8s_serverrecommendation.js에서 처리
+webconsolejs['pages/operation/manage/k8sworkloads'].validateAndOpenImageModalPmk = validateAndOpenImageModalPmk;
+webconsolejs['pages/operation/manage/k8sworkloads'].setupPmkSpecModalEvents = setupPmkSpecModalEvents; // PMK Spec 모달 이벤트 리스너 등록
+webconsolejs['pages/operation/manage/k8sworkloads'].filterByProviderPmk = filterByProviderPmk; // PMK용 Provider 필터링 함수 등록
+webconsolejs['pages/operation/manage/k8sworkloads'].callbackPmkServerRecommendation = callbackPmkServerRecommendation; // PMK용 Server Recommendation 콜백 함수 등록
 
 // 페이지 로드 시 초기화 (중복 방지)
 let pmkInitialized = false;
@@ -2631,15 +2631,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // PMK용 모달 초기화
     // PMK용 Spec 추천 모달 초기화
-    if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-        webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(webconsolejs["pages/operation/manage/pmk"].callbackPmkServerRecommendation);
+    if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+        webconsolejs["partials/operation/manage/k8s_serverrecommendation"].initServerRecommendationPmk(webconsolejs["pages/operation/manage/k8sworkloads"].callbackPmkServerRecommendation);
     } else {
         console.error("PMK Server recommendation module not found");
     }
 
     // PMK용 이미지 추천 모달 초기화
-    if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
-        webconsolejs["partials/operation/manage/pmk_imagerecommendation"].initImageModalPmk();
+    if (webconsolejs["partials/operation/manage/k8s_imagerecommendation"]) {
+        webconsolejs["partials/operation/manage/k8s_imagerecommendation"].initImageModalPmk();
     } else {
         console.error("PMK Image recommendation module not found");
     }

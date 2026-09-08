@@ -14,7 +14,7 @@ async function initDashboardNs() {
 
   ////////////////////// partials init functions///////////////////////////////////////
   try {
-    webconsolejs["partials/operation/dashboard/mci_dashboard"].initMciDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
+    webconsolejs["partials/operation/dashboard/infra_dashboard"].initMciDashboard(webconsolejs["pages/operation/dashboard/ns"].callbackStatusChanged, curWorkspaceProject);
   } catch (e) {
     console.error(e);
   }
@@ -29,7 +29,7 @@ export function callbackStatusChanged(caller, respData) {
     totalMciListObj.totalMciStatusMap = respData.totalMciStatusMap;
     totalMciListObj.totalVmStatusMap = respData.totalVmStatusMap;
 
-    webconsolejs["partials/operation/manage/mciserver_summary"].initMciServerSummary(null, totalMciListObj);
+    webconsolejs["partials/operation/manage/infraserver_summary"].initMciServerSummary(null, totalMciListObj);
   }
 }
 

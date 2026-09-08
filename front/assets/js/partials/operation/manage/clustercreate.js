@@ -232,7 +232,7 @@ export async function setCloudConnection(cloudConnection) {
 
 export async function checkAvailableK8sClusterVersion(providerName, regionName){
 	try {
-        var availableVersions = await webconsolejs["common/api/services/pmk_api"].getAvailableK8sClusterVersion(providerName, regionName);
+        var availableVersions = await webconsolejs["common/api/services/k8s_api"].getAvailableK8sClusterVersion(providerName, regionName);
 
         // k8s 생성 가능
         if (availableVersions && Array.isArray(availableVersions)) {
@@ -369,8 +369,8 @@ export async function displayNewNodeForm() {
 	var selectedNsId = selectedWorkspaceProject.nsId;
 	
 	// Get selected cluster's provider information for SSH Key filtering
-	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].getSelectedClusterContext();
-	var clusterProvider = webconsolejs["pages/operation/manage/pmk"].currentProvider
+	var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
+	var clusterProvider = webconsolejs["pages/operation/manage/k8sworkloads"].currentProvider
 		|| (selectedCluster && selectedCluster.provider)
 		|| null; // e.g., "aws", "azure", "gcp"
 	var clusterConnection = selectedCluster ? selectedCluster.connectionName : null;
@@ -388,7 +388,7 @@ export async function displayNewNodeForm() {
 	}
 
 	// getSSHKEY with provider filter
-	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId, clusterProvider);
+	var sshKeyList = await webconsolejs["common/api/services/k8s_api"].getSshKey(selectedNsId, clusterProvider);
 	var mysshKeyList = sshKeyList.data.responseData.sshKey;
 	if (mysshKeyList && mysshKeyList.length > 0) {
 		var html = '<option value="">Select sshKey</option>';
@@ -406,11 +406,11 @@ export async function displayNewNodeForm() {
 
 	// availablek8sclusternodeimage
 	// provider값과 region값 내려주기 전까지 임시
-	// var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
+	// var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].selectedPmkObj
 	// var providerString = selectedCluster[0].provider
 	// var {provider, region} = extractProviderRegion(providerString)
 
-	// var availableK8sClusterNodeImageList = await webconsolejs["common/api/services/pmk_api"].getAvailablek8sClusterNodeImage(provider, region)
+	// var availableK8sClusterNodeImageList = await webconsolejs["common/api/services/k8s_api"].getAvailablek8sClusterNodeImage(provider, region)
 	// console.log("availableK8sClusterNodeImageList",availableK8sClusterNodeImageList)
 	// if (availableK8sClusterNodeImageList && availableK8sClusterNodeImageList.length > 0) {
     //     var html = '<option value="">Select Image</option>';
@@ -430,8 +430,8 @@ export async function displayNewNodeForm() {
 	
 	// Spec 모달이 열릴 때 콜백 설정 (기존 폼용)
 	// 모달 열기 전에 콜백 설정
-	if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-		webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(
+	if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+		webconsolejs["partials/operation/manage/k8s_serverrecommendation"].initServerRecommendationPmk(
 			webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
 		);
 	}
@@ -439,12 +439,12 @@ export async function displayNewNodeForm() {
 	// Spec 모달 콜백 설정 (jQuery 방식 - 중복 방지용 네임스페이스 사용)
 	if (typeof $ !== 'undefined') {
 		$("#spec-search-pmk").off('shown.bs.modal.nodegroup').on('shown.bs.modal.nodegroup', function () {
-			if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-				webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(
+			if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+				webconsolejs["partials/operation/manage/k8s_serverrecommendation"].initServerRecommendationPmk(
 					webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
 				);
 			}
-			// provider 필터는 pmk_serverrecommendation.js의 shown.bs.modal 핸들러가 selectedPmkObj로 처리
+			// provider 필터는 k8s_serverrecommendation.js의 shown.bs.modal 핸들러가 selectedPmkObj로 처리
 		});
 	}
 
@@ -497,7 +497,7 @@ export async function createNode() {
 
 	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 	var selectedNsId = selectedWorkspaceProject.nsId;
-	var selectedPmk = webconsolejs["pages/operation/manage/pmk"].getSelectedClusterContext();
+	var selectedPmk = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
 	if (!selectedPmk) {
 		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
 			'Cluster Selection Required',
@@ -508,7 +508,7 @@ export async function createNode() {
 	var k8sClusterId = selectedPmk.id;
 	var provider = selectedPmk.provider; // CSP별 동시 전송 정책 판단용
 
-	const result = await webconsolejs["common/api/services/pmk_api"].createNode(
+	const result = await webconsolejs["common/api/services/k8s_api"].createNode(
 		k8sClusterId,
 		selectedNsId,
 		Create_Node_Config_Arr,
@@ -555,9 +555,9 @@ export async function createNode() {
 	}
 	
 	// PMK 목록 새로고침
-	if (webconsolejs["pages/operation/manage/pmk"] && 
-	    typeof webconsolejs["pages/operation/manage/pmk"].refreshPmkList === 'function') {
-		await webconsolejs["pages/operation/manage/pmk"].refreshPmkList();
+	if (webconsolejs["pages/operation/manage/k8sworkloads"] && 
+	    typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
+		await webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
 	}
 	
 	console.log("NodeGroup creation request sent and PMK list refreshed");
@@ -577,7 +577,7 @@ export async function addNewNodeGroup() {
 	Create_Node_Config_Arr = new Array();
 	currentEditingNodeGroupIndex = null; // Create 모드로 초기화
 
-	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].getSelectedClusterContext();
+	var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
 
 	// Validation: Check if cluster is selected
 	if (!selectedCluster) {
@@ -594,7 +594,7 @@ export async function addNewNodeGroup() {
 
 	var cluster_name = selectedCluster.name;
 	var cluster_desc = selectedCluster.description;
-	var cluster_provider = webconsolejs["pages/operation/manage/pmk"].currentProvider || selectedCluster.provider;
+	var cluster_provider = webconsolejs["pages/operation/manage/k8sworkloads"].currentProvider || selectedCluster.provider;
 	var cluster_connection = selectedCluster.connectionName;
 	var cluster_vpc = selectedCluster.vpc;
 	var cluster_subnet = selectedCluster.subnet;
@@ -688,17 +688,17 @@ function applyNodeRootDiskTypeOptions(provider, diskInfoList) {
 export async function addNewPmk() {
 	// isNode = false
 
-	var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
+	var providerList = await webconsolejs["common/api/services/k8s_api"].getProviderList()
 	// provider set
 	await setProviderList(providerList)
 
 	// call getRegion API (백그라운드, 로더 없음)
-	var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' })
+	var regionList = await webconsolejs["common/api/services/k8s_api"].getRegionList({ loaderType: 'none' })
 	// region set
 	await setRegionList(regionList)
 
 	// call cloudconnection (백그라운드, 로더 없음)
-	var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' })
+	var connectionList = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' })
 	// cloudconnection set
 	await setCloudConnection(connectionList)
 
@@ -719,7 +719,7 @@ export async function changeCloudConnection(connectionName) {
 export async function setVpcList(connectionName, nsId) {
 
 	// api 호출	
-	var vpcList = await webconsolejs["common/api/services/pmk_api"].getVpcList(connectionName, nsId)
+	var vpcList = await webconsolejs["common/api/services/k8s_api"].getVpcList(connectionName, nsId)
 	// select box에 SET
 	var vNetList = []
 	var res_item = vpcList.vNet
@@ -743,11 +743,11 @@ export async function setVpcList(connectionName, nsId) {
 		var selectedVpcId = $(this).val();  
 		if (selectedVpcId) {
 			// get subnetList
-			var subnetList = await webconsolejs["common/api/services/pmk_api"].getSubnetList(selectedVpcId, nsId);
+			var subnetList = await webconsolejs["common/api/services/k8s_api"].getSubnetList(selectedVpcId, nsId);
 			setSubnetList(subnetList)
 
 			// get securityGroupList
-			var securityGroupList = await webconsolejs["common/api/services/pmk_api"].getSecurityGroupList(selectedVpcId, nsId);
+			var securityGroupList = await webconsolejs["common/api/services/k8s_api"].getSecurityGroupList(selectedVpcId, nsId);
 			setSecurityGroupList(securityGroupList)
 		}
 	});
@@ -821,7 +821,7 @@ export async function createCluster() {
 	}
 
 	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다
-	webconsolejs["common/api/services/pmk_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
+	webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
 
 	webconsolejs['common/util'].showToast('Cluster creation request has been sent', 'info');
 
@@ -839,9 +839,9 @@ export async function createCluster() {
 	// CSP에 생성 명령이 전달되는 시간을 고려해 잠시 뒤 목록을 갱신한다
 	// (완료 시점 갱신은 pmk.js의 asyncRequestTracker 구독이 처리한다)
 	await new Promise(resolve => setTimeout(resolve, 2000));
-	if (webconsolejs["pages/operation/manage/pmk"] &&
-		typeof webconsolejs["pages/operation/manage/pmk"].refreshPmkList === 'function') {
-		await webconsolejs["pages/operation/manage/pmk"].refreshPmkList();
+	if (webconsolejs["pages/operation/manage/k8sworkloads"] &&
+		typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
+		await webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
 	}
 
 	// #createcluster(Simple)와 #createcluster-original(Expert)는 형제 섹션이고,
@@ -1248,8 +1248,8 @@ export function validateAndOpenImageModal(event) {
 	
 	try {
 		// PMK용 이미지 선택 콜백 함수 설정
-		if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
-			webconsolejs["partials/operation/manage/pmk_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
+		if (webconsolejs["partials/operation/manage/k8s_imagerecommendation"]) {
+			webconsolejs["partials/operation/manage/k8s_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
 				// 기존 nodegroup_configuration 폼의 이미지 필드에 설정
 				$("#node_imageid").val(selectedImage.name || selectedImage.cspImageName || "");
 				$("#n_imageid").val(selectedImage.name || selectedImage.cspImageName || "");

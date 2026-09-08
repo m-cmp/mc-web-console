@@ -10,7 +10,7 @@ window.openMciLabelEditor = function() {
   }
   
   // Label Editor 모달 열기
-  webconsolejs['pages/operation/manage/mci'].openLabelEditorModal('mci', mciId, mciName);
+  webconsolejs['pages/operation/manage/infraworkloads'].openLabelEditorModal('mci', mciId, mciName);
 }
 
 // MCI Labels 표시 함수 (전역으로 등록)

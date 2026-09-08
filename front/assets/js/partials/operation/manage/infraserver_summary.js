@@ -1,4 +1,4 @@
-// console.log("mciserver_summary.js");
+// console.log("infraserver_summary.js");
 
 // //var callbackFunction;
 // // 

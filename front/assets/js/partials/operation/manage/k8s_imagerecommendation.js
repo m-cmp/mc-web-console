@@ -385,43 +385,43 @@ function safeSetTableDataPmk(data) {
 if (typeof webconsolejs === 'undefined') {
 	webconsolejs = {};
 }
-if (typeof webconsolejs['partials/operation/manage/pmk_imagerecommendation'] === 'undefined') {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'] = {};
+if (typeof webconsolejs['partials/operation/manage/k8s_imagerecommendation'] === 'undefined') {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'] = {};
 }
 
 // 함수들을 조건부로 등록
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].initImageRecommendationPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].initImageRecommendationPmk = initImageRecommendationPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].initImageRecommendationPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].initImageRecommendationPmk = initImageRecommendationPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].initImageModalPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].initImageModalPmk = initImageModalPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].initImageModalPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].initImageModalPmk = initImageModalPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].getRecommendImageInfoPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].getRecommendImageInfoPmk = getRecommendImageInfoPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].getRecommendImageInfoPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].getRecommendImageInfoPmk = getRecommendImageInfoPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].applyImageInfoPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].applyImageInfoPmk = applyImageInfoPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyImageInfoPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyImageInfoPmk = applyImageInfoPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].showRecommendImageSettingPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].showRecommendImageSettingPmk = showRecommendImageSettingPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].showRecommendImageSettingPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].showRecommendImageSettingPmk = showRecommendImageSettingPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].setImageSelectionCallbackPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].setImageSelectionCallbackPmk = setImageSelectionCallbackPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].setImageSelectionCallbackPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].setImageSelectionCallbackPmk = setImageSelectionCallbackPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].filterByProviderPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].filterByProviderPmk = filterByProviderPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].filterByProviderPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].filterByProviderPmk = filterByProviderPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateK8sStatusPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateK8sStatusPmk = updateK8sStatusPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].updateK8sStatusPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].updateK8sStatusPmk = updateK8sStatusPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk = updateGPUStatusPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].updateGPUStatusPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].updateGPUStatusPmk = updateGPUStatusPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].toggleOSDropdownPmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].toggleOSDropdownPmk = toggleOSDropdownPmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].toggleOSDropdownPmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].toggleOSDropdownPmk = toggleOSDropdownPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_imagerecommendation'].selectOSTypePmk) {
-	webconsolejs['partials/operation/manage/pmk_imagerecommendation'].selectOSTypePmk = selectOSTypePmk;
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].selectOSTypePmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].selectOSTypePmk = selectOSTypePmk;
 }
 
  

@@ -173,7 +173,7 @@ function setMciListTableRow(aMciData, mciIndex) {
       }
     }
 
-    mciTableRow += '   <div class="card bg-secondary-lt mci-list" id="mci_areabox_' + mciIndex + ' "onclick="webconsolejs[\'partials/operation/dashboard/mci_dashboard\'].selectMci(\'' + aMciData.id + '\',\'' + aMciData.name + '\',\'mci_areabox_' + mciIndex + '\', this)">'
+    mciTableRow += '   <div class="card bg-secondary-lt mci-list" id="mci_areabox_' + mciIndex + ' "onclick="webconsolejs[\'partials/operation/dashboard/infra_dashboard\'].selectMci(\'' + aMciData.id + '\',\'' + aMciData.name + '\',\'mci_areabox_' + mciIndex + '\', this)">'
     mciTableRow += '     <div hidden id="' + mciIndex + '"></div>'
     mciTableRow += '     <div hidden id="' + mciDispStatus + '"></div>'
     mciTableRow += '     <div class="card-header">'

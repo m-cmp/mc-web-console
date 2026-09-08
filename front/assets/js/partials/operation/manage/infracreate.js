@@ -246,12 +246,12 @@ export function initMciCreate() {
 
 	// partial init functions
 
-	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/mcicreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
+	webconsolejs["partials/operation/manage/serverrecommendation"].initServerRecommendation(webconsolejs["partials/operation/manage/infracreate"].callbackServerRecommendation);// recommend popup에서 사용하는 table 정의.
 	
 	webconsolejs["partials/operation/manage/imagerecommendation"].initImageModal(); // 이미지 추천 모달 초기화
 	
 	// 이미지 선택 콜백 함수 설정
-	webconsolejs["partials/operation/manage/imagerecommendation"].setImageSelectionCallback(webconsolejs["partials/operation/manage/mcicreate"].callbackImageRecommendation);
+	webconsolejs["partials/operation/manage/imagerecommendation"].setImageSelectionCallback(webconsolejs["partials/operation/manage/infracreate"].callbackImageRecommendation);
 
 	initTemplateDeploySelect(); // Deployment Algorithm의 Template 선택 처리
 }
@@ -1136,7 +1136,7 @@ function addServerConfigToList(express_form) {
 
     var displayServerCnt = '(' + server_cnt + ')';
     var missingClass = hasName ? '' : ' nodegroup-name-missing border border-danger';
-    add_server_html += '<li class="removebullet btn btn-info' + missingClass + '" onclick="webconsolejs[\'partials/operation/manage/mcicreate\'].view_express(\'' + express_data_cnt + '\')">'
+    add_server_html += '<li class="removebullet btn btn-info' + missingClass + '" onclick="webconsolejs[\'partials/operation/manage/infracreate\'].view_express(\'' + express_data_cnt + '\')">'
       + server_name + displayServerCnt
       + '</li>';
 
@@ -1321,7 +1321,7 @@ export function changeDiskSize(type) {
 function getPlusVm(vmElementId) {
 
 	var append = "";
-	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/mcicreate\'].displayNewServerForm()">';
+	append = append + '<li class="removebullet btn btn-secondary-lt" id="' + vmElementId + '_plusVmIcon" onClick="webconsolejs[\'partials/operation/manage/infracreate\'].displayNewServerForm()">';
 	append = append + "+ NodeGroup"
 	append = append + '</li>';
 	return append;
