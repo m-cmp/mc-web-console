@@ -6,7 +6,7 @@ import { showToast, TOAST_TYPES } from '../../../../common/utils/toast.js';
 import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from '../../../../common/utils/cspResource.js';
 
 const nlbApi = () => webconsolejs['common/api/services/nlb_api'];
-const mciApi = () => webconsolejs['common/api/services/mci_api'];
+const mciApi = () => webconsolejs['common/api/services/infra_api'];
 
 const AppState = {
   ns: '',

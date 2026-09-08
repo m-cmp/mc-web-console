@@ -357,7 +357,7 @@ export async function getRecommendVmInfoPmk() {
 		if (loadingEl) loadingEl.style.display = 'block';
 		try {
 			// PMK용 Spec 추천 API 호출 (기존 MCI API 사용)
-			const result = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+			const result = await webconsolejs["common/api/services/infra_api"].mciRecommendVm(data);
 
 			if (result && result.status && result.status.code === 200) {
 				const specData = result.responseData;

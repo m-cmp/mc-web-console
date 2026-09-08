@@ -41,7 +41,7 @@ function calculateMciStatusCount(mciData) {
   mciStatusCountMap.set("terminate", 0);
   try {
     var mciStatus = mciData.status;
-    var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus); // 화면 표시용 status
+    var mciDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(mciStatus); // 화면 표시용 status
 
     if (mciStatus != "") {
       // mci status 가 없는 경우는 skip

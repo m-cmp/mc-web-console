@@ -127,7 +127,7 @@ async function initMonitorConfig() {
 
 // workload 목록 조회 ( mci + pmk )
 async function getWorkloadList(nsId){
-  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
+  var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(nsId);
   var res_item = respMciList.infra
   
   // HTML option 리스트 초기값
@@ -160,7 +160,7 @@ export async function refreshServerList() {
   
   // 1. mci의 vm 목록 조회(install 여부를 위해 필요.)
   try {
-    var response = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentWorkloadId);
+    var response = await webconsolejs["common/api/services/infra_api"].getMci(currentNsId, currentWorkloadId);
     var aMci = response.responseData
     for (var vmIndex in aMci.vm) {
       var aVm = aMci.vm[vmIndex]

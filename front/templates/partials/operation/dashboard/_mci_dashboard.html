@@ -130,7 +130,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"     
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'common/api/services/mci_api.mciLifeCycle', 'reboot')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'common/api/services/infra_api.mciLifeCycle', 'reboot')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +156,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'common/api/services/mci_api.mciLifeCycle', 'suspend')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'common/api/services/infra_api.mciLifeCycle', 'suspend')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -182,7 +182,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume Infra ?', 'common/api/services/mci_api.mciLifeCycle', 'resume')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume Infra ?', 'common/api/services/infra_api.mciLifeCycle', 'resume')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -208,7 +208,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate Infra ?', 'common/api/services/mci_api.mciLifeCycle', 'terminate')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate Infra ?', 'common/api/services/infra_api.mciLifeCycle', 'terminate')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -333,7 +333,7 @@
   </div>
 </div>
 {{ javascriptTag("partials/operation/dashboard/mci_dashboard.js") | raw }}
-{{ javascriptTag("common/api/services/mci_api.js") | raw }}
+{{ javascriptTag("common/api/services/infra_api.js") | raw }}
 
 
 <!--API 호출-->

@@ -253,7 +253,7 @@ export async function getRecommendImageInfoPmk() {
 
 
 		// 이미지 검색 API 호출
-		var response = await webconsolejs["common/api/services/mci_api"].searchImage(nsId, searchParams);
+		var response = await webconsolejs["common/api/services/infra_api"].searchImage(nsId, searchParams);
 
 
 		if (response.status && response.status.code === 200) {

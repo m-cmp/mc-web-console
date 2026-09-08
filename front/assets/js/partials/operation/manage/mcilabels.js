@@ -107,7 +107,7 @@ window.loadMciLabels = async function() {
   
   try {
     // Getmci API로 MCI 상세 정보 조회
-    const mciResponse = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, window.currentMciId);
+    const mciResponse = await webconsolejs["common/api/services/infra_api"].getMci(window.currentNsId, window.currentMciId);
     
     if (mciResponse && mciResponse.responseData && mciResponse.responseData.label) {
       const labels = mciResponse.responseData.label;

@@ -3,7 +3,7 @@
 $("#select-current-project").on('change', async function () {
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
+  var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(project.NsId);
 
   getMciListCallbackSuccess(respMciList);
 })
@@ -22,7 +22,7 @@ export async function initMciDashboard(callbackfunction, workspaceProject) {
   if (workspaceProject.projectId != "") {
     var selectedProjectId = workspaceProject.projectId;
     var selectedNsId = workspaceProject.nsId;
-    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(selectedNsId);
 
     getMciListCallbackSuccess("", respMciList);
   } else {
@@ -59,7 +59,7 @@ function setToTalMciStatus(totalMciListObj) {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
 
-      var aMciStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateMciStatusCount(aMci);
+      var aMciStatusCountMap = webconsolejs["common/api/services/infra_api"].calculateMciStatusCount(aMci);
       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
     }
   } catch (e) {
@@ -75,7 +75,7 @@ function setTotalVmStatus(totalMciListObj) {
   try {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
-      var vmStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateVmStatusCount(aMci);
+      var vmStatusCountMap = webconsolejs["common/api/services/infra_api"].calculateVmStatusCount(aMci);
       totalVmStatusMap.set(aMci.id, vmStatusCountMap);
     }
   } catch (e) {
@@ -111,7 +111,7 @@ function displayMciDashboard() {
 function setMciListTableRow(aMciData, mciIndex) {
   var mciTableRow = "";
   var mciStatus = aMciData.status
-  var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);// 화면 표시용 status
+  var mciDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(mciStatus);// 화면 표시용 status
 
   var vmStatusCountMap = totalVmStatusMap.get(aMciData.id);
   var totalVmCountOfMci = vmStatusCountMap.get('running') + vmStatusCountMap.get('stop') + vmStatusCountMap.get('terminate');
@@ -137,7 +137,7 @@ function setMciListTableRow(aMciData, mciIndex) {
         }
 
 
-        var vmDispStatus = webconsolejs["common/api/services/mci_api"].getVmStatusFormatter(aVm.status);
+        var vmDispStatus = webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(aVm.status);
         var sumVmCountRunning = vmStatusCountMap.get("running")
         var sumVmCountStop = vmStatusCountMap.get("stop")
         var sumVmCountTerminate = vmStatusCountMap.get("terminate")
@@ -231,7 +231,7 @@ export function selectMci(id, name, target, obj) {
 
     var mciStatus = aMciData.status
     var mciProviderNames = getProviderNamesOfMci(aMciData.id);//MCIS에 사용 된 provider
-    var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);// 화면 표시용 status
+    var mciDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(mciStatus);// 화면 표시용 status
 
     var vmStatusCountMap = totalVmStatusMap.get(aMciData.id);
     var mciStatusImg = "/assets/img/contents/icon_" + mciDispStatus + ".png"

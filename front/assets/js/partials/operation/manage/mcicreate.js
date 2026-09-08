@@ -102,7 +102,7 @@ function resetDiskAttachSection() {
 
 // 노드가 Running이 될 때까지 폴링. 타임아웃/삭제 시 null 반환.
 async function pollNodeUntilRunning(nsId, infraId, nodeId, { timeoutMs = 15 * 60 * 1000, intervalMs = 5000 } = {}) {
-	const mciApi = webconsolejs["common/api/services/mci_api"];
+	const mciApi = webconsolejs["common/api/services/infra_api"];
 	const deadline = Date.now() + timeoutMs;
 	while (Date.now() < deadline) {
 		try {
@@ -992,7 +992,7 @@ async function precheckNodeGroup(express_form) {
     var review = null;
     if (isVm) {
       // Extend VM(Add NodeGroup): infra 존재를 전제로 하는 단건 review API 사용
-      var vmResp = await webconsolejs["common/api/services/mci_api"].vmDynamicReview(window.currentMciId, nsId, express_form);
+      var vmResp = await webconsolejs["common/api/services/infra_api"].vmDynamicReview(window.currentMciId, nsId, express_form);
       var vmData = vmResp && vmResp.status === 200 ? vmResp.data.responseData : null;
       // 응답은 review 단건 객체 — 방어적으로 infra 래퍼(nodeReviews[])도 허용
       review = vmData && vmData.nodeReviews ? (vmData.nodeReviews[0] || null) : vmData;
@@ -1005,7 +1005,7 @@ async function precheckNodeGroup(express_form) {
       }
       var mciDesc = $("#mci_desc").val() || "precheck";
       // labels도 Deploy review와 동일하게 전달 (계약 대칭 — review는 label을 검증하지 않음)
-      var mciResp = await webconsolejs["common/api/services/mci_api"].mciDynamicReview(mciName, mciDesc, [express_form], nsId, getInfraDeployLabels());
+      var mciResp = await webconsolejs["common/api/services/infra_api"].mciDynamicReview(mciName, mciDesc, [express_form], nsId, getInfraDeployLabels());
       var mciData = mciResp && mciResp.status === 200 ? mciResp.data.responseData : null;
       review = mciData && mciData.nodeReviews && mciData.nodeReviews.length > 0 ? mciData.nodeReviews[0] : null;
     }
@@ -1063,7 +1063,7 @@ async function precheckNodeGroupExpert(express_form) {
   }
 
   try {
-    var resp = await webconsolejs["common/api/services/mci_api"].specImagePairReview(
+    var resp = await webconsolejs["common/api/services/infra_api"].specImagePairReview(
       express_form.commonSpec, express_form.commonImage, express_form.rootDiskType, express_form.zone
     );
     var review = resp && resp.status === 200 ? resp.data.responseData : null;
@@ -1468,7 +1468,7 @@ export async function createMciDynamic() {
 
 	// MCI 생성 전 검증 API 호출
 	try {
-		const validationResult = await webconsolejs["common/api/services/mci_api"].mciDynamicReview(
+		const validationResult = await webconsolejs["common/api/services/infra_api"].mciDynamicReview(
 			mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, deployLabels
 		);
 		
@@ -1518,7 +1518,7 @@ export async function createMciDynamic() {
 			}
 
 			// Ready / 사용자가 확인한 Error·Warning → 배포 진행
-			webconsolejs["common/api/services/mci_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure, deployLabels);
+			webconsolejs["common/api/services/infra_api"].mciDynamic(mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure, deployLabels);
 			scheduleDiskAttachForConfigs(selectedNsId, mciName, Express_Server_Config_Arr);
 		} else {
 			// API 호출 실패
@@ -1555,7 +1555,7 @@ async function createMciStatic() {
 
 	const deployLabels = getInfraDeployLabels();
 
-	webconsolejs["common/api/services/mci_api"].mciStatic(
+	webconsolejs["common/api/services/infra_api"].mciStatic(
 		mciName, mciDesc, Express_Server_Config_Arr, selectedNsId, policyOnPartialFailure, deployLabels
 	);
 }
@@ -1574,7 +1574,7 @@ export async function createVmDynamic() {
     var selectedNsId = selectedWorkspaceProject.nsId;
     var mciId = window.currentMciId;
 
-    await webconsolejs["common/api/services/mci_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
+    await webconsolejs["common/api/services/infra_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
     // Data Disk attach 오케스트레이션 시작 — window.location 이동으로 끊기지 않도록
     // sessionStorage에 먼저 기록됨(scheduleDiskAttachAfterDeploy 내부), mciworkloads
     // 페이지 로드 시 resumePendingDiskAttachJobs()가 이어받는다.
@@ -1591,7 +1591,7 @@ async function createVmStatic() {
     var selectedNsId = selectedWorkspaceProject.nsId;
     var mciId = window.currentMciId;
 
-    await webconsolejs["common/api/services/mci_api"].vmStatic(mciId, selectedNsId, Express_Server_Config_Arr)
+    await webconsolejs["common/api/services/infra_api"].vmStatic(mciId, selectedNsId, Express_Server_Config_Arr)
 
     alert("Node creation request completed")
     window.location = `/webconsole/operations/manage/workloads/infraworkloads`;

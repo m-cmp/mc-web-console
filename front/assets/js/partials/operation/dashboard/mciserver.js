@@ -13,7 +13,7 @@
 //   console.log("project change")
 //   var curWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 //   console.log("workspaceIdProjectId = ", curWorkspaceProject)
-//   webconsolejs["common/api/services/mci_api"].getMciList(curWorkspaceProject.nsId);
+//   webconsolejs["common/api/services/infra_api"].getMciList(curWorkspaceProject.nsId);
 //   //getMciList();
 // })
 
@@ -124,7 +124,7 @@
 //     for (var mciIndex in totalMciListObj) {
 //       var aMci = totalMciListObj[mciIndex];
 
-//       var aMciStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateMciStatusCount(aMci);
+//       var aMciStatusCountMap = webconsolejs["common/api/services/infra_api"].calculateMciStatusCount(aMci);
 //       console.log("aMci.id : ", aMci.id);
 //       console.log("mciStatusMap ::: ", aMciStatusCountMap);
 //       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
@@ -141,7 +141,7 @@
 //     for (var mciIndex in totalMciListObj) {
 //       var aMci = totalMciListObj[mciIndex];
 //       console.log("aMci : ", aMci);
-//       var vmStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateVmStatusCount(aMci);
+//       var vmStatusCountMap = webconsolejs["common/api/services/infra_api"].calculateVmStatusCount(aMci);
 //       totalVmStatusMap.set(aMci.id, vmStatusCountMap);
 //     }
 //   } catch (e) {
@@ -188,7 +188,7 @@
 //   mciStatusCountMap.set("terminate", 0);
 //   try {
 //     var mciStatus = mciData.status;
-//     var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus); // 화면 표시용 status
+//     var mciDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(mciStatus); // 화면 표시용 status
 
 //     if (mciStatus != "") {
 //       // mci status 가 없는 경우는 skip
