@@ -47,8 +47,8 @@ export async function fetchSpecs(ns, connectionName = '') {
 export async function lookupList(connectionName) {
   const controller = '/api/mc-infra-manager/ForwardAnyReqToAny';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
-    pathParams: { path: 'spider/vmspecs' },
-    queryParams: { ConnectionName: connectionName }
+    pathParams: { path: 'vmspec' },
+    request: { ConnectionName: connectionName }
   });
   return response?.data?.responseData;
 }
