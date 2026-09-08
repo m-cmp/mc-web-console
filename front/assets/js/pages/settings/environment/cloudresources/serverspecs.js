@@ -10,6 +10,7 @@ const specApi = () => webconsolejs['common/api/services/serverspec_api'];
 const AppState = {
   tables: { resourceTable: null, popupTable: null },
   resources: { selected: null },
+  popupConnections: [],
 };
 
 // ─── 페이지 초기화 ────────────────────────────────────────────────────────
@@ -195,18 +196,40 @@ document.getElementById('create-spec-modal')?.addEventListener('show.bs.modal', 
   document.getElementById('modal-connectionName').value = '';
 });
 
-export async function openSpecSelectPopup() {
-  try {
-    const resp = await webconsolejs['common/api/http'].commonAPIPost('/api/mc-infra-manager/GetConnConfigList', {});
-    const conns = resp?.data?.responseData?.connectionconfig || [];
-    const popupConn = document.getElementById('popup-connection');
-    popupConn.innerHTML = '<option value="">-- Select Connection --</option>';
-    conns.forEach(c => {
+// 연결이 8개 CSP에 걸쳐 177개까지 늘어나 provider로 먼저 좁힌다.
+function renderPopupConnections(providerName) {
+  const popupConn = document.getElementById('popup-connection');
+  popupConn.disabled = !providerName;
+  if (!providerName) {
+    popupConn.innerHTML = '<option value="">Select a provider first</option>';
+    return;
+  }
+  popupConn.innerHTML = '<option value="">-- Select Connection --</option>';
+  AppState.popupConnections
+    .filter(c => c.providerName === providerName)
+    .forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.configName;
       opt.textContent = c.configName;
       popupConn.appendChild(opt);
     });
+}
+
+export async function openSpecSelectPopup() {
+  try {
+    const resp = await webconsolejs['common/api/http'].commonAPIPost('/api/mc-infra-manager/GetConnConfigList', {});
+    AppState.popupConnections = resp?.data?.responseData?.connectionconfig || [];
+
+    const popupProvider = document.getElementById('popup-provider');
+    popupProvider.innerHTML = '<option value="">-- Select Provider --</option>';
+    [...new Set(AppState.popupConnections.map(c => c.providerName))].sort().forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      popupProvider.appendChild(opt);
+    });
+    popupProvider.value = '';
+    renderPopupConnections('');
   } catch (err) {
     console.error('Failed to load connections', err);
     showToast(TOAST_TYPES.ERROR, 'Failed to load connection list.');
@@ -221,7 +244,7 @@ export async function loadSpecList(connectionName) {
   if (!connectionName) return;
   try {
     const data = await specApi().lookupList(connectionName);
-    const items = data?.vmSpec || [];
+    const items = data?.vmspec || [];
     if (AppState.tables.popupTable) {
       AppState.tables.popupTable.replaceData(items);
     } else {
@@ -232,15 +255,26 @@ export async function loadSpecList(connectionName) {
         pagination: 'local',
         paginationSize: 10,
         columns: [
-          { title: 'Name', field: 'IId.NameId', sorter: 'string' },
-          { title: 'vCPU', field: 'NumvCPU', hozAlign: 'center', sorter: 'number' },
-          { title: 'Memory (GiB)', field: 'MemGiB', hozAlign: 'center', sorter: 'number' },
+          { title: 'Name', field: 'Name', sorter: 'string' },
+          { title: 'vCPU', field: 'VCpu.Count', hozAlign: 'center', sorter: 'number' },
+          {
+            title: 'Memory (GiB)',
+            field: 'MemSizeMiB',
+            hozAlign: 'center',
+            sorter: 'number',
+            // cb-spider는 MiB로 반환한다. 같은 화면 위쪽 표(memoryGiB)가 0.5 같은 소수를
+            // 그대로 보여주므로 반올림하지 않고 소수 둘째 자리까지만 정리한다.
+            formatter(cell) {
+              const mib = Number(cell.getValue());
+              return Number.isFinite(mib) && mib > 0 ? Math.round((mib / 1024) * 100) / 100 : '-';
+            },
+          },
         ],
       });
       AppState.tables.popupTable.on('rowClick', function (_e, row) {
         const d = row.getData();
-        document.getElementById('modal-specName').value = d.IId?.NameId || '';
-        document.getElementById('modal-cspSpecName').value = d.IId?.NameId || '';
+        document.getElementById('modal-specName').value = d.Name || '';
+        document.getElementById('modal-cspSpecName').value = d.Name || '';
         document.getElementById('modal-connectionName').value = connectionName;
         bootstrap.Modal.getInstance(document.getElementById('spec-select-popup'))?.hide();
       });
@@ -271,6 +305,12 @@ export async function submitRegisterSpec() {
     showToast(TOAST_TYPES.ERROR, 'Failed to register spec: ' + (err?.response?.data?.message || err.message));
   }
 }
+
+document.getElementById('popup-provider')?.addEventListener('change', function () {
+  renderPopupConnections(this.value);
+  AppState.tables.popupTable = null;
+  document.getElementById('popup-spec-table').innerHTML = '';
+});
 
 document.getElementById('popup-connection')?.addEventListener('change', function () {
   loadSpecList(this.value);

@@ -311,14 +311,14 @@ export async function loadImageList(connectionName) {
         paginationSize: 10,
         columns: [
           { title: 'Name', field: 'IId.NameId', sorter: 'string' },
-          { title: 'CspImageId', field: 'CspImageId', sorter: 'string' },
-          { title: 'OS', field: 'GuestOS', sorter: 'string' },
+          { title: 'CspImageId', field: 'IId.SystemId', sorter: 'string' },
+          { title: 'OS', field: 'OSDistribution', sorter: 'string' },
         ],
       });
       AppState.tables.popupTable.on('rowClick', function (_e, row) {
         const d = row.getData();
         document.getElementById('modal-imageName').value = d.IId?.NameId || '';
-        document.getElementById('modal-cspImageName').value = d.CspImageId || '';
+        document.getElementById('modal-cspImageName').value = d.IId?.SystemId || '';
         document.getElementById('modal-connectionName').value = connectionName;
         bootstrap.Modal.getInstance(document.getElementById('image-select-popup'))?.hide();
       });
