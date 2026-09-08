@@ -254,7 +254,7 @@ async function _loadAttachMciOptions() {
   select.innerHTML = '<option value="">Select</option>';
   const diskProvider = getProvider(AppState.resources.selected);
   try {
-    const mciApi = webconsolejs['common/api/services/mci_api'];
+    const mciApi = webconsolejs['common/api/services/infra_api'];
     const list = await mciApi.getMciList(AppState.ns);
     const mcis = list?.infra || (Array.isArray(list) ? list : []);
     for (const mci of mcis) {
@@ -307,7 +307,7 @@ async function _loadAttachVmOptions(infraId, nodeGroupId) {
   if (!infraId || !nodeGroupId) return;
   const selected = AppState.resources.selected;
   try {
-    const mciApi = webconsolejs['common/api/services/mci_api'];
+    const mciApi = webconsolejs['common/api/services/infra_api'];
     const mciResp = await mciApi.getMci(AppState.ns, infraId);
     const nodes = mciResp?.responseData?.node || [];
     const diskProvider = getProvider(selected);

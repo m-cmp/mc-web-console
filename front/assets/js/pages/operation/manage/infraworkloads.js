@@ -9,7 +9,7 @@ $("#select-current-project").on('change', async function () {
 
   window.currentNsId = webconsolejs["common/api/services/workspace_api"].getCurrentProject()?.NsId
 
-  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
+  var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(project.NsId);
   getMciListCallbackSuccess(project.NsId, respMciList);
 })
 
@@ -51,14 +51,14 @@ async function initMci() {
   initMciTable(); // init tabulator
 
   try {
-    webconsolejs["partials/operation/manage/mcicreate"].initMciCreate();
+    webconsolejs["partials/operation/manage/infracreate"].initMciCreate();
 
-    const targetSection = "mcicreate";
+    const targetSection = "infracreate";
     const createBtnName = "Add Infra";
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
 
     // Add Node(Extend VM) 플로우가 남긴 Data Disk attach pending job 재개 (WEB-TECH-014)
-    webconsolejs["partials/operation/manage/mcicreate"].resumePendingDiskAttachJobs();
+    webconsolejs["partials/operation/manage/infracreate"].resumePendingDiskAttachJobs();
   } catch (e) {
     console.error(e);
   }
@@ -88,7 +88,7 @@ async function initMci() {
   });
   const nlbTabEl = document.querySelector('a[data-bs-toggle="tab"][href="#tabs-mci-nlb"]');
   nlbTabEl?.addEventListener('shown.bs.tab', function (event) {
-    webconsolejs['partials/operation/manage/mcinlb']?.loadMciNlbList(false);
+    webconsolejs['partials/operation/manage/infranlb']?.loadMciNlbList(false);
   });
 
   // 모든 탭 전환 시 선택 상태 초기화
@@ -114,7 +114,7 @@ async function initMci() {
 export async function refreshMciList() {
   if (selectedWorkspaceProject.projectId != "") {
     //getMciList();// project가 선택되어 있으면 mci목록을 조회한다.
-    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(window.currentNsId);
+    var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(window.currentNsId);
 
     await getMciListCallbackSuccess(selectedWorkspaceProject.projectId, respMciList);
 
@@ -273,7 +273,7 @@ function resetTabSelectionStates(hiddenTab) {
   } else if (hiddenTab === '#tabs-mci-labels') {
     resetLabelsTabSelections();
   } else if (hiddenTab === '#tabs-mci-nlb') {
-    webconsolejs['partials/operation/manage/mcinlb']?.hideDetail();
+    webconsolejs['partials/operation/manage/infranlb']?.hideDetail();
   }
 }
 
@@ -461,7 +461,7 @@ export async function getSelectedMciData() {
 
   if (window.currentMciId != undefined && window.currentMciId != "") {
 
-    var mciResp = await webconsolejs["common/api/services/mci_api"].getMci(window.currentNsId, window.currentMciId)
+    var mciResp = await webconsolejs["common/api/services/infra_api"].getMci(window.currentNsId, window.currentMciId)
     if (mciResp.status.code != 200) {
       webconsolejs["common/utils/toast"].showToast(
         webconsolejs["common/utils/toast"].TOAST_TYPES.ERROR,
@@ -512,9 +512,9 @@ function setMciInfoData(mciData) {
     var mciName = mciData.name;
     var mciDescription = mciData.description;
     var mciStatus = mciData.status;
-    // var mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(mciStatus);
-    // var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(mciDispStatus);
-    var mciProviderNames = webconsolejs["common/api/services/mci_api"].getMciInfoProviderNames(mciData); //MCI에 사용 된 provider
+    // var mciDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(mciStatus);
+    // var mciStatusIcon = webconsolejs["common/api/services/infra_api"].getMciStatusIconFormatter(mciDispStatus);
+    var mciProviderNames = webconsolejs["common/api/services/infra_api"].getMciInfoProviderNames(mciData); //MCI에 사용 된 provider
     var totalvmCount = (mciData.node || []).length; //mci의 node개수
 
     var mciStatusCell = "";
@@ -584,7 +584,7 @@ export function deleteMci() {
   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"));
   mciListTable.deselectRow();
   executeTrackedRequest(
-    () => webconsolejs["common/api/services/mci_api"].mciDelete(deletingMciId, window.currentNsId),
+    () => webconsolejs["common/api/services/infra_api"].mciDelete(deletingMciId, window.currentNsId),
     "Infra deletion failed"
   ).then(() => {
     refreshMciList();
@@ -596,7 +596,7 @@ export function deleteVm() {
   const deletingVmId = currentVmId;
   resetDefaultTabSelections();
   executeTrackedRequest(
-    () => webconsolejs["common/api/services/mci_api"].vmDelete(window.currentMciId, window.currentNsId, deletingVmId),
+    () => webconsolejs["common/api/services/infra_api"].vmDelete(window.currentMciId, window.currentNsId, deletingVmId),
     "Node deletion failed"
   ).then(() => {
     refreshMciList();
@@ -647,7 +647,7 @@ export function changeMciLifeCycle(type) {
     return;
   }
   executeTrackedRequest(
-    () => webconsolejs["common/api/services/mci_api"].mciLifeCycle(type, window.currentMciId, window.currentNsId),
+    () => webconsolejs["common/api/services/infra_api"].mciLifeCycle(type, window.currentMciId, window.currentNsId),
     `Infra ${type} failed`
   ).then(() => {
     refreshMciList();
@@ -662,7 +662,7 @@ export function changeVmLifeCycle(type) {
   }
   if (selectedVmId) {
     executeTrackedRequest(
-      () => webconsolejs["common/api/services/mci_api"].vmLifeCycle(type, window.currentMciId, window.currentNsId, selectedVmId),
+      () => webconsolejs["common/api/services/infra_api"].vmLifeCycle(type, window.currentMciId, window.currentNsId, selectedVmId),
       `Node ${type} failed`
     ).then(() => {
       refreshMciList();
@@ -719,7 +719,7 @@ export function createNodeMyImage() {
   bootstrap.Modal.getInstance(document.getElementById("node-myimage-modal"))?.hide();
   // 산출물은 customImage — 노드 목록 갱신 불필요, 완료/실패는 알림센터로 통지
   executeTrackedRequest(
-    () => webconsolejs["common/api/services/mci_api"].createNodeSnapshot(
+    () => webconsolejs["common/api/services/infra_api"].createNodeSnapshot(
       window.currentNsId, window.currentMciId, selectedVmId, imageName, description),
     `Create MyImage failed`
   );
@@ -755,10 +755,10 @@ document.addEventListener('DOMContentLoaded', () => {
 //     var vmID = aVm.id;
 //     var vmName = aVm.name;
 //     var vmStatus = aVm.status;
-//     var vmDispStatus = webconsolejs["common/api/services/mci_api"].getVmStatusFormatter(vmStatus); // vmStatus set
-//     var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmStatusStyleClass(vmDispStatus) // vmStatus 별로 상태 색상 set
+//     var vmDispStatus = webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(vmStatus); // vmStatus set
+//     var vmStatusClass = webconsolejs["common/api/services/infra_api"].getVmStatusStyleClass(vmDispStatus) // vmStatus 별로 상태 색상 set
 
-//     vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/mci\'].vmDetailInfo(\'' + vmID +'\')"><span class="text-dark-fg">' + vmName + '</span></li>';
+//     vmLi += '<li id="server_status_icon_' + vmID + '" class="card ' + vmStatusClass + '" onclick="webconsolejs[\'pages/operation/manage/infraworkloads\'].vmDetailInfo(\'' + vmID +'\')"><span class="text-dark-fg">' + vmName + '</span></li>';
 
 // //     vmLi += '<div class="form-selectgroup-label d-flex align-items-center p-3">'
 // //   '<div class="me-3">'
@@ -797,20 +797,20 @@ function displayServerStatusList(mciID, vmList) {
     var vmID = aVm.id;
     var vmName = aVm.name;
     var vmStatus = aVm.status;
-    var vmDispStatus = webconsolejs["common/api/services/mci_api"].getVmStatusFormatter(vmStatus);
-    var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmStatusStyleClass(vmDispStatus);
+    var vmDispStatus = webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(vmStatus);
+    var vmStatusClass = webconsolejs["common/api/services/infra_api"].getVmStatusStyleClass(vmDispStatus);
 
     vmLi += `
       <li id="server_status_icon_${vmID}" 
           class="card ${vmStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vm', '${vmID}')">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].toggleCheck('vm', '${vmID}')">
         
         <input type="checkbox" 
                id="checkbox_vm_${vmID}" 
                class="vm-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vm', '${vmID}')" 
+               onchange="webconsolejs['pages/operation/manage/infraworkloads'].handleCheck('vm', '${vmID}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${vmName}</span>
@@ -823,7 +823,7 @@ function displayServerStatusList(mciID, vmList) {
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   if (currentVmId) {
-    webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
+    webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentVmId);
   }
 }
 
@@ -852,20 +852,20 @@ function displayServerGroupStatusList(mciID, vmList) {
     var nodeGroupId = aNodeGroup.nodeGroupId
     var vmCount = aNodeGroup.vms.length
     var vmList = aNodeGroup.vms
-    var vmGroupStatus = webconsolejs["common/api/services/mci_api"].getVmGroupStatusFormatter(vmList);
-    var vmGroupStatusClass = webconsolejs["common/api/services/mci_api"].getVmGroupStatusStyleClass(vmGroupStatus);
+    var vmGroupStatus = webconsolejs["common/api/services/infra_api"].getVmGroupStatusFormatter(vmList);
+    var vmGroupStatusClass = webconsolejs["common/api/services/infra_api"].getVmGroupStatusStyleClass(vmGroupStatus);
 
     vmGroupLi += `
       <li id="serverGroup_status_icon_${nodeGroupId}" 
           class="card ${vmGroupStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('vmGroup', '${nodeGroupId}')">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].toggleCheck('vmGroup', '${nodeGroupId}')">
         
         <input type="checkbox" 
                id="checkbox_vmGroup_${nodeGroupId}" 
                class="vmgroup-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('vmGroup', '${nodeGroupId}')" 
+               onchange="webconsolejs['pages/operation/manage/infraworkloads'].handleCheck('vmGroup', '${nodeGroupId}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${nodeGroupId}(${vmCount})</span>
@@ -878,7 +878,7 @@ function displayServerGroupStatusList(mciID, vmList) {
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   // if (currentVmGroupId) {
-  //   webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmGroupId);
+  //   webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentVmGroupId);
   // }
 }
 
@@ -905,7 +905,7 @@ export function handleCheck(type, id) {
       }
       selectedVmId = id;
       currentVmId = id;
-      webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentVmId);
+      webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentVmId);
     } else {
       selectedVmId = null;
       // 선택된 VM이 없다면 ServerInfo를 접음
@@ -981,7 +981,7 @@ export function handleCheck(type, id) {
         }
         selectedNodeGroupVmId = id;
         currentNodeGroupVmId = id;
-        webconsolejs['pages/operation/manage/mci'].nodeGroup_vmDetailInfo(currentNodeGroupVmId);
+        webconsolejs['pages/operation/manage/infraworkloads'].nodeGroup_vmDetailInfo(currentNodeGroupVmId);
         // Server Info 토글 (c 버튼 역할)
         const div = document.getElementById("nodeGroup_vm_info");
         if (div && !div.classList.contains("active")) {
@@ -1064,20 +1064,20 @@ function vmListInNodeGroup(nodeGroupId) {
     var vmID = aVm.id;
     var vmName = aVm.name;
     var vmStatus = aVm.status;
-    var vmDispStatus = webconsolejs["common/api/services/mci_api"].getVmStatusFormatter(vmStatus);
-    var vmStatusClass = webconsolejs["common/api/services/mci_api"].getVmStatusStyleClass(vmDispStatus);
+    var vmDispStatus = webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(vmStatus);
+    var vmStatusClass = webconsolejs["common/api/services/infra_api"].getVmStatusStyleClass(vmDispStatus);
 
     vmLi += `
       <li id="nodegroup_vm_status_icon_${vmID}" 
           class="card ${vmStatusClass} d-flex align-items-center" 
           style="display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 5px;" 
-          onclick="webconsolejs['pages/operation/manage/mci'].toggleCheck('nodegroup_vm', '${vmID}')">
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].toggleCheck('nodegroup_vm', '${vmID}')">
         
         <input type="checkbox" 
                id="checkbox_nodegroup_vm_${vmID}" 
                class="vm-checkbox" 
                style="width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0;" 
-               onchange="webconsolejs['pages/operation/manage/mci'].handleCheck('nodegroup_vm', '${vmID}')" 
+               onchange="webconsolejs['pages/operation/manage/infraworkloads'].handleCheck('nodegroup_vm', '${vmID}')" 
                onclick="event.stopPropagation()">
         
         <span class="h3 mb-0 me-2">${vmName}</span>
@@ -1090,7 +1090,7 @@ function vmListInNodeGroup(nodeGroupId) {
 
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   // if (currentNodeGroupVmId) {
-  //   webconsolejs['pages/operation/manage/mci'].vmDetailInfo(currentNodeGroupVmId);
+  //   webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentNodeGroupVmId);
   // }
   // displayServerStatusList(currentMciId, groupedVmList.vms);
 }
@@ -1111,7 +1111,7 @@ export async function vmDetailInfo(vmId) {
 
   // get mci vm  
   try {
-    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
+    var response = await webconsolejs["common/api/services/infra_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var nodeGroupId = aVm.nodeGroupId
     var cspVMID = aVm.uid
@@ -1193,8 +1193,8 @@ export async function vmDetailInfo(vmId) {
     providerName +
     '"/>';
 
-  var vmDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(vmStatus);
-  var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(vmDispStatus);
+  var vmDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(vmStatus);
+  var mciStatusIcon = webconsolejs["common/api/services/infra_api"].getMciStatusIconFormatter(vmDispStatus);
 
   //vm info
   $("#mci_server_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
@@ -1340,7 +1340,7 @@ export async function nodeGroup_vmDetailInfo(vmId) {
 
   // get mci vm  
   try {
-    var response = await webconsolejs["common/api/services/mci_api"].getMciVm(window.currentNsId, currentMciId, vmId);
+    var response = await webconsolejs["common/api/services/infra_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var responseVmId = response.id;
     // 전체를 관리하는 obj 갱신
@@ -1420,8 +1420,8 @@ export async function nodeGroup_vmDetailInfo(vmId) {
     '.png" alt="' +
     providerName +
     '"/>';
-  var vmDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(vmStatus);
-  var mciStatusIcon = webconsolejs["common/api/services/mci_api"].getMciStatusIconFormatter(vmDispStatus);
+  var vmDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(vmStatus);
+  var mciStatusIcon = webconsolejs["common/api/services/infra_api"].getMciStatusIconFormatter(vmDispStatus);
 
   //vm info
   $("#nodegroup_mci_server_info_status_img").attr("src", "/assets/images/common/" + mciStatusIcon)
@@ -1570,10 +1570,10 @@ async function renderBlockDeviceSection(context) {
       ? '<span class="text-muted">No attached disks</span>'
       : disks.map((d) => `<div class="mb-1">${d.name || d.id}
           <a class="btn btn-sm btn-outline-warning ms-1"
-             onclick="webconsolejs['pages/operation/manage/mci'].confirmDetachDisk('${context}','${d.id || d.name}')">Detach</a>
+             onclick="webconsolejs['pages/operation/manage/infraworkloads'].confirmDetachDisk('${context}','${d.id || d.name}')">Detach</a>
         </div>`).join('')
     el.innerHTML += `<a class="btn btn-sm btn-outline-primary mt-1"
-        onclick="webconsolejs['pages/operation/manage/mci'].openAttachDiskModal('${context}')">+ Attach Disk</a>`
+        onclick="webconsolejs['pages/operation/manage/infraworkloads'].openAttachDiskModal('${context}')">+ Attach Disk</a>`
   } catch (err) {
     console.error('Block device 조회 실패:', err)
     el.innerHTML = '<span class="text-danger">Failed to load disks</span>'
@@ -1606,7 +1606,7 @@ export async function openAttachDiskModal(context) {
   select.innerHTML = '<option value="">Select</option>'
   try {
     const diskApi = webconsolejs['common/api/services/disk_api']
-    const mciApi = webconsolejs['common/api/services/mci_api']
+    const mciApi = webconsolejs['common/api/services/infra_api']
     const [allDisks, mciResp] = await Promise.all([
       diskApi.getAllDataDisk(window.currentNsId),
       mciApi.getMci(window.currentNsId, infraId),
@@ -1683,7 +1683,7 @@ export async function executeAttachDiskToNode() {
 export function confirmDetachDisk(context, dataDiskId) {
   webconsolejs['partials/layout/modal'].commonConfirmModal(
     'commonDefaultModal', 'Detach Disk', `Detach disk "${dataDiskId}"?`,
-    'pages/operation/manage/mci.executeDetachDiskFromNode', `${context}|${dataDiskId}`
+    'pages/operation/manage/infraworkloads.executeDetachDiskFromNode', `${context}|${dataDiskId}`
   )
 }
 
@@ -1818,7 +1818,7 @@ function setToTalMciStatus() {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
 
-      var aMciStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateMciStatusCount(aMci);
+      var aMciStatusCountMap = webconsolejs["common/api/services/infra_api"].calculateMciStatusCount(aMci);
       totalMciStatusMap.set(aMci.id, aMciStatusCountMap);
     }
   } catch (e) {
@@ -1838,7 +1838,7 @@ function setTotalVmStatus() {
     for (var mciIndex in totalMciListObj) {
       var aMci = totalMciListObj[mciIndex];
       //console.log("aMci : ", aMci);
-      var vmStatusCountMap = webconsolejs["common/api/services/mci_api"].calculateVmStatusCount(aMci);
+      var vmStatusCountMap = webconsolejs["common/api/services/infra_api"].calculateVmStatusCount(aMci);
       totalVmStatusMap.set(aMci.id, vmStatusCountMap);
     }
   } catch (e) {
@@ -2166,7 +2166,7 @@ function initMciTable() {
       this.selectRow(tempcurmciID);
       
       window.currentMciId = tempcurmciID;
-      webconsolejs['partials/operation/manage/mcinlb']?.resetForMciSwitch();
+      webconsolejs['partials/operation/manage/infranlb']?.resetForMciSwitch();
       // MCI 변경 시 이전 VM 선택 상태 초기화
       currentVmId = "";
       selectedVmId = null;
@@ -2223,7 +2223,7 @@ function toggleRowSelection(id) {
 
 // 상태값을 table에서 표시하기 위해 감싸기
 function statusFormatter(cell) {
-  const mciDispStatus = webconsolejs["common/api/services/mci_api"].getMciStatusFormatter(
+  const mciDispStatus = webconsolejs["common/api/services/infra_api"].getMciStatusFormatter(
     cell.getData().status
   ); // 화면 표시용 status
 
@@ -2281,7 +2281,7 @@ function statusFormatter(cell) {
 
 // provider를 table에서 표시하기 위해 감싸기
 function providerFormatter(data) {
-  var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
+  var vmCloudConnectionMap = webconsolejs["common/api/services/infra_api"].calculateConnectionCount(
     data.getData().node
   );
   var mciProviderCell = "";
@@ -2301,7 +2301,7 @@ function providerFormatter(data) {
 // table에서 provider 이름으로 필터링 하기 위해
 function providerFormatterString(data) {
 
-  var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
+  var vmCloudConnectionMap = webconsolejs["common/api/services/infra_api"].calculateConnectionCount(
     data.getData().node
   );
 
@@ -2401,7 +2401,7 @@ function providerFormatterString(data) {
       var numVMsToAdd = parseInt(inputBox.value, 10)
       
       // fire-and-forget: requestId tracker가 ScaleOut progress/결과 toast 표시
-      webconsolejs["common/api/services/mci_api"].postScaleOutNodeGroup(window.currentNsId, currentMciId, currentNodeGroupId, numVMsToAdd);
+      webconsolejs["common/api/services/infra_api"].postScaleOutNodeGroup(window.currentNsId, currentMciId, currentNodeGroupId, numVMsToAdd);
     });
     li.appendChild(btnOk);
     
@@ -2553,7 +2553,7 @@ function providerFilter(data) {
   // case type like, equal, not eual
   // equal only
   if (typeEl.value == "=") {
-    var vmCloudConnectionMap = webconsolejs["common/api/services/mci_api"].calculateConnectionCount(
+    var vmCloudConnectionMap = webconsolejs["common/api/services/infra_api"].calculateConnectionCount(
       data.node
     );
     var valueElValue = valueEl.value;
@@ -2812,7 +2812,7 @@ function setPolicyInfoData(selectedPolicyData) {
 // 정책 데이터 조회
 async function loadPolicyData() {
   try {
-    var responseData = await webconsolejs['common/api/services/mci_api'].getPolicyList(window.currentNsId);
+    var responseData = await webconsolejs['common/api/services/infra_api'].getPolicyList(window.currentNsId);
     var transformedData = transformPolicyResponse(responseData);
     setPolicyTableData(transformedData);
   } catch (err) {
@@ -2944,7 +2944,7 @@ export async function deletePolicy() {
   }
 
   try {
-    await webconsolejs['common/api/services/mci_api'].deletePolicy(window.currentNsId, currentMciId);
+    await webconsolejs['common/api/services/infra_api'].deletePolicy(window.currentNsId, currentMciId);
     
     alert("Policy deletion completed.");
 
@@ -3071,7 +3071,7 @@ export async function initMciRemoteCmdModal() {
 export async function getKeypair(el) {
   const sshkeyId = el.innerText
   $("#keypairModal-bodytitle").text(sshkeyId);
-  var respSSHkey = await webconsolejs["common/api/services/mci_api"].getsshkey(window.currentNsId, sshkeyId);
+  var respSSHkey = await webconsolejs["common/api/services/infra_api"].getsshkey(window.currentNsId, sshkeyId);
   $("#keypairModal-textarea").val(respSSHkey.privateKey);
 }
 
@@ -3091,7 +3091,7 @@ export async function deployPolicy() {
     const requestData = buildPolicyRequestData(policyData);
 
     // API 호출
-    const response = await webconsolejs["common/api/services/mci_api"].createPolicy(
+    const response = await webconsolejs["common/api/services/infra_api"].createPolicy(
       window.currentNsId,
       window.currentMciId,
       requestData.policy
@@ -3334,7 +3334,7 @@ export function openLabelEditorModal(resourceType, resourceId, resourceName) {
 // Label Editor에서 Label 조회
 async function loadLabelsForEditor(labelType, uid) {
   try {
-    const response = await webconsolejs["common/api/services/mci_api"].getLabels(labelType, uid);
+    const response = await webconsolejs["common/api/services/infra_api"].getLabels(labelType, uid);
     
     if (response && response.data && response.data.responseData) {
       const labels = response.data.responseData.labels || {};
@@ -3516,7 +3516,7 @@ export async function saveLabels() {
     // 삭제된 Label들을 먼저 삭제
     for (const key of deletedLabels) {
       try {
-        const deleteResponse = await webconsolejs["common/api/services/mci_api"].removeLabel(labelType, uid, key);
+        const deleteResponse = await webconsolejs["common/api/services/infra_api"].removeLabel(labelType, uid, key);
         
         if (deleteResponse && deleteResponse.data && deleteResponse.data.status && deleteResponse.data.status.code === 200) {
         } else {
@@ -3539,7 +3539,7 @@ export async function saveLabels() {
     
     // 현재 Label들 저장 (추가/수정)
     if (hasValidLabels || Object.keys(finalLabels).length > 0) {
-      const response = await webconsolejs["common/api/services/mci_api"].createOrUpdateLabel(labelType, uid, finalLabels);
+      const response = await webconsolejs["common/api/services/infra_api"].createOrUpdateLabel(labelType, uid, finalLabels);
       
       if (response && response.data && response.data.status && response.data.status.code === 200) {
       } else {
@@ -3777,7 +3777,7 @@ async function applyLabelFilter() {
     }
         
     // 1. API 호출로 필터링된 MCI 목록 받기
-    const response = await webconsolejs["common/api/services/mci_api"].getResourcesByLabelSelector(labelSelector);
+    const response = await webconsolejs["common/api/services/infra_api"].getResourcesByLabelSelector(labelSelector);
     
     if (response && response.data && response.data.responseData) {
       let filteredMciResults = response.data.responseData;

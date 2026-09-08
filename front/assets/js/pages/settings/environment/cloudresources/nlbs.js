@@ -6,7 +6,7 @@ import { showToast, TOAST_TYPES } from '../../../../common/utils/toast.js';
 import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from '../../../../common/utils/cspResource.js';
 
 const nlbApi = () => webconsolejs['common/api/services/nlb_api'];
-const mciApi = () => webconsolejs['common/api/services/mci_api'];
+const mciApi = () => webconsolejs['common/api/services/infra_api'];
 
 const AppState = {
   ns: '',
@@ -453,7 +453,7 @@ export async function executeBulkDelete() {
 // ─── Edit (노드 Assign/UnAssign) ─────────────────────────────────────────
 // tumblebug에 NLB update API가 없어(RestPutNLB 미구현) Listener/HealthChecker는 생성 후 변경 불가.
 // 콘솔의 "Edit"는 타겟 노드 추가(AddNLBNodes)/해제(RemoveNLBNodes)만을 의미한다.
-// Infra Info NLB 탭(partials/operation/manage/mcinlb.js)의 Assign/UnAssign 로직을 이 화면 컨텍스트
+// Infra Info NLB 탭(partials/operation/manage/infranlb.js)의 Assign/UnAssign 로직을 이 화면 컨텍스트
 // (AppState.ns + 선택 행의 _infraId)에 맞춰 단일 Edit 모달로 구성.
 
 // 편집 대상 스냅샷 { id, infraId, assigned:[nodeId] } — 모달 오픈~저장 사이에만 유효

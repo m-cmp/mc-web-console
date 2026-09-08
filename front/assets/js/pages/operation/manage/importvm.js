@@ -288,7 +288,7 @@ export async function executeImportVMs() {
 
         // MCI 목록 새로고침
         if (window.currentNsId && typeof window.getMciListCallbackSuccess === 'function') {
-            const mciList = await webconsolejs["common/api/services/mci_api"].getMciList(window.currentNsId);
+            const mciList = await webconsolejs["common/api/services/infra_api"].getMciList(window.currentNsId);
             getMciListCallbackSuccess(window.currentNsId, mciList);
         }
 

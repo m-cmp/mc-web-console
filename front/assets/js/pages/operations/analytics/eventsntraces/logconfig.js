@@ -74,7 +74,7 @@ const LogConfigManager = {
                 ? webconsolejs["partials/layout/navbar"].workspaceProjectInit()
                 : { nsId: 'system' };
             const nsId = (workspace && workspace.nsId) ? workspace.nsId : 'system';
-            const respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
+            const respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(nsId);
             const mciList = (respMciList && respMciList.infra) ? respMciList.infra : [];
 
             if (DOM.mciSelect) {
@@ -98,7 +98,7 @@ const LogConfigManager = {
         }
         try {
             const workspace = { nsId: 'system' };
-            const respMci = await webconsolejs["common/api/services/mci_api"].getMci(workspace.nsId, mciId);
+            const respMci = await webconsolejs["common/api/services/infra_api"].getMci(workspace.nsId, mciId);
             const vms = (respMci && respMci.vm) ? respMci.vm : [];
 
             if (DOM.targetSelect) {

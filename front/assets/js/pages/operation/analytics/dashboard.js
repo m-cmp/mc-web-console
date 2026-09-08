@@ -117,7 +117,7 @@ async function loadMciList(nsId) {
   $('#resource-vm-select').empty().append('<option value="">Select</option>');
   if (!nsId) return;
   try {
-    var result = await webconsolejs['common/api/services/mci_api'].getMciList(nsId);
+    var result = await webconsolejs['common/api/services/infra_api'].getMciList(nsId);
     // getMciList returns responseData which is { infra: [...] } or array
     var mciList = Array.isArray(result) ? result : (result && result.infra ? result.infra : []);
     mciList.forEach(function (mci) {
@@ -136,7 +136,7 @@ $(document).on('change', '#resource-mci-select', async function () {
   var $vmSel = $('#resource-vm-select').empty().append('<option value="">Select</option>');
   if (!nsId || !mciId) return;
   try {
-    var mciData = await webconsolejs['common/api/services/mci_api'].getMci(nsId, mciId);
+    var mciData = await webconsolejs['common/api/services/infra_api'].getMci(nsId, mciId);
     if (mciData && mciData.responseData && mciData.responseData.vm) {
       mciData.responseData.vm.forEach(function (vm) {
         var id = vm.id || vm.vmId;

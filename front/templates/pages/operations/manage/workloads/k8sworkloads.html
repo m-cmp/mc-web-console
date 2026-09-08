@@ -90,7 +90,7 @@
                       class="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#commonDefaultModal"
-                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'PmkDelete', 'Would you like to delete K8s ?', 'pages/operation/manage/pmk.deletePmk')"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'PmkDelete', 'Would you like to delete K8s ?', 'pages/operation/manage/k8sworkloads.deletePmk')"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +122,7 @@
                 <!-- refresh -->
                 <a
                   class="btn-action"
-                  onclick="webconsolejs['pages/operation/manage/pmk'].refreshPmkList()"
+                  onclick="webconsolejs['pages/operation/manage/k8sworkloads'].refreshPmkList()"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -245,7 +245,7 @@
                 <button
                   type="button"
                   class="btn btn-outline-primary"
-                  onclick="webconsolejs['pages/operation/manage/pmk'].toggleExpertCreation()"
+                  onclick="webconsolejs['pages/operation/manage/k8sworkloads'].toggleExpertCreation()"
                 >
                   Expert Creation
                 </button>
@@ -310,7 +310,7 @@
                         <select
                           class="form-select"
                           name="cluster-connection-dynamic"
-                          onchange="webconsolejs['pages/operation/manage/pmk'].changeCloudConnectionDynamic(this.value)"
+                          onchange="webconsolejs['pages/operation/manage/k8sworkloads'].changeCloudConnectionDynamic(this.value)"
                           id="cluster_cloudconnection_dynamic"
                           required
                         >
@@ -327,7 +327,7 @@
                 <button
                   type="button"
                   class="btn btn-primary"
-                  onclick="webconsolejs['pages/operation/manage/pmk'].deployPmkDynamic()"
+                  onclick="webconsolejs['pages/operation/manage/k8sworkloads'].deployPmkDynamic()"
                 >
                   Deploy
                 </button>
@@ -438,7 +438,7 @@
                       <a
                         href="#"
                         class="btn"
-                        onclick="webconsolejs['pages/operation/manage/pmk'].validateAndOpenImageModalPmk(event)"
+                        onclick="webconsolejs['pages/operation/manage/k8sworkloads'].validateAndOpenImageModalPmk(event)"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -572,7 +572,7 @@
             <button
               type="button"
               class="btn btn-primary"
-              onclick="webconsolejs['pages/operation/manage/pmk'].deployPmkDynamic()"
+              onclick="webconsolejs['pages/operation/manage/k8sworkloads'].deployPmkDynamic()"
             >
               Deploy
             </button>
@@ -989,8 +989,8 @@
 {{ partial("partials/operation/manage/cspspeclist.html") | raw }}
 
 <!-- PMK용 모달 포함 -->
-{{ partial("partials/operation/manage/pmk_serverrecommendation.html") | raw }}
-{{ partial("partials/operation/manage/pmk_imagerecommendation.html") | raw }}
+{{ partial("partials/operation/manage/k8s_serverrecommendation.html") | raw }}
+{{ partial("partials/operation/manage/k8s_imagerecommendation.html") | raw }}
 
 <!-- Import from JSON: name collision → rename modal.
      #index(.section) 안이 아니라 여기(섹션 바깥)에 둔다 — Import는 addNewNodeGroup()이 #addnode로
@@ -1043,5 +1043,5 @@
 </div>
 
 {{ javascriptTag("common/utils/listRefreshPattern.js") | raw }}
-{{ javascriptTag("pages/operation/manage/pmk.js") | raw }}
-{{ javascriptTag("common/api/services/pmk_api.js") | raw }} {{ javascriptTag("common/api/services/mci_api.js") | raw }} {{ javascriptTag("common/api/services/vmimage_api.js") | raw }} {{ javascriptTag("partials/operation/manage/serverrecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/pmk_serverrecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/pmk_imagerecommendation.js") | raw }}
+{{ javascriptTag("pages/operation/manage/k8sworkloads.js") | raw }}
+{{ javascriptTag("common/api/services/k8s_api.js") | raw }} {{ javascriptTag("common/api/services/infra_api.js") | raw }} {{ javascriptTag("common/api/services/vmimage_api.js") | raw }} {{ javascriptTag("partials/operation/manage/serverrecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/k8s_serverrecommendation.js") | raw }} {{ javascriptTag("partials/operation/manage/k8s_imagerecommendation.js") | raw }}

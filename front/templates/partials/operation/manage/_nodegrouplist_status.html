@@ -54,7 +54,7 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/pmk.deleteNodeGroup')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/k8sworkloads.deleteNodeGroup')"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -82,7 +82,7 @@
 
           <a
             class="dropdown-item"
-            onclick="webconsolejs['pages/operation/manage/pmk'].openAutoscalingModal()"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscalingModal()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -105,7 +105,7 @@
           </a>
           <a
             class="dropdown-item"
-            onclick="webconsolejs['pages/operation/manage/pmk'].openAutoscaleSizeModal()"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscaleSizeModal()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +130,7 @@
 
           <a
             class="dropdown-item"
-            onclick="webconsolejs['pages/operation/manage/pmk'].exportNodeGroups()"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].exportNodeGroups()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -183,7 +183,7 @@
 
       <!-- refresh -->
       <a class="btn-action"
-        onclick="webconsolejs['pages/operation/manage/pmk'].getSelectedPmkData()"
+        onclick="webconsolejs['pages/operation/manage/k8sworkloads'].getSelectedPmkData()"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -242,7 +242,7 @@
     id="import-nodegroups-file"
     accept=".json"
     style="display: none"
-    onchange="webconsolejs['pages/operation/manage/pmk'].importNodeGroups(this)"
+    onchange="webconsolejs['pages/operation/manage/k8sworkloads'].importNodeGroups(this)"
   />
 </div>
 
@@ -294,7 +294,7 @@
           type="button"
           id="nodegroup-autoscaling-submit-btn"
           class="btn btn-primary"
-          onclick="webconsolejs['pages/operation/manage/pmk'].applyAutoscaling()"
+          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaling()"
         >
           Apply
         </button>
@@ -371,7 +371,7 @@
           type="button"
           id="nodegroup-autoscalesize-submit-btn"
           class="btn btn-primary"
-          onclick="webconsolejs['pages/operation/manage/pmk'].applyAutoscaleSize()"
+          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaleSize()"
         >
           Apply
         </button>

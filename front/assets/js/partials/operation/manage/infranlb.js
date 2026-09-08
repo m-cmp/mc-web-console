@@ -39,8 +39,8 @@ export async function loadMciNlbList(force) {
     }));
     AppState.resources.all = items;
     AppState.loadedForMciId = infraId;
-    populateProviderFilterOptions(items, 'mcinlb-filter-provider');
-    populateRegionFilterOptions(items, 'mcinlb-filter-provider', 'mcinlb-filter-region');
+    populateProviderFilterOptions(items, 'infranlb-filter-provider');
+    populateRegionFilterOptions(items, 'infranlb-filter-provider', 'infranlb-filter-region');
     if (AppState.tables.nlbTable) {
       AppState.tables.nlbTable.replaceData(items);
     } else {
@@ -62,7 +62,7 @@ export function resetForMciSwitch() {
 // ─── Tabulator 테이블 ─────────────────────────────────────────────────────
 
 function initTable(items) {
-  AppState.tables.nlbTable = new Tabulator('#mcinlb-list-table', {
+  AppState.tables.nlbTable = new Tabulator('#infranlb-list-table', {
     data: items,
     layout: 'fitColumns',
     placeholder: 'No NLBs. Create one in Cloud Resources > NLBs.',
@@ -140,23 +140,23 @@ function renderDetail(data) {
   const listener = data.listener || {};
   const target = data.targetGroup || {};
   const hc = data.healthChecker || {};
-  document.getElementById('mcinlb-detail-name').textContent = nlbId(data) || '-';
-  document.getElementById('mcinlb-detail-nlb-id').textContent = nlbId(data) || '-';
-  document.getElementById('mcinlb-detail-nlb-provider').textContent = getProvider(data);
-  document.getElementById('mcinlb-detail-nlb-region').textContent = getRegion(data);
-  document.getElementById('mcinlb-detail-nlb-type').textContent = data.type ?? data.Type ?? '-';
-  document.getElementById('mcinlb-detail-nlb-scope').textContent = data.scope ?? data.Scope ?? '-';
-  document.getElementById('mcinlb-detail-nlb-listener').textContent =
+  document.getElementById('infranlb-detail-name').textContent = nlbId(data) || '-';
+  document.getElementById('infranlb-detail-nlb-id').textContent = nlbId(data) || '-';
+  document.getElementById('infranlb-detail-nlb-provider').textContent = getProvider(data);
+  document.getElementById('infranlb-detail-nlb-region').textContent = getRegion(data);
+  document.getElementById('infranlb-detail-nlb-type').textContent = data.type ?? data.Type ?? '-';
+  document.getElementById('infranlb-detail-nlb-scope').textContent = data.scope ?? data.Scope ?? '-';
+  document.getElementById('infranlb-detail-nlb-listener').textContent =
     listener.protocol || listener.port ? `${listener.protocol || ''}:${listener.port || ''}` : '-';
-  renderTruncatableCopyable('mcinlb-detail-nlb-endpoint', listener.dnsName || listener.ip || '-');
-  document.getElementById('mcinlb-detail-nlb-nodegroup').textContent = target.nodeGroupId || target.subGroupId || '-';
-  document.getElementById('mcinlb-detail-nlb-nodes').textContent = _assignedNodes(data).join(', ') || '-';
-  document.getElementById('mcinlb-detail-nlb-target-port').textContent = target.port || '-';
-  document.getElementById('mcinlb-detail-nlb-healthchecker').textContent =
+  renderTruncatableCopyable('infranlb-detail-nlb-endpoint', listener.dnsName || listener.ip || '-');
+  document.getElementById('infranlb-detail-nlb-nodegroup').textContent = target.nodeGroupId || target.subGroupId || '-';
+  document.getElementById('infranlb-detail-nlb-nodes').textContent = _assignedNodes(data).join(', ') || '-';
+  document.getElementById('infranlb-detail-nlb-target-port').textContent = target.port || '-';
+  document.getElementById('infranlb-detail-nlb-healthchecker').textContent =
     hc.protocol || hc.port ? `${hc.protocol || ''}:${hc.port || ''} (interval ${hc.interval || '-'}, threshold ${hc.threshold || '-'})` : '-';
-  renderTruncatableCopyable('mcinlb-detail-nlb-csp-id', data.cspResourceId || '-');
-  document.getElementById('mcinlb-detail-nlb-description').textContent = data.description || '-';
-  document.getElementById('mcinlb-detail-nlb-health').textContent = '-';
+  renderTruncatableCopyable('infranlb-detail-nlb-csp-id', data.cspResourceId || '-');
+  document.getElementById('infranlb-detail-nlb-description').textContent = data.description || '-';
+  document.getElementById('infranlb-detail-nlb-health').textContent = '-';
 }
 
 // 길어서 "..."으로 잘리는 값(Listener IP/DNS, CSP Resource ID)을 hover 툴팁(전체 텍스트) +
@@ -220,11 +220,11 @@ function renderTruncatableCopyable(targetId, fullText) {
 }
 
 function showDetail() {
-  document.getElementById('mcinlb-detail-cards')?.classList.add('show');
+  document.getElementById('infranlb-detail-cards')?.classList.add('show');
 }
 
 export function hideDetail() {
-  document.getElementById('mcinlb-detail-cards')?.classList.remove('show');
+  document.getElementById('infranlb-detail-cards')?.classList.remove('show');
   AppState.resources.selected = null;
 }
 
@@ -275,7 +275,7 @@ function formatHealthSummary(hz) {
 function _applyHealthToDetailIfShown(item, text) {
   const shown = AppState.resources.selected;
   if (shown && nlbId(shown) === nlbId(item)) {
-    document.getElementById('mcinlb-detail-nlb-health').textContent = text;
+    document.getElementById('infranlb-detail-nlb-health').textContent = text;
   }
 }
 
@@ -296,7 +296,7 @@ export function confirmMciNlbBulkDelete() {
     'commonDefaultModal',
     'Delete Selected',
     `Delete ${selected.length} selected NLB(s)?`,
-    'partials/operation/manage/mcinlb.executeMciNlbBulkDelete'
+    'partials/operation/manage/infranlb.executeMciNlbBulkDelete'
   );
 }
 
@@ -320,22 +320,22 @@ export async function executeMciNlbBulkDelete() {
 
 // ─── Filter ───────────────────────────────────────────────────────────────
 
-document.getElementById('mcinlb-filter-provider')?.addEventListener('change', function () {
-  populateRegionFilterOptions(AppState.resources.all, 'mcinlb-filter-provider', 'mcinlb-filter-region');
+document.getElementById('infranlb-filter-provider')?.addEventListener('change', function () {
+  populateRegionFilterOptions(AppState.resources.all, 'infranlb-filter-provider', 'infranlb-filter-region');
   _updateFilter();
 });
-document.getElementById('mcinlb-filter-region')?.addEventListener('change', _updateFilter);
-document.getElementById('mcinlb-filter-field')?.addEventListener('change', _updateFilter);
-document.getElementById('mcinlb-filter-type')?.addEventListener('change', _updateFilter);
-document.getElementById('mcinlb-filter-value')?.addEventListener('keyup', _updateFilter);
+document.getElementById('infranlb-filter-region')?.addEventListener('change', _updateFilter);
+document.getElementById('infranlb-filter-field')?.addEventListener('change', _updateFilter);
+document.getElementById('infranlb-filter-type')?.addEventListener('change', _updateFilter);
+document.getElementById('infranlb-filter-value')?.addEventListener('keyup', _updateFilter);
 
 function _updateFilter() {
   if (!AppState.tables.nlbTable) return;
-  const providerEl = document.getElementById('mcinlb-filter-provider');
-  const regionEl = document.getElementById('mcinlb-filter-region');
-  const fieldEl = document.getElementById('mcinlb-filter-field');
-  const typeEl = document.getElementById('mcinlb-filter-type');
-  const valueEl = document.getElementById('mcinlb-filter-value');
+  const providerEl = document.getElementById('infranlb-filter-provider');
+  const regionEl = document.getElementById('infranlb-filter-region');
+  const fieldEl = document.getElementById('infranlb-filter-field');
+  const typeEl = document.getElementById('infranlb-filter-type');
+  const valueEl = document.getElementById('infranlb-filter-value');
   const filters = [];
   if (providerEl?.value) filters.push({ field: '_provider', type: '=', value: providerEl.value });
   if (regionEl?.value) filters.push({ field: '_region', type: '=', value: regionEl.value });
@@ -347,12 +347,12 @@ function _updateFilter() {
   }
 }
 
-document.getElementById('mcinlb-filter-clear')?.addEventListener('click', function () {
-  const providerEl = document.getElementById('mcinlb-filter-provider');
-  const regionEl = document.getElementById('mcinlb-filter-region');
-  const fieldEl = document.getElementById('mcinlb-filter-field');
-  const typeEl = document.getElementById('mcinlb-filter-type');
-  const valueEl = document.getElementById('mcinlb-filter-value');
+document.getElementById('infranlb-filter-clear')?.addEventListener('click', function () {
+  const providerEl = document.getElementById('infranlb-filter-provider');
+  const regionEl = document.getElementById('infranlb-filter-region');
+  const fieldEl = document.getElementById('infranlb-filter-field');
+  const typeEl = document.getElementById('infranlb-filter-type');
+  const valueEl = document.getElementById('infranlb-filter-value');
   if (providerEl) providerEl.value = '';
   if (regionEl) regionEl.value = '';
   if (fieldEl) fieldEl.value = '';
@@ -412,7 +412,7 @@ export async function openAssignNlbModal() {
     return;
   }
 
-  const select = document.getElementById('mcinlb-assign-nlb-select');
+  const select = document.getElementById('infranlb-assign-nlb-select');
   select.innerHTML = '';
   for (const item of AppState.resources.all) {
     const opt = document.createElement('option');
@@ -423,23 +423,23 @@ export async function openAssignNlbModal() {
   const selected = AppState.tables.nlbTable ? AppState.tables.nlbTable.getSelectedData() : [];
   if (selected.length === 1) select.value = nlbId(selected[0]);
 
-  const listEl = document.getElementById('mcinlb-assign-node-list');
+  const listEl = document.getElementById('infranlb-assign-node-list');
   listEl.innerHTML = '<div class="text-secondary">Loading nodes...</div>';
-  new bootstrap.Modal(document.getElementById('mcinlb-assign-modal')).show();
+  new bootstrap.Modal(document.getElementById('infranlb-assign-modal')).show();
 
   _nodeStatusByGroup = await getNodeStatusesByGroup(ns, infraId);
   _renderAssignNodeCandidates();
 }
 
-document.getElementById('mcinlb-assign-nlb-select')?.addEventListener('change', _renderAssignNodeCandidates);
+document.getElementById('infranlb-assign-nlb-select')?.addEventListener('change', _renderAssignNodeCandidates);
 
 // Infra 전체 노드 중 선택된 NLB에 아직 할당되지 않은 노드만 후보로 렌더링.
 // 백엔드 Add는 중복 검증 없이 append하므로 기할당 노드 제외는 프론트가 책임진다.
 function _renderAssignNodeCandidates() {
-  const listEl = document.getElementById('mcinlb-assign-node-list');
-  const statusEl = document.getElementById('mcinlb-assign-node-status');
+  const listEl = document.getElementById('infranlb-assign-node-list');
+  const statusEl = document.getElementById('infranlb-assign-node-status');
   if (!listEl) return;
-  const selectedNlb = _findNlbById(document.getElementById('mcinlb-assign-nlb-select').value);
+  const selectedNlb = _findNlbById(document.getElementById('infranlb-assign-nlb-select').value);
   const assigned = new Set(_assignedNodes(selectedNlb));
 
   const rows = [];
@@ -462,7 +462,7 @@ function _renderAssignNodeCandidates() {
       const badge = running ? 'bg-success' : 'bg-warning';
       return `
         <label class="form-check mb-1">
-          <input class="form-check-input mcinlb-assign-node-check" type="checkbox" value="${n.id}" ${running ? '' : 'disabled'}>
+          <input class="form-check-input infranlb-assign-node-check" type="checkbox" value="${n.id}" ${running ? '' : 'disabled'}>
           <span class="form-check-label">${n.id} <span class="text-secondary">(${n.groupId})</span>
             <span class="badge ${badge} ms-1">${n.status || 'Unknown'}</span></span>
         </label>`;
@@ -477,21 +477,21 @@ function _renderAssignNodeCandidates() {
 export async function executeAssignNlbNodes() {
   const ns = window.currentNsId;
   const infraId = window.currentMciId;
-  const targetNlbId = document.getElementById('mcinlb-assign-nlb-select').value;
-  const nodes = Array.from(document.querySelectorAll('.mcinlb-assign-node-check:checked')).map((el) => el.value);
+  const targetNlbId = document.getElementById('infranlb-assign-nlb-select').value;
+  const nodes = Array.from(document.querySelectorAll('.infranlb-assign-node-check:checked')).map((el) => el.value);
   if (!targetNlbId || nodes.length === 0) {
     showToast(TOAST_TYPES.WARNING, 'Select an NLB and at least one node to assign.');
     return;
   }
 
-  const spinner = document.getElementById('mcinlb-assign-spinner');
-  const btn = document.getElementById('mcinlb-assign-execute-btn');
+  const spinner = document.getElementById('infranlb-assign-spinner');
+  const btn = document.getElementById('infranlb-assign-execute-btn');
   spinner.classList.remove('d-none');
   btn.disabled = true;
   try {
     await nlbApi().addNLBNodes(ns, infraId, targetNlbId, nodes);
     showToast(TOAST_TYPES.SUCCESS, `${nodes.length} node(s) assigned to "${targetNlbId}"`);
-    bootstrap.Modal.getInstance(document.getElementById('mcinlb-assign-modal'))?.hide();
+    bootstrap.Modal.getInstance(document.getElementById('infranlb-assign-modal'))?.hide();
     await _reloadAndRefreshDetail(targetNlbId);
   } catch (err) {
     console.error('NLB 노드 Assign 실패:', err);
@@ -517,11 +517,11 @@ export async function openUnassignNlbModal() {
   }
   const item = selected[0];
   const id = nlbId(item);
-  document.getElementById('mcinlb-unassign-nlb-name').textContent = id;
+  document.getElementById('infranlb-unassign-nlb-name').textContent = id;
 
-  const listEl = document.getElementById('mcinlb-unassign-node-list');
+  const listEl = document.getElementById('infranlb-unassign-node-list');
   listEl.innerHTML = '<div class="text-secondary">Loading assigned nodes...</div>';
-  new bootstrap.Modal(document.getElementById('mcinlb-unassign-modal')).show();
+  new bootstrap.Modal(document.getElementById('infranlb-unassign-modal')).show();
 
   // 목록 캐시가 오래됐을 수 있어 상세를 새로 조회해 할당 노드를 확정한다.
   let nodes = _assignedNodes(item);
@@ -540,7 +540,7 @@ export async function openUnassignNlbModal() {
     .map(
       (n) => `
         <label class="form-check mb-1">
-          <input class="form-check-input mcinlb-unassign-node-check" type="checkbox" value="${n}">
+          <input class="form-check-input infranlb-unassign-node-check" type="checkbox" value="${n}">
           <span class="form-check-label">${n}</span>
         </label>`
     )
@@ -550,21 +550,21 @@ export async function openUnassignNlbModal() {
 export async function executeUnassignNlbNodes() {
   const ns = window.currentNsId;
   const infraId = window.currentMciId;
-  const targetNlbId = document.getElementById('mcinlb-unassign-nlb-name').textContent;
-  const nodes = Array.from(document.querySelectorAll('.mcinlb-unassign-node-check:checked')).map((el) => el.value);
+  const targetNlbId = document.getElementById('infranlb-unassign-nlb-name').textContent;
+  const nodes = Array.from(document.querySelectorAll('.infranlb-unassign-node-check:checked')).map((el) => el.value);
   if (!targetNlbId || nodes.length === 0) {
     showToast(TOAST_TYPES.WARNING, 'Select at least one node to unassign.');
     return;
   }
 
-  const spinner = document.getElementById('mcinlb-unassign-spinner');
-  const btn = document.getElementById('mcinlb-unassign-execute-btn');
+  const spinner = document.getElementById('infranlb-unassign-spinner');
+  const btn = document.getElementById('infranlb-unassign-execute-btn');
   spinner.classList.remove('d-none');
   btn.disabled = true;
   try {
     await nlbApi().removeNLBNodes(ns, infraId, targetNlbId, nodes);
     showToast(TOAST_TYPES.SUCCESS, `${nodes.length} node(s) unassigned from "${targetNlbId}"`);
-    bootstrap.Modal.getInstance(document.getElementById('mcinlb-unassign-modal'))?.hide();
+    bootstrap.Modal.getInstance(document.getElementById('infranlb-unassign-modal'))?.hide();
     await _reloadAndRefreshDetail(targetNlbId);
   } catch (err) {
     console.error('NLB 노드 UnAssign 실패:', err);
@@ -591,7 +591,7 @@ async function _reloadAndRefreshDetail(targetNlbId) {
 
 // ─── webconsolejs 등록 ────────────────────────────────────────────────────
 if (typeof webconsolejs === 'undefined') { window.webconsolejs = {}; }
-webconsolejs['partials/operation/manage/mcinlb'] = {
+webconsolejs['partials/operation/manage/infranlb'] = {
   loadMciNlbList,
   resetForMciSwitch,
   hideDetail,

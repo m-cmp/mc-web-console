@@ -147,7 +147,7 @@
                     <select
                       class="form-select"
                       name="rootDiskType"
-                      onchange="webconsolejs['partials/operation/manage/mcicreate'].changeDiskSize(this.value)"
+                      onchange="webconsolejs['partials/operation/manage/infracreate'].changeDiskSize(this.value)"
                       id="ep_root_disk_type"
                     >
                       <option value="">Select Root Disk Type</option>
@@ -291,7 +291,7 @@
                     type="button"
                     class="btn"
                     id="ep_label_add_btn"
-                    onclick="webconsolejs['partials/operation/manage/mcicreate'].addNodeLabel()"
+                    onclick="webconsolejs['partials/operation/manage/infracreate'].addNodeLabel()"
                   >
                     Add
                   </button>
@@ -318,7 +318,7 @@
                     class="form-select"
                     id="ep_expert_vnet"
                     disabled
-                    onchange="webconsolejs['partials/operation/manage/mcicreate'].onExpertVNetChange()"
+                    onchange="webconsolejs['partials/operation/manage/infracreate'].onExpertVNetChange()"
                   >
                     <option value="">Select Spec/Image first</option>
                   </select>
@@ -329,7 +329,7 @@
                     class="form-select"
                     id="ep_expert_subnet"
                     disabled
-                    onchange="webconsolejs['partials/operation/manage/mcicreate'].onExpertSubnetChange()"
+                    onchange="webconsolejs['partials/operation/manage/infracreate'].onExpertSubnetChange()"
                   >
                     <option value="">Select a VNet first</option>
                   </select>
@@ -360,12 +360,12 @@
         </div>
         <div class="card-footer">
           <div align="right">
-            <button type="button" class="btn btn-secondary" onclick="webconsolejs['partials/operation/manage/mcicreate'].clearExpressForm()">Clear</button>
+            <button type="button" class="btn btn-secondary" onclick="webconsolejs['partials/operation/manage/infracreate'].clearExpressForm()">Clear</button>
             <button
               type="submit"
               class="btn btn-info"
               id="express_done_btn"
-              onclick="webconsolejs['partials/operation/manage/mcicreate'].expressDone_btn()"
+              onclick="webconsolejs['partials/operation/manage/infracreate'].expressDone_btn()"
             >
               Done
             </button>
@@ -393,7 +393,7 @@
 
 {{ partial("partials/operation/manage/imagerecommendation.html") | raw }}
 
-{{ javascriptTag("partials/operation/manage/mcicreate.js") | raw }} {{ javascriptTag("common/api/services/mci_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("partials/operation/manage/infracreate.js") | raw }} {{ javascriptTag("common/api/services/infra_api.js") | raw }}<!--API 호출-->
 {{ javascriptTag("common/api/services/disk_api.js") | raw }}<!--API 호출-->
 {{ javascriptTag("common/api/services/vmimage_api.js") | raw }}<!--API 호출-->
 {{ javascriptTag("common/api/services/vpc_api.js") | raw }}<!--API 호출: Expert Mode VNet/Subnet 선택-->

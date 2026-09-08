@@ -75,7 +75,7 @@
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].toggleOSDropdownPmk()"
+                    onclick="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].toggleOSDropdownPmk()"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@
                       <a
                         class="dropdown-item"
                         href="#"
-                        onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].selectOSTypePmk('ubuntu 22.04')"
+                        onclick="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].selectOSTypePmk('ubuntu 22.04')"
                         >Ubuntu 22.04</a
                       >
                     </li>
@@ -119,7 +119,7 @@
                     type="checkbox"
                     id="assist_gpu_image-pmk"
                     name="assist_gpu_image-pmk"
-                    onchange="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateGPUStatusPmk()"
+                    onchange="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].updateGPUStatusPmk()"
                   />
                   <input type="hidden" id="gpu_image_value-pmk" value="false" />
                 </div>
@@ -133,7 +133,7 @@
                     id="assist_k8s_image-pmk"
                     name="assist_k8s_image-pmk"
                     checked
-                    onchange="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].updateK8sStatusPmk()"
+                    onchange="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].updateK8sStatusPmk()"
                   />
                   <input type="hidden" id="k8s_image_value-pmk" value="true" />
                 </div>
@@ -144,7 +144,7 @@
                   <a
                     class="btn btn-icon"
                     aria-label="Button"
-                    onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].getRecommendImageInfoPmk()"
+                    onclick="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].getRecommendImageInfoPmk()"
                   >
                       <!-- Download SVG icon from http://tabler-icons.io/i/search -->
                       <svg
@@ -186,7 +186,7 @@
             type="submit"
             class="btn btn-info"
             data-bs-dismiss="modal"
-            onclick="webconsolejs['partials/operation/manage/pmk_imagerecommendation'].applyImageInfoPmk()"
+            onclick="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyImageInfoPmk()"
           >
             Apply
           </button>

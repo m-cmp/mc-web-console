@@ -77,7 +77,7 @@ async function loadMyImageList() {
 		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
 		var nsId = selectedWorkspaceProject.nsId;
 
-		var response = await webconsolejs["common/api/services/mci_api"].getCustomImageList(nsId);
+		var response = await webconsolejs["common/api/services/infra_api"].getCustomImageList(nsId);
 
 		if (!(response.status && response.status.code === 200)) {
 			console.error("MyImage list API call failed:", response);
@@ -366,7 +366,7 @@ export async function getRecommendImageInfo() {
 		console.log("=== End Debug ===");
 
 		// 이미지 검색 API 호출
-		var response = await webconsolejs["common/api/services/mci_api"].searchImage(nsId, searchParams);
+		var response = await webconsolejs["common/api/services/infra_api"].searchImage(nsId, searchParams);
 
 		if (response.status && response.status.code === 200) {
 			var imageList = response.responseData.imageList || [];

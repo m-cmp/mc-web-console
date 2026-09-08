@@ -20,7 +20,7 @@ export function initServerRecommendationPmk(callbackfunction) {
 		modalEl.addEventListener('shown.bs.modal', function () {
 			const provider = document.getElementById('cluster_provider_dynamic')?.value
 				|| document.getElementById('cluster_provider')?.value
-				|| webconsolejs["pages/operation/manage/pmk"]?.selectedPmkObj?.[0]?.provider
+				|| webconsolejs["pages/operation/manage/k8sworkloads"]?.selectedPmkObj?.[0]?.provider
 				|| '';
 			const badge = document.getElementById('spec-provider-badge-pmk');
 			const hidden = document.getElementById('spec-provider-value-pmk');
@@ -357,7 +357,7 @@ export async function getRecommendVmInfoPmk() {
 		if (loadingEl) loadingEl.style.display = 'block';
 		try {
 			// PMK용 Spec 추천 API 호출 (기존 MCI API 사용)
-			const result = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+			const result = await webconsolejs["common/api/services/infra_api"].mciRecommendVm(data);
 
 			if (result && result.status && result.status.code === 200) {
 				const specData = result.responseData;
@@ -481,23 +481,23 @@ export function filterByProviderPmk(provider) {
 if (typeof webconsolejs === 'undefined') {
 	webconsolejs = {};
 }
-if (typeof webconsolejs['partials/operation/manage/pmk_serverrecommendation'] === 'undefined') {
-	webconsolejs['partials/operation/manage/pmk_serverrecommendation'] = {};
+if (typeof webconsolejs['partials/operation/manage/k8s_serverrecommendation'] === 'undefined') {
+	webconsolejs['partials/operation/manage/k8s_serverrecommendation'] = {};
 }
 
 // 함수들을 조건부로 등록
-if (!webconsolejs['partials/operation/manage/pmk_serverrecommendation'].initServerRecommendationPmk) {
-	webconsolejs['partials/operation/manage/pmk_serverrecommendation'].initServerRecommendationPmk = initServerRecommendationPmk;
+if (!webconsolejs['partials/operation/manage/k8s_serverrecommendation'].initServerRecommendationPmk) {
+	webconsolejs['partials/operation/manage/k8s_serverrecommendation'].initServerRecommendationPmk = initServerRecommendationPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_serverrecommendation'].getRecommendVmInfoPmk) {
-	webconsolejs['partials/operation/manage/pmk_serverrecommendation'].getRecommendVmInfoPmk = getRecommendVmInfoPmk;
+if (!webconsolejs['partials/operation/manage/k8s_serverrecommendation'].getRecommendVmInfoPmk) {
+	webconsolejs['partials/operation/manage/k8s_serverrecommendation'].getRecommendVmInfoPmk = getRecommendVmInfoPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_serverrecommendation'].applySpecInfoPmk) {
-	webconsolejs['partials/operation/manage/pmk_serverrecommendation'].applySpecInfoPmk = applySpecInfoPmk;
+if (!webconsolejs['partials/operation/manage/k8s_serverrecommendation'].applySpecInfoPmk) {
+	webconsolejs['partials/operation/manage/k8s_serverrecommendation'].applySpecInfoPmk = applySpecInfoPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_serverrecommendation'].showRecommendSpecSettingPmk) {
-	webconsolejs['partials/operation/manage/pmk_serverrecommendation'].showRecommendSpecSettingPmk = showRecommendSpecSettingPmk;
+if (!webconsolejs['partials/operation/manage/k8s_serverrecommendation'].showRecommendSpecSettingPmk) {
+	webconsolejs['partials/operation/manage/k8s_serverrecommendation'].showRecommendSpecSettingPmk = showRecommendSpecSettingPmk;
 }
-if (!webconsolejs['partials/operation/manage/pmk_serverrecommendation'].filterByProviderPmk) {
-	webconsolejs['partials/operation/manage/pmk_serverrecommendation'].filterByProviderPmk = filterByProviderPmk;
+if (!webconsolejs['partials/operation/manage/k8s_serverrecommendation'].filterByProviderPmk) {
+	webconsolejs['partials/operation/manage/k8s_serverrecommendation'].filterByProviderPmk = filterByProviderPmk;
 } 
