@@ -717,6 +717,51 @@ function isAutoscalingToggleUnsupported(provider) {
   return AUTOSCALING_TOGGLE_UNSUPPORTED_PROVIDERS.includes(String(provider || '').toLowerCase());
 }
 
+// ─── 생성 화면: AutoScaling Off 제약 ────────────────────────────────────────
+// 위 상수는 "생성된 NodeGroup 의 On/Off 토글" 제약이고, 아래는 "생성 시점" 제약이다.
+//
+// AWS: cb-spider 가 OnAutoScaling=false 자체를 거부한다 — EKS 관리형 NodeGroup 은 항상
+//      ASG 로 뒷받침되기 때문(cb-spider PR #1822). Expert/Dynamic 양쪽 모두 불가.
+const AUTOSCALING_OFF_UNSUPPORTED_PROVIDERS = ['aws'];
+// Azure / NHN: 드라이버가 "MinNodeSize 가 지정되면 OnAutoScaling 이 켜져 있어야 한다" 로 거부하는데,
+//      Dynamic 경로(/k8sClusterDynamic)는 cb-tumblebug 이 min<=0 이면 1 을 강제 주입한다
+//      (provisioning_dynamic_k8s.go). 키를 생략하든 0 을 명시하든 Go json 에서는 똑같이 0 이라
+//      주입을 피할 수 없어, 프론트가 보낼 수 있는 값이 존재하지 않는다(WEB-BUG-090, 실측 확인).
+//      비-dynamic 경로(/k8sCluster)에는 그 주입이 없어 Expert 폼에서는 정상 동작한다.
+const AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC = ['azure', 'nhn'];
+
+function autoScalingOffBlockReason(provider, isDynamicForm) {
+  const p = String(provider || '').toLowerCase();
+  if (!p) return '';
+  if (AUTOSCALING_OFF_UNSUPPORTED_PROVIDERS.includes(p)) {
+    return p.toUpperCase() + ' does not support creating a NodeGroup with AutoScaling off. '
+      + 'A managed node group is always backed by an Auto Scaling group.';
+  }
+  if (isDynamicForm && AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC.includes(p)) {
+    return p.toUpperCase() + ' does not support AutoScaling off in Simple Creation. '
+      + 'Use Expert Creation instead, or turn AutoScaling on.';
+  }
+  return '';
+}
+
+// AutoScaling select 에서 Off 선택을 막고 사유를 안내한다.
+export function applyAutoScalingOffConstraint(selectSelector, hintSelector, provider, isDynamicForm) {
+  const reason = autoScalingOffBlockReason(provider, isDynamicForm);
+  const $sel = $(selectSelector);
+  const $off = $sel.find('option[value="false"]');
+  const $hint = $(hintSelector);
+
+  if (reason) {
+    // 이미 Off 가 선택돼 있었다면 미선택으로 되돌린다 — 그대로 두면 Deploy 에서 백엔드 에러가 난다
+    if ($sel.val() === 'false') $sel.val('');
+    $off.prop('disabled', true);
+    $hint.text(reason).show();
+  } else {
+    $off.prop('disabled', false);
+    $hint.text('').hide();
+  }
+}
+
 // cb-spider AWS 드라이버가 NodeGroupInfo.OnAutoScaling을 채우지 않아(convertNodeGroup) 항상 false로
 // 내려온다 — min/max는 정상 반영되므로 AWS에 한해 그걸로 On/Off를 직접 계산한다.
 function resolveAutoScalingState(minSize, maxSize, rawOnAutoScaling) {
@@ -2059,6 +2104,11 @@ function resetNodeGroupRootDiskTypeDynamic() {
 
 // Dynamic 폼용 Provider 변경 이벤트
 export function onProviderChangeDynamic(providerValue) {
+    // 생성 시점 AutoScaling Off 제약 반영 (Simple/Dynamic 폼)
+    applyAutoScalingOffConstraint(
+        '#nodegroup_autoscaling_dynamic', '#nodegroup_autoscaling_dynamic_hint',
+        providerValue, true);
+
     // Azure, GCP, IBM, NHN 중 하나가 선택되었는지 확인
     const supportedProviders = ['azure', 'gcp', 'ibm', 'nhn'];
     const selectedProvider = providerValue.toLowerCase();

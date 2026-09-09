@@ -226,6 +226,14 @@ async function updateConfigurationFilltering() {
 	var selectedProvider = providerSelect.value; // 선택된 provider
 	var selectedRegion = regionSelect.value;     // 선택된 region ("[NHN] nhn-kr1")
 
+	// 생성 시점 AutoScaling Off 제약 반영 (Expert 폼 — 비-dynamic 경로라 AWS 만 해당).
+	// 여기서 예외가 나면 Region/Connection 필터링 전체가 멈추므로 방어적으로 호출한다.
+	const applyOffConstraint =
+		webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
+	if (typeof applyOffConstraint === "function") {
+		applyOffConstraint("#node_autoscaling", "#node_autoscaling_hint", selectedProvider, false);
+	}
+
 	// Provider 미선택 — 전체 목록으로 되돌린다
 	if (selectedProvider === "") {
 		await setRegionList("");
