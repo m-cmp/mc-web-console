@@ -157,77 +157,25 @@ export async function setProviderList(providerList) {
 
 }
 
-// region 목록 SET
-export async function setRegionList(regionList) {
-	// TODO: simple form
-
-	// expert form
-	if (Array.isArray(regionList) && typeof regionList[0] === 'string') {
-		var html = '<option value="">Select Region</option>'
-		myRegionList.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#expert_region").empty();
-		$("#expert_region").append(html);
-	} else if (Array.isArray(regionList)) {
-		// object에서 [providerName] + regionName 형태로 배열 생성
-		regionList.forEach(region => {
-			var providerName = region.ProviderName
-			var regionName = region.RegionName
-
-			var myRegionName = `[${providerName}] ${regionName}`
-
-			myRegionList.push(myRegionName)
-		})
-
-		var html = '<option value="">Select Region</option>'
-		myRegionList.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_region").empty();
-		$("#cluster_region").append(html);
-	}
+// Region 목록 SET — Connection에서 파생시킨다.
+// RetrieveRegionListFromCsp는 zone 단위 항목까지 내려주는데(전체의 약 76%) 그 대부분은
+// 대응하는 Connection이 없어, 그런 Region을 고르면 Connection 목록이 빈 채로 남았다.
+// Connection에서 파생하면 목록에 뜨는 Region은 항상 Connection을 하나 갖는다.
+export async function setRegionList(provider) {
+	const regionOptions = webconsolejs["common/api/services/k8s_api"]
+		.listRegionOptions(myCloudConnection, provider);
+	webconsolejs["common/api/services/k8s_api"]
+		.fillSelectOptions("#cluster_region", "Select Region", regionOptions);
 }
 
-export async function setCloudConnection(cloudConnection) {
-	// TODO: simple form
-
-	// expert form
-	if (Array.isArray(cloudConnection) && typeof cloudConnection[0] === 'string') {
-		// 배열이고 첫 번째 요소가 문자열인 경우 / filter에서 사용
-
-		// 알파벳 순으로 정렬
-		cloudConnection.sort();
-
-		var html = '<option value="">Select Connection</option>';
-		cloudConnection.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>';
-		});
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(html);
-
-	} else if (Array.isArray(cloudConnection)) {
-		// array 형태일 때
-
-		myCloudConnection = cloudConnection.map(item => item.configName);
-		// 알파벳 순으로 정렬
-		myCloudConnection.sort()
-
-		var html = '<option value="">Select Connection</option>'
-		myCloudConnection.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(html);
-
-	} else {
-		console.error("Unknown cloudConnection format");
-		return;
-	}
+// Connection 목록 SET — provider(+region)로 좁힌다.
+// region은 regionZoneInfoName 정확 일치로 비교한다(startsWith 금지 — "azure-eastus"가
+// "azure-eastus2"를, "gcp-europe-west1"이 "...west10/12"를 끌고 온다).
+export async function setCloudConnection(provider, regionZoneInfoName) {
+	const names = webconsolejs["common/api/services/k8s_api"]
+		.listConnectionNames(myCloudConnection, provider, regionZoneInfoName);
+	webconsolejs["common/api/services/k8s_api"]
+		.fillSelectOptions("#cluster_cloudconnection", "Select Connection", names, true);
 }
 
 export async function checkAvailableK8sClusterVersion(providerName, regionName){
@@ -263,93 +211,49 @@ export async function checkAvailableK8sClusterVersion(providerName, regionName){
 // for filterRegion func
 // set된 값들
 var myProviderList = []
-var myRegionList = []
+// ConnConfig 객체 배열 — Provider/Region/Connection 목록의 정본
 var myCloudConnection = []
 
-// provider region cloudconnection filtering
+// provider / region / connection 필터링
+// (#cluster_connection 은 존재하지 않는 id다 — 실제 id는 #cluster_cloudconnection)
 var providerSelect = document.getElementById('cluster_provider');
 var regionSelect = document.getElementById('cluster_region');
-var connectionSelect = document.getElementById('cluster_connection');
 providerSelect.addEventListener('change', updateConfigurationFilltering);
 regionSelect.addEventListener('change', updateConfigurationFilltering);
-// connectionSelect.addEventListener('change', updateConfigurationFilltering);
 
 async function updateConfigurationFilltering() {
 
 	var selectedProvider = providerSelect.value; // 선택된 provider
-	var selectedRegion = regionSelect.value; // 선택된 region
-	// var selectedConnection = connectionSelect.value; // 선택된 connection
+	var selectedRegion = regionSelect.value;     // 선택된 region ("[NHN] nhn-kr1")
 
-	//초기화 했을 시 
+	// Provider 미선택 — 전체 목록으로 되돌린다
 	if (selectedProvider === "") {
-		await setRegionList(myRegionList)
-		await setCloudConnection(myCloudConnection)
-
-		return
+		await setRegionList("");
+		await setCloudConnection("", "");
+		return;
 	}
 
-	// providr 선택시 region, connection filtering
-	if (selectedProvider !== "" && selectedRegion === "") {
+	// Provider가 바뀌면 이전 Region 값이 select에 그대로 남아 있다.
+	// 그 값으로 Connection을 거르면 빈 목록이 되고 Region 목록도 옛 provider 것에 고착되므로,
+	// provider가 맞지 않는 Region은 미선택으로 취급해 목록부터 다시 만든다.
+	var parsed = webconsolejs["common/api/services/k8s_api"].parseRegionOption(selectedRegion);
+	var regionBelongsToProvider = selectedRegion !== ""
+		&& parsed.provider.toLowerCase() === selectedProvider.toLowerCase();
 
-		// region filter
-		var filteredRegion = myRegionList.filter(region => {
-			return region.startsWith(`[${selectedProvider}]`)
-		})
-
-		var html = '<option value="">Select Region</option>'
-		filteredRegion.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_region").empty();
-		$("#cluster_region").append(html);
-
-		// connection filter
-
-		// 비교를 위해 소문자로 변환
-		var lowerSelectedProvider = selectedProvider.toLowerCase();
-		var filteredConnection = myCloudConnection.filter(connection => {
-
-			return connection.startsWith(lowerSelectedProvider);
-		});
-
-		var nhtml = '<option value="">Select Connection</option>'
-		filteredConnection.forEach(item => {
-			nhtml += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(nhtml);
-
+	if (!regionBelongsToProvider) {
+		await setRegionList(selectedProvider);
+		await setCloudConnection(selectedProvider, "");
+		return;
 	}
 
-	// region 선택시 connection filtering
-	if (selectedRegion != "") {
+	// Region까지 선택 — Connection을 그 Region 하나로 확정한다
+	await setCloudConnection(selectedProvider, parsed.regionZoneInfoName);
 
-		var cspRegex = /^\[(.*?)\]/; // "[CSP]" 형식의 문자열에서 CSP 이름 추출
-		var cspMatch = selectedRegion.match(cspRegex);
-		var provider = cspMatch ? cspMatch[1].toLowerCase() : null; // CSP 이름 추출 및 소문자 변환
-
-		// Region 이름 추출 (예: "[AWS] us-east-1" → "us-east-1")
-		var regionName = selectedRegion.replace(cspRegex, '').trim();
-
-		// Provider + Region으로 정확한 Connection 필터링
-		var filteredConnections = myCloudConnection.filter(connection => {
-			// "provider-region" 또는 "provider-region-zone" 형태와 매칭
-			return connection.startsWith(regionName);
-		});
-
-		var html = '<option value="">Select Connection</option>';
-		filteredConnections.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>';
-		});
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(html);
-
-		checkAvailableK8sClusterVersion(selectedProvider, regionName);
-	}
-
+	// GetAvailableK8sVersion은 CSP 원본 region 이름을 받는다.
+	// "nhn-kr1"을 그대로 넘기면 NHN이 500("no entry for provider(nhn):region(nhn-kr1)")을 반환한다.
+	var cspRegionName = webconsolejs["common/api/services/k8s_api"]
+		.toCspRegionName(selectedProvider, parsed.regionZoneInfoName);
+	checkAvailableK8sClusterVersion(selectedProvider, cspRegionName);
 }
 
 var createMciListObj = new Object();
@@ -364,9 +268,9 @@ var currentEditingNodeGroupIndex = null; // Edit 모드 추적용 변수
 // isExpert의 체크 여부에 따라 바뀜.
 // newServers 와 simpleServers가 있음.
 export async function displayNewNodeForm() {
-	
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
+
+	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+	var selectedNsId = getSelectedNsId();
 	
 	// Get selected cluster's provider information for SSH Key filtering
 	var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
@@ -495,8 +399,12 @@ export async function deployNode() {
 
 export async function createNode() {
 
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
+	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+	var selectedNsId = getSelectedNsId();
+	if (!selectedNsId) {
+		webconsolejs['common/util'].showToast('Please select a project first', 'warning');
+		return;
+	}
 	var selectedPmk = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
 	if (!selectedPmk) {
 		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
@@ -507,6 +415,18 @@ export async function createNode() {
 	}
 	var k8sClusterId = selectedPmk.id;
 	var provider = selectedPmk.provider; // CSP별 동시 전송 정책 판단용
+
+	// 스펙 ↔ 클러스터 Connection 정합성 검증.
+	// NodeGroup은 클러스터와 같은 Connection이어야 한다 — 스펙 검색이 Provider로만 거르기 때문에
+	// 다른 리전 스펙이 선택될 수 있고, 그대로 보내면 cb-tumblebug이 400으로 거부한다.
+	var specConnection = $("#node_connectionName").val();
+	if (specConnection && selectedPmk.connectionName && specConnection !== selectedPmk.connectionName) {
+		webconsolejs['common/util'].showToast(
+			"The selected spec belongs to connection '" + specConnection +
+			"' but the cluster uses '" + selectedPmk.connectionName +
+			"'. Select a spec from the same connection.", 'error');
+		return;
+	}
 
 	const result = await webconsolejs["common/api/services/k8s_api"].createNode(
 		k8sClusterId,
@@ -563,13 +483,12 @@ export async function createNode() {
 	console.log("NodeGroup creation request sent and PMK list refreshed");
 }
 
-// Extract region from connectionName
-// e.g., "aws-ap-northeast-2" -> "[aws] aws-ap-northeast-2"
+// connectionName에서 Region 표시값을 만든다 (표시 전용, disabled select).
+// Connection의 configName이 곧 regionZoneInfoName이므로 그대로 쓴다.
+// e.g. ("nhn-kr1", "nhn") -> "[NHN] nhn-kr1"
 function extractRegionFromConnection(connectionName, provider) {
 	if (!connectionName || !provider) return '';
-
-	// Return in the format: [provider] connectionName
-	return '[' + provider + '] ' + connectionName;
+	return webconsolejs["common/api/services/k8s_api"].formatRegionOption(provider, connectionName);
 }
 
 export async function addNewNodeGroup() {
@@ -692,15 +611,12 @@ export async function addNewPmk() {
 	// provider set
 	await setProviderList(providerList)
 
-	// call getRegion API (백그라운드, 로더 없음)
-	var regionList = await webconsolejs["common/api/services/k8s_api"].getRegionList({ loaderType: 'none' })
-	// region set
-	await setRegionList(regionList)
-
-	// call cloudconnection (백그라운드, 로더 없음)
-	var connectionList = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' })
-	// cloudconnection set
-	await setCloudConnection(connectionList)
+	// Connection이 Region/Connection 목록의 정본이다 (백그라운드, 로더 없음).
+	// RetrieveRegionListFromCsp는 더 이상 호출하지 않는다 — zone 항목까지 수백 건을 받아오는데
+	// 그중 Connection이 있는 Region만 쓸 수 있어 결국 Connection에서 파생시키면 된다.
+	myCloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' }) || []
+	await setRegionList("")
+	await setCloudConnection("", "")
 
 	Create_Cluster_Config_Arr = new Array();
 
@@ -708,9 +624,20 @@ export async function addNewPmk() {
 	// isNodeGroup = true
 }
 
+// 현재 선택된 project의 nsId — 세션에 저장된 project object가 정본이다.
+// (세션 키는 NsId, workspaceProjectInit() 반환값은 nsId 로 표기가 다르다)
+function getSelectedNsId() {
+	const project = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+	if (!project) return "";
+	return project.NsId || project.nsId || "";
+}
+
 export async function changeCloudConnection(connectionName) {
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
+	const selectedNsId = getSelectedNsId();
+	if (!selectedNsId) {
+		webconsolejs['common/util'].showToast('Please select a project first', 'warning');
+		return;
+	}
 	await setVpcList(connectionName, selectedNsId)
 
 }
@@ -779,18 +706,31 @@ export async function setSecurityGroupList(securityGroupList) {
 }
 
 export async function createCluster() {
-	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
-	// nsid = namespace.Name
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-
-	var selectedNsId = selectedWorkspaceProject.nsId;
-	var projectId = $("#select-current-project").text()
-	var projectName = $('#select-current-project').find('option:selected').text();
-	var nsId = projectName;
+	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+	// workspaceProjectInit()은 목록을 다시 읽어 셀렉트를 재구성하는 초기화 루틴이라,
+	// 세션이 비어 있으면 내부에서 현재 프로젝트를 지워 nsId가 ""로 전송된다(400).
+	var selectedNsId = getSelectedNsId();
+	if (!selectedNsId) {
+		webconsolejs['common/util'].showToast('Please select a project first', 'warning');
+		return;
+	}
 
 	var clusterName = $("#cluster_name").val()
 	var selectedConnection = $("#cluster_cloudconnection").val()
 	var clusterVersion = $("#cluster_version").val()
+
+	// 스펙 ↔ Connection 정합성 검증.
+	// 스펙 검색은 Provider로만 거르기 때문에 다른 리전의 스펙이 후보에 섞인다.
+	// 선택된 스펙이 자기 connectionName을 들고 있으므로, 클러스터 Connection과
+	// 다르면 여기서 잡는다 (예: kr1 스펙 + jp1 Connection → cb-tumblebug 400).
+	var specConnection = $("#node_connectionName").val()
+	if (specConnection && selectedConnection && specConnection !== selectedConnection) {
+		webconsolejs['common/util'].showToast(
+			"The selected spec belongs to connection '" + specConnection +
+			"' but the cluster uses '" + selectedConnection +
+			"'. Select a spec from the same connection.", 'error');
+		return;
+	}
 	var selectedVpc = $("#cluster_vpc").val()
 	var selectedSubnet = $("#cluster_subnet").val()
 	var selectedSecurityGroup = $("#cluster_sg").val()
@@ -939,10 +879,10 @@ export function clusterFormDone_btn() {
 	}
 
     // 2. 클러스터 기본 정보 할당
-    const connectionName = $("#cluster_connection").val();
+    const connectionName = $("#cluster_cloudconnection").val();
     const clusterName = $("#cluster_name").val();
     const vNetId = $("#cluster_vpc").val();
-    const subnetId = $("#subnet").val();
+    const subnetId = $("#cluster_subnet").val();
     const securityGroupId = $("#cluster_sg").val();
     const version = $("#cluster_version").val();
     const description = $("#cluster_desc").val();

@@ -3,19 +3,19 @@
 
 services:
   mc-infra-connector:
-    version: 0.9.4
+    version: 0.13.0
     baseurl: http://15.164.139.37:1024/spider
     auth:
       type: basic
       username:
       password:
   mc-iam-manager:
-    version: 0.2.11
+    version: 0.6.3
     baseurl: http://15.164.139.37:5000
     auth:
       type: bearer
   mc-infra-manager:
-    version: 0.12.9
+    version: 0.13.3
     baseurl: http://15.164.139.37:1323/tumblebug
     auth:
       type: basic

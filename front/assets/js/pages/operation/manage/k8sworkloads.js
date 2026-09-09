@@ -155,7 +155,8 @@ async function initPmk() {
     ////////////////////// partials init functions///////////////////////////////////////
     try {
         webconsolejs["partials/operation/manage/clustercreate"].iniClusterkCreate();//PmkCreate을 Partial로 가지고 있음. 
-        webconsolejs["partials/operation/manage/clustercreate"].addNewPmk();
+        // Provider/Connection 적재가 끝난 뒤 나머지 init이 진행되도록 기다린다
+        await webconsolejs["partials/operation/manage/clustercreate"].addNewPmk();
 
         // 새로운 폼 Dynamic 초기화
         await initFormDynamic();
@@ -181,7 +182,6 @@ async function initPmk() {
 
     var targetSection = "createcluster"
     var createBtnName = "Add cluster"
-    var onclickEvent = "webconsolejs['partials/operation/manage/clustercreate'].addNewPmk()";
 
     webconsolejs['partials/layout/navigatePages'].addPageHeaderButton(targetSection, createBtnName);
 
@@ -1929,40 +1929,32 @@ export async function initFormDynamic() {
     setupDesiredNodeSizeButtons();
 }
 
+// Dynamic 폼 Region/Connection 목록의 정본 (ConnConfig 객체 배열)
+let dynamicConnectionList = [];
+
 // Dynamic 폼용 데이터 직접 로드
+// Region 목록은 Connection에서 파생시킨다 — RetrieveRegionListFromCsp는 zone 단위 항목까지
+// 내려주는데(전체의 약 76%) 그 대부분은 대응하는 Connection이 없어, 고르면 Connection 목록이 빈다.
 async function loadFormDynamicData() {
     try {
         // Provider 목록은 HTML partial component로 이미 렌더링됨
-        // Region 목록 로드 (백그라운드, 로더 없음)
-        const regionList = await webconsolejs["common/api/services/k8s_api"].getRegionList({ loaderType: 'none' });
-        if (regionList && Array.isArray(regionList)) {
-            let html = '<option value="">Select Region</option>';
-            regionList.forEach(region => {
-                const providerName = region.ProviderName || '';
-                const regionName = region.RegionName || '';
-                const displayName = `[${providerName}] ${regionName}`;
-                html += `<option value="${displayName}">${displayName}</option>`;
-            });
-
-            $("#cluster_region_dynamic").empty().append(html);
-        }
-
-        // Cloud Connection 목록 로드 (백그라운드, 로더 없음)
-        const cloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' });
-        if (cloudConnection && Array.isArray(cloudConnection)) {
-            const connectionNames = cloudConnection.map(item => item.configName).sort();
-
-            let html = '<option value="">Select Connection</option>';
-            connectionNames.forEach(item => {
-                html += `<option value="${item}">${item}</option>`;
-            });
-
-            $("#cluster_cloudconnection_dynamic").empty().append(html);
-        }
-
+        dynamicConnectionList = await webconsolejs["common/api/services/k8s_api"]
+            .getCloudConnection({ loaderType: 'none' }) || [];
+        applyDynamicRegionConnectionOptions("", "");
     } catch (error) {
         console.error("Failed to load dynamic form data:", error);
     }
+}
+
+// provider(+region)에 맞춰 Dynamic 폼의 Region/Connection select를 다시 채운다
+function applyDynamicRegionConnectionOptions(provider, regionZoneInfoName) {
+    const k8sApi = webconsolejs["common/api/services/k8s_api"];
+    k8sApi.fillSelectOptions(
+        "#cluster_region_dynamic", "Select Region",
+        k8sApi.listRegionOptions(dynamicConnectionList, provider));
+    k8sApi.fillSelectOptions(
+        "#cluster_cloudconnection_dynamic", "Select Connection",
+        k8sApi.listConnectionNames(dynamicConnectionList, provider, regionZoneInfoName), true);
 }
 
 // Dynamic 폼용 필터링 설정
@@ -1979,95 +1971,39 @@ function setupFormDynamicFiltering() {
     }
 }
 
-// B 폼용 필터링 업데이트 함수
+// Dynamic 폼용 필터링 업데이트 함수
 async function updateFormDynamicConfigurationFiltering() {
+    const k8sApi = webconsolejs["common/api/services/k8s_api"];
     const selectedProvider = document.getElementById('cluster_provider_dynamic').value;
     const selectedRegion = document.getElementById('cluster_region_dynamic').value;
 
-    // 초기화했을 시
+    // Provider 미선택 — 전체 목록으로 되돌리고 NodeGroup 폼을 숨긴다
     if (selectedProvider === "") {
-        // Dynamic 폼의 전체 데이터를 다시 로드
-        await loadFormDynamicData();
-        // NodeGroup 폼 숨기기
+        applyDynamicRegionConnectionOptions("", "");
         hideNodeGroupFormDynamic();
         return;
     }
 
-    // provider 선택시 region, connection filtering
-    if (selectedProvider !== "" && selectedRegion === "") {
-        try {
-            // Region 필터링 - 선택된 Provider의 Region만 표시 (백그라운드, 로더 없음)
-            const regionList = await webconsolejs["common/api/services/k8s_api"].getRegionList({ loaderType: 'none' });
-            if (regionList && Array.isArray(regionList)) {
-                const filteredRegions = regionList.filter(region =>
-                    region.ProviderName && region.ProviderName.toUpperCase() === selectedProvider
-                );
+    // Provider가 바뀌면 이전 Region 값이 select에 그대로 남아 있다.
+    // 그 값으로 Connection을 거르면 빈 목록이 되고 Region 목록도 옛 provider 것에 고착되므로,
+    // provider가 맞지 않는 Region은 미선택으로 취급해 목록부터 다시 만든다.
+    const parsed = k8sApi.parseRegionOption(selectedRegion);
+    const regionBelongsToProvider = selectedRegion !== ""
+        && parsed.provider.toLowerCase() === selectedProvider.toLowerCase();
 
-                let html = '<option value="">Select Region</option>';
-                filteredRegions.forEach(region => {
-                    const providerName = region.ProviderName || '';
-                    const regionName = region.RegionName || '';
-                    const displayName = `[${providerName}] ${regionName}`;
-                    html += `<option value="${displayName}">${displayName}</option>`;
-                });
-
-                $("#cluster_region_dynamic").empty().append(html);
-            }
-
-            // Connection 필터링 - 선택된 Provider의 Connection만 표시 (백그라운드, 로더 없음)
-            const cloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' });
-            if (cloudConnection && Array.isArray(cloudConnection)) {
-                const lowerSelectedProvider = selectedProvider.toLowerCase();
-                const filteredConnections = cloudConnection.filter(connection =>
-                    connection.configName && connection.configName.toLowerCase().startsWith(lowerSelectedProvider)
-                );
-
-                let html = '<option value="">Select Connection</option>';
-                filteredConnections.forEach(connection => {
-                    html += `<option value="${connection.configName}">${connection.configName}</option>`;
-                });
-
-                $("#cluster_cloudconnection_dynamic").empty().append(html);
-            }
-
-            // NodeGroup 폼 표시/숨김 처리
-            onProviderChangeDynamic(selectedProvider);
-        } catch (error) {
-            console.error("Failed to filter dynamic form:", error);
-        }
+    if (!regionBelongsToProvider) {
+        applyDynamicRegionConnectionOptions(selectedProvider, "");
+        onProviderChangeDynamic(selectedProvider);
+        return;
     }
 
-    // region 선택시 connection filtering
-    if (selectedRegion !== "") {
-        try {
-            const cspRegex = /^\[(.*?)\]/;
-            const cspMatch = selectedRegion.match(cspRegex);
-            const provider = cspMatch ? cspMatch[1] : null;
-
-            // Region 이름 추출 (예: "[AWS] us-east-1" → "us-east-1")
-            const regionName = selectedRegion.replace(cspRegex, '').trim();
-
-            if (provider && regionName) {
-                const cloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' });
-                if (cloudConnection && Array.isArray(cloudConnection)) {
-                    // Provider + Region으로 정확한 Connection 필터링
-                    const filteredConnections = cloudConnection.filter(connection => {
-                        // "provider-region" 또는 "provider-region-zone" 형태와 매칭
-                        return connection.configName && connection.configName.startsWith(regionName);
-                    });
-
-                    let html = '<option value="">Select Connection</option>';
-                    filteredConnections.forEach(connection => {
-                        html += `<option value="${connection.configName}">${connection.configName}</option>`;
-                    });
-
-                    $("#cluster_cloudconnection_dynamic").empty().append(html);
-                }
-            }
-        } catch (error) {
-            console.error("Failed to filter dynamic form region:", error);
-        }
-    }
+    // Region까지 선택 — Connection을 그 Region 하나로 확정한다.
+    // regionZoneInfoName 정확 일치로 비교한다(startsWith 금지 — "azure-eastus"가
+    // "azure-eastus2"를, "gcp-europe-west1"이 "...west10/12"를 끌고 온다).
+    k8sApi.fillSelectOptions(
+        "#cluster_cloudconnection_dynamic", "Select Connection",
+        k8sApi.listConnectionNames(dynamicConnectionList, selectedProvider, parsed.regionZoneInfoName), true);
+    onProviderChangeDynamic(selectedProvider);
 }
 
 
@@ -2189,6 +2125,19 @@ export async function deployPmkDynamic() {
                 return;
             }
 
+            // 스펙 ↔ Connection 정합성 검증.
+            // 스펙 검색은 Provider로만 거르기 때문에 다른 리전의 스펙이 후보에 섞인다.
+            // 선택된 스펙이 자기 connectionName을 들고 있으므로, 클러스터 Connection과
+            // 다르면 여기서 잡는다 (예: kr1 스펙 + jp1 Connection → cb-tumblebug 400).
+            const specConnection = $("#nodegroup_connectionName_dynamic").val();
+            if (specConnection && specConnection !== clusterData.connection) {
+                webconsolejs['common/util'].showToast(
+                    `The selected spec belongs to connection '${specConnection}' but the cluster uses '${clusterData.connection}'. Select a spec from the same connection.`,
+                    'error'
+                );
+                return;
+            }
+
             const checkResult = await webconsolejs["common/api/services/k8s_api"].checkK8sClusterDynamic(
                 selectedWorkspaceProject.nsId,
                 commonSpec
@@ -2200,17 +2149,21 @@ export async function deployPmkDynamic() {
         } else {
             // NodeGroup이 없는 경우: K8s 버전 + specId 동적 조회 후 control plane만 생성
             const providerName = clusterData.provider;
-            const regionMatch = clusterData.region.match(/\[.*?\]\s*(.+)/);
-            const regionName = regionMatch ? regionMatch[1].trim() : '';
+            const parsedRegion = webconsolejs["common/api/services/k8s_api"]
+                .parseRegionOption(clusterData.region);
+            const regionName = parsedRegion.regionZoneInfoName;
 
             if (!providerName || !regionName) {
                 webconsolejs['common/util'].showToast('Please select both Provider and Region', 'warning');
                 return;
             }
 
-            // K8s 버전 조회
+            // K8s 버전 조회 — CSP 원본 region 이름을 넘긴다.
+            // "nhn-kr1"을 그대로 넘기면 NHN이 500("no entry for provider(nhn):region(nhn-kr1)")을 반환한다.
+            const cspRegionName = webconsolejs["common/api/services/k8s_api"]
+                .toCspRegionName(providerName, regionName);
             const versions = await webconsolejs["common/api/services/k8s_api"]
-                .getAvailableK8sClusterVersion(providerName, regionName);
+                .getAvailableK8sClusterVersion(providerName, cspRegionName);
             if (versions && Array.isArray(versions) && versions.length > 0) {
                 k8sVersion = versions[0].id || "";
             }
