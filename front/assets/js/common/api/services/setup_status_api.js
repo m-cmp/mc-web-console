@@ -88,9 +88,35 @@ export async function fetchAllStatus() {
 
 // ─── Public: 4개 Re-sync 액션 ────────────────────────────────────────
 
-/** /api/setup/initial-menus — 1_setup_auto.sh init_menu 와 동일 */
+/**
+ * /api/setup/initial-menus?force=true — 메뉴 카탈로그 yaml로 강제 재시딩.
+ * mc-iam-manager는 DB에 메뉴가 있으면 기본적으로 skip하므로(최초 설치 1회 시딩 원칙),
+ * Setup Status에서는 관리자의 명시적 행위로만 force를 보낸다. 서버가 재시딩 전에
+ * 역할-메뉴 매핑을 백업하고 응답에 backupPath를 돌려준다.
+ */
 export async function resyncMenu() {
-  return await proxyPost(iamUrl('InitialMenus'), {});
+  return await proxyPost(iamUrl('InitialMenus'), { queryParams: { force: 'true' } });
+}
+
+/**
+ * initial-menus 응답(data 또는 CommonResponse 래핑)에서 시딩 결과 필드만 추출.
+ * @returns {{skipped:boolean, existingMenuCount:number|null, registeredCount:number|null,
+ *            backupPath:string|null, backupWarning:string|null, permissionsWarning:string|null,
+ *            orphanMenusDetected:string[], missingPermissionMenuIDs:string[]}|null}
+ */
+export function parseMenuSeedResult(resp) {
+  const data = extractResponseData(resp);
+  if (!data || typeof data !== 'object') return null;
+  return {
+    skipped: !!data.skipped,
+    existingMenuCount: data.existingMenuCount ?? null,
+    registeredCount: data.registeredCount ?? null,
+    backupPath: data.backupPath || null,
+    backupWarning: data.backupWarning || null,
+    permissionsWarning: data.permissionsWarning || null,
+    orphanMenusDetected: Array.isArray(data.orphanMenusDetected) ? data.orphanMenusDetected : [],
+    missingPermissionMenuIDs: Array.isArray(data.missingPermissionMenuIDs) ? data.missingPermissionMenuIDs : [],
+  };
 }
 
 /** /api/setup/sync-mcmp-apis — 1_setup_auto.sh init_api_resources 와 동일 */
@@ -322,6 +348,7 @@ export function buildViewModel(raw) {
     menu: {
       registeredCount: menuCount,
       sourceUrl: menuYaml.url,
+      sourceType: menuYaml.sourceType,
       sourceUrlReachable: menuYaml.reachable,
       sourceHttpStatus: menuYaml.httpStatus,
       sourceLastModified: menuYaml.lastModified,
@@ -333,6 +360,7 @@ export function buildViewModel(raw) {
       servicesCount: Object.keys(services).length,
       services,
       sourceUrl: apiYaml.url,
+      sourceType: apiYaml.sourceType,
       sourceUrlReachable: apiYaml.reachable,
       sourceHttpStatus: apiYaml.httpStatus,
       sourceLastModified: apiYaml.lastModified,
@@ -510,7 +538,7 @@ function aggregateProvidersFromHolders(holders) {
 // BFF setup-yaml-check 응답 파싱 — 항상 200으로 오므로 reachable 필드로 판정
 function parseYamlCheck(settled) {
   const empty = {
-    url: null, reachable: false, httpStatus: null,
+    url: null, sourceType: null, reachable: false, httpStatus: null,
     lastModified: null, etag: null, errorMessage: null,
   };
   if (!settled || settled.status !== 'fulfilled') {
@@ -522,6 +550,7 @@ function parseYamlCheck(settled) {
   const data = resp.data.responseData || resp.data;
   return {
     url: data.url || null,
+    sourceType: data.sourceType || (data.url ? 'url' : null),
     reachable: !!data.reachable,
     httpStatus: data.httpStatus || null,
     lastModified: data.lastModified || null,

@@ -4,7 +4,7 @@
 services:
   mc-infra-connector:
     version: 0.9.4
-    baseurl: http://spider_url:1024/spider
+    baseurl: http://15.164.139.37:1024/spider
     auth:
       type: basic
       username:
@@ -837,6 +837,10 @@ serviceActions:
       method: delete
       resourcePath: /api/projects/id/{projectId}
       description: project 삭제
+    getProjectWorkspaces:
+      method: get
+      resourcePath: /api/projects/id/{projectId}/workspaces
+      description: project 기준 배정된 workspace 목록 조회
     deleteWorkspace:
       method: delete
       resourcePath: /api/workspaces/id/{workspaceId}
@@ -1209,7 +1213,7 @@ serviceActions:
     InitialMenus:
       method: post
       resourcePath: /api/setup/initial-menus
-      description: "menu.yaml 기반 메뉴 일괄 재등록 (1_setup_auto.sh init_menu와 동일). FR-006-08 Re-sync."
+      description: "메뉴 카탈로그 yaml 시딩 (1_setup_auto.sh init_menu와 동일). 메뉴가 이미 있으면 skip(200, skipped=true); queryParams force=true면 역할-메뉴 매핑 백업 후 덮어씀. FR-006-08 Force re-seed."
     SyncMcmpApis:
       method: post
       resourcePath: /api/setup/sync-mcmp-apis
@@ -1219,18 +1223,14 @@ serviceActions:
       resourcePath: /api/setup/sync-projects
       description: "mc-infra-manager의 namespace 목록을 가져와 project 테이블과 동기화 (1_setup_auto.sh sync_projects와 동일). FR-006-08 Re-sync."
   mc-infra-manager:
-    GetInfraReadyzInit:
-      method: put
-      resourcePath: /readyz/init
-      description: "mc-infra-manager 초기화. credential valid 선행 필요. image/spec 등 초기 데이터 로드."
     Lookupspeclist:
       method: post
       resourcePath: /lookupSpecs
       description: "Lookup spec list"
-    AddNLBVMs:
+    AddNLBNodes:
       method: post
       resourcePath: /ns/{nsId}/infra/{infraId}/nlb/{nlbId}/node
-      description: Add VMs to NLB
+      description: Add nodes to NLB
     AnalyzeProvisioningRisk:
       method: get
       resourcePath: /provisioning/risk/{specId}
@@ -1351,10 +1351,10 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/checkResource/{resourceType}/{resourceId}
       description: Check resources' existence
-    ClearAllVmCommandStatus:
+    ClearAllNodeCommandStatus:
       method: delete
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/commandStatusAll
-      description: Delete all command status records for a VM
+      description: Delete all command status records for a node
     ComplementSshKeyRemoteCommand:
       method: put
       resourcePath: /ns/{nsId}/resources/sshKey/{sshKeyId}/complement
@@ -1793,18 +1793,18 @@ serviceActions:
       method: delete
       resourcePath: /resources/objectStorage/{objectStorageName}/versions/{objectKey}
       description: (To be deprecated) Delete a specific version of an object in an object storage (bucket)
-    DeleteVmCommandStatus:
+    DeleteNodeCommandStatus:
       method: delete
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/commandStatus/{index}
-      description: Delete a specific command status record by index for a VM
-    DeleteVmCommandStatusByCriteria:
+      description: Delete a specific command status record by index for a node
+    DeleteNodeCommandStatusByCriteria:
       method: delete
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/commandStatus
-      description: Delete multiple command status records for a VM based on filtering criteria
-    DeleteVmSshHostKey:
+      description: Delete multiple command status records for a node based on filtering criteria
+    DeleteNodeSshHostKey:
       method: delete
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/sshHostKey
-      description: Reset the stored SSH host key for a specific VM. This should be used when the VM's host key has legitimately changed (e.g., after VM recreation) and you trust the new key. The next SSH connection will store the new host key (TOFU).
+      description: Reset the stored SSH host key for a specific node. This should be used when the node's host key has legitimately changed (e.g., after node recreation) and you trust the new key. The next SSH connection will store the new host key (TOFU).
     DeregisterCustomImage:
       method: delete
       resourcePath: /ns/{nsId}/deregisterResource/customImage/{customImageId}
@@ -2032,6 +2032,10 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/infra/{infraId}/nlb
       description: List all NLBs or NLBs' ID
+    GetAllNLBInNs:
+      method: get
+      resourcePath: /ns/{nsId}/resources/nlb
+      description: List all NLBs in a namespace (each item carries infraId)
     GetAllNs:
       method: get
       resourcePath: /ns
@@ -2098,7 +2102,7 @@ serviceActions:
       description: Query verified zones for a spec based on connection configs. Returns zones that are both verified and available for the specified spec. For Alibaba Cloud, additional CSP API filtering is applied.
     GetBastionNodes:
       method: get
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion
       description: Get bastion nodes for a VM
     GetBenchmark:
       method: post
@@ -2129,10 +2133,6 @@ serviceActions:
       method: get
       resourcePath: /connConfig
       description: List all registered ConnConfig
-    FilterConnConfigByCredentialHolder:
-      method: get
-      resourcePath: /connConfig
-      description: Filter connection configs by credential holder name (queryParams.filterCredentialHolder)
     GetControlK8sCluster:
       method: get
       resourcePath: /ns/{nsId}/control/k8sCluster/{k8sClusterId}
@@ -2213,6 +2213,10 @@ serviceActions:
       method: get
       resourcePath: /k8sClusterInfo
       description: Get kubernetes cluster information
+    GetK8sClusterKubeconfig:
+      method: get
+      resourcePath: /ns/{nsId}/k8sCluster/{k8sClusterId}/kubeconfig
+      description: Get a kubeconfig for the specified K8sCluster using CSP-native auth plugins (e.g., aws-iam-authenticator for EKS, gke-gcloud-auth-plugin for GKE).
     GetK8sClusterToken:
       method: get
       resourcePath: /ns/{nsId}/k8sCluster/{k8sClusterId}/token
@@ -2300,6 +2304,14 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/infra/{infraId}/nlb/{nlbId}/healthz
       description: Get NLB Health
+    GetNLBSupport:
+      method: get
+      resourcePath: /nlb/support
+      description: Get per-CSP support for custom NLB health checker fields
+    GetNodeDataDisk:
+      method: get
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/dataDisk
+      description: Get available dataDisks for a Node
     GetNs:
       method: get
       resourcePath: /ns/{nsId}
@@ -2661,22 +2673,18 @@ serviceActions:
       method: get
       resourcePath: /ns/{nsId}/template/vNet/{templateId}
       description: Retrieve a specific vNet Template by ID.
-    GetVmCommandStatus:
+    GetNodeCommandStatus:
       method: get
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/commandStatus/{index}
-      description: Get a specific command status record by index for a VM
-    GetVmDataDisk:
-      method: get
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/dataDisk
-      description: Get available dataDisks for a VM
-    GetVmHandlingCommandCount:
+      description: Get a specific command status record by index for a node
+    GetNodeHandlingCommandCount:
       method: get
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/handlingCount
-      description: Get the number of commands currently in 'Handling' status for a specific VM. Optimized for frequent polling.
-    GetVmSshHostKey:
+      description: Get the number of commands currently in 'Handling' status for a specific node. Optimized for frequent polling.
+    GetNodeSshHostKey:
       method: get
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/sshHostKey
-      description: Get the stored SSH host key information for a specific VM. This is used for TOFU (Trust On First Use) verification.
+      description: Get the stored SSH host key information for a specific node. This is used for TOFU (Trust On First Use) verification.
     InitAllConfig:
       method: delete
       resourcePath: /config
@@ -2807,10 +2815,10 @@ serviceActions:
         </ListVersionsResult>
 
         ```'
-    ListVmCommandStatus:
+    ListNodeCommandStatus:
       method: get
       resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/commandStatus
-      description: List command status records for a VM with various filtering options
+      description: List command status records for a node with various filtering options
     GetAssetsSummary:
       method: get
       resourcePath: /assetsSummary
@@ -2845,16 +2853,6 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/buildAgnosticImage
       description: Creates an MCI infrastructure, executes post-deployment commands, creates snapshots from each subgroup, and optionally cleans up the MCI. This is a complete workflow for building CSP-agnostic custom images.
-    PostCmdK8sCluster:
-      method: post
-      resourcePath: /ns/{nsId}/cmd/k8sCluster/{k8sClusterId}
-      description: 'Send a command to specified Container in K8sCluster
-
-        [note] This feature is not intended for general use
-
-        This API is provided as an exceptional and limited function for specific purposes such as migration.
-
-        Kubernetes resource information required as input for this API is not currently provided, and its availability in the future is uncertain.'
     PostCmdInfra:
 
       method: post
@@ -2881,16 +2879,6 @@ serviceActions:
       description: 'Download a file from a specific VM in MCI via SCP through bastion host.
 
         The file size should be less than 200MB.'
-    PostFileToK8sCluster:
-      method: post
-      resourcePath: /ns/{nsId}/transferFile/k8sCluster/{k8sClusterId}
-      description: 'Transfer a file to specified Container in K8sCluster. The tar command is required in the container.
-
-        [note] This feature is not intended for general use
-
-        This API is provided as an exceptional and limited function for specific purposes such as migration.
-
-        Kubernetes resource information required as input for this API is not currently provided, and its availability in the future is uncertain.'
     PostFileToInfra:
 
       method: post
@@ -3761,11 +3749,15 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/infra/{infraId}/nlb
       description: Create NLB
+    PostNodeDataDisk:
+      method: post
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/dataDisk
+      description: Provisioning (Create and attach) dataDisk
     PostNs:
       method: post
       resourcePath: /ns
       description: Create namespace
-    PostRegisterCSPNativeVM:
+    PostRegisterCSPNativeNode:
       method: post
       resourcePath: /ns/{nsId}/registerCspNode
       description: 'Import and register pre-existing virtual machines from cloud service providers into CB-Tumblebug management.
@@ -4144,10 +4136,6 @@ serviceActions:
 
 
         Templates can be created manually with desired vNet configurations.'
-    PostVmDataDisk:
-      method: post
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/dataDisk
-      description: Provisioning (Create and attach) dataDisk
     PutChangeK8sNodeGroupAutoscaleSize:
       method: put
       resourcePath: /ns/{nsId}/k8sCluster/{k8sClusterId}/k8sNodeGroup/{k8sNodeGroupName}/autoscaleSize
@@ -4225,6 +4213,10 @@ serviceActions:
       method: put
       resourcePath: /ns/{nsId}/monitoring/status/infra/{infraId}/node/{nodeId}
       description: Set monitoring agent (CB-Dragonfly agent) installation status installed (for Windows VM only)
+    PutNodeDataDisk:
+      method: put
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/dataDisk
+      description: Attach/Detach available dataDisk
     PutNs:
       method: put
       resourcePath: /ns/{nsId}
@@ -4328,10 +4320,6 @@ serviceActions:
       method: put
       resourcePath: /ns/{nsId}/template/vNet/{templateId}
       description: Update an existing vNet Template.
-    PutVmDataDisk:
-      method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{nodeId}/dataDisk
-      description: Attach/Detach available dataDisk
     RecommendK8sNode:
       method: post
       resourcePath: /k8sClusterRecommendNode
@@ -4397,6 +4385,10 @@ serviceActions:
       method: post
       resourcePath: /credential
       description: This API registers credential information using hybrid encryption. The process involves compressing and encrypting sensitive data with AES-256, encrypting the AES key with a 4096-bit RSA public key (retrieved via `GET /credential/publicKey`), and using OAEP padding with SHA-256. All values, including the AES key, must be base64 encoded before sending, and the public key token ID must be included in the request.
+    RegisterCspDefinition:
+      method: post
+      resourcePath: /cloudInfo/{providerName}
+      description: Register a CSP definition (driver, cloud platform, regions with zones) at runtime. CB-Tumblebug registers the driver and regions with CB-Spider on behalf of the caller. Credentials must be registered separately via RegisterCredential before the CSP becomes usable.
     RegisterCspNativeResources:
       method: post
       resourcePath: /registerCspResources
@@ -4446,25 +4438,25 @@ serviceActions:
         - New: `POST /registerCspResources` with `{"connectionName": "", "nsId": "default", "mciNamePrefix": "mci-all"}`'
     RemoveBastionNodes:
       method: delete
-      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionNodeId}
       description: Remove a bastion VM from all vNets
     RemoveBastionNodesWithInfra:
 
       method: delete
-      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionInfraId}/{bastionNodeId}
       description: Remove a specific cross-MCI bastion from all vNets of the target MCI
     RemoveBastionNodesWithNs:
       method: delete
-      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionNsId}/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/bastion/{bastionNsId}/{bastionInfraId}/{bastionNodeId}
       description: Remove a specific cross-namespace bastion from all vNets of the target MCI
     RemoveLabel:
       method: delete
       resourcePath: /label/{labelType}/{uid}/{key}
       description: Remove a label from a resource identified by its uid
-    RemoveNLBVMs:
+    RemoveNLBNodes:
       method: delete
       resourcePath: /ns/{nsId}/infra/{infraId}/nlb/{nlbId}/node
-      description: Delete VMs from NLB
+      description: Delete nodes from NLB
     RestDeleteObjectStorage:
       method: delete
       resourcePath: /ns/{nsId}/resources/objectStorage/{osId}
@@ -4483,7 +4475,7 @@ serviceActions:
       description: Get all available options for image search fields
     SetBastionNodes:
       method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion/{bastionNodeId}
       description: "Set bastion nodes for a VM"
     Inspectresourcesoverview:
       method: get
@@ -4517,70 +4509,14 @@ serviceActions:
       method: post
       resourcePath: /ns/{nsId}/sharedResource
       description: "Create shared resources for MC-Infra"
-    ListVNet:
-      method: get
-      resourcePath: /ns/{nsId}/resources/vNet
-      description: "List all VNets in a namespace"
-    CreateVNet:
-      method: post
-      resourcePath: /ns/{nsId}/resources/vNet
-      description: "Create VNet"
-    DeleteVNet:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/vNet/{vNetId}
-      description: "Delete VNet"
-    ListSecurityGroup:
-      method: get
-      resourcePath: /ns/{nsId}/resources/securityGroup
-      description: "List all Security Groups in a namespace"
-    CreateSecurityGroup:
-      method: post
-      resourcePath: /ns/{nsId}/resources/securityGroup
-      description: "Create Security Group"
-    DeleteSecurityGroup:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/securityGroup/{securityGroupId}
-      description: "Delete Security Group"
-    ListSSHKey:
-      method: get
-      resourcePath: /ns/{nsId}/resources/sshKey
-      description: "List all SSH Keys in a namespace"
-    CreateSSHKey:
-      method: post
-      resourcePath: /ns/{nsId}/resources/sshKey
-      description: "Create SSH Key"
-    ListImage:
-      method: get
-      resourcePath: /ns/{nsId}/resources/image
-      description: "List all images in a namespace"
-    RegisterImage:
-      method: post
-      resourcePath: /ns/{nsId}/resources/image
-      description: "Register image in a namespace"
-    DeleteImage:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/image/{imageId}
-      description: "Delete image"
-    ListSpec:
-      method: post
-      resourcePath: /ns/{nsId}/resources/filterSpecsByRange
-      description: "List all specs in a namespace"
-    RegisterSpec:
-      method: post
-      resourcePath: /ns/{nsId}/resources/spec
-      description: "Register spec in a namespace"
-    DeleteSpec:
-      method: delete
-      resourcePath: /ns/{nsId}/resources/spec/{specId}
-      description: "Delete spec"
     SetBastionNodesWithInfra:
 
       method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion/{bastionInfraId}/{bastionNodeId}
       description: Set bastion nodes for a target VM, specifying a bastion VM that belongs to a different MCI within the same namespace (cross-MCI bastion). This allows, for example, an AWS VM to serve as a bastion for an OpenStack VM.
     SetBastionNodesWithNs:
       method: put
-      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetVmId}/bastion/{bastionNsId}/{bastionMciId}/{bastionVmId}
+      resourcePath: /ns/{nsId}/infra/{infraId}/node/{targetNodeId}/bastion/{bastionNsId}/{bastionInfraId}/{bastionNodeId}
       description: Set bastion nodes for a target VM, specifying a bastion VM that belongs to a different namespace and MCI (cross-namespace bastion). This allows, for example, a VM in a shared-services namespace to act as a bastion for VMs in other namespaces.
     SetObjectStorageCORS:
       method: put
@@ -4685,6 +4621,10 @@ serviceActions:
       method: get
       resourcePath: /auth/test
       description: Test JWT authentication
+    UnregisterCspDefinition:
+      method: delete
+      resourcePath: /cloudInfo/{providerName}
+      description: Remove a runtime-registered CSP definition. Only definitions registered at runtime can be removed; built-in providers loaded from CB-Tumblebug's asset config are rejected.
     UnsetSystemInitialized:
       method: delete
       resourcePath: /readyz/init

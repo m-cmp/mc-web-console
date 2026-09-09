@@ -32,8 +32,9 @@ const setupYamlCheckTimeout = 5 * time.Second
 // FR-CLOUD-ADMIN-006-08-DESIGN.md 응답 스키마 기준.
 type SetupYamlCheckResult struct {
 	Which         string `json:"which"`                   // "menu" | "api"
-	URL           string `json:"url"`                     // 검사 대상 raw URL
-	Reachable     bool   `json:"reachable"`               // 200~299 응답 여부
+	URL           string `json:"url"`                     // 검사 대상 raw URL 또는 로컬 경로
+	SourceType    string `json:"sourceType"`              // "url" | "local" (env 값이 http(s)가 아니면 local)
+	Reachable     bool   `json:"reachable"`               // 200~299 응답 여부 (local이면 항상 false, 프로브 안 함)
 	HTTPStatus    int    `json:"httpStatus"`              // 실제 HTTP status
 	LastModified  string `json:"lastModified,omitempty"`  // RFC1123
 	ETag          string `json:"etag,omitempty"`          // 원본 ETag (양 끝 따옴표 포함)
@@ -74,9 +75,32 @@ func GetSetupYamlCheck(c echo.Context) error {
 		return c.JSON(resp.ToJSON())
 	}
 
+	// env가 URL이 아니면 대상 컨테이너(mc-iam-manager)에 마운트된 로컬 사본이다.
+	// 이 BFF 프로세스에서는 그 경로가 보이지 않으므로 프로브하지 않고 종류만 알린다.
+	if !isHTTPURL(url) {
+		result := SetupYamlCheckResult{
+			Which:         which,
+			URL:           url,
+			SourceType:    yamlSourceLocal,
+			ContentLength: -1,
+			CheckedAt:     time.Now().UTC().Format(time.RFC3339),
+		}
+		resp := model.CommonResponseStatusOK(result)
+		return c.JSON(resp.ToJSON())
+	}
+
 	result := probeYamlURL(which, url)
 	resp := model.CommonResponseStatusOK(result)
 	return c.JSON(resp.ToJSON())
+}
+
+const (
+	yamlSourceURL   = "url"
+	yamlSourceLocal = "local"
+)
+
+func isHTTPURL(s string) bool {
+	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
 }
 
 // resolveYamlURL which 값에 따라 사용할 raw URL을 반환. 미설정이면 빈 문자열.
@@ -97,6 +121,7 @@ func probeYamlURL(which, url string) SetupYamlCheckResult {
 	result := SetupYamlCheckResult{
 		Which:         which,
 		URL:           url,
+		SourceType:    yamlSourceURL,
 		Reachable:     false,
 		ContentLength: -1,
 		CheckedAt:     time.Now().UTC().Format(time.RFC3339),

@@ -47,37 +47,9 @@ export async function postRemoteCmd(nsid, resourceId, targetId, cmdarr, targetTy
                 userName: "cb-user"
             }
         };
-    } else if (targetType === 'cluster') {
-        // K8s Cluster 로직
-        const queryParams = {
-            k8sClusterNamespace: targetId.namespace,
-            k8sClusterPodName: targetId.podName
-        };
-
-        // containerName이 있으면 추가
-        if (targetId.containerName) {
-            queryParams.k8sClusterContainerName = targetId.containerName;
-        }
-
-        data = {
-            pathParams: {
-                nsId: nsid,
-                k8sClusterId: resourceId  // resourceId는 clusterId
-            },
-            queryParams: queryParams,
-            Request: {
-                command: cmdarr,
-                userName: "cb-user"
-            }
-        };
     }
 
-    let controller;
-    if (targetType === 'cluster') {
-        controller = "/api/" + "mc-infra-manager/" + "Postclusterremotecmd";
-    } else {
-        controller = "/api/" + "mc-infra-manager/" + "PostCmdInfra";
-    }
+    const controller = "/api/" + "mc-infra-manager/" + "PostCmdInfra";
 
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     const responseData = response.data.responseData;

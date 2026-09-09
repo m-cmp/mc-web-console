@@ -60,6 +60,15 @@ func SubsystemAnyController(c echo.Context) error {
 		return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
 	}
 
+	// MC_WEB_CONSOLE_USE_IAM=false(self 모드): 메뉴 조회 op는 mc-iam-manager로 프록시하지 않고
+	// 로컬 yaml 기반 목록을 반환한다. self 모드는 "전체 메뉴 = 역할별 메뉴"이므로
+	// 사용자 메뉴(GetAllAvailableMenus)와 전체 메뉴(Getmenuresources/listMenus)가 같은 응답이다.
+	if !cfg.MCIAM.Use &&
+		strings.EqualFold(subsystemName, "mc-iam-manager") &&
+		isLocalMenuOperation(operationId) {
+		return handleLocalAvailableMenus(c, cfg)
+	}
+
 	// api.yaml에서 기본 Service + ActionSpec 조회 (fallback 및 Auth 설정 소스)
 	service, actionSpec, err := cfg.ApiSpec.GetAction(subsystemName, operationId)
 	if err != nil {

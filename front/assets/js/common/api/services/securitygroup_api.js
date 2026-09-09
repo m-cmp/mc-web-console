@@ -1,5 +1,5 @@
 export async function list(ns) {
-  const controller = '/api/mc-infra-manager/Getallsecuritygroup';
+  const controller = '/api/mc-infra-manager/GetAllSecurityGroup';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns }
   });
@@ -7,7 +7,7 @@ export async function list(ns) {
 }
 
 export async function create(ns, body) {
-  const controller = '/api/mc-infra-manager/Postsecuritygroup';
+  const controller = '/api/mc-infra-manager/PostSecurityGroup';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns },
     request: body
@@ -16,7 +16,7 @@ export async function create(ns, body) {
 }
 
 export async function get(ns, name) {
-  const controller = '/api/mc-infra-manager/Getsecuritygroup';
+  const controller = '/api/mc-infra-manager/GetSecurityGroup';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, securityGroupId: name }
   });
@@ -24,7 +24,7 @@ export async function get(ns, name) {
 }
 
 export async function del(ns, name) {
-  const controller = '/api/mc-infra-manager/Delsecuritygroup';
+  const controller = '/api/mc-infra-manager/DelSecurityGroup';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, securityGroupId: name }
   });

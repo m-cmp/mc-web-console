@@ -58,9 +58,9 @@ window.addEventListener('load', hideLoader);
     case1 : section 으로 show/hide 하는 경우
         addPageHeaderButton(targetSection, createBtnName);        
     case2 : onClickEvent 있는 경우
-        var targetSection = "mcicreate"
+        var targetSection = "infracreate"
         var createBtnName ="Add Mci";
-        var onclickEvent = "webconsolejs['partials/operation/manage/mcicreate'].addNewMci()";    
+        var onclickEvent = "webconsolejs['partials/operation/manage/infracreate'].addNewMci()";    
         addPageHeaderButton(targetSection, createBtnName, onclickEvent);
 
 

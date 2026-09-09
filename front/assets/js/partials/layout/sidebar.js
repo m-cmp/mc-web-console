@@ -119,7 +119,7 @@ function generateMenuHTML(menus) {
                             : null;
                         html += `<li class="nav-item">`;
                         html += `<a class="nav-link" ${resolved ? actionAttrs(resolved, 'sidebar_' + menu.id) : `name="sidebar_${menu.id}"`}>`;
-                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr['undefined']}</span>`;
+                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${resolveMenuIcon(menu)}</span>`;
                         html += `<span class="nav-link-title">${menu.displayName}</span>`;
                         html += `</a>`;
                         html += `</li>`;
@@ -129,7 +129,7 @@ function generateMenuHTML(menus) {
                             ? resolveMenuHref(title, category, menu, null).href
                             : '#navbar-extra';
                         html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${parentHref}" role="button" aria-expanded="false">`;
-                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr['undefined']}</span>`;
+                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${resolveMenuIcon(menu)}</span>`;
                         html += `<span class="nav-link-title">${menu.displayName}</span>`;
                         html += `</div>`;
                     }
@@ -238,11 +238,6 @@ const iconsArr = {
         <path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
         <path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
         </svg>`,
-    single: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 11l3 3l8 -8">
-        </path><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"></path>
-        </svg>`,
     approvals: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-user-check">
@@ -252,3 +247,8 @@ const iconsArr = {
         <path d="M15 19l2 2l4 -4"/>
         </svg>`,
 };
+
+// 메뉴 아이콘 조회 — 데이터 필드(menu.icon) 우선, 없으면 기존 id 기반 조회로 하위호환, 그마저 없으면 기본 아이콘
+function resolveMenuIcon(menu) {
+    return iconsArr[menu.icon] || iconsArr[menu.id] || iconsArr['undefined'];
+}

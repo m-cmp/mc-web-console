@@ -9,6 +9,10 @@ function unwrapResponse(response) {
         err.response = response.response;
         throw err;
     }
+    // 204 No Content: DELETE 등 body 없는 성공 응답 (다른 *_api.js 서비스 파일과 동일 패턴)
+    if (response.status === 204) {
+        return null;
+    }
     if (!response.data) {
         throw new Error('Invalid response from server');
     }
@@ -124,4 +128,25 @@ export async function listUsers() {
     const controller = "/api/mc-iam-manager/Listusers";
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller);
     return response.data.responseData || [];
+}
+
+// 그룹에 할당된 Platform Role 목록
+export async function getGroupPlatformRoles(groupId) {
+    const controller = "/api/mc-iam-manager/getGroupPlatformRoles";
+    const data = {
+        pathParams: { groupId: groupId.toString() }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return unwrapResponse(response) || [];
+}
+
+// 그룹에 Platform Role 할당 — 그룹 소속 사용자 전원이 상속받음
+export async function assignGroupPlatformRole(groupId, roleId) {
+    const controller = "/api/mc-iam-manager/assignGroupPlatformRole";
+    const data = {
+        pathParams: { groupId: groupId.toString() },
+        request: { role_id: parseInt(roleId, 10) }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    return unwrapResponse(response);
 }

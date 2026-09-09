@@ -1,5 +1,5 @@
 <!-- create nodegroup form -->
-<div class="container-xl">
+<div class="container-fluid">
   <form id="cluster_form">
     <input type="hidden" name="n_name" value="" id="n_name" />
     <input type="hidden" name="n_specid" id="n_specid" />
@@ -274,4 +274,4 @@
     </div>
   </div>
 </div>
-{{ javascriptTag("partials/operation/manage/clustercreate.js") | raw }} {{ javascriptTag("common/api/services/pmk_api.js") | raw }} {{ javascriptTag("common/api/services/disk_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("partials/operation/manage/clustercreate.js") | raw }} {{ javascriptTag("common/api/services/k8s_api.js") | raw }} {{ javascriptTag("common/api/services/disk_api.js") | raw }}<!--API 호출-->

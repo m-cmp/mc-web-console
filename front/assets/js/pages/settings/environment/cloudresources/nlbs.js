@@ -6,7 +6,7 @@ import { showToast, TOAST_TYPES } from '../../../../common/utils/toast.js';
 import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from '../../../../common/utils/cspResource.js';
 
 const nlbApi = () => webconsolejs['common/api/services/nlb_api'];
-const mciApi = () => webconsolejs['common/api/services/mci_api'];
+const mciApi = () => webconsolejs['common/api/services/infra_api'];
 
 const AppState = {
   ns: '',
@@ -23,7 +23,7 @@ $('#select-current-project').on('change', async function () {
   AppState.ns = project?.NsId || '';
   hideDetail();
   if (AppState.tables.nlbTable) AppState.tables.nlbTable.replaceData([]);
-  if (AppState.ns) await loadNlbList();
+  if (AppState.ns) await loadNlbInNsList();
 });
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   initTable([]);
 
   if (selectedWorkspaceProject.projectId !== '') {
-    await loadNlbList();
+    await loadNlbInNsList();
   }
 });
 
@@ -77,7 +77,12 @@ async function getInfraList() {
     return infras
       .map((infra) => {
         const id = infra.id || infra.name;
-        return id ? { id, label: formatInfraLabel(id, infra) } : null;
+        if (!id) return null;
+        const provider =
+          (infra.cluster || []).flatMap((c) => c.providerNames || [])[0] ||
+          (infra.node || [])[0]?.connectionConfig?.providerName ||
+          '';
+        return { id, label: formatInfraLabel(id, infra), provider: String(provider).toLowerCase() };
       })
       .filter(Boolean);
   } catch (err) {
@@ -88,10 +93,55 @@ async function getInfraList() {
 }
 
 // ─── NLB 목록 로드 ────────────────────────────────────────────────────────
-// Infra는 NLB 조회 API(nsId+infraId 필요)의 필수 경로 파라미터라 목록 화면
-// 자체를 특정 Infra 선택으로 가둘 수 없다. 대신 namespace의 전체 Infra
-// 목록을 먼저 조회한 뒤, Infra별로 NLB를 조회해 하나의 테이블에 합친다.
 
+// 배포 백엔드(cb-tumblebug NLBInfo)는 Type/Scope/CreatedTime에 json 태그가 없어 대문자 키로 내려오고,
+// targetGroup의 노드 그룹 필드는 nodeGroupId(구계약 subGroupId), 노드 목록은 nodes(구계약 vms)다.
+// 화면 전역에서 이 편차를 흡수하는 접근자.
+const nlbType = (d) => d?.type ?? d?.Type ?? '-';
+const nlbScope = (d) => d?.scope ?? d?.Scope ?? '-';
+const nodeGroupOf = (d) => d?.targetGroup?.nodeGroupId || d?.targetGroup?.subGroupId || '-';
+const assignedNodes = (d) => d?.targetGroup?.nodes || d?.targetGroup?.vms || [];
+
+function _enrichNlbItem(v, infraId) {
+  return {
+    ...v,
+    _infraId: infraId,
+    _provider: getProvider(v),
+    _region: getRegion(v),
+    _type: nlbType(v),
+    _scope: nlbScope(v),
+  };
+}
+
+function _applyNlbItems(items) {
+  AppState.resources.all = items;
+  populateProviderFilterOptions(items, 'filter-provider');
+  populateRegionFilterOptions(items, 'filter-provider', 'filter-region');
+  if (AppState.tables.nlbTable) {
+    AppState.tables.nlbTable.replaceData(items);
+  } else {
+    initTable(items);
+  }
+}
+
+// namespace 전체 NLB를 단일 호출(GetAllNLBInNs, cb-tumblebug#2658)로 조회한다.
+// 각 항목이 infraId를 들고 오므로 Infra별 N+1 조회 없이 하나의 테이블에 바로 싣는다.
+export async function loadNlbInNsList() {
+  if (!AppState.ns) return;
+  try {
+    const data = await nlbApi().getAllNLBInNs(AppState.ns);
+    const rawItems = data?.nlb || (Array.isArray(data) ? data : []);
+    const items = rawItems.map((v) => _enrichNlbItem(v, v.infraId || v._infraId || '-'));
+    _applyNlbItems(items);
+  } catch (err) {
+    console.error('NLB 목록(namespace) 조회 실패:', err);
+    showToast(TOAST_TYPES.ERROR, 'Failed to load NLB list.');
+  }
+}
+
+// [legacy] Infra별 N+1 집계 방식 — GetAllNLBInNs 미지원 백엔드용 폴백으로 유지(현재 미호출).
+// Infra는 NLB 조회 API(nsId+infraId 필요)의 필수 경로 파라미터라 namespace의 전체 Infra
+// 목록을 먼저 조회한 뒤, Infra별로 NLB를 조회해 하나의 테이블에 합친다.
 export async function loadNlbList() {
   if (!AppState.ns) return;
   const infras = await getInfraList();
@@ -109,17 +159,10 @@ export async function loadNlbList() {
       if (result.status !== 'fulfilled') return;
       const rawItems = result.value?.nlb || (Array.isArray(result.value) ? result.value : []);
       for (const v of rawItems) {
-        items.push({ ...v, _infraId: infras[idx].id, _provider: getProvider(v), _region: getRegion(v) });
+        items.push(_enrichNlbItem(v, infras[idx].id));
       }
     });
-    AppState.resources.all = items;
-    populateProviderFilterOptions(items, 'filter-provider');
-    populateRegionFilterOptions(items, 'filter-provider', 'filter-region');
-    if (AppState.tables.nlbTable) {
-      AppState.tables.nlbTable.replaceData(items);
-    } else {
-      initTable(items);
-    }
+    _applyNlbItems(items);
   } catch (err) {
     console.error('NLB 목록 조회 실패:', err);
     showToast(TOAST_TYPES.ERROR, 'Failed to load NLB list.');
@@ -150,8 +193,8 @@ function initTable(items) {
       { title: 'Infra', field: '_infraId', widthGrow: 1, sorter: 'string' },
       { title: 'Provider', field: '_provider', widthGrow: 1, sorter: 'string' },
       { title: 'Region', field: '_region', widthGrow: 1, sorter: 'string' },
-      { title: 'Type', field: 'type', width: 100 },
-      { title: 'Scope', field: 'scope', width: 100 },
+      { title: 'Type', field: '_type', width: 100 },
+      { title: 'Scope', field: '_scope', width: 100 },
       {
         title: 'Listener',
         field: 'listener',
@@ -165,7 +208,15 @@ function initTable(items) {
         title: 'Target NodeGroup',
         field: 'targetGroup',
         widthGrow: 1,
-        formatter: (cell) => cell.getValue()?.subGroupId || '-',
+        formatter: (cell) => nodeGroupOf(cell.getRow().getData()),
+      },
+      {
+        title: 'Assigned Nodes',
+        field: 'targetGroup',
+        width: 130,
+        hozAlign: 'center',
+        formatter: (cell) => String(assignedNodes(cell.getRow().getData()).length),
+        sorter: (a, b, aRow, bRow) => assignedNodes(aRow.getData()).length - assignedNodes(bRow.getData()).length,
       },
       {
         title: 'DNS Name',
@@ -215,15 +266,21 @@ function renderDetail(data) {
   document.getElementById('detail-nlb-infra').textContent = data._infraId || '-';
   document.getElementById('detail-nlb-provider').textContent = getProvider(data);
   document.getElementById('detail-nlb-region').textContent = getRegion(data);
-  document.getElementById('detail-nlb-type').textContent = data.type || '-';
-  document.getElementById('detail-nlb-scope').textContent = data.scope || '-';
+  document.getElementById('detail-nlb-type').textContent = nlbType(data);
+  document.getElementById('detail-nlb-scope').textContent = nlbScope(data);
   document.getElementById('detail-nlb-listener').textContent =
     listener.protocol || listener.port ? `${listener.protocol || ''}:${listener.port || ''}` : '-';
   renderTruncatableCopyable('detail-nlb-endpoint', listener.dnsName || listener.ip || '-');
-  document.getElementById('detail-nlb-nodegroup').textContent = target.subGroupId || '-';
+  document.getElementById('detail-nlb-nodegroup').textContent = nodeGroupOf(data);
+  const nodes = assignedNodes(data);
+  document.getElementById('detail-nlb-nodes').innerHTML = nodes.length
+    ? nodes.map((n) => `<span class="badge bg-blue-lt me-1">${n}</span>`).join('')
+    : '-';
   document.getElementById('detail-nlb-target-port').textContent = target.port || '-';
   document.getElementById('detail-nlb-healthchecker').textContent =
-    hc.protocol || hc.port ? `${hc.protocol || ''}:${hc.port || ''} (interval ${hc.interval || '-'}, threshold ${hc.threshold || '-'})` : '-';
+    hc.protocol || hc.port
+      ? `${hc.protocol || ''}:${hc.port || ''} (interval ${hc.interval || '-'}, timeout ${hc.timeout || '-'}, threshold ${hc.threshold || '-'})`
+      : '-';
   renderTruncatableCopyable('detail-nlb-csp-id', data.cspResourceId || '-');
   document.getElementById('detail-nlb-description').textContent = data.description || '-';
   document.getElementById('detail-nlb-health').textContent = '-';
@@ -236,6 +293,10 @@ function renderDetail(data) {
 function renderTruncatableCopyable(targetId, fullText) {
   const target = document.getElementById(targetId);
   if (!target) return;
+  // 이전 렌더의 툴팁 인스턴스가 body에 남지 않도록 정리
+  if (window.bootstrap?.Tooltip) {
+    target.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => bootstrap.Tooltip.getInstance(el)?.dispose());
+  }
   target.innerHTML = '';
 
   if (!fullText || fullText === '-') {
@@ -250,11 +311,19 @@ function renderTruncatableCopyable(targetId, fullText) {
 
   const span = document.createElement('span');
   span.textContent = fullText;
-  span.title = fullText;
   span.style.maxWidth = '240px';
   span.style.overflow = 'hidden';
   span.style.textOverflow = 'ellipsis';
   span.style.whiteSpace = 'nowrap';
+  span.style.cursor = 'default';
+  // 잘린 값은 hover 시 Bootstrap 툴팁으로 전체 텍스트를 즉시 보여준다
+  // (브라우저 기본 title 툴팁은 지연·미표시 환경이 있어 대체). 값이 짧아 안 잘리면 툴팁 불필요.
+  span.setAttribute('data-bs-toggle', 'tooltip');
+  span.setAttribute('data-bs-placement', 'top');
+  span.setAttribute('title', fullText);
+  if (window.bootstrap?.Tooltip) {
+    new bootstrap.Tooltip(span, { container: 'body', trigger: 'hover focus', customClass: 'nlb-full-text-tooltip' });
+  }
 
   const copyBtn = document.createElement('a');
   copyBtn.href = '#';
@@ -378,7 +447,170 @@ export async function executeBulkDelete() {
   AppState.resources.bulkSelected = [];
   AppState.tables.nlbTable?.deselectRow();
   hideDetail();
-  await loadNlbList();
+  await loadNlbInNsList();
+}
+
+// ─── Edit (노드 Assign/UnAssign) ─────────────────────────────────────────
+// tumblebug에 NLB update API가 없어(RestPutNLB 미구현) Listener/HealthChecker는 생성 후 변경 불가.
+// 콘솔의 "Edit"는 타겟 노드 추가(AddNLBNodes)/해제(RemoveNLBNodes)만을 의미한다.
+// Infra Info NLB 탭(partials/operation/manage/infranlb.js)의 Assign/UnAssign 로직을 이 화면 컨텍스트
+// (AppState.ns + 선택 행의 _infraId)에 맞춰 단일 Edit 모달로 구성.
+
+// 편집 대상 스냅샷 { id, infraId, assigned:[nodeId] } — 모달 오픈~저장 사이에만 유효
+let _editTarget = null;
+
+export async function triggerEditSelected() {
+  const table = AppState.tables.nlbTable;
+  const selected = table ? table.getSelectedData() : [];
+  if (selected.length !== 1) {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'Validation',
+      selected.length === 0 ? 'Please select an NLB to edit.' : 'Please select only one NLB to edit.'
+    );
+    return;
+  }
+  const row = selected[0];
+  _editTarget = { id: nlbId(row), infraId: row._infraId, assigned: assignedNodes(row) };
+  document.getElementById('nlb-edit-nlb-name').textContent = _editTarget.id;
+  document.getElementById('nlb-edit-assigned-list').innerHTML = '<div class="text-secondary">Loading...</div>';
+  document.getElementById('nlb-edit-candidate-list').innerHTML = '<div class="text-secondary">Loading...</div>';
+  document.getElementById('nlb-edit-node-status').textContent = '';
+  new bootstrap.Modal(document.getElementById('nlb-edit-modal')).show();
+  await _loadEditNodes();
+}
+
+async function _loadEditNodes() {
+  if (!_editTarget) return;
+  const { id, infraId } = _editTarget;
+
+  // 목록 캐시가 오래됐을 수 있어 상세를 새로 조회해 할당 노드를 확정한다.
+  try {
+    const detail = await nlbApi().getNLB(AppState.ns, infraId, id);
+    if (detail) _editTarget.assigned = assignedNodes(detail);
+  } catch (err) {
+    console.error('NLB 상세 조회 실패:', err);
+  }
+  const statusByGroup = await getNodeStatusesByGroup(AppState.ns, infraId);
+  _renderEditLists(statusByGroup);
+}
+
+// 좌: 할당된 노드(체크=해제 대상) / 우: 미할당 노드(체크=추가 대상, 비Running은 비활성).
+// 백엔드 Add는 중복 검증 없이 append하므로 기할당 노드 제외는 프론트가 책임진다.
+function _renderEditLists(statusByGroup) {
+  const assignedEl = document.getElementById('nlb-edit-assigned-list');
+  const candidateEl = document.getElementById('nlb-edit-candidate-list');
+  const statusEl = document.getElementById('nlb-edit-node-status');
+  const assigned = new Set(_editTarget?.assigned || []);
+
+  assignedEl.innerHTML = assigned.size
+    ? Array.from(assigned)
+        .map(
+          (n) => `
+        <label class="form-check mb-1">
+          <input class="form-check-input nlb-edit-unassign-check" type="checkbox" value="${n}">
+          <span class="form-check-label">${n}</span>
+        </label>`
+        )
+        .join('')
+    : '<div class="text-secondary">No nodes are assigned to this NLB.</div>';
+
+  const candidates = [];
+  for (const [groupId, nodes] of Object.entries(statusByGroup || {})) {
+    for (const n of nodes) {
+      if (assigned.has(n.id)) continue;
+      candidates.push({ ...n, groupId });
+    }
+  }
+  if (candidates.length === 0) {
+    candidateEl.innerHTML = '<div class="text-secondary">No assignable nodes. All nodes of this Infra are already assigned.</div>';
+    statusEl.textContent = '';
+    return;
+  }
+  candidateEl.innerHTML = candidates
+    .map((n) => {
+      const running = n.status === 'Running';
+      return `
+        <label class="form-check mb-1">
+          <input class="form-check-input nlb-edit-assign-check" type="checkbox" value="${n.id}" ${running ? '' : 'disabled'}>
+          <span class="form-check-label">${n.id} <span class="text-secondary">(${n.groupId})</span>
+            <span class="badge ${running ? 'bg-success' : 'bg-warning'} ms-1">${n.status || 'Unknown'}</span></span>
+        </label>`;
+    })
+    .join('');
+  const notRunning = candidates.filter((n) => n.status !== 'Running').length;
+  statusEl.textContent = notRunning > 0 ? `${notRunning} node(s) not in Running state cannot be assigned.` : '';
+}
+
+export async function executeEditNlbNodes() {
+  if (!_editTarget) return;
+  const { id, infraId } = _editTarget;
+  const toAdd = Array.from(document.querySelectorAll('.nlb-edit-assign-check:checked')).map((el) => el.value);
+  const toRemove = Array.from(document.querySelectorAll('.nlb-edit-unassign-check:checked')).map((el) => el.value);
+  if (toAdd.length === 0 && toRemove.length === 0) {
+    showToast(TOAST_TYPES.WARNING, 'Select nodes to assign or unassign.');
+    return;
+  }
+
+  const spinner = document.getElementById('nlb-edit-spinner');
+  const btn = document.getElementById('nlb-edit-execute-btn');
+  spinner.classList.remove('d-none');
+  btn.disabled = true;
+
+  // CSP 측 동시 변경 오류를 피하려고 add → remove 순차 호출. 하나가 실패해도 다른 하나는 시도한다.
+  const failures = [];
+  let added = 0;
+  let removed = 0;
+  if (toAdd.length > 0) {
+    try {
+      await nlbApi().addNLBNodes(AppState.ns, infraId, id, toAdd);
+      added = toAdd.length;
+    } catch (err) {
+      console.error('NLB 노드 Assign 실패:', err);
+      failures.push(`assign: ${_errMsg(err)}`);
+    }
+  }
+  if (toRemove.length > 0) {
+    try {
+      await nlbApi().removeNLBNodes(AppState.ns, infraId, id, toRemove);
+      removed = toRemove.length;
+    } catch (err) {
+      console.error('NLB 노드 UnAssign 실패:', err);
+      failures.push(`unassign: ${_errMsg(err)}`);
+    }
+  }
+
+  spinner.classList.add('d-none');
+  btn.disabled = false;
+
+  if (failures.length === 0) {
+    showToast(TOAST_TYPES.SUCCESS, `Assigned ${added}, unassigned ${removed} node(s) for "${id}"`);
+    bootstrap.Modal.getInstance(document.getElementById('nlb-edit-modal'))?.hide();
+  } else {
+    showToast(
+      added + removed > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.ERROR,
+      `Edit NLB "${id}" — ${failures.join('; ')}`
+    );
+    if (added + removed > 0) bootstrap.Modal.getInstance(document.getElementById('nlb-edit-modal'))?.hide();
+  }
+  AppState.tables.nlbTable?.deselectRow();
+  await _reloadAndRefreshDetail(id);
+}
+
+function _errMsg(err) {
+  return err?.response?.data?.responseData?.message || err?.response?.data?.message || err?.message || 'unknown error';
+}
+
+// 편집 후 목록 재조회 + 열려 있는 Detail이 대상 NLB면 갱신
+async function _reloadAndRefreshDetail(targetId) {
+  await loadNlbInNsList();
+  const shown = AppState.resources.selected;
+  if (shown && nlbId(shown) === targetId) {
+    const fresh = AppState.resources.all.find((it) => nlbId(it) === targetId && it._infraId === shown._infraId);
+    if (fresh) {
+      AppState.resources.selected = fresh;
+      renderDetail(fresh);
+    }
+  }
 }
 
 // ─── Filter ───────────────────────────────────────────────────────────────
@@ -434,6 +666,7 @@ export async function openCreateNlbModal() {
   document.getElementById('create-nlb-target-port').value = '80';
   document.getElementById('create-nlb-protocol').value = 'TCP';
   document.getElementById('create-nlb-description').value = '';
+  _resetHealthCheckerInputs();
   await _loadCreateInfraOptions();
   new bootstrap.Modal(document.getElementById('create-nlb-modal')).show();
 }
@@ -448,13 +681,102 @@ async function _loadCreateInfraOptions() {
     opt.textContent = infra.label;
     select.appendChild(opt);
   }
+  _createInfraCache = infras;
   if (infras.length === 1) select.value = infras[0].id;
-  await _loadNodeGroupOptions(select.value);
+  await Promise.all([_loadNodeGroupOptions(select.value), _applyHealthCheckerSupport(select.value)]);
 }
 
 document.getElementById('create-nlb-infra')?.addEventListener('change', function () {
   _loadNodeGroupOptions(this.value);
+  _applyHealthCheckerSupport(this.value);
 });
+
+// ─── Create NLB — HealthChecker 입력 (CSP별 커스텀 지원 여부는 GetNLBSupport로 결정) ──
+// tumblebug NLBHealthCheckerReq는 interval/timeout/threshold(int)만 받고 0이면 백엔드 기본값을 쓴다.
+// CSP에 따라 커스텀 값을 무시/거부하는 필드가 있어(예: AWS TCP NLB는 timeout 커스텀 불가)
+// GetNLBSupport 응답으로 해당 필드를 비활성화한다. 지원 정보 조회 실패는 생성 자체를 막지 않는다.
+
+const HC_FIELDS = [
+  { key: 'Interval', id: 'create-nlb-hc-interval', label: 'Interval' },
+  { key: 'Timeout', id: 'create-nlb-hc-timeout', label: 'Timeout' },
+  { key: 'Threshold', id: 'create-nlb-hc-threshold', label: 'Threshold' },
+];
+
+// Create 모달용 Infra 목록 캐시 [{ id, label, provider }] — provider→GetNLBSupport 매칭에 사용
+let _createInfraCache = [];
+// GetNLBSupport 응답의 supports 맵 캐시 (페이지 수명 동안 1회 조회)
+let _nlbSupportCache = null;
+
+async function _getNlbSupport() {
+  if (_nlbSupportCache) return _nlbSupportCache;
+  try {
+    const data = await nlbApi().getNLBSupport();
+    _nlbSupportCache = data?.supports || {};
+  } catch (err) {
+    console.warn('GetNLBSupport 조회 실패 — health checker 필드 전체 활성 유지:', err);
+    _nlbSupportCache = {};
+  }
+  return _nlbSupportCache;
+}
+
+function _resetHealthCheckerInputs() {
+  for (const f of HC_FIELDS) {
+    const el = document.getElementById(f.id);
+    if (!el) continue;
+    el.value = '0';
+    el.disabled = false;
+    el.title = '';
+  }
+  const note = document.getElementById('create-nlb-hc-support-note');
+  if (note) note.textContent = '';
+}
+
+async function _applyHealthCheckerSupport(infraId) {
+  const note = document.getElementById('create-nlb-hc-support-note');
+  const provider = (_createInfraCache.find((i) => i.id === infraId)?.provider || '').toLowerCase();
+  if (!provider) {
+    _resetHealthCheckerInputs();
+    return;
+  }
+  const supports = await _getNlbSupport();
+  const sup = supports[provider];
+  const unsupported = [];
+  for (const f of HC_FIELDS) {
+    const el = document.getElementById(f.id);
+    if (!el) continue;
+    const ok = sup ? sup[`customHealthChecker${f.key}`] !== false : true;
+    el.disabled = !ok;
+    if (!ok) {
+      el.value = '0';
+      el.title = `${f.label} is not configurable on ${provider.toUpperCase()}`;
+      unsupported.push(f.label);
+    } else {
+      el.title = '';
+    }
+  }
+  if (note) {
+    note.textContent = unsupported.length
+      ? `${unsupported.join(', ')} ${unsupported.length > 1 ? 'are' : 'is'} not configurable on ${provider.toUpperCase()} (provider default is used).`
+      : '';
+  }
+}
+
+// 입력값을 non-negative int로 읽는다. disabled 필드는 항상 0(=default). 잘못된 값이면 null.
+function _readHealthCheckerInputs() {
+  const out = {};
+  for (const f of HC_FIELDS) {
+    const el = document.getElementById(f.id);
+    if (!el || el.disabled) {
+      out[f.key.toLowerCase()] = 0;
+      continue;
+    }
+    const raw = String(el.value ?? '').trim();
+    const n = raw === '' ? 0 : Number(raw);
+    if (!Number.isInteger(n) || n < 0) return null;
+    out[f.key.toLowerCase()] = n;
+  }
+  return out;
+}
 
 document.getElementById('create-nlb-nodegroup')?.addEventListener('change', _updateNodeGroupStatus);
 
@@ -555,6 +877,12 @@ export async function executeCreateNlb() {
     return;
   }
 
+  const healthChecker = _readHealthCheckerInputs();
+  if (!healthChecker) {
+    showToast(TOAST_TYPES.WARNING, 'Health checker values must be non-negative integers (0 = provider default).');
+    return;
+  }
+
   const spinner = document.getElementById('create-nlb-spinner');
   const btn = document.getElementById('create-nlb-execute-btn');
   spinner.classList.remove('d-none');
@@ -569,11 +897,8 @@ export async function executeCreateNlb() {
     targetGroup: { protocol, port: String(targetPort), nodeGroupId: subGroupId },
     // model.NLBHealthCheckerReq는 interval/timeout/threshold만 받는 int 필드이며,
     // 0을 보내면 tumblebug가 자체 기본값을 적용한다("0 = use default").
-    healthChecker: {
-      interval: 0,
-      timeout: 0,
-      threshold: 0,
-    },
+    // CSP가 커스텀을 지원하지 않는 필드는 GetNLBSupport 기준으로 비활성화돼 0으로 전송된다.
+    healthChecker,
   };
   if (description) body.description = description;
 
@@ -581,7 +906,7 @@ export async function executeCreateNlb() {
     await nlbApi().postNLB(AppState.ns, infraId, body);
     showToast(TOAST_TYPES.SUCCESS, `NLB for "${subGroupId}" created successfully`);
     bootstrap.Modal.getInstance(document.getElementById('create-nlb-modal'))?.hide();
-    await loadNlbList();
+    await loadNlbInNsList();
   } catch (err) {
     console.error('NLB 생성 실패:', err);
     showToast(TOAST_TYPES.ERROR, 'Failed to create NLB: ' + (err.message || ''));
@@ -594,11 +919,14 @@ export async function executeCreateNlb() {
 // ─── webconsolejs 등록 ────────────────────────────────────────────────────
 if (typeof webconsolejs === 'undefined') { window.webconsolejs = {}; }
 webconsolejs['pages/settings/environment/cloudresources/nlbs'] = {
+  loadNlbInNsList,
   loadNlbList,
   hideDetail,
   checkSelectedNlbHealth,
   confirmBulkDelete,
   executeBulkDelete,
+  triggerEditSelected,
+  executeEditNlbNodes,
   openCreateNlbModal,
   executeCreateNlb,
 };

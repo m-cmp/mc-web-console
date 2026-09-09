@@ -431,7 +431,7 @@ export async function getRecommendVmInfo() {
 		}
 	}
 
-	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+	var respData = await webconsolejs["common/api/services/infra_api"].mciRecommendVm(data);
 	if (respData.status.code != 200) {
 		console.error(respData.status)
 		// TODO : Error 표시

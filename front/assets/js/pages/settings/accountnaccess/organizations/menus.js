@@ -159,9 +159,11 @@ const UIManager = {
         const vt = document.getElementById('detail-menu-viewtype');
         const fw = document.getElementById('detail-menu-frameworkservice');
         const ph = document.getElementById('detail-menu-path');
+        const ic = document.getElementById('detail-menu-icon');
         if (vt) vt.textContent = menu.viewType || 'local';
         if (fw) fw.textContent = menu.frameworkService || '-';
         if (ph) ph.textContent = menu.path != null && menu.path !== '' ? menu.path : '-';
+        if (ic) ic.textContent = menu.icon || '(default)';
 
         const panel = document.getElementById('menu-detail-panel');
         if (panel.classList.contains('d-none')) {
@@ -238,6 +240,8 @@ const ModalManager = {
         if (cf) cf.value = '';
         const cp = document.getElementById('create-menu-path');
         if (cp) cp.value = '';
+        const ci = document.getElementById('create-menu-icon');
+        if (ci) ci.value = '';
 
         // ParentID select 채우기
         UIManager.populateParentSelect('create-menu-parentid', parentId || '');
@@ -263,6 +267,8 @@ const ModalManager = {
         if (ef) ef.value = menu.frameworkService || '';
         const ep = document.getElementById('edit-menu-path');
         if (ep) ep.value = menu.path != null ? menu.path : '';
+        const ei = document.getElementById('edit-menu-icon');
+        if (ei) ei.value = menu.icon || '';
 
         UIManager.populateParentSelect('edit-menu-parentid', menu.parentId || '');
 
@@ -311,6 +317,7 @@ window.saveCreateMenu = async function () {
     const viewType = document.getElementById('create-menu-viewtype')?.value || 'local';
     const frameworkService = document.getElementById('create-menu-frameworkservice')?.value.trim() || '';
     const path = document.getElementById('create-menu-path')?.value.trim() || '';
+    const icon = document.getElementById('create-menu-icon')?.value || '';
     if ((viewType === 'iframe' || viewType === 'popup') && !frameworkService) {
         alert('frameworkService is required for iframe/popup viewType.');
         return;
@@ -326,6 +333,7 @@ window.saveCreateMenu = async function () {
         viewType: viewType,
         frameworkService: frameworkService,
         path: path,
+        icon: icon,
         roleIds: UIManager.getCheckedRoleIds('create-menu-roles')
     };
 
@@ -356,6 +364,7 @@ window.saveEditMenu = async function () {
     const viewType = document.getElementById('edit-menu-viewtype')?.value || 'local';
     const frameworkService = document.getElementById('edit-menu-frameworkservice')?.value.trim() || '';
     const path = document.getElementById('edit-menu-path')?.value.trim() || '';
+    const icon = document.getElementById('edit-menu-icon')?.value || '';
     if ((viewType === 'iframe' || viewType === 'popup') && !frameworkService) {
         alert('frameworkService is required for iframe/popup viewType.');
         return;
@@ -370,6 +379,7 @@ window.saveEditMenu = async function () {
         viewType: viewType,
         frameworkService: frameworkService,
         path: path,
+        icon: icon,
         roleIds: UIManager.getCheckedRoleIds('edit-menu-roles')
     };
 
@@ -417,6 +427,12 @@ function sortMenusByDependency(menus) {
     return result;
 }
 
+// export-menus-filename 기본값 생성 — 초 단위 타임스탬프로 재export 시 파일명 충돌 방지
+function buildDefaultExportFilename(format) {
+    const stamp = new Date().toISOString().replace(/[:T]/g, '-').split('.')[0];
+    return `menu-export-${stamp}.${format}`;
+}
+
 // Export: 포맷(json/yaml)과 파일명을 받아 다운로드
 window.exportMenus = async function(format, filename) {
     try {
@@ -450,7 +466,7 @@ window.exportMenus = async function(format, filename) {
 // Export 모달 저장 버튼 핸들러
 window.doExportMenus = async function() {
     const format = document.querySelector('input[name="export-format"]:checked').value;
-    const filename = (document.getElementById('export-menus-filename').value || `menu-export.${format}`).trim();
+    const filename = (document.getElementById('export-menus-filename').value || buildDefaultExportFilename(format)).trim();
     bootstrap.Modal.getInstance(document.getElementById('export-menus-modal')).hide();
     await exportMenus(format, filename);
 };
@@ -568,8 +584,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const exportModal = document.getElementById('export-menus-modal');
     if (exportModal) {
         exportModal.addEventListener('show.bs.modal', () => {
-            const date = new Date().toISOString().slice(0, 10);
-            document.getElementById('export-menus-filename').value = `menu-${date}.json`;
+            document.getElementById('export-menus-filename').value = buildDefaultExportFilename('json');
             document.getElementById('export-format-json').checked = true;
         });
     }

@@ -113,7 +113,9 @@ function renderDetail(data) {
     });
   }
 
-  const commands = req.postCommand?.command || [];
+  // postCommands는 다단계 phase 배열(cb-tumblebug v0.12.29+). 이 화면은 phase 구분 없이
+  // 전 phase의 command를 순서대로 이어붙여 표시한다(최소안 — 다단계 UI는 범위 밖).
+  const commands = (req.postCommands || []).flatMap(pc => pc.command || []);
   document.getElementById('detail-postCommand').textContent = commands.length ? commands.join('\n') : '-';
 
   document.getElementById('detail-raw-json').textContent = JSON.stringify(req, null, 2);

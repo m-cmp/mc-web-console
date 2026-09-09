@@ -201,7 +201,10 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         } else if (loaderType === 'page') {
           deactivePageLoader();
         }
-        webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
+        // 호출부가 서버 메시지를 직접 노출하는 경우(options.suppressErrorToast) 일반 문구로 덮지 않는다.
+        if (!options.suppressErrorToast) {
+          webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
+        }
         throw error;
       }
     }

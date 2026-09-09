@@ -1,6 +1,6 @@
 /*
     <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
-        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/mci_api.commoncallbac','Arg')">
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/infra_api.commoncallbac','Arg')">
         commonSimpleModal
     </a>
 */

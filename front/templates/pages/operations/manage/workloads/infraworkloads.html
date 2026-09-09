@@ -1,0 +1,1972 @@
+<div class="page-body">
+  <div class="container-fluid">
+    <!-- MCI DASHBOARD -->
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <div class="col-md-7">
+          {{ partial("partials/operation/manage/infra_status_summary.html") | raw }}
+        </div>
+
+        <div class="col-md-5">
+          {{ partial("partials/operation/manage/server_status_summary.html") | raw }}
+        </div>
+
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">List of Infra</h3>
+              <div
+                class="card-actions btn-actions"
+                style="justify-content: center"
+              >
+                <!-- filter -->
+                <a
+                  class="btn-action"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#filterbody"
+                  aria-expanded="false"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-filter"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                      d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"
+                    />
+                  </svg>
+                </a>
+
+                <!-- sort -->
+                <div class="dropdown">
+                  <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-arrows-sort"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                      <path d="M3 9l4 -4l4 4m-4 -4v14" />
+                      <path d="M21 15l-4 4l-4 -4m4 4v-14" />
+                    </svg>
+                  </a>
+                  <div
+                    class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
+                  >
+                    <a class="dropdown-item" href="#">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Action
+                    </a>
+                    <a class="dropdown-item" href="#">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
+                        ></path>
+                        <path
+                          d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"
+                        ></path>
+                        <path d="M16 5l3 3"></path>
+                      </svg>
+                      Another action
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Action -->
+                <div class="dropdown">
+                  <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                      <path d="M6 9l6 6l6 -6" />
+                    </svg>
+                  </a>
+                  <div
+                    class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
+                  >
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'reboot')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Reboot
+                    </a>
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'suspend')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Suspend
+                    </a>
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'resume')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Resume
+                    </a>
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate Infra ?', 'pages/operation/manage/infraworkloads.changeMciLifeCycle', 'terminate')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Terminate
+                    </a>
+
+                    <div class="dropdown-divider"></div>
+
+                    <a
+                      class="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciDelete', 'Would you like to delete Infra ?', 'pages/operation/manage/infraworkloads.deleteMci')"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Delete
+                    </a>
+                    <a
+                      class="dropdown-item"
+                      onclick="webconsolejs['pages/operation/manage/infraworkloads'].openSaveAsTemplateModal()"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"
+                        ></path>
+                        <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                        <path d="M14 4l0 4l-6 0l0 -4"></path>
+                      </svg>
+                      Save as Template
+                    </a>
+                    <a
+                      class="dropdown-item"
+                      onclick="webconsolejs['pages/operation/manage/infraworkloads'].exportInfraAsJson()"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon dropdown-item-icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                        ></path>
+                        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                      </svg>
+                      Export as JSON
+                    </a>
+                  </div>
+                </div>
+
+                <!-- refresh -->
+                <a
+                  class="btn-action"
+                  onclick="webconsolejs['pages/operation/manage/infraworkloads'].refreshMciList()"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div id="filterbody" class="accordion-collapse collapse">
+              <div class="accordion-body p-3">
+                <!-- 기존 필터 영역 -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <h6 class="text-muted mb-2">General Filter</h6>
+                    <div class="row">
+                      <div class="col-sm-12 col-md-4 row mb-1">
+                        <div
+                          class="col-4 col-form-label required d-flex justify-content-end"
+                        >
+                          Field
+                        </div>
+                        <select class="col form-select" id="filter-field">
+                          <option value="name">Name</option>
+                          <option value="provider">Provider</option>
+                          <option value="statusCount.countTotal">
+                            Total Nodes
+                          </option>
+                          <option value="statusCount.countRunning">
+                            Running
+                          </option>
+                          <option value="statusCount.countSuspended">
+                            Suspended
+                          </option>
+                          <option value="statusCount.countTerminated">
+                            Terminated
+                          </option>
+                        </select>
+                      </div>
+
+                      <div class="col-sm-12 col-md-3 row mb-1">
+                        <div
+                          class="col-4 col-form-label d-flex justify-content-end"
+                        >
+                          Type
+                        </div>
+                        <select class="col form-select" id="filter-type">
+                          <option value="like">like</option>
+                          <option value="=">=</option>
+                          <option value="<"><</option>
+                          <option value="<="><=</option>
+                          <option value=">">></option>
+                          <option value=">=">>=</option>
+                          <option value="!=">!=</option>
+                        </select>
+                      </div>
+
+                      <div class="col-sm-12 col-md-5 row mb-1">
+                        <div
+                          class="col-sm-4 col-md-3 col-form-label required d-flex justify-content-end"
+                        >
+                          Filter
+                        </div>
+                        <input
+                          class="col form-control"
+                          id="filter-value"
+                          type="text"
+                          placeholder="value to filter"
+                        />
+                        <div class="col-auto">
+                          <a
+                            id="filter-clear"
+                            class="btn btn-icon"
+                            type="button"
+                            aria-label="Button"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="icon icon-tabler icons-tabler-outline icon-tabler-x"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
+                              <path d="M18 6l-12 12" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Label 필터 영역 -->
+                  <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Label Filter</h6>
+                    <div class="row">
+                      <div class="col-sm-12 col-md-3 row mb-1">
+                        <div
+                          class="col-4 col-form-label d-flex justify-content-end"
+                        >
+                          Type
+                        </div>
+                        <select class="col form-select" id="label-filter-type">
+                          <option value="=">=</option>
+                          <option value="!=">!=</option>
+                          <option value="in">in</option>
+                          <option value="notin">notin</option>
+                          <option value="exists">exists</option>
+                          <option value="!exists">!exists</option>
+                        </select>
+                      </div>
+
+                      <div class="col-sm-12 col-md-9 row mb-1">
+                        <div
+                          class="col-sm-4 col-md-3 col-form-label d-flex justify-content-end"
+                        >
+                          Value
+                        </div>
+                        <input
+                          class="col form-control"
+                          id="label-filter-value"
+                          type="text"
+                          placeholder="env=production,tier=backend"
+                        />
+                        <div class="col-auto">
+                          <a
+                            id="label-filter-clear"
+                            class="btn btn-icon"
+                            type="button"
+                            aria-label="Button"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="icon icon-tabler icons-tabler-outline icon-tabler-x"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
+                              <path d="M18 6l-12 12" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          </a>
+                          <a
+                            id="label-filter-apply"
+                            class="btn btn-icon"
+                            type="button"
+                            aria-label="Button"
+                            style="margin-left: 5px;"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="icon icon-tabler icons-tabler-outline icon-tabler-check"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
+                              <path d="M5 12l5 5l10 -10" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-table table-responsive">
+              <!-- Tabulator TABLE SET -->
+              <div id="mcilist-table"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          {{ partial("partials/operation/manage/infrainfo.html") | raw }}
+        </div>
+      </div>
+    </div>
+
+    <!-- MCI CREATE -->
+
+    <!-- TODO : divide to express, simple, expert form  -->
+    <div id="infracreate" class="section">
+      <form id="express_form">
+        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
+        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
+        <input
+          type="hidden"
+          name="subGroupSize"
+          value=""
+          id="p_subGroupSize"
+        /><!-- vm_cnt에서 subGroupSize로 변경 -->
+        <input type="hidden" name="name" value="" id="p_name" />
+        <input type="hidden" name="description" id="p_description" />
+        <input type="hidden" name="provider" id="p_provider" />
+        <input type="hidden" name="image" id="p_imageId" />
+        <input type="hidden" name="spec" id="p_specId" />
+        <input type="hidden" name="commonSpec" id="p_commonSpecId" />
+        <input type="hidden" name="commonImage" id="p_commonImageId" />
+        <input type="hidden" name="rootDiskType" id="p_root_disk_type" />
+        <input type="hidden" name="rootDiskSize" id="p_root_disk_size" />
+        <input
+          type="hidden"
+          name="connectionName"
+          value=""
+          id="p_connectionName"
+        />
+      </form>
+
+      <div class="row row-cards">
+        <div class="col-md-9">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Create Infra</h3>
+            </div>
+
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label required">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="mci_name"
+                  id="mci_name"
+                  placeholder="Input Name"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  name="mci_desc"
+                  id="mci_desc"
+                  placeholder="type Description"
+                ></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label required">Deployment Algorithm</label>
+                <select
+                  class="form-select"
+                  name="mci_deploy_algorithm"
+                  id="mci_deploy_algorithm"
+                >
+                  <option value="express" selected>Express</option>
+                  <option value="simple">Simple</option>
+                  <option value="expert">Expert</option>
+                  <option value="template">Template</option>
+                  <option value="import_json">Import from JSON</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label required"
+                  >Policy on Partial Failure</label
+                >
+                <select
+                  class="form-select"
+                  name="mci_policy_on_partial_failure"
+                  id="mci_policy_on_partial_failure"
+                >
+                  <option value="continue" selected>Continue</option>
+                  <option value="rollback">Rollback</option>
+                  <option value="refine">Refine</option>
+                </select>
+                <div class="form-hint">
+                  <strong>Continue:</strong> Create Infra with successful Nodes,
+                  failed Nodes remain for manual refinement<br />
+                  <strong>Rollback:</strong> Delete entire Infra if any Node fails
+                  (all-or-nothing deployment)<br />
+                  <strong>Refine:</strong> Automatically clean up failed Nodes,
+                  keep successful ones (recommended for large deployments)
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Infra Labels</label>
+                <div class="input-group mb-2">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="mci_label_key"
+                    placeholder="key"
+                  />
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="mci_label_value"
+                    placeholder="value"
+                  />
+                  <button
+                    type="button"
+                    class="btn"
+                    id="mci_label_add_btn"
+                    onclick="webconsolejs['partials/operation/manage/infracreate'].addInfraLabel()"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div id="mci_label_list"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="row row-cards">
+                    <ul class="removebullet vmStatus-list" id="mci_server_list">
+                      <li
+                        class="removebullet btn btn-secondary-lt"
+                        id="mci_plusVmIcon"
+                        onclick="webconsolejs['partials/operation/manage/infracreate'].displayNewServerForm()"
+                      >
+                        + NodeGroup
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer text-end">
+              <button
+                type=""
+                class="btn btn-primary"
+                onclick="webconsolejs['partials/operation/manage/infracreate'].deployMci()"
+              >
+                Deploy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="card-title">Infra Creation Steps</h3>
+              <ul class="steps steps-vertical">
+                <li class="step-item">
+                  <div class="h4 m-0">1. Infra Basic Info</div>
+                  <div class="text-secondary">Enter Infra name and description</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">2. Node Configuration</div>
+                  <div class="text-secondary">Click +Node button to configure Node/NodeGroup</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">3. Add Configuration</div>
+                  <div class="text-secondary">Click Done button to add configuration</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">4. Deploy Infra</div>
+                  <div class="text-secondary">Click Deploy button to execute deployment</div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- addserver -->
+    <div id="addserver" class="section">
+      <form id="express_form">
+        <!-- <input type="hidden" name="specId"  value="" id="p_specId" /> -->
+        <!--id 에 간단설정이면 s_, Expert On 이면 e_ , Express On 이면 p_-->
+        <input
+          type="hidden"
+          name="subGroupSize"
+          value=""
+          id="p_subGroupSize"
+        /><!-- vm_cnt에서 subGroupSize로 변경 -->
+        <input type="hidden" name="name" value="" id="p_name" />
+        <input type="hidden" name="description" id="p_description" />
+        <input type="hidden" name="provider" id="p_provider" />
+        <input type="hidden" name="image" id="p_imageId" />
+        <input type="hidden" name="spec" id="p_specId" />
+        <input type="hidden" name="commonSpec" id="p_commonSpecId" />
+        <input type="hidden" name="commonImage" id="p_commonImageId" />
+        <input
+          type="hidden"
+          name="connectionName"
+          value=""
+          id="p_connectionName"
+        />
+      </form>
+
+      <div class="row row-cards">
+        <div class="col-md-9">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Extend Node</h3>
+            </div>
+
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="extend_mci_name"
+                  id="extend_mci_name"
+                  value=""
+                  readonly
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  name="extend_mci_desc"
+                  id="extend_mci_desc"
+                  placeholder="type Description"
+                  readonly
+                ></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Deployment Algorithm</label>
+                <select
+                  class="form-select"
+                  name="vm_deploy_algorithm"
+                  id="vm_deploy_algorithm"
+                >
+                  <option value="express">Express</option>
+                  <option value="simple">Simple</option>
+                  <option value="expert">Expert</option>
+                  <option value="template">Template</option>
+                  <option value="import_json">Import from JSON</option>
+                </select>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="row row-cards">
+                    <ul class="vmStatus-list removebullet" id="vm_server_list">
+                      <li
+                        class="removebullet btn btn-secondary-lt"
+                        id="vm_plusVmIcon"
+                        onclick="webconsolejs['partials/operation/manage/infracreate'].displayNewServerForm()"
+                      >
+                        + Node
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer text-end">
+              <button
+                type=""
+                class="btn btn-primary"
+                onclick="webconsolejs['partials/operation/manage/infracreate'].deployVm()"
+              >
+                Deploy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="card-title">Node Configuration Steps</h3>
+              <ul class="steps steps-vertical">
+                <li class="step-item">
+                  <div class="h4 m-0">1. Node Name & Description</div>
+                  <div class="text-secondary">Enter server name and description</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">2. Node Spec</div>
+                  <div class="text-secondary">Select provider and server specification</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">3. Image & Disk</div>
+                  <div class="text-secondary">Choose OS image and configure disk</div>
+                </li>
+                <li class="step-item">
+                  <div class="h4 m-0">4. Network & Labels</div>
+                  <div class="text-secondary">Set connection and labels</div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ADD POLICY -->
+    <div id="addpolicy" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Create Policy</h3>
+        </div>
+
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label required">Policy name</label>
+            <input
+              type="text"
+              class="form-control"
+              name="policy_name"
+              id="policy_name"
+              placeholder="Input Policy Name"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea
+              class="form-control"
+              rows="2"
+              name="policy_desc"
+              id="policy_desc"
+              placeholder="Input Policy Description"
+            ></textarea>
+          </div>
+
+          <div class="form-group mb-2">
+            <label class="form-label">Policy Type / placementAlgo</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input
+                  class="form-control"
+                  name="policy_type"
+                  value="ScaleOut"
+                  id="policy_type"
+                  readonly
+                />
+              </div>
+              <div class="col-6">
+                <select
+                  class="form-select"
+                  name="policy_placementAlgo"
+                  id="policy_placementAlgo"
+                >
+                  <option value="random" selected>random</option>
+                  <option value="location">location</option>
+                  <option value="cost">cost</option>
+                  <option value="performance">performance</option>
+                  <option value="latency">latency</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label">Command</label>
+                <input
+                  class="form-control"
+                  name="policy_command"
+                  id="policy_command"
+                  placeholder="ex: List [ client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH client IP is: $client_ip ]"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label">UserName</label>
+                <input
+                  class="form-control"
+                  name="policy_username"
+                  id="policy_username"
+                  placeholder="ex: cb-user"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group mb-2">
+                <label class="form-label required">Metric</label>
+                <select
+                  class="form-select"
+                  name="policy_metric"
+                  id="policy_ep_metric"
+                >
+                  <option value="">Select Metric</option>
+                  <option value="cpu">CPU Usage</option>
+                  <option value="memory">Memory Usage</option>
+                  <option value="disk">Disk Usage</option>
+                  <option value="network">Network Usage</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-2">
+                <label class="form-label required">Operator</label>
+                <select
+                  class="form-select"
+                  name="policy_operator"
+                  id="policy_ep_operator"
+                >
+                  <option value="">Select Operator</option>
+                  <option value=">">Greater than (>)</option>
+                  <option value=">=">Greater than or equal (>=)</option>
+                  <option value="<">Less than (<)</option>
+                  <option value="<=">Less than or equal (<=)</option>
+                  <option value="==">Equal (==)</option>
+                  <option value="!=">Not equal (!=)</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-2">
+                <label class="form-label required">Operand</label>
+                <input
+                  class="form-control"
+                  name="policy_operand"
+                  id="policy_ep_operand"
+                  placeholder="ex: 80 (for 80%)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="text-info">Node Configuration</h3>
+            </div>
+            <div class="card-body">
+              <div class="row row-cards">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Node Name</label>
+                      <input
+                        class="form-control"
+                        name="policy_server_name"
+                        rows="1"
+                        placeholder="Input Name"
+                        id="policy_ep_name"
+                      />
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Spec</label>
+                      <div class="row g-2">
+                        <div class="col">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Please Use Search"
+                            name="spec"
+                            id="policy_ep_specId"
+                          />
+
+                          <input
+                            type="hidden"
+                            name="provider"
+                            id="policy_ep_provider"
+                            value=""
+                          />
+                          <input
+                            type="hidden"
+                            name="connectionName"
+                            id="policy_ep_connectionName"
+                            value=""
+                          />
+
+                          <input
+                            type="hidden"
+                            name="commonImageId"
+                            id="policy_ep_commonImageId"
+                            value=""
+                          />
+                          <input
+                            type="hidden"
+                            name="commonSpecId"
+                            id="policy_ep_commonSpecId"
+                            value=""
+                          />
+                        </div>
+                        <div class="col-auto">
+                          <a
+                            href="#"
+                            class="btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#spec-search"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="icon"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              fill="none"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              ></path>
+                              <path
+                                d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                              ></path>
+                              <path d="M21 21l-6 -6"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label required">Image</label>
+                      <div class="row g-2">
+                        <div class="col">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Please Use Search"
+                            name="image"
+                            id="policy_ep_imageId_input"
+                          />
+                          <input
+                            type="hidden"
+                            name="commonImageId"
+                            id="policy_ep_commonImageId"
+                            value=""
+                          />
+                        </div>
+                        <div class="col-auto">
+                          <a
+                            href="#"
+                            class="btn"
+                            onclick="webconsolejs['partials/operation/manage/imagerecommendation'].validateAndOpenImageModal(event)"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="icon"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              fill="none"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              ></path>
+                              <path
+                                d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                              ></path>
+                              <path d="M21 21l-6 -6"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label">Root Disk</label>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <select
+                            class="form-select"
+                            name="policy_rootDiskType"
+                            onchange="webconsolejs['partials/operation/manage/infracreate'].changeDiskSize(this.value)"
+                            id="policy_ep_root_disk_type"
+                          >
+                            <option value="">Select Root Disk Type</option>
+                          </select>
+                        </div>
+                        <div class="col-6">
+                          <input
+                            class="form-control"
+                            name="policy_rootDiskSize"
+                            rows="1"
+                            placeholder="Root Disk Size(GB)"
+                            id="policy_ep_root_disk_size"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group mb-2">
+                      <label class="form-label">NodeGroup Size</label>
+                      <div class="row g-2">
+                        <div class="col-md-6">
+                          <div class="d-flex align-items-center">
+                            <button
+                              type="button"
+                              class="btn btn-outline-secondary-lt btn-sm"
+                            >
+                              –
+                            </button>
+                            <input
+                              type="text"
+                              id="policy_ep_vm_add_cnt"
+                              class="form-control mx-2 text-center"
+                              style="width: 60px"
+                              value="1"
+                              readonly
+                            />
+                            <button
+                              type="button"
+                              class="btn btn-outline-secondary-lt btn-sm"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-2">
+                      <label class="form-label">Description</label>
+                      <textarea
+                        class="form-control"
+                        name="policy_server_description"
+                        id="policy_ep_description"
+                        rows="3"
+                        placeholder="type Description"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer text-end">
+          <button
+            type=""
+            class="btn btn-primary"
+            onclick="webconsolejs['pages/operation/manage/infraworkloads'].deployPolicy()"
+          >
+            Deploy
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- end of add server area-->
+  </div>
+  <!-- end of container-x1-->
+</div>
+<!-- end of page-body -->
+
+<!-- remote commnad -->
+{{ javascriptTag("partials/operation/manage/remotecmd.js") | raw }}
+
+<!-- MCI Terminal Modal -->
+<div
+  class="modal modal-blur fade"
+  id="mci-cmdtestmodal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mci-cmdtestmodal-title">Remote Terminal</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="accordion" id="mci-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="mci-terminal-heading">
+              <button
+                class="accordion-button"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mci-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="mci-terminal-collapse"
+              >
+              Execute Commands
+              </button>
+            </h2>
+            <div
+              id="mci-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="mci-terminal-heading"
+              data-bs-parent="#mci-terminal-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <!-- Command Input Section -->
+                <div id="mci-command-input-section">
+                  <div class="mb-3">
+                    <label for="mci-command-input" class="form-label"></label>
+                    <textarea 
+                      class="form-control" 
+                      id="mci-command-input" 
+                      placeholder="Enter command to execute on all Nodes..."
+                      rows="3"
+                    ></textarea>
+                    <div class="form-text">Command will be executed on all Nodes in this Infra</div>
+                  </div>
+                  
+                  <div class="d-grid gap-2">
+                    <button
+                      id="mci-execute-command-btn"
+                      class="btn btn-primary"
+                      type="button"
+                    >
+                      Execute
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Command Results Section (initially hidden) -->
+                <div id="mci-command-results-section" style="display: none;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Execution Result/Output</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="mci-transfer-heading">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mci-transfer-collapse"
+                aria-expanded="false"
+                aria-controls="mci-transfer-collapse"
+              >
+                Transfer a file
+              </button>
+            </h2>
+            <div
+              id="mci-transfer-collapse"
+              class="accordion-collapse collapse"
+              aria-labelledby="mci-transfer-heading"
+              data-bs-parent="#mci-terminal-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <!-- Path 입력 필드 추가 -->
+                <div class="mb-3">
+                  <label for="mci-file-path-input" class="form-label">Target Path</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="mci-file-path-input" 
+                    placeholder="/tmp/" 
+                    value="/tmp/"
+                  >
+                  <div class="form-text">Directory path where the file will be stored</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button
+                    id="mci-show-content-btn"
+                    class="btn btn-primary"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mci-transfer-collapse"
+                  >
+                    Transfer File
+                  </button>
+                </div>
+                <form
+                  class="dropzone dz-clickable"
+                  id="mci-dropzone-custom"
+                  action="./"
+                  autocomplete="off"
+                  novalidate=""
+                >
+                  <div class="dz-message">
+                    <h3 class="dropzone-msg-title">Drop Down Files</h3>
+                    <span class="dropzone-msg-desc"
+                      >Upload files (Max 10MB): .txt, .json, .yaml, .conf, .log, .sh</span
+                    >
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- add server : server configuration -->
+{{ partial("partials/operation/manage/infracreate.html") | raw }}
+
+<!-- add server : spec-search -->
+{{ partial("partials/operation/manage/serverrecommendation.html") | raw }}
+<!-- image-search 모달은 infracreate.html partial이 이미 포함 — 직접 include 시 #image-search 중복 렌더링됨 -->
+<!-- add server : cspimagelist -->
+{{ partial("partials/operation/manage/cspimagelist.html") | raw }}
+<!-- add server : cspspeclist -->
+{{ partial("partials/operation/manage/cspspeclist.html") | raw }}
+
+<!-- Label Editor Modal -->
+<div
+  class="modal modal-blur fade"
+  id="label-editor-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  style="display: none"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="label-editor-title">Label Edit</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Label Management</h3>
+            <div
+              class="card-actions btn-actions"
+              style="justify-content: center"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                onclick="addNewLabelRow()"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M12 5l0 14"></path>
+                  <path d="M5 12l14 0"></path>
+                </svg>
+                Add Label
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-md-4">
+                <label class="form-label">Key</label>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Value</label>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Action</label>
+              </div>
+            </div>
+            <div id="label-editor-content">
+              <!-- Label 행들이 여기에 동적으로 추가됩니다 -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].saveLabels()"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VM Terminal Modal -->
+<div
+  class="modal modal-blur fade"
+  id="cmdtestmodal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cmdtestmodal-title">Remote Terminal</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="accordion" id="server-terminal-accordion">
+          <!-- Terminal Console Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="server-terminal-heading">
+              <button
+                class="accordion-button"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#server-terminal-collapse"
+                aria-expanded="true"
+                aria-controls="server-terminal-collapse"
+              >
+                Command
+              </button>
+            </h2>
+            <div
+              id="server-terminal-collapse"
+              class="accordion-collapse collapse show"
+              aria-labelledby="server-terminal-heading"
+              data-bs-parent="#server-terminal-accordion"
+            >
+              <div class="accordion-body p-0">
+                <div id="xterm-container"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transfer a file Accordion Item -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="server-transfer-heading">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#server-transfer-collapse"
+                aria-expanded="false"
+                aria-controls="server-transfer-collapse"
+              >
+                Transfer a file
+              </button>
+            </h2>
+            <div
+              id="server-transfer-collapse"
+              class="accordion-collapse collapse"
+              aria-labelledby="server-transfer-heading"
+              data-bs-parent="#server-terminal-accordion"
+            >
+              <div class="accordion-body pt-0">
+                <!-- Path 입력 필드 추가 -->
+                <div class="mb-3">
+                  <label for="file-path-input" class="form-label">Target Path</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="file-path-input" 
+                    placeholder="/tmp/" 
+                    value="/tmp/"
+                  >
+                  <div class="form-text">Directory path where the file will be stored</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button
+                    id="show-content-btn"
+                    class="btn btn-primary"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#server-transfer-collapse"
+                  >
+                    Transfer File
+                  </button>
+                </div>
+                <form
+                  class="dropzone dz-clickable"
+                  id="dropzone-custom"
+                  action="./"
+                  autocomplete="off"
+                  novalidate=""
+                >
+                  <div class="dz-message">
+                    <h3 class="dropzone-msg-title">Drop Down Files</h3>
+                    <span class="dropzone-msg-desc"
+                      >Upload files (Max 10MB): .txt, .json, .yaml, .conf, .log, .sh</span
+                    >
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VM Import 3단계 팝업 (RQ-CLOUD-ADMIN-007 / UC-IMPORT-006) -->
+<div class="modal modal-blur fade" id="import-vm-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="import-vm-modal-title">Node Import (1/3 — Select Target Node)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Step 1: VM 선택 -->
+        <div id="import-vm-step1">
+          <div class="row mb-3 align-items-end">
+            <div class="col-5">
+              <label class="form-label">Connection</label>
+              <select class="form-select" id="import-vm-connection"></select>
+            </div>
+            <div class="col-3">
+              <button class="btn btn-secondary w-100"
+                onclick="webconsolejs['pages/operation/manage/importvm'].loadCspVMs()">Query</button>
+            </div>
+          </div>
+          <div id="import-vm-step1-list" class="d-none">
+            <div class="table-responsive">
+              <table class="table table-vcenter">
+                <thead>
+                  <tr>
+                    <th style="width:40px"><input type="checkbox" id="import-vm-select-all" class="form-check-input"></th>
+                    <th>Node Name</th>
+                    <th>Instance Type</th>
+                    <th>CSP ID</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="import-vm-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="import-vm-step1-loading" class="text-center py-3 d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: 의존 자원 상태 -->
+        <div id="import-vm-step2" class="d-none">
+          <p class="text-muted mb-2">Checks registration status of dependent resources for selected Nodes.</p>
+          <div id="import-vm-dep-table"></div>
+          <div class="mt-3">
+            <label class="form-check">
+              <input class="form-check-input" type="checkbox" id="import-vm-auto-register" checked>
+              <span class="form-check-label">Auto-register unregistered resources (registered during import)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 3: Target MCI 설정 -->
+        <div id="import-vm-step3" class="d-none">
+          <div class="mb-3">
+            <label class="form-label">Target Project</label>
+            <input type="text" class="form-control" id="import-vm-project" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Infra Name</label>
+            <div class="mb-2">
+              <label class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="import-vm-mci-mode" value="new" checked
+                  onchange="webconsolejs['pages/operation/manage/importvm'].toggleMciMode(this.value)">
+                <span class="form-check-label">Enter new Infra name</span>
+              </label>
+              <label class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="import-vm-mci-mode" value="ref"
+                  onchange="webconsolejs['pages/operation/manage/importvm'].toggleMciMode(this.value)">
+                <span class="form-check-label">Reference existing Infra (for name copy)</span>
+              </label>
+            </div>
+            <input type="text" class="form-control" id="import-vm-mci-name" placeholder="Enter Infra name">
+            <select class="form-select d-none" id="import-vm-mci-ref"
+              onchange="document.getElementById('import-vm-mci-name').value = this.value">
+              <option value="">Select existing Infra (for name reference)</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-secondary d-none" id="import-vm-prev-btn"
+          onclick="webconsolejs['pages/operation/manage/importvm'].prevStep()">← Prev</button>
+        <button type="button" class="btn btn-primary" id="import-vm-next-btn"
+          onclick="webconsolejs['pages/operation/manage/importvm'].nextStep()">Next →</button>
+        <button type="button" class="btn btn-primary d-none" id="import-vm-execute-btn"
+          onclick="webconsolejs['pages/operation/manage/importvm'].executeImportVMs()">
+          <span id="import-vm-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+          Run Import
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Infra Template 선택 팝업 -->
+<div class="modal modal-blur fade" id="infra-template-select-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Deploy from Infra Template</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-2">
+          Infra Name/Description below override the template values; current Infra Name / Description inputs of the
+          Create Infra form are used.
+        </p>
+        <div id="template-select-table"></div>
+
+        <!-- 선택한 템플릿 미리보기 (읽기 전용) -->
+        <div id="template-select-detail" class="mt-3">
+          <p id="template-select-detail-hint" class="text-muted mb-0">
+            Select a template to preview its configuration.
+          </p>
+          <div id="template-select-detail-content" class="d-none">
+            <div class="mb-2">
+              <span class="text-muted">Description:</span>
+              <span id="template-select-detail-desc">-</span>
+            </div>
+            <h4 class="mb-1">NodeGroups</h4>
+            <div class="table-responsive" style="overflow-x:auto">
+              <table class="table table-vcenter table-sm">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Spec ID</th>
+                    <th>Image ID</th>
+                    <th>Size</th>
+                    <th>Connection</th>
+                    <th>Root Disk</th>
+                    <th>Zone</th>
+                  </tr>
+                </thead>
+                <tbody id="template-select-nodegroup-rows"></tbody>
+              </table>
+            </div>
+            <div id="template-select-postcommand-block" class="d-none">
+              <h4 class="mb-1">Post Command</h4>
+              <pre id="template-select-postcommand" class="bg-dark text-white p-2 rounded mb-0" style="max-height:120px;overflow:auto"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          id="btn-add-nodegroup-to-form"
+          class="btn btn-outline-primary"
+          onclick="webconsolejs['partials/operation/manage/infracreate'].addTemplateToForm()"
+        >
+          Add NodeGroup
+        </button>
+        <button
+          type="button"
+          id="btn-deploy-from-template"
+          class="btn btn-primary"
+          onclick="webconsolejs['partials/operation/manage/infracreate'].deployFromSelectedTemplate()"
+        >
+          Deploy from Template
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Import NodeGroups from JSON (진짜 Node Import — export한 JSON을 읽어 Add Node 처리) -->
+<div class="modal modal-blur fade" id="import-nodegroups-json-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import NodeGroups from JSON</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-2">
+          Select a JSON file exported from an existing Infra ("Export as JSON" or "Export NodeGroup as JSON" action).
+          Its NodeGroups will be added to the form below — review/edit them before clicking Deploy.
+        </p>
+
+        <!-- 드래그앤드롭 영역 — Terminal popup과 동일한 Dropzone 사용 -->
+        <div class="dropzone dz-clickable" id="import-json-dropzone">
+          <div class="dz-message">
+            <h3 class="dropzone-msg-title">Drop a JSON file here</h3>
+            <span class="dropzone-msg-desc">or click to browse (.json, max 10MB)</span>
+          </div>
+        </div>
+
+        <!-- 파일 선택 input은 유지 — 키보드/스크린리더 접근성 및 기존 자동화 호환 -->
+        <div class="form-label mt-3 text-muted">Or select a file</div>
+        <input
+          type="file"
+          class="form-control"
+          id="import-nodegroups-json-file"
+          accept=".json"
+          onchange="webconsolejs['partials/operation/manage/infracreate'].handleImportJsonFileChange(this)"
+        />
+
+        <!-- 파싱된 NodeGroups 미리보기 -->
+        <div id="import-json-preview" class="mt-3">
+          <div id="import-json-conflict-warning" class="alert alert-warning d-none" role="alert"></div>
+          <p id="import-json-preview-hint" class="text-muted mb-0">
+            Choose a JSON file to preview its NodeGroups.
+          </p>
+          <div id="import-json-preview-content" class="d-none">
+            <h4 class="mb-1">NodeGroups</h4>
+            <div class="table-responsive" style="overflow-x:auto">
+              <table class="table table-vcenter table-sm">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Spec ID</th>
+                    <th>Image ID</th>
+                    <th>Size</th>
+                    <th>Connection</th>
+                    <th>Root Disk</th>
+                    <th>Zone</th>
+                  </tr>
+                </thead>
+                <tbody id="import-json-nodegroup-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          id="btn-add-imported-nodegroups"
+          class="btn btn-primary"
+          disabled
+          onclick="webconsolejs['partials/operation/manage/infracreate'].applyImportedNodeGroups()"
+        >
+          Add NodeGroup(s)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MCI를 Infra Template으로 저장 팝업 -->
+<div class="modal modal-blur fade" id="save-as-template-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Save as Infra Template</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Template Name</label>
+          <input type="text" id="save-template-name" class="form-control" placeholder="my-infra-template">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <input type="text" id="save-template-desc" class="form-control" placeholder="Optional description">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].executeSaveAsTemplate()"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Node Data Disk Attach 팝업 (Default/Group 탭 Node Detail에서 공유) -->
+<div class="modal modal-blur fade" id="node-attach-disk-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Attach Data Disk</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Target Node</label>
+          <input type="text" class="form-control" id="node-attach-disk-target" readonly>
+        </div>
+        <div class="mb-3">
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="node-attach-disk-mode" id="node-attach-mode-existing" checked>
+            <label class="btn btn-outline-primary" for="node-attach-mode-existing">Existing Disk</label>
+            <input type="radio" class="btn-check" name="node-attach-disk-mode" id="node-attach-mode-new">
+            <label class="btn btn-outline-primary" for="node-attach-mode-new">Create New</label>
+          </div>
+        </div>
+        <div id="node-attach-existing-fields">
+          <div class="mb-2">
+            <label class="form-label required">Disk</label>
+            <select class="form-select" id="node-attach-disk-select"></select>
+          </div>
+        </div>
+        <div id="node-attach-new-fields" class="d-none">
+          <div class="mb-3">
+            <label class="form-label required">Disk Name</label>
+            <input type="text" class="form-control" id="node-attach-new-name" placeholder="e.g. my-data-disk">
+          </div>
+          <div class="mb-3">
+            <label class="form-label required">Disk Size (GB)</label>
+            <input type="number" class="form-control" id="node-attach-new-size" min="1" placeholder="e.g. 100">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Disk Type</label>
+            <input type="text" class="form-control" id="node-attach-new-type" placeholder="optional">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-control" id="node-attach-new-description" placeholder="optional">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="node-attach-disk-execute-btn"
+          onclick="webconsolejs['pages/operation/manage/infraworkloads'].executeAttachDiskToNode()">
+          <span id="node-attach-disk-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>Attach
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- pageloader-->
+{{ partial("partials/layout/pageloader.html") | raw }}
+{{ javascriptTag("pages/operation/manage/infraworkloads.js") | raw }}
+{{ javascriptTag("common/api/services/infra_api.js") | raw }}
+{{ javascriptTag("common/api/services/disk_api.js") | raw }}
+{{ javascriptTag("common/api/services/vmimage_api.js") | raw }}
+{{ javascriptTag("common/api/services/import_api.js") | raw }}
+{{ javascriptTag("pages/operation/manage/importvm.js") | raw }}
+{{ javascriptTag("common/api/services/infratemplate_api.js") | raw }}

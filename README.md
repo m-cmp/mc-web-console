@@ -23,212 +23,63 @@ The MC-WEB-CONSOLE multi-cloud management portal and open interfaces include sev
 
 ---
 
-## Quick Start with docker
+## Installation
 
-Use this guide to start MC-WEB-CONOLE  using the docker. This guide explains on the premise that all prerequisites have been met.
+mc-web-console is one subsystem of the M-CMP platform. It depends on **mc-iam-manager** (authentication/menu/RBAC) and **mc-infra-manager** (multi-cloud infra API) being reachable, and its menu catalog (`conf/webconsole_menu_resources.yaml`, see [Menu Catalog](#menu-catalog-canonical-source) below) is the platform-wide canonical source that mc-iam-manager seeds itself from.
 
-### Prequisites
+### Recommended: install the whole platform with mc-admin-cli
 
-- Ubuntu (22.04 is tested) with external access (https-443, http-80, ssh-ANY)
-- pre-installed [MC-INFRA-MANAGER](https://github.com/m-cmp/mc-infra-manager) and [MC-IAM-MANAGER](https://github.com/m-cmp/mc-iam-manager)
-    - Both should be completed setting (users, pre-Runscript, credential ….)
-- Stop or Disable Services using 3001 port for web interface
-
-### Step one : Clone this repo
+For a new environment, use [mc-admin-cli](https://github.com/m-cmp/mc-admin-cli)'s `installAll.sh` — it is the **unified installer** for the whole M-CMP platform (mc-infra-manager/cb-tumblebug, mc-iam-manager, mc-web-console, and the rest of the microservices) and brings everything up together via Docker Compose, including seeding mc-iam-manager's menu/role data from this repo.
 
 ```bash
-git clone <https://github.com/m-cmp/mc-web-console> <YourFolderName>
-
+git clone https://github.com/m-cmp/mc-admin-cli.git -b v0.5.0
+cd mc-admin-cli/conf/docker/conf/mc-iam-manager
+cp .env.setup .env   # edit: platform admin ID/password and other REQUIRE-marked values
+cd ../../../../bin
+./installAll.sh
 ```
 
-### Step two : Configuration
+See mc-admin-cli's [README](https://github.com/m-cmp/mc-admin-cli#readme) (Quick Start / Quick Guide) for the full walkthrough, deployment modes, and troubleshooting. Once it finishes, mc-web-console is reachable at `https://<server>:3001` with default credentials `mcmp` / `mcmp_password`.
 
-- Modifying an Environment variable in docker-compose file
-- Those marked with OPTIONAL do not have to be changed. Those marked with REQUIRED are fixed values that must be changed or used after setting.
-    - port
-    - GO_ENV
-    - MCINFRAMANAGER
-    - MCIAMMANAGER
-    - API_USERNAME
-    - API_PASSWORD
-    - DEV_DATABASE_URL
-    - POSTGRES_DB
-    - POSTGRES_USER
-    - POSTGRES_PASSWORD
+### Local development (contributors)
 
+mc-web-console runs as **two separate Echo servers**: `api/` (backend API / proxy to mc-iam-manager, mc-infra-manager, and the other microservices, default port 3000) and `front/` (HTML templates + static assets, default port 3001).
+
+**Prerequisites**
+- Go 1.25+ ([install guide](https://go.dev/doc/install))
+- Node.js (for `front/`'s webpack build)
+- A reachable mc-iam-manager instance (and mc-infra-manager, for infra-resource screens) — either one you run locally, or a shared dev/stage instance
+
+**1. Clone and configure**
 ```bash
-cd <YourFolderName>/scripts
-vi dockerfile
+git clone https://github.com/m-cmp/mc-web-console.git
+cd mc-web-console
+cp conf/.env.sample conf/.env
+# edit conf/.env — MC_WEB_CONSOLE_* ports, Postgres connection, MC_WEB_CONSOLE_USE_IAM, etc.
 ```
+`conf/api.yaml` (committed, not a `.sample`) holds the `services.<name>.baseurl` map the API server proxies to — update `services.mc-iam-manager.baseurl` / `services.mc-infra-manager.baseurl` to point at the instances you're using. Client-side (browser) access means these must be real, reachable addresses — not `localhost`/`127.0.0.1` — unless you're also running the browser on the same host.
 
-```jsx
-version: '3.8'
-
-services:
-  mcwebconsole:
-    build: ../
-    container_name: mcwebconsole
-    depends_on:
-      - postgresdb
-    ports:
-      - "3000:3000"
-      - "3001:3001"
-    environment:
-      GO_ENV: development # production | development # Please CHANGE ME (OPTIONAL)
-      GODEBUG: netdns=go
-      MCIAMMANAGER: <https://sample.mc-iam-manager.com:5000> # Please CHANGE ME (REQUIRE)
-      MCINFRAMANAGER: <http://sample.m-cmp.com:1323/tumblebug> # Please CHANGE ME (REQUIRE)
-      API_USERNAME: API_USERNAME # Please CHANGE ME (REQUIRE)
-      API_PASSWORD: API_PASSWORD # Please CHANGE ME (REQUIRE)
-      DEV_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbdev # Please CHANGE ME (OPTIONAL)
-      PROD_DATABASE_URL: postgres://mcwebadmin:mcwebadminpassword@mcwebconsole-postgresdb:5432/mcwebconsoledbprod # Please CHANGE ME (OPTIONAL)
-    restart: always
-    networks:
-      - mcwebconsole
-
-  mcwebconsole-postgresdb:
-    image: postgres:14-alpine
-    container_name: mcwebconsole-postgresdb
-    volumes:
-      - ~/.m-cmp/mc-web-console/postgresql/data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: mcwebconsoledbdev # [mcwebconsoledbdev / mcwebconsoledbprod] # Please CHANGE ME (OPTIONAL)
-      POSTGRES_USER: mcwebadmin # Please CHANGE ME (OPTIONAL)
-      POSTGRES_PASSWORD: mcwebadminpassword # Please CHANGE ME (OPTIONAL)
-    networks:
-      - mcwebconsole
-
-networks:
-  mcwebconsole:
-
-```
-
-### Step three: Excute docker-compose
-
+**2. Build and run**
 ```bash
-docker-compose up --build -d
+# api
+cd api && go build -o ../bin/api ./cmd/main.go && cd ..
+MC_WEB_CONSOLE_API_PORT=3000 ./bin/api
+
+# front (separate terminal)
+cd front && npm install && npm run build && go build -o ../bin/front ./cmd/app && cd ..
+MC_WEB_CONSOLE_FRONT_PORT=3001 ./bin/front
 ```
+For active `front/` development, `npm run dev` (webpack `--watch`) rebuilds static assets automatically instead of running `npm run build` by hand each time; the Go binaries (`api/`, `front/`) still need a manual rebuild.
 
-If you check the log as below, it seems that you have successfully built and deployed the mc-web-console without any problems.
-
+**3. Verify**
 ```bash
-$ docker-compose up --build -d
-## This warning sign is a natural occurrence when running an existing MCIAMMANAGER with docker components.
-WARNING: Found orphan containers (mciammanager, mciammanager-keycloak, mciammanager-nginx, mciammanager-certbot) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up.
-Building mcwebconsole
-Step 1/32 : FROM golang:1.25-alpine AS builder
- ---> 0594d7786b7c
-Step 2/32 : RUN apk add --no-cache gcc libc-dev musl-dev curl npm wget
- ---> Using cache
- ---> ed49efe7089b
-Step 3/32 : RUN npm install --global yarn
-.....
-Creating mcwebconsole-postgresdb ... done
-Creating mcwebconsole            ... done
-
+curl http://localhost:3001/readyz
 ```
+Then open `http://<host>:3001/auth/login` — you should reach the login screen and be able to sign in as a user created in mc-iam-manager.
 
-### Step four: Ready Check
+### Menu Catalog (canonical source)
 
-1. **Verify Framework and Service Status**
-    
-    • Confirm that the services required by MC-WEB-CONSOLE, such as MC-INFRA-MANAGER and MC-IAM-MANAGER, are running.
-    
-    • Ensure the database connection is established without issues.
-    
-2. **Check Status in Browser**
-    
-    • Open a web browser and navigate to the following URL to verify the service response:
-    
-    ```bash
-    http://<YOUR_ADDRESS>:3001/readyz
-    ```
-    
+`conf/webconsole_menu_resources.yaml` in this repo is the **platform-wide canonical menu catalog** — every menu item's id, hierarchy, and (for embedded microservice screens) `viewtype`/`frameworkservice`/`path`. mc-iam-manager does not maintain its own menu definitions. How the file is used depends on the mode:
 
-### WELCOME: **Visit Web pages**
-
-```jsx
-http://<YOUR_ADDRESS>:3001/auth/login
-
-```
-
-MC-WEB-CONSOLE has been successfully deployed if the login screen is displayed when accessing the endpoint above. Login users can log in as users created by MC-IAM-MANAGER.
-
----
-
-**[설치 환경]**
-
-mc-web-console은 1.25 이상의 Go 버전이 설치된 다양한 환경에서 실행 가능하지만 최종 동작을 검증한 OS는 Ubuntu 22.0.4입니다.
-
-**[의존성]**
-
-mc-web-console은 내부적으로 mc-iam-manager & mc-infra-manager의 개방형 API를 이용하기 때문에 각 서버의 연동이 필요합니다.(필수)
-
-- https://github.com/m-cmp/mc-infra-manager README 참고하여 설치 및 실행
-- https://github.com/m-cmp/mc-iam-manager README 참고하여 설치 및 실행 (검증된 버전 : mc-iam-manager v0.2.0).
-
----
-
-**[소스 설치]**
-
-- Git 설치
-    - `$ sudo apt update`
-    - `$ sudo apt install git`
-- Go 1.25 이상의 버전 설치 ( 공식 문서 참고 )
-    - https://go.dev/doc/install
-- mc-web-console 설치
-    
-    ```bash
-    $ git clone <https://github.com/m-cmp/mc-web-console.git>
-    ```
-    
-    ```bash
-    $ git clone <https://github.com/m-cmp/mc-web-console.git>
-    ```
-    
-    - api
-
-        ```bash
-        $ cd mc-web-console/api
-        $ go build ./...
-        ```
-
-    - front
-
-        ```bash
-        $ cd mc-web-console/front
-        $ npm install
-        $ npm run build
-        $ go build ./cmd/app
-        ```
-        
-
----
-
-**[환경 설정]**
-
-- /conf/.env.sample 파일을 .env로 변경합니다.
-- .env 파일에서 이용하고자 하는 개방형 API 서버의 실제 URL 정보로 수정합니다.
-    
-    **[주의사항]**
-    
-    mc-web-console을 비롯하여 연동되는 모든 서버가 자신의 로컬 환경에서 개발되는 경우를 제외하고는 클라이언트의 웹브라우저에서 접근하기 때문에 localhost나 127.0.0.1 주소가 아닌 실제 IP 주소를 사용해야 합니다.
-    
-
----
-
-**[mc-web-console 실행]**
-
-- 코드기반 실행
-    
-    ```bash
-    $ cd <YourFolderName>/api
-    $ source ../conf/.env
-    $ go run ./cmd
-    ```
-
-    ```bash
-    $ cd <YourFolderName>/front
-    $ source ../conf/.env
-    $ go run ./cmd/app
-    ```
+- **IAM mode** (`MC_WEB_CONSOLE_USE_IAM=true`, the mc-admin-cli default): the catalog is seeded into mc-iam-manager's `mcmp_menus` table **once, at first install**. mc-admin-cli bundles a copy of this file under `conf/docker/conf/mc-web-console/api/conf/` and mounts it into the mc-iam-manager container (`MC_WEB_CONSOLE_MENUYAML` points at the mounted path; a URL is also accepted). After that the IAM DB is the source of truth — menus and role-menu mappings are edited through the console's Menus / Roles screens (or mc-iam-manager's `/api/menus*` APIs), and the console reads the full menu (`/api/menus/list`) and the caller's role-filtered menu (`/api/users/menus/list`) from IAM. Re-running the seed skips when menus already exist; an operator can explicitly `force` a re-seed (role mappings are backed up first) — see mc-iam-manager's README "Menu Management". So changing this file affects existing deployments only when someone updates the mc-admin-cli copy and forces a re-seed.
+- **self mode** (`MC_WEB_CONSOLE_USE_IAM=false`): the API server loads this file at boot and answers the menu queries (`GetAllAvailableMenus`, `Getmenuresources`, `listMenus`) from it directly — full menu = role menu, no IAM round trip. Screens that only work with IAM (Menus, Roles, CSP Roles, Cloud Overview's Setup Status) are hidden from the local list (`api/internal/handler/menu_local.go`).

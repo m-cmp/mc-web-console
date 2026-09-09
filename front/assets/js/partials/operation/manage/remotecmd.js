@@ -223,117 +223,6 @@ export async function initTerminal(id, nsId, mciId, targetId, targetType) {
     });
 }
 
-// K8s Cluster 전용 터미널 초기화 함수
-export async function initClusterTerminal(id, nsId, clusterId, namespace, podName, containerName = null) {
-    let fileContents = [];
-
-    if (terminalInstance) {
-        terminalInstance.dispose();
-        terminalInstance = null;
-    }
-
-    if (dropzoneInstance) {
-        dropzoneInstance.destroy();
-        dropzoneInstance = null;
-    }
-
-    const term = new Terminal({
-        theme: {
-            background: '#1e1e1e',
-            foreground: '#ffffff',
-            cursor: '#ffcc00'
-        },
-        cursorBlink: true
-    });
-
-    const fitAddon = new FitAddon();
-    term.loadAddon(fitAddon);
-
-    const container = document.getElementById(id);
-    term.open(container);
-    terminalInstance = term;
-
-    function prompt() {
-        term.write('\r\n\r\n $ ');
-    }
-
-    // SSH Private IP 메시지 제거 - 기존 로직은 유지하되 화면에 표시하지 않음
-    const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
-
-    await processCommand(nsId, clusterId, { namespace, podName, containerName }, [ipcmd], term, () => {
-        prompt();
-    }, 'cluster');
-
-    // 터미널 초기화 후 바로 프롬프트 표시
-    // prompt();
-
-    let userInput = '';
-    term.onData(async (data) => {
-        if (data === '\r') {
-            const command = userInput;
-            userInput = '';
-            term.write(`\r\n`);
-            await processCommand(nsId, clusterId, { namespace, podName, containerName }, [command], term, () => {
-                prompt();
-            }, 'cluster');
-        } else if (data === '\u007f') {
-            if (userInput.length > 0) {
-                term.write('\b \b');
-                userInput = userInput.slice(0, -1);
-            }
-        } else {
-            if (/^[a-zA-Z0-9 !@#$%^&*()_\-+=\[\]{}|;:'",.<>/?]$/.test(data)) {
-                term.write(data);
-                userInput += data;
-            }
-        }
-    });
-
-    dropzoneInstance = new Dropzone("#dropzone-custom", {
-        autoProcessQueue: false,
-        addRemoveLinks: true,
-        acceptedFiles: ".sh",
-        init: function () {
-            this.on("addedfile", function (file) {
-                if (file.name.endsWith(".sh")) {
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        const fileText = event.target.result;
-                        const modifiedContent = fileText
-                            .split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line.length > 0);
-                        fileContents.push(modifiedContent);
-                    };
-                    reader.onerror = function () {
-                        alert("Failed to read file");
-                    };
-                    reader.readAsText(file);
-                } else {
-                    alert("Only shell script files (.sh) are allowed.");
-                }
-            });
-        }
-    });
-
-    document.getElementById("show-content-btn").addEventListener("click", async function () {
-        if (fileContents.length > 0) {
-            for (const cmdarr of fileContents) {
-                try {
-                    await processCommand(nsId, clusterId, { namespace, podName, containerName }, cmdarr, terminalInstance, () => {
-                        prompt();
-                    }, 'cluster');
-                } catch (error) {
-                    alert("An error occurred while processing the command.");
-                    console.error(error);
-                }
-            }
-        } else {
-            alert("No file content available or file not loaded.");
-        }
-    });
-}
-
 // MCI/NodeGroup용 단발성 명령어 실행 초기화 함수
 export async function initBatchCommandTerminal(id, nsId, mciId, targetId, targetType) {
     // 기존 터미널 인스턴스 정리
@@ -675,27 +564,6 @@ export function buildCommandData(nsid, resourceId, targetId, cmdarr, targetType)
                 userName: "cb-user"
             }
         };
-    } else if (targetType === 'cluster') {
-        const queryParams = {
-            k8sClusterNamespace: targetId.namespace,
-            k8sClusterPodName: targetId.podName
-        };
-
-        if (targetId.containerName) {
-            queryParams.k8sClusterContainerName = targetId.containerName;
-        }
-
-        data = {
-            pathParams: {
-                nsId: nsid,
-                k8sClusterId: resourceId
-            },
-            queryParams: queryParams,
-            Request: {
-                command: cmdarr,
-                userName: "cb-user"
-            }
-        };
     }
 
     return data;
@@ -978,10 +846,17 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
         clearInterval(loadingInterval);
         term.write('\r                          \r');
 
-        const response = result.results[0];
+        const response = Array.isArray(result && result.results) ? result.results[0] : null;
+        if (!response) {
+            const message = (result && (result.message || result.error)) || 'No command result returned by the remote command API';
+            writeAutoWrap(term, " > Error: \x1b[1m\x1b[31m" + message + "\x1b[0m");
+            callback({ error: message });
+            return;
+        }
+
         const callErr = response.err;
-        const stdout = response.stdout;
-        const stderr = response.stderr;
+        const stdout = toOutputChunks(response.stdout);
+        const stderr = toOutputChunks(response.stderr);
 
         if (callErr && Object.keys(callErr).length > 0) {
             const formattedError = JSON.stringify(callErr, null, 2);
@@ -990,16 +865,16 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
             return;
         }
 
-        if (stderr && Object.values(stderr).some(value => value.trim() !== '')) {
+        if (stderr.some(value => value.trim() !== '')) {
             term.write('\r\n\x1b[1m\x1b[31mSTDERR RESPONSE:\r\n');
-            Object.values(stderr).forEach(value => {
+            stderr.forEach(value => {
                 writeAutoWrap(term, value);
             });
             term.write("\x1b[0m\r\n");
         }
 
-        if (stdout && Object.values(stdout).some(value => value.trim() !== '')) {
-            Object.values(stdout).forEach(value => {
+        if (stdout.some(value => value.trim() !== '')) {
+            stdout.forEach(value => {
                 writeAutoWrap(term, value);
             });
         } else {
@@ -1013,6 +888,14 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
         term.write(`Error: ${error.message}\r\n`);
         callback({ error: error.message });
     }
+}
+
+// PostCmdInfra는 stdout/stderr를 map[int]string(객체) 또는 단일 문자열로 돌려줄 수 있다.
+// 두 형태를 출력 단위 배열로 통일한다.
+function toOutputChunks(value) {
+    if (!value) return [];
+    if (typeof value === 'string') return [value];
+    return Object.values(value).map(v => (typeof v === 'string' ? v : String(v)));
 }
 
 function writeAutoWrap(term, text) {

@@ -7,7 +7,12 @@ const STORAGE_KEY = 'mcwc_async_requests';
 const TOASTED_KEY = 'mcwc_async_toasted';
 const POLL_MS = 2500;
 const LIST_REFRESH_MS = 2000;
-const MAX_MS = 15 * 60 * 1000;
+// Fallback-mode backstop only (sessionStorage, no server list). It means
+// "stop watching", not "cancel" — nothing else resolves the job in that mode,
+// so keep it generous and aligned with the server poller's TTL (1h).
+// In server mode the poller owns lifecycle, so no client cutoff applies:
+// a 15min cutoff mislabeled still-running EKS creations (10~20min) as timed out.
+const FALLBACK_MAX_MS = 60 * 60 * 1000;
 const MAX_JOBS = 20;
 const RECENT_FINISH_TOAST_MS = 30 * 1000;
 const TOASTED_MAX = 40;
@@ -390,12 +395,13 @@ function startPolling(job) {
       stopTimer(job.requestId);
       return;
     }
-    if (Date.now() - current.startedAt > MAX_MS) {
+    // Server mode: the server poller decides terminal status. Giving up here
+    // would both mislabel a running job and thrash the timer — refreshFromServer
+    // re-arms startPolling every 2s while the job is still Handling.
+    if (useServer !== true && Date.now() - current.startedAt > FALLBACK_MAX_MS) {
       const msg = current.label + ' — status check timed out';
       maybeFinishToast(current, 'Timeout', true, msg);
-      if (!useServer) {
-        markFinishedLocal(current.requestId, 'Timeout', msg);
-      }
+      markFinishedLocal(current.requestId, 'Timeout', msg);
       stopTimer(job.requestId);
       return;
     }

@@ -1,5 +1,5 @@
 <div class="page-body">
-  <div class="container-xl">
+  <div class="container-fluid">
 
     <!-- 메인 콘텐츠 -->
     <div class="row">
@@ -60,6 +60,10 @@
                 <div class="datagrid-item">
                   <div class="datagrid-title">Path</div>
                   <div class="datagrid-content" id="detail-menu-path"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Icon</div>
+                  <div class="datagrid-content" id="detail-menu-icon"></div>
                 </div>
               </div>
             </div>
@@ -166,6 +170,13 @@
           <input type="text" class="form-control" id="create-menu-path" placeholder="e.g. / or /web/workflow/list" />
         </div>
         <div class="mb-3">
+          <label class="form-label">Icon</label>
+          <select class="form-select" id="create-menu-icon">
+            <option value="" selected>(Use default icon)</option>
+            <option value="approvals">Approvals (user-check)</option>
+          </select>
+        </div>
+        <div class="mb-3">
           <label class="form-label">Roles</label>
           <div id="create-menu-roles" class="d-flex flex-column gap-1" style="max-height: 180px; overflow-y: auto;">
             <!-- role checkboxes rendered by JS -->
@@ -235,6 +246,13 @@
         <div class="mb-3">
           <label class="form-label">Path</label>
           <input type="text" class="form-control" id="edit-menu-path" placeholder="e.g. / or /web/workflow/list" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Icon</label>
+          <select class="form-select" id="edit-menu-icon">
+            <option value="">(Use default icon)</option>
+            <option value="approvals">Approvals (user-check)</option>
+          </select>
         </div>
         <div class="mb-3">
           <label class="form-label">Roles</label>

@@ -1,5 +1,5 @@
 <div class="page-body">
-  <div class="container-xl">
+  <div class="container-fluid">
 
     <!-- 탭 네비게이션 -->
     <div class="row mb-3">
@@ -7,6 +7,12 @@
         <ul class="nav nav-tabs" id="sync-tabs">
           <li class="nav-item">
             <a class="nav-link active" href="#" onclick="syncShowTab('overview', this); return false;">Sync Status</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="syncShowTab('resources', this); return false;">Resources</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="syncShowTab('schedule', this); return false;">Schedule</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" onclick="syncShowTab('result', this); return false;">Sync Result</a>
@@ -232,11 +238,165 @@
                 <div class="col-12 d-flex gap-2 align-items-center">
                   <button class="btn btn-primary" onclick="syncExecute()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 4v16l13 -8z"/></svg>
-                    동기화 실행
+                    Run Sync
                   </button>
                   <span id="sync-exec-status" class="text-secondary small"></span>
                 </div>
 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Resources 탭 ────────────────────────────────────────────────── -->
+    <div id="tab-resources" style="display:none">
+
+      <!-- 조회 조건 카드 -->
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Search Conditions</h3>
+            </div>
+            <div class="card-body">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label required">Provider</label>
+                  <select id="res-provider" class="form-select" onchange="syncResOnProviderChange()">
+                    <option value="">Select Provider</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Region</label>
+                  <select id="res-region" class="form-select">
+                    <option value="">All Regions of the Provider</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label required">Namespace</label>
+                  <select id="res-ns" class="form-select">
+                    <option value="">Select Namespace</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <button class="btn btn-primary w-100" onclick="syncResQuery()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg>
+                    Query
+                  </button>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Resource Type</label>
+                  <div class="d-flex gap-3 flex-wrap">
+                    <label class="form-check mb-0"><input class="form-check-input res-filter-type-cb" type="checkbox" value="vNet" checked onchange="syncResApplyFilter()"><span class="form-check-label">vNet</span></label>
+                    <label class="form-check mb-0"><input class="form-check-input res-filter-type-cb" type="checkbox" value="securityGroup" checked onchange="syncResApplyFilter()"><span class="form-check-label">Security Group</span></label>
+                    <label class="form-check mb-0"><input class="form-check-input res-filter-type-cb" type="checkbox" value="sshKey" checked onchange="syncResApplyFilter()"><span class="form-check-label">SSH Key</span></label>
+                    <label class="form-check mb-0"><input class="form-check-input res-filter-type-cb" type="checkbox" value="node" checked onchange="syncResApplyFilter()"><span class="form-check-label">Node</span></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="res-loading" class="card-footer text-center text-secondary small py-2" style="display:none">
+              <div class="spinner-border spinner-border-sm me-1"></div>
+              <span id="res-loading-text">Loading resources from CSP…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 미등록 자원 -->
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Unmanaged CSP Resources</h3>
+            </div>
+            <div class="card-body p-0">
+              <div id="res-unmanaged-table"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 등록 대상 -->
+      <div class="row row-cards mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Register Selected Resources</h3>
+            </div>
+            <div class="card-body">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-6" id="res-infra-name-group" style="display:none">
+                  <label class="form-label required">Infra Name (for Node)</label>
+                  <input type="text" id="res-infra-name" class="form-control" placeholder="imported-infra">
+                </div>
+                <div class="col-12">
+                  <button class="btn btn-primary" onclick="syncResRegister()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
+                    Register
+                  </button>
+                  <span id="res-register-status" class="text-secondary small ms-2"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 등록된 자원 -->
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Registered Resources (MCMP)</h3>
+              <div class="card-options ms-auto">
+                <button class="btn btn-sm btn-outline-danger" id="res-btn-unregister" onclick="syncResUnregister()" disabled>
+                  Unregister
+                </button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div id="res-registered-table"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Schedule 탭 ─────────────────────────────────────────────────── -->
+    <div id="tab-schedule" style="display:none">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs" id="schedule-tabs">
+                <li class="nav-item">
+                  <a class="nav-link active" href="#" onclick="scheduleShowTab('list', this); return false;">Schedule List</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#" onclick="scheduleShowTab('history', this); return false;">Execution History</a>
+                </li>
+              </ul>
+              <div class="card-options ms-auto">
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#modal-add-schedule" onclick="loadModalDropdownsOnce()">
+                  + Add Schedule
+                </button>
+              </div>
+            </div>
+
+            <div id="tab-schedule-list">
+              <div class="card-body p-0">
+                <div id="schedule-table"></div>
+              </div>
+            </div>
+
+            <div id="tab-schedule-history" style="display:none">
+              <div class="card-body p-0">
+                <div id="history-table"></div>
               </div>
             </div>
           </div>
@@ -305,6 +465,53 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Add Schedule Modal -->
+<div class="modal modal-blur fade" id="modal-add-schedule" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Schedule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label required">Namespace</label>
+          <select id="modal-ns" class="form-select">
+            <option value="">Select Namespace</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">Connection</label>
+          <select id="modal-connection" class="form-select">
+            <option value="">Select Connection</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">Resource Types</label>
+          <div class="d-flex gap-3 flex-wrap">
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="vNet"><span class="form-check-label">vNet</span></label>
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="securityGroup"><span class="form-check-label">Security Group</span></label>
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="sshKey"><span class="form-check-label">SSH Key</span></label>
+            <label class="form-check"><input class="form-check-input modal-type-cb" type="checkbox" value="node" onchange="scheduleToggleModalMci()"><span class="form-check-label">Node</span></label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required">Interval (seconds)</label>
+          <input type="number" id="modal-interval" class="form-control" value="60" min="10">
+        </div>
+        <div class="mb-3" id="modal-mci-group" style="display:none">
+          <label class="form-label">Infra Name Prefix (for Node)</label>
+          <input type="text" id="modal-mci-prefix" class="form-control" value="csp">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="scheduleSubmitCreate()">Create</button>
+      </div>
+    </div>
   </div>
 </div>
 

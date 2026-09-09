@@ -5,9 +5,12 @@ const AppState = {
     groups: {
         tree: [],
         list: [],
-        selectedGroup: null
+        selectedGroup: null,
+        platformRoles: [],
+        memberCount: 0
     },
     users: { all: [] },
+    roles: { all: [] },
     ui: {
         viewMode: false
     }
@@ -50,10 +53,67 @@ const GroupManager = {
     async loadGroupUsers(id) {
         try {
             const users = await webconsolejs["common/api/services/groups_api"].getGroupUsers(id);
+            AppState.groups.memberCount = (users || []).length;
             UIManager.showGroupUsers(users || []);
         } catch (error) {
             console.error("Error loading group users:", error);
+            AppState.groups.memberCount = 0;
             UIManager.showGroupUsers([]);
+        }
+        UIManager.updateInheritNotice();
+    },
+
+    async loadGroupPlatformRoles(id) {
+        try {
+            const roles = await webconsolejs["common/api/services/groups_api"].getGroupPlatformRoles(id);
+            AppState.groups.platformRoles = roles || [];
+            UIManager.showGroupPlatformRoles(AppState.groups.platformRoles);
+        } catch (error) {
+            console.error("Error loading group platform roles:", error);
+            AppState.groups.platformRoles = [];
+            UIManager.showGroupPlatformRoles([]);
+            if (webconsolejs && webconsolejs['common/util'] && webconsolejs['common/util'].showToast) {
+                const d = error.response && error.response.data;
+                const rd = d && d.responseData;
+                const msg = (rd && (rd.error || rd.message))
+                    || (d && d.message)
+                    || (d && d.status && d.status.message)
+                    || error.message
+                    || 'Platform role load failed.';
+                webconsolejs['common/util'].showToast('Platform role query error: ' + msg, 'error');
+            }
+        }
+    },
+
+    async assignPlatformRole(groupId, roleId) {
+        try {
+            await webconsolejs["common/api/services/groups_api"].assignGroupPlatformRole(groupId, roleId);
+            const count = AppState.groups.memberCount;
+            alert(count > 0
+                ? `Platform role assigned. ${count} member(s) of this group now inherit this role.`
+                : "Platform role assigned. It will apply to any user added to this group.");
+            await GroupManager.loadGroupPlatformRoles(groupId);
+        } catch (error) {
+            console.error("Error assigning platform role:", error);
+            const status = error.response && error.response.status;
+            const d = error.response && error.response.data;
+            // BFF(proxy.go)는 status.message에 HTTP 상태문구("Internal Server Error")를 붙이고
+            // 백엔드 원본 에러는 responseData.error에 담는다. 일반 문구가 구체적 원인을
+            // 덮지 않도록 responseData.error를 먼저 본다.
+            const rd = d && d.responseData;
+            const msg = (rd && (rd.error || rd.message))
+                || (d && d.error)
+                || (d && d.message)
+                || (d && d.status && d.status.message)
+                || error.message
+                || "Unknown error";
+            if (status === 409) {
+                alert("This role is already assigned to the group.");
+            } else if (status === 404) {
+                alert("Failed to assign platform role: group or role not found.");
+            } else {
+                alert("Failed to assign platform role: " + msg);
+            }
         }
     },
 
@@ -161,6 +221,7 @@ const UIManager = {
                     AppState.groups.selectedGroup = nodeData.data;
                     UIManager.showDetailPanel(nodeData.data);
                     GroupManager.loadGroupUsers(nodeData.data.id);
+                    GroupManager.loadGroupPlatformRoles(nodeData.data.id);
                 }
             }
         });
@@ -186,6 +247,12 @@ const UIManager = {
         document.getElementById('btn-edit').disabled = false;
         document.getElementById('btn-delete').disabled = false;
         document.getElementById('btn-invite-member').disabled = false;
+        const btnAssignRole = document.getElementById('btn-assign-platform-role');
+        if (btnAssignRole) btnAssignRole.disabled = false;
+
+        // 상속 고지의 인원수는 멤버 조회 완료 후 갱신되므로, 우선 group.user_count로 표기
+        AppState.groups.memberCount = group.user_count !== undefined ? group.user_count : 0;
+        UIManager.updateInheritNotice();
     },
 
     clearDetailPanel() {
@@ -199,13 +266,49 @@ const UIManager = {
             if (el) el.textContent = '-';
         });
 
-        ['btn-add-child', 'btn-edit', 'btn-delete', 'btn-invite-member'].forEach(id => {
+        ['btn-add-child', 'btn-edit', 'btn-delete', 'btn-invite-member', 'btn-assign-platform-role'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) btn.disabled = true;
         });
 
         const membersList = document.getElementById('group-members-list');
         if (membersList) membersList.innerHTML = '<p class="text-muted">Select a group to view members.</p>';
+
+        AppState.groups.platformRoles = [];
+        AppState.groups.memberCount = 0;
+        const rolesList = document.getElementById('group-platform-roles-list');
+        if (rolesList) rolesList.innerHTML = '<p class="text-muted">Select a group to view platform roles.</p>';
+        const inheritCount = document.getElementById('role-inherit-member-count');
+        if (inheritCount) inheritCount.textContent = 'every member';
+    },
+
+    // 상속 영향 고지 — 그룹에 배정된 role은 소속 사용자 전원이 상속받는다
+    updateInheritNotice() {
+        const el = document.getElementById('role-inherit-member-count');
+        if (!el) return;
+        const count = AppState.groups.memberCount;
+        el.textContent = count === 1 ? '1 member' : `all ${count} member(s)`;
+    },
+
+    showGroupPlatformRoles(roles) {
+        const list = document.getElementById('group-platform-roles-list');
+        if (!list) return;
+        if (!roles || roles.length === 0) {
+            list.innerHTML = '<p class="text-muted">No platform roles assigned to this group.</p>';
+            return;
+        }
+        list.innerHTML = roles.map(r => {
+            const name = r.role_name || r.roleName || '-';
+            const assignedAt = r.created_at || r.createdAt;
+            const assignedText = assignedAt ? new Date(assignedAt).toLocaleDateString() : '';
+            return `<div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-azure-lt me-2">Platform</span>
+                    <span class="fw-bold">${name}</span>
+                </div>
+                ${assignedText ? `<span class="text-muted small">Assigned ${assignedText}</span>` : ''}
+            </div>`;
+        }).join('');
     },
 
     populateParentSelect(list, excludeId) {
@@ -342,6 +445,106 @@ const ModalManager = {
         document.getElementById('delete-group-name').textContent = group.name || '';
         const modal = new bootstrap.Modal(document.getElementById('delete-group-modal'));
         modal.show();
+    },
+
+    // users.js와 동일한 방식: 전체 역할 목록을 가져와 role type으로 필터
+    getRoleTypes(role) {
+        if (Array.isArray(role.role_types) && role.role_types.length > 0) {
+            return role.role_types;
+        }
+        if (Array.isArray(role.roleTypes) && role.roleTypes.length > 0) {
+            return role.roleTypes;
+        }
+        const roleSubs = role.role_subs || role.roleSubs || [];
+        return roleSubs
+            .map(sub => sub.role_type || sub.roleType)
+            .filter(Boolean);
+    },
+
+    filterRolesByType(roles, roleType) {
+        if (!roleType) return roles;
+        const normalizedType = roleType.toLowerCase();
+        return roles.filter(role => {
+            const roleTypes = this.getRoleTypes(role);
+            return roleTypes.some(type => String(type).toLowerCase() === normalizedType);
+        });
+    },
+
+    async openAssignPlatformRole(group) {
+        if (!group) return;
+
+        document.getElementById('assign-role-group-name').value =
+            group.name + (group.organization_code ? ` (${group.organization_code})` : '');
+
+        const select = document.getElementById('assign-role-select');
+        const hint = document.getElementById('assign-role-hint');
+        const impact = document.getElementById('assign-role-impact');
+        const submit = document.getElementById('assign-role-submit');
+
+        select.innerHTML = '<option value="">Loading roles...</option>';
+        select.disabled = true;
+        hint.textContent = '';
+        impact.style.display = 'none';
+        submit.disabled = true;
+
+        new bootstrap.Modal(document.getElementById('assign-platform-role-modal')).show();
+
+        try {
+            if (!AppState.roles.all.length) {
+                const allRoles = await webconsolejs['common/api/services/roles_api'].getRoleList();
+                AppState.roles.all = allRoles || [];
+            }
+            const platformRoles = this.filterRolesByType(AppState.roles.all, 'platform');
+            const assignedIds = new Set(
+                (AppState.groups.platformRoles || []).map(r => String(r.role_id || r.roleId))
+            );
+            const selectable = platformRoles.filter(r => !assignedIds.has(String(r.id)));
+
+            select.innerHTML = '<option value="">Select role</option>';
+            selectable.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role.id;
+                option.textContent = role.name + (role.description ? ` — ${role.description}` : '');
+                select.appendChild(option);
+            });
+            select.disabled = false;
+            submit.disabled = false;
+
+            if (selectable.length === 0) {
+                select.innerHTML = '<option value="">No assignable platform role</option>';
+                hint.textContent = platformRoles.length === 0
+                    ? 'No platform role is defined yet.'
+                    : 'All platform roles are already assigned to this group.';
+                select.disabled = true;
+                submit.disabled = true;
+            }
+        } catch (error) {
+            console.error('Failed to load role list:', error);
+            select.innerHTML = '<option value="">Failed to load roles</option>';
+            hint.textContent = 'Could not load the platform role list. Please retry.';
+        }
+    },
+
+    // 상속 영향 고지 — 선택한 role이 몇 명에게 전파되는지 명시
+    showAssignImpact() {
+        const select = document.getElementById('assign-role-select');
+        const impact = document.getElementById('assign-role-impact');
+        const text = document.getElementById('assign-role-impact-text');
+        if (!select || !impact || !text) return;
+
+        if (!select.value) {
+            impact.style.display = 'none';
+            return;
+        }
+
+        const roleName = select.options[select.selectedIndex].textContent.split(' — ')[0];
+        const count = AppState.groups.memberCount;
+        const groupName = AppState.groups.selectedGroup ? AppState.groups.selectedGroup.name : 'this group';
+
+        text.innerHTML = count > 0
+            ? `<strong>${count}</strong> member(s) of <strong>${groupName}</strong> will inherit <strong>${roleName}</strong> immediately, on top of the roles granted to them directly.`
+            : `<strong>${groupName}</strong> has no member yet. <strong>${roleName}</strong> will be inherited by every user added to this group later.`;
+        impact.style.display = 'block';
     }
 };
 
@@ -432,9 +635,46 @@ window.submitDeleteGroup = async function() {
 
 window.refreshGroups = async function() {
     AppState.groups.selectedGroup = null;
+    AppState.roles.all = [];
     UIManager.clearDetailPanel();
     await GroupManager.loadTree();
     await GroupManager.loadList();
+};
+
+window.openAssignPlatformRole = async function() {
+    if (!AppState.groups.selectedGroup) {
+        alert("Please select a group first.");
+        return;
+    }
+    await ModalManager.openAssignPlatformRole(AppState.groups.selectedGroup);
+};
+
+window.onAssignRoleChanged = function() {
+    ModalManager.showAssignImpact();
+};
+
+window.submitAssignPlatformRole = async function() {
+    const roleId = document.getElementById('assign-role-select').value;
+    if (!roleId) {
+        alert("Please select a platform role.");
+        return;
+    }
+    if (!AppState.groups.selectedGroup) return;
+
+    const groupId = AppState.groups.selectedGroup.id;
+    const groupName = AppState.groups.selectedGroup.name;
+    const count = AppState.groups.memberCount;
+
+    // 상속 영향 최종 확인 — 그룹 배정은 소속 사용자 전원의 권한을 올린다
+    const confirmMsg = count > 0
+        ? `Assign this platform role to "${groupName}"?\n\n${count} member(s) of this group will inherit it immediately.`
+        : `Assign this platform role to "${groupName}"?\n\nThis group has no member yet. Any user added later will inherit it.`;
+    if (!confirm(confirmMsg)) return;
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('assign-platform-role-modal'));
+    if (modal) modal.hide();
+
+    await GroupManager.assignPlatformRole(groupId, roleId);
 };
 
 window.openInviteMember = async function() {

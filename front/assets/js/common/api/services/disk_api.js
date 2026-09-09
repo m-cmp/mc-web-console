@@ -48,19 +48,10 @@ export async function getCommonLookupDiskInfo(provider, connectionName) {
   return response.data.responseData;
 }
 
-// 노드(VM)에 연결 가능/연결된 DataDisk 목록 조회 — GetAllDataDisk와 동일한 { dataDisk: [...] } 응답 형태
-export async function getVmDataDisk(nsId, infraId, nodeId) {
-  const controller = '/api/mc-infra-manager/GetVmDataDisk';
-  const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
-    pathParams: { nsId, infraId, nodeId }
-  });
-  return response?.data?.responseData;
-}
-
 // 기존 DataDisk를 노드에 Attach/Detach — option: 'attach' | 'detach', force: 'true' | 'false' (선택)
 // 응답은 model.NodeInfo(갱신된 노드 전체, dataDiskIds 포함)
-export async function putVmDataDisk(nsId, infraId, nodeId, dataDiskId, option, force) {
-  const controller = '/api/mc-infra-manager/PutVmDataDisk';
+export async function putNodeDataDisk(nsId, infraId, nodeId, dataDiskId, option, force) {
+  const controller = '/api/mc-infra-manager/PutNodeDataDisk';
   const queryParams = { option };
   if (force !== undefined) queryParams.force = String(force);
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
@@ -72,17 +63,17 @@ export async function putVmDataDisk(nsId, infraId, nodeId, dataDiskId, option, f
 }
 
 export async function attachDataDisk(nsId, infraId, nodeId, dataDiskId, force) {
-  return putVmDataDisk(nsId, infraId, nodeId, dataDiskId, 'attach', force);
+  return putNodeDataDisk(nsId, infraId, nodeId, dataDiskId, 'attach', force);
 }
 
 export async function detachDataDisk(nsId, infraId, nodeId, dataDiskId, force) {
-  return putVmDataDisk(nsId, infraId, nodeId, dataDiskId, 'detach', force);
+  return putNodeDataDisk(nsId, infraId, nodeId, dataDiskId, 'detach', force);
 }
 
 // 신규 디스크를 생성과 동시에 노드에 Attach (Infra Node 화면의 "Create New" 흐름 전용).
 // model.DataDiskNodeReq: { name(필수), diskSize(필수, GB), diskType?, description? } / 응답은 갱신된 NodeInfo
-export async function postVmDataDisk(nsId, infraId, nodeId, body) {
-  const controller = '/api/mc-infra-manager/PostVmDataDisk';
+export async function postNodeDataDisk(nsId, infraId, nodeId, body) {
+  const controller = '/api/mc-infra-manager/PostNodeDataDisk';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId, infraId, nodeId },
     request: body

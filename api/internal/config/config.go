@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/viper"
@@ -16,6 +17,7 @@ type Config struct {
 	RegistryCache      RegistryCacheInterface
 	SetupYaml          SetupYamlConfig
 	IframeTargetIsHost bool // IFRAME_TARGET_IS_HOST 환경변수
+	Menus              []Menu
 }
 
 // SetupYamlConfig FR-CLOUD-ADMIN-006-08용 raw yaml 도달성 확인 설정
@@ -100,6 +102,18 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to load API spec: %w", err)
 	}
 	cfg.ApiSpec = apiSpec
+
+	// self 모드(USE_IAM=false)에서 GetAllAvailableMenus를 mc-iam-manager로 프록시하지 않고
+	// 로컬 정본 메뉴 yaml로 응답하기 위한 로드. USE_IAM=true 배포에서는 이 파일이 없어도
+	// 서버 기동을 막지 않는다.
+	if !cfg.MCIAM.Use {
+		menuSpec, err := LoadMenuSpec("../conf/webconsole_menu_resources.yaml")
+		if err != nil {
+			log.Printf("failed to load local menu spec (../conf/webconsole_menu_resources.yaml): %v", err)
+		} else {
+			cfg.Menus = menuSpec.Menus
+		}
+	}
 
 	return cfg, nil
 }

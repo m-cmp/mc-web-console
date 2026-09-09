@@ -17,6 +17,7 @@ FROM debian:bookworm-slim AS deploy
 WORKDIR /app/
 COPY --from=build /bin/api .
 ADD ./conf/api.yaml /conf/api.yaml
+ADD ./conf/webconsole_menu_resources.yaml /conf/webconsole_menu_resources.yaml
 
 ENV API_ADDR=0.0.0.0
 ENV API_PORT=3000

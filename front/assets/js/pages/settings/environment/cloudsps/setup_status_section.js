@@ -20,6 +20,8 @@ const State = {
   lastViewModel: null,
   // 카드별 in-flight 카운트 (5개 카드 모두 끝나면 액션 버튼 enable)
   cardInFlight: 0,
+  // 마지막 Force re-seed ▶ Menu 결과 (skipped/backupPath/orphan/missing) — 메뉴 카드에 표시
+  menuSeedResult: null,
 };
 
 // ─── Public ───────────────────────────────────────────────────────
@@ -509,7 +511,7 @@ async function runAction(label, actionFn, partialRefreshFn) {
                 || `${label} re-sync failed (HTTP ${status})`;
       renderActionError(label, msg);
     } else {
-      await partialRefreshFn();
+      await partialRefreshFn(resp);
     }
   } catch (e) {
     console.error(`[setup-status] action ${label} failed:`, e);
@@ -535,6 +537,7 @@ function mergeMenu(prev, partial) {
     ...prev.menu,
     registeredCount: menuCount,
     sourceUrl: menuYaml.url,
+    sourceType: menuYaml.sourceType,
     sourceUrlReachable: menuYaml.reachable,
     sourceHttpStatus: menuYaml.httpStatus,
     sourceLastModified: menuYaml.lastModified,
@@ -933,8 +936,9 @@ function renderMenuCard(menu) {
     <div class="card-header py-2 d-flex align-items-center">
       <h4 class="card-title mb-0">Menu Settings</h4>
       <div class="ms-auto">
-        <button id="setup-resync-menu-btn" class="btn btn-sm btn-outline-primary">
-          Re-sync ▶ Menu
+        <button id="setup-resync-menu-btn" class="btn btn-sm btn-outline-danger"
+                title="Overwrite menus from the seed yaml. Role-menu mappings are backed up first.">
+          Force re-seed ▶ Menu
         </button>
       </div>
     </div>
@@ -942,24 +946,67 @@ function renderMenuCard(menu) {
       <div class="row g-2">
         <div class="col-md-3"><div class="text-muted small">Registered menus</div>
           <div class="fs-3 fw-medium">${menu.registeredCount ?? '-'}</div></div>
-        <div class="col-md-3"><div class="text-muted small">Source yaml reachable</div>
-          <div>${reachableBadge(menu.sourceUrlReachable, menu.sourceHttpStatus, menu.sourceErrorMessage)}</div></div>
+        <div class="col-md-3"><div class="text-muted small">Seed source</div>
+          <div>${seedSourceBadge(menu)}</div></div>
         <div class="col-md-6"><div class="text-muted small">Last-Modified / ETag</div>
           <div class="small">${formatYamlMeta(menu)}</div></div>
-        <div class="col-12"><div class="text-muted small">URL</div>
+        <div class="col-12"><div class="text-muted small">Source</div>
           <div class="small text-break">${menu.sourceUrl ? escapeHtml(menu.sourceUrl) : '<span class="text-muted">env not configured</span>'}</div></div>
       </div>
+      <div class="text-muted small mt-2">
+        Menus are seeded from yaml once at install; afterwards edit them in Menus / Roles. Force re-seed overwrites DB edits.
+      </div>
+      ${renderMenuSeedResult(State.menuSeedResult)}
     </div>
   </div>`;
   // Re-sync 버튼은 매 렌더마다 새로 그려지므로 이벤트 재바인딩
-  bindClick('setup-resync-menu-btn', () => runAction('menu', api().resyncMenu, async () => {
-    const partial = await api().fetchMenuOnly();
-    if (!State.lastViewModel) return refresh();
-    const merged = mergeMenu(State.lastViewModel, partial);
-    State.lastViewModel = merged;
-    renderSetupSequence(merged.setupSequence);
-    renderMenuCard(merged.menu);
-  }));
+  bindClick('setup-resync-menu-btn', () => {
+    const ok = window.confirm(
+      'Force re-seed menus from the seed yaml?\n\n' +
+      'Menus and role-menu mappings edited in the DB will be overwritten by the yaml. ' +
+      'The current role-menu mappings are backed up on the mc-iam-manager server first.'
+    );
+    if (!ok) return;
+    runAction('menu', api().resyncMenu, async (resp) => {
+      State.menuSeedResult = api().parseMenuSeedResult(resp);
+      const partial = await api().fetchMenuOnly();
+      if (!State.lastViewModel) return refresh();
+      const merged = mergeMenu(State.lastViewModel, partial);
+      State.lastViewModel = merged;
+      renderSetupSequence(merged.setupSequence);
+      renderMenuCard(merged.menu);
+    });
+  });
+}
+
+// Force re-seed 직후 서버가 돌려준 결과(skip/backup/orphan/missing)를 카드 안에 표시
+function renderMenuSeedResult(r) {
+  if (!r) return '';
+  const lines = [];
+  if (r.skipped) {
+    lines.push(`Skipped — ${r.existingMenuCount ?? '?'} menus already exist (no force).`);
+  } else {
+    lines.push(`Re-seeded ${r.registeredCount ?? '?'} menus from yaml.`);
+    if (r.backupPath) lines.push(`Role-menu mappings backed up to <code>${escapeHtml(r.backupPath)}</code> (mc-iam-manager container).`);
+  }
+  if (r.backupWarning) lines.push(`⚠️ ${escapeHtml(r.backupWarning)}`);
+  if (r.permissionsWarning) lines.push(`⚠️ ${escapeHtml(r.permissionsWarning)}`);
+  if (r.orphanMenusDetected.length > 0) {
+    lines.push(`In DB but not in yaml (not deleted; remove via Menus if unwanted): <code>${escapeHtml(r.orphanMenusDetected.join(', '))}</code>`);
+  }
+  if (r.missingPermissionMenuIDs.length > 0) {
+    lines.push(`permission.yaml references unknown menu ids (mapping skipped): <code>${escapeHtml(r.missingPermissionMenuIDs.join(', '))}</code>`);
+  }
+  const cls = (r.backupWarning || r.permissionsWarning) ? 'alert-warning' : 'alert-info';
+  return `<div class="alert ${cls} mt-2 mb-0 small">${lines.join('<br>')}</div>`;
+}
+
+// Seed source 배지: local(마운트 사본)이면 프로브 결과가 없으므로 종류만, URL이면 도달성
+function seedSourceBadge(card) {
+  if (card.sourceType === 'local') {
+    return '<span class="badge bg-azure-lt" title="Mounted copy inside the mc-iam-manager container (not probed from here)">local (mounted copy)</span>';
+  }
+  return reachableBadge(card.sourceUrlReachable, card.sourceHttpStatus, card.sourceErrorMessage);
 }
 
 // ─── 카드 3: API Settings ─────────────────────────────────────────
@@ -1571,7 +1618,7 @@ function unwrapServicesMap(settled) {
 
 function parseYaml(settled) {
   const empty = {
-    url: null, reachable: false, httpStatus: null,
+    url: null, sourceType: null, reachable: false, httpStatus: null,
     lastModified: null, etag: null, errorMessage: null,
   };
   if (!settled || settled.status !== 'fulfilled') return empty;
@@ -1580,6 +1627,7 @@ function parseYaml(settled) {
   const data = resp.data.responseData || resp.data;
   return {
     url: data.url || null,
+    sourceType: data.sourceType || (data.url ? 'url' : null),
     reachable: !!data.reachable,
     httpStatus: data.httpStatus || null,
     lastModified: data.lastModified || null,

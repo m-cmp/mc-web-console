@@ -27,7 +27,7 @@ export async function getAllVNet(nsId, query = {}) {
 }
 
 export async function create(nsId, body) {
-  const controller = '/api/mc-infra-manager/CreateVNet';
+  const controller = '/api/mc-infra-manager/PostVNet';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: nsId },
     request: body
@@ -44,9 +44,12 @@ export async function get(nsId, name) {
 }
 
 export async function del(nsId, name) {
-  const controller = '/api/mc-infra-manager/DeleteVNet';
+  const controller = '/api/mc-infra-manager/DelVNet';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
-    pathParams: { nsId: nsId, vNetId: name }
+    pathParams: { nsId: nsId, vNetId: name },
+    // 콘솔에서 생성한 VNet은 항상 서브넷을 포함하므로, action 없이 호출하면
+    // "vNet has subnets" 형태의 500이 난다. withsubnets로 VNet+서브넷을 함께 삭제.
+    queryParams: { action: 'withsubnets' }
   });
   return response?.data;
 }

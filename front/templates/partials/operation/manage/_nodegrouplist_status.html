@@ -2,108 +2,8 @@
   <div class="card-header">
     <h3 class="card-title">
       NodeGroup List / Status
-      <!-- <span class="text-info" id="mci_server_info_status"> </span>
-      <span class="text-secondary" id="mci_server_info_count"></span> -->
     </h3>
     <div class="card-actions btn-actions">
-
-      <!-- filter -->
-      <a
-        class="btn-action"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#filterbody"
-        aria-expanded="false"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="icon icon-tabler icons-tabler-outline icon-tabler-filter"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path
-            d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z"
-          />
-        </svg>
-      </a>
-
-      <!-- sort -->
-      <div class="dropdown">
-        <a href="#" class="btn-action" data-bs-toggle="dropdown">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="icon icon-tabler icons-tabler-outline icon-tabler-arrows-sort"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M3 9l4 -4l4 4m-4 -4v14" />
-            <path d="M21 15l-4 4l-4 -4m4 4v-14" />
-          </svg>
-        </a>
-        <div
-          class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
-        >
-          <a class="dropdown-item" href="#">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-              ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-            </svg>
-            Action
-          </a>
-          <a class="dropdown-item" href="#">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
-              ></path>
-              <path
-                d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"
-              ></path>
-              <path d="M16 5l3 3"></path>
-            </svg>
-            Another action
-          </a>
-        </div>
-      </div>
 
       <!-- Action -->
       <div class="dropdown">
@@ -125,115 +25,8 @@
           </svg>
         </a>
         <div
-          class="dropdown-menu dropdown-menu-end dropdown-menu-demo dropdown-menu-arrow"
+          class="dropdown-menu dropdown-menu-end dropdown-menu-arrow"
         >
-          <a
-            class="dropdown-item"
-            data-bs-toggle="modal"
-            data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciReboot', 'Would you like to reboot Infra ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'reboot')"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-              ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-            </svg>
-            Reboot
-          </a>
-          <a
-            class="dropdown-item"
-            data-bs-toggle="modal"
-            data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciSuspend', 'Would you like to suspend Infra ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'suspend')"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-              ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-            </svg>
-            Suspend
-          </a>
-          <a
-            class="dropdown-item"
-            data-bs-toggle="modal"
-            data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciResume', 'Would you like to resume Infra ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'resume')"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-              ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-            </svg>
-            Resume
-          </a>
-          <a
-            class="dropdown-item"
-            data-bs-toggle="modal"
-            data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'MciTerminate', 'Would you like to terminate Infra ?', 'pages/operation/manage/mci.changeVmLifeCycle', 'terminate')"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-              ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-            </svg>
-            Terminate
-          </a>
-
-          <div class="dropdown-divider"></div>
-
           <a
             class="dropdown-item"
             href="#addnode"
@@ -252,10 +45,8 @@
               stroke-linejoin="round"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
-              ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+              <path d="M12 5l0 14"></path>
+              <path d="M5 12l14 0"></path>
             </svg>
             New
           </a>
@@ -263,7 +54,83 @@
             class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
-            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/pmk.deleteNodeGroup')"
+            onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/k8sworkloads.deleteNodeGroup')"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 7l16 0"></path>
+              <path d="M10 11l0 6"></path>
+              <path d="M14 11l0 6"></path>
+              <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+              <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+            </svg>
+            Delete
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <a
+            class="dropdown-item"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscalingModal()"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M8 8m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+              <path d="M16 16m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+              <path d="M8 4h8a4 4 0 0 1 0 8h-8a4 4 0 0 0 0 8"></path>
+            </svg>
+            Set Autoscaling
+          </a>
+          <a
+            class="dropdown-item"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscaleSizeModal()"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon dropdown-item-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M21 11v-3a2 2 0 0 0 -2 -2h-6l3 3m0 -6l-3 3"></path>
+              <path d="M3 13v3a2 2 0 0 0 2 2h6l-3 -3m0 6l3 -3"></path>
+            </svg>
+            Change Autoscale Size
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <a
+            class="dropdown-item"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].exportNodeGroups()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -279,13 +146,17 @@
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"
               ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+              <path d="M7 11l5 5l5 -5"></path>
+              <path d="M12 4l0 12"></path>
             </svg>
-            Delete
+            Export to JSON
           </a>
-          <a class="dropdown-item" href="#">
+          <a
+            class="dropdown-item"
+            onclick="document.getElementById('import-nodegroups-file').click()"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon dropdown-item-icon"
@@ -300,18 +171,19 @@
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path
-                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"
               ></path>
-              <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+              <path d="M7 9l5 -5l5 5"></path>
+              <path d="M12 4l0 12"></path>
             </svg>
-            Export
+            Import from JSON
           </a>
         </div>
       </div>
 
       <!-- refresh -->
       <a class="btn-action"
-        onclick="webconsolejs['pages/operation/manage/pmk'].getSelectedPmkData()"
+        onclick="webconsolejs['pages/operation/manage/k8sworkloads'].getSelectedPmkData()"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -363,4 +235,148 @@
       <ul class="vmStatus-list" id="pmk_nodegroup_info_box"></ul>
     </div>
   </div>
+
+  <!-- Import from JSON: hidden file picker -->
+  <input
+    type="file"
+    id="import-nodegroups-file"
+    accept=".json"
+    style="display: none"
+    onchange="webconsolejs['pages/operation/manage/k8sworkloads'].importNodeGroups(this)"
+  />
 </div>
+
+<!-- Set Autoscaling modal -->
+<div
+  class="modal modal-blur fade"
+  id="nodegroup-autoscaling-modal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Set Autoscaling</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">NodeGroup</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nodegroup-autoscaling-name"
+            readonly
+          />
+        </div>
+        <div class="mb-1">
+          <label class="form-label required">Autoscaling</label>
+          <select class="form-select" id="nodegroup-autoscaling-value">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-link link-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="nodegroup-autoscaling-submit-btn"
+          class="btn btn-primary"
+          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaling()"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Autoscale Size modal -->
+<div
+  class="modal modal-blur fade"
+  id="nodegroup-autoscalesize-modal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change Autoscale Size</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">NodeGroup</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nodegroup-autoscalesize-name"
+            readonly
+          />
+        </div>
+        <div class="mb-2">
+          <label class="form-label required">Desired Node Size</label>
+          <input
+            type="number"
+            min="0"
+            class="form-control"
+            id="nodegroup-autoscalesize-desired"
+          />
+        </div>
+        <div class="mb-2">
+          <label class="form-label required">Min Node Size</label>
+          <input
+            type="number"
+            min="0"
+            class="form-control"
+            id="nodegroup-autoscalesize-min"
+          />
+        </div>
+        <div class="mb-1">
+          <label class="form-label required">Max Node Size</label>
+          <input
+            type="number"
+            min="0"
+            class="form-control"
+            id="nodegroup-autoscalesize-max"
+          />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-link link-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="nodegroup-autoscalesize-submit-btn"
+          class="btn btn-primary"
+          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaleSize()"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

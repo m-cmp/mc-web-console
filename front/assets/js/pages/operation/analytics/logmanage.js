@@ -61,7 +61,7 @@ async function initLog() {
     var selectedNsId = selectedWorkspaceProject.nsId;
     
     // MCI 목록 로드
-    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(selectedNsId);
     getMciListCallbackSuccess(selectedProjectId, respMciList);
   }
   
@@ -98,7 +98,7 @@ function setMciList(mciList) {
 
 // MCI 선택 시 서버 목록 업데이트
 async function displayLogMci(nsId, mciId) {
-  var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+  var respMci = await webconsolejs["common/api/services/infra_api"].getMci(nsId, mciId);
 
   var vmList = respMci.responseData.vm;
   if (Array.isArray(vmList) && vmList.length > 0) {

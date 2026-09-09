@@ -55,6 +55,50 @@ export async function getResourcesOverview() {
   return res?.data?.responseData;
 }
 
+// ── Resource type 메타 ────────────────────────────────────────────────────────
+
+/**
+ * cb-tumblebug 이 허용하는 자원유형과 선행 의존성.
+ * src/core/infra/utility.go validateReqOptions() 와 1:1 대응한다.
+ * 'nlb' 는 응답 overview 에는 있으나 요청 option 으로는 지원되지 않는다.
+ */
+export const RESOURCE_TYPE_DEPS = {
+  dataDisk: ['node'],
+  node: ['securityGroup', 'sshKey'],
+  securityGroup: ['vNet'],
+};
+
+export const RESOURCE_TYPE_LABELS = {
+  vNet: 'VNet (VPC)',
+  securityGroup: 'SecurityGroup',
+  sshKey: 'SSH Key',
+  node: 'Node',
+  dataDisk: 'DataDisk',
+  customImage: 'Custom Image',
+  nlb: 'NLB',
+};
+
+/**
+ * 선택한 자원유형이 요구하는 선행 자원유형 중 미선택된 것을 안내 문장으로 반환.
+ * 반환값이 비어 있지 않으면 요청을 보내기 전에 사용자에게 보여준다.
+ * @param {string[]} selected
+ * @returns {string[]}
+ */
+export function findMissingResourceTypeDeps(selected) {
+  const messages = [];
+  for (const [type, deps] of Object.entries(RESOURCE_TYPE_DEPS)) {
+    if (!selected.includes(type)) continue;
+    const lacking = deps.filter(d => !selected.includes(d));
+    if (lacking.length > 0) {
+      messages.push(
+        `- ${RESOURCE_TYPE_LABELS[type]} also requires ` +
+        `${lacking.map(d => RESOURCE_TYPE_LABELS[d]).join(' and ')}.`
+      );
+    }
+  }
+  return messages;
+}
+
 // ── Register ─────────────────────────────────────────────────────────────────
 
 /**
@@ -77,8 +121,11 @@ export async function registerVNet(nsId, connectionName, cspResourceId, name) {
  * @param {string[]} resourceTypes  e.g. ['vNet','securityGroup','sshKey']
  */
 export async function registerCspNativeResources(nsId, filter, resourceTypes) {
+  // option 은 반드시 콤마로 이어붙인 단일 문자열로 보낸다.
+  // cb-tumblebug 핸들러가 c.QueryParam("option") 으로 첫 값만 읽고 ","로 분리하므로,
+  // 배열로 넘겨 option=a&option=b 형태가 되면 첫 자원유형만 처리된다.
   const res = await call('RegisterCspNativeResources', {
-    queryParams: resourceTypes?.length ? { option: resourceTypes } : undefined,
+    queryParams: resourceTypes?.length ? { option: resourceTypes.join(',') } : undefined,
     request: { nsId, ...filter },
   });
   return res?.data?.responseData;
@@ -92,7 +139,7 @@ export async function registerCspNativeResources(nsId, filter, resourceTypes) {
  * @param {{ connectionName: string, cspResourceId: string, name: string }[]} vmList
  */
 export async function registerCspVm(nsId, mciName, vmList) {
-  const res = await call('PostRegisterCSPNativeVM', {
+  const res = await call('PostRegisterCSPNativeNode', {
     pathParams: { nsId },
     request: {
       name: mciName,
@@ -110,9 +157,17 @@ export async function registerCspVm(nsId, mciName, vmList) {
 
 // ── Deregister ───────────────────────────────────────────────────────────────
 
-/** vNet 등록 해제 - DELETE /ns/{nsId}/deregisterResource/vNet/{vNetId} */
-export async function deregisterVNet(nsId, vNetId) {
-  return call('DeleteDeregisterVNet', { pathParams: { nsId, vNetId } });
+/**
+ * vNet 등록 해제 - DELETE /ns/{nsId}/deregisterResource/vNet/{vNetId}
+ * 서브넷이 하나라도 남아 있으면 cb-tumblebug 이 withSubnets 없이는 거부한다
+ * ("has N subnet(s); set withSubnets=true"). 등록 해제는 CSP 자원을 지우지 않으므로
+ * 부모 vNet 을 내릴 때 서브넷도 함께 내리는 것이 기본 동작이다.
+ */
+export async function deregisterVNet(nsId, vNetId, withSubnets = true) {
+  return call('DeleteDeregisterVNet', {
+    pathParams: { nsId, vNetId },
+    queryParams: { withSubnets: withSubnets ? 'true' : 'false' },
+  });
 }
 
 /** SecurityGroup 등록 해제 */

@@ -9,7 +9,7 @@ export async function list(ns, limit = 500) {
 }
 
 export async function register(ns, body) {
-  const controller = '/api/mc-infra-manager/Postspec';
+  const controller = '/api/mc-infra-manager/PostSpec';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns },
     request: body
@@ -18,7 +18,7 @@ export async function register(ns, body) {
 }
 
 export async function get(ns, name) {
-  const controller = '/api/mc-infra-manager/Getspec';
+  const controller = '/api/mc-infra-manager/GetSpec';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, specId: name }
   });
@@ -26,7 +26,7 @@ export async function get(ns, name) {
 }
 
 export async function del(ns, name) {
-  const controller = '/api/mc-infra-manager/Delspec';
+  const controller = '/api/mc-infra-manager/DelSpec';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, specId: name }
   });
@@ -35,7 +35,7 @@ export async function del(ns, name) {
 
 // fetchSpecs: fetch specs from CSP connections into namespace
 export async function fetchSpecs(ns, connectionName = '') {
-  const controller = '/api/mc-infra-manager/Fetchspecs';
+  const controller = '/api/mc-infra-manager/FetchSpecs';
   const body = connectionName ? { connectionName } : {};
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns },
@@ -47,8 +47,8 @@ export async function fetchSpecs(ns, connectionName = '') {
 export async function lookupList(connectionName) {
   const controller = '/api/mc-infra-manager/ForwardAnyReqToAny';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
-    pathParams: { path: 'spider/vmspecs' },
-    queryParams: { ConnectionName: connectionName }
+    pathParams: { path: 'vmspec' },
+    request: { ConnectionName: connectionName }
   });
   return response?.data?.responseData;
 }

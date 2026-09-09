@@ -171,7 +171,9 @@ function initRecommendSpecTable() {
 	];
 
 	//recommendTable = setSpecTabulator("spec-table", tableObjParams, columns);
-	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
+	// applySpecInfo()는 항상 recommendSpecs[0]만 사용하므로 단일 선택으로 강제한다.
+	// 다중 선택 상태로 두면 이전에 체크된 행이 재검색/재선택 후에도 남아있어 Apply가 옛 spec을 다시 적용하는 결함이 생긴다(PMK WEB-BUG-073과 동일 원인).
+	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns, false);
 	window.recommendTable = recommendTable; // window 객체에 할당
 
 	recommendTable.on("rowSelectionChanged", function (data, rows) {
@@ -516,7 +518,7 @@ export async function getRecommendVmInfo() {
 	const loadingEl = document.getElementById('spec-search-loading');
 	if (loadingEl) loadingEl.style.display = 'block';
 	try {
-		var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+		var respData = await webconsolejs["common/api/services/infra_api"].mciRecommendVm(data);
 		if (respData.status.code != 200) {
 			console.error("RecommendSpec failed", respData)
 			return

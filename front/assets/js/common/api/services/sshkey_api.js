@@ -1,5 +1,5 @@
 export async function list(ns) {
-  const controller = '/api/mc-infra-manager/Getallsshkey';
+  const controller = '/api/mc-infra-manager/GetAllSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns }
   });
@@ -7,7 +7,7 @@ export async function list(ns) {
 }
 
 export async function create(ns, body) {
-  const controller = '/api/mc-infra-manager/Postsshkey';
+  const controller = '/api/mc-infra-manager/PostSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns },
     request: body
@@ -16,7 +16,7 @@ export async function create(ns, body) {
 }
 
 export async function get(ns, name) {
-  const controller = '/api/mc-infra-manager/Getsshkey';
+  const controller = '/api/mc-infra-manager/GetSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, sshKeyId: name }
   });
@@ -24,7 +24,7 @@ export async function get(ns, name) {
 }
 
 export async function del(ns, name) {
-  const controller = '/api/mc-infra-manager/Delsshkey';
+  const controller = '/api/mc-infra-manager/DelSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, sshKeyId: name }
   });

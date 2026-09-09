@@ -1,5 +1,5 @@
 <div class="page-body">
-  <div class="container-xl">
+  <div class="container-fluid">
 
     <!-- CSP ACCOUNT LIST SECTION -->
     <div id="index" class="section">
@@ -353,16 +353,16 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- Target Project (읽기전용) -->
+        <!-- Target Project (등록 대상 NS 선택) -->
         <div class="mb-3">
           <label class="form-label">Target Project</label>
-          <input type="text" class="form-control" id="sync-target-project" readonly>
+          <select class="form-select" id="sync-target-project"></select>
         </div>
-        <!-- CSP Account 선택 -->
+        <!-- CSP Connection 선택 -->
         <div class="mb-3">
-          <label class="form-label">CSP Account</label>
+          <label class="form-label">CSP Connection</label>
           <select class="form-select" id="sync-connection-select">
-            <option value="">All Accounts</option>
+            <option value="">All Connections</option>
           </select>
         </div>
         <!-- 자원 유형 선택 -->
@@ -389,7 +389,7 @@
             </div>
             <div class="col-6">
               <label class="form-check">
-                <input class="form-check-input sync-resource-type" type="checkbox" value="vm" checked>
+                <input class="form-check-input sync-resource-type" type="checkbox" value="node" checked>
                 <span class="form-check-label">Node</span>
               </label>
             </div>
@@ -421,7 +421,7 @@
 </div>
 
 {{ javascriptTag("common/api/services/csp_accounts_api.js") | raw }}
-{{ javascriptTag("common/api/services/import_api.js") | raw }}
+{{ javascriptTag("common/api/services/cspimport_api.js") | raw }}
 {{ javascriptTag("common/api/services/readyz_api.js") | raw }}
 {{ javascriptTag("common/api/services/setup_status_api.js") | raw }}
 {{ javascriptTag("pages/settings/environment/cloudsps/setup_status_section.js") | raw }}
