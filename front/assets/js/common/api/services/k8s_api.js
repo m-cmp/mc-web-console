@@ -4,7 +4,7 @@
 export async function getClusterList(nsId, options = {}) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -113,7 +113,8 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
 
   obj['connectionName'] = selectedConnection; // 선택된 Connection
   obj['name'] = clusterName; // 클러스터 이름
-  obj['description'] = Create_Cluster_Config_Arr.description || ""; // 설명 (옵션)
+  // description은 배열 자체가 아니라 첫 요소(cluster_form)에 들어 있다
+  obj['description'] = (Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].description) || "";
   obj['version'] = clusterVersion; // 선택된 Kubernetes 버전
   obj['vNetId'] = selectedVpc; // VPC ID
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
@@ -181,7 +182,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
 export async function getVpcList(connectionName, nsId) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -211,7 +212,7 @@ export async function getSubnetList(vNetId, nsId) {
   // TODO : getSubnet api로 변경
   // 현재 subnet관련 api 안됨
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -255,7 +256,7 @@ export async function getSubnetList(vNetId, nsId) {
 export async function getSecurityGroupList(vNetId, nsId) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -406,6 +407,90 @@ export async function getCloudConnection(options = {}) {
   );
 
   return response.data.responseData.connectionconfig
+}
+
+// ---------------------------------------------------------------------------
+// Provider / Region / Connection 카탈로그
+//
+// Connection(ConnConfig)이 provider·region의 유일한 정본이다.
+//   configName          : "nhn-kr1"   (= regionZoneInfoName, 기본 credentialHolder 기준)
+//   providerName        : "nhn"
+//   regionZoneInfoName  : "nhn-kr1"   (= CB-Spider 등록명 = "{provider}-{cspRegion}")
+//
+// RetrieveRegionListFromCsp 는 zone 단위 항목까지 내려주고(전체의 약 76%가 zone 항목)
+// 그 대부분은 대응하는 Connection이 없다. 그래서 Region 목록은 이 API 대신
+// Connection에서 파생시킨다 — 목록에 뜨는 Region은 항상 Connection을 하나 갖는다.
+// ---------------------------------------------------------------------------
+
+// Region select의 표시/값 포맷 ("[NHN] nhn-kr1")
+export function formatRegionOption(providerName, regionZoneInfoName) {
+  return "[" + String(providerName || "").toUpperCase() + "] " + regionZoneInfoName;
+}
+
+// "[NHN] nhn-kr1" → { provider: "NHN", regionZoneInfoName: "nhn-kr1" }
+export function parseRegionOption(optionValue) {
+  const m = String(optionValue || "").match(/^\[(.*?)\]\s*(.*)$/);
+  if (!m) return { provider: "", regionZoneInfoName: String(optionValue || "").trim() };
+  return { provider: m[1], regionZoneInfoName: m[2].trim() };
+}
+
+// CSP 고유 region 이름 — GetAvailableK8sVersion 등 CSP 원본 region을 받는 API용.
+// "nhn" + "nhn-kr1" → "kr1". NHN은 prefix가 붙은 형태를 거부한다.
+export function toCspRegionName(providerName, regionZoneInfoName) {
+  const prefix = String(providerName || "").toLowerCase() + "-";
+  const region = String(regionZoneInfoName || "");
+  return region.toLowerCase().startsWith(prefix) ? region.slice(prefix.length) : region;
+}
+
+function matchesProvider(connection, provider) {
+  if (!provider) return true;
+  return String(connection.providerName || "").toLowerCase() === String(provider).toLowerCase();
+}
+
+// 해당 provider가 가진 Region 목록 (중복 제거 + 정렬)
+export function listRegionOptions(connectionList, provider) {
+  const seen = new Set();
+  (connectionList || []).forEach(conn => {
+    if (!conn || !conn.regionZoneInfoName) return;
+    if (!matchesProvider(conn, provider)) return;
+    seen.add(formatRegionOption(conn.providerName, conn.regionZoneInfoName));
+  });
+  return Array.from(seen).sort();
+}
+
+// provider(+region)에 해당하는 Connection 목록.
+// region은 regionZoneInfoName 정확 일치로 비교한다 — startsWith로 비교하면
+// "azure-eastus"가 "azure-eastus2"까지, "gcp-europe-west1"이 "...west10/12"까지 끌고 온다.
+export function listConnectionNames(connectionList, provider, regionZoneInfoName) {
+  return (connectionList || [])
+    .filter(conn => conn && conn.configName && matchesProvider(conn, provider))
+    .filter(conn => !regionZoneInfoName || conn.regionZoneInfoName === regionZoneInfoName)
+    .map(conn => conn.configName)
+    .sort();
+}
+
+// select 요소를 옵션 목록으로 다시 채운다. 기존 선택값이 목록에 남아 있으면 유지한다.
+// autoSelectSingle: 후보가 정확히 1건이면 그것을 선택한다. Region을 고르면 Connection이
+// 하나로 확정되는데, 목록만 좁히고 선택은 비워두면 사용자가 한 번 더 골라야 하고
+// 그 사이 값이 비어 "필수값 누락"으로 막히거나 엉뚱한 값이 남는다.
+export function fillSelectOptions(selector, placeholder, values, autoSelectSingle) {
+  const $el = $(selector);
+  if ($el.length === 0) return;
+  const previous = $el.val();
+  let html = '<option value="">' + placeholder + "</option>";
+  values.forEach(v => {
+    html += '<option value="' + v + '">' + v + "</option>";
+  });
+  $el.empty().append(html);
+  if (previous && values.indexOf(previous) !== -1) {
+    $el.val(previous);
+  } else if (autoSelectSingle && values.length === 1) {
+    $el.val(values[0]);
+    // 프로그래매틱 .val() 은 change 를 발생시키지 않는다. Connection select 는 인라인
+    // onchange 로 VPC/Subnet/SG 목록을 불러오므로, 명시적으로 트리거하지 않으면
+    // 자동 선택된 값에 대한 하위 목록이 비어 있게 된다.
+    $el.trigger("change");
+  }
 }
 
 // pmk내 vm들의 provider별 connection count
@@ -615,10 +700,10 @@ async function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, config
   return responses;
 }
 
-export async function getSshKey(nsId, providerName) {
+export async function getSshKey(nsId, providerName, connectionName) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -628,11 +713,19 @@ export async function getSshKey(nsId, providerName) {
     },
   };
 
-  // Add provider filter if provided
-  if (providerName && providerName !== "") {
+  // Connection 이 정해져 있으면 그걸로 거른다.
+  // providerName 필터는 tumblebug 에서 신뢰할 수 없다 — filterVal=nhn 으로 걸러도
+  // gcp-asia-northeast3 / tencent-ap-seoul 키까지 섞여 나온다(실측). connectionName 은 정확하다.
+  // K8s NodeGroup 의 SSH Key 는 클러스터 Connection 과 일치해야 하므로 connectionName 우선.
+  if (connectionName && connectionName !== "") {
+    data.queryParams = {
+      filterKey: "connectionName",
+      filterVal: connectionName
+    };
+  } else if (providerName && providerName !== "") {
     data.queryParams = {
       filterKey: "providerName",
-      filterVal: providerName.toLowerCase() // e.g., "aws", "azure", "gcp"
+      filterVal: providerName.toLowerCase()
     };
   }
 
@@ -1058,7 +1151,7 @@ export async function getPmkRecommendSpec(data) {
 // PMK용 Spec 목록 API
 export async function getPmkSpecList(connectionName, nsId) {
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -1086,7 +1179,7 @@ export async function getPmkSpecList(connectionName, nsId) {
 // PMK용 Image 목록 API
 export async function getPmkImageList(connectionName, nsId) {
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 

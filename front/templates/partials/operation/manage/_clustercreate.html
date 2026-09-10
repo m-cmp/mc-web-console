@@ -112,6 +112,15 @@
                   <div class="col-auto">
                     <a
                       href="#"
+                      class="btn btn-outline-info"
+                      onclick="webconsolejs['partials/operation/manage/clustercreate'].useDefaultImage(event)"
+                    >
+                      Use Default
+                    </a>
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
                       class="btn"
                       onclick="webconsolejs['partials/operation/manage/clustercreate'].validateAndOpenImageModal(event)"
                     >
@@ -228,6 +237,11 @@
                       <option value="true">On</option>
                       <option value="false">Off</option>
                     </select>
+                    <small
+                      id="node_autoscaling_hint"
+                      class="form-hint text-warning"
+                      style="display: none;"
+                    ></small>
                   </div>
                 </div>
               </div>

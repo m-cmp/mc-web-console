@@ -90,7 +90,10 @@ function initRecommendImageTablePmk() {
 	
 	var tableObjParams = {
 		layout: "fitDataFill",
-		placeholder: "No data available"
+		placeholder: "No data available",
+		// 기본 5건은 너무 적다 — CSP에 따라 수십 건이 나와 원하는 이미지가 뒤 페이지로 밀린다
+		// (NHN kr1은 38건 → 기본값이면 8페이지). 하단 셀렉터(5/10/15/20)로 더 늘릴 수 있다.
+		paginationSize: 10
 	};
 
 	var columns = [
@@ -106,6 +109,9 @@ function initRecommendImageTablePmk() {
 		{
 			title: "BASIC",
 			field: "isBasicImage",
+			headerFilter: "tickCross",
+			headerFilterParams: { tristate: true },
+			headerFilterEmptyCheck: function (value) { return value === null; },
 			vertAlign: "middle",
 			hozAlign: "center",
 			maxWidth: 100,
@@ -122,6 +128,7 @@ function initRecommendImageTablePmk() {
 		{
 			title: "OS TYPE",
 			field: "osType",
+			headerFilter: "input",
 			vertAlign: "middle",
 			hozAlign: "center",
 			minWidth: 120,
@@ -130,6 +137,7 @@ function initRecommendImageTablePmk() {
 		{
 			title: "IMAGE NAME",
 			field: "name",
+			headerFilter: "input",
 			vertAlign: "middle",
 			hozAlign: "left",
 			minWidth: 180,
@@ -138,6 +146,7 @@ function initRecommendImageTablePmk() {
 		{
 			title: "OS DISTRIBUTION",
 			field: "osDistribution",
+			headerFilter: "input",
 			vertAlign: "middle",
 			hozAlign: "left",
 			minWidth: 300,
@@ -147,6 +156,9 @@ function initRecommendImageTablePmk() {
 		{
 			title: "GPU",
 			field: "isGPUImage",
+			headerFilter: "tickCross",
+			headerFilterParams: { tristate: true },
+			headerFilterEmptyCheck: function (value) { return value === null; },
 			vertAlign: "middle",
 			hozAlign: "center",
 			maxWidth: 80,
@@ -163,6 +175,9 @@ function initRecommendImageTablePmk() {
 		{
 			title: "K8S",
 			field: "isKubernetesImage",
+			headerFilter: "tickCross",
+			headerFilterParams: { tristate: true },
+			headerFilterEmptyCheck: function (value) { return value === null; },
 			vertAlign: "middle",
 			hozAlign: "center",
 			maxWidth: 80,
@@ -208,7 +223,7 @@ export function setImageSelectionCallbackPmk(callback) {
 export async function getRecommendImageInfoPmk() {
 	// PMK용 전역 변수에서 spec 정보 확인
 	if (!window.selectedPmkSpecInfo) {
-		alert("Please select a node specification first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		return;
 	}
 
@@ -225,8 +240,11 @@ export async function getRecommendImageInfoPmk() {
 
 	// 현재 workspace/project 정보 가져오기
 	try {
-		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-		var nsId = selectedWorkspaceProject.nsId;
+		// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+		// workspaceProjectInit()은 셀렉트를 재구성하는 초기화 루틴이라 세션이 비어 있으면
+		// 현재 프로젝트를 지워버린다.
+		var currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+		var nsId = currentProject ? (currentProject.NsId || currentProject.nsId || "") : "";
 
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
@@ -289,12 +307,12 @@ export async function getRecommendImageInfoPmk() {
 
 		} else {
 			console.error("PMK API call failed:", response);
-			alert("Failed to search images. Please try again.");
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to search images. Please try again.');
 		}
 
 	} catch (error) {
 		console.error("Error in getRecommendImageInfoPmk:", error);
-		alert("Error searching images. Please try again.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error searching images. Please try again.');
 	}
 }
 
@@ -302,7 +320,7 @@ export async function applyImageInfoPmk() {
 	
 	if (recommendImagesPmk.length === 0) {
 		console.warn("No PMK image selected");
-		alert("Please select an image first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Please select an image first.');
 		return;
 	}
 
@@ -323,6 +341,24 @@ export async function applyImageInfoPmk() {
 }
 
 
+
+// CSP 드라이버에게 "기본 노드 이미지를 알아서 골라라"라고 알리는 sentinel.
+// cb-tumblebug은 imageId가 ""이거나 "default"면 빈 문자열로 cb-spider에 넘기고
+// K8s 이미지 검증도 건너뛴다(k8s_cluster.go: 클러스터 생성/NodeGroup 추가 두 경로 모두).
+// 각 드라이버가 자기 기본값을 적용한다 — NHN은 Container 판, AWS는 AL2023_x86_64_STANDARD,
+// GCP는 COS_CONTAINERD, Alibaba는 defaultNodePoolImageType.
+// nodeImageDesignation=false인 CSP(Azure/NCP/IBM)는 이미지를 아예 무시하므로 무해하다.
+export const DEFAULT_IMAGE_ID = "default";
+
+// 목록에서 고르지 않고 CSP 기본 이미지를 쓴다.
+// 기존 콜백들은 selectedImage.name || cspImageName 을 읽으므로 name 하나면 충분하다.
+export function applyDefaultImagePmk() {
+	if (imageSelectionCallbackPmk) {
+		imageSelectionCallbackPmk({ name: DEFAULT_IMAGE_ID, cspImageName: DEFAULT_IMAGE_ID });
+	} else {
+		console.warn("Image selection callback function not set");
+	}
+}
 
 export function showRecommendImageSettingPmk(value) {
 	// TODO: 지역 선택에 따른 설정 로직 구현
@@ -401,6 +437,9 @@ if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].getRecomm
 }
 if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyImageInfoPmk) {
 	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyImageInfoPmk = applyImageInfoPmk;
+}
+if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyDefaultImagePmk) {
+	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyDefaultImagePmk = applyDefaultImagePmk;
 }
 if (!webconsolejs['partials/operation/manage/k8s_imagerecommendation'].showRecommendImageSettingPmk) {
 	webconsolejs['partials/operation/manage/k8s_imagerecommendation'].showRecommendImageSettingPmk = showRecommendImageSettingPmk;
