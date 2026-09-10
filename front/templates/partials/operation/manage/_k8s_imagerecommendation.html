@@ -182,6 +182,17 @@
 
       <div class="modal-footer">
         <div align="right">
+          <!-- imageId를 "default"로 보내면 CSP 드라이버가 자기 기본 노드 이미지를 고른다.
+               (NHN은 Container 판, AWS는 AL2023, GCP는 COS_CONTAINERD 등)
+               목록에서 유효한 이미지를 찾기 어려울 때의 안전한 선택지다. -->
+          <button
+            type="button"
+            class="btn btn-outline-info"
+            data-bs-dismiss="modal"
+            onclick="webconsolejs['partials/operation/manage/k8s_imagerecommendation'].applyDefaultImagePmk()"
+          >
+            Use Default
+          </button>
           <button
             type="submit"
             class="btn btn-info"

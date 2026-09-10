@@ -2427,6 +2427,18 @@ function setupPmkSpecModalEvents() {
 // export function applyPmkSpecInfo() { ... } - 중복 제거
 
 // PMK용 Image 모달 검증 및 열기
+// CSP 기본 노드 이미지를 쓴다 — Expert 폼의 useDefaultImage() 와 동일한 취지.
+// Dynamic 폼의 Image 입력은 readonly 가 아니지만, 직접 타이핑을 유도하지 않고 버튼으로 채운다.
+export function useDefaultImageDynamic(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const defaultId = webconsolejs["partials/operation/manage/k8s_imagerecommendation"].DEFAULT_IMAGE_ID || "default";
+    $("#nodegroup_image_dynamic").val(defaultId);
+    return false;
+}
+
 export function validateAndOpenImageModalPmk(event) {
 
     // 스펙 입력 필드 값 확인 (MCI와 동일한 검증 로직)
@@ -2633,6 +2645,7 @@ webconsolejs['pages/operation/manage/k8sworkloads'].deployPmkDynamic = deployPmk
 webconsolejs['pages/operation/manage/k8sworkloads'].showRecommendSpecSettingPmk = showRecommendSpecSettingPmk;
 webconsolejs['pages/operation/manage/k8sworkloads'].getRecommendVmInfoPmk = getRecommendVmInfoPmk;
 // webconsolejs['pages/operation/manage/k8sworkloads'].applyPmkSpecInfo = applyPmkSpecInfo; // 중복 제거 - k8s_serverrecommendation.js에서 처리
+webconsolejs['pages/operation/manage/k8sworkloads'].useDefaultImageDynamic = useDefaultImageDynamic;
 webconsolejs['pages/operation/manage/k8sworkloads'].validateAndOpenImageModalPmk = validateAndOpenImageModalPmk;
 webconsolejs['pages/operation/manage/k8sworkloads'].setupPmkSpecModalEvents = setupPmkSpecModalEvents; // PMK Spec 모달 이벤트 리스너 등록
 webconsolejs['pages/operation/manage/k8sworkloads'].filterByProviderPmk = filterByProviderPmk; // PMK용 Provider 필터링 함수 등록

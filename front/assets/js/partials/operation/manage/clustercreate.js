@@ -1191,6 +1191,21 @@ export function callbackNodegroupServerRecommendation(vmSpec) {
 }
 
 // PMK용 Image 모달 검증 및 열기 (기존 nodegroup_configuration 폼용)
+// CSP 기본 노드 이미지를 쓴다 — 목록에서 고르지 않고 "default" 를 넣는다.
+// 이미지 목록이 CSP마다 수십 건이고 이름이 UUID인 경우(NHN)가 있어 고르기 어렵다.
+// cb-tumblebug이 "default" 를 빈 문자열로 바꿔 넘기면 각 CSP 드라이버가 자기 기본값을 고른다.
+export function useDefaultImage(event) {
+	if (event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	const defaultId = webconsolejs["partials/operation/manage/k8s_imagerecommendation"].DEFAULT_IMAGE_ID || "default";
+	// 모달 콜백(setImageSelectionCallbackPmk)과 동일하게 hidden 미러도 함께 채운다
+	$("#node_imageid").val(defaultId);
+	$("#n_imageid").val(defaultId);
+	return false;
+}
+
 export function validateAndOpenImageModal(event) {
 	// Spec 입력 필드 값 확인
 	var specValue = $("#node_specid").val();
