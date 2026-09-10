@@ -2205,9 +2205,8 @@ export async function deployPmkDynamic() {
             // 다르면 여기서 잡는다 (예: kr1 스펙 + jp1 Connection → cb-tumblebug 400).
             const specConnection = $("#nodegroup_connectionName_dynamic").val();
             if (specConnection && specConnection !== clusterData.connection) {
-                webconsolejs['common/util'].showToast(
-                    `The selected spec belongs to connection '${specConnection}' but the cluster uses '${clusterData.connection}'. Select a spec from the same connection.`,
-                    'error'
+                webconsolejs['partials/layout/modal'].commonShowDefaultModal('Spec / Connection Mismatch',
+                    `The selected spec belongs to connection '${specConnection}' but the cluster uses '${clusterData.connection}'. Select a spec from the same connection.`
                 );
                 return;
             }
@@ -2371,11 +2370,11 @@ export async function getRecommendVmInfoPmk() {
             await webconsolejs["partials/operation/manage/k8s_serverrecommendation"].getRecommendVmInfoPmk();
         } else {
             console.error("PMK Server recommendation module not found");
-            alert("K8s Node recommendation module not found");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'K8s Node recommendation module not found.');
         }
     } catch (error) {
         console.error("failed to recommend PMK spec:", error);
-        alert("failed to recommend K8s spec");
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to recommend a K8s spec.');
     }
 }
 
@@ -2435,7 +2434,7 @@ export function validateAndOpenImageModalPmk(event) {
 
     if (!specValue || specValue.trim() === "") {
         console.warn("No PMK spec selected - validation failed");
-        alert("Please select a node specification first before opening the image recommendation modal.");
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
         // 이벤트 전파 중단 및 기본 동작 방지
         if (event) {
             event.preventDefault();
@@ -2447,7 +2446,7 @@ export function validateAndOpenImageModalPmk(event) {
     // 전역 변수에서 spec 정보 확인 (MCI와 동일한 검증 로직)
     if (!window.selectedPmkSpecInfo) {
         console.warn("No PMK spec info in global variable - validation failed");
-        alert("Please select a node specification first before opening the image recommendation modal.");
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
         // 이벤트 전파 중단 및 기본 동작 방지
         if (event) {
             event.preventDefault();
@@ -2494,17 +2493,17 @@ export function validateAndOpenImageModalPmk(event) {
                 }
             } else {
                 console.error("Bootstrap is not loaded");
-                alert("could not open modal because Bootstrap is not loaded");
+                webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Could not open the modal because Bootstrap is not loaded.');
             }
         } catch (error) {
             console.error("failed to open PMK image modal:", error);
-            alert("Error opening K8s image recommendation modal. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error opening the K8s image recommendation modal. Please try again.');
         }
     }, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
 
     } catch (error) {
         console.error("failed to open PMK image modal:", error);
-        alert("failed to open K8s image modal");
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to open the K8s image modal.');
     }
 
 

@@ -194,16 +194,16 @@ export async function checkAvailableK8sClusterVersion(providerName, regionName){
             $("#cluster_version").append(html);
         } else {
             // 데이터가 없거나 응답이 올바르지 않은 경우
-            alert("Failed to retrieve Kubernetes cluster versions. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve Kubernetes cluster versions. Please try again.');
         }
 
     } catch (error) {
         console.error("Failed to retrieve Kubernetes cluster versions. Please try again.", error);
 
         if (error.response && error.response.status === 500) {
-            alert("Failed to retrieve available Kubernetes cluster versions due to server error. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve available Kubernetes cluster versions due to server error. Please try again.');
         } else {
-            alert("An unexpected error occurred. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'An unexpected error occurred. Please try again.');
         }
     }
 }
@@ -429,7 +429,7 @@ export async function createNode() {
 	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
 	var selectedNsId = getSelectedNsId();
 	if (!selectedNsId) {
-		webconsolejs['common/util'].showToast('Please select a project first', 'warning');
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.');
 		return;
 	}
 	var selectedPmk = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
@@ -448,10 +448,10 @@ export async function createNode() {
 	// 다른 리전 스펙이 선택될 수 있고, 그대로 보내면 cb-tumblebug이 400으로 거부한다.
 	var specConnection = $("#node_connectionName").val();
 	if (specConnection && selectedPmk.connectionName && specConnection !== selectedPmk.connectionName) {
-		webconsolejs['common/util'].showToast(
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Spec / Connection Mismatch',
 			"The selected spec belongs to connection '" + specConnection +
 			"' but the cluster uses '" + selectedPmk.connectionName +
-			"'. Select a spec from the same connection.", 'error');
+			"'. Select a spec from the same connection.");
 		return;
 	}
 
@@ -662,7 +662,7 @@ function getSelectedNsId() {
 export async function changeCloudConnection(connectionName) {
 	const selectedNsId = getSelectedNsId();
 	if (!selectedNsId) {
-		webconsolejs['common/util'].showToast('Please select a project first', 'warning');
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.');
 		return;
 	}
 	await setVpcList(connectionName, selectedNsId)
@@ -738,7 +738,7 @@ export async function createCluster() {
 	// 세션이 비어 있으면 내부에서 현재 프로젝트를 지워 nsId가 ""로 전송된다(400).
 	var selectedNsId = getSelectedNsId();
 	if (!selectedNsId) {
-		webconsolejs['common/util'].showToast('Please select a project first', 'warning');
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.');
 		return;
 	}
 
@@ -754,18 +754,18 @@ export async function createCluster() {
 	// "VM KeyPair '...' does not exist in connection '...'" 로 생성이 실패한다.
 	var selectedSshKey = $("#node_sshkey").val()
 	if (selectedSshKey && selectedConnection && !selectedSshKey.includes(selectedConnection)) {
-		webconsolejs['common/util'].showToast(
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('SSH Key Mismatch',
 			"The selected SSH Key '" + selectedSshKey + "' does not belong to connection '" +
-			selectedConnection + "'. Select a key from the same connection.", 'error');
+			selectedConnection + "'. Select a key from the same connection.");
 		return;
 	}
 
 	var specConnection = $("#node_connectionName").val()
 	if (specConnection && selectedConnection && specConnection !== selectedConnection) {
-		webconsolejs['common/util'].showToast(
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Spec / Connection Mismatch',
 			"The selected spec belongs to connection '" + specConnection +
 			"' but the cluster uses '" + selectedConnection +
-			"'. Select a spec from the same connection.", 'error');
+			"'. Select a spec from the same connection.");
 		return;
 	}
 	var selectedVpc = $("#cluster_vpc").val()
@@ -773,27 +773,27 @@ export async function createCluster() {
 	var selectedSecurityGroup = $("#cluster_sg").val()
 
 	if (!clusterName) {
-		alert("Please Input Cluster Name!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Cluster name is required.')
 		return;
 	}
 	if (!selectedConnection) {
-		alert("Please Select Connection!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Connection is required.')
 		return;
 	}
 	if (!clusterVersion) {
-		alert("Please Select Cluster Version!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Cluster version is required.')
 		return;
 	}
 	if (!selectedVpc) {
-		alert("Please Select VPC!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'VPC is required.')
 		return;
 	}
 	if (!selectedSubnet) {
-		alert("Please Select Subnet!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Subnet is required.')
 		return;
 	}
 	if (!selectedSecurityGroup) {
-		alert("Please Select Security Group!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Security Group is required.')
 		return;
 	}
 
@@ -909,7 +909,7 @@ export function clusterFormDone_btn() {
 	
 	for (var field of requiredFields) {
 		if (!$(field.id).val() || $(field.id).val().trim() === '') {
-			alert(field.message);
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', field.message);
 			$(field.id).focus();
 			return;
 		}
@@ -976,9 +976,6 @@ export function clusterFormDone_btn() {
         nodeGroupData["minNodeSize"] = minNodeSize || "";
     }
 
-    if (nodeGroupName) {
-        cluster_form["k8sNodeGroupList"] = [nodeGroupData];
-    }
 	
 	var nodeGroup_name = nodeGroupName;
 	var nodeGroup_cnt = parseInt(desiredNodeSize) || 1;
@@ -989,9 +986,8 @@ export function clusterFormDone_btn() {
 		// **Edit 모드**: 기존 NodeGroup 업데이트
 		console.log("Edit mode: Updating NodeGroup at index", currentEditingNodeGroupIndex);
 		
-		// 배열의 기존 데이터 업데이트
+		// NodeGroup 만 해당 인덱스를 갱신한다. cluster_form 은 단일이므로 아래에서 일괄 반영.
 		Create_Node_Config_Arr[currentEditingNodeGroupIndex] = nodeGroupData;
-		Create_Cluster_Config_Arr[currentEditingNodeGroupIndex] = cluster_form;
 		
 		// HTML 리스트 항목 업데이트 (기존 항목 찾아서 텍스트만 변경)
 		var targetLi = $("#nodegroup_list li").eq(currentEditingNodeGroupIndex + 1); // +1은 plusIcon 때문
@@ -1008,11 +1004,8 @@ export function clusterFormDone_btn() {
 		// **Create 모드**: 새 NodeGroup 추가
 		console.log("Create mode: Adding new NodeGroup");
 		
-		// 배열에 저장
-		Create_Cluster_Config_Arr.push(cluster_form);
-		if (isNodeGroup) {
-			Create_Node_Config_Arr.push(nodeGroupData);
-		}
+		// NodeGroup 을 배열에 누적한다 (cluster_form 은 아래에서 단일로 반영)
+		Create_Node_Config_Arr.push(nodeGroupData);
 
 		// HTML 생성 (NodeGroup 리스트 항목)
 		var add_nodegroup_html = '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
@@ -1032,6 +1025,12 @@ export function clusterFormDone_btn() {
 		// 카운터 증가
 		nodeGroup_data_cnt++;
 	}
+
+	// cluster_form 은 클러스터 하나에 대한 값이므로 항상 슬롯 0 을 현재 값으로 덮어쓴다.
+	// push 하면 Deploy 가 읽는 [0] 이 첫 Done 시점의 낡은 값으로 고정된다.
+	// NodeGroup 목록은 지금까지 누적된 전체를 싣는다 — 여러 개 만들어도 모두 전송된다.
+	cluster_form["k8sNodeGroupList"] = Create_Node_Config_Arr.slice();
+	Create_Cluster_Config_Arr[0] = cluster_form;
 
 	// 폼 토글
     var div = document.getElementById("nodegroup_configuration");
@@ -1198,7 +1197,7 @@ export function validateAndOpenImageModal(event) {
 	
 	if (!specValue || specValue.trim() === "") {
 		console.warn("No PMK spec selected - validation failed");
-		alert("Please select a node specification first before opening the image recommendation modal.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		if (event) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -1209,7 +1208,7 @@ export function validateAndOpenImageModal(event) {
 	// 전역 변수에서 spec 정보 확인
 	if (!window.selectedPmkSpecInfo) {
 		console.warn("No PMK spec info in global variable - validation failed");
-		alert("Please select a node specification first before opening the image recommendation modal.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		if (event) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -1249,17 +1248,17 @@ export function validateAndOpenImageModal(event) {
 					}
 				} else {
 					console.error("Bootstrap is not loaded");
-					alert("could not open modal because Bootstrap is not loaded");
+					webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Could not open the modal because Bootstrap is not loaded.');
 				}
 			} catch (error) {
 				console.error("failed to open PMK image modal:", error);
-				alert("Error opening K8s image recommendation modal. Please try again.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error opening the K8s image recommendation modal. Please try again.');
 			}
 		}, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
 		
 	} catch (error) {
 		console.error("failed to validate and open image modal:", error);
-		alert("Error opening image recommendation modal. Please try again.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error opening the image recommendation modal. Please try again.');
 		return false;
 	}
 	

@@ -235,7 +235,7 @@ export async function getRecommendVmInfoPmk() {
 		// CPU 필터 (최소 4 vCPU 보장)
 		if (cpuMinVal !== "" || cpuMaxVal !== "") {
 			if (cpuMaxVal !== "" && cpuMaxVal < cpuMinVal) {
-				alert("Maximum value is less than the minimum value.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Invalid Range', 'Maximum value is less than the minimum value.');
 				return;
 			}
 			
@@ -264,7 +264,7 @@ export async function getRecommendVmInfoPmk() {
 		// Memory 필터 (최소 16GB 보장)
 		if (memoryMinVal !== "" || memoryMaxVal !== "") {
 			if (memoryMaxVal !== "" && memoryMaxVal < memoryMinVal) {
-				alert("Maximum value is less than the minimum value.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Invalid Range', 'Maximum value is less than the minimum value.');
 				return;
 			}
 			
@@ -293,7 +293,7 @@ export async function getRecommendVmInfoPmk() {
 		// Cost 필터
 		if (costMinVal !== "" || costMaxVal !== "") {
 			if (costMaxVal !== "" && costMaxVal < costMinVal) {
-				alert("Maximum value is less than the minimum value.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Invalid Range', 'Maximum value is less than the minimum value.');
 				return;
 			}
 			
@@ -414,7 +414,7 @@ export async function getRecommendVmInfoPmk() {
 export async function applySpecInfoPmk() {
 	if (recommendSpecsPmk.length === 0) {
 		console.warn("No PMK spec selected");
-		alert("Please select a spec first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Please select a spec first.');
 		return;
 	}
 	

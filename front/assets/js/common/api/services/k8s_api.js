@@ -4,7 +4,7 @@
 export async function getClusterList(nsId, options = {}) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -182,7 +182,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
 export async function getVpcList(connectionName, nsId) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -212,7 +212,7 @@ export async function getSubnetList(vNetId, nsId) {
   // TODO : getSubnet api로 변경
   // 현재 subnet관련 api 안됨
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -256,7 +256,7 @@ export async function getSubnetList(vNetId, nsId) {
 export async function getSecurityGroupList(vNetId, nsId) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -703,7 +703,7 @@ async function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, config
 export async function getSshKey(nsId, providerName, connectionName) {
 
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -1151,7 +1151,7 @@ export async function getPmkRecommendSpec(data) {
 // PMK용 Spec 목록 API
 export async function getPmkSpecList(connectionName, nsId) {
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 
@@ -1179,7 +1179,7 @@ export async function getPmkSpecList(connectionName, nsId) {
 // PMK용 Image 목록 API
 export async function getPmkImageList(connectionName, nsId) {
   if (nsId == "") {
-    alert("Project has not set")
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.')
     return;
   }
 

@@ -208,7 +208,7 @@ export function setImageSelectionCallbackPmk(callback) {
 export async function getRecommendImageInfoPmk() {
 	// PMK용 전역 변수에서 spec 정보 확인
 	if (!window.selectedPmkSpecInfo) {
-		alert("Please select a node specification first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		return;
 	}
 
@@ -292,12 +292,12 @@ export async function getRecommendImageInfoPmk() {
 
 		} else {
 			console.error("PMK API call failed:", response);
-			alert("Failed to search images. Please try again.");
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to search images. Please try again.');
 		}
 
 	} catch (error) {
 		console.error("Error in getRecommendImageInfoPmk:", error);
-		alert("Error searching images. Please try again.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error searching images. Please try again.');
 	}
 }
 
@@ -305,7 +305,7 @@ export async function applyImageInfoPmk() {
 	
 	if (recommendImagesPmk.length === 0) {
 		console.warn("No PMK image selected");
-		alert("Please select an image first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Please select an image first.');
 		return;
 	}
 
