@@ -231,7 +231,7 @@ async function updateConfigurationFilltering() {
 	const applyOffConstraint =
 		webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
 	if (typeof applyOffConstraint === "function") {
-		applyOffConstraint("#node_autoscaling", "#node_autoscaling_hint", selectedProvider, false);
+		applyOffConstraint("#node_autoscaling", "#node_autoscaling_hint", selectedProvider, "expertCreate");
 	}
 
 	// Provider 미선택 — 전체 목록으로 되돌린다
@@ -285,7 +285,12 @@ export async function displayNewNodeForm() {
 	var clusterProvider = webconsolejs["pages/operation/manage/k8sworkloads"].currentProvider
 		|| (selectedCluster && selectedCluster.provider)
 		|| null; // e.g., "aws", "azure", "gcp"
-	var clusterConnection = selectedCluster ? selectedCluster.connectionName : null;
+	// 신규 클러스터 생성 중에는 선택된 클러스터가 없다 — 폼에서 고른 Connection 을 쓴다.
+	// (currentProvider 는 목록에서 클러스터를 선택했을 때 세팅되는 값이라, 생성 흐름에서는
+	//  비어 있거나 직전에 보던 클러스터의 값이 남아 있어 신뢰할 수 없다)
+	var clusterConnection = (selectedCluster && selectedCluster.connectionName)
+		|| $("#cluster_cloudconnection").val()
+		|| null;
 
 	// Root Disk Type 옵션을 provider/connection 기준으로 동적 조회 (이미 알려진 값 사용)
 	// ssh key 조회보다 먼저 실행해, 이후 블록의 예외와 무관하게 항상 호출되도록 한다
@@ -299,8 +304,22 @@ export async function displayNewNodeForm() {
 		}
 	}
 
-	// getSSHKEY with provider filter
-	var sshKeyList = await webconsolejs["common/api/services/k8s_api"].getSshKey(selectedNsId, clusterProvider);
+	// NodeGroup 폼이 열릴 때 AutoScaling Off 제약을 다시 적용한다.
+	// provider 변경 시점에만 적용하면, 그 뒤 폼이 새로 렌더될 때 disabled 상태가 사라진다.
+	const applyOff = webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
+	if (typeof applyOff === "function") {
+		// isNodeGroup=true 는 기존 클러스터에 NodeGroup 추가(PostK8sNodeGroup) — 이 경로는
+		// min=desiredNodeSize(>=1) 를 보내므로 Azure/NHN 이 Off 를 거부한다.
+		// false 는 Expert 클러스터 생성(PostK8sCluster) — min=0 이 그대로 가서 통과한다.
+		applyOff("#node_autoscaling", "#node_autoscaling_hint",
+			clusterProvider || $("#cluster_provider").val(),
+			isNodeGroup ? "addNodeGroup" : "expertCreate");
+	}
+
+	// SSH Key 는 Connection 기준으로 거른다 — 다른 Connection 의 키를 고르면
+	// "VM KeyPair '...' does not exist in connection '...'" 로 생성이 실패한다.
+	var sshKeyList = await webconsolejs["common/api/services/k8s_api"]
+		.getSshKey(selectedNsId, clusterProvider, clusterConnection);
 	var mysshKeyList = sshKeyList.data.responseData.sshKey;
 	if (mysshKeyList && mysshKeyList.length > 0) {
 		var html = '<option value="">Select sshKey</option>';
@@ -731,6 +750,16 @@ export async function createCluster() {
 	// 스펙 검색은 Provider로만 거르기 때문에 다른 리전의 스펙이 후보에 섞인다.
 	// 선택된 스펙이 자기 connectionName을 들고 있으므로, 클러스터 Connection과
 	// 다르면 여기서 잡는다 (예: kr1 스펙 + jp1 Connection → cb-tumblebug 400).
+	// SSH Key 는 클러스터 Connection 에 속한 것이어야 한다. 다른 Connection 의 키를 보내면
+	// "VM KeyPair '...' does not exist in connection '...'" 로 생성이 실패한다.
+	var selectedSshKey = $("#node_sshkey").val()
+	if (selectedSshKey && selectedConnection && !selectedSshKey.includes(selectedConnection)) {
+		webconsolejs['common/util'].showToast(
+			"The selected SSH Key '" + selectedSshKey + "' does not belong to connection '" +
+			selectedConnection + "'. Select a key from the same connection.", 'error');
+		return;
+	}
+
 	var specConnection = $("#node_connectionName").val()
 	if (specConnection && selectedConnection && specConnection !== selectedConnection) {
 		webconsolejs['common/util'].showToast(

@@ -730,23 +730,37 @@ const AUTOSCALING_OFF_UNSUPPORTED_PROVIDERS = ['aws'];
 //      비-dynamic 경로(/k8sCluster)에는 그 주입이 없어 Expert 폼에서는 정상 동작한다.
 const AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC = ['azure', 'nhn'];
 
-function autoScalingOffBlockReason(provider, isDynamicForm) {
+// context: 'dynamic'(Simple 생성) | 'addNodeGroup'(기존 클러스터에 추가) | 'expertCreate'
+//
+// Azure/NHN 은 "MinNodeSize 가 지정되면 OnAutoScaling 이 켜져 있어야 한다" 로 거부한다.
+// 그런데 경로에 따라 min 이 0 으로 가느냐 양수로 가느냐가 다르다:
+//   - expertCreate  → PostK8sCluster 로 min=0 전송, tumblebug 디폴팅 없음 → 통과 (막지 않는다)
+//   - dynamic       → tumblebug 이 min<=0 이면 1 을 주입 → 거부
+//   - addNodeGroup  → 프론트가 min=desiredNodeSize(>=1) 를 전송 → 거부
+// addNodeGroup 은 CSP 별로 min=0 을 보내면 NHN 은 살릴 수 있으나 Tencent(min>=1 요구)가 깨진다.
+// 그 정규화는 WEB-BUG-090 범위이므로, 여기서는 실패가 확정된 조합만 막는다.
+function autoScalingOffBlockReason(provider, context) {
   const p = String(provider || '').toLowerCase();
   if (!p) return '';
   if (AUTOSCALING_OFF_UNSUPPORTED_PROVIDERS.includes(p)) {
     return p.toUpperCase() + ' does not support creating a NodeGroup with AutoScaling off. '
       + 'A managed node group is always backed by an Auto Scaling group.';
   }
-  if (isDynamicForm && AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC.includes(p)) {
+  if (!AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC.includes(p)) return '';
+  if (context === 'dynamic') {
     return p.toUpperCase() + ' does not support AutoScaling off in Simple Creation. '
       + 'Use Expert Creation instead, or turn AutoScaling on.';
+  }
+  if (context === 'addNodeGroup') {
+    return p.toUpperCase() + ' does not support adding a NodeGroup with AutoScaling off. '
+      + 'Turn AutoScaling on.';
   }
   return '';
 }
 
 // AutoScaling select 에서 Off 선택을 막고 사유를 안내한다.
-export function applyAutoScalingOffConstraint(selectSelector, hintSelector, provider, isDynamicForm) {
-  const reason = autoScalingOffBlockReason(provider, isDynamicForm);
+export function applyAutoScalingOffConstraint(selectSelector, hintSelector, provider, context) {
+  const reason = autoScalingOffBlockReason(provider, context);
   const $sel = $(selectSelector);
   const $off = $sel.find('option[value="false"]');
   const $hint = $(hintSelector);
@@ -1942,6 +1956,10 @@ export function toggleExpertCreation() {
         newFormDynamic.style.display = "none";
         originalForm.style.display = "block";
 
+        // Simple 폼의 NodeGroup Configuration 은 #createcluster 밖(형제 노드)에 있어
+        // 부모를 숨겨도 따라 숨겨지지 않는다. 명시적으로 닫지 않으면 Expert 폼 위에 남는다.
+        hideNodeGroupFormDynamic();
+
         // 버튼 상태 변경
         if (expertBtn) {
             expertBtn.classList.add("btn-primary");
@@ -1952,6 +1970,12 @@ export function toggleExpertCreation() {
         // Simple Creation 모드로 복귀
         newFormDynamic.style.display = "block";
         originalForm.style.display = "none";
+
+        // 복귀 시에는 현재 Provider 기준으로 NodeGroup 폼 노출 여부를 다시 판단한다
+        const providerDynamic = document.getElementById("cluster_provider_dynamic");
+        if (providerDynamic && providerDynamic.value) {
+            onProviderChangeDynamic(providerDynamic.value);
+        }
 
         // 버튼 상태 변경
         if (expertBtn) {
@@ -2107,7 +2131,7 @@ export function onProviderChangeDynamic(providerValue) {
     // 생성 시점 AutoScaling Off 제약 반영 (Simple/Dynamic 폼)
     applyAutoScalingOffConstraint(
         '#nodegroup_autoscaling_dynamic', '#nodegroup_autoscaling_dynamic_hint',
-        providerValue, true);
+        providerValue, 'dynamic');
 
     // Azure, GCP, IBM, NHN 중 하나가 선택되었는지 확인
     const supportedProviders = ['azure', 'gcp', 'ibm', 'nhn'];

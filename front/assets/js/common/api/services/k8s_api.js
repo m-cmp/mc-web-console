@@ -486,6 +486,10 @@ export function fillSelectOptions(selector, placeholder, values, autoSelectSingl
     $el.val(previous);
   } else if (autoSelectSingle && values.length === 1) {
     $el.val(values[0]);
+    // 프로그래매틱 .val() 은 change 를 발생시키지 않는다. Connection select 는 인라인
+    // onchange 로 VPC/Subnet/SG 목록을 불러오므로, 명시적으로 트리거하지 않으면
+    // 자동 선택된 값에 대한 하위 목록이 비어 있게 된다.
+    $el.trigger("change");
   }
 }
 
@@ -696,7 +700,7 @@ async function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, config
   return responses;
 }
 
-export async function getSshKey(nsId, providerName) {
+export async function getSshKey(nsId, providerName, connectionName) {
 
   if (nsId == "") {
     alert("Project has not set")
@@ -709,11 +713,19 @@ export async function getSshKey(nsId, providerName) {
     },
   };
 
-  // Add provider filter if provided
-  if (providerName && providerName !== "") {
+  // Connection 이 정해져 있으면 그걸로 거른다.
+  // providerName 필터는 tumblebug 에서 신뢰할 수 없다 — filterVal=nhn 으로 걸러도
+  // gcp-asia-northeast3 / tencent-ap-seoul 키까지 섞여 나온다(실측). connectionName 은 정확하다.
+  // K8s NodeGroup 의 SSH Key 는 클러스터 Connection 과 일치해야 하므로 connectionName 우선.
+  if (connectionName && connectionName !== "") {
+    data.queryParams = {
+      filterKey: "connectionName",
+      filterVal: connectionName
+    };
+  } else if (providerName && providerName !== "") {
     data.queryParams = {
       filterKey: "providerName",
-      filterVal: providerName.toLowerCase() // e.g., "aws", "azure", "gcp"
+      filterVal: providerName.toLowerCase()
     };
   }
 
