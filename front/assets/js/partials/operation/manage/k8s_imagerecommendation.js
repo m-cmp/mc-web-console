@@ -208,7 +208,7 @@ export function setImageSelectionCallbackPmk(callback) {
 export async function getRecommendImageInfoPmk() {
 	// PMK용 전역 변수에서 spec 정보 확인
 	if (!window.selectedPmkSpecInfo) {
-		alert("Please select a node specification first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		return;
 	}
 
@@ -225,8 +225,11 @@ export async function getRecommendImageInfoPmk() {
 
 	// 현재 workspace/project 정보 가져오기
 	try {
-		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-		var nsId = selectedWorkspaceProject.nsId;
+		// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+		// workspaceProjectInit()은 셀렉트를 재구성하는 초기화 루틴이라 세션이 비어 있으면
+		// 현재 프로젝트를 지워버린다.
+		var currentProject = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+		var nsId = currentProject ? (currentProject.NsId || currentProject.nsId || "") : "";
 
 		// API 호출을 위한 파라미터 구성
 		var searchParams = {
@@ -289,12 +292,12 @@ export async function getRecommendImageInfoPmk() {
 
 		} else {
 			console.error("PMK API call failed:", response);
-			alert("Failed to search images. Please try again.");
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to search images. Please try again.');
 		}
 
 	} catch (error) {
 		console.error("Error in getRecommendImageInfoPmk:", error);
-		alert("Error searching images. Please try again.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error searching images. Please try again.');
 	}
 }
 
@@ -302,7 +305,7 @@ export async function applyImageInfoPmk() {
 	
 	if (recommendImagesPmk.length === 0) {
 		console.warn("No PMK image selected");
-		alert("Please select an image first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Please select an image first.');
 		return;
 	}
 

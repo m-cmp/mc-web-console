@@ -26,6 +26,16 @@ export function initServerRecommendationPmk(callbackfunction) {
 			const hidden = document.getElementById('spec-provider-value-pmk');
 			if (badge) badge.textContent = provider;
 			if (hidden) hidden.value = provider;
+
+			// 선택된 Connection도 함께 잡아둔다. providerName으로만 거르면 같은 CSP의
+			// 다른 리전 스펙까지 섞여 나와(예: nhn → jp1/kr1/kr2), 그 스펙을 고르면
+			// 클러스터 Connection과 어긋나 cb-tumblebug이 400으로 거부한다.
+			const connection = document.getElementById('cluster_cloudconnection_dynamic')?.value
+				|| document.getElementById('cluster_cloudconnection')?.value
+				|| webconsolejs["pages/operation/manage/k8sworkloads"]?.selectedPmkObj?.[0]?.connectionName
+				|| '';
+			const connHidden = document.getElementById('spec-connection-value-pmk');
+			if (connHidden) connHidden.value = connection;
 		});
 	}
 }
@@ -204,9 +214,6 @@ function updateSelectedRowsPmk(data) {
 // PMK용 recommened Vm 조회
 export async function getRecommendVmInfoPmk() {
 	try {
-		const selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-		const selectedNsId = selectedWorkspaceProject.nsId;
-		
 		// PMK 최소 요구사항 (Kubernetes 권장 사양)
 		// Min vCPU: 4, Min Memory: 16GB, Disk: 100GB
 		const PMK_MIN_VCPU = 4;
@@ -228,7 +235,7 @@ export async function getRecommendVmInfoPmk() {
 		// CPU 필터 (최소 4 vCPU 보장)
 		if (cpuMinVal !== "" || cpuMaxVal !== "") {
 			if (cpuMaxVal !== "" && cpuMaxVal < cpuMinVal) {
-				alert("Maximum value is less than the minimum value.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Invalid Range', 'Maximum value is less than the minimum value.');
 				return;
 			}
 			
@@ -257,7 +264,7 @@ export async function getRecommendVmInfoPmk() {
 		// Memory 필터 (최소 16GB 보장)
 		if (memoryMinVal !== "" || memoryMaxVal !== "") {
 			if (memoryMaxVal !== "" && memoryMaxVal < memoryMinVal) {
-				alert("Maximum value is less than the minimum value.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Invalid Range', 'Maximum value is less than the minimum value.');
 				return;
 			}
 			
@@ -286,7 +293,7 @@ export async function getRecommendVmInfoPmk() {
 		// Cost 필터
 		if (costMinVal !== "" || costMaxVal !== "") {
 			if (costMaxVal !== "" && costMaxVal < costMinVal) {
-				alert("Maximum value is less than the minimum value.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Invalid Range', 'Maximum value is less than the minimum value.');
 				return;
 			}
 			
@@ -317,9 +324,17 @@ export async function getRecommendVmInfoPmk() {
 			policyArr.push(filterPolicy)
 		}
 
-		// provider 필터 - 폼에서 선택된 provider 값 적용
+		// Connection이 정해져 있으면 connectionName으로 거른다 — provider만으로 거르면
+		// 같은 CSP의 다른 리전 스펙이 섞여 나온다(nhn → nhn-jp1/nhn-kr1/nhn-kr2 혼재).
+		// Connection이 아직 없을 때만 provider로 폴백한다.
+		const selectedConnection = document.getElementById('spec-connection-value-pmk')?.value;
 		const selectedProvider = document.getElementById('spec-provider-value-pmk')?.value;
-		if (selectedProvider) {
+		if (selectedConnection) {
+			policyArr.push({
+				"metric": "connectionName",
+				"condition": [{ "operator": "==", "operand": selectedConnection }]
+			});
+		} else if (selectedProvider) {
 			policyArr.push({
 				"metric": "providerName",
 				"condition": [{ "operator": "==", "operand": selectedProvider }]
@@ -399,7 +414,7 @@ export async function getRecommendVmInfoPmk() {
 export async function applySpecInfoPmk() {
 	if (recommendSpecsPmk.length === 0) {
 		console.warn("No PMK spec selected");
-		alert("Please select a spec first.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Please select a spec first.');
 		return;
 	}
 	
