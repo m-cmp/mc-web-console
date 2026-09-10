@@ -1246,7 +1246,10 @@ function setPmkInfoData(pmkData, kubeconfigText) {
     updateAddNodeGroupButtonState(pmkStatus);
 }
 
-// 체크박스를 클릭했을 때 선택 상태를 반전시킴
+// 카드(li)의 체크박스 바깥 영역을 클릭했을 때 선택 상태를 반전시킴.
+// 체크박스 자체는 네이티브 토글 + onchange -> handleNodeCheck 경로를 타고,
+// onclick="event.stopPropagation()"으로 카드까지 버블링되지 않으므로 여기로 들어오지 않는다.
+// (jQuery prop() 변경은 change 이벤트를 발생시키지 않아 이 경로도 handleNodeCheck 1회만 호출된다)
 export function toggleNodeCheck(pmkID, nodeID) {
     var checkbox = $(`#node_checkbox_${nodeID}`);
     checkbox.prop("checked", !checkbox.prop("checked"));
@@ -1293,6 +1296,7 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
                  id="node_checkbox_${nodeID}" 
                  class="vm-checkbox" 
                  style="width: 20px; height: 20px; margin-right: 15px; flex-shrink: 0;" 
+                 onclick="event.stopPropagation()" 
                  onchange="webconsolejs['pages/operation/manage/k8sworkloads'].handleNodeCheck('${pmkID}', '${nodeID}')">
           
           <span class="text-dark-fg" 
