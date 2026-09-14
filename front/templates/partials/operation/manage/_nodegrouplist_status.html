@@ -29,29 +29,6 @@
         >
           <a
             class="dropdown-item"
-            href="#addnode"
-            onclick="webconsolejs['partials/operation/manage/clustercreate'].addNewNodeGroup()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M12 5l0 14"></path>
-              <path d="M5 12l14 0"></path>
-            </svg>
-            New
-          </a>
-          <a
-            class="dropdown-item"
             data-bs-toggle="modal"
             data-bs-target="#commonDefaultModal"
             onclick="webconsolejs['partials/layout/modal'].commonModal(this,'NodeGroupDelete', 'Would you like to delete NodeGroup ?', 'pages/operation/manage/k8sworkloads.deleteNodeGroup')"
@@ -82,7 +59,8 @@
 
           <a
             class="dropdown-item"
-            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscalingModal()"
+            id="nodegroup-edit-scaling-item"
+            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openEditScalingModal()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -101,29 +79,7 @@
               <path d="M16 16m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
               <path d="M8 4h8a4 4 0 0 1 0 8h-8a4 4 0 0 0 0 8"></path>
             </svg>
-            Set Autoscaling
-          </a>
-          <a
-            class="dropdown-item"
-            onclick="webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscaleSizeModal()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="icon dropdown-item-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M21 11v-3a2 2 0 0 0 -2 -2h-6l3 3m0 -6l-3 3"></path>
-              <path d="M3 13v3a2 2 0 0 0 2 2h6l-3 -3m0 6l3 -3"></path>
-            </svg>
-            Change Autoscale Size
+            Edit Scaling
           </a>
 
           <div class="dropdown-divider"></div>
@@ -246,17 +202,17 @@
   />
 </div>
 
-<!-- Set Autoscaling modal -->
+<!-- Edit Scaling modal (autoscaling on/off + node sizes) -->
 <div
   class="modal modal-blur fade"
-  id="nodegroup-autoscaling-modal"
+  id="nodegroup-scaling-modal"
   tabindex="-1"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Set Autoscaling</h5>
+        <h5 class="modal-title">Edit Scaling</h5>
         <button
           type="button"
           class="btn-close"
@@ -270,93 +226,60 @@
           <input
             type="text"
             class="form-control"
-            id="nodegroup-autoscaling-name"
+            id="ng-scaling-name"
             readonly
           />
+          <small class="form-hint" id="ng-scaling-current"></small>
         </div>
-        <div class="mb-1">
-          <label class="form-label required">Autoscaling</label>
-          <select class="form-select" id="nodegroup-autoscaling-value">
-            <option value="true">On</option>
-            <option value="false">Off</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-link link-secondary"
-          data-bs-dismiss="modal"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          id="nodegroup-autoscaling-submit-btn"
-          class="btn btn-primary"
-          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaling()"
-        >
-          Apply
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Change Autoscale Size modal -->
-<div
-  class="modal modal-blur fade"
-  id="nodegroup-autoscalesize-modal"
-  tabindex="-1"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Change Autoscale Size</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
         <div class="mb-2">
-          <label class="form-label">NodeGroup</label>
-          <input
-            type="text"
-            class="form-control"
-            id="nodegroup-autoscalesize-name"
-            readonly
-          />
-        </div>
-        <div class="mb-2">
-          <label class="form-label required">Desired Node Size</label>
+          <label class="form-label required">Desired Node Count</label>
           <input
             type="number"
             min="0"
             class="form-control"
-            id="nodegroup-autoscalesize-desired"
+            id="ng-scaling-desired"
           />
+          <small class="form-hint" id="ng-scaling-desired-note" style="display: none"></small>
         </div>
+
         <div class="mb-2">
-          <label class="form-label required">Min Node Size</label>
-          <input
-            type="number"
-            min="0"
-            class="form-control"
-            id="nodegroup-autoscalesize-min"
-          />
+          <label class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="ng-scaling-enabled" />
+            <span class="form-check-label">Enable autoscaling</span>
+          </label>
+          <small class="form-hint text-warning" id="ng-scaling-hint" style="display: none"></small>
         </div>
-        <div class="mb-1">
-          <label class="form-label required">Max Node Size</label>
-          <input
-            type="number"
-            min="0"
-            class="form-control"
-            id="nodegroup-autoscalesize-max"
-          />
+
+        <div class="mb-2" id="ng-scaling-range" style="display: none">
+          <label class="form-label required">Min / Max Node Count</label>
+          <div class="row g-2">
+            <div class="col-6">
+              <input
+                type="number"
+                min="0"
+                class="form-control"
+                id="ng-scaling-min"
+                placeholder="Min"
+              />
+            </div>
+            <div class="col-6">
+              <input
+                type="number"
+                min="0"
+                class="form-control"
+                id="ng-scaling-max"
+                placeholder="Max"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3" id="ng-scaling-plan"></div>
+
+        <div class="alert alert-warning mt-2" id="ng-scaling-confirm" style="display: none">
+          <div class="fw-bold" id="ng-scaling-confirm-title"></div>
+          <div id="ng-scaling-confirm-text"></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -369,9 +292,9 @@
         </button>
         <button
           type="button"
-          id="nodegroup-autoscalesize-submit-btn"
+          id="ng-scaling-submit-btn"
           class="btn btn-primary"
-          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaleSize()"
+          onclick="webconsolejs['pages/operation/manage/k8sworkloads'].applyEditScaling()"
         >
           Apply
         </button>

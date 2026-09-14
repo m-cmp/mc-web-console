@@ -1,4 +1,14 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import {
+	K8S_SCALING_PATHS,
+	getRules,
+	getScalingMessage,
+	isCreateNodeGroupSupported,
+	getCreateNodeGroupUnsupportedReason,
+	readBackScaling,
+	buildCreateScaling,
+	validateScalingForm,
+} from "../../../common/utils/k8sScalingRules.js";
 //import { selectedMciObj } from "./mci";
 //document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
@@ -44,47 +54,89 @@ function setupDesiredNodeSizeButtons() {
 
 		const input = $(this).siblings('.input-number');
 		const currentValue = parseInt(input.val()) || 1;
-		const maxNodeSize = parseInt($('#node_maxnodesize').val()) || 5;
 
-		// maxNodeSize 이하로 유지
-		if (currentValue < maxNodeSize) {
+		// 상한은 두지 않는다 — 범위 검증은 CSP 규칙이 한다
+		if (true) {
 			input.val(currentValue + 1);
 		}
 	});
 
-	// AutoScaling 변경 시 min/max 활성화 제어
-	$(document).on('change', '#node_autoscaling', function () {
-		const val = $(this).val();
-		if (val === 'true') {
-			$('#node_minnodesize, #node_maxnodesize').prop('disabled', false);
-		} else {
-			$('#node_minnodesize, #node_maxnodesize').val('').prop('disabled', true);
-		}
+	// autoscaling 체크박스 — 체크했을 때만 Min/Max 를 보여준다.
+	// 값 자동 보정은 하지 않는다(입력을 말없이 바꾸면 사용자가 무엇이 전송되는지 알 수 없다).
+	$(document).off('change', '#node_autoscaling_enabled');
+	$(document).on('change', '#node_autoscaling_enabled', function () {
+		syncCreateScalingVisibility();
 	});
+}
 
-	// minNodeSize 변경 시 Desired Node Size 자동 조정
-	$(document).on('change', '#node_minnodesize', function () {
-		const minNodeSize = parseInt($(this).val()) || 1;
-		const desiredInput = $('#node_desirednodesize');
-		const currentDesired = parseInt(desiredInput.val()) || 1;
-
-		// Desired Node Size가 minNodeSize보다 작으면 minNodeSize로 설정
-		if (currentDesired < minNodeSize) {
-			desiredInput.val(minNodeSize);
+// 체크 상태에 따라 Min/Max 입력을 열고 닫는다
+function syncCreateScalingVisibility() {
+	const checked = $('#node_autoscaling_enabled').is(':checked');
+	$('#node_autoscaling_range').toggle(checked);
+	if (checked && !$('#node_minnodesize').val() && !$('#node_maxnodesize').val()) {
+		// 해제 상태에서 처음 켜면 현재 노드 수를 기준으로 채워준다
+		const desired = parseInt($('#node_desirednodesize').val(), 10);
+		if (Number.isFinite(desired)) {
+			$('#node_minnodesize').val(desired);
+			$('#node_maxnodesize').val(desired + 1);
 		}
-	});
+	}
+}
 
-	// maxNodeSize 변경 시 Desired Node Size 자동 조정
-	$(document).on('change', '#node_maxnodesize', function () {
-		const maxNodeSize = parseInt($(this).val()) || 5;
-		const desiredInput = $('#node_desirednodesize');
-		const currentDesired = parseInt(desiredInput.val()) || 1;
+// 생성 경로: expert(클러스터 생성) | add(기존 클러스터에 NodeGroup 추가)
+let createPath = K8S_SCALING_PATHS.EXPERT;
+function setCreatePath(path) { createPath = path; }
+export function getCreatePath() { return createPath; }
 
-		// Desired Node Size가 maxNodeSize보다 크면 maxNodeSize로 설정
-		if (currentDesired > maxNodeSize) {
-			desiredInput.val(maxNodeSize);
-		}
-	});
+// 생성 폼의 provider. expert 는 폼에서 고른 값, add 는 선택된 클러스터의 값을 쓴다.
+// (currentProvider 는 목록에서 클러스터를 선택했을 때만 채워져 생성 흐름에서는 신뢰할 수 없다)
+function resolveCreateProvider() {
+	if (createPath === K8S_SCALING_PATHS.ADD) {
+		const selected = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
+		return (selected && selected.provider) || "";
+	}
+	return $("#cluster_provider").val() || "";
+}
+
+// CSP 규칙을 폼에 반영한다 — NodeGroup 영역 노출, 체크박스 강제, 안내 문구
+export function applyScalingFormRules() {
+	const provider = resolveCreateProvider();
+	const rules = getRules(provider);
+	const $hint = $('#node_autoscaling_hint');
+
+	// 클러스터 생성 시 NodeGroup 을 받지 않는 CSP(AWS/Alibaba/Tencent)는 영역 자체를 숨긴다
+	if (provider && createPath !== K8S_SCALING_PATHS.ADD
+		&& !isCreateNodeGroupSupported(provider, createPath)) {
+		$('#nodegroup_configuration').hide();
+		$('#nodegroup_plusIcon').hide();
+		$('#cluster_nodegroup_unavailable_hint')
+			.text(getCreateNodeGroupUnsupportedReason(provider)).show();
+		return;
+	}
+	$('#nodegroup_plusIcon').show();
+	$('#cluster_nodegroup_unavailable_hint').text('').hide();
+
+	if (!rules) {
+		$('#node_autoscaling_enabled').prop('disabled', false);
+		$hint.text('').hide();
+		syncCreateScalingVisibility();
+		return;
+	}
+
+	// NCP 는 생성 경로에서 autoscale 을 전송하지 않아 항상 off 로 만들어진다
+	const forceUnchecked = createPath !== K8S_SCALING_PATHS.ADD
+		&& rules.create.forceUncheckedAtClusterCreate === true;
+	if (forceUnchecked) {
+		$('#node_autoscaling_enabled').prop('checked', false).prop('disabled', true);
+		$hint.text(rules.create.forceUncheckedReason || '').show();
+	} else {
+		$('#node_autoscaling_enabled').prop('disabled', false);
+		const note = $('#node_autoscaling_enabled').is(':checked')
+			? getScalingMessage(provider, 'rangeRule')
+			: getScalingMessage(provider, 'fixedSize');
+		if (note) $hint.text(note).show(); else $hint.text('').hide();
+	}
+	syncCreateScalingVisibility();
 }
 
 // callback PopupData
@@ -226,12 +278,12 @@ async function updateConfigurationFilltering() {
 	var selectedProvider = providerSelect.value; // 선택된 provider
 	var selectedRegion = regionSelect.value;     // 선택된 region ("[NHN] nhn-kr1")
 
-	// 생성 시점 AutoScaling Off 제약 반영 (Expert 폼 — 비-dynamic 경로라 AWS 만 해당).
+	// CSP 규칙을 폼에 반영한다(NodeGroup 영역 노출·체크박스 강제·안내 문구).
 	// 여기서 예외가 나면 Region/Connection 필터링 전체가 멈추므로 방어적으로 호출한다.
-	const applyOffConstraint =
-		webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
-	if (typeof applyOffConstraint === "function") {
-		applyOffConstraint("#node_autoscaling", "#node_autoscaling_hint", selectedProvider, "expertCreate");
+	try {
+		applyScalingFormRules();
+	} catch (error) {
+		console.error("Failed to apply scaling form rules:", error);
 	}
 
 	// Provider 미선택 — 전체 목록으로 되돌린다
@@ -265,7 +317,8 @@ async function updateConfigurationFilltering() {
 }
 
 var createMciListObj = new Object();
-var isNodeGroup = false // mci 생성(false) / vm 추가(true)
+// 생성 경로는 createPath 가 정본이다 (이전의 isNodeGroup 플래그는 true 로만 바뀌고 되돌지 않아
+// Expert 생성에서 add 경로의 payload 가 나가는 함정이 있었다)
 var Create_Cluster_Config_Arr = new Array();
 var Create_Node_Config_Arr = new Array();
 var nodeGroup_data_cnt = 0
@@ -304,16 +357,12 @@ export async function displayNewNodeForm() {
 		}
 	}
 
-	// NodeGroup 폼이 열릴 때 AutoScaling Off 제약을 다시 적용한다.
-	// provider 변경 시점에만 적용하면, 그 뒤 폼이 새로 렌더될 때 disabled 상태가 사라진다.
-	const applyOff = webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
-	if (typeof applyOff === "function") {
-		// isNodeGroup=true 는 기존 클러스터에 NodeGroup 추가(PostK8sNodeGroup) — 이 경로는
-		// min=desiredNodeSize(>=1) 를 보내므로 Azure/NHN 이 Off 를 거부한다.
-		// false 는 Expert 클러스터 생성(PostK8sCluster) — min=0 이 그대로 가서 통과한다.
-		applyOff("#node_autoscaling", "#node_autoscaling_hint",
-			clusterProvider || $("#cluster_provider").val(),
-			isNodeGroup ? "addNodeGroup" : "expertCreate");
+	// NodeGroup 폼이 열릴 때 CSP 규칙을 다시 적용한다.
+	// provider 변경 시점에만 적용하면, 그 뒤 폼이 새로 렌더될 때 상태가 풀린다.
+	try {
+		applyScalingFormRules();
+	} catch (error) {
+		console.error("Failed to apply scaling form rules:", error);
 	}
 
 	// SSH Key 는 Connection 기준으로 거른다 — 다른 Connection 의 키를 고르면
@@ -611,7 +660,8 @@ export async function addNewNodeGroup() {
 	// Navigate to Add NodeGroup section (following existing pattern)
 	window.location.hash = "#addnode";
 
-	isNodeGroup = true;
+	setCreatePath(K8S_SCALING_PATHS.ADD);
+	applyScalingFormRules();
 }
 
 // provider에 맞는 Root Disk Type 옵션으로 #node_rootdisk 드롭다운을 채운다
@@ -647,8 +697,8 @@ export async function addNewPmk() {
 
 	Create_Cluster_Config_Arr = new Array();
 
-	
-	// isNodeGroup = true
+	setCreatePath(K8S_SCALING_PATHS.EXPERT);
+	applyScalingFormRules();
 }
 
 // 현재 선택된 project의 nsId — 세션에 저장된 project object가 정본이다.
@@ -894,25 +944,38 @@ export async function createCluster() {
 // }
 export function clusterFormDone_btn() {
 	// 1. 필수 필드 검증
-	const isAutoScalingOn = $('#node_autoscaling').val() === 'true';
 	var requiredFields = [
 		{ id: '#node_name', message: 'NodeGroup name is required' },
 		{ id: '#node_specid', message: 'Spec is required' },
 		{ id: '#node_imageid', message: 'Image is required' },
-		{ id: '#node_sshkey', message: 'SSH Key is required' },
-		{ id: '#node_autoscaling', message: 'AutoScaling option is required' }
+		{ id: '#node_sshkey', message: 'SSH Key is required' }
 	];
-	if (isAutoScalingOn) {
-		requiredFields.push({ id: '#node_minnodesize', message: 'Min Node Size is required' });
-		requiredFields.push({ id: '#node_maxnodesize', message: 'Max Node Size is required' });
-	}
-	
+
 	for (var field of requiredFields) {
 		if (!$(field.id).val() || $(field.id).val().trim() === '') {
 			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', field.message);
 			$(field.id).focus();
 			return;
 		}
+	}
+
+	// 스케일 값은 CSP 규칙으로 검증한다 (범위·최소값이 CSP마다 다르다)
+	const createProvider = resolveCreateProvider();
+	const scalingForm = {
+		checked: $('#node_autoscaling_enabled').is(':checked'),
+		desired: $('#node_desirednodesize').val(),
+		min: $('#node_minnodesize').val(),
+		max: $('#node_maxnodesize').val(),
+	};
+	const scalingCheck = validateScalingForm(
+		createProvider, 'create:' + createPath, scalingForm,
+		{ nodeGroupCountSoFar: Create_Node_Config_Arr.length });
+	if (!scalingCheck.ok) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Invalid Node Scaling', scalingCheck.errors[0].message);
+		$('#node_' + (scalingCheck.errors[0].field === 'desired' ? 'desirednodesize'
+			: scalingCheck.errors[0].field + 'nodesize')).focus();
+		return;
 	}
 
     // 2. 클러스터 기본 정보 할당
@@ -940,7 +1003,7 @@ export function clusterFormDone_btn() {
     const imageId = $("#node_imageid").val();
     const maxNodeSize = $("#node_maxnodesize").val();
     const minNodeSize = $("#node_minnodesize").val();
-    const onAutoScaling = $("#node_autoscaling").val();
+    const onAutoScaling = $("#node_autoscaling_enabled").is(':checked') ? "true" : "false";
     const rootDiskSize = $("#node_rootdisksize").val();
     const rootDiskType = $("#node_rootdisk").val();
     // specId는 commonSpecId를 사용 (search로 선택한 경우)
@@ -960,21 +1023,21 @@ export function clusterFormDone_btn() {
 	$("#n_desirednodesize").val(desiredNodeSize || "1");
 
     // 4. NodeGroup 데이터 객체 생성
+    // 체크 해제(고정 크기)를 CSP가 받아들이는 형태로 번역한다 — 진짜 off 이거나 min=max=desired.
+    // 네 값을 항상 함께 보낸다(일부만 보내면 하위 계층의 기본값 치환이 끼어든다).
+    const scalingPayload = buildCreateScaling(createProvider, createPath, scalingForm);
     var nodeGroupData = {
-        "desiredNodeSize": desiredNodeSize || "",
+        "desiredNodeSize": scalingPayload.desiredNodeSize,
         "imageId": imageId || "",
         "name": nodeGroupName,
-        "onAutoScaling": onAutoScaling || "false",
+        "onAutoScaling": scalingPayload.onAutoScaling,
+        "minNodeSize": scalingPayload.minNodeSize,
+        "maxNodeSize": scalingPayload.maxNodeSize,
         "rootDiskSize": rootDiskSize || "",
         "rootDiskType": rootDiskType || "",
         "specId": specId || "",
         "sshKeyId": sshKeyId || ""
     };
-    // AutoScaling On일 때만 min/max 포함
-    if (onAutoScaling === "true") {
-        nodeGroupData["maxNodeSize"] = maxNodeSize || "";
-        nodeGroupData["minNodeSize"] = minNodeSize || "";
-    }
 
 	
 	var nodeGroup_name = nodeGroupName;
@@ -1015,10 +1078,7 @@ export function clusterFormDone_btn() {
 		// 리스트 업데이트 — 기존 + NodeGroup 버튼(#..._plusIcon)은 유지하고 항목만 추가
 		// (remove 후 getPlusVm으로 재생성하면 id가 _plusVmIcon으로 바뀌어 다음 Done의
 		//  remove가 실패하고, Done마다 + NodeGroup 버튼이 하나씩 증식한다)
-		var ngEleId = "nodegroup";
-		if (isNodeGroup) {
-			ngEleId = "addnodegroup";
-		}
+		var ngEleId = createPath === K8S_SCALING_PATHS.ADD ? "addnodegroup" : "nodegroup";
 
 		$("#" + ngEleId + "_list").append(add_nodegroup_html);
 
@@ -1062,19 +1122,10 @@ export function clusterFormDone_btn() {
 	$("#node_sshkey").val("");
 	$("#node_rootdisk").val("");
 	$("#node_rootdisksize").val("");
-	$("#node_autoscaling").val("");
+	$("#node_autoscaling_enabled").prop('checked', false);
 	$("#node_desirednodesize").val("1"); // 기본값 1로 설정
-}
-
-// select에 없는 값이면 option을 만들어 넣는다.
-// min/max Node Size 셀렉트는 1~5만 미리 들어 있어, 그보다 큰 값을 그대로 세팅하면 조용히 비워진다.
-function ensureSelectOption(selector, value) {
-	if (value === undefined || value === null || value === "") return;
-	const $sel = $(selector);
-	if ($sel.length === 0) return;
-	if ($sel.find('option[value="' + value + '"]').length === 0) {
-		$sel.append('<option value="' + value + '">' + value + '</option>');
-	}
+	syncCreateScalingVisibility();
+	applyScalingFormRules();
 }
 
 // 값이 select에 존재할 때만 세팅한다.
@@ -1104,34 +1155,22 @@ export function prefillNodeGroupForm(nodeGroupData) {
 	$("#node_commonSpecId").val(nodeGroupData.specId || "");
 	$("#node_imageid").val(nodeGroupData.imageId || "");
 
-	const autoScalingOn = String(nodeGroupData.onAutoScaling || "false") === "true";
-	$("#node_autoscaling").val(autoScalingOn ? "true" : "false");
-	if (autoScalingOn) {
-		$('#node_minnodesize, #node_maxnodesize').prop('disabled', false);
-		ensureSelectOption("#node_minnodesize", nodeGroupData.minNodeSize);
-		ensureSelectOption("#node_maxnodesize", nodeGroupData.maxNodeSize);
-		$("#node_minnodesize").val(nodeGroupData.minNodeSize || "");
-		$("#node_maxnodesize").val(nodeGroupData.maxNodeSize || "");
-	} else {
-		$('#node_minnodesize, #node_maxnodesize').val('').prop('disabled', true);
-	}
+	// 저장된 값 → 폼 상태. 고정 크기(min=max)는 체크 해제로 복원된다.
+	const scalingState = readBackScaling(resolveCreateProvider(), {
+		onAutoScaling: nodeGroupData.onAutoScaling,
+		desiredNodeSize: nodeGroupData.desiredNodeSize,
+		minNodeSize: nodeGroupData.minNodeSize,
+		maxNodeSize: nodeGroupData.maxNodeSize,
+	});
+	$("#node_autoscaling_enabled").prop('checked', scalingState.checked);
+	$("#node_minnodesize").val(scalingState.checked ? scalingState.min : "");
+	$("#node_maxnodesize").val(scalingState.checked ? scalingState.max : "");
+	syncCreateScalingVisibility();
 
 	const sshKeyMatched = setSelectIfOptionExists("#node_sshkey", nodeGroupData.sshKeyId);
 	const rootDiskTypeMatched = setSelectIfOptionExists("#node_rootdisk", nodeGroupData.rootDiskType);
 	$("#node_rootdisksize").val(nodeGroupData.rootDiskSize || "");
 	$("#node_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
-
-	// Hidden 필드에도 설정
-	$("#n_name").val(nodeGroupData.name || "");
-	$("#n_specid").val(nodeGroupData.specId || "");
-	$("#n_imageid").val(nodeGroupData.imageId || "");
-	$("#n_minnodesize").val(autoScalingOn ? (nodeGroupData.minNodeSize || "") : "");
-	$("#n_maxnodesize").val(autoScalingOn ? (nodeGroupData.maxNodeSize || "") : "");
-	$("#n_sshkey").val($("#node_sshkey").val() || "");
-	$("#n_rootdisk").val($("#node_rootdisk").val() || "");
-	$("#n_rootdisksize").val(nodeGroupData.rootDiskSize || "");
-	$("#n_autoscaling").val(autoScalingOn ? "true" : "false");
-	$("#n_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
 
 	return { sshKeyMatched, rootDiskTypeMatched };
 }

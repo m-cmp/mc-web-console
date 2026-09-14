@@ -26,6 +26,13 @@ export async function getClusterList(nsId, options = {}) {
   return pmkList
 }
 
+// 정수 변환 — 0을 falsy로 흘려보내지 않는다.
+// (NHN 은 autoscaling off 일 때 min=0 을, Azure 수동 모드는 min=max=0 을 요구한다)
+function intOr(value, fallback) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 export async function getCluster(nsId, clusterId, options = {}) {
   // Validation: Check nsId
   if (!nsId || nsId === "") {
@@ -124,10 +131,10 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
     obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => {
       const ng = {
-        desiredNodeSize: parseInt(group.desiredNodeSize, 10) || 0,
+        desiredNodeSize: intOr(group.desiredNodeSize, 0),
         imageId: group.imageId,
-        maxNodeSize: parseInt(group.maxNodeSize, 10) || 0,
-        minNodeSize: parseInt(group.minNodeSize, 10) || 0,
+        maxNodeSize: intOr(group.maxNodeSize, 0),
+        minNodeSize: intOr(group.minNodeSize, 0),
         name: group.name,
         onAutoScaling: String(group.onAutoScaling),
         rootDiskType: group.rootDiskType,
@@ -321,8 +328,8 @@ export async function vmDynamic(pmkId, nsId, Express_Server_Config_Arr) {
       "specId": obj.specId || obj.commonSpec,
       "imageId": obj.imageId || obj.commonImage,
       "desiredNodeSize": desiredNodeSize,
-      "minNodeSize": parseInt(obj.minNodeSize) || desiredNodeSize,
-      "maxNodeSize": parseInt(obj.maxNodeSize) || desiredNodeSize,
+      "minNodeSize": intOr(obj.minNodeSize, 0),
+      "maxNodeSize": intOr(obj.maxNodeSize, 0),
       "onAutoScaling": obj.onAutoScaling || "false",
       "rootDiskSize": parseInt(obj.rootDiskSize) || 0,
       "rootDiskType": obj.rootDiskType || "",
@@ -539,10 +546,10 @@ function buildNodeGroupRequest(k8sClusterId, nsId, obj) {
       k8sClusterId: k8sClusterId,
     },
     request: {
-      "desiredNodeSize": parseInt(obj.desiredNodeSize) || 1,
+      "desiredNodeSize": intOr(obj.desiredNodeSize, 0),
       "imageId": obj.imageId,
-      "maxNodeSize": parseInt(obj.maxNodeSize) || parseInt(obj.desiredNodeSize) || 1,
-      "minNodeSize": parseInt(obj.minNodeSize) || parseInt(obj.desiredNodeSize) || 1,
+      "maxNodeSize": intOr(obj.maxNodeSize, 0),
+      "minNodeSize": intOr(obj.minNodeSize, 0),
       "name": obj.name,
       "onAutoScaling": obj.onAutoScaling || "false",
       "rootDiskSize": parseInt(obj.rootDiskSize) || 0,
@@ -586,10 +593,11 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr, pro
   // 완료 보고와 목록 갱신은 체인 끝에서 수행한다 (동시 전송 경로와 동일한 UX).
   sendNodeGroupsSequentially(controller, k8sClusterId, nsId, Create_Node_Config_Arr);
   webconsolejs["common/util"].showToast(
-    'NodeGroup creation requests dispatched (' + Create_Node_Config_Arr.length + ') — processing in background',
+    'NodeGroup creation queued (' + Create_Node_Config_Arr.length + ') — each takes a few minutes. '
+    + 'You can leave this page; the remaining requests resume when you come back.',
     'info'
   );
-  return { dispatched: Create_Node_Config_Arr.length };
+  return { queued: Create_Node_Config_Arr.length };
 }
 
 // 동시 수용 CSP: 응답을 기다리지 않고 3초 간격으로 전송(fire) — 3초 내 즉시 오류만 감시하고
@@ -651,53 +659,11 @@ async function dispatchNodeGroupsConcurrently(controller, k8sClusterId, nsId, co
 }
 
 // 미실증/제한 CSP: 각 응답 확인 후 다음 전송 (기존 동작 — 한 건 실패해도 나머지는 계속)
-async function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, configArr) {
-  var responses = [];
-  var failedNames = [];
-
-  for (var i = 0; i < configArr.length; i++) {
-    var obj = configArr[i];
-    var data = buildNodeGroupRequest(k8sClusterId, nsId, obj);
-    var tracked = webconsolejs['common/api/requestId'].beginTrackedRequest(
-      'PostK8sNodeGroup',
-      'K8s NG create: ' + obj.name
-    );
-
-    try {
-      const response = await webconsolejs["common/api/http"].commonAPIPost(
-        controller,
-        data,
-        false,
-        tracked.httpOptions
-      );
-
-      if (response && (response.status === 200 || response.status === 201)) {
-        responses.push(response);
-      } else {
-        console.error('Node creation failed:', obj.name, response);
-        failedNames.push(obj.name);
-        responses.push(response);
-      }
-    } catch (error) {
-      // 한 건의 실패가 나머지 NodeGroup 전송을 막지 않도록 계속 진행 (실패 목록은 마지막에 표시)
-      console.error('Error creating node:', obj.name, error);
-      failedNames.push(obj.name);
-      responses.push(null);
-    }
-  }
-
-  if (failedNames.length === 0) {
-    webconsolejs["common/util"].showToast('Node group creation request completed successfully (' + configArr.length + ')', 'success');
-  } else {
-    webconsolejs["common/util"].showToast('Failed to create node group: ' + failedNames.join(', '), 'error');
-  }
-
-  // 결과 수신 시점에 목록 갱신 (생성 접수 반영)
-  if (webconsolejs["pages/operation/manage/k8sworkloads"] &&
-      typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
-    webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
-  }
-  return responses;
+// NodeGroup 생성은 공통 대기열(common/api/k8sScalingQueue)이 맡는다.
+// 그 모듈은 모든 페이지에 로드돼 있어, 전송 도중 화면을 옮겨도 응답을 받는 즉시
+// 다음 건을 이어서 보낸다. 여기서는 큐에 넣기만 한다.
+function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, configArr) {
+  webconsolejs["common/api/k8sScalingQueue"].enqueueNodeGroupCreates(nsId, k8sClusterId, configArr);
 }
 
 export async function getSshKey(nsId, providerName, connectionName) {
@@ -1114,9 +1080,11 @@ export function changeNodeGroupAutoscaleSize(nsId, k8sClusterId, k8sNodeGroupNam
       k8sNodeGroupName: k8sNodeGroupName
     },
     request: {
-      desiredNodeSize: parseInt(sizes.desiredNodeSize) || 1,
-      minNodeSize: parseInt(sizes.minNodeSize) || 1,
-      maxNodeSize: parseInt(sizes.maxNodeSize) || parseInt(sizes.desiredNodeSize) || 1
+      // 0은 유효한 값이다 — Azure 수동 모드는 min=max=0을 요구한다.
+      // `|| 1` 로 치환하면 그 경로가 조용히 깨지므로 intOr를 쓴다.
+      desiredNodeSize: intOr(sizes.desiredNodeSize, 0),
+      minNodeSize: intOr(sizes.minNodeSize, 0),
+      maxNodeSize: intOr(sizes.maxNodeSize, 0)
     }
   };
   let controller = '/api/' + 'mc-infra-manager/' + 'PutChangeK8sNodeGroupAutoscaleSize';

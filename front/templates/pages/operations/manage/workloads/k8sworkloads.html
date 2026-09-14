@@ -478,65 +478,6 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group mb-2">
-                  <label class="form-label required">minNodeSize / maxNodeSize</label>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <select
-                        class="form-select"
-                        name="nodegroup-minnodesize-dynamic"
-                        id="nodegroup_minnodesize_dynamic"
-                        disabled
-                      >
-                        <option value="">Min</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                      </select>
-                    </div>
-                    <div class="col-6">
-                      <select
-                        class="form-select"
-                        name="nodegroup-maxnodesize-dynamic"
-                        id="nodegroup_maxnodesize_dynamic"
-                        disabled
-                      >
-                        <option value="">Max</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="form-group mb-2">
-                  <label class="form-label required">AutoScaling</label>
-                  <div class="row g-2">
-                    <div class="col">
-                      <select
-                        class="form-select"
-                        name="nodegroup-autoscaling-dynamic"
-                        id="nodegroup_autoscaling_dynamic"
-                        required
-                      >
-                        <option value="">Select option</option>
-                        <option value="true">On</option>
-                        <option value="false">Off</option>
-                      </select>
-                      <small
-                        id="nodegroup_autoscaling_dynamic_hint"
-                        class="form-hint text-warning"
-                        style="display: none;"
-                      ></small>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="form-group mb-2">
                   <label class="form-label">Root Disk</label>
                   <div class="row g-2">
                     <div class="col-6">
@@ -576,6 +517,52 @@
                         />
                         <button class="input-number-increment" style="height: calc(1.5em + 0.75rem + 2px); border: 1px solid #ced4da;">+</button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- autoscaling 체크박스 — 기본은 해제(고정 크기) -->
+                <div class="form-group mb-2">
+                  <label class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="nodegroup_autoscaling_enabled_dynamic"
+                    />
+                    <span class="form-check-label">Enable autoscaling</span>
+                  </label>
+                  <small
+                    id="nodegroup_autoscaling_dynamic_hint"
+                    class="form-hint"
+                    style="display: none;"
+                  ></small>
+                </div>
+
+                <!-- 범위 — 체크했을 때만 보인다 -->
+                <div
+                  class="form-group mb-2"
+                  id="nodegroup_autoscaling_range_dynamic"
+                  style="display: none;"
+                >
+                  <label class="form-label required">Min / Max Node Count</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <input
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="Min"
+                        id="nodegroup_minnodesize_dynamic"
+                      />
+                    </div>
+                    <div class="col-6">
+                      <input
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="Max"
+                        id="nodegroup_maxnodesize_dynamic"
+                      />
                     </div>
                   </div>
                 </div>
@@ -745,6 +732,12 @@
               </div>
               <div class="card">
                 <div class="card-body">
+                  <!-- 클러스터 생성 요청에 NodeGroup 을 담을 수 없는 CSP 안내 -->
+                  <div
+                    class="alert alert-info"
+                    id="cluster_nodegroup_unavailable_hint"
+                    style="display: none;"
+                  ></div>
                   <div class="row row-cards">
                     <ul class="removebullet vmStatus-list" id="nodegroup_list">
                       <li
