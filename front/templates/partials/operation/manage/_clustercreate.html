@@ -151,43 +151,6 @@
                 </div>
               </div>
 
-              <div class="form-group mb-2">
-                <label class="form-label required"
-                  >minNodeSize / maxNodeSize</label
-                >
-                <div class="row g-2">
-                  <div class="col-6">
-                    <select
-                      class="form-select"
-                      name="node-minnodesize"
-                      id="node_minnodesize"
-                      disabled
-                    >
-                      <option value="">Min</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                    </select>
-                  </div>
-                  <div class="col-6">
-                    <select
-                      class="form-select"
-                      name="node_maxnodesize"
-                      id="node_maxnodesize"
-                      disabled
-                    >
-                      <option value="">Max</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <div class="col-md-6">
@@ -223,45 +186,68 @@
                 </div>
               </div>
 
+              <!-- 1) 노드 수 -->
               <div class="form-group mb-2">
-                <label class="form-label required">AutoScaling</label>
-                <div class="row g-2">
-                  <div class="col">
-                    <select
-                      class="form-select"
-                      name="node-autoscaling"
-                      id="node_autoscaling"
-                      required
-                    >
-                      <option value="">Select option</option>
-                      <option value="true">On</option>
-                      <option value="false">Off</option>
-                    </select>
-                    <small
-                      id="node_autoscaling_hint"
-                      class="form-hint text-warning"
-                      style="display: none;"
-                    ></small>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group mb-2">
-                <label class="form-label">Desired Node Size</label>
+                <label class="form-label required">Desired Node Count</label>
                 <div class="row g-2">
                   <div class="col-md-6">
                     <div class="input-number-container">
-                      <button class="input-number-decrement">-</button>
+                      <button class="input-number-decrement" type="button">-</button>
                       <input
                         type="number"
                         class="input-number"
                         value="1"
-                        min="1"
-                        max="5"
+                        min="0"
                         id="node_desirednodesize"
                       />
-                      <button class="input-number-increment">+</button>
+                      <button class="input-number-increment" type="button">+</button>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2) autoscaling 체크박스 — 기본은 해제(고정 크기) -->
+              <div class="form-group mb-2">
+                <label class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="node_autoscaling_enabled"
+                  />
+                  <span class="form-check-label">Enable autoscaling</span>
+                </label>
+                <small
+                  id="node_autoscaling_hint"
+                  class="form-hint"
+                  style="display: none;"
+                ></small>
+              </div>
+
+              <!-- 3) 범위 — 체크했을 때만 보인다 -->
+              <div
+                class="form-group mb-2"
+                id="node_autoscaling_range"
+                style="display: none;"
+              >
+                <label class="form-label required">Min / Max Node Count</label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      min="0"
+                      placeholder="Min"
+                      id="node_minnodesize"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      min="0"
+                      placeholder="Max"
+                      id="node_maxnodesize"
+                    />
                   </div>
                 </div>
               </div>

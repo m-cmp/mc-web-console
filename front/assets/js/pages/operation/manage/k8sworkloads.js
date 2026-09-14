@@ -1,4 +1,16 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import {
+  K8S_SCALING_PATHS,
+  getRules,
+  getScalingMessage,
+  isCreateNodeGroupSupported,
+  getCreateNodeGroupUnsupportedReason,
+  buildCreateScaling,
+  readBackScaling,
+  validateScalingForm,
+  buildModifyPlan,
+  describeStep,
+} from "../../../common/utils/k8sScalingRules.js";
 
 /**
  * ===================================================================
@@ -706,196 +718,267 @@ export async function deleteNodeGroup() {
 // tumblebug은 K8s NodeGroup에 대해 lifecycle(reboot/suspend/resume/terminate) 액션을
 // 제공하지 않는다. NodeGroup 단위로 가능한 변경은 Autoscaling On/Off와 Autoscale Size뿐이다.
 
-// AWS는 SetNodeGroupAutoScaling이 미구현 스텁이라(cb-spider, WEB-BUG-066) On/Off 자체가 무의미하다 —
-// 항상 무반응인데 성공 토스트만 뜬다. Change Autoscale Size(min/max/desired 직접 조정)는
-// 실제 AWS AutoScaling API로 구현돼 있어 그쪽으로 유도한다.
-const AUTOSCALING_TOGGLE_UNSUPPORTED_PROVIDERS = ['aws'];
-const AUTOSCALING_TOGGLE_UNSUPPORTED_MESSAGE =
-  'AWS does not support a separate Autoscaling On/Off toggle. Use Change Autoscale Size to adjust min/max/desired directly.';
+// ─── NodeGroup Edit Scaling ────────────────────────────────────────────────
+// 사용자는 desired(+ 체크 시 min/max)만 입력하고 Apply 한 번만 누른다.
+// CSP마다 Set/Change 호출이 1개 또는 2개로 갈리는데 그 차이는 여기서 흡수한다.
+// 어떤 값을 어떤 순서로 보낼지는 common/utils/k8sScalingRules.js 가 단일 정본이다.
 
-function isAutoscalingToggleUnsupported(provider) {
-  return AUTOSCALING_TOGGLE_UNSUPPORTED_PROVIDERS.includes(String(provider || '').toLowerCase());
+// 실행은 공통 대기열(common/api/k8sScalingQueue)이 맡는다 — 모든 페이지에 로드돼 있어
+// 화면을 옮겨도 응답 즉시 다음 단계가 나간다. 여기서는 화면(모달·미리보기·액션 상태)만 담당한다.
+// 스케일 기능이 쓰는 provider.
+// currentProvider 는 목록에서 클러스터를 "행 클릭"으로 고른 경우 등에 비어 있을 수 있어
+// (이 화면은 행 클릭과 체크박스 선택 경로가 갈려 있다) 기존 3단 폴백 헬퍼를 함께 쓴다.
+function scalingProvider() {
+  if (currentProvider) return currentProvider;
+  try {
+    return getSelectedClusterContext()?.provider || '';
+  } catch (error) {
+    console.error('Failed to resolve provider for scaling:', error);
+    return '';
+  }
 }
 
-// ─── 생성 화면: AutoScaling Off 제약 ────────────────────────────────────────
-// 위 상수는 "생성된 NodeGroup 의 On/Off 토글" 제약이고, 아래는 "생성 시점" 제약이다.
-//
-// AWS: cb-spider 가 OnAutoScaling=false 자체를 거부한다 — EKS 관리형 NodeGroup 은 항상
-//      ASG 로 뒷받침되기 때문(cb-spider PR #1822). Expert/Dynamic 양쪽 모두 불가.
-const AUTOSCALING_OFF_UNSUPPORTED_PROVIDERS = ['aws'];
-// Azure / NHN: 드라이버가 "MinNodeSize 가 지정되면 OnAutoScaling 이 켜져 있어야 한다" 로 거부하는데,
-//      Dynamic 경로(/k8sClusterDynamic)는 cb-tumblebug 이 min<=0 이면 1 을 강제 주입한다
-//      (provisioning_dynamic_k8s.go). 키를 생략하든 0 을 명시하든 Go json 에서는 똑같이 0 이라
-//      주입을 피할 수 없어, 프론트가 보낼 수 있는 값이 존재하지 않는다(WEB-BUG-090, 실측 확인).
-//      비-dynamic 경로(/k8sCluster)에는 그 주입이 없어 Expert 폼에서는 정상 동작한다.
-const AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC = ['azure', 'nhn'];
-
-// context: 'dynamic'(Simple 생성) | 'addNodeGroup'(기존 클러스터에 추가) | 'expertCreate'
-//
-// Azure/NHN 은 "MinNodeSize 가 지정되면 OnAutoScaling 이 켜져 있어야 한다" 로 거부한다.
-// 그런데 경로에 따라 min 이 0 으로 가느냐 양수로 가느냐가 다르다:
-//   - expertCreate  → PostK8sCluster 로 min=0 전송, tumblebug 디폴팅 없음 → 통과 (막지 않는다)
-//   - dynamic       → tumblebug 이 min<=0 이면 1 을 주입 → 거부
-//   - addNodeGroup  → 프론트가 min=desiredNodeSize(>=1) 를 전송 → 거부
-// addNodeGroup 은 CSP 별로 min=0 을 보내면 NHN 은 살릴 수 있으나 Tencent(min>=1 요구)가 깨진다.
-// 그 정규화는 WEB-BUG-090 범위이므로, 여기서는 실패가 확정된 조합만 막는다.
-function autoScalingOffBlockReason(provider, context) {
-  const p = String(provider || '').toLowerCase();
-  if (!p) return '';
-  if (AUTOSCALING_OFF_UNSUPPORTED_PROVIDERS.includes(p)) {
-    return p.toUpperCase() + ' does not support creating a NodeGroup with AutoScaling off. '
-      + 'A managed node group is always backed by an Auto Scaling group.';
-  }
-  if (!AUTOSCALING_OFF_UNSUPPORTED_ON_DYNAMIC.includes(p)) return '';
-  if (context === 'dynamic') {
-    return p.toUpperCase() + ' does not support AutoScaling off in Simple Creation. '
-      + 'Use Expert Creation instead, or turn AutoScaling on.';
-  }
-  if (context === 'addNodeGroup') {
-    return p.toUpperCase() + ' does not support adding a NodeGroup with AutoScaling off. '
-      + 'Turn AutoScaling on.';
-  }
-  return '';
+function scalingQueue() {
+  return webconsolejs['common/api/k8sScalingQueue'];
 }
 
-// AutoScaling select 에서 Off 선택을 막고 사유를 안내한다.
-export function applyAutoScalingOffConstraint(selectSelector, hintSelector, provider, context) {
-  const reason = autoScalingOffBlockReason(provider, context);
-  const $sel = $(selectSelector);
-  const $off = $sel.find('option[value="false"]');
-  const $hint = $(hintSelector);
+function isScalingInFlight() {
+  const target = currentNodeGroupName ? requireNodeGroupSelectionSilently() : null;
+  if (!target) return false;
+  return scalingQueue().isScalingJobPending(target.nsId, target.clusterId, target.nodeGroupName);
+}
 
-  if (reason) {
-    // 이미 Off 가 선택돼 있었다면 미선택으로 되돌린다 — 그대로 두면 Deploy 에서 백엔드 에러가 난다
-    if ($sel.val() === 'false') $sel.val('');
-    $off.prop('disabled', true);
-    $hint.text(reason).show();
+// 안내 모달 없이 현재 선택만 읽는다 (액션 상태 갱신용)
+function requireNodeGroupSelectionSilently() {
+  if (!currentNodeGroupName || !currentPmkId || !selectedWorkspaceProject.nsId) return null;
+  return {
+    nsId: selectedWorkspaceProject.nsId,
+    clusterId: currentPmkId,
+    nodeGroupName: currentNodeGroupName,
+  };
+}
+
+function scalingModalEl() {
+  return document.getElementById('nodegroup-scaling-modal');
+}
+
+function scalingToast(message, type) {
+  webconsolejs['common/util'].showToast(message, type);
+}
+
+function escapeScalingText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[ch]));
+}
+
+// 조회값 → 현재 스케일 상태.
+// spiderView(CSP 실제값) 우선, tumblebug 값은 폴백. `||`가 아니라 `??`를 쓴다 —
+// Azure/NHN/NCP의 off는 0, IBM의 autoscaler 미배포는 -1이라 0/-1을 삼키면 안 된다.
+function scalingStateFromNodeGroup(provider, ng) {
+  if (!ng) return null;
+  const sv = ng.spiderViewK8sNodeGroupDetail || {};
+  const state = readBackScaling(provider, {
+    onAutoScaling: sv.OnAutoScaling ?? ng.onAutoScaling,
+    desiredNodeSize: sv.DesiredNodeSize ?? ng.desiredNodeSize,
+    minNodeSize: sv.MinNodeSize ?? ng.minNodeSize,
+    maxNodeSize: sv.MaxNodeSize ?? ng.maxNodeSize,
+  });
+  const nodeCount = Array.isArray(sv.Nodes) ? sv.Nodes.length : 0;
+  // GCP가 보고하는 desired는 InitialNodeCount라 현재 노드 수와 다르다
+  const desired = String(provider || '').toLowerCase() === 'gcp' && nodeCount > 0
+    ? nodeCount
+    : state.desired;
+  return {
+    ...state,
+    desired,
+    nodeCount,
+    status: sv.Status ?? ng.status ?? '',
+  };
+}
+
+function readCurrentNodeGroupScaling() {
+  return scalingStateFromNodeGroup(scalingProvider(), findSelectedNodeGroupInfo());
+}
+
+function describeCurrentScaling(cur) {
+  const rules = getRules(scalingProvider());
+  const rangeUnknown = (cur.min === -1 || cur.max === -1);
+  const range = rangeUnknown ? 'unknown' : cur.min + ' / ' + cur.max;
+  const summary = 'Current: ' + (rules?.label || scalingProvider() || '-')
+    + ' · autoscaling ' + (cur.checked ? 'on' : 'off')
+    + ' · desired ' + cur.desired
+    + ' · min/max ' + range
+    + ' · ' + cur.nodeCount + ' node(s)';
+  const unknownNote = rangeUnknown ? getScalingMessage(scalingProvider(), 'unknownRange') : '';
+  return unknownNote ? summary + ' — ' + unknownNote : summary;
+}
+
+function readScalingFormState() {
+  return {
+    checked: $('#ng-scaling-enabled').is(':checked'),
+    desired: $('#ng-scaling-desired').val(),
+    min: $('#ng-scaling-min').val(),
+    max: $('#ng-scaling-max').val(),
+  };
+}
+
+function syncScalingRangeVisibility() {
+  $('#ng-scaling-range').toggle($('#ng-scaling-enabled').is(':checked'));
+}
+
+export function openEditScalingModal() {
+  const target = requireNodeGroupSelection('edit scaling for');
+  if (!target) return;
+
+  if (isScalingInFlight()) {
+    scalingToast('A scaling change is already in progress. Wait for it to finish.', 'warning');
+    return;
+  }
+
+  const rules = getRules(scalingProvider());
+  if (!rules) {
+    scalingToast('Scaling is not supported for this provider.', 'warning');
+    return;
+  }
+
+  const cur = readCurrentNodeGroupScaling();
+  if (!cur) {
+    scalingToast('NodeGroup details are not loaded yet. Select the NodeGroup again.', 'warning');
+    return;
+  }
+
+  $('#ng-scaling-name').val(target.nodeGroupName);
+  $('#ng-scaling-current').text(describeCurrentScaling(cur));
+
+  const desiredEditable = rules.modify.desiredEditable !== false;
+  $('#ng-scaling-desired').val(cur.desired).prop('readonly', !desiredEditable);
+  if (desiredEditable) {
+    $('#ng-scaling-desired-note').text('').hide();
   } else {
-    $off.prop('disabled', false);
-    $hint.text('').hide();
+    $('#ng-scaling-desired-note')
+      .text(getScalingMessage(scalingProvider(), 'desiredReadonly')
+        || (rules.label + ' does not apply a node count change from here.'))
+      .show();
+  }
+
+  $('#ng-scaling-enabled').prop('checked', cur.checked);
+  // 해제 상태였다면 체크했을 때 쓸 기본 범위를 미리 채워둔다
+  $('#ng-scaling-min').val(cur.checked ? cur.min : cur.desired);
+  $('#ng-scaling-max').val(cur.checked ? cur.max : cur.desired + 1);
+
+  $('#ng-scaling-hint').text('').hide();
+  $('#ng-scaling-confirm').hide();
+  syncScalingRangeVisibility();
+  renderScalingPlanPreview();
+
+  new bootstrap.Modal(scalingModalEl()).show();
+}
+
+// 입력이 바뀔 때마다 "무엇이 어떤 순서로 실행되는지"를 보여준다.
+// 호출이 1개인지 2개인지는 CSP와 현재 상태에 달렸으므로, 누르기 전에 드러내는 편이 낫다.
+function renderScalingPlanPreview() {
+  const $plan = $('#ng-scaling-plan');
+  const $submit = $('#ng-scaling-submit-btn');
+  const $confirm = $('#ng-scaling-confirm');
+
+  const cur = readCurrentNodeGroupScaling();
+  if (!cur) {
+    $plan.html('');
+    $submit.prop('disabled', true);
+    return;
+  }
+
+  const form = readScalingFormState();
+  const validation = validateScalingForm(scalingProvider(), 'modify', form, { nodeCount: cur.nodeCount });
+  if (!validation.ok) {
+    $plan.html('<div class="text-danger">' + escapeScalingText(validation.errors[0].message) + '</div>');
+    $confirm.hide();
+    $submit.prop('disabled', true).text('Apply');
+    return;
+  }
+
+  const plan = buildModifyPlan(scalingProvider(), cur, form);
+  if (!plan.ok) {
+    $plan.html('<div class="text-secondary">' + escapeScalingText(plan.blocked.reason) + '</div>');
+    $confirm.hide();
+    $submit.prop('disabled', true).text('Apply');
+    return;
+  }
+
+  // 체크 해제가 CSP마다 다르게 처리되므로(진짜 off / 범위 고정) 그 방식을 문구로 알린다
+  const fixedSizeNote = form.checked ? '' : getScalingMessage(scalingProvider(), 'fixedSize');
+  if (fixedSizeNote) {
+    $('#ng-scaling-hint').text(fixedSizeNote).show();
+  } else {
+    $('#ng-scaling-hint').text('').hide();
+  }
+
+  const items = plan.steps
+    .filter((step) => step.kind !== 'wait')
+    .map((step) => '<li>' + escapeScalingText(describeStep(step)) + '</li>')
+    .join('');
+  const hint = validation.hints.length
+    ? '<div class="form-hint">' + escapeScalingText(validation.hints[0]) + '</div>'
+    : '';
+  $plan.html('<div class="form-label">What will be applied</div><ol class="mb-1">' + items + '</ol>' + hint);
+
+  if (plan.confirm) {
+    $('#ng-scaling-confirm-title').text(plan.confirm.title);
+    $('#ng-scaling-confirm-text').text(plan.confirm.body);
+    $confirm.show();
+    $submit.prop('disabled', false).text('Confirm & Apply');
+  } else {
+    $confirm.hide();
+    $submit.prop('disabled', false).text('Apply');
   }
 }
 
-// cb-spider AWS 드라이버가 NodeGroupInfo.OnAutoScaling을 채우지 않아(convertNodeGroup) 항상 false로
-// 내려온다 — min/max는 정상 반영되므로 AWS에 한해 그걸로 On/Off를 직접 계산한다.
-function resolveAutoScalingState(minSize, maxSize, rawOnAutoScaling) {
-  if (isAutoscalingToggleUnsupported(currentProvider)) {
-    const min = Number(minSize);
-    const max = Number(maxSize);
-    if (!Number.isNaN(min) && !Number.isNaN(max)) {
-      return min < max;
-    }
-  }
-  return String(rawOnAutoScaling ?? 'false') === 'true';
-}
-
-function isAutoScalingOn(nodeGroupInfo) {
-  return resolveAutoScalingState(nodeGroupInfo?.minNodeSize, nodeGroupInfo?.maxNodeSize, nodeGroupInfo?.onAutoScaling);
-}
-
-export function openAutoscalingModal() {
-  const target = requireNodeGroupSelection('set autoscaling for');
+export async function applyEditScaling() {
+  const target = requireNodeGroupSelection('edit scaling for');
   if (!target) return;
+  if (isScalingInFlight()) return;
 
-  if (isAutoscalingToggleUnsupported(currentProvider)) {
-    webconsolejs['common/util'].showToast(AUTOSCALING_TOGGLE_UNSUPPORTED_MESSAGE, 'info');
+  const cur = readCurrentNodeGroupScaling();
+  if (!cur) {
+    scalingToast('NodeGroup details are not loaded yet. Select the NodeGroup again.', 'warning');
     return;
   }
 
-  $('#nodegroup-autoscaling-name').val(target.nodeGroupName);
-  $('#nodegroup-autoscaling-value').val(isAutoScalingOn(findSelectedNodeGroupInfo()) ? 'true' : 'false');
+  const form = readScalingFormState();
+  const validation = validateScalingForm(scalingProvider(), 'modify', form, { nodeCount: cur.nodeCount });
+  if (!validation.ok) {
+    scalingToast(validation.errors[0].message, 'warning');
+    return;
+  }
 
-  new bootstrap.Modal(document.getElementById('nodegroup-autoscaling-modal')).show();
+  const plan = buildModifyPlan(scalingProvider(), cur, form);
+  if (!plan.ok) {
+    scalingToast(plan.blocked.reason, 'warning');
+    return;
+  }
+
+  bootstrap.Modal.getInstance(scalingModalEl())?.hide();
+
+  // 식별자를 캡처해 큐에 넘긴다 — 목록 갱신으로 선택이 바뀌거나 화면을 옮겨도
+  // 공통 대기열이 남은 단계를 끝까지 실행한다
+  await scalingQueue().enqueueScalingJob({
+    nsId: target.nsId,
+    clusterId: target.clusterId,
+    nodeGroupName: target.nodeGroupName,
+    provider: scalingProvider(),
+    plan,
+  });
 }
 
-export async function applyAutoscaling() {
-  const target = requireNodeGroupSelection('set autoscaling for');
-  if (!target) return;
-
-  const onAutoScaling = $('#nodegroup-autoscaling-value').val();
-  bootstrap.Modal.getInstance(document.getElementById('nodegroup-autoscaling-modal'))?.hide();
-
-  try {
-    await PmkApiHelper.setNodeGroupAutoscaling(
-      target.nsId,
-      target.clusterId,
-      target.nodeGroupName,
-      onAutoScaling
-    );
-    webconsolejs['common/util'].showToast(
-      'Autoscaling has been set to ' + (onAutoScaling === 'true' ? 'On' : 'Off'),
-      'success'
-    );
-    await getSelectedPmkData();
-  } catch (error) {
-    console.error('Failed to set autoscaling:', error);
-    webconsolejs['common/util'].showToast('Failed to set autoscaling', 'error');
-  }
-}
-
-export function openAutoscaleSizeModal() {
-  const target = requireNodeGroupSelection('change autoscale size for');
-  if (!target) return;
-
-  const nodeGroupInfo = findSelectedNodeGroupInfo();
-  if (!isAutoscalingToggleUnsupported(currentProvider) && !isAutoScalingOn(nodeGroupInfo)) {
-    webconsolejs['common/util'].showToast(
-      'Autoscale size can only be changed while autoscaling is On. Use Set Autoscaling first.',
-      'warning'
-    );
-    return;
-  }
-
-  $('#nodegroup-autoscalesize-name').val(target.nodeGroupName);
-  $('#nodegroup-autoscalesize-desired').val(nodeGroupInfo.desiredNodeSize ?? '');
-  $('#nodegroup-autoscalesize-min').val(nodeGroupInfo.minNodeSize ?? '');
-  $('#nodegroup-autoscalesize-max').val(nodeGroupInfo.maxNodeSize ?? '');
-
-  new bootstrap.Modal(document.getElementById('nodegroup-autoscalesize-modal')).show();
-}
-
-export async function applyAutoscaleSize() {
-  const target = requireNodeGroupSelection('change autoscale size for');
-  if (!target) return;
-
-  const desired = $('#nodegroup-autoscalesize-desired').val();
-  const min = $('#nodegroup-autoscalesize-min').val();
-  const max = $('#nodegroup-autoscalesize-max').val();
-
-  if (desired === '' || min === '' || max === '') {
-    webconsolejs['common/util'].showToast('Please fill in desired, min and max node size', 'warning');
-    return;
-  }
-
-  const desiredNum = parseInt(desired);
-  const minNum = parseInt(min);
-  const maxNum = parseInt(max);
-
-  if (minNum > maxNum) {
-    webconsolejs['common/util'].showToast('Min node size cannot be greater than max node size', 'warning');
-    return;
-  }
-  if (desiredNum < minNum || desiredNum > maxNum) {
-    webconsolejs['common/util'].showToast('Desired node size must be between min and max node size', 'warning');
-    return;
-  }
-
-  bootstrap.Modal.getInstance(document.getElementById('nodegroup-autoscalesize-modal'))?.hide();
-
-  try {
-    await PmkApiHelper.changeNodeGroupAutoscaleSize(
-      target.nsId,
-      target.clusterId,
-      target.nodeGroupName,
-      { desiredNodeSize: desiredNum, minNodeSize: minNum, maxNodeSize: maxNum }
-    );
-    webconsolejs['common/util'].showToast('Autoscale size has been changed', 'success');
-    await getSelectedPmkData();
-  } catch (error) {
-    console.error('Failed to change autoscale size:', error);
-    webconsolejs['common/util'].showToast('Failed to change autoscale size', 'error');
-  }
-}
+// 모달 입력 변화를 계획 미리보기에 반영한다(모달은 페이지 로드 시 이미 DOM에 있다)
+$(document).on('change', '#ng-scaling-enabled', function () {
+  syncScalingRangeVisibility();
+  renderScalingPlanPreview();
+});
+$(document).on('input change', '#ng-scaling-desired, #ng-scaling-min, #ng-scaling-max', function () {
+  renderScalingPlanPreview();
+});
 
 // ─── NodeGroup Export / Import ──────────────────────────────────────────────
 
@@ -944,7 +1027,7 @@ export function exportNodeGroups() {
     version: NODEGROUP_EXPORT_VERSION,
     exported_at: new Date().toISOString(),
     clusterId: currentPmkId,
-    provider: currentProvider,
+    provider: scalingProvider(),
     nodeGroups: nodeGroupList.map(toNodeGroupRequest)
   };
 
@@ -1348,10 +1431,26 @@ export function handleNodeCheck(pmkID, nodeID) {
             };
         });
 
-        // 마지막 선택된 Node ID와 비교하여 Node를 찾음
-        var aNodeObject = JSON.stringify(nodeList.find(node => node.ParsedSystemId === lastSelectedNodeID));
+        // 마지막 선택된 Node ID와 비교하여 Node를 찾음.
+        // 못 찾는 경우가 실제로 있다 — 다른 클러스터를 보다가 넘어오면 selectedClusterData 가
+        // 아직 이전 클러스터의 것일 수 있다. 그대로 두면 JSON.stringify(undefined) 가
+        // nodeGroupDetailInfo 의 JSON.parse 에서 터진다("undefined" is not valid JSON).
+        var matchedNode = nodeList.find(node => node.ParsedSystemId === lastSelectedNodeID)
+            || nodeList.find(node => node.name === lastSelectedNodeID
+                || node.cspResourceName === lastSelectedNodeID);
 
-        webconsolejs['pages/operation/manage/k8sworkloads'].nodeGroupDetailInfo(pmkID, aNodeObject, lastSelectedNodeID);
+        if (!matchedNode) {
+            console.error('NodeGroup not found in the loaded cluster data:',
+                lastSelectedNodeID, nodeList.map(n => n.ParsedSystemId));
+            webconsolejs['common/util'].showToast(
+                'NodeGroup details are out of date — reloading the cluster. Select the NodeGroup again.',
+                'warning');
+            getSelectedPmkData();
+            return;
+        }
+
+        webconsolejs['pages/operation/manage/k8sworkloads'].nodeGroupDetailInfo(
+            pmkID, JSON.stringify(matchedNode), lastSelectedNodeID);
     } else {
         // 선택된 Node가 없다면 NodeGroupInfo를 접음
         clearServerInfo();
@@ -1384,6 +1483,10 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
     webconsolejs["partials/layout/navigatePages"].toggleElement(div)
 
     clearServerInfo();
+    if (!aNodeObject || aNodeObject === 'undefined') {
+        console.error('nodeGroupDetailInfo called without NodeGroup data:', nodeID);
+        return;
+    }
     var aNode = JSON.parse(aNodeObject);
 
     // spiderViewK8sNodeGroupDetail에서 실제 데이터 가져오기
@@ -1399,11 +1502,13 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
     var ngSpec = nodeGroupDetail.VMSpecName || "t3.medium"
 
     var ngKeyPair = nodeGroupDetail.KeyPairIID.NameId || "d2rpbhedf1f12d7uev2g"
-    var ngDesiredNodeSize = nodeGroupDetail.DesiredNodeSize || aNode.desiredNodeSize
-    var ngMinNodeSize = nodeGroupDetail.MinNodeSize || aNode.minNodeSize
-    var ngMaxNodeSize = nodeGroupDetail.MaxNodeSize || aNode.maxNodeSize
+    // 모달과 같은 read-back 규칙을 쓴다 — 패널과 모달이 서로 다른 값을 보이면 안 된다
+    var ngScaling = scalingStateFromNodeGroup(scalingProvider(), aNode)
+    var ngDesiredNodeSize = ngScaling ? ngScaling.desired : (nodeGroupDetail.DesiredNodeSize ?? aNode.desiredNodeSize)
+    var ngMinNodeSize = ngScaling ? ngScaling.min : (nodeGroupDetail.MinNodeSize ?? aNode.minNodeSize)
+    var ngMaxNodeSize = ngScaling ? ngScaling.max : (nodeGroupDetail.MaxNodeSize ?? aNode.maxNodeSize)
 
-    var ngAutoScaling = resolveAutoScalingState(ngMinNodeSize, ngMaxNodeSize, nodeGroupDetail.OnAutoScaling ?? aNode.onAutoScaling)
+    var ngAutoScaling = ngScaling ? ngScaling.checked : false
     var ngRootDiskType = nodeGroupDetail.RootDiskType || ""
     var ngRootDiskSize = nodeGroupDetail.RootDiskSize || aNode.rootDiskSize
 
@@ -1416,7 +1521,9 @@ export async function nodeGroupDetailInfo(pmkID, aNodeObject, nodeID) {
 
     $("#ng_info_keypair").text(ngKeyPair)
     $("#ng_info_desirednodesize").text(ngDesiredNodeSize)
-    $("#ng_info_nodesize").text(ngMinNodeSize + " / " + ngMaxNodeSize)
+    $("#ng_info_nodesize").text((ngMinNodeSize === -1 || ngMaxNodeSize === -1)
+        ? "-"
+        : ngMinNodeSize + " / " + ngMaxNodeSize)
     // $("#ng_info_nodesize").text("1 / 2")
 
     $("#ng_info_autoscaling").text(ngAutoScaling)
@@ -2132,21 +2239,46 @@ function resetNodeGroupRootDiskTypeDynamic() {
 
 // Dynamic 폼용 Provider 변경 이벤트
 export function onProviderChangeDynamic(providerValue) {
-    // 생성 시점 AutoScaling Off 제약 반영 (Simple/Dynamic 폼)
-    applyAutoScalingOffConstraint(
-        '#nodegroup_autoscaling_dynamic', '#nodegroup_autoscaling_dynamic_hint',
-        providerValue, 'dynamic');
+    const selectedProvider = String(providerValue || '').toLowerCase();
 
-    // Azure, GCP, IBM, NHN 중 하나가 선택되었는지 확인
-    const supportedProviders = ['azure', 'gcp', 'ibm', 'nhn'];
-    const selectedProvider = providerValue.toLowerCase();
-
-    if (supportedProviders.includes(selectedProvider)) {
-        // 지원되는 CSP가 선택된 경우 NodeGroup 구성 폼 표시
+    // 클러스터 생성 요청에 NodeGroup 을 담을 수 있는 CSP 인지로 판단한다
+    // (AWS 는 무시, Alibaba·Tencent 는 거부 — 생성 후 Add NodeGroup 으로 추가해야 한다)
+    if (selectedProvider && isCreateNodeGroupSupported(selectedProvider, K8S_SCALING_PATHS.DYNAMIC)) {
         showNodeGroupFormDynamic();
+        applyDynamicScalingFormRules(selectedProvider);
     } else {
-        // 지원되지 않는 CSP이거나 선택되지 않은 경우 NodeGroup 구성 폼 숨기기
         hideNodeGroupFormDynamic();
+    }
+}
+
+// Simple 생성 폼에 CSP 규칙을 반영한다 — 체크박스 강제, 안내 문구, 범위 노출
+function applyDynamicScalingFormRules(provider) {
+    const rules = getRules(provider);
+    const $checkbox = $('#nodegroup_autoscaling_enabled_dynamic');
+    const $hint = $('#nodegroup_autoscaling_dynamic_hint');
+
+    if (rules && rules.create.forceUncheckedAtClusterCreate === true) {
+        $checkbox.prop('checked', false).prop('disabled', true);
+        $hint.text(rules.create.forceUncheckedReason || '').show();
+    } else {
+        $checkbox.prop('disabled', false);
+        const note = $checkbox.is(':checked')
+            ? getScalingMessage(provider, 'rangeRule')
+            : getScalingMessage(provider, 'fixedSize');
+        if (note) $hint.text(note).show(); else $hint.text('').hide();
+    }
+    syncDynamicScalingVisibility();
+}
+
+function syncDynamicScalingVisibility() {
+    const checked = $('#nodegroup_autoscaling_enabled_dynamic').is(':checked');
+    $('#nodegroup_autoscaling_range_dynamic').toggle(checked);
+    if (checked && !$('#nodegroup_minnodesize_dynamic').val() && !$('#nodegroup_maxnodesize_dynamic').val()) {
+        const desired = parseInt($('#nodegroup_desirednodesize_dynamic').val(), 10);
+        if (Number.isFinite(desired)) {
+            $('#nodegroup_minnodesize_dynamic').val(desired);
+            $('#nodegroup_maxnodesize_dynamic').val(desired + 1);
+        }
     }
 }
 
@@ -2280,18 +2412,24 @@ export async function deployPmkDynamic() {
                 webconsolejs['common/util'].showToast('Please input NodeGroup name', 'warning');
                 return;
             }
-            const autoScalingVal = $("#nodegroup_autoscaling_dynamic").val();
-            createData.onAutoScaling = autoScalingVal || "false";
-            if (autoScalingVal === "true") {
-                const minNodeSize = $("#nodegroup_minnodesize_dynamic").val();
-                const maxNodeSize = $("#nodegroup_maxnodesize_dynamic").val();
-                if (!minNodeSize || !maxNodeSize) {
-                    webconsolejs['common/util'].showToast('Min/Max Node Size is required when AutoScaling is On', 'warning');
-                    return;
-                }
-                createData.minNodeSize = parseInt(minNodeSize, 10);
-                createData.maxNodeSize = parseInt(maxNodeSize, 10);
+            // 스케일 값은 CSP 규칙으로 검증하고 번역한다.
+            // desired 는 지금까지 payload 에 아예 실리지 않아 tumblebug 기본값(1)로 만들어졌다.
+            const dynamicProvider = String($("#cluster_provider_dynamic").val()
+                || $("#nodegroup_provider_dynamic").val() || '').toLowerCase();
+            const dynamicScalingForm = {
+                checked: $("#nodegroup_autoscaling_enabled_dynamic").is(':checked'),
+                desired: $("#nodegroup_desirednodesize_dynamic").val(),
+                min: $("#nodegroup_minnodesize_dynamic").val(),
+                max: $("#nodegroup_maxnodesize_dynamic").val(),
+            };
+            const dynamicCheck = validateScalingForm(
+                dynamicProvider, 'create:dynamic', dynamicScalingForm, {});
+            if (!dynamicCheck.ok) {
+                webconsolejs['common/util'].showToast(dynamicCheck.errors[0].message, 'warning');
+                return;
             }
+            Object.assign(createData,
+                buildCreateScaling(dynamicProvider, K8S_SCALING_PATHS.DYNAMIC, dynamicScalingForm));
         }
 
         // 동적 클러스터 생성 API 호출 (비동기 - requestId toast로 상태 표시)
@@ -2321,7 +2459,8 @@ export async function deployPmkDynamic() {
             $("#nodegroup_image_dynamic").val("");
             $("#nodegroup_minnodesize_dynamic").val("");
             $("#nodegroup_maxnodesize_dynamic").val("");
-            $("#nodegroup_autoscaling_dynamic").val("");
+            $("#nodegroup_autoscaling_enabled_dynamic").prop('checked', false);
+            syncDynamicScalingVisibility();
             $("#nodegroup_rootdisk_dynamic").val("");
             $("#nodegroup_rootdisksize_dynamic").val("");
             $("#nodegroup_desirednodesize_dynamic").val("1");
@@ -2531,15 +2670,12 @@ function setupDesiredNodeSizeButtons() {
     // 기존 이벤트 핸들러 제거
     $(document).off('click', '#nodegroup_configuration_dynamic .input-number-decrement');
     $(document).off('click', '#nodegroup_configuration_dynamic .input-number-increment');
-    $(document).off('change', '#nodegroup_autoscaling_dynamic');
+    $(document).off('change', '#nodegroup_autoscaling_enabled_dynamic');
 
-    // AutoScaling 변경 시 min/max 활성화 제어
-    $(document).on('change', '#nodegroup_autoscaling_dynamic', function () {
-        if ($(this).val() === 'true') {
-            $('#nodegroup_minnodesize_dynamic, #nodegroup_maxnodesize_dynamic').prop('disabled', false);
-        } else {
-            $('#nodegroup_minnodesize_dynamic, #nodegroup_maxnodesize_dynamic').val('').prop('disabled', true);
-        }
+    // autoscaling 체크박스 — 체크했을 때만 Min/Max 를 보여준다
+    $(document).on('change', '#nodegroup_autoscaling_enabled_dynamic', function () {
+        syncDynamicScalingVisibility();
+        applyDynamicScalingFormRules(String($("#cluster_provider_dynamic").val() || '').toLowerCase());
     });
 
     // 새로운 이벤트 핸들러 등록
@@ -2630,10 +2766,8 @@ webconsolejs['pages/operation/manage/k8sworkloads'].getSelectedPmkData = getSele
 webconsolejs['pages/operation/manage/k8sworkloads'].getSelectedClusterContext = getSelectedClusterContext;
 webconsolejs['pages/operation/manage/k8sworkloads'].deletePmk = deletePmk;
 webconsolejs['pages/operation/manage/k8sworkloads'].deleteNodeGroup = deleteNodeGroup;
-webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscalingModal = openAutoscalingModal;
-webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaling = applyAutoscaling;
-webconsolejs['pages/operation/manage/k8sworkloads'].openAutoscaleSizeModal = openAutoscaleSizeModal;
-webconsolejs['pages/operation/manage/k8sworkloads'].applyAutoscaleSize = applyAutoscaleSize;
+webconsolejs['pages/operation/manage/k8sworkloads'].openEditScalingModal = openEditScalingModal;
+webconsolejs['pages/operation/manage/k8sworkloads'].applyEditScaling = applyEditScaling;
 webconsolejs['pages/operation/manage/k8sworkloads'].exportNodeGroups = exportNodeGroups;
 webconsolejs['pages/operation/manage/k8sworkloads'].importNodeGroups = importNodeGroups;
 webconsolejs['pages/operation/manage/k8sworkloads'].toggleNodeCheck = toggleNodeCheck;
@@ -2668,6 +2802,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // PMK 초기화
     initPmk();
+
 
     // Desired Node Size 버튼 설정
     setupDesiredNodeSizeButtons();
@@ -2720,14 +2855,10 @@ function updateAddNodeGroupButtonState(clusterStatus) {
 // (model.K8sNodeGroupInfo.isInitialNodeGroup). 클러스터를 지울 때 함께 사라진다.
 // <a>는 .disabled 클래스만으로 onclick이 막히지 않으므로 pointerEvents도 함께 꺼야 한다.
 function updateNodeGroupActionState() {
-    const deleteItems = document.querySelectorAll('a.dropdown-item[onclick*="deleteNodeGroup"]');
-    if (deleteItems.length === 0) {
-        return;
-    }
-
     const nodeGroupInfo = currentNodeGroupName ? findSelectedNodeGroupInfo() : null;
     const isInitial = nodeGroupInfo?.isInitialNodeGroup === true;
 
+    const deleteItems = document.querySelectorAll('a.dropdown-item[onclick*="deleteNodeGroup"]');
     deleteItems.forEach(item => {
         if (isInitial) {
             item.classList.add('disabled');
@@ -2739,4 +2870,40 @@ function updateNodeGroupActionState() {
             item.title = '';
         }
     });
+
+    updateEditScalingActionState(nodeGroupInfo);
+}
+
+// Edit Scaling 은 선택된 NodeGroup 이 있고, 규칙이 있는 CSP 이고, 작업 중이 아닐 때만 연다.
+function updateEditScalingActionState(nodeGroupInfo) {
+    const item = document.getElementById('nodegroup-edit-scaling-item');
+    if (!item) {
+        return;
+    }
+
+    const status = String(nodeGroupInfo?.status || '');
+    const provider = scalingProvider();
+    let blockedReason = '';
+    if (!currentNodeGroupName) {
+        blockedReason = 'Select a NodeGroup first';
+    } else if (!provider) {
+        // provider 를 못 읽은 것과 "지원하지 않는 CSP"는 다른 상황이다 — 사유를 구분해 보여준다
+        blockedReason = 'Cluster provider is not loaded yet — select the cluster again';
+    } else if (!getRules(provider)) {
+        blockedReason = 'Scaling is not supported for ' + provider;
+    } else if (isScalingInFlight()) {
+        blockedReason = 'A scaling change is in progress';
+    } else if (status === 'Creating' || status === 'Deleting') {
+        blockedReason = 'NodeGroup is ' + status.toLowerCase();
+    }
+
+    if (blockedReason) {
+        item.classList.add('disabled');
+        item.style.pointerEvents = 'none';
+        item.title = blockedReason;
+    } else {
+        item.classList.remove('disabled');
+        item.style.pointerEvents = 'auto';
+        item.title = '';
+    }
 }
