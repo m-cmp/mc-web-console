@@ -115,6 +115,10 @@ export function applyScalingFormRules() {
 	}
 	$('#nodegroup_plusIcon').show();
 	$('#cluster_nodegroup_unavailable_hint').text('').hide();
+	// 위에서 숨길 때 남긴 인라인 display:none 을 걷어낸다. 폼의 열림/닫힘은 .active 클래스가 맡는데
+	// 인라인 스타일이 클래스를 이겨, 걷어내지 않으면 + nodeGroup 을 눌러도 폼이 열리지 않는다.
+	// (.show() 로 강제로 펼치지 않는다 — 사용자가 열기 전까지는 닫혀 있어야 한다)
+	$('#nodegroup_configuration').css('display', '');
 
 	if (!rules) {
 		$('#node_autoscaling_enabled').prop('disabled', false);
@@ -847,8 +851,31 @@ export async function createCluster() {
 		return;
 	}
 
-	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다
-	webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
+	// 생성 시점에 NodeGroup 이 필요한 CSP(Azure/GCP/NCP/NHN/IBM)는 NodeGroup 없이 보내면
+	// tumblebug 이 "NodeGroups are required at K8sCluster creation" 으로 거부한다 — 폼에서 먼저 알린다.
+	// (NodeGroup 을 받지 않는 AWS/Alibaba/Tencent 는 NodeGroup 영역 자체가 숨겨져 있다)
+	var selectedProvider = $("#cluster_provider").val();
+	var addedNodeGroups = (Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].k8sNodeGroupList) || [];
+	if (selectedProvider && isCreateNodeGroupSupported(selectedProvider, K8S_SCALING_PATHS.EXPERT)
+		&& addedNodeGroups.length === 0) {
+		var providerLabel = (getRules(selectedProvider) && getRules(selectedProvider).label) || selectedProvider;
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('NodeGroup Required',
+			providerLabel + ' needs at least one NodeGroup when the cluster is created. Add a NodeGroup before deploying.');
+		return;
+	}
+
+	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다.
+	// 다만 요청을 만드는 단계에서 실패하면 요청이 나가지 않으므로, 그때는 전송 토스트 대신 실패를 알린다.
+	var dispatch;
+	try {
+		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
+	} catch (error) {
+		console.error('Failed to build cluster creation request:', error);
+	}
+	if (!dispatch || !dispatch.dispatched) {
+		webconsolejs['common/util'].showToast('Failed to send cluster creation request', 'error');
+		return;
+	}
 
 	webconsolejs['common/util'].showToast('Cluster creation request has been sent', 'info');
 

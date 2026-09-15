@@ -127,9 +127,12 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
-  // NodeGroupList가 있으면 추가 (조건부로 추가)
-  if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
-    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => {
+  // NodeGroupList가 있으면 추가 (조건부로 추가).
+  // AWS/Alibaba/Tencent 는 생성 시점에 NodeGroup 을 받지 않아 폼에서 NodeGroup 을 추가하지 않으므로
+  // 배열이 비어 있는 것이 정상이다 — [0] 에 가드 없이 접근하면 TypeError 로 요청이 나가지 않는다.
+  const nodeGroupList = Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].k8sNodeGroupList;
+  if (nodeGroupList && nodeGroupList.length > 0) {
+    obj['k8sNodeGroupList'] = nodeGroupList.map(group => {
       const ng = {
         desiredNodeSize: intOr(group.desiredNodeSize, 0),
         imageId: group.imageId,
