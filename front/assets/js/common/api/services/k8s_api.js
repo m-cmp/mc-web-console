@@ -666,7 +666,11 @@ async function dispatchNodeGroupsConcurrently(controller, k8sClusterId, nsId, co
 // 그 모듈은 모든 페이지에 로드돼 있어, 전송 도중 화면을 옮겨도 응답을 받는 즉시
 // 다음 건을 이어서 보낸다. 여기서는 큐에 넣기만 한다.
 function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, configArr) {
-  webconsolejs["common/api/k8sScalingQueue"].enqueueNodeGroupCreates(nsId, k8sClusterId, configArr);
+  // 큐는 받은 config 를 그대로 request 로 보낸다 — 넣기 전에 tumblebug 타입에 맞춘다.
+  // 폼 값은 문자열이라 그대로 보내면 "Unmarshal type error: expected=int, got=string,
+  // field=rootDiskSize" 로 400 이 난다(큐로 옮기기 전에는 이 함수가 buildNodeGroupRequest 를 거쳤다).
+  const requests = configArr.map((obj) => buildNodeGroupRequest(k8sClusterId, nsId, obj).request);
+  webconsolejs["common/api/k8sScalingQueue"].enqueueNodeGroupCreates(nsId, k8sClusterId, requests);
 }
 
 export async function getSshKey(nsId, providerName, connectionName) {
