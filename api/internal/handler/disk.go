@@ -43,9 +43,13 @@ var diskTypeTable = []diskTypeInfo{
 		DiskSize:     []string{"Standard_LRS|1|32767|GB", "StandardSSD_LRS|1|32767|GB", "Premium_LRS|4|32767|GB", "UltraSSD_LRS|4|65536|GB"},
 	},
 	{
+		// cb-tumblebug assets/diskinfo.yaml 기준. 현세대 인스턴스(S8 등)는 시스템 디스크로
+		// CLOUD_BSSD·CLOUD_HSSD 만 지원한다 — 빠져 있으면 기본값 CLOUD_PREMIUM 으로 노드가 매번 거부된다.
+		// CLOUD_TSSD 는 시스템 디스크가 될 수 없어 넣지 않는다. 크기 범위는 데이터 디스크와 함께 쓰므로
+		// 데이터 디스크 기준 최솟값을 둔다(시스템 디스크 최소 50GB 는 CSP 가 검사한다).
 		ProviderID:   "TENCENT",
-		RootDiskType: []string{"CLOUD_PREMIUM", "CLOUD_SSD"},
-		DiskSize:     []string{"CLOUD_PREMIUM|10|32000|GB", "CLOUD_SSD|20|32000|GB", "CLOUD_HSSD|20|32000|GB"},
+		RootDiskType: []string{"CLOUD_PREMIUM", "CLOUD_SSD", "CLOUD_HSSD", "CLOUD_BSSD"},
+		DiskSize:     []string{"CLOUD_PREMIUM|10|32000|GB", "CLOUD_SSD|20|32000|GB", "CLOUD_HSSD|20|32000|GB", "CLOUD_BSSD|20|32000|GB"},
 	},
 	{
 		ProviderID:   "NCP",
