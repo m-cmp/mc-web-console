@@ -195,12 +195,16 @@ const RULES = {
       off: {
         expert: { on: false, min: 0, max: 0 },
         add: { on: false, min: 0, max: 0 },
-        dynamic: { on: false, min: 0, max: 0 },
+        // Simple(dynamic)은 tumblebug 이 min<=0 이면 1, max<=0 이면 2 를 주입한다. {false,0,0} 을 보내면
+        // {false,1,2} 가 되어 NCP 드라이버가 "If MinNodeSize is specified, OnAutoScaling must be enabled."
+        // 로 거부해 Simple 생성이 항상 실패했다. NCP 생성은 autoscale 을 적용하지 않고(NodeCount=desired)
+        // 드라이버 검증은 min<=max 를 허용하므로, on + min=max=desired 로 보내면 통과하고 결과는 고정 크기다.
+        dynamic: { on: true, min: D, max: D },
       },
       onRange: { minMin: 1 },
       desiredMin: 1,
       nodeGroupAtClusterCreate: 'shown',
-      forceUncheckedAtClusterCreate: true, // 생성 경로는 autoscale을 전송하지 않아 항상 off로 생성된다
+      forceUncheckedAtClusterCreate: true, // 생성 경로는 autoscale을 적용하지 않아 항상 off로 생성된다
       forceUncheckedReason:
         'NCP cannot enable autoscaling while the cluster is being created. Enable it afterwards from Edit Scaling.',
     },
