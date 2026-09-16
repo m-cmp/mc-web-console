@@ -11,6 +11,10 @@ import {
   buildModifyPlan,
   describeStep,
 } from "../../../common/utils/k8sScalingRules.js";
+import {
+  isVersionOutsideAvailableList,
+  buildVersionQueryParams,
+} from "../../../common/utils/k8sVersionRules.js";
 
 /**
  * ===================================================================
@@ -2211,6 +2215,66 @@ export async function changeCloudConnectionDynamic(connectionName) {
         console.error("Failed to look up disk types:", error);
         resetNodeGroupRootDiskTypeDynamic();
     }
+
+    // Version 제안 목록은 제출 시점이 아니라 여기서 채운다 — 사용자가 고르거나
+    // 직접 입력하려면 Deploy 를 누르기 전에 후보가 보여야 한다.
+    await loadDynamicVersionOptions(provider, $("#cluster_region_dynamic").val());
+}
+
+// Simple 폼의 가용 버전 목록 — 입력값이 목록 밖인지 판단하는 기준
+var availableK8sVersionsDynamic = [];
+
+export function getAvailableK8sVersionsDynamic() {
+    return availableK8sVersionsDynamic;
+}
+
+async function loadDynamicVersionOptions(provider, regionOption) {
+    availableK8sVersionsDynamic = [];
+    $("#cluster_version_options_dynamic").empty();
+
+    if (!provider || !regionOption) {
+        onClusterVersionDynamicInput();
+        return;
+    }
+
+    try {
+        // GetAvailableK8sVersion 은 CSP 원본 region 이름을 받는다 (Expert 와 동일)
+        const parsed = webconsolejs["common/api/services/k8s_api"].parseRegionOption(regionOption);
+        const cspRegionName = webconsolejs["common/api/services/k8s_api"]
+            .toCspRegionName(provider, parsed.regionZoneInfoName);
+        const versions = await webconsolejs["common/api/services/k8s_api"]
+            .getAvailableK8sClusterVersion(provider, cspRegionName);
+
+        if (versions && Array.isArray(versions)) {
+            availableK8sVersionsDynamic = versions;
+            let html = '';
+            versions.forEach(version => {
+                html += `<option value="${version.id}"></option>`;
+            });
+            $("#cluster_version_options_dynamic").append(html);
+        }
+    } catch (error) {
+        // 목록을 못 받아도 생성 자체를 막지 않는다 — 직접 입력 경로가 남아 있다
+        console.error("Failed to retrieve Kubernetes cluster versions:", error);
+    }
+
+    onClusterVersionDynamicInput();
+}
+
+// 목록 밖 버전 입력 시 검증을 건너뛴다는 사실을 미리 알린다 (Expert 와 동일한 안내)
+export function onClusterVersionDynamicInput() {
+    const entered = ($("#cluster_version_dynamic").val() || "").trim();
+    const hint = $("#cluster_version_dynamic_hint");
+
+    if (isVersionOutsideAvailableList(entered, availableK8sVersionsDynamic)) {
+        hint.text(
+            "This version is not in the list reported by the platform. " +
+            "It will be sent to the CSP without version validation."
+        );
+        hint.show();
+    } else {
+        hint.hide();
+    }
 }
 
 // provider/connectionName에 맞는 Root Disk Type 옵션으로 드롭다운을 채운다
@@ -2393,6 +2457,16 @@ export async function deployPmkDynamic() {
             commonImage = "default";
         }
 
+        // 사용자가 Cluster Version 을 직접 입력했으면 그 값이 자동 선택보다 우선한다.
+        // 두 분기 모두에 적용해야 한다 — NodeGroup 을 함께 만드는 분기는 위에서 버전을
+        // 조회하지 않아 k8sVersion 이 빈 채로 남고, 그러면 tumblebug 이 자기 정적 목록에서
+        // 최신 버전을 골라 넣는다(getK8sRecommendVersion). 목록이 CSP 허용 버전과 어긋난
+        // 경우(Alibaba) 그 자동 선택도 반드시 실패한다.
+        const enteredVersion = ($("#cluster_version_dynamic").val() || "").trim();
+        if (enteredVersion) {
+            k8sVersion = enteredVersion;
+        }
+
         // 클러스터 생성 데이터 준비
         const createData = {
             imageId: commonImage || "default",
@@ -2434,9 +2508,13 @@ export async function deployPmkDynamic() {
 
         // 동적 클러스터 생성 API 호출 (비동기 - requestId toast로 상태 표시)
         // 결과는 기다리지 않지만 rejection은 관측한다 — 그러지 않으면 실패를 사용자가 알 수 없다
+        // 목록 밖 버전일 때만 tumblebug 의 정적 목록 대조를 건너뛴다
+        const versionQueryParams = buildVersionQueryParams(k8sVersion, availableK8sVersionsDynamic);
+
         webconsolejs["common/api/services/k8s_api"].createK8sClusterDynamic(
             selectedWorkspaceProject.nsId,
-            createData
+            createData,
+            versionQueryParams
         ).catch(function (error) {
             console.error("Failed to send cluster creation request:", error);
             webconsolejs['common/util'].showToast('Failed to send cluster creation request', 'error');
@@ -2448,6 +2526,8 @@ export async function deployPmkDynamic() {
         $("#cluster_provider_dynamic").val("");
         $("#cluster_region_dynamic").val("");
         $("#cluster_cloudconnection_dynamic").val("");
+        $("#cluster_version_dynamic").val("");
+        $("#cluster_version_dynamic_hint").hide();
 
         // NodeGroup 폼이 표시되어 있었다면 초기화
         if (isNodeGroupVisible) {
