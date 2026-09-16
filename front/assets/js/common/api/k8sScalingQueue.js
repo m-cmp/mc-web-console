@@ -219,7 +219,7 @@ function stepSatisfied(provider, step, state) {
   if (!state) return false;
   if (step.kind === "set") return state.on === step.on;
   if (step.kind !== "change") return false;
-  const desiredIgnored = getRules(provider)?.modify?.desiredEditable === false;
+  const desiredIgnored = getRules(provider)?.modify?.desiredAppliedViaRange === true;
   const rangeSame = state.min === step.minNodeSize && state.max === step.maxNodeSize;
   return rangeSame && (desiredIgnored || state.desired === step.desiredNodeSize);
 }
@@ -301,7 +301,14 @@ async function runScalingJob(job, options = {}) {
       upsertJob(PENDING_SCALING_KEY, Object.assign({}, job, { cursor: i }));
 
       if (step.kind === "wait") {
-        await waitForState(job, step);
+        try {
+          await waitForState(job, step);
+        } catch (error) {
+          if (!step.optional) throw error;
+          // 순서는 이미 HTTP 응답 대기로 보장된다 — 선택적 대기는 실패해도 계획을 멈추지 않는다.
+          // (여기서 중단하면 autoscaling 이 켜진 채로 남는다)
+          console.warn("Optional wait step timed out, continuing:", step.label, error);
+        }
         continue;
       }
 

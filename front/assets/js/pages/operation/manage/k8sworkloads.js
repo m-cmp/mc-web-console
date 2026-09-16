@@ -2,6 +2,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import {
   K8S_SCALING_PATHS,
   getRules,
+  getModifyDesiredMin,
   getScalingMessage,
   isCreateNodeGroupSupported,
   getCreateNodeGroupUnsupportedReason,
@@ -827,6 +828,33 @@ function syncScalingRangeVisibility() {
   $('#ng-scaling-range').toggle($('#ng-scaling-enabled').is(':checked'));
 }
 
+// Desired 입력과 +/- 버튼의 활성 상태를 함께 움직인다
+function setScalingDesiredEditable(editable) {
+  $('#ng-scaling-desired').prop('readonly', !editable);
+  $('#ng-scaling-desired-stepper button').prop('disabled', !editable);
+}
+
+function stepScalingDesired(delta) {
+  const $input = $('#ng-scaling-desired');
+  if ($input.prop('readonly') || $input.prop('disabled')) return;
+  const floor = getModifyDesiredMin(scalingProvider());
+  const parsed = parseInt($input.val(), 10);
+  const base = Number.isFinite(parsed) ? parsed : floor;
+  const next = Math.max(floor, base + delta);
+  if (next === base) return;
+  // jQuery .val() 은 이벤트를 발생시키지 않는다 — 계획 미리보기가 다시 그려지도록 직접 발화한다
+  $input.val(next).trigger('change');
+}
+
+$(document).on('click', '#ng-scaling-desired-dec', function (e) {
+  e.preventDefault();
+  stepScalingDesired(-1);
+});
+$(document).on('click', '#ng-scaling-desired-inc', function (e) {
+  e.preventDefault();
+  stepScalingDesired(1);
+});
+
 export function openEditScalingModal() {
   const target = requireNodeGroupSelection('edit scaling for');
   if (!target) return;
@@ -851,15 +879,20 @@ export function openEditScalingModal() {
   $('#ng-scaling-name').val(target.nodeGroupName);
   $('#ng-scaling-current').text(describeCurrentScaling(cur));
 
-  const desiredEditable = rules.modify.desiredEditable !== false;
-  $('#ng-scaling-desired').val(cur.desired).prop('readonly', !desiredEditable);
-  if (desiredEditable) {
-    $('#ng-scaling-desired-note').text('').hide();
+  // Desired 는 전 CSP에서 편집 가능하다. 드라이버가 desired 를 전달하지 않는 CSP는
+  // 체크 해제 시 min=max=desired 로 번역되므로(k8sScalingRules), 잠그는 대신 그 사실을 알린다.
+  $('#ng-scaling-desired')
+    .attr('min', getModifyDesiredMin(scalingProvider()))
+    .val(cur.desired);
+  setScalingDesiredEditable(true);
+
+  const desiredNote = rules.modify.desiredAppliedViaRange
+    ? getScalingMessage(scalingProvider(), 'desiredViaRange')
+    : '';
+  if (desiredNote) {
+    $('#ng-scaling-desired-note').text(desiredNote).show();
   } else {
-    $('#ng-scaling-desired-note')
-      .text(getScalingMessage(scalingProvider(), 'desiredReadonly')
-        || (rules.label + ' does not apply a node count change from here.'))
-      .show();
+    $('#ng-scaling-desired-note').text('').hide();
   }
 
   $('#ng-scaling-enabled').prop('checked', cur.checked);
