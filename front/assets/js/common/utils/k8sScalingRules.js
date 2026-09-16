@@ -34,12 +34,13 @@ const changeStep = (desired, min, max) => ({
   maxNodeSize: max,
   label: 'Apply size (desired ' + desired + ', min ' + min + ', max ' + max + ')',
 });
-const waitStep = (until, label) => ({
+const waitStep = (until, label, options = {}) => ({
   kind: 'wait',
   until,
   label: label || 'Wait for the CSP to apply the change',
   intervalMs: 5000,
   timeoutMs: 180000,
+  ...options,
 });
 
 // ─── CSP 규칙표 ──────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ const RULES = {
       nodeGroupAtClusterCreateReason:
         'AWS creates node groups after the cluster exists. Create the cluster first, then use Add NodeGroup.',
     },
-    modify: { desiredEditable: true, supportsSet: false },
+    modify: { supportsSet: false },
     // 드라이버가 OnAutoScaling을 채우지 않거나 항상 true로 보고한다 → 범위로만 판단
     readBack: (v) => v.max > v.min,
   },
@@ -88,7 +89,7 @@ const RULES = {
       onRange: { minMin: 1, maxMax: 1000 },
       nodeGroupAtClusterCreate: 'shown',
     },
-    modify: { desiredEditable: true, supportsSet: true },
+    modify: { supportsSet: true },
   },
 
   gcp: {
@@ -109,17 +110,19 @@ const RULES = {
       onRange: { minMin: 1 },
       nodeGroupAtClusterCreate: 'shown',
     },
-    modify: { desiredEditable: true, supportsSet: true, confirmOnImplicitEnable: true },
+    modify: { supportsSet: true, confirmOnImplicitEnable: true },
   },
 
   alibaba: {
     label: 'Alibaba',
     messages: {
-      fixedSize: 'Alibaba switches autoscaling off and leaves the node count as it is.',
-      desiredReadonly: 'Alibaba does not receive a node count with this request — only the Min/Max range is applied. '
-        + 'The node count follows that range.',
+      fixedSize: 'Alibaba pins the node pool: Min and Max are set to the desired count, then autoscaling is switched off.',
+      desiredViaRange: 'Alibaba does not receive a node count with this request. The desired count is applied as the '
+        + 'Min/Max range (Min = Max = Desired), and the node pool settles on that size.',
       rangeRule: 'Alibaba requires 1 or more for both Min and Max.',
       confirmEnable: 'Applying a range switches autoscaling on for this node group — Alibaba has no range-only update.',
+      confirmTempEnable: 'Alibaba can only change the range while autoscaling is on. It is switched on to apply '
+        + 'Min/Max, then switched off again.',
     },
     create: {
       off: { add: { on: false, min: D, max: D } },
@@ -129,8 +132,13 @@ const RULES = {
         'Alibaba creates node groups after the cluster exists. Create the cluster first, then use Add NodeGroup.',
       desiredIgnoredByCsp: true,
     },
-    // ChangeNodeGroupScaling이 desired를 CSP 요청에 넣지 않는다
-    modify: { desiredEditable: false, supportsSet: true, confirmOnImplicitEnable: true },
+    // ChangeNodeGroupScaling이 desired를 CSP 요청에 넣지 않는다 → desired를 min=max로 인코딩한다
+    modify: {
+      supportsSet: true,
+      confirmOnImplicitEnable: true,
+      desiredAppliedViaRange: true,
+      desiredMin: 1,
+    },
   },
 
   tencent: {
@@ -147,18 +155,24 @@ const RULES = {
       nodeGroupAtClusterCreateReason:
         'Tencent creates node groups after the cluster exists. Create the cluster first, then use Add NodeGroup.',
     },
-    modify: { desiredEditable: true, supportsSet: true },
+    modify: { supportsSet: true },
   },
 
   nhn: {
     label: 'NHN',
     messages: {
-      fixedSize: 'NHN switches autoscaling off and leaves the node count as it is.',
-      desiredReadonly: 'NHN does not receive a node count with this request — only the Min/Max range is applied. '
-        + 'The node count follows that range.',
+      fixedSize: 'NHN pins the node group: Min and Max are set to the desired count, then autoscaling is switched off.',
+      desiredViaRange: 'NHN does not receive a node count with this request. The desired count is applied as the '
+        + 'Min/Max range (Min = Max = Desired).',
+      // 드라이버가 범위를 현재 노드 수에 맞춰 넓히므로 노드 수가 그대로일 수 있다 — 미리 알린다
+      fixedSizeClamped: 'NHN fits the range around the number of nodes running now, so the node count does not '
+        + 'change from here. Min and Max are sent as the desired count, and NHN widens them to keep the current '
+        + 'nodes inside the range.',
       rangeRule: 'NHN fits the range around the current node count: Min must be at most, and Max at least, '
         + 'the number of nodes running now. Max cannot exceed 10.',
       confirmEnable: 'Applying a range switches autoscaling on for this node group — NHN has no range-only update.',
+      confirmTempEnable: 'NHN can only change the range while autoscaling is on. It is switched on to apply '
+        + 'Min/Max, then switched off again.',
       // 생성 제약의 원인은 NHN이 아니라 tumblebug의 기본값 주입이다 (cb-tumblebug#2767)
       createOff: 'Simple Creation always sends a minimum node count of 1, and NHN rejects that while autoscaling is off. '
         + 'Use Expert Creation to create it with autoscaling off, or keep autoscaling on.',
@@ -167,7 +181,11 @@ const RULES = {
       // 검증이 모두 min>0 일 때만 동작한다 → off면 min=max=0
       off: {
         expert: { on: false, min: 0, max: 0 },
-        add: { on: false, min: 0, max: 0 },
+        // NHN NodeGroup API 는 max_node_count >= 1 을 요구한다 — max 0 으로 보내면
+        // "Invalid input for field/attribute max_node_count. Value: '0'" 로 거부된다.
+        // 클러스터 생성 경로는 autoscale 을 라벨로 처리해 같은 값이 통과하지만 Add 는 아니다.
+        // off 는 유지하고 max 만 desired 로 채운다(실측: {false, d, 0, d} 통과).
+        add: { on: false, min: 0, max: D },
         dynamic: { on: true, min: D, max: D }, // tumblebug 주입 회피
       },
       onRange: { minMin: 1, maxMax: 10 },
@@ -175,10 +193,12 @@ const RULES = {
       maxNodeGroupsAtCreate: 1, // 클러스터 생성 시 첫 NodeGroup만 만들어진다
     },
     modify: {
-      desiredEditable: false,
       supportsSet: true,
       confirmOnImplicitEnable: true,
-      validateAgainstNodeCount: true,
+      // 드라이버가 범위를 현재 노드 수에 맞춰 말없이 보정한다
+      clampsRangeToNodeCount: true,
+      desiredAppliedViaRange: true,
+      desiredMin: 1,
     },
   },
 
@@ -210,7 +230,6 @@ const RULES = {
     },
     // SetNodeGroupAutoScaling이 빈 구현이라 off로 되돌릴 수 없다
     modify: {
-      desiredEditable: true,
       supportsSet: false,
       confirmOnEnable: true,
     },
@@ -219,9 +238,10 @@ const RULES = {
   ibm: {
     label: 'IBM',
     messages: {
-      fixedSize: 'IBM switches the autoscaler off for this worker pool and leaves the node count as it is.',
-      desiredReadonly: 'IBM changes the node count through the cluster autoscaler add-on — this request only updates '
-        + 'the Min/Max range.',
+      fixedSize: 'IBM pins the worker pool: the autoscaler range is set to the desired count and the autoscaler is '
+        + 'then switched off, so the node count stays where it is until the autoscaler is switched on again.',
+      desiredViaRange: 'IBM changes the node count through the cluster autoscaler add-on. The desired count is '
+        + 'applied as the Min/Max range (Min = Max = Desired) in the autoscaler config.',
       rangeRule: 'IBM requires 1 or more for both Min and Max.',
       unknownRange: 'The autoscaler add-on is not reporting a range yet. Applying one creates it.',
     },
@@ -235,8 +255,8 @@ const RULES = {
       desiredMin: 1,
       nodeGroupAtClusterCreate: 'shown',
     },
-    // ChangeNodeGroupScaling이 autoscaler ConfigMap의 min/max만 쓴다
-    modify: { desiredEditable: false, supportsSet: true },
+    // ChangeNodeGroupScaling이 autoscaler ConfigMap의 min/max만 쓴다 → desired를 min=max로 인코딩한다
+    modify: { supportsSet: true, desiredAppliedViaRange: true },
   },
 };
 
@@ -247,6 +267,17 @@ export function getScalingMessage(provider, key) {
 
 export function getRules(provider) {
   return RULES[String(provider || '').toLowerCase()] || null;
+}
+
+// 수정 경로의 Desired 바닥값. 드라이버가 Change 에서 요구하는 최소치를 따른다
+// (NHN·Alibaba 는 min>=1, IBM 은 생성과 같은 1, 나머지는 0).
+export function getModifyDesiredMin(provider) {
+  const rules = getRules(provider);
+  if (!rules) return 0;
+  const fromModify = rules.modify?.desiredMin;
+  if (Number.isFinite(fromModify)) return fromModify;
+  const fromCreate = rules.create?.desiredMin;
+  return Number.isFinite(fromCreate) ? fromCreate : 0;
 }
 
 export function isCreateNodeGroupSupported(provider, path) {
@@ -305,18 +336,18 @@ export function validateScalingForm(provider, mode, form, context) {
 
   const isModify = mode === 'modify';
   const isDynamic = mode === 'create:dynamic';
-  const desiredEditable = isModify ? rules.modify.desiredEditable !== false : true;
   const desired = num(form?.desired, NaN);
 
-  if (desiredEditable) {
-    if (!Number.isFinite(desired)) {
-      errors.push({ field: 'desired', message: 'Desired node count is required.' });
-    } else {
-      // tumblebug이 dynamic 경로에서 0 이하를 1로 덮어쓴다
-      const desiredMin = isDynamic ? Math.max(1, rules.create.desiredMin || 0) : (rules.create.desiredMin || 0);
-      if (desired < desiredMin) {
-        errors.push({ field: 'desired', message: 'Desired node count must be ' + desiredMin + ' or more.' });
-      }
+  if (!Number.isFinite(desired)) {
+    errors.push({ field: 'desired', message: 'Desired node count is required.' });
+  } else {
+    // 수정 경로는 드라이버가 요구하는 바닥값(Change 의 min>=1 등)을 따른다.
+    // tumblebug이 dynamic 생성 경로에서 0 이하를 1로 덮어쓴다.
+    const desiredMin = isModify
+      ? getModifyDesiredMin(provider)
+      : (isDynamic ? Math.max(1, rules.create.desiredMin || 0) : (rules.create.desiredMin || 0));
+    if (desired < desiredMin) {
+      errors.push({ field: 'desired', message: 'Desired node count must be ' + desiredMin + ' or more.' });
     }
   }
 
@@ -324,7 +355,14 @@ export function validateScalingForm(provider, mode, form, context) {
     if (!isModify && rules.create.desiredIgnoredByCsp) {
       hints.push(rules.messages?.fixedSize || '');
     }
-    return { ok: errors.length === 0, errors, hints };
+    // 고정 크기로 보내도 NHN 은 범위를 현재 노드 수에 맞춰 넓힌다 → 막지 말고 미리 알린다
+    if (isModify && rules.modify.clampsRangeToNodeCount && Number.isFinite(desired)) {
+      const nodeCount = num(context?.nodeCount, NaN);
+      if (Number.isFinite(nodeCount) && desired !== nodeCount) {
+        hints.push((rules.messages?.fixedSizeClamped || '') + ' Nodes running now: ' + nodeCount + '.');
+      }
+    }
+    return { ok: errors.length === 0, errors, hints: hints.filter(Boolean) };
   }
 
   const min = num(form?.min, NaN);
@@ -348,11 +386,11 @@ export function validateScalingForm(provider, mode, form, context) {
     if (Number.isFinite(range.maxMax) && max > range.maxMax) {
       errors.push({ field: 'max', message: 'Max cannot exceed ' + range.maxMax + ' on ' + rules.label + '.' });
     }
-    if (desiredEditable && Number.isFinite(desired) && (desired < min || desired > max)) {
+    if (Number.isFinite(desired) && (desired < min || desired > max)) {
       errors.push({ field: 'desired', message: 'Desired node count must be between Min and Max.' });
     }
     // NHN 드라이버는 범위를 현재 노드 수에 맞춰 말없이 보정한다 → 미리 막는다
-    if (isModify && rules.modify.validateAgainstNodeCount) {
+    if (isModify && rules.modify.clampsRangeToNodeCount) {
       const nodeCount = num(context?.nodeCount, NaN);
       if (Number.isFinite(nodeCount) && (min > nodeCount || max < nodeCount)) {
         errors.push({
@@ -362,10 +400,6 @@ export function validateScalingForm(provider, mode, form, context) {
         });
       }
     }
-  }
-
-  if (isModify && !desiredEditable) {
-    hints.push(rules.messages?.desiredReadonly || '');
   }
 
   if (form?.checked && rules.messages?.rangeRule) {
@@ -378,8 +412,7 @@ export function validateScalingForm(provider, mode, form, context) {
 // 변경할 것이 있는지 — 없으면 호출하지 않는다 (GCP는 동일값이면 드라이버가 에러를 낸다)
 function hasNoChange(rules, current, target) {
   if (Boolean(current.checked) !== Boolean(target.checked)) return false;
-  const desiredSame = rules.modify.desiredEditable === false
-    || num(target.desired) === num(current.desired);
+  const desiredSame = num(target.desired) === num(current.desired);
   if (!target.checked) return desiredSame;
   return desiredSame && num(target.min) === num(current.min) && num(target.max) === num(current.max);
 }
@@ -391,19 +424,18 @@ export function buildModifyPlan(provider, current, target) {
     return { ok: false, blocked: { reason: 'Scaling is not supported for this provider.' }, confirm: null, steps: [], expected: null };
   }
 
-  const d = rules.modify.desiredEditable === false ? num(current.desired) : num(target.desired);
+  const d = num(target.desired);
   const min = num(target.min);
   const max = num(target.max);
   const on = Boolean(current.on);
   const checked = Boolean(target.checked);
 
   if (hasNoChange(rules, current, target)) {
-    const desiredIgnored = rules.modify.desiredEditable === false
-      && num(target.desired) !== num(current.desired);
-    const reason = desiredIgnored
-      ? rules.label + ' does not apply a node count change from here; only the autoscaling range can be changed.'
-      : 'Nothing to apply — the values are unchanged.';
-    return { ok: false, blocked: { reason }, confirm: null, steps: [], expected: null };
+    return {
+      ok: false,
+      blocked: { reason: 'Nothing to apply — the values are unchanged.' },
+      confirm: null, steps: [], expected: null,
+    };
   }
 
   let steps = [];
@@ -445,8 +477,17 @@ export function buildModifyPlan(provider, current, target) {
 
     case 'alibaba':
     case 'nhn':
-      // desired는 드라이버가 전달하지 않는다 → 범위만 바꾼다
-      steps = checked ? [changeStep(d, min, max)] : (on ? [setStep(false)] : []);
+      // 드라이버가 desired 를 버리고 enable=true 를 강제한다 → 생성 폼과 같은 인코딩(min=max=desired)으로
+      // 번역하고, Change 가 켜 버린 autoscaling 을 Set(off) 로 마무리한다.
+      // NHN 은 이 순서 덕분에 ca_max_node_count 가 먼저 채워져 Set 단독 호출의 409 가 사라진다.
+      // 노드 수({desired})를 기다리면 안 된다 — NHN 은 범위를 클램프해 목표로 수렴하지 않아 행이 된다.
+      steps = checked
+        ? [changeStep(d, min, max)]
+        : [
+          changeStep(d, d, d),
+          waitStep({ on: true }, 'Wait until the new range is registered', { optional: true, timeoutMs: 60000 }),
+          setStep(false),
+        ];
       break;
 
     case 'ncp':
@@ -459,10 +500,10 @@ export function buildModifyPlan(provider, current, target) {
         steps = [changeStep(d, min, max)];
         if (!on) steps.push(setStep(true));
       } else {
-        // 끄기는 Set 하나면 된다. ConfigMap 항목이 없는 경우(min/max = -1)는 read-back 이
-        // 이미 "해제"로 판정하므로 이 경로로 들어오지 않는다 — 항목 생성은 위의 켜기 분기가
-        // Change(항목 생성) → Set(on) 순서로 처리한다.
-        steps = on ? [setStep(false)] : [];
+        // Change 는 autoscaler ConfigMap 의 min/max 만 쓰고 Enabled 는 건드리지 않는다 → 대기 불필요.
+        // desired 를 min=max 로 남겨 두면 다음에 autoscaling 을 켤 때 그 크기로 시작한다.
+        steps = [changeStep(d, d, d)];
+        if (on) steps.push(setStep(false));
       }
       break;
 
@@ -493,6 +534,8 @@ export function buildModifyPlan(provider, current, target) {
   const expectedOn = checked
     ? true
     : (steps.some((s) => s.kind === 'set' && s.on === false) ? false : on);
+  // 해제 계획의 마지막 스텝은 Set 일 수 있다 — 범위는 마지막 change 스텝이 정본이다
+  const lastChange = steps.slice().reverse().find((s) => s.kind === 'change');
 
   return {
     ok: true,
@@ -503,8 +546,8 @@ export function buildModifyPlan(provider, current, target) {
       on: expectedOn,
       checked,
       desired: d,
-      min: checked ? min : (steps[steps.length - 1].kind === 'change' ? steps[steps.length - 1].minNodeSize : num(current.min)),
-      max: checked ? max : (steps[steps.length - 1].kind === 'change' ? steps[steps.length - 1].maxNodeSize : num(current.max)),
+      min: checked ? min : (lastChange ? lastChange.minNodeSize : num(current.min)),
+      max: checked ? max : (lastChange ? lastChange.maxNodeSize : num(current.max)),
     },
   };
 }
@@ -520,6 +563,7 @@ if (typeof webconsolejs !== 'undefined') {
   Object.assign(webconsolejs['common/utils/k8sScalingRules'], {
     K8S_SCALING_PATHS,
     getRules,
+    getModifyDesiredMin,
     isCreateNodeGroupSupported,
     getCreateNodeGroupUnsupportedReason,
     readBackScaling,
