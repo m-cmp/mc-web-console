@@ -46,7 +46,7 @@ async function resolveTargetNodes(nsId, mciId, targetId, targetType) {
     }
 
     try {
-        const response = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+        const response = await webconsolejs["common/api/services/infra_api"].getMci(nsId, mciId);
         const nodes = (response && response.responseData && response.responseData.node) || [];
         const targetNodes = (targetType === 'nodegroup' && targetId)
             ? nodes.filter(node => node.nodeGroupId === targetId)
