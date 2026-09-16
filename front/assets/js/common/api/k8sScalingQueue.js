@@ -102,6 +102,13 @@ async function fetchScalingState(job) {
   const sv = ng.spiderViewK8sNodeGroupDetail || {};
   const num = (v) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : 0; };
   const nodeCount = Array.isArray(sv.Nodes) ? sv.Nodes.length : 0;
+  // tumblebug 과 cb-spider 는 상태를 Active/Creating 으로 정규화하면서 CSP 원본 상태를 잃는다.
+  // NHN 은 원본을 keyValueList 에 남긴다(Status=UPDATE_IN_PROGRESS 등) — 대기 판정에 필요하다.
+  const kvList = Array.isArray(ng.keyValueList) ? ng.keyValueList : [];
+  const kv = (name) => {
+    const hit = kvList.find((x) => String(x?.key ?? x?.Key ?? "").toLowerCase() === name);
+    return hit ? String(hit.value ?? hit.Value ?? "") : "";
+  };
   return {
     on: String(sv.OnAutoScaling ?? ng.onAutoScaling) === "true",
     desired: num(sv.DesiredNodeSize ?? ng.desiredNodeSize),
@@ -109,6 +116,7 @@ async function fetchScalingState(job) {
     max: num(sv.MaxNodeSize ?? ng.maxNodeSize),
     nodeCount,
     status: String(sv.Status ?? ng.status ?? ""),
+    cspStatus: kv("status"),
   };
 }
 
@@ -230,6 +238,10 @@ function stepSatisfied(provider, step, state) {
 const TRANSITIONAL_STATUSES = new Set(["creating", "updating", "scaling", "upgrading"]);
 
 function isSettled(state) {
+  // CSP 원본 상태가 있으면 그쪽이 우선이다. NHN 은 NodeGroup 이 UPDATE_IN_PROGRESS 인 동안에도
+  // tumblebug 이 Active 로 보고하는데, 그 사이 autoscale 호출은 400 으로 거부된다
+  // (2026-09-16 실측: "status UPDATE_IN_PROGRESS is not supported").
+  if (/_IN_PROGRESS$/i.test(state?.cspStatus || "")) return false;
   // 상태를 못 읽으면 판단 근거가 없으므로 막지 않는다(상태를 안 채우는 CSP가 있다)
   if (!state?.status) return true;
   return !TRANSITIONAL_STATUSES.has(state.status.toLowerCase());
@@ -301,14 +313,7 @@ async function runScalingJob(job, options = {}) {
       upsertJob(PENDING_SCALING_KEY, Object.assign({}, job, { cursor: i }));
 
       if (step.kind === "wait") {
-        try {
-          await waitForState(job, step);
-        } catch (error) {
-          if (!step.optional) throw error;
-          // 순서는 이미 HTTP 응답 대기로 보장된다 — 선택적 대기는 실패해도 계획을 멈추지 않는다.
-          // (여기서 중단하면 autoscaling 이 켜진 채로 남는다)
-          console.warn("Optional wait step timed out, continuing:", step.label, error);
-        }
+        await waitForState(job, step);
         continue;
       }
 

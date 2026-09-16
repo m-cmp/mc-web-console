@@ -34,13 +34,12 @@ const changeStep = (desired, min, max) => ({
   maxNodeSize: max,
   label: 'Apply size (desired ' + desired + ', min ' + min + ', max ' + max + ')',
 });
-const waitStep = (until, label, options = {}) => ({
+const waitStep = (until, label) => ({
   kind: 'wait',
   until,
   label: label || 'Wait for the CSP to apply the change',
   intervalMs: 5000,
   timeoutMs: 180000,
-  ...options,
 });
 
 // ─── CSP 규칙표 ──────────────────────────────────────────────────────
@@ -481,11 +480,15 @@ export function buildModifyPlan(provider, current, target) {
       // 번역하고, Change 가 켜 버린 autoscaling 을 Set(off) 로 마무리한다.
       // NHN 은 이 순서 덕분에 ca_max_node_count 가 먼저 채워져 Set 단독 호출의 409 가 사라진다.
       // 노드 수({desired})를 기다리면 안 된다 — NHN 은 범위를 클램프해 목표로 수렴하지 않아 행이 된다.
+      // 대기 판정은 CSP 원본 상태(keyValueList.Status)를 본다 — tumblebug 의 Active 만 보면
+      // NHN 이 아직 UPDATE_IN_PROGRESS 인데 통과해 버린다(k8sScalingQueue isSettled 참고).
       steps = checked
         ? [changeStep(d, min, max)]
         : [
           changeStep(d, d, d),
-          waitStep({ on: true }, 'Wait until the new range is registered', { optional: true, timeoutMs: 60000 }),
+          // 대기를 건너뛰면 안 된다 — NHN 은 NodeGroup 이 UPDATE_IN_PROGRESS 인 동안 autoscale 호출을
+          // 400 으로 거부한다. 못 기다렸으면 실패할 Set 을 던지는 대신 여기서 멈추고 이유를 알린다
+          waitStep({ on: true }, 'Wait until the new range is registered'),
           setStep(false),
         ];
       break;
