@@ -34,12 +34,13 @@ const changeStep = (desired, min, max) => ({
   maxNodeSize: max,
   label: 'Apply size (desired ' + desired + ', min ' + min + ', max ' + max + ')',
 });
-const waitStep = (until, label) => ({
+const waitStep = (until, label, options = {}) => ({
   kind: 'wait',
   until,
   label: label || 'Wait for the CSP to apply the change',
   intervalMs: 5000,
   timeoutMs: 180000,
+  ...options,
 });
 
 // ─── CSP 규칙표 ──────────────────────────────────────────────────────
@@ -488,7 +489,8 @@ export function buildModifyPlan(provider, current, target) {
           changeStep(d, d, d),
           // 대기를 건너뛰면 안 된다 — NHN 은 NodeGroup 이 UPDATE_IN_PROGRESS 인 동안 autoscale 호출을
           // 400 으로 거부한다. 못 기다렸으면 실패할 Set 을 던지는 대신 여기서 멈추고 이유를 알린다
-          waitStep({ on: true }, 'Wait until the new range is registered'),
+          // NHN 실측: Change 후 수렴까지 143초·178.5초(2026-09-16) — 기본 3분으로는 여유가 없다
+          waitStep({ on: true }, 'Wait until the new range is registered', { timeoutMs: 300000 }),
           setStep(false),
         ];
       break;
