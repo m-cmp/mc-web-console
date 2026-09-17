@@ -9,6 +9,10 @@ import {
 	buildCreateScaling,
 	validateScalingForm,
 } from "../../../common/utils/k8sScalingRules.js";
+import {
+	isVersionOutsideAvailableList,
+	buildVersionQueryParams,
+} from "../../../common/utils/k8sVersionRules.js";
 //import { selectedMciObj } from "./mci";
 //document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
@@ -234,27 +238,58 @@ export async function setCloudConnection(provider, regionZoneInfoName) {
 		.fillSelectOptions("#cluster_cloudconnection", "Select Connection", names, true);
 }
 
+// tumblebug 이 내려준 가용 버전 목록 — 입력값이 목록 밖인지 판단하는 기준.
+// 목록 밖이면 생성 요청에 skipVersionCheck 를 붙인다.
+var availableK8sVersions = [];
+
+export function getAvailableK8sVersions() {
+	return availableK8sVersions;
+}
+
+// 목록 밖 버전을 입력하면 검증을 건너뛴다는 사실을 미리 알린다 —
+// 실패한 뒤에야 알게 되면 사용자가 오타와 의도적 입력을 구분할 수 없다.
+export function onClusterVersionInput() {
+	const entered = $("#cluster_version").val();
+	const outside = isVersionOutsideAvailableList(entered, availableK8sVersions);
+	const hint = $("#cluster_version_hint");
+
+	if (outside) {
+		hint.text(
+			"This version is not in the list reported by the platform. " +
+			"It will be sent to the CSP without version validation."
+		);
+		hint.show();
+	} else {
+		hint.hide();
+	}
+}
+
 export async function checkAvailableK8sClusterVersion(providerName, regionName){
 	try {
         var availableVersions = await webconsolejs["common/api/services/k8s_api"].getAvailableK8sClusterVersion(providerName, regionName);
 
         // k8s 생성 가능
         if (availableVersions && Array.isArray(availableVersions)) {
+            availableK8sVersions = availableVersions;
 
-            let html = '<option value="">Select Version</option>';
+            // select 가 아니라 datalist 다 — 목록은 제안일 뿐이고 직접 입력도 받는다
+            let html = '';
             availableVersions.forEach(version => {
-                html += `<option value="${version.id}">${version.id}</option>`;
+                html += `<option value="${version.id}"></option>`;
             });
 
-            $("#cluster_version").empty();
-            $("#cluster_version").append(html);
+            $("#cluster_version_options").empty();
+            $("#cluster_version_options").append(html);
+            onClusterVersionInput();
         } else {
+            availableK8sVersions = [];
             // 데이터가 없거나 응답이 올바르지 않은 경우
             webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve Kubernetes cluster versions. Please try again.');
         }
 
     } catch (error) {
         console.error("Failed to retrieve Kubernetes cluster versions. Please try again.", error);
+        availableK8sVersions = [];
 
         if (error.response && error.response.status === 500) {
             webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve available Kubernetes cluster versions due to server error. Please try again.');
@@ -864,11 +899,15 @@ export async function createCluster() {
 		return;
 	}
 
+	// 목록 밖 버전을 직접 입력한 경우에만 tumblebug 의 정적 목록 대조를 건너뛴다.
+	// 목록에서 고른 값이면 queryParams 는 undefined 라 평소와 동일하게 검증된다.
+	const versionQueryParams = buildVersionQueryParams(clusterVersion, availableK8sVersions);
+
 	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다.
 	// 다만 요청을 만드는 단계에서 실패하면 요청이 나가지 않으므로, 그때는 전송 토스트 대신 실패를 알린다.
 	var dispatch;
 	try {
-		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
+		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, versionQueryParams)
 	} catch (error) {
 		console.error('Failed to build cluster creation request:', error);
 	}
@@ -884,6 +923,7 @@ export async function createCluster() {
 	$("#cluster_desc").val("");
 	$("#cluster_cloudconnection").val("");
 	$("#cluster_version").val("");
+	$("#cluster_version_hint").hide();
 	$("#cluster_vpc").val("");
 	$("#cluster_subnet").val("");
 	$("#cluster_sg").val("");

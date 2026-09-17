@@ -114,7 +114,9 @@ export async function getClusterKubeconfig(nsId, clusterId, options = {}) {
   }
 }
 
-export async function CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId) {
+// queryParams: 목록 밖 버전을 보낼 때 {skipVersionCheck:"true"} 가 들어온다(공통 프록시가
+// operationId 와 무관하게 쿼리스트링으로 붙여준다). 목록에서 고른 값이면 undefined.
+export async function CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, queryParams) {
 
   var obj = {}
 
@@ -166,6 +168,10 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
       "securityGroupIds": obj['securityGroupIds'],
       "k8sNodeGroupList": obj['k8sNodeGroupList']
     }
+  }
+
+  if (queryParams && Object.keys(queryParams).length > 0) {
+    data.queryParams = queryParams;
   }
 
   var controller = "/api/" + "mc-infra-manager/" + "PostK8sCluster";
@@ -1204,7 +1210,10 @@ export async function checkK8sClusterDynamic(nsId, commonSpec) {
 }
 
 // 동적 클러스터 생성 API
-export async function createK8sClusterDynamic(nsId, clusterData) {
+// queryParams: CreateCluster 와 같다 — 목록 밖 버전일 때만 {skipVersionCheck:"true"}.
+// dynamic 경로는 skipVersionCheck 가 true 면 version 명시가 필수인데(tumblebug
+// provisioning_dynamic_k8s.go), 호출부가 이미 clusterData.version 을 채워 보낸다.
+export async function createK8sClusterDynamic(nsId, clusterData, queryParams) {
   if (!nsId || !clusterData) {
     return;
   }
@@ -1220,6 +1229,10 @@ export async function createK8sClusterDynamic(nsId, clusterData) {
     },
     Request: clusterData
   };
+
+  if (queryParams && Object.keys(queryParams).length > 0) {
+    data.queryParams = queryParams;
+  }
 
   var controller = "/api/" + "mc-infra-manager/" + "PostK8sClusterDynamic";
   const clusterName = (clusterData && clusterData.name) ? clusterData.name : 'cluster';

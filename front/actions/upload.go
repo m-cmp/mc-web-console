@@ -13,6 +13,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// maxUploadFileSize caps a single remote file transfer. mc-infra-manager
+// (cb-tumblebug) rejects larger payloads, so reject here before building the
+// multipart body. The front-end enforces the same limit before base64 encoding.
+const maxUploadFileSize = 10 * 1024 * 1024 // 10MB
+
 type fileUploadPathParams struct {
 	NsId    string `json:"nsId"`
 	InfraId string `json:"infraId"`
@@ -70,6 +75,11 @@ func PostFileToInfraHandler(c echo.Context) error {
 		}
 	}
 
+	if len(fileBytes) > maxUploadFileSize {
+		return respondUploadError(c, http.StatusRequestEntityTooLarge,
+			fmt.Sprintf("file exceeds the %d MB limit (%d bytes)", maxUploadFileSize/(1024*1024), len(fileBytes)))
+	}
+
 	fileName := req.Request.File.Name
 	if fileName == "" {
 		fileName = "upload"
@@ -99,7 +109,7 @@ func PostFileToInfraHandler(c echo.Context) error {
 	}
 	targetURL := fmt.Sprintf("%s/ns/%s/transferFile/infra/%s", baseURL, nsId, infraId)
 
-	// Forward queryParams as URL query string (e.g. subGroupId, vmId)
+	// Forward queryParams as URL query string (e.g. nodeGroupId, nodeId)
 	if len(req.QueryParams) > 0 {
 		params := []string{}
 		for k, v := range req.QueryParams {
