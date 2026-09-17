@@ -940,7 +940,9 @@ function renderScalingPlanPreview() {
   }
 
   // 체크 해제가 CSP마다 다르게 처리되므로(진짜 off / 범위 고정) 그 방식을 문구로 알린다
-  const fixedSizeNote = form.checked ? '' : getScalingMessage(scalingProvider(), 'fixedSize');
+  // 수정 모달의 해제는 CSP에 따라 Change→Set 2단계가 된다 — 전용 문구가 있으면 그것을 쓴다
+  const fixedSizeNote = form.checked ? ''
+    : (getScalingMessage(scalingProvider(), 'fixedSizeModify') || getScalingMessage(scalingProvider(), 'fixedSize'));
   if (fixedSizeNote) {
     $('#ng-scaling-hint').text(fixedSizeNote).show();
   } else {

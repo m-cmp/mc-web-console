@@ -116,7 +116,9 @@ const RULES = {
   alibaba: {
     label: 'Alibaba',
     messages: {
-      fixedSize: 'Alibaba pins the node pool: Min and Max are set to the desired count, then autoscaling is switched off.',
+      // 생성 폼(Expert/Add/Simple)과 수정 모달은 해제 시 보내는 값이 다르다 — 문구를 나눈다
+      fixedSize: 'Alibaba switches autoscaling off and leaves the node count as it is.',
+      fixedSizeModify: 'Alibaba pins the node pool: Min and Max are set to the desired count, then autoscaling is switched off.',
       desiredViaRange: 'Alibaba does not receive a node count with this request. The desired count is applied as the '
         + 'Min/Max range (Min = Max = Desired), and the node pool settles on that size.',
       rangeRule: 'Alibaba requires 1 or more for both Min and Max.',
@@ -161,7 +163,9 @@ const RULES = {
   nhn: {
     label: 'NHN',
     messages: {
-      fixedSize: 'NHN pins the node group: Min and Max are set to the desired count, then autoscaling is switched off.',
+      // 생성 폼은 { on:false, min:0, max:desired } 를 한 번에 보내고 끄는 단계가 없다 — 수정 모달 문구와 분리
+      fixedSize: 'NHN switches autoscaling off and leaves the node count as it is.',
+      fixedSizeModify: 'NHN pins the node group: Min and Max are set to the desired count, then autoscaling is switched off.',
       desiredViaRange: 'NHN does not receive a node count with this request. The desired count is applied as the '
         + 'Min/Max range (Min = Max = Desired).',
       // 드라이버가 범위를 현재 노드 수에 맞춰 넓히므로 노드 수가 그대로일 수 있다 — 미리 알린다
@@ -238,7 +242,8 @@ const RULES = {
   ibm: {
     label: 'IBM',
     messages: {
-      fixedSize: 'IBM pins the worker pool: the autoscaler range is set to the desired count and the autoscaler is '
+      fixedSize: 'IBM switches the autoscaler off for this worker pool and leaves the node count as it is.',
+      fixedSizeModify: 'IBM pins the worker pool: the autoscaler range is set to the desired count and the autoscaler is '
         + 'then switched off, so the node count stays where it is until the autoscaler is switched on again.',
       desiredViaRange: 'IBM changes the node count through the cluster autoscaler add-on. The desired count is '
         + 'applied as the Min/Max range (Min = Max = Desired) in the autoscaler config.',
