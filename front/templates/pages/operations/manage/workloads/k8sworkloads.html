@@ -319,6 +319,31 @@
                       </div>
                     </div>
                   </div>
+
+                  <div class="form-group mb-2">
+                    <label class="form-label">Cluster Version</label>
+                    <div class="row g-2">
+                      <div class="col">
+                        <!-- 비우면 기존 동작(조회 목록의 첫 항목 자동 선택)을 유지한다.
+                             목록이 CSP 허용 버전과 어긋난 경우에만 직접 입력하면 된다. -->
+                        <input
+                          class="form-control"
+                          list="cluster_version_options_dynamic"
+                          name="cluster-version-dynamic"
+                          id="cluster_version_dynamic"
+                          placeholder="Leave empty to use the default version"
+                          autocomplete="off"
+                          oninput="webconsolejs['pages/operation/manage/k8sworkloads'].onClusterVersionDynamicInput()"
+                        />
+                        <datalist id="cluster_version_options_dynamic"></datalist>
+                        <small
+                          class="form-hint text-warning"
+                          id="cluster_version_dynamic_hint"
+                          style="display: none;"
+                        ></small>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -717,14 +742,25 @@
                     <label class="form-label required">Cluster Version</label>
                     <div class="row g-2">
                       <div class="col">
-                        <select
-                          class="form-select"
+                        <!-- 조회 목록은 제안으로 두되 직접 입력도 받는다.
+                             목록이 CSP 허용 버전과 어긋난 경우(Alibaba) 목록 밖 값을
+                             넣어야 생성이 가능하고, 그때만 skipVersionCheck 가 붙는다. -->
+                        <input
+                          class="form-control"
+                          list="cluster_version_options"
                           name="cluster-version"
                           id="cluster_version"
+                          placeholder="Select or enter a version"
+                          autocomplete="off"
+                          oninput="webconsolejs['partials/operation/manage/clustercreate'].onClusterVersionInput()"
                           required
-                        >
-                          <option value="">Select Version</option>
-                        </select>
+                        />
+                        <datalist id="cluster_version_options"></datalist>
+                        <small
+                          class="form-hint text-warning"
+                          id="cluster_version_hint"
+                          style="display: none;"
+                        ></small>
                       </div>
                     </div>
                   </div>
