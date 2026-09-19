@@ -26,6 +26,13 @@ export async function getClusterList(nsId, options = {}) {
   return pmkList
 }
 
+// 정수 변환 — 0을 falsy로 흘려보내지 않는다.
+// (NHN 은 autoscaling off 일 때 min=0 을, Azure 수동 모드는 min=max=0 을 요구한다)
+function intOr(value, fallback) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 export async function getCluster(nsId, clusterId, options = {}) {
   // Validation: Check nsId
   if (!nsId || nsId === "") {
@@ -107,7 +114,9 @@ export async function getClusterKubeconfig(nsId, clusterId, options = {}) {
   }
 }
 
-export async function CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId) {
+// queryParams: 목록 밖 버전을 보낼 때 {skipVersionCheck:"true"} 가 들어온다(공통 프록시가
+// operationId 와 무관하게 쿼리스트링으로 붙여준다). 목록에서 고른 값이면 undefined.
+export async function CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, queryParams) {
 
   var obj = {}
 
@@ -120,14 +129,17 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
-  // NodeGroupList가 있으면 추가 (조건부로 추가)
-  if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
-    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => {
+  // NodeGroupList가 있으면 추가 (조건부로 추가).
+  // AWS/Alibaba/Tencent 는 생성 시점에 NodeGroup 을 받지 않아 폼에서 NodeGroup 을 추가하지 않으므로
+  // 배열이 비어 있는 것이 정상이다 — [0] 에 가드 없이 접근하면 TypeError 로 요청이 나가지 않는다.
+  const nodeGroupList = Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].k8sNodeGroupList;
+  if (nodeGroupList && nodeGroupList.length > 0) {
+    obj['k8sNodeGroupList'] = nodeGroupList.map(group => {
       const ng = {
-        desiredNodeSize: parseInt(group.desiredNodeSize, 10) || 0,
+        desiredNodeSize: intOr(group.desiredNodeSize, 0),
         imageId: group.imageId,
-        maxNodeSize: parseInt(group.maxNodeSize, 10) || 0,
-        minNodeSize: parseInt(group.minNodeSize, 10) || 0,
+        maxNodeSize: intOr(group.maxNodeSize, 0),
+        minNodeSize: intOr(group.minNodeSize, 0),
         name: group.name,
         onAutoScaling: String(group.onAutoScaling),
         rootDiskType: group.rootDiskType,
@@ -156,6 +168,10 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
       "securityGroupIds": obj['securityGroupIds'],
       "k8sNodeGroupList": obj['k8sNodeGroupList']
     }
+  }
+
+  if (queryParams && Object.keys(queryParams).length > 0) {
+    data.queryParams = queryParams;
   }
 
   var controller = "/api/" + "mc-infra-manager/" + "PostK8sCluster";
@@ -321,8 +337,8 @@ export async function vmDynamic(pmkId, nsId, Express_Server_Config_Arr) {
       "specId": obj.specId || obj.commonSpec,
       "imageId": obj.imageId || obj.commonImage,
       "desiredNodeSize": desiredNodeSize,
-      "minNodeSize": parseInt(obj.minNodeSize) || desiredNodeSize,
-      "maxNodeSize": parseInt(obj.maxNodeSize) || desiredNodeSize,
+      "minNodeSize": intOr(obj.minNodeSize, 0),
+      "maxNodeSize": intOr(obj.maxNodeSize, 0),
       "onAutoScaling": obj.onAutoScaling || "false",
       "rootDiskSize": parseInt(obj.rootDiskSize) || 0,
       "rootDiskType": obj.rootDiskType || "",
@@ -539,10 +555,10 @@ function buildNodeGroupRequest(k8sClusterId, nsId, obj) {
       k8sClusterId: k8sClusterId,
     },
     request: {
-      "desiredNodeSize": parseInt(obj.desiredNodeSize) || 1,
+      "desiredNodeSize": intOr(obj.desiredNodeSize, 0),
       "imageId": obj.imageId,
-      "maxNodeSize": parseInt(obj.maxNodeSize) || parseInt(obj.desiredNodeSize) || 1,
-      "minNodeSize": parseInt(obj.minNodeSize) || parseInt(obj.desiredNodeSize) || 1,
+      "maxNodeSize": intOr(obj.maxNodeSize, 0),
+      "minNodeSize": intOr(obj.minNodeSize, 0),
       "name": obj.name,
       "onAutoScaling": obj.onAutoScaling || "false",
       "rootDiskSize": parseInt(obj.rootDiskSize) || 0,
@@ -586,10 +602,11 @@ export async function createNode(k8sClusterId, nsId, Create_Node_Config_Arr, pro
   // 완료 보고와 목록 갱신은 체인 끝에서 수행한다 (동시 전송 경로와 동일한 UX).
   sendNodeGroupsSequentially(controller, k8sClusterId, nsId, Create_Node_Config_Arr);
   webconsolejs["common/util"].showToast(
-    'NodeGroup creation requests dispatched (' + Create_Node_Config_Arr.length + ') — processing in background',
+    'NodeGroup creation queued (' + Create_Node_Config_Arr.length + ') — each takes a few minutes. '
+    + 'You can leave this page; the remaining requests resume when you come back.',
     'info'
   );
-  return { dispatched: Create_Node_Config_Arr.length };
+  return { queued: Create_Node_Config_Arr.length };
 }
 
 // 동시 수용 CSP: 응답을 기다리지 않고 3초 간격으로 전송(fire) — 3초 내 즉시 오류만 감시하고
@@ -651,53 +668,15 @@ async function dispatchNodeGroupsConcurrently(controller, k8sClusterId, nsId, co
 }
 
 // 미실증/제한 CSP: 각 응답 확인 후 다음 전송 (기존 동작 — 한 건 실패해도 나머지는 계속)
-async function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, configArr) {
-  var responses = [];
-  var failedNames = [];
-
-  for (var i = 0; i < configArr.length; i++) {
-    var obj = configArr[i];
-    var data = buildNodeGroupRequest(k8sClusterId, nsId, obj);
-    var tracked = webconsolejs['common/api/requestId'].beginTrackedRequest(
-      'PostK8sNodeGroup',
-      'K8s NG create: ' + obj.name
-    );
-
-    try {
-      const response = await webconsolejs["common/api/http"].commonAPIPost(
-        controller,
-        data,
-        false,
-        tracked.httpOptions
-      );
-
-      if (response && (response.status === 200 || response.status === 201)) {
-        responses.push(response);
-      } else {
-        console.error('Node creation failed:', obj.name, response);
-        failedNames.push(obj.name);
-        responses.push(response);
-      }
-    } catch (error) {
-      // 한 건의 실패가 나머지 NodeGroup 전송을 막지 않도록 계속 진행 (실패 목록은 마지막에 표시)
-      console.error('Error creating node:', obj.name, error);
-      failedNames.push(obj.name);
-      responses.push(null);
-    }
-  }
-
-  if (failedNames.length === 0) {
-    webconsolejs["common/util"].showToast('Node group creation request completed successfully (' + configArr.length + ')', 'success');
-  } else {
-    webconsolejs["common/util"].showToast('Failed to create node group: ' + failedNames.join(', '), 'error');
-  }
-
-  // 결과 수신 시점에 목록 갱신 (생성 접수 반영)
-  if (webconsolejs["pages/operation/manage/k8sworkloads"] &&
-      typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
-    webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
-  }
-  return responses;
+// NodeGroup 생성은 공통 대기열(common/api/k8sScalingQueue)이 맡는다.
+// 그 모듈은 모든 페이지에 로드돼 있어, 전송 도중 화면을 옮겨도 응답을 받는 즉시
+// 다음 건을 이어서 보낸다. 여기서는 큐에 넣기만 한다.
+function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, configArr) {
+  // 큐는 받은 config 를 그대로 request 로 보낸다 — 넣기 전에 tumblebug 타입에 맞춘다.
+  // 폼 값은 문자열이라 그대로 보내면 "Unmarshal type error: expected=int, got=string,
+  // field=rootDiskSize" 로 400 이 난다(큐로 옮기기 전에는 이 함수가 buildNodeGroupRequest 를 거쳤다).
+  const requests = configArr.map((obj) => buildNodeGroupRequest(k8sClusterId, nsId, obj).request);
+  webconsolejs["common/api/k8sScalingQueue"].enqueueNodeGroupCreates(nsId, k8sClusterId, requests);
 }
 
 export async function getSshKey(nsId, providerName, connectionName) {
@@ -1114,9 +1093,11 @@ export function changeNodeGroupAutoscaleSize(nsId, k8sClusterId, k8sNodeGroupNam
       k8sNodeGroupName: k8sNodeGroupName
     },
     request: {
-      desiredNodeSize: parseInt(sizes.desiredNodeSize) || 1,
-      minNodeSize: parseInt(sizes.minNodeSize) || 1,
-      maxNodeSize: parseInt(sizes.maxNodeSize) || parseInt(sizes.desiredNodeSize) || 1
+      // 0은 유효한 값이다 — Azure 수동 모드는 min=max=0을 요구한다.
+      // `|| 1` 로 치환하면 그 경로가 조용히 깨지므로 intOr를 쓴다.
+      desiredNodeSize: intOr(sizes.desiredNodeSize, 0),
+      minNodeSize: intOr(sizes.minNodeSize, 0),
+      maxNodeSize: intOr(sizes.maxNodeSize, 0)
     }
   };
   let controller = '/api/' + 'mc-infra-manager/' + 'PutChangeK8sNodeGroupAutoscaleSize';
@@ -1229,7 +1210,10 @@ export async function checkK8sClusterDynamic(nsId, commonSpec) {
 }
 
 // 동적 클러스터 생성 API
-export async function createK8sClusterDynamic(nsId, clusterData) {
+// queryParams: CreateCluster 와 같다 — 목록 밖 버전일 때만 {skipVersionCheck:"true"}.
+// dynamic 경로는 skipVersionCheck 가 true 면 version 명시가 필수인데(tumblebug
+// provisioning_dynamic_k8s.go), 호출부가 이미 clusterData.version 을 채워 보낸다.
+export async function createK8sClusterDynamic(nsId, clusterData, queryParams) {
   if (!nsId || !clusterData) {
     return;
   }
@@ -1245,6 +1229,10 @@ export async function createK8sClusterDynamic(nsId, clusterData) {
     },
     Request: clusterData
   };
+
+  if (queryParams && Object.keys(queryParams).length > 0) {
+    data.queryParams = queryParams;
+  }
 
   var controller = "/api/" + "mc-infra-manager/" + "PostK8sClusterDynamic";
   const clusterName = (clusterData && clusterData.name) ? clusterData.name : 'cluster';

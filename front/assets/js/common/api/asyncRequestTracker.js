@@ -3,6 +3,11 @@
  * Primary: GET /api/async-requests (Postgres). Fallback: sessionStorage + poll.
  */
 
+import {
+  parseInvalidVersionError,
+  formatInvalidVersionMessage,
+} from '../utils/k8sVersionRules.js';
+
 const STORAGE_KEY = 'mcwc_async_requests';
 const TOASTED_KEY = 'mcwc_async_toasted';
 const POLL_MS = 2500;
@@ -365,7 +370,12 @@ async function pollOnce(job) {
     }
     if (status === 'Error' || status === 'error') {
       const errMsg = details.errorResponse || details.ErrorResponse || 'failed';
-      const msg = job.label + ' — ' + errMsg;
+      // CSP 가 K8s 버전을 거부한 경우 SDK 원문 대신 허용 버전과 재시도 방법을 보여준다.
+      // 원문은 CSP SDK 문구가 그대로 실려 와 사용자가 무엇을 고쳐야 할지 알 수 없다.
+      const versionError = parseInvalidVersionError(errMsg);
+      const msg = versionError
+        ? job.label + ' — ' + formatInvalidVersionMessage(versionError)
+        : job.label + ' — ' + errMsg;
       maybeFinishToast(job, 'Error', true, msg);
       if (useServer) {
         stopTimer(job.requestId);

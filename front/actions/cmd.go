@@ -51,7 +51,7 @@ func PostCmdInfraHandler(c echo.Context) error {
 	}
 	targetURL := fmt.Sprintf("%s/ns/%s/cmd/infra/%s", baseURL, nsId, mciId)
 
-	// Forward optional queryParams (subGroupId, vmId, etc.)
+	// Forward optional queryParams (nodeGroupId, nodeId, etc.)
 	if len(req.QueryParams) > 0 {
 		params := []string{}
 		for k, v := range req.QueryParams {

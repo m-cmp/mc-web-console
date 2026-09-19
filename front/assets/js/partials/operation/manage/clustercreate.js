@@ -1,4 +1,18 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import {
+	K8S_SCALING_PATHS,
+	getRules,
+	getScalingMessage,
+	isCreateNodeGroupSupported,
+	getCreateNodeGroupUnsupportedReason,
+	readBackScaling,
+	buildCreateScaling,
+	validateScalingForm,
+} from "../../../common/utils/k8sScalingRules.js";
+import {
+	isVersionOutsideAvailableList,
+	buildVersionQueryParams,
+} from "../../../common/utils/k8sVersionRules.js";
 //import { selectedMciObj } from "./mci";
 //document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
@@ -44,47 +58,93 @@ function setupDesiredNodeSizeButtons() {
 
 		const input = $(this).siblings('.input-number');
 		const currentValue = parseInt(input.val()) || 1;
-		const maxNodeSize = parseInt($('#node_maxnodesize').val()) || 5;
 
-		// maxNodeSize 이하로 유지
-		if (currentValue < maxNodeSize) {
+		// 상한은 두지 않는다 — 범위 검증은 CSP 규칙이 한다
+		if (true) {
 			input.val(currentValue + 1);
 		}
 	});
 
-	// AutoScaling 변경 시 min/max 활성화 제어
-	$(document).on('change', '#node_autoscaling', function () {
-		const val = $(this).val();
-		if (val === 'true') {
-			$('#node_minnodesize, #node_maxnodesize').prop('disabled', false);
-		} else {
-			$('#node_minnodesize, #node_maxnodesize').val('').prop('disabled', true);
-		}
+	// autoscaling 체크박스 — 체크했을 때만 Min/Max 를 보여준다.
+	// 값 자동 보정은 하지 않는다(입력을 말없이 바꾸면 사용자가 무엇이 전송되는지 알 수 없다).
+	$(document).off('change', '#node_autoscaling_enabled');
+	$(document).on('change', '#node_autoscaling_enabled', function () {
+		syncCreateScalingVisibility();
 	});
+}
 
-	// minNodeSize 변경 시 Desired Node Size 자동 조정
-	$(document).on('change', '#node_minnodesize', function () {
-		const minNodeSize = parseInt($(this).val()) || 1;
-		const desiredInput = $('#node_desirednodesize');
-		const currentDesired = parseInt(desiredInput.val()) || 1;
-
-		// Desired Node Size가 minNodeSize보다 작으면 minNodeSize로 설정
-		if (currentDesired < minNodeSize) {
-			desiredInput.val(minNodeSize);
+// 체크 상태에 따라 Min/Max 입력을 열고 닫는다
+function syncCreateScalingVisibility() {
+	const checked = $('#node_autoscaling_enabled').is(':checked');
+	$('#node_autoscaling_range').toggle(checked);
+	if (checked && !$('#node_minnodesize').val() && !$('#node_maxnodesize').val()) {
+		// 해제 상태에서 처음 켜면 현재 노드 수를 기준으로 채워준다
+		const desired = parseInt($('#node_desirednodesize').val(), 10);
+		if (Number.isFinite(desired)) {
+			$('#node_minnodesize').val(desired);
+			$('#node_maxnodesize').val(desired + 1);
 		}
-	});
+	}
+}
 
-	// maxNodeSize 변경 시 Desired Node Size 자동 조정
-	$(document).on('change', '#node_maxnodesize', function () {
-		const maxNodeSize = parseInt($(this).val()) || 5;
-		const desiredInput = $('#node_desirednodesize');
-		const currentDesired = parseInt(desiredInput.val()) || 1;
+// 생성 경로: expert(클러스터 생성) | add(기존 클러스터에 NodeGroup 추가)
+let createPath = K8S_SCALING_PATHS.EXPERT;
+function setCreatePath(path) { createPath = path; }
+export function getCreatePath() { return createPath; }
 
-		// Desired Node Size가 maxNodeSize보다 크면 maxNodeSize로 설정
-		if (currentDesired > maxNodeSize) {
-			desiredInput.val(maxNodeSize);
-		}
-	});
+// 생성 폼의 provider. expert 는 폼에서 고른 값, add 는 선택된 클러스터의 값을 쓴다.
+// (currentProvider 는 목록에서 클러스터를 선택했을 때만 채워져 생성 흐름에서는 신뢰할 수 없다)
+function resolveCreateProvider() {
+	if (createPath === K8S_SCALING_PATHS.ADD) {
+		const selected = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
+		return (selected && selected.provider) || "";
+	}
+	return $("#cluster_provider").val() || "";
+}
+
+// CSP 규칙을 폼에 반영한다 — NodeGroup 영역 노출, 체크박스 강제, 안내 문구
+export function applyScalingFormRules() {
+	const provider = resolveCreateProvider();
+	const rules = getRules(provider);
+	const $hint = $('#node_autoscaling_hint');
+
+	// 클러스터 생성 시 NodeGroup 을 받지 않는 CSP(AWS/Alibaba/Tencent)는 영역 자체를 숨긴다
+	if (provider && createPath !== K8S_SCALING_PATHS.ADD
+		&& !isCreateNodeGroupSupported(provider, createPath)) {
+		$('#nodegroup_configuration').hide();
+		$('#nodegroup_plusIcon').hide();
+		$('#cluster_nodegroup_unavailable_hint')
+			.text(getCreateNodeGroupUnsupportedReason(provider)).show();
+		return;
+	}
+	$('#nodegroup_plusIcon').show();
+	$('#cluster_nodegroup_unavailable_hint').text('').hide();
+	// 위에서 숨길 때 남긴 인라인 display:none 을 걷어낸다. 폼의 열림/닫힘은 .active 클래스가 맡는데
+	// 인라인 스타일이 클래스를 이겨, 걷어내지 않으면 + nodeGroup 을 눌러도 폼이 열리지 않는다.
+	// (.show() 로 강제로 펼치지 않는다 — 사용자가 열기 전까지는 닫혀 있어야 한다)
+	$('#nodegroup_configuration').css('display', '');
+
+	if (!rules) {
+		$('#node_autoscaling_enabled').prop('disabled', false);
+		$hint.text('').hide();
+		syncCreateScalingVisibility();
+		return;
+	}
+
+	// NCP 는 생성 경로에서 autoscale 을 전송하지 않아 항상 off 로 만들어진다
+	const forceUnchecked = createPath !== K8S_SCALING_PATHS.ADD
+		&& rules.create.forceUncheckedAtClusterCreate === true;
+	if (forceUnchecked) {
+		$('#node_autoscaling_enabled').prop('checked', false).prop('disabled', true);
+		$hint.text(rules.create.forceUncheckedReason || '').show();
+	} else {
+		$('#node_autoscaling_enabled').prop('disabled', false);
+		const note = $('#node_autoscaling_enabled').is(':checked')
+			? getScalingMessage(provider, 'rangeRule')
+			: getScalingMessage(provider, 'fixedSize');
+		if (note) $hint.text(note).show(); else $hint.text('').hide();
+	}
+	syncCreateScalingVisibility();
 }
 
 // callback PopupData
@@ -178,27 +238,58 @@ export async function setCloudConnection(provider, regionZoneInfoName) {
 		.fillSelectOptions("#cluster_cloudconnection", "Select Connection", names, true);
 }
 
+// tumblebug 이 내려준 가용 버전 목록 — 입력값이 목록 밖인지 판단하는 기준.
+// 목록 밖이면 생성 요청에 skipVersionCheck 를 붙인다.
+var availableK8sVersions = [];
+
+export function getAvailableK8sVersions() {
+	return availableK8sVersions;
+}
+
+// 목록 밖 버전을 입력하면 검증을 건너뛴다는 사실을 미리 알린다 —
+// 실패한 뒤에야 알게 되면 사용자가 오타와 의도적 입력을 구분할 수 없다.
+export function onClusterVersionInput() {
+	const entered = $("#cluster_version").val();
+	const outside = isVersionOutsideAvailableList(entered, availableK8sVersions);
+	const hint = $("#cluster_version_hint");
+
+	if (outside) {
+		hint.text(
+			"This version is not in the list reported by the platform. " +
+			"It will be sent to the CSP without version validation."
+		);
+		hint.show();
+	} else {
+		hint.hide();
+	}
+}
+
 export async function checkAvailableK8sClusterVersion(providerName, regionName){
 	try {
         var availableVersions = await webconsolejs["common/api/services/k8s_api"].getAvailableK8sClusterVersion(providerName, regionName);
 
         // k8s 생성 가능
         if (availableVersions && Array.isArray(availableVersions)) {
+            availableK8sVersions = availableVersions;
 
-            let html = '<option value="">Select Version</option>';
+            // select 가 아니라 datalist 다 — 목록은 제안일 뿐이고 직접 입력도 받는다
+            let html = '';
             availableVersions.forEach(version => {
-                html += `<option value="${version.id}">${version.id}</option>`;
+                html += `<option value="${version.id}"></option>`;
             });
 
-            $("#cluster_version").empty();
-            $("#cluster_version").append(html);
+            $("#cluster_version_options").empty();
+            $("#cluster_version_options").append(html);
+            onClusterVersionInput();
         } else {
+            availableK8sVersions = [];
             // 데이터가 없거나 응답이 올바르지 않은 경우
             webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve Kubernetes cluster versions. Please try again.');
         }
 
     } catch (error) {
         console.error("Failed to retrieve Kubernetes cluster versions. Please try again.", error);
+        availableK8sVersions = [];
 
         if (error.response && error.response.status === 500) {
             webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve available Kubernetes cluster versions due to server error. Please try again.');
@@ -226,12 +317,12 @@ async function updateConfigurationFilltering() {
 	var selectedProvider = providerSelect.value; // 선택된 provider
 	var selectedRegion = regionSelect.value;     // 선택된 region ("[NHN] nhn-kr1")
 
-	// 생성 시점 AutoScaling Off 제약 반영 (Expert 폼 — 비-dynamic 경로라 AWS 만 해당).
+	// CSP 규칙을 폼에 반영한다(NodeGroup 영역 노출·체크박스 강제·안내 문구).
 	// 여기서 예외가 나면 Region/Connection 필터링 전체가 멈추므로 방어적으로 호출한다.
-	const applyOffConstraint =
-		webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
-	if (typeof applyOffConstraint === "function") {
-		applyOffConstraint("#node_autoscaling", "#node_autoscaling_hint", selectedProvider, "expertCreate");
+	try {
+		applyScalingFormRules();
+	} catch (error) {
+		console.error("Failed to apply scaling form rules:", error);
 	}
 
 	// Provider 미선택 — 전체 목록으로 되돌린다
@@ -265,7 +356,8 @@ async function updateConfigurationFilltering() {
 }
 
 var createMciListObj = new Object();
-var isNodeGroup = false // mci 생성(false) / vm 추가(true)
+// 생성 경로는 createPath 가 정본이다 (이전의 isNodeGroup 플래그는 true 로만 바뀌고 되돌지 않아
+// Expert 생성에서 add 경로의 payload 가 나가는 함정이 있었다)
 var Create_Cluster_Config_Arr = new Array();
 var Create_Node_Config_Arr = new Array();
 var nodeGroup_data_cnt = 0
@@ -304,16 +396,12 @@ export async function displayNewNodeForm() {
 		}
 	}
 
-	// NodeGroup 폼이 열릴 때 AutoScaling Off 제약을 다시 적용한다.
-	// provider 변경 시점에만 적용하면, 그 뒤 폼이 새로 렌더될 때 disabled 상태가 사라진다.
-	const applyOff = webconsolejs["pages/operation/manage/k8sworkloads"]?.applyAutoScalingOffConstraint;
-	if (typeof applyOff === "function") {
-		// isNodeGroup=true 는 기존 클러스터에 NodeGroup 추가(PostK8sNodeGroup) — 이 경로는
-		// min=desiredNodeSize(>=1) 를 보내므로 Azure/NHN 이 Off 를 거부한다.
-		// false 는 Expert 클러스터 생성(PostK8sCluster) — min=0 이 그대로 가서 통과한다.
-		applyOff("#node_autoscaling", "#node_autoscaling_hint",
-			clusterProvider || $("#cluster_provider").val(),
-			isNodeGroup ? "addNodeGroup" : "expertCreate");
+	// NodeGroup 폼이 열릴 때 CSP 규칙을 다시 적용한다.
+	// provider 변경 시점에만 적용하면, 그 뒤 폼이 새로 렌더될 때 상태가 풀린다.
+	try {
+		applyScalingFormRules();
+	} catch (error) {
+		console.error("Failed to apply scaling form rules:", error);
 	}
 
 	// SSH Key 는 Connection 기준으로 거른다 — 다른 Connection 의 키를 고르면
@@ -611,7 +699,8 @@ export async function addNewNodeGroup() {
 	// Navigate to Add NodeGroup section (following existing pattern)
 	window.location.hash = "#addnode";
 
-	isNodeGroup = true;
+	setCreatePath(K8S_SCALING_PATHS.ADD);
+	applyScalingFormRules();
 }
 
 // provider에 맞는 Root Disk Type 옵션으로 #node_rootdisk 드롭다운을 채운다
@@ -647,8 +736,8 @@ export async function addNewPmk() {
 
 	Create_Cluster_Config_Arr = new Array();
 
-	
-	// isNodeGroup = true
+	setCreatePath(K8S_SCALING_PATHS.EXPERT);
+	applyScalingFormRules();
 }
 
 // 현재 선택된 project의 nsId — 세션에 저장된 project object가 정본이다.
@@ -797,8 +886,35 @@ export async function createCluster() {
 		return;
 	}
 
-	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다
-	webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
+	// 생성 시점에 NodeGroup 이 필요한 CSP(Azure/GCP/NCP/NHN/IBM)는 NodeGroup 없이 보내면
+	// tumblebug 이 "NodeGroups are required at K8sCluster creation" 으로 거부한다 — 폼에서 먼저 알린다.
+	// (NodeGroup 을 받지 않는 AWS/Alibaba/Tencent 는 NodeGroup 영역 자체가 숨겨져 있다)
+	var selectedProvider = $("#cluster_provider").val();
+	var addedNodeGroups = (Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].k8sNodeGroupList) || [];
+	if (selectedProvider && isCreateNodeGroupSupported(selectedProvider, K8S_SCALING_PATHS.EXPERT)
+		&& addedNodeGroups.length === 0) {
+		var providerLabel = (getRules(selectedProvider) && getRules(selectedProvider).label) || selectedProvider;
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('NodeGroup Required',
+			providerLabel + ' needs at least one NodeGroup when the cluster is created. Add a NodeGroup before deploying.');
+		return;
+	}
+
+	// 목록 밖 버전을 직접 입력한 경우에만 tumblebug 의 정적 목록 대조를 건너뛴다.
+	// 목록에서 고른 값이면 queryParams 는 undefined 라 평소와 동일하게 검증된다.
+	const versionQueryParams = buildVersionQueryParams(clusterVersion, availableK8sVersions);
+
+	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다.
+	// 다만 요청을 만드는 단계에서 실패하면 요청이 나가지 않으므로, 그때는 전송 토스트 대신 실패를 알린다.
+	var dispatch;
+	try {
+		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, versionQueryParams)
+	} catch (error) {
+		console.error('Failed to build cluster creation request:', error);
+	}
+	if (!dispatch || !dispatch.dispatched) {
+		webconsolejs['common/util'].showToast('Failed to send cluster creation request', 'error');
+		return;
+	}
 
 	webconsolejs['common/util'].showToast('Cluster creation request has been sent', 'info');
 
@@ -807,6 +923,7 @@ export async function createCluster() {
 	$("#cluster_desc").val("");
 	$("#cluster_cloudconnection").val("");
 	$("#cluster_version").val("");
+	$("#cluster_version_hint").hide();
 	$("#cluster_vpc").val("");
 	$("#cluster_subnet").val("");
 	$("#cluster_sg").val("");
@@ -894,25 +1011,38 @@ export async function createCluster() {
 // }
 export function clusterFormDone_btn() {
 	// 1. 필수 필드 검증
-	const isAutoScalingOn = $('#node_autoscaling').val() === 'true';
 	var requiredFields = [
 		{ id: '#node_name', message: 'NodeGroup name is required' },
 		{ id: '#node_specid', message: 'Spec is required' },
 		{ id: '#node_imageid', message: 'Image is required' },
-		{ id: '#node_sshkey', message: 'SSH Key is required' },
-		{ id: '#node_autoscaling', message: 'AutoScaling option is required' }
+		{ id: '#node_sshkey', message: 'SSH Key is required' }
 	];
-	if (isAutoScalingOn) {
-		requiredFields.push({ id: '#node_minnodesize', message: 'Min Node Size is required' });
-		requiredFields.push({ id: '#node_maxnodesize', message: 'Max Node Size is required' });
-	}
-	
+
 	for (var field of requiredFields) {
 		if (!$(field.id).val() || $(field.id).val().trim() === '') {
 			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', field.message);
 			$(field.id).focus();
 			return;
 		}
+	}
+
+	// 스케일 값은 CSP 규칙으로 검증한다 (범위·최소값이 CSP마다 다르다)
+	const createProvider = resolveCreateProvider();
+	const scalingForm = {
+		checked: $('#node_autoscaling_enabled').is(':checked'),
+		desired: $('#node_desirednodesize').val(),
+		min: $('#node_minnodesize').val(),
+		max: $('#node_maxnodesize').val(),
+	};
+	const scalingCheck = validateScalingForm(
+		createProvider, 'create:' + createPath, scalingForm,
+		{ nodeGroupCountSoFar: Create_Node_Config_Arr.length });
+	if (!scalingCheck.ok) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Invalid Node Scaling', scalingCheck.errors[0].message);
+		$('#node_' + (scalingCheck.errors[0].field === 'desired' ? 'desirednodesize'
+			: scalingCheck.errors[0].field + 'nodesize')).focus();
+		return;
 	}
 
     // 2. 클러스터 기본 정보 할당
@@ -940,7 +1070,7 @@ export function clusterFormDone_btn() {
     const imageId = $("#node_imageid").val();
     const maxNodeSize = $("#node_maxnodesize").val();
     const minNodeSize = $("#node_minnodesize").val();
-    const onAutoScaling = $("#node_autoscaling").val();
+    const onAutoScaling = $("#node_autoscaling_enabled").is(':checked') ? "true" : "false";
     const rootDiskSize = $("#node_rootdisksize").val();
     const rootDiskType = $("#node_rootdisk").val();
     // specId는 commonSpecId를 사용 (search로 선택한 경우)
@@ -960,21 +1090,21 @@ export function clusterFormDone_btn() {
 	$("#n_desirednodesize").val(desiredNodeSize || "1");
 
     // 4. NodeGroup 데이터 객체 생성
+    // 체크 해제(고정 크기)를 CSP가 받아들이는 형태로 번역한다 — 진짜 off 이거나 min=max=desired.
+    // 네 값을 항상 함께 보낸다(일부만 보내면 하위 계층의 기본값 치환이 끼어든다).
+    const scalingPayload = buildCreateScaling(createProvider, createPath, scalingForm);
     var nodeGroupData = {
-        "desiredNodeSize": desiredNodeSize || "",
+        "desiredNodeSize": scalingPayload.desiredNodeSize,
         "imageId": imageId || "",
         "name": nodeGroupName,
-        "onAutoScaling": onAutoScaling || "false",
+        "onAutoScaling": scalingPayload.onAutoScaling,
+        "minNodeSize": scalingPayload.minNodeSize,
+        "maxNodeSize": scalingPayload.maxNodeSize,
         "rootDiskSize": rootDiskSize || "",
         "rootDiskType": rootDiskType || "",
         "specId": specId || "",
         "sshKeyId": sshKeyId || ""
     };
-    // AutoScaling On일 때만 min/max 포함
-    if (onAutoScaling === "true") {
-        nodeGroupData["maxNodeSize"] = maxNodeSize || "";
-        nodeGroupData["minNodeSize"] = minNodeSize || "";
-    }
 
 	
 	var nodeGroup_name = nodeGroupName;
@@ -1015,10 +1145,7 @@ export function clusterFormDone_btn() {
 		// 리스트 업데이트 — 기존 + NodeGroup 버튼(#..._plusIcon)은 유지하고 항목만 추가
 		// (remove 후 getPlusVm으로 재생성하면 id가 _plusVmIcon으로 바뀌어 다음 Done의
 		//  remove가 실패하고, Done마다 + NodeGroup 버튼이 하나씩 증식한다)
-		var ngEleId = "nodegroup";
-		if (isNodeGroup) {
-			ngEleId = "addnodegroup";
-		}
+		var ngEleId = createPath === K8S_SCALING_PATHS.ADD ? "addnodegroup" : "nodegroup";
 
 		$("#" + ngEleId + "_list").append(add_nodegroup_html);
 
@@ -1062,19 +1189,10 @@ export function clusterFormDone_btn() {
 	$("#node_sshkey").val("");
 	$("#node_rootdisk").val("");
 	$("#node_rootdisksize").val("");
-	$("#node_autoscaling").val("");
+	$("#node_autoscaling_enabled").prop('checked', false);
 	$("#node_desirednodesize").val("1"); // 기본값 1로 설정
-}
-
-// select에 없는 값이면 option을 만들어 넣는다.
-// min/max Node Size 셀렉트는 1~5만 미리 들어 있어, 그보다 큰 값을 그대로 세팅하면 조용히 비워진다.
-function ensureSelectOption(selector, value) {
-	if (value === undefined || value === null || value === "") return;
-	const $sel = $(selector);
-	if ($sel.length === 0) return;
-	if ($sel.find('option[value="' + value + '"]').length === 0) {
-		$sel.append('<option value="' + value + '">' + value + '</option>');
-	}
+	syncCreateScalingVisibility();
+	applyScalingFormRules();
 }
 
 // 값이 select에 존재할 때만 세팅한다.
@@ -1104,34 +1222,22 @@ export function prefillNodeGroupForm(nodeGroupData) {
 	$("#node_commonSpecId").val(nodeGroupData.specId || "");
 	$("#node_imageid").val(nodeGroupData.imageId || "");
 
-	const autoScalingOn = String(nodeGroupData.onAutoScaling || "false") === "true";
-	$("#node_autoscaling").val(autoScalingOn ? "true" : "false");
-	if (autoScalingOn) {
-		$('#node_minnodesize, #node_maxnodesize').prop('disabled', false);
-		ensureSelectOption("#node_minnodesize", nodeGroupData.minNodeSize);
-		ensureSelectOption("#node_maxnodesize", nodeGroupData.maxNodeSize);
-		$("#node_minnodesize").val(nodeGroupData.minNodeSize || "");
-		$("#node_maxnodesize").val(nodeGroupData.maxNodeSize || "");
-	} else {
-		$('#node_minnodesize, #node_maxnodesize').val('').prop('disabled', true);
-	}
+	// 저장된 값 → 폼 상태. 고정 크기(min=max)는 체크 해제로 복원된다.
+	const scalingState = readBackScaling(resolveCreateProvider(), {
+		onAutoScaling: nodeGroupData.onAutoScaling,
+		desiredNodeSize: nodeGroupData.desiredNodeSize,
+		minNodeSize: nodeGroupData.minNodeSize,
+		maxNodeSize: nodeGroupData.maxNodeSize,
+	});
+	$("#node_autoscaling_enabled").prop('checked', scalingState.checked);
+	$("#node_minnodesize").val(scalingState.checked ? scalingState.min : "");
+	$("#node_maxnodesize").val(scalingState.checked ? scalingState.max : "");
+	syncCreateScalingVisibility();
 
 	const sshKeyMatched = setSelectIfOptionExists("#node_sshkey", nodeGroupData.sshKeyId);
 	const rootDiskTypeMatched = setSelectIfOptionExists("#node_rootdisk", nodeGroupData.rootDiskType);
 	$("#node_rootdisksize").val(nodeGroupData.rootDiskSize || "");
 	$("#node_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
-
-	// Hidden 필드에도 설정
-	$("#n_name").val(nodeGroupData.name || "");
-	$("#n_specid").val(nodeGroupData.specId || "");
-	$("#n_imageid").val(nodeGroupData.imageId || "");
-	$("#n_minnodesize").val(autoScalingOn ? (nodeGroupData.minNodeSize || "") : "");
-	$("#n_maxnodesize").val(autoScalingOn ? (nodeGroupData.maxNodeSize || "") : "");
-	$("#n_sshkey").val($("#node_sshkey").val() || "");
-	$("#n_rootdisk").val($("#node_rootdisk").val() || "");
-	$("#n_rootdisksize").val(nodeGroupData.rootDiskSize || "");
-	$("#n_autoscaling").val(autoScalingOn ? "true" : "false");
-	$("#n_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
 
 	return { sshKeyMatched, rootDiskTypeMatched };
 }
