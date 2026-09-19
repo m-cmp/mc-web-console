@@ -129,9 +129,12 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
-  // NodeGroupList가 있으면 추가 (조건부로 추가)
-  if (Create_Cluster_Config_Arr[0].k8sNodeGroupList && Create_Cluster_Config_Arr[0].k8sNodeGroupList.length > 0) {
-    obj['k8sNodeGroupList'] = Create_Cluster_Config_Arr[0].k8sNodeGroupList.map(group => {
+  // NodeGroupList가 있으면 추가 (조건부로 추가).
+  // AWS/Alibaba/Tencent 는 생성 시점에 NodeGroup 을 받지 않아 폼에서 NodeGroup 을 추가하지 않으므로
+  // 배열이 비어 있는 것이 정상이다 — [0] 에 가드 없이 접근하면 TypeError 로 요청이 나가지 않는다.
+  const nodeGroupList = Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].k8sNodeGroupList;
+  if (nodeGroupList && nodeGroupList.length > 0) {
+    obj['k8sNodeGroupList'] = nodeGroupList.map(group => {
       const ng = {
         desiredNodeSize: intOr(group.desiredNodeSize, 0),
         imageId: group.imageId,
@@ -669,7 +672,11 @@ async function dispatchNodeGroupsConcurrently(controller, k8sClusterId, nsId, co
 // 그 모듈은 모든 페이지에 로드돼 있어, 전송 도중 화면을 옮겨도 응답을 받는 즉시
 // 다음 건을 이어서 보낸다. 여기서는 큐에 넣기만 한다.
 function sendNodeGroupsSequentially(controller, k8sClusterId, nsId, configArr) {
-  webconsolejs["common/api/k8sScalingQueue"].enqueueNodeGroupCreates(nsId, k8sClusterId, configArr);
+  // 큐는 받은 config 를 그대로 request 로 보낸다 — 넣기 전에 tumblebug 타입에 맞춘다.
+  // 폼 값은 문자열이라 그대로 보내면 "Unmarshal type error: expected=int, got=string,
+  // field=rootDiskSize" 로 400 이 난다(큐로 옮기기 전에는 이 함수가 buildNodeGroupRequest 를 거쳤다).
+  const requests = configArr.map((obj) => buildNodeGroupRequest(k8sClusterId, nsId, obj).request);
+  webconsolejs["common/api/k8sScalingQueue"].enqueueNodeGroupCreates(nsId, k8sClusterId, requests);
 }
 
 export async function getSshKey(nsId, providerName, connectionName) {

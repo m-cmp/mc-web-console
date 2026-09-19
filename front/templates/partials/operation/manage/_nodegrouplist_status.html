@@ -234,12 +234,28 @@
 
         <div class="mb-2">
           <label class="form-label required">Desired Node Count</label>
-          <input
-            type="number"
-            min="0"
-            class="form-control"
-            id="ng-scaling-desired"
-          />
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="input-number-container" id="ng-scaling-desired-stepper">
+                <button
+                  class="input-number-decrement"
+                  type="button"
+                  id="ng-scaling-desired-dec"
+                >-</button>
+                <input
+                  type="number"
+                  min="0"
+                  class="input-number"
+                  id="ng-scaling-desired"
+                />
+                <button
+                  class="input-number-increment"
+                  type="button"
+                  id="ng-scaling-desired-inc"
+                >+</button>
+              </div>
+            </div>
+          </div>
           <small class="form-hint" id="ng-scaling-desired-note" style="display: none"></small>
         </div>
 

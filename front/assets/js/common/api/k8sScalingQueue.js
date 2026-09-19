@@ -102,6 +102,13 @@ async function fetchScalingState(job) {
   const sv = ng.spiderViewK8sNodeGroupDetail || {};
   const num = (v) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : 0; };
   const nodeCount = Array.isArray(sv.Nodes) ? sv.Nodes.length : 0;
+  // tumblebug 과 cb-spider 는 상태를 Active/Creating 으로 정규화하면서 CSP 원본 상태를 잃는다.
+  // NHN 은 원본을 keyValueList 에 남긴다(Status=UPDATE_IN_PROGRESS 등) — 대기 판정에 필요하다.
+  const kvList = Array.isArray(ng.keyValueList) ? ng.keyValueList : [];
+  const kv = (name) => {
+    const hit = kvList.find((x) => String(x?.key ?? x?.Key ?? "").toLowerCase() === name);
+    return hit ? String(hit.value ?? hit.Value ?? "") : "";
+  };
   return {
     on: String(sv.OnAutoScaling ?? ng.onAutoScaling) === "true",
     desired: num(sv.DesiredNodeSize ?? ng.desiredNodeSize),
@@ -109,6 +116,7 @@ async function fetchScalingState(job) {
     max: num(sv.MaxNodeSize ?? ng.maxNodeSize),
     nodeCount,
     status: String(sv.Status ?? ng.status ?? ""),
+    cspStatus: kv("status"),
   };
 }
 
@@ -219,7 +227,7 @@ function stepSatisfied(provider, step, state) {
   if (!state) return false;
   if (step.kind === "set") return state.on === step.on;
   if (step.kind !== "change") return false;
-  const desiredIgnored = getRules(provider)?.modify?.desiredEditable === false;
+  const desiredIgnored = getRules(provider)?.modify?.changeAppliesDesired === false;
   const rangeSame = state.min === step.minNodeSize && state.max === step.maxNodeSize;
   return rangeSame && (desiredIgnored || state.desired === step.desiredNodeSize);
 }
@@ -230,6 +238,10 @@ function stepSatisfied(provider, step, state) {
 const TRANSITIONAL_STATUSES = new Set(["creating", "updating", "scaling", "upgrading"]);
 
 function isSettled(state) {
+  // CSP 원본 상태가 있으면 그쪽이 우선이다. NHN 은 NodeGroup 이 UPDATE_IN_PROGRESS 인 동안에도
+  // tumblebug 이 Active 로 보고하는데, 그 사이 autoscale 호출은 400 으로 거부된다
+  // (2026-09-16 실측: "status UPDATE_IN_PROGRESS is not supported").
+  if (/_IN_PROGRESS$/i.test(state?.cspStatus || "")) return false;
   // 상태를 못 읽으면 판단 근거가 없으므로 막지 않는다(상태를 안 채우는 CSP가 있다)
   if (!state?.status) return true;
   return !TRANSITIONAL_STATUSES.has(state.status.toLowerCase());
@@ -291,7 +303,7 @@ async function runScalingJob(job, options = {}) {
   activeKeys.add(key);
 
   const steps = job.plan.steps;
-  const callCount = steps.filter((step) => step.kind !== "wait").length;
+  let callCount = steps.filter((step) => step.kind !== "wait").length;
   let doneCount = steps.slice(0, job.cursor || 0).filter((step) => step.kind !== "wait").length;
   let verifyFirstCall = options.resumed === true;
 
@@ -305,10 +317,19 @@ async function runScalingJob(job, options = {}) {
         continue;
       }
 
-      if (verifyFirstCall) {
+      // set 은 보내기 전에 항상 현재 상태를 확인한다 — 이미 그 상태면 보내지 않는다.
+      // 드라이버가 Change 로 모드를 같이 바꿔 버리는 CSP(GCP·Alibaba·NCP·NHN)에서는 뒤따르는 Set 이
+      // 불필요해지고, Azure 는 같은 상태로 Set 을 받으면 에러를 낸다. 드라이버가 고쳐져 모드를
+      // 그대로 두게 되면 같은 Set 이 실제로 필요해진다 — 어느 쪽이든 이 확인 하나로 맞는다.
+      // change 는 재개(resume) 때만 확인한다(중복 적용 방지).
+      const verifyBeforeSend = step.kind === "set" || verifyFirstCall;
+      if (verifyBeforeSend) {
         verifyFirstCall = false;
         const current = await fetchScalingState(job).catch(() => null);
-        if (stepSatisfied(job.provider, step, current)) { doneCount += 1; continue; }
+        if (stepSatisfied(job.provider, step, current)) {
+          callCount -= 1;
+          continue;
+        }
       }
 
       doneCount += 1;
