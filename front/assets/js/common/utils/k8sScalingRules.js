@@ -67,7 +67,15 @@ const RULES = {
       nodeGroupAtClusterCreateReason:
         'AWS creates node groups after the cluster exists. Create the cluster first, then use Add NodeGroup.',
     },
-    modify: { supportsSet: false },
+    // Change 가 ASG 의 Desired/Min/Max 를 그대로 쓴다. Set 은 off 를 거부하고 on 은 무동작이다
+    modify: {
+      changeAppliesDesired: true,
+      changeForcesEnable: false,
+      set: 'none',
+      offMode: 'pin',
+      enableOrder: 'change-then-set',
+      waitBetween: false,
+    },
     // 드라이버가 OnAutoScaling을 채우지 않거나 항상 true로 보고한다 → 범위로만 판단
     readBack: (v) => v.max > v.min,
   },
@@ -89,7 +97,16 @@ const RULES = {
       onRange: { minMin: 1, maxMax: 1000 },
       nodeGroupAtClusterCreate: 'shown',
     },
-    modify: { supportsSet: true },
+    // 수동 모드의 Change 는 min=max=0 만 받는다(드라이버가 그 외를 거부). Set 은 양방향이지만
+    // 현재와 같은 상태로 보내면 드라이버가 에러를 낸다 → 큐의 멱등 스킵이 막는다
+    modify: {
+      changeAppliesDesired: true,
+      changeForcesEnable: false,
+      set: 'both',
+      offMode: 'manualZero',
+      enableOrder: 'set-then-change',
+      waitBetween: true,
+    },
   },
 
   gcp: {
@@ -110,17 +127,22 @@ const RULES = {
       onRange: { minMin: 1 },
       nodeGroupAtClusterCreate: 'shown',
     },
-    modify: { supportsSet: true, confirmOnImplicitEnable: true },
+    // Change 가 범위를 적용하면서 autoscaling 을 켠다. Set 은 끄기만 되고 켜기는 드라이버가 거부한다
+    modify: {
+      changeAppliesDesired: true,
+      changeForcesEnable: true,
+      set: 'off',
+      offMode: 'pin',
+      enableOrder: 'change-then-set',
+      waitBetween: true,
+    },
   },
 
   alibaba: {
     label: 'Alibaba',
     messages: {
-      // 생성 폼(Expert/Add/Simple)과 수정 모달은 해제 시 보내는 값이 다르다 — 문구를 나눈다
+      // 생성 폼 전용 문구. 수정 모달의 해제 설명은 describeOffBehavior 가 사실에서 조립한다
       fixedSize: 'Alibaba switches autoscaling off and leaves the node count as it is.',
-      fixedSizeModify: 'Alibaba pins the node pool: Min and Max are set to the desired count, then autoscaling is switched off.',
-      desiredViaRange: 'Alibaba does not receive a node count with this request. The desired count is applied as the '
-        + 'Min/Max range (Min = Max = Desired), and the node pool settles on that size.',
       rangeRule: 'Alibaba requires 1 or more for both Min and Max.',
       confirmEnable: 'Applying a range switches autoscaling on for this node group — Alibaba has no range-only update.',
       confirmTempEnable: 'Alibaba can only change the range while autoscaling is on. It is switched on to apply '
@@ -134,11 +156,16 @@ const RULES = {
         'Alibaba creates node groups after the cluster exists. Create the cluster first, then use Add NodeGroup.',
       desiredIgnoredByCsp: true,
     },
-    // ChangeNodeGroupScaling이 desired를 CSP 요청에 넣지 않는다 → desired를 min=max로 인코딩한다
+    // ChangeNodeGroupScaling이 desired를 CSP 요청에 넣지 않는다 → desired를 min=max로 인코딩한다.
+    // cb-spider PR #1844 가 머지되면 changeAppliesDesired: true / changeForcesEnable: false 로 내린다
+    // (그 전까지도 계획은 그대로 맞는다 — 여분 Set 은 큐의 멱등 스킵이 걸러낸다)
     modify: {
-      supportsSet: true,
-      confirmOnImplicitEnable: true,
-      desiredAppliedViaRange: true,
+      changeAppliesDesired: false,
+      changeForcesEnable: true,
+      set: 'both',
+      offMode: 'pin',
+      enableOrder: 'change-then-set',
+      waitBetween: true,
       desiredMin: 1,
     },
   },
@@ -157,21 +184,23 @@ const RULES = {
       nodeGroupAtClusterCreateReason:
         'Tencent creates node groups after the cluster exists. Create the cluster first, then use Add NodeGroup.',
     },
-    modify: { supportsSet: true },
+    // Change 는 ASG 를, Set 은 노드풀 플래그를 친다 — 서로 모드를 건드리지 않는다
+    modify: {
+      changeAppliesDesired: true,
+      changeForcesEnable: false,
+      set: 'both',
+      offMode: 'pin',
+      enableOrder: 'set-then-change',
+      waitBetween: true,
+      desiredMin: 1,
+    },
   },
 
   nhn: {
     label: 'NHN',
     messages: {
-      // 생성 폼은 { on:false, min:0, max:desired } 를 한 번에 보내고 끄는 단계가 없다 — 수정 모달 문구와 분리
+      // 생성 폼은 { on:false, min:0, max:desired } 를 한 번에 보내고 끄는 단계가 없다
       fixedSize: 'NHN switches autoscaling off and leaves the node count as it is.',
-      fixedSizeModify: 'NHN pins the node group: Min and Max are set to the desired count, then autoscaling is switched off.',
-      desiredViaRange: 'NHN does not receive a node count with this request. The desired count is applied as the '
-        + 'Min/Max range (Min = Max = Desired).',
-      // 드라이버가 범위를 현재 노드 수에 맞춰 넓히므로 노드 수가 그대로일 수 있다 — 미리 알린다
-      fixedSizeClamped: 'NHN fits the range around the number of nodes running now, so the node count does not '
-        + 'change from here. Min and Max are sent as the desired count, and NHN widens them to keep the current '
-        + 'nodes inside the range.',
       rangeRule: 'NHN fits the range around the current node count: Min must be at most, and Max at least, '
         + 'the number of nodes running now. Max cannot exceed 10.',
       confirmEnable: 'Applying a range switches autoscaling on for this node group — NHN has no range-only update.',
@@ -197,11 +226,14 @@ const RULES = {
       maxNodeGroupsAtCreate: 1, // 클러스터 생성 시 첫 NodeGroup만 만들어진다
     },
     modify: {
-      supportsSet: true,
-      confirmOnImplicitEnable: true,
-      // 드라이버가 범위를 현재 노드 수에 맞춰 말없이 보정한다
+      changeAppliesDesired: false,
+      changeForcesEnable: true,
+      set: 'both',
+      offMode: 'pin',
+      enableOrder: 'change-then-set',
+      waitBetween: true,
+      // 드라이버가 범위를 현재 노드 수에 맞춰 말없이 보정한다 → 노드 수 도달을 기다리면 행이 된다
       clampsRangeToNodeCount: true,
-      desiredAppliedViaRange: true,
       desiredMin: 1,
     },
   },
@@ -232,10 +264,15 @@ const RULES = {
       forceUncheckedReason:
         'NCP cannot enable autoscaling while the cluster is being created. Enable it afterwards from Edit Scaling.',
     },
-    // SetNodeGroupAutoScaling이 빈 구현이라 off로 되돌릴 수 없다
+    // SetNodeGroupAutoScaling이 빈 구현이라 off로 되돌릴 수 없다 → 해제는 범위 고정으로 표현한다
     modify: {
-      supportsSet: false,
-      confirmOnEnable: true,
+      changeAppliesDesired: true,
+      changeForcesEnable: true,
+      set: 'none',
+      offMode: 'pin',
+      enableOrder: 'change-then-set',
+      waitBetween: false,
+      desiredMin: 1,
     },
   },
 
@@ -243,10 +280,6 @@ const RULES = {
     label: 'IBM',
     messages: {
       fixedSize: 'IBM switches the autoscaler off for this worker pool and leaves the node count as it is.',
-      fixedSizeModify: 'IBM pins the worker pool: the autoscaler range is set to the desired count and the autoscaler is '
-        + 'then switched off, so the node count stays where it is until the autoscaler is switched on again.',
-      desiredViaRange: 'IBM changes the node count through the cluster autoscaler add-on. The desired count is '
-        + 'applied as the Min/Max range (Min = Max = Desired) in the autoscaler config.',
       rangeRule: 'IBM requires 1 or more for both Min and Max.',
       unknownRange: 'The autoscaler add-on is not reporting a range yet. Applying one creates it.',
     },
@@ -260,14 +293,67 @@ const RULES = {
       desiredMin: 1,
       nodeGroupAtClusterCreate: 'shown',
     },
-    // ChangeNodeGroupScaling이 autoscaler ConfigMap의 min/max만 쓴다 → desired를 min=max로 인코딩한다
-    modify: { supportsSet: true, desiredAppliedViaRange: true },
+    // ChangeNodeGroupScaling이 autoscaler ConfigMap의 min/max만 쓴다 → desired를 min=max로 인코딩한다.
+    // Change 는 Enabled 를 건드리지 않고 ConfigMap 만 즉시 반영하므로 단계 사이 대기가 필요 없다
+    modify: {
+      changeAppliesDesired: false,
+      changeForcesEnable: false,
+      set: 'both',
+      offMode: 'pin',
+      enableOrder: 'change-then-set',
+      waitBetween: false,
+      desiredMin: 1,
+    },
   },
 };
 
 // CSP별 안내 문구. 없으면 빈 문자열 — 호출부가 공통 문구로 대체한다.
 export function getScalingMessage(provider, key) {
   return getRules(provider)?.messages?.[key] || '';
+}
+
+// 드라이버가 Change 로 노드 수를 직접 받지 않는 CSP 에서 desired 가 어떻게 전달되는지.
+// 입력을 잠그는 대신 이 문장을 보여준다 — 화면 계약은 전 CSP 동일하다.
+export function describeDesiredHandling(provider) {
+  const rules = getRules(provider);
+  if (!rules || rules.modify.changeAppliesDesired !== false) return '';
+  return rules.label + ' does not receive a node count with this request. The desired count is applied as the '
+    + 'Min/Max range (Min = Max = Desired), and the node group settles on that size.';
+}
+
+// 해제(고정 크기)가 그 CSP 에서 어떻게 구현되는지 — CSP별 문구를 두지 않고 사실에서 조립한다.
+// 화면 계약은 전 CSP 동일하므로, 차이는 "무엇을 입력할 수 있는가"가 아니라 이 설명으로만 드러난다.
+export function describeOffBehavior(provider, context) {
+  const rules = getRules(provider);
+  if (!rules) return '';
+  const f = rules.modify;
+  const label = rules.label;
+  const out = [];
+
+  if (f.offMode === 'manualZero') {
+    out.push(label + ' switches the node group to manual scaling and sets the node count directly.');
+  } else if (f.set === 'none') {
+    out.push(label + ' cannot switch autoscaling off, so the node group is pinned instead: '
+      + 'Min and Max are set to the desired count.');
+  } else {
+    out.push(label + ' pins the node group first — Min and Max are set to the desired count — '
+      + 'and then switches autoscaling off.');
+  }
+
+  const desiredNote = describeDesiredHandling(provider);
+  if (desiredNote) out.push(desiredNote);
+
+  // 범위를 현재 노드 수에 맞춰 넓히는 CSP(NHN)는 노드 수가 그대로일 수 있다 → 누르기 전에 알린다
+  if (f.clampsRangeToNodeCount) {
+    const nodeCount = num(context?.nodeCount, NaN);
+    const desired = num(context?.desired, NaN);
+    if (Number.isFinite(nodeCount) && Number.isFinite(desired) && desired !== nodeCount) {
+      out.push(label + ' widens the range to keep the nodes running now inside it, so the node count '
+        + 'does not change from here. Nodes running now: ' + nodeCount + '.');
+    }
+  }
+
+  return out.join(' ');
 }
 
 export function getRules(provider) {
@@ -362,10 +448,7 @@ export function validateScalingForm(provider, mode, form, context) {
     }
     // 고정 크기로 보내도 NHN 은 범위를 현재 노드 수에 맞춰 넓힌다 → 막지 말고 미리 알린다
     if (isModify && rules.modify.clampsRangeToNodeCount && Number.isFinite(desired)) {
-      const nodeCount = num(context?.nodeCount, NaN);
-      if (Number.isFinite(nodeCount) && desired !== nodeCount) {
-        hints.push((rules.messages?.fixedSizeClamped || '') + ' Nodes running now: ' + nodeCount + '.');
-      }
+      hints.push(describeOffBehavior(provider, { nodeCount: context?.nodeCount, desired }));
     }
     return { ok: errors.length === 0, errors, hints: hints.filter(Boolean) };
   }
@@ -443,100 +526,57 @@ export function buildModifyPlan(provider, current, target) {
     };
   }
 
+  // CSP 분기가 없다 — 사실표(modify)만 보고 계획을 만든다.
+  // 드라이버가 고쳐지면 사실 하나를 내리면 되고, 계획 코드는 그대로다.
+  const f = rules.modify;
+  const canSet = (want) => (want ? f.set === 'both' : f.set === 'both' || f.set === 'off');
+
   let steps = [];
-  switch (String(provider).toLowerCase()) {
-    case 'aws':
-      steps = checked ? [changeStep(d, min, max)] : [changeStep(d, d, d)];
-      break;
-
-    case 'azure':
-      if (checked) {
-        steps = on
-          ? [changeStep(d, min, max)]
-          : [setStep(true), waitStep({ on: true }, 'Wait until autoscaling is on'), changeStep(d, min, max)];
-      } else {
-        // 수동 모드의 Change는 min=max=0 만 받는다
-        steps = on
-          ? [setStep(false), waitStep({ on: false }, 'Wait until autoscaling is off'), changeStep(d, 0, 0)]
-          : [changeStep(d, 0, 0)];
+  if (checked) {
+    if (on) {
+      // 이미 켜져 있다 — 범위만 바꾼다
+      steps = [changeStep(d, min, max)];
+    } else if (f.enableOrder === 'set-then-change') {
+      // Change 가 모드를 안 건드리는 CSP 는 먼저 켜고 범위를 넣는다
+      steps = [setStep(true), waitStep({ on: true }, 'Wait until autoscaling is on'), changeStep(d, min, max)];
+    } else {
+      // Change 가 범위와 함께 켜 주는 CSP 는 Change 가 먼저다.
+      // 뒤따르는 Set(on) 은 드라이버가 이미 켰으면 큐가 건너뛴다(멱등) — 드라이버가 더 이상
+      // 강제로 켜지 않게 바뀌어도(cb-spider PR #1844) 이 계획이 그대로 맞는다
+      steps = [changeStep(d, min, max)];
+      if (canSet(true)) steps.push(setStep(true));
+    }
+  } else if (f.offMode === 'manualZero') {
+    // 수동 모드로 내린 뒤 노드 수를 직접 지정한다. 이 CSP 의 Change 는 min=max=0 만 받는다
+    steps = on
+      ? [setStep(false), waitStep({ on: false }, 'Wait until autoscaling is off'), changeStep(d, 0, 0)]
+      : [changeStep(d, 0, 0)];
+  } else {
+    // 해제 = 고정 크기. min=max=desired 로 범위를 좁혀 노드 수를 고정한다
+    steps = [changeStep(d, d, d)];
+    const willBeOn = on || f.changeForcesEnable;
+    if (willBeOn && canSet(false)) {
+      if (f.waitBetween) {
+        // 대기 없이 Set 을 던지면 CSP 가 거부하거나(NHN 400), 노드 수가 옮겨가기 전에 굳는다(Alibaba).
+        // 범위를 클램프하는 CSP(NHN)는 목표 노드 수로 수렴하지 않으므로 상태 안정만 본다
+        const until = f.clampsRangeToNodeCount ? {} : { desired: d };
+        steps.push(waitStep(until, 'Wait until the new size is applied', { timeoutMs: 300000 }));
       }
-      break;
-
-    case 'gcp':
-      // Change가 off 상태를 자동으로 켜므로, 끄기는 마지막에 Set으로 마무리한다
-      steps = checked
-        ? [changeStep(d, min, max)]
-        : [changeStep(d, d, d), waitStep({ desired: d }, 'Wait until the node count is applied'), setStep(false)];
-      break;
-
-    case 'tencent':
-      if (checked) {
-        steps = on
-          ? [changeStep(d, min, max)]
-          : [setStep(true), waitStep({ on: true }, 'Wait until autoscaling is on'), changeStep(d, min, max)];
-      } else {
-        steps = [changeStep(d, d, d)];
-        if (on) steps.push(waitStep({ desired: d }, 'Wait until the node count is applied'), setStep(false));
-      }
-      break;
-
-    case 'alibaba':
-    case 'nhn':
-      // 드라이버가 desired 를 버리고 enable=true 를 강제한다 → 생성 폼과 같은 인코딩(min=max=desired)으로
-      // 번역하고, Change 가 켜 버린 autoscaling 을 Set(off) 로 마무리한다.
-      // NHN 은 이 순서 덕분에 ca_max_node_count 가 먼저 채워져 Set 단독 호출의 409 가 사라진다.
-      // 노드 수({desired})를 기다리면 안 된다 — NHN 은 범위를 클램프해 목표로 수렴하지 않아 행이 된다.
-      // 대기 판정은 CSP 원본 상태(keyValueList.Status)를 본다 — tumblebug 의 Active 만 보면
-      // NHN 이 아직 UPDATE_IN_PROGRESS 인데 통과해 버린다(k8sScalingQueue isSettled 참고).
-      steps = checked
-        ? [changeStep(d, min, max)]
-        : [
-          changeStep(d, d, d),
-          // 대기를 건너뛰면 안 된다 — NHN 은 NodeGroup 이 UPDATE_IN_PROGRESS 인 동안 autoscale 호출을
-          // 400 으로 거부한다. 못 기다렸으면 실패할 Set 을 던지는 대신 여기서 멈추고 이유를 알린다
-          // NHN 실측: Change 후 수렴까지 143초·178.5초(2026-09-16) — 기본 3분으로는 여유가 없다
-          waitStep({ on: true }, 'Wait until the new range is registered', { timeoutMs: 300000 }),
-          setStep(false),
-        ];
-      break;
-
-    case 'ncp':
-      // Set이 빈 구현이라 "해제"는 범위 고정으로 표현한다
-      steps = checked ? [changeStep(d, min, max)] : [changeStep(d, d, d)];
-      break;
-
-    case 'ibm':
-      if (checked) {
-        steps = [changeStep(d, min, max)];
-        if (!on) steps.push(setStep(true));
-      } else {
-        // Change 는 autoscaler ConfigMap 의 min/max 만 쓰고 Enabled 는 건드리지 않는다 → 대기 불필요.
-        // desired 를 min=max 로 남겨 두면 다음에 autoscaling 을 켤 때 그 크기로 시작한다.
-        steps = [changeStep(d, d, d)];
-        if (on) steps.push(setStep(false));
-      }
-      break;
-
-    default:
-      steps = checked ? [changeStep(d, min, max)] : [changeStep(d, d, d)];
-  }
-
-  // 안전장치: Set 이 동작하지 않는 CSP(AWS는 거부, NCP는 빈 구현)에는 Set 스텝을 넘기지 않는다
-  if (rules.modify.supportsSet === false) {
-    steps = steps.filter((step) => step.kind !== 'set');
+      steps.push(setStep(false));
+    }
   }
 
   if (steps.length === 0) {
     return { ok: false, blocked: { reason: 'Nothing to apply — the values are unchanged.' }, confirm: null, steps: [], expected: null };
   }
 
+  // 확인 문구도 플래그가 아니라 사실에서 파생시킨다
   let confirm = null;
-  const turnsOnImplicitly = checked && !on && Boolean(rules.modify.confirmOnImplicitEnable);
-  if (checked && rules.modify.confirmOnEnable) {
+  if (checked && f.set === 'none') {
     confirm = { title: 'Autoscaling cannot be switched off again', body: rules.messages?.confirmEnable || '' };
-  } else if (turnsOnImplicitly) {
+  } else if (checked && !on && f.changeForcesEnable) {
     confirm = { title: 'Autoscaling will be switched on', body: rules.messages?.confirmEnable || '' };
-  } else if (!checked && !on && rules.modify.confirmOnImplicitEnable) {
+  } else if (!checked && !on && f.changeForcesEnable && canSet(false)) {
     confirm = { title: 'Autoscaling is switched on briefly', body: rules.messages?.confirmTempEnable || '' };
   }
   if (confirm && !confirm.body) confirm = null;
@@ -581,5 +621,8 @@ if (typeof webconsolejs !== 'undefined') {
     validateScalingForm,
     buildModifyPlan,
     describeStep,
+    getScalingMessage,
+    describeOffBehavior,
+    describeDesiredHandling,
   });
 }

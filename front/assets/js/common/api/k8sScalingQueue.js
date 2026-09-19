@@ -227,7 +227,7 @@ function stepSatisfied(provider, step, state) {
   if (!state) return false;
   if (step.kind === "set") return state.on === step.on;
   if (step.kind !== "change") return false;
-  const desiredIgnored = getRules(provider)?.modify?.desiredAppliedViaRange === true;
+  const desiredIgnored = getRules(provider)?.modify?.changeAppliesDesired === false;
   const rangeSame = state.min === step.minNodeSize && state.max === step.maxNodeSize;
   return rangeSame && (desiredIgnored || state.desired === step.desiredNodeSize);
 }
@@ -303,7 +303,7 @@ async function runScalingJob(job, options = {}) {
   activeKeys.add(key);
 
   const steps = job.plan.steps;
-  const callCount = steps.filter((step) => step.kind !== "wait").length;
+  let callCount = steps.filter((step) => step.kind !== "wait").length;
   let doneCount = steps.slice(0, job.cursor || 0).filter((step) => step.kind !== "wait").length;
   let verifyFirstCall = options.resumed === true;
 
@@ -317,10 +317,19 @@ async function runScalingJob(job, options = {}) {
         continue;
       }
 
-      if (verifyFirstCall) {
+      // set 은 보내기 전에 항상 현재 상태를 확인한다 — 이미 그 상태면 보내지 않는다.
+      // 드라이버가 Change 로 모드를 같이 바꿔 버리는 CSP(GCP·Alibaba·NCP·NHN)에서는 뒤따르는 Set 이
+      // 불필요해지고, Azure 는 같은 상태로 Set 을 받으면 에러를 낸다. 드라이버가 고쳐져 모드를
+      // 그대로 두게 되면 같은 Set 이 실제로 필요해진다 — 어느 쪽이든 이 확인 하나로 맞는다.
+      // change 는 재개(resume) 때만 확인한다(중복 적용 방지).
+      const verifyBeforeSend = step.kind === "set" || verifyFirstCall;
+      if (verifyBeforeSend) {
         verifyFirstCall = false;
         const current = await fetchScalingState(job).catch(() => null);
-        if (stepSatisfied(job.provider, step, current)) { doneCount += 1; continue; }
+        if (stepSatisfied(job.provider, step, current)) {
+          callCount -= 1;
+          continue;
+        }
       }
 
       doneCount += 1;

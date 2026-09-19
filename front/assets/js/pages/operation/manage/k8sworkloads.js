@@ -11,6 +11,8 @@ import {
   validateScalingForm,
   buildModifyPlan,
   describeStep,
+  describeOffBehavior,
+  describeDesiredHandling,
 } from "../../../common/utils/k8sScalingRules.js";
 import {
   isVersionOutsideAvailableList,
@@ -890,9 +892,7 @@ export function openEditScalingModal() {
     .val(cur.desired);
   setScalingDesiredEditable(true);
 
-  const desiredNote = rules.modify.desiredAppliedViaRange
-    ? getScalingMessage(scalingProvider(), 'desiredViaRange')
-    : '';
+  const desiredNote = describeDesiredHandling(scalingProvider());
   if (desiredNote) {
     $('#ng-scaling-desired-note').text(desiredNote).show();
   } else {
@@ -943,10 +943,10 @@ function renderScalingPlanPreview() {
     return;
   }
 
-  // 체크 해제가 CSP마다 다르게 처리되므로(진짜 off / 범위 고정) 그 방식을 문구로 알린다
-  // 수정 모달의 해제는 CSP에 따라 Change→Set 2단계가 된다 — 전용 문구가 있으면 그것을 쓴다
+  // 체크 해제가 CSP마다 다르게 처리되므로(진짜 off / 범위 고정) 그 방식을 문구로 알린다.
+  // 문구는 CSP별 상수가 아니라 사실(changeAppliesDesired·set·offMode…)에서 조립된다
   const fixedSizeNote = form.checked ? ''
-    : (getScalingMessage(scalingProvider(), 'fixedSizeModify') || getScalingMessage(scalingProvider(), 'fixedSize'));
+    : describeOffBehavior(scalingProvider(), { nodeCount: cur?.nodeCount, desired: form.desired });
   if (fixedSizeNote) {
     $('#ng-scaling-hint').text(fixedSizeNote).show();
   } else {
