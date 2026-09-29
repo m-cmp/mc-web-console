@@ -171,7 +171,8 @@ function setActiveMenu() {
     const depth4 = path[4] ? `sidebar_${path[4]}` : null;
     const depth5 = path[5] ? `sidebar_${path[4]}_${path[5]}` : null;
     if (depth4) {
-        document.querySelectorAll(`[name="${depth4}"]`).forEach((i) => {
+        // 하위 메뉴 항목도 부모와 같은 name 을 쓰므로 제외 — 현재 항목은 아래 depth5 에서 active 처리
+        document.querySelectorAll(`[name="${depth4}"]:not(.dropdown-item)`).forEach((i) => {
             if (!i.classList.contains('show')) i.classList.add('show');
             if (!i.classList.contains('active')) i.classList.add('active');
         });
