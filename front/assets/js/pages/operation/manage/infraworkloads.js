@@ -32,6 +32,11 @@ window.currentMciId = "";
 var currentVmId = "";
 var currentNodeGroupId = "";
 var currentNodeGroupVmId = "";
+// Server 탭 Node Info 에 표시 중인 Node 의 소속 NodeGroup·상태 (Install SW 컨텍스트)
+var currentServerNodeGroupId = "";
+var currentServerNodeStatus = "";
+// Group 탭 Node Info 에 표시 중인 Node 상태
+var currentNodeGroupVmStatus = "";
 var currentGroupedVmList = [];
 var vmListGroupedByNodeGroup = [];
 
@@ -591,6 +596,64 @@ export function deleteMci() {
   });
 }
 
+// Install SW 는 Running 노드에만 가능 — 버튼 활성화와 클릭 시 재확인에 공통 사용
+function isNodeRunning(status) {
+  return typeof status === "string" && status !== ""
+    && webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(status) === "running";
+}
+
+// disabled 스타일은 쓰되 pointer-events 는 살려 둔다 — hover 시 title 로 사유를 보이고,
+// 클릭하면 installSwToNode/installSwToNodeGroup 의 재확인이 사유 토스트를 띄운다
+function setInstallSwButtonState(btnId, enabled, disabledReason) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.classList.toggle("disabled", !enabled);
+  btn.style.pointerEvents = "auto";
+  btn.style.cursor = enabled ? "" : "not-allowed";
+  btn.setAttribute("aria-disabled", String(!enabled));
+  btn.title = enabled ? "Install software" : disabledReason;
+}
+
+function updateInstallSwNodeButton(btnId, status) {
+  setInstallSwButtonState(
+    btnId,
+    isNodeRunning(status),
+    "Available only when the node is Running" + (status ? " (current: " + status + ")" : "")
+  );
+}
+
+// Install SW — Node Info 카드(scope: 'server' = Server 탭, 'nodegroup' = Group 탭)
+export function installSwToNode(scope) {
+  const isGroupTab = scope === 'nodegroup';
+  const target = isGroupTab
+    ? { infraId: window.currentMciId, nodeGroupId: currentNodeGroupId, nodeId: currentNodeGroupVmId }
+    : { infraId: window.currentMciId, nodeGroupId: currentServerNodeGroupId, nodeId: currentVmId };
+  if (!target.nodeId) {
+    webconsolejs["common/util"].showToast("Select a Node first.", "warning");
+    return;
+  }
+  if (!isNodeRunning(isGroupTab ? currentNodeGroupVmStatus : currentServerNodeStatus)) {
+    webconsolejs["common/util"].showToast("Install SW is available only when the node is Running.", "warning");
+    return;
+  }
+  openInstallSw(target);
+}
+
+// Install SW — NodeGroup 전체 대상 (Group 탭 Node List / Status 카드)
+export function installSwToNodeGroup() {
+  if (!currentGroupedVmList.some(aVm => isNodeRunning(aVm.status))) {
+    webconsolejs["common/util"].showToast("Install SW is available only when at least one node in the NodeGroup is Running.", "warning");
+    return;
+  }
+  openInstallSw({ infraId: window.currentMciId, nodeGroupId: currentNodeGroupId });
+}
+
+function openInstallSw(target) {
+  webconsolejs["partials/operation/manage/installsw"].openInstallSwModal(target, {
+    onSucceeded: () => refreshMciList(),
+  });
+}
+
 // vm 삭제
 export function deleteVm() {
   const deletingVmId = currentVmId;
@@ -1088,6 +1151,12 @@ function vmListInNodeGroup(nodeGroupId) {
   $("#nodegroup_vm_info_box").empty();
   $("#nodegroup_vm_info_box").append(vmLi);
 
+  setInstallSwButtonState(
+    "installsw-nodegroup-btn",
+    groupedVmList.some(aVm => isNodeRunning(aVm.status)),
+    "Available only when at least one node in the NodeGroup is Running"
+  );
+
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   // if (currentNodeGroupVmId) {
   //   webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentNodeGroupVmId);
@@ -1099,6 +1168,9 @@ function vmListInNodeGroup(nodeGroupId) {
 // VM 한 개 클릭시 vm의 세부 정보
 export async function vmDetailInfo(vmId) {
   currentVmId = vmId
+  currentServerNodeGroupId = ""
+  currentServerNodeStatus = ""
+  updateInstallSwNodeButton("installsw-node-server-btn", "")
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
   const hasActiveClass = div.classList.contains("active");
@@ -1114,6 +1186,7 @@ export async function vmDetailInfo(vmId) {
     var response = await webconsolejs["common/api/services/infra_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var nodeGroupId = aVm.nodeGroupId
+    currentServerNodeGroupId = nodeGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
     // 전체를 관리하는 obj 갱신
@@ -1166,6 +1239,8 @@ export async function vmDetailInfo(vmId) {
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
+  currentServerNodeStatus = vmStatus;
+  updateInstallSwNodeButton("installsw-node-server-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
   var vmSshKeyID = data.sshKeyId;
@@ -1328,6 +1403,8 @@ export async function vmDetailInfo(vmId) {
 
 export async function nodeGroup_vmDetailInfo(vmId) {
   currentNodeGroupVmId = vmId
+  currentNodeGroupVmStatus = ""
+  updateInstallSwNodeButton("installsw-node-nodegroup-btn", "")
   // Server Info는 c 버튼으로만 제어되므로 자동 토글 제거
   // var div = document.getElementById("nodeGroup_vm_info");
   // const hasActiveClass = div.classList.contains("active");
@@ -1394,6 +1471,8 @@ export async function nodeGroup_vmDetailInfo(vmId) {
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
+  currentNodeGroupVmStatus = vmStatus;
+  updateInstallSwNodeButton("installsw-node-nodegroup-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
   var vmSshKeyID = data.sshKeyId;
@@ -1702,6 +1781,8 @@ export async function executeDetachDiskFromNode(arg) {
 
 // vm 세부 정보 초기화
 function clearServerInfo() {
+  updateInstallSwNodeButton("installsw-node-server-btn", "")
+  updateInstallSwNodeButton("installsw-node-nodegroup-btn", "")
   $("#server_info_text").text("")
   $("#server_detail_info_text").text("")
   $("#server_detail_view_server_status").val("");

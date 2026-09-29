@@ -11,9 +11,13 @@
 
 
       <a
-        href="#installsw"
-        class="btn btn-outline-dark"
-        onclick="webconsolejs['common/util'].installSwtoVm()"
+        href="#"
+        id="installsw-node-nodegroup-btn"
+        aria-disabled="true"
+        title="Available only when the node is Running"
+        style="pointer-events: auto; cursor: not-allowed;"
+        class="btn btn-outline-dark disabled"
+        onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNode('nodegroup')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

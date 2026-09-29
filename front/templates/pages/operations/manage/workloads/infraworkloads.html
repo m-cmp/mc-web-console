@@ -1416,6 +1416,8 @@
 {{ partial("partials/operation/manage/cspimagelist.html") | raw }}
 <!-- add server : cspspeclist -->
 {{ partial("partials/operation/manage/cspspeclist.html") | raw }}
+<!-- Install SW : mc-application-manager iframe popup -->
+{{ partial("partials/operation/manage/installsw_modal.html") | raw }}
 
 <!-- Label Editor Modal -->
 <div
@@ -1964,6 +1966,7 @@
 <!-- pageloader-->
 {{ partial("partials/layout/pageloader.html") | raw }}
 {{ javascriptTag("pages/operation/manage/infraworkloads.js") | raw }}
+{{ javascriptTag("partials/operation/manage/installsw.js") | raw }}
 {{ javascriptTag("common/api/services/infra_api.js") | raw }}
 {{ javascriptTag("common/api/services/disk_api.js") | raw }}
 {{ javascriptTag("common/api/services/vmimage_api.js") | raw }}
