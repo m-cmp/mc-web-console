@@ -157,10 +157,14 @@ function setActiveMenu() {
     const path = window.location.pathname.split('/');
     // /webconsole/_view/{menuId}
     if (path[2] === '_view' && path[3]) {
-        const name = `sidebar_${path[3]}`;
-        document.querySelectorAll(`[name="${name}"]`).forEach((i) => {
+        // 하위 메뉴 항목의 name 은 부모 id(sidebar_{parentId}) 라서 URL 의 menuId 로는 부모를 못 찾는다
+        // — href 로 항목을 찾아 그 name 으로 부모 드롭다운까지 펼친다
+        const item = document.querySelector(`[data-viewtype="iframe"][href="/webconsole/_view/${path[3]}"]`);
+        const name = (item && item.getAttribute('name')) || `sidebar_${path[3]}`;
+        document.querySelectorAll(`[name="${name}"]:not(.dropdown-item)`).forEach((i) => {
             i.classList.add('show', 'active');
         });
+        if (item) item.classList.add('active');
         return;
     }
     const depth3 = path[3] ? `sidebar_${path[3]}` : null;
