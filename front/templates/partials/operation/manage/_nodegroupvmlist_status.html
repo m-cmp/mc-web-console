@@ -336,7 +336,10 @@
         <a
           href="#"
           id="installsw-nodegroup-btn"
-          class="btn btn-outline-dark me-2"
+          aria-disabled="true"
+          title="Available only when at least one node in the NodeGroup is Running"
+          style="pointer-events: auto; cursor: not-allowed;"
+          class="btn btn-outline-dark me-2 disabled"
           onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNodeGroup()"
         >
           <svg

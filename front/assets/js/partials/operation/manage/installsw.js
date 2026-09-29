@@ -2,9 +2,9 @@
  * Install SW 팝업 — mc-application-manager(AM) 설치 화면을 모달 iframe으로 띄운다.
  *
  * 흐름 (AM iframe 연동 규약):
- *   1. iframe src = {AM}/web/softwareCatalog/install?targetType=NODE&infraId&nodeGroupId[&nodeId]&requestId
+ *   1. iframe src = {AM}/web/softwareCatalog/install?targetType=VM&mciId&nodeGroupId[&vmId]&requestId
  *   2. AM → MCMP_AM_INSTALL_EVENT { status: IFRAME_READY } 수신 후에만 token·workspace·project 전달
- *   3. DEPLOY_SUCCEEDED / DEPLOY_FAILED / FORM_ERROR / CANCELLED 처리
+ *   3. DEPLOY_SUCCEEDED / DEPLOY_FAILED / FORM_ERROR / CONFIGURATION_ERROR / CANCELLED 처리
  *
  * namespace·access token 은 URL 에 넣지 않는다 — postMessage(targetOrigin=AM origin)로만 전달.
  */
@@ -26,15 +26,16 @@ let openSeq = 0;
 
 /**
  * 설치 대상 → iframe URL 쿼리 파라미터.
- * 콘솔 용어(Infra/NodeGroup/Node) 기준 — AM 파라미터명이 달라지면 이 함수만 고친다.
+ * AM 규약은 VM 명명(targetType=VM, mciId, vmId)이고 그 외 키는 거부한다.
+ * 콘솔 용어(Infra/Node)는 이 함수에서만 변환한다 — AM 명명이 바뀌면 여기만 고친다.
  */
 export function buildInstallParams(target, requestId) {
   const params = new URLSearchParams();
-  params.set("targetType", "NODE");
-  params.set("infraId", target.infraId);
+  params.set("targetType", "VM");
+  params.set("mciId", target.infraId);
   params.set("nodeGroupId", target.nodeGroupId);
   if (target.nodeId) {
-    params.set("nodeId", target.nodeId);
+    params.set("vmId", target.nodeId);
   }
   params.set("requestId", requestId);
   return params;
@@ -127,13 +128,14 @@ function handleMessage(event) {
     }
     case "DEPLOY_FAILED":
     case "FORM_ERROR":
+    case "CONFIGURATION_ERROR": // AM 이 URL 파라미터 검증에 실패한 경우
       showToast(TOAST_TYPES.ERROR, data.message || "Software installation failed.");
       break;
     case "CANCELLED":
       hideModal();
       break;
     default:
-      // FORM_READY, DEPLOY_STARTED — 진행 상태는 AM 화면이 표시한다
+      // CONTEXT_READY, FORM_READY, DEPLOY_STARTED — 진행 상태는 AM 화면이 표시한다
       break;
   }
 }

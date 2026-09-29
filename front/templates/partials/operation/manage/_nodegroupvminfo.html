@@ -13,7 +13,10 @@
       <a
         href="#"
         id="installsw-node-nodegroup-btn"
-        class="btn btn-outline-dark"
+        aria-disabled="true"
+        title="Available only when the node is Running"
+        style="pointer-events: auto; cursor: not-allowed;"
+        class="btn btn-outline-dark disabled"
         onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNode('nodegroup')"
       >
         <svg
