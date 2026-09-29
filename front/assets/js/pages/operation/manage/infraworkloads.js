@@ -32,6 +32,8 @@ window.currentMciId = "";
 var currentVmId = "";
 var currentNodeGroupId = "";
 var currentNodeGroupVmId = "";
+// Server 탭 Node Info 에 표시 중인 Node 의 소속 NodeGroup (Install SW 컨텍스트)
+var currentServerNodeGroupId = "";
 var currentGroupedVmList = [];
 var vmListGroupedByNodeGroup = [];
 
@@ -591,6 +593,29 @@ export function deleteMci() {
   });
 }
 
+// Install SW — Node Info 카드(scope: 'server' = Server 탭, 'nodegroup' = Group 탭)
+export function installSwToNode(scope) {
+  const target = scope === 'nodegroup'
+    ? { infraId: window.currentMciId, nodeGroupId: currentNodeGroupId, nodeId: currentNodeGroupVmId }
+    : { infraId: window.currentMciId, nodeGroupId: currentServerNodeGroupId, nodeId: currentVmId };
+  if (!target.nodeId) {
+    webconsolejs["common/util"].showToast("Select a Node first.", "warning");
+    return;
+  }
+  openInstallSw(target);
+}
+
+// Install SW — NodeGroup 전체 대상 (Group 탭 Node List / Status 카드)
+export function installSwToNodeGroup() {
+  openInstallSw({ infraId: window.currentMciId, nodeGroupId: currentNodeGroupId });
+}
+
+function openInstallSw(target) {
+  webconsolejs["partials/operation/manage/installsw"].openInstallSwModal(target, {
+    onSucceeded: () => refreshMciList(),
+  });
+}
+
 // vm 삭제
 export function deleteVm() {
   const deletingVmId = currentVmId;
@@ -1099,6 +1124,7 @@ function vmListInNodeGroup(nodeGroupId) {
 // VM 한 개 클릭시 vm의 세부 정보
 export async function vmDetailInfo(vmId) {
   currentVmId = vmId
+  currentServerNodeGroupId = ""
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
   const hasActiveClass = div.classList.contains("active");
@@ -1114,6 +1140,7 @@ export async function vmDetailInfo(vmId) {
     var response = await webconsolejs["common/api/services/infra_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var nodeGroupId = aVm.nodeGroupId
+    currentServerNodeGroupId = nodeGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
     // 전체를 관리하는 obj 갱신

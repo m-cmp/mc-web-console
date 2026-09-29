@@ -11,9 +11,10 @@
 
 
       <a
-        href="#installsw"
+        href="#"
+        id="installsw-node-nodegroup-btn"
         class="btn btn-outline-dark"
-        onclick="webconsolejs['common/util'].installSwtoVm()"
+        onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNode('nodegroup')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

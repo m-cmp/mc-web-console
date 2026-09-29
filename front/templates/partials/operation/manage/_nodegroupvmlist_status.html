@@ -332,6 +332,31 @@
             <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
           </svg>
         </a>
+        <!-- install sw : NodeGroup 전체 대상 -->
+        <a
+          href="#"
+          id="installsw-nodegroup-btn"
+          class="btn btn-outline-dark me-2"
+          onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNodeGroup()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="icon"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 5l0 14"></path>
+            <path d="M5 12l14 0"></path>
+          </svg>
+          Install SW
+        </a>
         <!-- add server-->
         <a
           href="#addserver"
