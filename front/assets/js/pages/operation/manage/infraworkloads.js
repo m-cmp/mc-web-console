@@ -1212,8 +1212,8 @@ export async function vmDetailInfo(vmId) {
 
       if (aMci.id == currentMciId) {
         for (var vmIndex in aMci.node) {
-          var tempVms = aMci.node
-          if (currentVmId == tempVms.id) {
+          // 방금 조회한 노드로 목록 캐시를 갱신한다 — 아래 화면 표시는 이 캐시를 읽는다
+          if (currentVmId == aMci.node[vmIndex].id) {
             aMci.node[vmIndex] = aVm;
             break;
           }
@@ -1443,8 +1443,8 @@ export async function nodeGroup_vmDetailInfo(vmId) {
 
       if (aMci.id == currentMciId) {
         for (var vmIndex in aMci.node) {
-          var tempVms = aMci.node
-          if (currentVmId == tempVms.id) {
+          // 방금 조회한 노드로 목록 캐시를 갱신한다 — 아래 화면 표시는 이 캐시를 읽는다
+          if (currentNodeGroupVmId == aMci.node[vmIndex].id) {
             aMci.node[vmIndex] = aVm;
             break;
           }
