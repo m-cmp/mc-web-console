@@ -585,6 +585,10 @@ function updateMciLabelsTab(mciData) {
 // mci 삭제 — requestId tracker가 progress/결과 toast 담당
 export function deleteMci() {
   const deletingMciId = window.currentMciId;
+  if (!deletingMciId) {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select an Infra')
+    return;
+  }
   window.currentMciId = "";
   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"));
   mciListTable.deselectRow();
@@ -654,10 +658,22 @@ function openInstallSw(target) {
   });
 }
 
-// vm 삭제
-export function deleteVm() {
-  const deletingVmId = currentVmId;
-  resetDefaultTabSelections();
+// vm 삭제 (scope: 'nodegroup' = Group 탭, 그 외 = Server 탭)
+// Group 탭은 노드 선택을 currentNodeGroupVmId에만 담는다 — currentVmId로 지우면 빈 id가 나가거나
+// Server 탭에서 앞서 고른 다른 노드가 지워진다
+export function deleteVm(scope) {
+  const isGroupTab = scope === 'nodegroup';
+  const deletingVmId = isGroupTab ? currentNodeGroupVmId : currentVmId;
+  if (!deletingVmId) {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a Node')
+    return;
+  }
+  if (isGroupTab) {
+    currentNodeGroupVmId = "";
+    selectedNodeGroupVmId = null;
+  } else {
+    resetDefaultTabSelections();
+  }
   executeTrackedRequest(
     () => webconsolejs["common/api/services/infra_api"].vmDelete(window.currentMciId, window.currentNsId, deletingVmId),
     "Node deletion failed"
@@ -2235,35 +2251,14 @@ function initMciTable() {
     // var tempcurmciID = row.getCell("id").getValue();
     var tempcurmciID = row.getCell("id").getValue();
     if (tempcurmciID === window.currentMciId) {
-      webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
-      window.currentMciId = ""
       this.deselectRow();
-      // MCI 선택 해제 시 Policy Info도 초기화
-      resetPolicyInfoState();
+      deactivateMci();
       return
     } else {
       // 기존 선택 해제 후 새 행 선택
       this.deselectRow();
       this.selectRow(tempcurmciID);
-      
-      window.currentMciId = tempcurmciID;
-      webconsolejs['partials/operation/manage/infranlb']?.resetForMciSwitch();
-      // MCI 변경 시 이전 VM 선택 상태 초기화
-      currentVmId = "";
-      selectedVmId = null;
-      
-      // Server Info 숨기기 (이전 MCI의 VM 정보가 표시되지 않도록)
-      const serverInfoElement = document.getElementById("server_info");
-      if (serverInfoElement && serverInfoElement.classList.contains("active")) {
-        webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
-      }
-      
-      webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
-      // 표에서 선택된 MCISInfo 
-      // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
-      resetPolicyInfoState();
-      resetMciTabState();
-      getSelectedMciData()
+      activateMci(tempcurmciID);
       return
     }
     //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
@@ -2281,6 +2276,19 @@ function initMciTable() {
     // }
   });
 
+  // 체크박스 클릭은 rowClick을 발생시키지 않아 window.currentMciId가 바뀌지 않는다.
+  // 그러면 Delete 등이 빈 infraId로 나가므로 체크박스 선택도 행 클릭과 같은 경로로 맞춘다.
+  // 행 클릭도 선택을 바꾸므로, 같은 클릭의 rowClick이 끝난 뒤의 선택 상태로 판단한다.
+  // 선택이 비는 경우는 다루지 않는다 — 목록 새로고침 중에도 비므로 상세가 닫혀버린다.
+  mciListTable.on("rowSelectionChanged", function () {
+    setTimeout(function () {
+      const selected = mciListTable.getSelectedData();
+      if (selected.length === 1 && selected[0].id !== window.currentMciId) {
+        activateMci(selected[0].id);
+      }
+    }, 0);
+  });
+
 
   //  선택된 여러개 row에 대해 처리
   // mciListTable.on("rowSelectionChanged", function (data, rows) {
@@ -2290,6 +2298,36 @@ function initMciTable() {
   //   selectedMciObj = data
   // });
   // displayColumn(table);
+}
+
+// Infra를 현재 선택으로 지정하고 상세를 연다 (행 클릭·체크박스 공통)
+function activateMci(mciId) {
+  window.currentMciId = mciId;
+  webconsolejs['partials/operation/manage/infranlb']?.resetForMciSwitch();
+  // MCI 변경 시 이전 VM 선택 상태 초기화
+  currentVmId = "";
+  selectedVmId = null;
+  
+  // Server Info 숨기기 (이전 MCI의 VM 정보가 표시되지 않도록)
+  const serverInfoElement = document.getElementById("server_info");
+  if (serverInfoElement && serverInfoElement.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
+  }
+  
+  webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
+  // 표에서 선택된 MCISInfo 
+  // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
+  resetPolicyInfoState();
+  resetMciTabState();
+  getSelectedMciData()
+}
+
+// Infra 선택을 해제하고 상세를 닫는다 (행 클릭·체크박스 공통)
+function deactivateMci() {
+  webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
+  window.currentMciId = ""
+  // MCI 선택 해제 시 Policy Info도 초기화
+  resetPolicyInfoState();
 }
 
 // toggleSelectBox of table row

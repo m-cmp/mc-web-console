@@ -172,8 +172,9 @@ export function mciDelete(currentMciId, nsId) {
       nsId: nsId,
       infraId: currentMciId,
     },
+    // terminate: CSP 자원을 종료한 뒤 기록을 지운다. force는 기록만 지워 CSP 인스턴스가 과금된 채 남는다
     queryParams: {
-      option: "force"
+      option: "terminate"
     }
   };
   let controller = "/api/" + "mc-infra-manager/" + "DelInfra";
@@ -197,8 +198,9 @@ export function vmDelete(mciId, nsId, vmId) {
       infraId: mciId,
       nodeId: vmId
     },
+    // DelInfraNode는 force가 아니면 terminate 후 기록을 지운다 — force는 CSP 인스턴스를 남긴다
     queryParams: {
-      "option": "force"
+      "option": "terminate"
     }
   };
   let controller = "/api/" + "mc-infra-manager/" + "DelInfraNode";

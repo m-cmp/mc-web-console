@@ -515,6 +515,15 @@ export async function deletePmk() {
     return;
   }
 
+  // Validation 1-1: 여러 클러스터가 체크된 상태면 삭제 대상이 모호하다 — 1건만 지우고 나머지를 조용히 무시하지 않는다
+  if (Array.isArray(selectedPmkObj) && selectedPmkObj.length > 1) {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+      'K8s Selection Check',
+      'Please select only one K8s to delete.'
+    );
+    return;
+  }
+
   // Validation 2: Workspace/Project가 선택되었는지 확인
   var selectedNsId = selectedWorkspaceProject.nsId;
   if (!selectedNsId || selectedNsId === '') {
@@ -1947,24 +1956,41 @@ function initPmkTable() {
     pmkListTable.on("rowClick", function (e, row) {
         // vmid 초기화 for vmlifecycle
         // selectedClusterId = ""
-
-        // 1. 기존 UI 먼저 초기화
-        clearClusterInfo();
-        clearNodeGroupInfo();
-        
-        // 2. 새로운 PMK ID 설정
-        currentPmkId = row.getCell("id").getValue();
-        
-        // 3. 표에서 선택된 PmkInfo 조회
-        getSelectedPmkData()
-
+        selectPmkCluster(row.getCell("id").getValue());
     });
 
     //  선택된 여러개 row에 대해 처리
     pmkListTable.on("rowSelectionChanged", function (data, rows) {
         selectedPmkObj = data
+
+        // 체크박스 클릭은 rowClick을 발생시키지 않아 currentPmkId가 비어 있게 되고,
+        // currentPmkId 기준 액션(Delete 등)이 "select a K8s"로 막힌다.
+        // 1건만 체크된 경우 행 클릭과 같은 경로로 선택을 맞춘다.
+        // 행 클릭도 선택을 토글하므로, 같은 클릭의 rowClick이 끝난 뒤 판단해 중복 조회를 피한다.
+        if (data.length !== 1) {
+            return;
+        }
+        const checkedId = data[0].id;
+        setTimeout(function () {
+            if (checkedId && checkedId !== currentPmkId) {
+                selectPmkCluster(checkedId);
+            }
+        }, 0);
     });
     // displayColumn(table);
+}
+
+// 클러스터를 현재 선택으로 지정하고 상세 정보를 조회한다 (행 클릭·체크박스 공통)
+function selectPmkCluster(pmkId) {
+    // 1. 기존 UI 먼저 초기화
+    clearClusterInfo();
+    clearNodeGroupInfo();
+
+    // 2. 새로운 PMK ID 설정
+    currentPmkId = pmkId;
+
+    // 3. 표에서 선택된 PmkInfo 조회
+    getSelectedPmkData()
 }
 
 // toggleSelectBox of table row
