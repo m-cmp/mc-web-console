@@ -430,15 +430,7 @@ export async function getSelectedPmkData() {
         var selectedNsId = selectedWorkspaceProject.nsId;
 
         try {
-            var detailPromise = PmkApiHelper.getClusterDetail(selectedNsId, currentPmkId);
-            // KubeConfig는 CSP에 따라 실패/미지원일 수 있어 클러스터 정보 조회와 별개로 병렬 진행 — 실패해도 메인 조회는 막지 않음
-            var kubeconfigPromise = PmkApiHelper.getClusterKubeconfig(selectedNsId, currentPmkId)
-                .catch(function(error) {
-                    console.error('Error fetching kubeconfig:', error);
-                    return null;
-                });
-
-            var pmkResp = await detailPromise;
+            var pmkResp = await PmkApiHelper.getClusterDetail(selectedNsId, currentPmkId);
 
             // Check if pmkResp exists
             if (!pmkResp) {
@@ -476,12 +468,20 @@ export async function getSelectedPmkData() {
                 return;
             }
 
-            // KubeConfig 응답 처리 — CSP 미지원/실패 시 null (setPmkInfoData가 N/A로 표시)
-            var kubeconfigResp = await kubeconfigPromise;
-            var pmkKubeConfigText = (kubeconfigResp && kubeconfigResp.status === 200 &&
-                kubeconfigResp.data && kubeconfigResp.data.responseData)
-                ? (kubeconfigResp.data.responseData.kubeconfig || null)
-                : null;
+            // KubeConfig는 클러스터가 Active일 때만 조회한다 — Creating 등에서는 아직 발급되지 않아 오류만 난다.
+            // CSP에 따라 실패/미지원일 수 있어 실패해도 메인 정보 표시는 막지 않는다 (null이면 setPmkInfoData가 N/A로 표시)
+            var pmkKubeConfigText = null;
+            if (isClusterActive(pmkResp.data.responseData)) {
+                var kubeconfigResp = await PmkApiHelper.getClusterKubeconfig(selectedNsId, currentPmkId)
+                    .catch(function(error) {
+                        console.error('Error fetching kubeconfig:', error);
+                        return null;
+                    });
+                pmkKubeConfigText = (kubeconfigResp && kubeconfigResp.status === 200 &&
+                    kubeconfigResp.data && kubeconfigResp.data.responseData)
+                    ? (kubeconfigResp.data.responseData.kubeconfig || null)
+                    : null;
+            }
 
             // SET PMK Info page
             setPmkInfoData(pmkResp.data, pmkKubeConfigText);
@@ -502,6 +502,12 @@ export async function getSelectedPmkData() {
             );
         }
     }
+}
+
+// 클러스터가 Active인지 — CSP 상태(spider)를 우선하고, 없으면 tumblebug 상태를 본다
+function isClusterActive(cluster) {
+  const status = cluster?.spiderViewK8sClusterDetail?.Status || cluster?.status || "";
+  return String(status).toLowerCase() === "active";
 }
 
 // pmk 삭제
