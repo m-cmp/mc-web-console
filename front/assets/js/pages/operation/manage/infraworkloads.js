@@ -32,6 +32,11 @@ window.currentMciId = "";
 var currentVmId = "";
 var currentNodeGroupId = "";
 var currentNodeGroupVmId = "";
+// Server 탭 Node Info 에 표시 중인 Node 의 소속 NodeGroup·상태 (Install SW 컨텍스트)
+var currentServerNodeGroupId = "";
+var currentServerNodeStatus = "";
+// Group 탭 Node Info 에 표시 중인 Node 상태
+var currentNodeGroupVmStatus = "";
 var currentGroupedVmList = [];
 var vmListGroupedByNodeGroup = [];
 
@@ -580,6 +585,10 @@ function updateMciLabelsTab(mciData) {
 // mci 삭제 — requestId tracker가 progress/결과 toast 담당
 export function deleteMci() {
   const deletingMciId = window.currentMciId;
+  if (!deletingMciId) {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select an Infra')
+    return;
+  }
   window.currentMciId = "";
   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"));
   mciListTable.deselectRow();
@@ -591,10 +600,80 @@ export function deleteMci() {
   });
 }
 
-// vm 삭제
-export function deleteVm() {
-  const deletingVmId = currentVmId;
-  resetDefaultTabSelections();
+// Install SW 는 Running 노드에만 가능 — 버튼 활성화와 클릭 시 재확인에 공통 사용
+function isNodeRunning(status) {
+  return typeof status === "string" && status !== ""
+    && webconsolejs["common/api/services/infra_api"].getVmStatusFormatter(status) === "running";
+}
+
+// disabled 스타일은 쓰되 pointer-events 는 살려 둔다 — hover 시 title 로 사유를 보이고,
+// 클릭하면 installSwToNode/installSwToNodeGroup 의 재확인이 사유 토스트를 띄운다
+function setInstallSwButtonState(btnId, enabled, disabledReason) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.classList.toggle("disabled", !enabled);
+  btn.style.pointerEvents = "auto";
+  btn.style.cursor = enabled ? "" : "not-allowed";
+  btn.setAttribute("aria-disabled", String(!enabled));
+  btn.title = enabled ? "Install software" : disabledReason;
+}
+
+function updateInstallSwNodeButton(btnId, status) {
+  setInstallSwButtonState(
+    btnId,
+    isNodeRunning(status),
+    "Available only when the node is Running" + (status ? " (current: " + status + ")" : "")
+  );
+}
+
+// Install SW — Node Info 카드(scope: 'server' = Server 탭, 'nodegroup' = Group 탭)
+export function installSwToNode(scope) {
+  const isGroupTab = scope === 'nodegroup';
+  const target = isGroupTab
+    ? { infraId: window.currentMciId, nodeGroupId: currentNodeGroupId, nodeId: currentNodeGroupVmId }
+    : { infraId: window.currentMciId, nodeGroupId: currentServerNodeGroupId, nodeId: currentVmId };
+  if (!target.nodeId) {
+    webconsolejs["common/util"].showToast("Select a Node first.", "warning");
+    return;
+  }
+  if (!isNodeRunning(isGroupTab ? currentNodeGroupVmStatus : currentServerNodeStatus)) {
+    webconsolejs["common/util"].showToast("Install SW is available only when the node is Running.", "warning");
+    return;
+  }
+  openInstallSw(target);
+}
+
+// Install SW — NodeGroup 전체 대상 (Group 탭 Node List / Status 카드)
+export function installSwToNodeGroup() {
+  if (!currentGroupedVmList.some(aVm => isNodeRunning(aVm.status))) {
+    webconsolejs["common/util"].showToast("Install SW is available only when at least one node in the NodeGroup is Running.", "warning");
+    return;
+  }
+  openInstallSw({ infraId: window.currentMciId, nodeGroupId: currentNodeGroupId });
+}
+
+function openInstallSw(target) {
+  webconsolejs["partials/operation/manage/installsw"].openInstallSwModal(target, {
+    onSucceeded: () => refreshMciList(),
+  });
+}
+
+// vm 삭제 (scope: 'nodegroup' = Group 탭, 그 외 = Server 탭)
+// Group 탭은 노드 선택을 currentNodeGroupVmId에만 담는다 — currentVmId로 지우면 빈 id가 나가거나
+// Server 탭에서 앞서 고른 다른 노드가 지워진다
+export function deleteVm(scope) {
+  const isGroupTab = scope === 'nodegroup';
+  const deletingVmId = isGroupTab ? currentNodeGroupVmId : currentVmId;
+  if (!deletingVmId) {
+    webconsolejs['partials/layout/modal'].commonShowDefaultModal('Validation', 'Please select a Node')
+    return;
+  }
+  if (isGroupTab) {
+    currentNodeGroupVmId = "";
+    selectedNodeGroupVmId = null;
+  } else {
+    resetDefaultTabSelections();
+  }
   executeTrackedRequest(
     () => webconsolejs["common/api/services/infra_api"].vmDelete(window.currentMciId, window.currentNsId, deletingVmId),
     "Node deletion failed"
@@ -1088,6 +1167,12 @@ function vmListInNodeGroup(nodeGroupId) {
   $("#nodegroup_vm_info_box").empty();
   $("#nodegroup_vm_info_box").append(vmLi);
 
+  setInstallSwButtonState(
+    "installsw-nodegroup-btn",
+    groupedVmList.some(aVm => isNodeRunning(aVm.status)),
+    "Available only when at least one node in the NodeGroup is Running"
+  );
+
   // 선택한 vm이 있는 경우 해당 vm의 정보도 갱신한다.
   // if (currentNodeGroupVmId) {
   //   webconsolejs['pages/operation/manage/infraworkloads'].vmDetailInfo(currentNodeGroupVmId);
@@ -1099,6 +1184,9 @@ function vmListInNodeGroup(nodeGroupId) {
 // VM 한 개 클릭시 vm의 세부 정보
 export async function vmDetailInfo(vmId) {
   currentVmId = vmId
+  currentServerNodeGroupId = ""
+  currentServerNodeStatus = ""
+  updateInstallSwNodeButton("installsw-node-server-btn", "")
   // Toggle MCIS Info
   var div = document.getElementById("server_info");
   const hasActiveClass = div.classList.contains("active");
@@ -1114,6 +1202,7 @@ export async function vmDetailInfo(vmId) {
     var response = await webconsolejs["common/api/services/infra_api"].getMciVm(window.currentNsId, currentMciId, vmId);
     var aVm = response.responseData
     var nodeGroupId = aVm.nodeGroupId
+    currentServerNodeGroupId = nodeGroupId
     var cspVMID = aVm.uid
     var responseVmId = response.id;
     // 전체를 관리하는 obj 갱신
@@ -1123,8 +1212,8 @@ export async function vmDetailInfo(vmId) {
 
       if (aMci.id == currentMciId) {
         for (var vmIndex in aMci.node) {
-          var tempVms = aMci.node
-          if (currentVmId == tempVms.id) {
+          // 방금 조회한 노드로 목록 캐시를 갱신한다 — 아래 화면 표시는 이 캐시를 읽는다
+          if (currentVmId == aMci.node[vmIndex].id) {
             aMci.node[vmIndex] = aVm;
             break;
           }
@@ -1166,6 +1255,8 @@ export async function vmDetailInfo(vmId) {
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
+  currentServerNodeStatus = vmStatus;
+  updateInstallSwNodeButton("installsw-node-server-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
   var vmSshKeyID = data.sshKeyId;
@@ -1328,6 +1419,8 @@ export async function vmDetailInfo(vmId) {
 
 export async function nodeGroup_vmDetailInfo(vmId) {
   currentNodeGroupVmId = vmId
+  currentNodeGroupVmStatus = ""
+  updateInstallSwNodeButton("installsw-node-nodegroup-btn", "")
   // Server Info는 c 버튼으로만 제어되므로 자동 토글 제거
   // var div = document.getElementById("nodeGroup_vm_info");
   // const hasActiveClass = div.classList.contains("active");
@@ -1350,8 +1443,8 @@ export async function nodeGroup_vmDetailInfo(vmId) {
 
       if (aMci.id == currentMciId) {
         for (var vmIndex in aMci.node) {
-          var tempVms = aMci.node
-          if (currentVmId == tempVms.id) {
+          // 방금 조회한 노드로 목록 캐시를 갱신한다 — 아래 화면 표시는 이 캐시를 읽는다
+          if (currentNodeGroupVmId == aMci.node[vmIndex].id) {
             aMci.node[vmIndex] = aVm;
             break;
           }
@@ -1394,6 +1487,8 @@ export async function nodeGroup_vmDetailInfo(vmId) {
   var vmId = data.id;
   var vmName = data.name;
   var vmStatus = data.status;
+  currentNodeGroupVmStatus = vmStatus;
+  updateInstallSwNodeButton("installsw-node-nodegroup-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
   var vmSshKeyID = data.sshKeyId;
@@ -1702,6 +1797,8 @@ export async function executeDetachDiskFromNode(arg) {
 
 // vm 세부 정보 초기화
 function clearServerInfo() {
+  updateInstallSwNodeButton("installsw-node-server-btn", "")
+  updateInstallSwNodeButton("installsw-node-nodegroup-btn", "")
   $("#server_info_text").text("")
   $("#server_detail_info_text").text("")
   $("#server_detail_view_server_status").val("");
@@ -2154,35 +2251,14 @@ function initMciTable() {
     // var tempcurmciID = row.getCell("id").getValue();
     var tempcurmciID = row.getCell("id").getValue();
     if (tempcurmciID === window.currentMciId) {
-      webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
-      window.currentMciId = ""
       this.deselectRow();
-      // MCI 선택 해제 시 Policy Info도 초기화
-      resetPolicyInfoState();
+      deactivateMci();
       return
     } else {
       // 기존 선택 해제 후 새 행 선택
       this.deselectRow();
       this.selectRow(tempcurmciID);
-      
-      window.currentMciId = tempcurmciID;
-      webconsolejs['partials/operation/manage/infranlb']?.resetForMciSwitch();
-      // MCI 변경 시 이전 VM 선택 상태 초기화
-      currentVmId = "";
-      selectedVmId = null;
-      
-      // Server Info 숨기기 (이전 MCI의 VM 정보가 표시되지 않도록)
-      const serverInfoElement = document.getElementById("server_info");
-      if (serverInfoElement && serverInfoElement.classList.contains("active")) {
-        webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
-      }
-      
-      webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
-      // 표에서 선택된 MCISInfo 
-      // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
-      resetPolicyInfoState();
-      resetMciTabState();
-      getSelectedMciData()
+      activateMci(tempcurmciID);
       return
     }
     //   webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
@@ -2200,6 +2276,19 @@ function initMciTable() {
     // }
   });
 
+  // 체크박스 클릭은 rowClick을 발생시키지 않아 window.currentMciId가 바뀌지 않는다.
+  // 그러면 Delete 등이 빈 infraId로 나가므로 체크박스 선택도 행 클릭과 같은 경로로 맞춘다.
+  // 행 클릭도 선택을 바꾸므로, 같은 클릭의 rowClick이 끝난 뒤의 선택 상태로 판단한다.
+  // 선택이 비는 경우는 다루지 않는다 — 목록 새로고침 중에도 비므로 상세가 닫혀버린다.
+  mciListTable.on("rowSelectionChanged", function () {
+    setTimeout(function () {
+      const selected = mciListTable.getSelectedData();
+      if (selected.length === 1 && selected[0].id !== window.currentMciId) {
+        activateMci(selected[0].id);
+      }
+    }, 0);
+  });
+
 
   //  선택된 여러개 row에 대해 처리
   // mciListTable.on("rowSelectionChanged", function (data, rows) {
@@ -2209,6 +2298,36 @@ function initMciTable() {
   //   selectedMciObj = data
   // });
   // displayColumn(table);
+}
+
+// Infra를 현재 선택으로 지정하고 상세를 연다 (행 클릭·체크박스 공통)
+function activateMci(mciId) {
+  window.currentMciId = mciId;
+  webconsolejs['partials/operation/manage/infranlb']?.resetForMciSwitch();
+  // MCI 변경 시 이전 VM 선택 상태 초기화
+  currentVmId = "";
+  selectedVmId = null;
+  
+  // Server Info 숨기기 (이전 MCI의 VM 정보가 표시되지 않도록)
+  const serverInfoElement = document.getElementById("server_info");
+  if (serverInfoElement && serverInfoElement.classList.contains("active")) {
+    webconsolejs["partials/layout/navigatePages"].deactiveElement(serverInfoElement);
+  }
+  
+  webconsolejs["partials/layout/navigatePages"].activeElement(document.getElementById("mci_info"))
+  // 표에서 선택된 MCISInfo 
+  // MCI 선택 변경 시 Policy Info 및 탭 상태 초기화
+  resetPolicyInfoState();
+  resetMciTabState();
+  getSelectedMciData()
+}
+
+// Infra 선택을 해제하고 상세를 닫는다 (행 클릭·체크박스 공통)
+function deactivateMci() {
+  webconsolejs["partials/layout/navigatePages"].deactiveElement(document.getElementById("mci_info"))
+  window.currentMciId = ""
+  // MCI 선택 해제 시 Policy Info도 초기화
+  resetPolicyInfoState();
 }
 
 // toggleSelectBox of table row

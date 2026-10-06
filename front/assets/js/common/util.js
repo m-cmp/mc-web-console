@@ -160,12 +160,6 @@ export function getCommonData(
 //   $('#alertText').html(alertMessage);
 //   $("#alertArea").modal();
 // }
-// sw 설치화면으로 이동.
-export function installSwtoVm() {
-  // 
-  window.location = "/webconsole/operations/manage/swcatalogs";
-}
-
 // 날자 포맷 변경
 // ex) "2024-10-17T01:27:34.25956Z"; -> 2024-10-17 01:27:34
 export function dateYYYYMMDDHH24MISS(dateString) {

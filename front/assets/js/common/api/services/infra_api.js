@@ -103,6 +103,30 @@ export async function getMci(nsId, mciId) {
 }
 
 
+// Running 노드인데 저장된 publicIP가 비어 있으면 CSP 실값(option=accessinfo)으로 채운다.
+// cb-tumblebug 0.13.4는 Resume 완료 순간에만 IP를 조회해, CSP가 IP를 늦게 붙이면 빈 값을 저장한 채 갱신하지 않는다
+// (upstream 96cbede3에서 수정). accessinfo는 매번 CSP를 조회하지만 저장값은 바꾸지 않는다. 실패해도 원래 응답을 쓴다.
+async function fillMissingPublicIp(node, nsId, mciId, vmId) {
+  if (!node || node.publicIP || node.status !== "Running") {
+    return;
+  }
+  try {
+    const response = await webconsolejs["common/api/http"].commonAPIPost(
+      "/api/" + "mc-infra-manager/" + "GetInfraNode",
+      {
+        pathParams: { nsId: nsId, infraId: mciId, nodeId: vmId },
+        queryParams: { option: "accessinfo" },
+      }
+    );
+    const liveIp = response.data?.responseData?.publicIP;
+    if (liveIp) {
+      node.publicIP = liveIp;
+    }
+  } catch (error) {
+    console.warn("Failed to fetch live public IP:", vmId, error);
+  }
+}
+
 // mci vm 단건 조회
 export async function getMciVm(nsId, mciId, vmId) {
   if (nsId == "" || nsId == undefined || mciId == undefined || vmId == "" || vmId == undefined || vmId == "") {
@@ -118,12 +142,14 @@ export async function getMciVm(nsId, mciId, vmId) {
   }
 
   var controller = "/api/" + "mc-infra-manager/" + "GetInfraNode";
-  
+
   try {
     const response = await webconsolejs["common/api/http"].commonAPIPost(
       controller,
       data
     );
+
+    await fillMissingPublicIp(response.data?.responseData, nsId, mciId, vmId);
 
     // error check를 위해 response를 return
     return response.data;
@@ -172,8 +198,9 @@ export function mciDelete(currentMciId, nsId) {
       nsId: nsId,
       infraId: currentMciId,
     },
+    // terminate: CSP 자원을 종료한 뒤 기록을 지운다. force는 기록만 지워 CSP 인스턴스가 과금된 채 남는다
     queryParams: {
-      option: "force"
+      option: "terminate"
     }
   };
   let controller = "/api/" + "mc-infra-manager/" + "DelInfra";
@@ -197,8 +224,9 @@ export function vmDelete(mciId, nsId, vmId) {
       infraId: mciId,
       nodeId: vmId
     },
+    // DelInfraNode는 force가 아니면 terminate 후 기록을 지운다 — force는 CSP 인스턴스를 남긴다
     queryParams: {
-      "option": "force"
+      "option": "terminate"
     }
   };
   let controller = "/api/" + "mc-infra-manager/" + "DelInfraNode";
