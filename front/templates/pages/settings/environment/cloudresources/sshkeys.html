@@ -128,22 +128,28 @@
               <!-- Public Key -->
               <div class="mt-3">
                 <h4 class="mb-2">Public Key</h4>
-                <div id="detail-pubkey-empty" class="text-muted small d-none">None</div>
+                <div id="detail-pubkey-empty" class="text-muted small d-none">Not provided by the CSP</div>
                 <pre id="detail-pubkey" class="pre-scrollable bg-light p-2 rounded small" style="max-height:120px;word-break:break-all;white-space:pre-wrap;"></pre>
               </div>
 
-              <!-- Private Key (생성 직후에만 표시) -->
-              <div class="mt-3" id="detail-privkey-section" style="display:none">
+              <!-- Private Key — 기본은 ****** 로 가리고 Show/Copy 로 확인·복사 -->
+              <div class="mt-3" id="detail-privkey-section">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <h4 class="mb-0">Private Key</h4>
-                  <span class="badge bg-warning-lt">Viewable only right after creation</span>
-                  <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="toggle-privkey-btn"
-                    onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].togglePrivateKey()">
-                    Show
-                  </button>
+                  <div class="ms-auto d-flex gap-2" id="detail-privkey-actions">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-privkey-btn"
+                      onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].togglePrivateKey()">
+                      Show
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="copy-privkey-btn"
+                      onclick="webconsolejs['pages/settings/environment/cloudresources/sshkeys'].copyPrivateKey()">
+                      Copy
+                    </button>
+                  </div>
                 </div>
+                <div id="detail-privkey-empty" class="text-muted small d-none">Not available</div>
                 <pre id="detail-privkey" class="pre-scrollable bg-light p-2 rounded small"
-                  style="max-height:200px;word-break:break-all;white-space:pre-wrap;filter:blur(4px);user-select:none;"></pre>
+                  style="max-height:200px;word-break:break-all;white-space:pre-wrap;">******</pre>
               </div>
             </div>
           </div>
