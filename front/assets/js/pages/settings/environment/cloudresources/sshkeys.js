@@ -14,7 +14,8 @@ const AppState = {
     tables: { keyTable: null },
     resources: { selected: null, all: [] },
     ui: { viewMode: false, privKeyVisible: false },
-    _lastCreatedPrivKey: null,
+    // 상세에 표시 중인 Private Key 원문 (화면에는 기본 ****** 로 가린다)
+    _privKey: null,
 };
 
 // ─── 페이지 초기화 ────────────────────────────────────────────────────────
@@ -109,8 +110,6 @@ function initTable(items) {
         }
 
         const data = row.getData();
-        // 행 클릭 시 private key 초기화 (생성 직후가 아닌 경우)
-        AppState._lastCreatedPrivKey = null;
         AppState.resources.selected = data;
         renderDetail(data, null);
         showDetail();
@@ -148,16 +147,20 @@ function renderDetail(data, privateKey) {
         pubEmptyEl.classList.remove('d-none');
     }
 
-    const privSection = document.getElementById('detail-privkey-section');
-    if (privateKey) {
-        privSection.style.display = '';
-        document.getElementById('detail-privkey').textContent = privateKey;
-        document.getElementById('detail-privkey').style.filter = 'blur(4px)';
-        document.getElementById('toggle-privkey-btn').textContent = 'Show';
-        AppState.ui.privKeyVisible = false;
-    } else {
-        privSection.style.display = 'none';
-    }
+    // Private Key — 생성 응답뿐 아니라 cb-tumblebug 목록·상세 응답에도 들어 있다. 기본은 가려서 보여 준다.
+    AppState._privKey = privateKey || data.privateKey || data.privateKeyMaterial || null;
+    AppState.ui.privKeyVisible = false;
+    const hasPrivKey = !!AppState._privKey;
+    document.getElementById('detail-privkey').style.display = hasPrivKey ? '' : 'none';
+    document.getElementById('detail-privkey-actions').classList.toggle('d-none', !hasPrivKey);
+    document.getElementById('detail-privkey-empty').classList.toggle('d-none', hasPrivKey);
+    renderPrivateKey();
+}
+
+function renderPrivateKey() {
+    const visible = AppState.ui.privKeyVisible && AppState._privKey;
+    document.getElementById('detail-privkey').textContent = visible ? AppState._privKey : '******';
+    document.getElementById('toggle-privkey-btn').textContent = visible ? 'Hide' : 'Show';
 }
 
 function showDetail() {
@@ -170,16 +173,28 @@ export function hideDetail() {
     document.getElementById('view-mode-cards')?.classList.remove('show');
     AppState.ui.viewMode = false;
     AppState.resources.selected = null;
-    AppState._lastCreatedPrivKey = null;
+    AppState._privKey = null;
+    AppState.ui.privKeyVisible = false;
+    document.getElementById('detail-privkey').textContent = '******';
 }
 
 export function togglePrivateKey() {
-    const preEl  = document.getElementById('detail-privkey');
-    const btnEl  = document.getElementById('toggle-privkey-btn');
     AppState.ui.privKeyVisible = !AppState.ui.privKeyVisible;
-    preEl.style.filter    = AppState.ui.privKeyVisible ? 'none' : 'blur(4px)';
-    preEl.style.userSelect = AppState.ui.privKeyVisible ? 'text' : 'none';
-    btnEl.textContent = AppState.ui.privKeyVisible ? 'Hide' : 'Show';
+    renderPrivateKey();
+}
+
+// 화면 표시 여부와 관계없이 원문을 복사한다
+export function copyPrivateKey() {
+    const btnEl = document.getElementById('copy-privkey-btn');
+    const done = (label) => {
+        btnEl.textContent = label;
+        setTimeout(() => { btnEl.textContent = 'Copy'; }, 1500);
+    };
+    if (!AppState._privKey || !navigator.clipboard) {
+        done('Copy failed');
+        return;
+    }
+    navigator.clipboard.writeText(AppState._privKey).then(() => done('Copied!')).catch(() => done('Copy failed'));
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────
@@ -315,9 +330,7 @@ export async function executeCreateSshKey() {
         showToast(TOAST_TYPES.SUCCESS, `SSH Key "${name}" created successfully`);
         bootstrap.Modal.getInstance(document.getElementById('create-sshkey-modal'))?.hide();
 
-        // Private Key는 생성 응답에만 포함 — 즉시 상세 패널에 표시
         const privateKey = created?.privateKey || created?.privateKeyMaterial || null;
-        AppState._lastCreatedPrivKey = privateKey;
 
         await loadKeyList();
 
@@ -402,6 +415,7 @@ webconsolejs['pages/settings/environment/cloudresources/sshkeys'] = {
     loadKeyList,
     hideDetail,
     togglePrivateKey,
+    copyPrivateKey,
     confirmDeleteSshKey,
     executeDeleteSshKey,
     confirmBulkDelete,

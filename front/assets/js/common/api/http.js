@@ -14,12 +14,11 @@ const activeProgressToasts = new Map();
 function showAPIProgressToast(url, label) {
   const toastId = `api-progress-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   
-  if (webconsolejs && webconsolejs['common/utils/toast'] && 
-      webconsolejs['common/utils/toast'].showProgressToast) {
-    webconsolejs['common/utils/toast'].showProgressToast(
-      toastId,
-      label || 'Loading...'
-    );
+  const toast = webconsolejs && webconsolejs['common/utils/toast'];
+  if (toast && toast.showToast) {
+    // id를 지정해 띄워야 완료·실패 시 hideAPIProgressToast(toastId)로 닫힌다.
+    // (showProgressToast(fileName, status)는 고정 id 'transferProgressToast'로 등록돼 닫히지 않았다)
+    toast.showToast(toast.TOAST_TYPES.PROGRESS, label || 'Loading...', { id: toastId });
     
     activeProgressToasts.set(toastId, {
       url,
@@ -169,6 +168,12 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken({ force: true });
         if (authrefreshStatus) {
           console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
+          // 재시도 호출이 로더를 새로 띄우므로 이번 호출의 로더는 닫는다
+          if (loaderType === 'toast' && toastId) {
+            hideAPIProgressToast(toastId, true);
+          } else if (loaderType === 'page') {
+            deactivePageLoader();
+          }
           return commonAPIPost(url, data, true, options);
         } else {
           // Loader 종료 / End loader
