@@ -780,6 +780,7 @@ export async function setVpcList(connectionName, nsId) {
 
 	$("#cluster_vpc").empty();
 	$("#cluster_vpc").append(html);
+	setSubnetList([]);
 
 	// vpcId 선택 시
 	$("#cluster_vpc").on("change", async function () {
@@ -796,17 +797,65 @@ export async function setVpcList(connectionName, nsId) {
 	});
 }
 
+// 클러스터 생성 시 서로 다른 AZ의 subnet이 최소 몇 개 필요한지 (CSP별).
+// AWS EKS는 2개 AZ 미만이면 "Subnets specified must be in at least two different AZs"로 거부한다.
+const CLUSTER_SUBNET_MIN_ZONES = { aws: 2 };
+
+function getClusterSubnetMinZones(provider) {
+	return CLUSTER_SUBNET_MIN_ZONES[String(provider || "").toLowerCase()] || 0;
+}
+
+// 현재 VPC의 subnet 목록 (zone 확인용)
+var clusterSubnetList = [];
+
 export async function setSubnetList(subnetList) {
+	clusterSubnetList = Array.isArray(subnetList) ? subnetList : [];
+	const minZones = getClusterSubnetMinZones($("#cluster_provider").val());
+	const multiple = minZones > 1;
 
-	var html = '<option value="">Select Subnet</option>';
-
-	subnetList.forEach(subnet => {
-		html += '<option value="' + subnet.id + '">' + subnet.id + '</option>';
+	var html = multiple ? '' : '<option value="">Select Subnet</option>';
+	clusterSubnetList.forEach(subnet => {
+		const detail = [subnet.zone, subnet.ipv4_CIDR].filter(Boolean).join(', ');
+		html += '<option value="' + subnet.id + '">' + subnet.id + (detail ? ' (' + detail + ')' : '') + '</option>';
 	});
 
-	$("#cluster_subnet").empty();
-	$("#cluster_subnet").append(html);
+	const $subnet = $("#cluster_subnet");
+	$subnet.prop("multiple", multiple);
+	if (multiple) {
+		$subnet.attr("size", Math.min(Math.max(clusterSubnetList.length, 2), 6));
+	} else {
+		$subnet.removeAttr("size");
+	}
+	$subnet.empty();
+	$subnet.append(html);
 
+	$("#cluster_subnet_hint")
+		.text(multiple ? 'Select at least ' + minZones + ' subnets in different availability zones (Ctrl/Cmd + click).' : '')
+		.toggle(multiple);
+}
+
+// 선택된 subnet id 배열 (단일/다중 선택 공통)
+function getSelectedClusterSubnetIds() {
+	const value = $("#cluster_subnet").val();
+	return (Array.isArray(value) ? value : [value]).filter(Boolean);
+}
+
+// subnet 선택 검증 — 통과하면 null, 실패하면 안내 문구
+function validateClusterSubnets(provider, subnetIds) {
+	if (subnetIds.length === 0) {
+		return 'Subnet is required.';
+	}
+	const minZones = getClusterSubnetMinZones(provider);
+	if (minZones > 1) {
+		const zones = new Set(subnetIds
+			.map(id => (clusterSubnetList.find(subnet => subnet.id === id) || {}).zone)
+			.filter(Boolean));
+		if (zones.size < minZones) {
+			return String(provider).toUpperCase() + ' requires subnets in at least ' + minZones +
+				' different availability zones. Selected zones: ' + (zones.size ? Array.from(zones).join(', ') : 'none') + '.';
+		}
+	}
+	return null;
 }
 
 export async function setSecurityGroupList(securityGroupList) {
@@ -858,7 +907,7 @@ export async function createCluster() {
 		return;
 	}
 	var selectedVpc = $("#cluster_vpc").val()
-	var selectedSubnet = $("#cluster_subnet").val()
+	var selectedSubnetIds = getSelectedClusterSubnetIds()
 	var selectedSecurityGroup = $("#cluster_sg").val()
 
 	if (!clusterName) {
@@ -877,8 +926,9 @@ export async function createCluster() {
 		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'VPC is required.')
 		return;
 	}
-	if (!selectedSubnet) {
-		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Subnet is required.')
+	var subnetError = validateClusterSubnets($("#cluster_provider").val(), selectedSubnetIds);
+	if (subnetError) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Subnet Selection', subnetError)
 		return;
 	}
 	if (!selectedSecurityGroup) {
@@ -907,7 +957,7 @@ export async function createCluster() {
 	// 다만 요청을 만드는 단계에서 실패하면 요청이 나가지 않으므로, 그때는 전송 토스트 대신 실패를 알린다.
 	var dispatch;
 	try {
-		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, versionQueryParams)
+		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnetIds, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, versionQueryParams)
 	} catch (error) {
 		console.error('Failed to build cluster creation request:', error);
 	}
@@ -925,7 +975,7 @@ export async function createCluster() {
 	$("#cluster_version").val("");
 	$("#cluster_version_hint").hide();
 	$("#cluster_vpc").val("");
-	$("#cluster_subnet").val("");
+	$("#cluster_subnet").val($("#cluster_subnet").prop("multiple") ? [] : "");
 	$("#cluster_sg").val("");
 	Create_Cluster_Config_Arr = new Array();
 	Create_Node_Config_Arr = new Array();
@@ -1049,7 +1099,7 @@ export function clusterFormDone_btn() {
     const connectionName = $("#cluster_cloudconnection").val();
     const clusterName = $("#cluster_name").val();
     const vNetId = $("#cluster_vpc").val();
-    const subnetId = $("#cluster_subnet").val();
+    const subnetIds = getSelectedClusterSubnetIds();
     const securityGroupId = $("#cluster_sg").val();
     const version = $("#cluster_version").val();
     const description = $("#cluster_desc").val();
@@ -1058,7 +1108,7 @@ export function clusterFormDone_btn() {
         connectionName: connectionName || "", 
         name: clusterName || "",
         vNetId: vNetId || "", 
-        subnetIds: [subnetId || ""],
+        subnetIds: subnetIds.length ? subnetIds : [""],
         securityGroupIds: [securityGroupId || ""],
         version: version || "", 
         description: description || ""

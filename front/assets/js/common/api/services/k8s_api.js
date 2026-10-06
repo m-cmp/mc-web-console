@@ -126,7 +126,7 @@ export async function CreateCluster(clusterName, selectedConnection, clusterVers
   obj['description'] = (Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].description) || "";
   obj['version'] = clusterVersion; // 선택된 Kubernetes 버전
   obj['vNetId'] = selectedVpc; // VPC ID
-  obj['subnetIds'] = [selectedSubnet]; // Subnet ID (배열로 전달)
+  obj['subnetIds'] = Array.isArray(selectedSubnet) ? selectedSubnet : [selectedSubnet]; // Subnet ID 배열 (AWS는 서로 다른 AZ 2개 이상)
   obj['securityGroupIds'] = [selectedSecurityGroup]; // Security Group ID (배열로 전달)
 
   // NodeGroupList가 있으면 추가 (조건부로 추가).
