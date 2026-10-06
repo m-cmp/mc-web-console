@@ -52,17 +52,21 @@ async function getWorkspaceProjectListByUserToken() {
 }
 
 ///////////////////////////////////////
-export async function getWorkspaceListByUser() {
+// forceRefresh: 세션 캐시를 무시하고 다시 조회한다(navbar refresh 버튼).
+// 로그인 이후 추가·매핑된 workspace/project는 캐시에 없으므로 다시 조회해야 반영된다.
+// 조회에 실패하면 기존 캐시를 그대로 쓴다.
+export async function getWorkspaceListByUser(forceRefresh = false) {
   var workspaceList = [];
   // 세션에서 찾기
   let userWorkspaceList = await webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceProjectList();
-  
-  // sessionStorage에 데이터가 없거나 빈 배열인 경우 API 호출
-  if (userWorkspaceList == null || !Array.isArray(userWorkspaceList) || userWorkspaceList.length === 0) {
+  const hasCache = Array.isArray(userWorkspaceList) && userWorkspaceList.length > 0;
+
+  // sessionStorage에 데이터가 없거나 빈 배열인 경우, 또는 강제 갱신인 경우 API 호출
+  if (forceRefresh || !hasCache) {
     try {
       // workspace 목록, project 목록 조회
       var userWorkspaceProjectList = await getWorkspaceProjectListByUserToken();
-      
+
       if (userWorkspaceProjectList && Array.isArray(userWorkspaceProjectList) && userWorkspaceProjectList.length > 0) {
         setWorkspaceProjectList(userWorkspaceProjectList);
         userWorkspaceProjectList.forEach(item => {
@@ -71,16 +75,14 @@ export async function getWorkspaceListByUser() {
         // 새로 조회한 경우 저장된 curworkspace, curproject 는 초기화
         setCurrentWorkspace("");
         setCurrentProject("");
-      } else {
-        console.warn("No workspace data available for user");
-        // 빈 배열 반환 (에러는 아니므로 조용히 처리)
-        return [];
+        return workspaceList;
       }
+      console.warn("No workspace data available for user");
     } catch (error) {
       console.error("Failed to fetch workspace list:", error);
-      // 에러 발생 시 빈 배열 반환
-      return [];
     }
+    // 조회 실패·빈 응답: 캐시가 있으면 그대로 쓰고, 없으면 빈 배열 (에러는 아니므로 조용히 처리)
+    return hasCache ? [...userWorkspaceList] : [];
   } else {
     userWorkspaceList.forEach(item => {
       workspaceList.push(item);
@@ -107,6 +109,9 @@ export async function getProjectListByWorkspaceId(workspaceId) {
       console.debug(item)
       projectList.push(item);
     });
+    // 페이지 로드 시 project 목록은 세션 캐시(projectList_<wsId>)에서 읽으므로,
+    // 실시간으로 조회한 목록을 캐시에도 반영해 화면 이동 후에도 같은 목록이 보이게 한다.
+    webconsolejs["common/storage/sessionstorage"].setSessionProjectList(workspaceId, JSON.stringify(projectList));
   } catch (error) {
     // commonAPIPost는 403(권한 부족) 등 에러 응답을 throw로 전파한다.
     // 여기서 잡지 않으면 project select box 갱신 로직 전체가 중단되어
