@@ -931,13 +931,12 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
             return;
         }
 
-        const callErr = response.err;
+        const callErr = toErrorMessage(response.error) || toErrorMessage(response.err);
         const stdout = toOutputChunks(response.stdout);
         const stderr = toOutputChunks(response.stderr);
 
-        if (callErr && Object.keys(callErr).length > 0) {
-            const formattedError = JSON.stringify(callErr, null, 2);
-            writeAutoWrap(term, " > connect Error: \x1b[1m\x1b[31m" + formattedError + "\x1b[0m");
+        if (callErr) {
+            writeAutoWrap(term, " > connect Error: \x1b[1m\x1b[31m" + callErr + "\x1b[0m");
             callback({ error: callErr });
             return;
         }
@@ -965,6 +964,15 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
         term.write(`Error: ${error.message}\r\n`);
         callback({ error: error.message });
     }
+}
+
+// PostCmdInfra는 실패 사유를 `error`(문자열)로 돌려준다. 이전 응답 형태인 `err`(객체)도 받아준다.
+// 빈 문자열/빈 객체는 에러 없음으로 본다.
+function toErrorMessage(value) {
+    if (!value) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'object' && Object.keys(value).length > 0) return JSON.stringify(value, null, 2);
+    return '';
 }
 
 // PostCmdInfra는 stdout/stderr를 map[int]string(객체) 또는 단일 문자열로 돌려줄 수 있다.
