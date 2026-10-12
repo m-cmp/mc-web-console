@@ -10,6 +10,11 @@ const AppState = {
   allConnections: [],   // from getConnConfigList: { configName, providerName, ... }[]
   lastSyncResult: [],
 
+  // 마지막 Query 조회 범위 — Run Sync 대상의 기준.
+  // { mode: 'all'|'partial', connections: string[], resourceTypes: string[] }
+  queryScope: null,
+  queryScopeStale: false, // Query 이후 Search Conditions가 바뀌면 true → 재조회 전까지 Run Sync 차단
+
   // Resources 탭 (구 CSP Overview)
   resUnmanaged: [],     // onCspOnly
   resRegistered: [],    // onTumblebug
@@ -108,11 +113,13 @@ window.syncToggleProviderConns = function (provider, checked) {
   document.querySelectorAll(`.qry-conn-cb[data-provider="${provider}"]`).forEach(cb => {
     cb.checked = checked;
   });
+  markQueryScopeStale();
 };
 
 window.syncSelectAllConn = function (checked) {
   document.querySelectorAll('.qry-conn-cb').forEach(cb => { cb.checked = checked; });
   document.querySelectorAll('.qry-provider-group-cb').forEach(cb => { cb.checked = checked; });
+  markQueryScopeStale();
 };
 
 // Provider 체크박스 초기 생성 (allConnections 로드 후 호출)
@@ -152,7 +159,7 @@ window.syncQuery = async function () {
   const mode = document.querySelector('input[name="query-provider-radio"]:checked')?.value;
 
   if (mode === 'all') {
-    await queryAll();
+    await queryAll(resourceTypes);
   } else {
     const selectedConns = Array.from(document.querySelectorAll('.qry-conn-cb:checked')).map(c => c.value);
     if (selectedConns.length === 0) { alert('Please select at least one Connection.'); return; }
@@ -161,7 +168,7 @@ window.syncQuery = async function () {
 };
 
 // All 조회: InspectResourcesOverview
-async function queryAll() {
+async function queryAll(resourceTypes) {
   const statusEl = document.getElementById('qry-status');
   const loading  = document.getElementById('sync-overview-loading');
   const summary  = document.getElementById('sync-summary');
@@ -175,7 +182,8 @@ async function queryAll() {
     loading.style.display = 'none';
     if (!data) { renderOverviewTable([], []); statusEl.textContent = ''; return; }
 
-    const selectedTypes = Array.from(document.querySelectorAll('.qry-restype-cb:checked')).map(c => c.value);
+    // Resource Type이 All이면 체크박스가 전부 해제돼 있으므로 체크박스가 아니라 요청 type을 쓴다
+    const selectedTypes = resourceTypes;
 
     AppState.overviewRaw = Array.isArray(data.inspectResult) ? data.inspectResult : [];
 
@@ -206,7 +214,7 @@ async function queryAll() {
     document.getElementById('sync-elapsed').textContent = data.elapsedTime ? `Query time: ${data.elapsedTime}s` : '';
     summary.style.display = '';
 
-    populateSyncProviderCheckboxes();
+    setQueryScope('all', selectedTypes);
     renderOverviewTable(AppState.overviewRows, selectedTypes);
     statusEl.textContent = '';
   } catch (e) {
@@ -272,7 +280,7 @@ async function queryPartial(connections, resourceTypes) {
   document.getElementById('sync-elapsed').textContent = '';
   summary.style.display = '';
 
-  populateSyncProviderCheckboxes();
+  setQueryScope('partial', resourceTypes);
   renderOverviewTable(AppState.overviewRows, resourceTypes);
   statusEl.textContent = '';
 }
@@ -326,16 +334,7 @@ function renderOverviewTable(data, resourceTypes) {
     renderDetailCard(row.getData(), resourceTypes || []);
   });
 
-  AppState.overviewTable.on('rowSelectionChanged', (rows) => {
-    const el = document.getElementById('sync-selected-conn');
-    if (!rows || rows.length === 0) {
-      el.textContent = 'Select a Connection from the status table (all if none selected)';
-      el.className = 'form-control bg-light text-secondary';
-    } else {
-      el.textContent = rows.map(r => r.connectionName).join(', ');
-      el.className = 'form-control bg-light text-dark';
-    }
-  });
+  AppState.overviewTable.on('rowSelectionChanged', () => renderSyncTarget());
 }
 
 // ── Detail Card ───────────────────────────────────────────────────────────────
@@ -386,25 +385,82 @@ window.syncFilterTable = function (val) {
   }
 };
 
-// ── 동기화 실행 카드: Provider / ResType toggles ──────────────────────────────
+// ── 동기화 실행 카드: 대상(Query Scope) / ResType ─────────────────────────────
 
-// 동기화 실행 섹션의 provider 체크박스 — 조회 결과에서 추출
-// 기본: disabled + unchecked — "부분 선택" 라디오 클릭 시 활성화
-function populateSyncProviderCheckboxes() {
-  const providers = [...new Set(AppState.overviewRows.map(r => getProvider(r.connectionName)))].sort();
-  const group = document.getElementById('provider-cb-group');
-  group.innerHTML = providers.map(p =>
-    `<label class="form-check mb-0">
-       <input class="form-check-input sync-provider-cb" type="checkbox" value="${p}" disabled>
-       <span class="form-check-label">${p.toUpperCase()}</span>
-     </label>`
-  ).join('');
+const ALL_SYNC_TYPES = ['vNet', 'securityGroup', 'sshKey', 'node', 'dataDisk', 'customImage'];
+
+// Query 성공 시 조회 범위를 저장하고, Run Sync 자원 유형 기본값을 Query 유형에 맞춘다
+function setQueryScope(mode, resourceTypes) {
+  AppState.queryScope = {
+    mode,
+    connections: AppState.overviewRows.map(r => r.connectionName),
+    resourceTypes: resourceTypes.slice(),
+  };
+  AppState.queryScopeStale = false;
+
+  const typeAll = document.querySelector('input[name="query-restype-radio"]:checked')?.value === 'all';
+  document.querySelector(`input[name="restype-radio"][value="${typeAll ? 'all' : 'partial'}"]`).checked = true;
+  document.querySelectorAll('.sync-type-cb').forEach(cb => {
+    cb.checked = !typeAll && resourceTypes.includes(cb.value);
+    cb.disabled = typeAll;
+  });
+
+  renderSyncTarget();
 }
 
-window.syncToggleProvider = function () {
-  const partial = document.querySelector('input[name="provider-radio"]:checked')?.value === 'partial';
-  document.querySelectorAll('.sync-provider-cb').forEach(cb => { cb.disabled = !partial; });
-};
+function markQueryScopeStale() {
+  if (!AppState.queryScope || AppState.queryScopeStale) return;
+  AppState.queryScopeStale = true;
+  renderSyncTarget();
+}
+
+// 표 선택 행 → 없으면 Query 조회 범위. null 이면 전체 connection(Query All)
+function getSyncTargetConnections() {
+  const selectedRows = AppState.overviewTable ? AppState.overviewTable.getSelectedData() : [];
+  if (selectedRows.length > 0) return selectedRows.map(r => r.connectionName);
+  if (AppState.queryScope?.mode === 'partial') return AppState.queryScope.connections.slice();
+  return null;
+}
+
+function listConnections(connNames, max = 10) {
+  if (connNames.length <= max) return connNames.join(', ');
+  return `${connNames.slice(0, max).join(', ')} … (+${connNames.length - max} more)`;
+}
+
+function summarizeConnections(connNames) {
+  const byProvider = {};
+  connNames.forEach(n => { const p = getProvider(n); byProvider[p] = (byProvider[p] || 0) + 1; });
+  return Object.keys(byProvider).sort().map(p => `${p} ${byProvider[p]}`).join(', ');
+}
+
+function renderSyncTarget() {
+  const el   = document.getElementById('sync-target');
+  const warn = document.getElementById('sync-target-warning');
+  const btn  = document.getElementById('sync-exec-btn');
+  const scope = AppState.queryScope;
+
+  warn.style.display = scope && AppState.queryScopeStale ? '' : 'none';
+  btn.disabled = !scope || AppState.queryScopeStale;
+
+  if (!scope) {
+    el.textContent = 'Run Query first. Sync targets the queried Connections (or the rows selected in the status table).';
+    el.className = 'form-control bg-light text-secondary';
+    return;
+  }
+
+  const selectedCount = AppState.overviewTable ? AppState.overviewTable.getSelectedData().length : 0;
+  const conns = getSyncTargetConnections();
+  let label;
+  if (selectedCount > 0) {
+    label = `Selected rows: ${conns.length} Connection(s) (${summarizeConnections(conns)}) — ${listConnections(conns)}`;
+  } else if (conns) {
+    label = `Query scope: ${conns.length} Connection(s) (${summarizeConnections(conns)}) — ${listConnections(conns)}`;
+  } else {
+    label = 'Query scope: All Connections';
+  }
+  el.textContent = label;
+  el.className = 'form-control bg-light text-dark';
+}
 
 window.syncToggleResType = function () {
   const partial = document.querySelector('input[name="restype-radio"]:checked')?.value === 'partial';
@@ -413,36 +469,42 @@ window.syncToggleResType = function () {
 
 // ── 동기화 실행 ───────────────────────────────────────────────────────────────
 
-// connectionName → { provider, region } — allConnections의 regionZoneInfo 우선 사용
-// string split 방식은 "alibaba-us-east-1-us-east-1b" → region="us-east-1-us-east-1b" 오파싱 발생
-function getProviderRegion(connectionName) {
+// connectionName → tumblebug RegisterCspNativeResources 필터 1개.
+// provider+region 만 보내면 tumblebug 이 그 region 의 모든 zone connection 으로 넓혀 잡으므로
+// zone 까지 지정해 connection 1개로 좁힌다. regionZoneInfo 가 없으면 connectionName(deprecated지만 지원)으로 지정.
+// (string split 방식은 "alibaba-us-east-1-us-east-1b" → region 오파싱이 있어 쓰지 않는다)
+function getConnectionFilter(connectionName) {
   const conn = AppState.allConnections.find(c => c.configName === connectionName);
-  if (conn) {
-    return {
-      provider: conn.providerName,
-      region:   conn.regionZoneInfo?.assignedRegion || '',
-    };
-  }
-  // fallback: provider만 추출 (region 필터 없음)
-  return { provider: connectionName.split('-')[0], region: '' };
+  const region = conn?.regionZoneInfo?.assignedRegion;
+  if (!conn?.providerName || !region) return { connectionName };
+  const filter = { provider: conn.providerName, region };
+  if (conn.regionZoneInfo.assignedZone) filter.zone = conn.regionZoneInfo.assignedZone;
+  return filter;
 }
 
-// 연결 목록 → 중복 제거된 { provider, region } 필터 배열 반환
+// 연결 목록 → 중복 제거된 필터 배열
 function buildFilters(connNames) {
   const seen = new Set();
   const filters = [];
   for (const name of connNames) {
-    const { provider, region } = getProviderRegion(name);
-    const key = `${provider}|${region}`;
+    const filter = getConnectionFilter(name);
+    const key = filter.connectionName || `${filter.provider}|${filter.region}|${filter.zone || ''}`;
     if (!seen.has(key)) {
       seen.add(key);
-      filters.push({ provider, region });
+      filters.push(filter);
     }
   }
   return filters;
 }
 
+function describeFilter(filter) {
+  if (filter.connectionName) return filter.connectionName;
+  if (!filter.provider) return 'All';
+  return [filter.provider, filter.region, filter.zone].filter(Boolean).join('/');
+}
+
 window.syncExecute = async function () {
+  if (!AppState.queryScope || AppState.queryScopeStale) { alert('Run Query first. Sync targets the queried Connections.'); return; }
   const nsId = document.getElementById('sync-ns').value;
   if (!nsId) { alert('Please select a Namespace first.'); return; }
 
@@ -457,34 +519,18 @@ window.syncExecute = async function () {
       return;
     }
   } else {
-    types = ['vNet', 'securityGroup', 'sshKey', 'node', 'dataDisk', 'customImage'];
+    types = ALL_SYNC_TYPES.slice();
   }
 
-  // 대상 connection 결정 → provider/region 필터 목록 생성
-  let filters;
-  const selectedRows = AppState.overviewTable ? AppState.overviewTable.getSelectedData() : [];
-  if (selectedRows.length > 0) {
-    filters = buildFilters(selectedRows.map(r => r.connectionName));
-  } else {
-    const providerPartial = document.querySelector('input[name="provider-radio"]:checked')?.value === 'partial';
-    if (providerPartial) {
-      const selProviders = new Set(
-        Array.from(document.querySelectorAll('.sync-provider-cb:checked')).map(c => c.value)
-      );
-      const conns = AppState.overviewRows
-        .filter(r => selProviders.has(getProvider(r.connectionName)))
-        .map(r => r.connectionName);
-      filters = buildFilters(conns);
-    } else {
-      filters = [{}]; // All — provider/region 필터 없음
-    }
-  }
+  // 대상: 표 선택 행 → Query 조회 범위 → (Query All 일 때만) 전체
+  const targetConns = getSyncTargetConnections();
+  const filters = targetConns ? buildFilters(targetConns) : [{}];
 
-  const filterDesc = filters.length === 1 && !filters[0].provider
-    ? 'All'
-    : filters.map(f => `${f.provider}/${f.region}`).join(', ');
+  const targetDesc = targetConns
+    ? `${targetConns.length} Connection(s)\n  ${targetConns.join('\n  ')}`
+    : 'All Connections';
 
-  if (!confirm(`Running sync.\nNS: ${nsId}\nTarget: ${filterDesc}\nResource Type: ${types.join(', ')}\n\nDo you want to continue?`)) return;
+  if (!confirm(`Running sync.\nNS: ${nsId}\nTarget: ${targetDesc}\nResource Type: ${types.join(', ')}\n\nDo you want to continue?`)) return;
 
   const statusEl = document.getElementById('sync-exec-status');
   statusEl.className = 'text-secondary small';
@@ -511,7 +557,8 @@ window.syncExecute = async function () {
   statusEl.className = totalFailed > 0 ? 'text-warning small' : 'text-success small';
   statusEl.textContent = `Completed: ${totalSucceeded} registered, ${totalFailed} failed`;
 
-  const resultTabLink = document.querySelector('#sync-tabs .nav-item:last-child .nav-link');
+  // 마지막 탭은 NS Sync 이므로 위치가 아니라 대상 탭으로 찾는다
+  const resultTabLink = document.querySelector('#sync-tabs .nav-link[onclick*="\'result\'"]');
   syncShowTab('result', resultTabLink);
 };
 
@@ -564,9 +611,7 @@ function renderResultTab() {
   const rows = [];
   for (const entry of AppState.lastSyncResult) {
     if (!entry.success) {
-      const filterLabel = entry.filter?.provider
-        ? `${entry.filter.provider}/${entry.filter.region}`
-        : 'All';
+      const filterLabel = describeFilter(entry.filter || {});
       rows.push({ connectionName: filterLabel, resourceType: '—', resourceId: entry.error, status: 'Error', message: '', _failed: true });
       continue;
     }
@@ -1261,6 +1306,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   AppState.allConnections = conns;
   populateQueryProviderCheckboxes();
   populateResourceProviderSelect();
+
+  // Query 이후 조회 조건(라디오/체크박스, 동적 생성분 포함)이 바뀌면 Run Sync 대상이 어긋나므로 stale 처리
+  document.getElementById('qry-conditions')?.addEventListener('change', markQueryScopeStale);
 
   // NS 드롭다운
   await loadNsDropdown('sync-ns');

@@ -34,7 +34,7 @@
             <div class="card-header">
               <h3 class="card-title">Search Conditions</h3>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="qry-conditions">
               <div class="row g-3">
 
                 <!-- Provider -->
@@ -187,27 +187,14 @@
                   </select>
                 </div>
 
-                <!-- Target Connection (테이블 선택 표시) -->
+                <!-- Target (Query 조회 범위 / 표 선택 행) -->
                 <div class="col-md-8">
-                  <label class="form-label">Target Connection</label>
-                  <div id="sync-selected-conn" class="form-control bg-light text-secondary" style="min-height:38px; font-size:0.875rem">
-                    Select a Connection from the status table (all if none selected)
+                  <label class="form-label">Target</label>
+                  <div id="sync-target" class="form-control bg-light text-secondary" style="min-height:38px; font-size:0.875rem">
+                    Run Query first. Sync targets the queried Connections (or the rows selected in the status table).
                   </div>
-                </div>
-
-                <!-- Target Provider -->
-                <div class="col-12">
-                  <label class="form-label">Target Provider</label>
-                  <div class="d-flex gap-3 align-items-center flex-wrap">
-                    <label class="form-check mb-0">
-                      <input class="form-check-input" type="radio" name="provider-radio" value="all" checked onchange="syncToggleProvider()">
-                      <span class="form-check-label">All</span>
-                    </label>
-                    <label class="form-check mb-0">
-                      <input class="form-check-input" type="radio" name="provider-radio" value="partial" onchange="syncToggleProvider()">
-                      <span class="form-check-label">Partial</span>
-                    </label>
-                    <div id="provider-cb-group" class="d-flex gap-3 flex-wrap"></div>
+                  <div id="sync-target-warning" class="text-warning small mt-1" style="display:none">
+                    Search Conditions changed after the last Query. Run Query again to sync.
                   </div>
                 </div>
 
@@ -236,7 +223,7 @@
 
                 <!-- 실행 버튼 -->
                 <div class="col-12 d-flex gap-2 align-items-center">
-                  <button class="btn btn-primary" onclick="syncExecute()">
+                  <button id="sync-exec-btn" class="btn btn-primary" onclick="syncExecute()" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 4v16l13 -8z"/></svg>
                     Run Sync
                   </button>
