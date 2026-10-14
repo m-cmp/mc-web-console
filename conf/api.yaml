@@ -10,7 +10,7 @@ services:
       username:
       password:
   mc-iam-manager:
-    version: 0.6.4
+    version: 0.7.0
     baseurl: http://15.164.139.37:5000
     auth:
       type: bearer
