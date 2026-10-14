@@ -14,19 +14,49 @@ const AppState = {
     tables: { holderTable: null },
 };
 
-// cb-spider가 각 Provider별로 기대하는 Credential key 이름 목록
-const PROVIDER_KEYS = {
-    aws:       ['ClientId', 'ClientSecret'],
-    gcp:       ['ClientEmail', 'PrivateKey', 'ProjectID'],
-    azure:     ['ClientId', 'ClientSecret', 'TenantId', 'SubscriptionId'],
-    alibaba:   ['ClientId', 'ClientSecret'],
-    ibm:       ['ApiKey', 'S3AccessKey', 'S3SecretKey'],
-    ncp:       ['ClientId', 'ClientSecret'],
+// mc-infra-manager POST /credential 이 허용하는 CSP 형식 key 목록 (cloudos metainfo의 CredentialCSP).
+// Provider 선택 시 metainfo를 조회해 쓰고, 조회 실패 시에만 아래 값을 사용한다 (mc-infra-manager 0.13.x 기준).
+const FALLBACK_PROVIDER_KEYS = {
+    aws:       ['aws_access_key_id', 'aws_secret_access_key'],
+    gcp:       ['client_email', 'private_key', 'project_id'],
+    azure:     ['clientId', 'clientSecret', 'tenantId', 'subscriptionId'],
+    alibaba:   ['AccessKeyId', 'AccessKeySecret'],
+    ibm:       ['ApiKey'],
+    ncp:       ['ncloud_access_key', 'ncloud_secret_key'],
     nhn:       ['IdentityEndpoint', 'Username', 'Password', 'DomainName', 'TenantId'],
     kt:        ['IdentityEndpoint', 'Username', 'Password', 'DomainName', 'ProjectID'],
     openstack: ['IdentityEndpoint', 'Username', 'Password', 'DomainName', 'ProjectID'],
     tencent:   ['SecretId', 'SecretKey'],
 };
+
+const providerKeysCache = {};
+
+async function getProviderKeys(provider) {
+    if (providerKeysCache[provider]) return providerKeysCache[provider];
+    try {
+        const keys = await webconsolejs["common/api/services/credential_holder_api"].getProviderCredentialKeys(provider);
+        if (keys.length > 0) {
+            providerKeysCache[provider] = keys;
+            return keys;
+        }
+    } catch (e) {
+        console.warn(`CredentialCSP 조회 실패 (${provider}), 기본 key 목록 사용:`, e);
+    }
+    return FALLBACK_PROVIDER_KEYS[provider] || [];
+}
+
+// 서버 거부 사유: mc-infra-manager 응답 message(responseData) → 프록시 status message → axios message 순
+function getServerErrorMessage(e) {
+    const data = e && e.response && e.response.data;
+    if (data) {
+        const backend = data.responseData;
+        if (backend && typeof backend === 'object' && backend.message) return backend.message;
+        if (typeof backend === 'string' && backend) return backend;
+        if (data.status && data.status.message) return data.status.message;
+        if (data.message) return data.message;
+    }
+    return e && e.message ? e.message : 'Unknown error';
+}
 
 const PROVIDER_BADGE = {
     aws:   '<span class="badge bg-orange-lt">AWS</span>',
@@ -217,7 +247,7 @@ const CredentialHolderManager = {
             await CredentialHolderManager.loadHolders();
         } catch (e) {
             console.error('Credential 등록 실패:', e);
-            webconsolejs['common/util'].showToast('Failed to register credential: ' + e.message, 'error');
+            webconsolejs['common/util'].showToast('Failed to register credential: ' + getServerErrorMessage(e), 'error');
         }
     },
 };
@@ -246,11 +276,14 @@ document.addEventListener('DOMContentLoaded', () => {
     KVManager.reset();
     CredentialHolderManager.loadHolders();
 
-    // Provider 선택 시 cb-spider 기대 key 이름으로 KV 행 자동 채우기
+    // Provider 선택 시 mc-infra-manager 허용 key 이름으로 KV 행 자동 채우기
     const providerSelect = document.getElementById('create-holder-provider');
     if (providerSelect) {
-        providerSelect.addEventListener('change', () => {
-            const keys = PROVIDER_KEYS[providerSelect.value];
+        providerSelect.addEventListener('change', async () => {
+            const provider = providerSelect.value;
+            const keys = provider ? await getProviderKeys(provider) : [];
+            // 조회 중 Provider가 다시 바뀌었으면 이전 응답은 버린다
+            if (providerSelect.value !== provider) return;
             const container = document.getElementById('kv-list-container');
             if (!container) return;
             container.innerHTML = '';
