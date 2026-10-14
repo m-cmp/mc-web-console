@@ -4,6 +4,7 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { showToast, TOAST_TYPES } from '../../../../common/utils/toast.js';
 import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from '../../../../common/utils/cspResource.js';
+import { parseNodeRef, extractErrorMessage } from '../../../../common/utils/resourceUsage.js';
 
 const diskApi = () => webconsolejs['common/api/services/disk_api'];
 const importApi = () => webconsolejs['common/api/services/import_api'];
@@ -81,24 +82,12 @@ function diskId(data) {
   return data?.id || data?.name;
 }
 
-// "/ns/default/infra/infra01/node/aws-ap-southeast-1-1" -> { nsId, infraId, nodeId }
-function parseNodeRef(resourcePath) {
-  const m = /^\/ns\/([^/]+)\/infra\/([^/]+)\/node\/([^/]+)$/.exec(resourcePath || '');
-  return m ? { nsId: m[1], infraId: m[2], nodeId: m[3] } : null;
-}
-
 function attachedNodeRef(disk) {
   for (const ref of disk?.associatedObjectList || []) {
     const parsed = parseNodeRef(ref);
     if (parsed) return parsed;
   }
   return null;
-}
-
-// API 프록시는 백엔드(CSP SDK) 에러 메시지를 {responseData:{message},status:{...}} 로 감싼다.
-// 축소된 axios 기본 메시지("Request failed with status code 500") 대신 실제 원인을 보여준다.
-function extractErrorMessage(err) {
-  return err?.response?.data?.responseData?.message || err?.message || String(err);
 }
 
 // ─── Tabulator 테이블 ─────────────────────────────────────────────────────
