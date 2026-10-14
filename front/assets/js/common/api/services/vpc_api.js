@@ -43,14 +43,15 @@ export async function get(nsId, name) {
   return response?.data?.responseData;
 }
 
-export async function del(nsId, name) {
+// options는 commonAPIPost로 그대로 전달 (예: 호출부가 실패 사유를 직접 표시할 때 { suppressErrorToast: true })
+export async function del(nsId, name, options = {}) {
   const controller = '/api/mc-infra-manager/DelVNet';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: nsId, vNetId: name },
     // 콘솔에서 생성한 VNet은 항상 서브넷을 포함하므로, action 없이 호출하면
     // "vNet has subnets" 형태의 500이 난다. withsubnets로 VNet+서브넷을 함께 삭제.
     queryParams: { action: 'withsubnets' }
-  });
+  }, undefined, options);
   return response?.data;
 }
 
@@ -63,10 +64,10 @@ export async function createSubnet(nsId, vnetId, body) {
   return response?.data;
 }
 
-export async function delSubnet(nsId, vnetId, subnetId) {
+export async function delSubnet(nsId, vnetId, subnetId, options = {}) {
   const controller = '/api/mc-infra-manager/DelSubnet';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId, vNetId: vnetId, subnetId }
-  });
+  }, undefined, options);
   return response?.data;
 }

@@ -4,6 +4,7 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { showToast, TOAST_TYPES } from "../../../../common/utils/toast.js";
 import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from "../../../../common/utils/cspResource.js";
+import { usedByCount, usedByBadgeHtml, showAssociatedNodes, cancelAssociatedNodes, extractErrorMessage } from "../../../../common/utils/resourceUsage.js";
 
 const sgApi     = () => webconsolejs["common/api/services/securitygroup_api"];
 const importApi = () => webconsolejs["common/api/services/import_api"];
@@ -60,7 +61,7 @@ export async function loadSGList() {
     try {
         const data = await sgApi().list(AppState.ns);
         const rawItems = data?.securityGroup || (Array.isArray(data) ? data : []);
-        const items = rawItems.map((v) => ({ ...v, _provider: getProvider(v), _region: getRegion(v) }));
+        const items = rawItems.map((v) => ({ ...v, _provider: getProvider(v), _region: getRegion(v), _usedBy: usedByCount(v) }));
         AppState.resources.all = items;
         populateProviderFilterOptions(items, 'filter-provider');
         populateRegionFilterOptions(items, 'filter-provider', 'filter-region');
@@ -101,6 +102,8 @@ function initTable(items) {
                   return `${rules.length}`;
               },
               hozAlign: 'center', width: 90 },
+            { title: 'Used By',      field: '_usedBy',        sorter: 'number', hozAlign: 'center', width: 120,
+              formatter: (cell) => usedByBadgeHtml(cell.getValue()) },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
     });
@@ -127,6 +130,7 @@ function initTable(items) {
         } catch (err) {
             console.error('SG 상세 조회 실패:', err);
         }
+        await showAssociatedNodes(AppState.ns, AppState.resources.selected);
     });
 }
 
@@ -240,6 +244,7 @@ function showDetail() {
 }
 
 export function hideDetail() {
+    cancelAssociatedNodes();
     document.getElementById('view-mode-cards')?.classList.remove('show');
     document.getElementById('edit-mode-cards')?.classList.remove('show');
     AppState.ui.viewMode = false;
@@ -291,6 +296,14 @@ export function showEditMode() {
     document.getElementById('edit-sg-vnet').value       = selected.vNetId || '';
     document.getElementById('edit-sg-provider').value   = getProvider(selected);
     document.getElementById('edit-sg-region').value     = getRegion(selected);
+
+    // 규칙 변경은 이 SG를 쓰는 Node에 바로 적용되므로 사용 중이면 영향 범위를 알린다
+    const usedBy = usedByCount(selected);
+    const inUseEl = document.getElementById('edit-sg-inuse-warning');
+    if (inUseEl) {
+        inUseEl.textContent = `This Security Group is used by ${usedBy} node(s). Rule changes apply to them immediately.`;
+        inUseEl.classList.toggle('d-none', usedBy === 0);
+    }
 
     const rules = selected.firewallRules || selected.securityRuleList || [];
     const blocked = _hasUnsupportedAllRule(rules);
@@ -451,11 +464,25 @@ export function confirmBulkDelete() {
         );
         return;
     }
-    AppState.resources.bulkSelected = selected;
+    // 사용 중 SG는 tumblebug이 삭제를 거부하므로 요청하지 않는다
+    const inUse = selected.filter((v) => v._usedBy > 0);
+    const deletable = selected.filter((v) => !(v._usedBy > 0));
+    const inUseLines = inUse.map((v) => `· ${v.name} — used by ${v._usedBy} node(s)`).join('\n');
+    if (deletable.length === 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+            'Cannot Delete',
+            `The selected SecurityGroup(s) are in use and cannot be deleted:\n${inUseLines}`
+        );
+        return;
+    }
+    AppState.resources.bulkSelected = deletable;
+    const skipNote = inUse.length > 0
+        ? `\n\n${inUse.length} SecurityGroup(s) are in use and will be skipped:\n${inUseLines}`
+        : '';
     webconsolejs['partials/layout/modal'].commonConfirmModal(
         'commonDefaultModal',
         'Delete Selected',
-        `Delete ${selected.length} selected SecurityGroup(s)?`,
+        `Delete ${deletable.length} SecurityGroup(s)?${skipNote}`,
         'pages/settings/environment/cloudresources/securitygroups.executeBulkDelete'
     );
 }
@@ -463,13 +490,20 @@ export function confirmBulkDelete() {
 export async function executeBulkDelete() {
     const items = AppState.resources.bulkSelected || [];
     if (items.length === 0) return;
-    const results = await Promise.allSettled(items.map((item) => sgApi().del(AppState.ns, item.name)));
-    const failed = results.filter((r) => r.status === 'rejected').length;
-    const succeeded = results.length - failed;
-    showToast(
-        failed > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
-        `${succeeded} SecurityGroup(s) deleted${failed > 0 ? `, ${failed} failed` : ''}`
+    const results = await Promise.allSettled(
+        items.map((item) => sgApi().del(AppState.ns, item.name, { suppressErrorToast: true }))
     );
+    const failures = results
+        .map((r, i) => (r.status === 'rejected' ? `· ${items[i].name}: ${extractErrorMessage(r.reason)}` : null))
+        .filter(Boolean);
+    const succeeded = results.length - failures.length;
+    showToast(
+        failures.length > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
+        `${succeeded} SecurityGroup(s) deleted${failures.length > 0 ? `, ${failures.length} failed` : ''}`
+    );
+    if (failures.length > 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Delete Failed', failures.join('\n'));
+    }
     AppState.resources.bulkSelected = [];
     AppState.tables.sgTable?.deselectRow();
     hideDetail();
@@ -481,6 +515,7 @@ export async function executeBulkDelete() {
 function initFilter() {
     const providerEl = document.getElementById('filter-provider');
     const regionEl   = document.getElementById('filter-region');
+    const usageEl    = document.getElementById('filter-usage');
     const fieldEl = document.getElementById('filter-field');
     const typeEl  = document.getElementById('filter-type');
     const valueEl = document.getElementById('filter-value');
@@ -491,6 +526,8 @@ function initFilter() {
         const filters = [];
         if (providerEl?.value) filters.push({ field: '_provider', type: '=', value: providerEl.value });
         if (regionEl?.value) filters.push({ field: '_region', type: '=', value: regionEl.value });
+        if (usageEl?.value === 'in-use') filters.push({ field: '_usedBy', type: '>', value: 0 });
+        if (usageEl?.value === 'unused') filters.push({ field: '_usedBy', type: '=', value: 0 });
         if (fieldEl.value) filters.push({ field: fieldEl.value, type: typeEl.value, value: valueEl.value });
         if (filters.length > 0) {
             AppState.tables.sgTable.setFilter(filters);
@@ -504,6 +541,7 @@ function initFilter() {
         updateFilter();
     });
     regionEl?.addEventListener('change', updateFilter);
+    usageEl?.addEventListener('change', updateFilter);
     fieldEl.addEventListener('change', updateFilter);
     typeEl.addEventListener('change', updateFilter);
     valueEl.addEventListener('keyup', updateFilter);
@@ -511,6 +549,7 @@ function initFilter() {
     document.getElementById('filter-clear').addEventListener('click', function () {
         if (providerEl) providerEl.value = '';
         if (regionEl) regionEl.value = '';
+        if (usageEl) usageEl.value = '';
         fieldEl.value = '';
         typeEl.value  = 'like';
         valueEl.value = '';

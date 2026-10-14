@@ -4,6 +4,7 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { showToast, TOAST_TYPES } from "../../../../common/utils/toast.js";
 import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from "../../../../common/utils/cspResource.js";
+import { usedByCount, usedByBadgeHtml, showAssociatedNodes, cancelAssociatedNodes, extractErrorMessage } from "../../../../common/utils/resourceUsage.js";
 
 const vpcApi    = () => webconsolejs["common/api/services/vpc_api"];
 const importApi = () => webconsolejs["common/api/services/import_api"];
@@ -12,7 +13,8 @@ const importApi = () => webconsolejs["common/api/services/import_api"];
 const AppState = {
     ns: '',
     tables: { vnetTable: null },
-    resources: { selected: null, all: [] },
+    // subnetUsage: { vNet, counts: Map<subnetId, nodeCount> } — 선택한 VPC의 연관 Node를 해석한 결과
+    resources: { selected: null, all: [], subnetUsage: null },
     ui: { viewMode: false },
 };
 
@@ -63,7 +65,7 @@ export async function loadVNetList() {
     try {
         const data = await vpcApi().getAllVNet(AppState.ns);
         const rawVNets = data?.vNet || (Array.isArray(data) ? data : []);
-        const vNets = rawVNets.map((v) => ({ ...v, _provider: getProvider(v), _region: getRegion(v) }));
+        const vNets = rawVNets.map((v) => ({ ...v, _provider: getProvider(v), _region: getRegion(v), _usedBy: usedByCount(v) }));
         AppState.resources.all = vNets;
         populateProviderFilterOptions(vNets, 'filter-provider');
         populateRegionFilterOptions(vNets, 'filter-provider', 'filter-region');
@@ -101,6 +103,8 @@ function initTable(vNets) {
             { title: 'Subnet Count',      field: 'subnetInfoList',
               formatter: (cell) => `${(cell.getValue() || []).length}`,
               hozAlign: 'center', width: 100 },
+            { title: 'Used By',        field: '_usedBy',        sorter: 'number', hozAlign: 'center', width: 120,
+              formatter: (cell) => usedByBadgeHtml(cell.getValue()) },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
     });
@@ -128,7 +132,34 @@ function initTable(vNets) {
         } catch (err) {
             console.error('VNet 상세 조회 실패:', err);
         }
+        await refreshSubnetUsage(AppState.resources.selected);
     });
+}
+
+// ─── 연관 Node(Used By) ───────────────────────────────────────────────────
+
+// 연관 Node를 해석해 상세 섹션을 그리고, 그 Node들의 subnetId로 Subnet별 사용 수를 집계한다.
+// Subnet은 tumblebug에 자체 연관 목록이 없어 vNet 연관 Node 기준으로 계산한다.
+async function refreshSubnetUsage(vNet) {
+    if (!vNet) return;
+    AppState.resources.subnetUsage = null;
+    const rows = await showAssociatedNodes(AppState.ns, vNet, { showSubnet: true });
+    if (rows === null || AppState.resources.selected?.name !== vNet.name) return;
+    const counts = new Map();
+    for (const row of rows) {
+        if (row.state !== 'ok' || !row.node.subnetId) continue;
+        counts.set(row.node.subnetId, (counts.get(row.node.subnetId) || 0) + 1);
+    }
+    AppState.resources.subnetUsage = { vNet: vNet.name, counts };
+    renderDetail(AppState.resources.selected);
+    if (AppState.ui.editMode) _renderEditSubnetTable(AppState.resources.selected.subnetInfoList || []);
+}
+
+// 집계 전이면 null — 화면에는 "…"로 표시하고 삭제 버튼은 막아 둔다
+function subnetUsedBy(subnet) {
+    const usage = AppState.resources.subnetUsage;
+    if (!usage || usage.vNet !== AppState.resources.selected?.name) return null;
+    return usage.counts.get(subnet.id || subnet.name) || 0;
 }
 
 // ─── Detail Panel ─────────────────────────────────────────────────────────
@@ -159,10 +190,16 @@ function renderDetail(data) {
                 <td>${s.name || '-'}</td>
                 <td>${s.ipv4_cidr || s.ipv4CIDR || s.cidr || '-'}</td>
                 <td>${s.zone || '-'}</td>
-                <td><code>${s.cspResourceId || '-'}</code></td>`;
+                <td><code>${s.cspResourceId || '-'}</code></td>
+                <td>${subnetUsedByText(s)}</td>`;
             tbody.appendChild(tr);
         }
     }
+}
+
+function subnetUsedByText(subnet) {
+    const count = subnetUsedBy(subnet);
+    return count === null ? '<span class="text-muted">…</span>' : usedByBadgeHtml(count);
 }
 
 function showDetail() {
@@ -174,6 +211,7 @@ function showDetail() {
 }
 
 export function hideDetail() {
+    cancelAssociatedNodes();
     document.getElementById('view-mode-cards')?.classList.remove('show');
     document.getElementById('edit-mode-cards')?.classList.remove('show');
     AppState.ui.viewMode = false;
@@ -216,6 +254,10 @@ function _renderEditSubnetTable(subnets) {
     const tbody = document.getElementById('edit-subnet-tbody');
     tbody.innerHTML = '';
     for (const s of subnets) {
+        const count = subnetUsedBy(s);
+        // 사용 중 Subnet은 tumblebug이 삭제를 거부하므로 요청 전에 막는다. 집계 전(null)에도 막아 둔다.
+        const blocked = count !== 0;
+        const tip = count === null ? 'Checking usage...' : `In use by ${count} node(s)`;
         const tr = document.createElement('tr');
         tr.dataset.subnetId = s.name;
         tr.innerHTML = `
@@ -223,11 +265,14 @@ function _renderEditSubnetTable(subnets) {
             <td>${s.ipv4_cidr || s.ipv4CIDR || s.cidr || '-'}</td>
             <td>${s.zone || '-'}</td>
             <td><code>${s.cspResourceId || '-'}</code></td>
+            <td>${subnetUsedByText(s)}</td>
             <td>
-              <button type="button" class="btn btn-sm btn-outline-danger"
-                onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].confirmDeleteSubnet('${s.name}')">
-                Delete
-              </button>
+              <span ${blocked ? `title="${tip}"` : ''}>
+                <button type="button" class="btn btn-sm btn-outline-danger" ${blocked ? 'disabled' : ''}
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/networks'].confirmDeleteSubnet('${s.name}')">
+                  Delete
+                </button>
+              </span>
             </td>`;
         tbody.appendChild(tr);
     }
@@ -274,7 +319,7 @@ export async function executeDeleteSubnet(subnetId) {
     const vnetName = AppState.resources.selected?.name;
     if (!vnetName || !subnetId) return;
     try {
-        await vpcApi().delSubnet(AppState.ns, vnetName, subnetId);
+        await vpcApi().delSubnet(AppState.ns, vnetName, subnetId, { suppressErrorToast: true });
         showToast(TOAST_TYPES.SUCCESS, `Subnet "${subnetId}" deleted successfully`);
         // 상태 업데이트 및 UI 갱신
         const detail = await vpcApi().get(AppState.ns, vnetName);
@@ -284,7 +329,7 @@ export async function executeDeleteSubnet(subnetId) {
         }
     } catch (err) {
         console.error('Subnet Delete 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'Failed to delete Subnet: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to delete Subnet: ' + extractErrorMessage(err));
     }
 }
 
@@ -367,6 +412,8 @@ export async function triggerEditSelected() {
     }
     showEditMode();
     table.deselectRow();
+    // Subnet 삭제 보호를 위해 사용 현황을 집계한다(완료되면 Edit 표를 다시 그림)
+    await refreshSubnetUsage(AppState.resources.selected);
 }
 
 // ─── 다중선택 삭제 ───────────────────────────────────────────────────────
@@ -381,11 +428,26 @@ export function confirmBulkDelete() {
         );
         return;
     }
-    AppState.resources.bulkSelected = selected;
+    // 사용 중 VPC는 요청하지 않는다. withsubnets 삭제는 Subnet을 순서대로 지우다 사용 중 Subnet에서 멈춰
+    // 앞서 지운 Subnet이 복구되지 않는 부분 삭제가 생기기 때문이다.
+    const inUse = selected.filter((v) => v._usedBy > 0);
+    const deletable = selected.filter((v) => !(v._usedBy > 0));
+    const inUseLines = inUse.map((v) => `· ${v.name} — used by ${v._usedBy} node(s)`).join('\n');
+    if (deletable.length === 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+            'Cannot Delete',
+            `The selected VPC(s) are in use and cannot be deleted:\n${inUseLines}`
+        );
+        return;
+    }
+    AppState.resources.bulkSelected = deletable;
+    const skipNote = inUse.length > 0
+        ? `\n\n${inUse.length} VPC(s) are in use and will be skipped:\n${inUseLines}`
+        : '';
     webconsolejs['partials/layout/modal'].commonConfirmModal(
         'commonDefaultModal',
         'Delete Selected',
-        `Delete ${selected.length} selected VPC(s)?`,
+        `Delete ${deletable.length} VPC(s)?${skipNote}`,
         'pages/settings/environment/cloudresources/networks.executeBulkDelete'
     );
 }
@@ -393,13 +455,20 @@ export function confirmBulkDelete() {
 export async function executeBulkDelete() {
     const items = AppState.resources.bulkSelected || [];
     if (items.length === 0) return;
-    const results = await Promise.allSettled(items.map((item) => vpcApi().del(AppState.ns, item.name)));
-    const failed = results.filter((r) => r.status === 'rejected').length;
-    const succeeded = results.length - failed;
-    showToast(
-        failed > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
-        `${succeeded} VPC(s) deleted${failed > 0 ? `, ${failed} failed` : ''}`
+    const results = await Promise.allSettled(
+        items.map((item) => vpcApi().del(AppState.ns, item.name, { suppressErrorToast: true }))
     );
+    const failures = results
+        .map((r, i) => (r.status === 'rejected' ? `· ${items[i].name}: ${extractErrorMessage(r.reason)}` : null))
+        .filter(Boolean);
+    const succeeded = results.length - failures.length;
+    showToast(
+        failures.length > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
+        `${succeeded} VPC(s) deleted${failures.length > 0 ? `, ${failures.length} failed` : ''}`
+    );
+    if (failures.length > 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Delete Failed', failures.join('\n'));
+    }
     AppState.resources.bulkSelected = [];
     AppState.tables.vnetTable?.deselectRow();
     hideDetail();
@@ -411,6 +480,7 @@ export async function executeBulkDelete() {
 function initFilter() {
     const providerEl = document.getElementById('filter-provider');
     const regionEl   = document.getElementById('filter-region');
+    const usageEl    = document.getElementById('filter-usage');
     const fieldEl = document.getElementById('filter-field');
     const typeEl  = document.getElementById('filter-type');
     const valueEl = document.getElementById('filter-value');
@@ -421,6 +491,8 @@ function initFilter() {
         const filters = [];
         if (providerEl?.value) filters.push({ field: '_provider', type: '=', value: providerEl.value });
         if (regionEl?.value) filters.push({ field: '_region', type: '=', value: regionEl.value });
+        if (usageEl?.value === 'in-use') filters.push({ field: '_usedBy', type: '>', value: 0 });
+        if (usageEl?.value === 'unused') filters.push({ field: '_usedBy', type: '=', value: 0 });
         if (fieldEl.value) filters.push({ field: fieldEl.value, type: typeEl.value, value: valueEl.value });
         if (filters.length > 0) {
             AppState.tables.vnetTable.setFilter(filters);
@@ -434,6 +506,7 @@ function initFilter() {
         updateFilter();
     });
     regionEl?.addEventListener('change', updateFilter);
+    usageEl?.addEventListener('change', updateFilter);
     fieldEl.addEventListener('change', updateFilter);
     typeEl.addEventListener('change', updateFilter);
     valueEl.addEventListener('keyup', updateFilter);
@@ -441,6 +514,7 @@ function initFilter() {
     document.getElementById('filter-clear').addEventListener('click', function () {
         if (providerEl) providerEl.value = '';
         if (regionEl) regionEl.value = '';
+        if (usageEl) usageEl.value = '';
         fieldEl.value = '';
         typeEl.value  = 'like';
         valueEl.value = '';
