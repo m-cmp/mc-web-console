@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-wrapper">
       <div class="page-body">
-        <div class="container-xl">
+        <div class="container-fluid">
 
           <!-- List -->
           <div class="row row-cards">
@@ -471,15 +471,27 @@
                             </div>
                           </div>
                         </div>
+                        <div class="row">
+                          <div class="col-md-4">
+                            <div class="mb-3">
+                              <label class="form-label required">Auth Method</label>
+                              <select class="form-select" id="csp-auth-method-select" name="csp-auth-method" required>
+                                <option value="OIDC">OIDC</option>
+                                <option value="SAML">SAML</option>
+                                <option value="SECRET_KEY">Secret Key</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
                       </form>
-                      
+
                       <!-- CSP Role Mapping 테이블 -->
                       <div class="mt-3">
                         <div id="create-csp-role-mapping-table"></div>
                       </div>
                     </div>
                   </div>
-                  
+
                   <!-- Save/Cancel 버튼 -->
                   <div class="d-flex justify-content-end mt-3">
                     <button class="btn me-2" id="cancel-create-role-btn">
@@ -627,8 +639,20 @@
                               </div>
                             </div>
                           </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="mb-3">
+                                <label class="form-label required">Auth Method</label>
+                                <select class="form-select" id="edit-csp-auth-method-select" name="edit-csp-auth-method" required>
+                                  <option value="OIDC">OIDC</option>
+                                  <option value="SAML">SAML</option>
+                                  <option value="SECRET_KEY">Secret Key</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
                         </form>
-                      
+
                       <!-- CSP Role Mapping 테이블 -->
                       <div class="mt-3">
                         <div id="csp-role-mapping-edit-table"></div>

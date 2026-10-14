@@ -14,12 +14,11 @@ const activeProgressToasts = new Map();
 function showAPIProgressToast(url, label) {
   const toastId = `api-progress-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   
-  if (webconsolejs && webconsolejs['common/utils/toast'] && 
-      webconsolejs['common/utils/toast'].showProgressToast) {
-    webconsolejs['common/utils/toast'].showProgressToast(
-      toastId,
-      label || 'Loading...'
-    );
+  const toast = webconsolejs && webconsolejs['common/utils/toast'];
+  if (toast && toast.showToast) {
+    // id를 지정해 띄워야 완료·실패 시 hideAPIProgressToast(toastId)로 닫힌다.
+    // (showProgressToast(fileName, status)는 고정 id 'transferProgressToast'로 등록돼 닫히지 않았다)
+    toast.showToast(toast.TOAST_TYPES.PROGRESS, label || 'Loading...', { id: toastId });
     
     activeProgressToasts.set(toastId, {
       url,
@@ -85,9 +84,15 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
   console.log("Loader Type :", loaderType);
   console.log("-----------------------");
   
+  // Custom headers (e.g. x-request-id for tumblebug RequestMap)
+  const axiosConfig = {};
+  if (options.headers && typeof options.headers === 'object') {
+    axiosConfig.headers = options.headers;
+  }
+
   try {
     if (data === undefined || data === null) {
-      var response = await axios.post(url);
+      var response = await axios.post(url, undefined, axiosConfig);
     } else if (data.formData instanceof FormData) {
       // FormData 처리 분기 - axios 사용
       console.log("FormData detected, sending with axios");
@@ -110,9 +115,9 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
       
       // FormData 사용 시 Content-Type 헤더를 설정하지 않음
       // 브라우저가 자동으로 boundary 정보와 함께 올바른 헤더를 설정
-      var response = await axios.post(url, data.formData);
+      var response = await axios.post(url, data.formData, axiosConfig);
     } else {
-      var response = await axios.post(url, data);
+      var response = await axios.post(url, data, axiosConfig);
     }
     
     console.log("#### commonAPIPost Response");
@@ -142,7 +147,9 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         } else if (loaderType === 'page') {
           deactivePageLoader();
         }
-        return error;
+        // return error 는 호출부의 await가 정상 resolve된 것처럼 보이게 만들어
+        // try/catch로 실패를 판단하는 모든 호출부가 성공 분기를 타는 버그의 원인이었음 — throw로 전파
+        throw error;
       }
       // 404 에러는 데이터가 없는 정상적인 상황이므로 토큰 갱신하지 않음
       if (error.response && error.response.status === 404) {
@@ -153,13 +160,20 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         } else if (loaderType === 'page') {
           deactivePageLoader();
         }
-        return error;
+        // 호출부가 catch(err) { if (err?.response?.status !== 404) ... } 패턴으로 throw를 전제하므로 throw 유지
+        throw error;
       }
       // 401 Unauthorized는 토큰 만료 또는 인증 실패
       if (error.response && error.response.status === 401) {
         const authrefreshStatus = await webconsolejs["common/cookie/authcookie"].refreshCookieAccessToken({ force: true });
         if (authrefreshStatus) {
           console.log("refreshCookieAccessToken success. Retrying request with refreshed token...");
+          // 재시도 호출이 로더를 새로 띄우므로 이번 호출의 로더는 닫는다
+          if (loaderType === 'toast' && toastId) {
+            hideAPIProgressToast(toastId, true);
+          } else if (loaderType === 'page') {
+            deactivePageLoader();
+          }
           return commonAPIPost(url, data, true, options);
         } else {
           // Loader 종료 / End loader
@@ -182,7 +196,7 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
           deactivePageLoader();
         }
         webconsolejs["common/util"].showToast("Insufficient permissions. Please contact your administrator.", 'error');
-        return error;
+        throw error;
       }
       // 500 Internal Server Error는 서버 오류
       if (error.response && error.response.status === 500) {
@@ -192,8 +206,11 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         } else if (loaderType === 'page') {
           deactivePageLoader();
         }
-        webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
-        return error;
+        // 호출부가 서버 메시지를 직접 노출하는 경우(options.suppressErrorToast) 일반 문구로 덮지 않는다.
+        if (!options.suppressErrorToast) {
+          webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
+        }
+        throw error;
       }
     }
     
@@ -222,8 +239,8 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         webconsolejs["common/util"].showToast("An error occurred while processing the request: " + error.message, 'error');
       }
     }
-    
-    return error;
+
+    throw error;
   }
 }
 
@@ -281,7 +298,14 @@ export async function commonAPIPostWithoutRetry(url, data) {
     }
 }
 
+// 동시에 여러 API 호출이 겹칠 수 있어 단순 on/off 토글이면 안 됨 —
+// 먼저 끝난 호출의 deactivate가 아직 진행 중인 다른 호출의 로더까지 꺼버리는
+// 경쟁 상태가 발생한다(예: 페이지 진입 시 workspace/project 초기화 호출과
+// 목록 조회 호출이 동시에 뜨는 경우). 활성 요청 수를 세어 0이 될 때만 끈다.
+let activePageLoaderCount = 0;
+
 function activePageLoader(){
+    activePageLoaderCount++;
     try{
         document.getElementById("pageloader").classList.add('active');
     }catch(error){
@@ -290,6 +314,8 @@ function activePageLoader(){
 }
 
 function deactivePageLoader(){
+    activePageLoaderCount = Math.max(0, activePageLoaderCount - 1);
+    if (activePageLoaderCount > 0) return;
     try{
         document.getElementById("pageloader").classList.remove('active');
     }catch(error){

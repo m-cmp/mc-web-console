@@ -25,8 +25,20 @@ export function initServerRecommendation(callbackfunction) {
 	}
 }
 
+// 값이 없거나 0/-1인 숫자 필드는 "-"로 표시
+function dashIfEmpty(cell) {
+	var v = cell.getValue();
+	if (v === undefined || v === null || v === "" || v === 0 || v === -1) {
+		return "-";
+	}
+	return v;
+}
+
 function initRecommendSpecTable() {
-	var tableObjParams = {};
+	// fitColumns는 전체 칼럼을 컨테이너 폭에 압축해 가로 스크롤이 생기지 않음 → fitData로 전환
+	var tableObjParams = {
+		layout: "fitData",
+	};
 
 	var columns = [
 		{
@@ -45,12 +57,6 @@ function initRecommendSpecTable() {
 			visible: false
 		},
 		{
-			title: "EVALUATIONSCORE",
-			field: "evaluationScore10",
-			headerSort: false,
-			visible: false
-		},
-		{
 			title: "PROVIDER",
 			field: "providerName",
 			vertAlign: "middle",
@@ -62,7 +68,8 @@ function initRecommendSpecTable() {
 	{
 		title: "REGION",
 		field: "regionName",
-		vertAlign: "middle"
+		vertAlign: "middle",
+		minWidth: 140,
 	},
 	{
 		title: "SPEC NAME",
@@ -93,11 +100,80 @@ function initRecommendSpecTable() {
 		hozAlign: "center",
 		headerHozAlign: "center",
 		maxWidth: 80,
+	},
+	{
+		title: "ARCHITECTURE",
+		field: "architecture",
+		vertAlign: "middle",
+		hozAlign: "center",
+		formatter: dashIfEmpty,
+	},
+	{
+		title: "DISK (GB)",
+		field: "diskSizeGB",
+		vertAlign: "middle",
+		hozAlign: "center",
+		formatter: dashIfEmpty,
+	},
+	{
+		title: "ROOT DISK",
+		field: "rootDiskType",
+		vertAlign: "middle",
+		hozAlign: "center",
+		formatter: function (cell) {
+			var row = cell.getRow().getData();
+			var type = row.rootDiskType;
+			var size = row.rootDiskSize;
+			if (!type && (!size || size <= 0)) {
+				return "-";
+			}
+			if (size && size > 0) {
+				return (type ? type + " " : "") + size + " GB";
+			}
+			return type;
+		},
+	},
+	{
+		title: "NET BW (Gbps)",
+		field: "netBwGbps",
+		vertAlign: "middle",
+		hozAlign: "center",
+		formatter: dashIfEmpty,
+	},
+	{
+		title: "GPU",
+		field: "acceleratorModel",
+		vertAlign: "middle",
+		hozAlign: "center",
+		formatter: function (cell) {
+			var row = cell.getRow().getData();
+			var model = row.acceleratorModel;
+			if (!model || model === "NA" || row.acceleratorType === "") {
+				return "-";
+			}
+			var count = row.acceleratorCount;
+			return count && count > 1 ? model + " x" + count : model;
+		},
+	},
+	{
+		title: "GPU MEM (GB)",
+		field: "acceleratorMemoryGB",
+		vertAlign: "middle",
+		hozAlign: "center",
+		formatter: dashIfEmpty,
+	},
+	{
+		title: "SCORE",
+		field: "evaluationScore10",
+		vertAlign: "middle",
+		hozAlign: "center",
 	}
 	];
 
 	//recommendTable = setSpecTabulator("spec-table", tableObjParams, columns);
-	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns);
+	// applySpecInfo()는 항상 recommendSpecs[0]만 사용하므로 단일 선택으로 강제한다.
+	// 다중 선택 상태로 두면 이전에 체크된 행이 재검색/재선택 후에도 남아있어 Apply가 옛 spec을 다시 적용하는 결함이 생긴다(PMK WEB-BUG-073과 동일 원인).
+	recommendTable = webconsolejs["common/util"].setTabulator("spec-table", tableObjParams, columns, false);
 	window.recommendTable = recommendTable; // window 객체에 할당
 
 	recommendTable.on("rowSelectionChanged", function (data, rows) {
@@ -442,7 +518,7 @@ export async function getRecommendVmInfo() {
 	const loadingEl = document.getElementById('spec-search-loading');
 	if (loadingEl) loadingEl.style.display = 'block';
 	try {
-		var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+		var respData = await webconsolejs["common/api/services/infra_api"].mciRecommendVm(data);
 		if (respData.status.code != 200) {
 			console.error("RecommendSpec failed", respData)
 			return

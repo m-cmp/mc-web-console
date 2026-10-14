@@ -52,9 +52,15 @@ type RefreshRequestWrapper struct {
 }
 
 // Login 로그인 핸들러
-// POST /api/auth/login
-// MCIAM_USE=true : mc-iam-manager로 프록시
-// MCIAM_USE=false: 로컬 JWT 발급
+// @Summary     Login
+// @Description Authenticate user. MCIAM_USE=true proxies to mc-iam-manager; false issues local JWT.
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       request body LoginRequest true "Login credentials"
+// @Success     200 {object} model.CommonResponse
+// @Failure     400 {object} model.CommonResponse
+// @Router      /api/auth/login [post]
 func Login(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -156,8 +162,16 @@ func loginLocal(c echo.Context, id, password string) error {
 }
 
 // Refresh 토큰 갱신 핸들러
-// POST /api/auth/refresh
-// {"refresh_token": "..."} 또는 {"request": {"refresh_token": "..."}} 형식 모두 지원
+// @Summary     Refresh token
+// @Description Refresh access token. Accepts flat or CommonRequest wrapper body.
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       request body RefreshRequest true "Refresh token"
+// @Success     200 {object} model.CommonResponse
+// @Failure     400 {object} model.CommonResponse
+// @Failure     401 {object} model.CommonResponse
+// @Router      /api/auth/refresh [post]
 func Refresh(c echo.Context) error {
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
@@ -252,9 +266,16 @@ type SignupRequest struct {
 }
 
 // Signup 회원가입 핸들러
-// POST /api/auth/signup
-// MCIAM_USE=true : mc-iam-manager로 프록시
-// MCIAM_USE=false: 미지원 안내 반환
+// @Summary     Sign up
+// @Description Register a new user. MCIAM_USE=true proxies to mc-iam-manager.
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       request body SignupRequest true "Signup payload"
+// @Success     200 {object} model.CommonResponse
+// @Failure     400 {object} model.CommonResponse
+// @Failure     503 {object} map[string]interface{}
+// @Router      /api/auth/signup [post]
 func Signup(c echo.Context) error {
 	var req SignupRequest
 	if err := c.Bind(&req); err != nil {
@@ -324,7 +345,14 @@ func signupViaMCIAM(c echo.Context, req SignupRequestBody, cfg *config.Config) e
 }
 
 // Validate 토큰 검증 핸들러
-// POST /api/auth/validate
+// @Summary     Validate token
+// @Description Validate the current access token
+// @Tags        auth
+// @Security    BearerAuth
+// @Produce     json
+// @Success     200 {object} model.CommonResponse
+// @Failure     401 {object} model.CommonResponse
+// @Router      /api/auth/validate [post]
 func Validate(c echo.Context) error {
 	userID := middleware.GetUserID(c)
 	if userID == "" {
@@ -364,7 +392,14 @@ func storeSession(userID, accessToken string, expiresIn float64, refreshToken st
 }
 
 // Logout 로그아웃 핸들러
-// POST /api/auth/logout
+// @Summary     Logout
+// @Description Invalidate session and remove stored tokens
+// @Tags        auth
+// @Security    BearerAuth
+// @Produce     json
+// @Success     200 {object} model.CommonResponse
+// @Failure     401 {object} model.CommonResponse
+// @Router      /api/auth/logout [post]
 func Logout(c echo.Context) error {
 	userID := middleware.GetUserID(c)
 	if userID == "" {
@@ -386,7 +421,14 @@ func Logout(c echo.Context) error {
 }
 
 // UserInfo 사용자 정보 조회 핸들러
-// POST /api/auth/userinfo
+// @Summary     Get user info
+// @Description Return authenticated user profile from JWT
+// @Tags        auth
+// @Security    BearerAuth
+// @Produce     json
+// @Success     200 {object} model.CommonResponse
+// @Failure     401 {object} model.CommonResponse
+// @Router      /api/auth/userinfo [get]
 func UserInfo(c echo.Context) error {
 	userID := middleware.GetUserID(c)
 	if userID == "" {

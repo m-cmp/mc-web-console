@@ -127,7 +127,7 @@ async function initMonitorConfig() {
 
 // workload 목록 조회 ( mci + pmk )
 async function getWorkloadList(nsId){
-  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
+  var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(nsId);
   var res_item = respMciList.infra
   
   // HTML option 리스트 초기값
@@ -160,7 +160,7 @@ export async function refreshServerList() {
   
   // 1. mci의 vm 목록 조회(install 여부를 위해 필요.)
   try {
-    var response = await webconsolejs["common/api/services/mci_api"].getMci(currentNsId, currentWorkloadId);
+    var response = await webconsolejs["common/api/services/infra_api"].getMci(currentNsId, currentWorkloadId);
     var aMci = response.responseData
     for (var vmIndex in aMci.vm) {
       var aVm = aMci.vm[vmIndex]
@@ -242,6 +242,10 @@ function initMonitorConfigTable() {
     {
       title: "Type",
       field: "workloadType",
+      formatter: function(cell) {
+        var v = cell.getValue();
+        return v === "MCI" ? "Infra" : v; // 표시용 매핑, 내부 workloadType 값은 유지
+      },
       vertAlign: "middle",
       hozAlign: "center",
       headerSort: false,
@@ -383,7 +387,7 @@ function initMonitorMetricsTable() {
       width: 60,
     },
     {
-      title: "Server Name/Id",
+      title: "Node Name/Id",
       field: "vmId",
       vertAlign: "middle",
       hozAlign: "center",
@@ -539,7 +543,7 @@ async function setMonitorConfigInfoData() {
   
     $(htmlCardIdPrefix+"name").text(selectedServerNode.name+" / "+selectedServerNode.id)
     $(htmlCardIdPrefix+"desc").text(selectedServerNode.description)
-    $(htmlCardIdPrefix+"workload").text(selectedServerNode.workloadType+" / "+selectedServerNode.workloadName)
+    $(htmlCardIdPrefix+"workload").text((selectedServerNode.workloadType === "MCI" ? "Infra" : selectedServerNode.workloadType)+" / "+selectedServerNode.workloadName)
     $(htmlCardIdPrefix+"monitor").html(generateOnOffIndicator(selectedServerNode.monitoringAgentStatus === "SUCCESS" && selectedServerNode.logAgentStatus === "SUCCESS" ? true : false))
     $(htmlCardIdPrefix+"monitoring_agent_status").html(generateStatusIndicator(selectedServerNode.logAgentStatus === "SUCCESS" ? "success" : "danger", selectedServerNode.monitoringAgentStatus))
     $(htmlCardIdPrefix+"log_agent_status").html(generateStatusIndicator(selectedServerNode.logAgentStatus === "SUCCESS" ? "success" : "danger", selectedServerNode.monitoringAgentStatus))

@@ -1,0 +1,181 @@
+<div class="page-body">
+  <div class="container-fluid">
+
+    <!-- CSP DEFINITION LIST SECTION -->
+    <div id="index" class="section">
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">CSP Definitions</h3>
+              <div class="card-actions btn-actions">
+
+                <!-- action dropdown -->
+                <div class="dropdown">
+                  <a href="#" class="btn-action" data-bs-toggle="dropdown">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down">
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M6 9l6 6l6 -6"></path>
+                    </svg>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <a class="dropdown-item" href="#"
+                      data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
+                      onclick="webconsolejs['partials/layout/modal'].commonModal(this, 'Delete CSP Definition', 'Would you like to delete the selected CSP definition(s)?', 'pages/settings/environment/cloudsps/cspdefinitions.deleteDefinitions')">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M4 7l16 0"></path>
+                        <path d="M10 11l0 6"></path>
+                        <path d="M14 11l0 6"></path>
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
+                      </svg>
+                      Delete
+                    </a>
+                  </div>
+                </div>
+
+                <!-- refresh -->
+                <a class="btn-action"
+                  onclick="webconsolejs['pages/settings/environment/cloudsps/cspdefinitions'].refreshDefinitionList()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="card-body pb-0">
+              <div class="alert alert-info mb-0" role="alert">
+                Registering a CSP definition makes the provider known and registers its driver and regions with the
+                infrastructure connector. Register a credential on the
+                <a href="/webconsole/settings/environment/cloudsps/credentials">Credentials</a> page afterwards to make
+                the provider usable. Built-in providers cannot be deleted.
+              </div>
+            </div>
+
+            <div class="card-table table-responsive" style="max-height: 400px; overflow: hidden">
+              <div id="csp-table" class="csp-table-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 모드 — CSP 정의 상세 -->
+      <div id="view-mode-cards" class="collapse bg-secondary-lt">
+        <div class="card" id="csp-info-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              CSP Definition Info
+              <span id="csp-info-name-label" class="ms-2 text-primary" style="display:none; font-weight:normal">
+                [<span id="csp-info-name-text"></span>]
+              </span>
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="row p-4 mb-2" style="background-color:#f8f9fa; border-radius:8px; border:1px solid #e9ecef">
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="csp-info-provider"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Driver</div>
+                  <div class="datagrid-content" id="csp-info-driver"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Cloud Platform</div>
+                  <div class="datagrid-content" id="csp-info-platform"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Description</div>
+                  <div class="datagrid-content" id="csp-info-description"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-vcenter card-table">
+                <thead>
+                  <tr>
+                    <th>Region ID</th>
+                    <th>Region Name</th>
+                    <th>Zones</th>
+                  </tr>
+                </thead>
+                <tbody id="csp-info-regions"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD CSP DEFINITION SECTION -->
+      <div id="cspcreate" class="collapse">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Add CSP Definition</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label required">Provider Name</label>
+                  <input type="text" class="form-control" id="create-csp-provider" placeholder="e.g. openstack-site01">
+                  <small class="form-hint">Used as the identifier. It is stored in lower case.</small>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label required">Driver</label>
+                  <input type="text" class="form-control" id="create-csp-driver" placeholder="e.g. openstack-driver-v1.0">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Cloud Platform</label>
+                  <select class="form-select" id="create-csp-platform">
+                    <option value="">Not set</option>
+                  </select>
+                  <small class="form-hint">Base platform this CSP is built on. Required when defining a CSP derived from
+                    another platform (for example an OpenStack site). Leave unset to use the provider itself as the platform.</small>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <input type="text" class="form-control" id="create-csp-description" placeholder="Optional">
+                </div>
+              </div>
+            </div>
+
+            <div class="hr-text">Regions</div>
+            <div class="row g-2 mb-1">
+              <div class="col-md-4"><label class="form-label required">Region ID</label></div>
+              <div class="col-md-7"><label class="form-label required">Zones</label></div>
+              <div class="col-md-1"></div>
+            </div>
+            <div id="region-rows"></div>
+            <button type="button" class="btn btn-outline-primary btn-sm"
+              onclick="webconsolejs['pages/settings/environment/cloudsps/cspdefinitions'].addRegionRow()">
+              Add Region
+            </button>
+          </div>
+          <div class="card-footer text-end">
+            <a href="#cspcreate" class="btn btn-outline-secondary me-2"
+              data-bs-toggle="collapse" data-bs-target="#cspcreate">Cancel</a>
+            <button class="btn btn-primary"
+              onclick="webconsolejs['pages/settings/environment/cloudsps/cspdefinitions'].createDefinition()">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /index section -->
+  </div>
+</div>
+
+{{ javascriptTag("common/api/services/clouddriver_api.js") | raw }} {{ javascriptTag("common/api/services/cspdefinition_api.js") | raw }} {{ javascriptTag("pages/settings/environment/cloudsps/cspdefinitions.js") | raw }}

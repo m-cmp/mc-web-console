@@ -50,7 +50,7 @@
     "css-loader": "~3.5.1",
     "expose-loader": "^3.0.0",
     "file-loader": "~6.0.0",
-    "glob": "^13.0.0",
+    "glob": "^13.0.6",
     "gopherjs-loader": "^0.0.1",
     "mini-css-extract-plugin": "^2.0.0",
     "npm-install-webpack-plugin": "4.0.5",

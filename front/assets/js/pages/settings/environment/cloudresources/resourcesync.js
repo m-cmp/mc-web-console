@@ -9,6 +9,22 @@ const AppState = {
   overviewRaw: [],      // raw { connectionName, resourceType, resourceOverview }[]
   allConnections: [],   // from getConnConfigList: { configName, providerName, ... }[]
   lastSyncResult: [],
+
+  // 마지막 Query 조회 범위 — Run Sync 대상의 기준.
+  // { mode: 'all'|'partial', connections: string[], resourceTypes: string[] }
+  queryScope: null,
+  queryScopeStale: false, // Query 이후 Search Conditions가 바뀌면 true → 재조회 전까지 Run Sync 차단
+
+  // Resources 탭 (구 CSP Overview)
+  resUnmanaged: [],     // onCspOnly
+  resRegistered: [],    // onTumblebug
+  resTable: null,
+  resRegisteredTable: null,
+
+  // Schedule 탭 (구 CSP Schedule)
+  schedules: [],
+  scheduleTable: null,
+  historyTable: null,
 };
 
 // connection name 첫 세그먼트가 provider
@@ -25,12 +41,15 @@ function api() {
 // ── Tab ───────────────────────────────────────────────────────────────────────
 
 window.syncShowTab = function (tab, link) {
-  document.getElementById('tab-overview').style.display = tab === 'overview' ? '' : 'none';
-  document.getElementById('tab-result').style.display   = tab === 'result'   ? '' : 'none';
-  document.getElementById('tab-nssync').style.display   = tab === 'nssync'   ? '' : 'none';
+  document.getElementById('tab-overview').style.display   = tab === 'overview'  ? '' : 'none';
+  document.getElementById('tab-resources').style.display  = tab === 'resources' ? '' : 'none';
+  document.getElementById('tab-schedule').style.display   = tab === 'schedule'  ? '' : 'none';
+  document.getElementById('tab-result').style.display     = tab === 'result'    ? '' : 'none';
+  document.getElementById('tab-nssync').style.display     = tab === 'nssync'    ? '' : 'none';
   document.querySelectorAll('#sync-tabs .nav-link').forEach(a => a.classList.remove('active'));
   if (link) link.classList.add('active');
-  if (tab === 'result') renderResultTab();
+  if (tab === 'result')   renderResultTab();
+  if (tab === 'schedule') loadScheduleList();
 };
 
 // ── 조회 조건: Provider mode toggle ──────────────────────────────────────────
@@ -94,11 +113,13 @@ window.syncToggleProviderConns = function (provider, checked) {
   document.querySelectorAll(`.qry-conn-cb[data-provider="${provider}"]`).forEach(cb => {
     cb.checked = checked;
   });
+  markQueryScopeStale();
 };
 
 window.syncSelectAllConn = function (checked) {
   document.querySelectorAll('.qry-conn-cb').forEach(cb => { cb.checked = checked; });
   document.querySelectorAll('.qry-provider-group-cb').forEach(cb => { cb.checked = checked; });
+  markQueryScopeStale();
 };
 
 // Provider 체크박스 초기 생성 (allConnections 로드 후 호출)
@@ -138,7 +159,7 @@ window.syncQuery = async function () {
   const mode = document.querySelector('input[name="query-provider-radio"]:checked')?.value;
 
   if (mode === 'all') {
-    await queryAll();
+    await queryAll(resourceTypes);
   } else {
     const selectedConns = Array.from(document.querySelectorAll('.qry-conn-cb:checked')).map(c => c.value);
     if (selectedConns.length === 0) { alert('Please select at least one Connection.'); return; }
@@ -147,7 +168,7 @@ window.syncQuery = async function () {
 };
 
 // All 조회: InspectResourcesOverview
-async function queryAll() {
+async function queryAll(resourceTypes) {
   const statusEl = document.getElementById('qry-status');
   const loading  = document.getElementById('sync-overview-loading');
   const summary  = document.getElementById('sync-summary');
@@ -161,7 +182,8 @@ async function queryAll() {
     loading.style.display = 'none';
     if (!data) { renderOverviewTable([], []); statusEl.textContent = ''; return; }
 
-    const selectedTypes = Array.from(document.querySelectorAll('.qry-restype-cb:checked')).map(c => c.value);
+    // Resource Type이 All이면 체크박스가 전부 해제돼 있으므로 체크박스가 아니라 요청 type을 쓴다
+    const selectedTypes = resourceTypes;
 
     AppState.overviewRaw = Array.isArray(data.inspectResult) ? data.inspectResult : [];
 
@@ -172,10 +194,8 @@ async function queryAll() {
         connMap[conn] = { connectionName: conn, hasUnsynced: false };
         selectedTypes.forEach(t => { connMap[conn][t] = '-'; });
       }
-      // InspectResourcesOverview uses 'vm'; map to 'node' if user selected 'node'
-      const displayType = item.resourceType === 'vm' && selectedTypes.includes('node')
-        ? 'node'
-        : item.resourceType;
+      // InspectResourcesOverview 는 자원유형을 'node' 로 돌려준다 (model.StrNode)
+      const displayType = item.resourceType;
       if (selectedTypes.includes(displayType)) {
         const onTb   = item.resourceOverview?.onTumblebug ?? 0;
         const onCsp  = item.resourceOverview?.onCspTotal  ?? 0;
@@ -194,7 +214,7 @@ async function queryAll() {
     document.getElementById('sync-elapsed').textContent = data.elapsedTime ? `Query time: ${data.elapsedTime}s` : '';
     summary.style.display = '';
 
-    populateSyncProviderCheckboxes();
+    setQueryScope('all', selectedTypes);
     renderOverviewTable(AppState.overviewRows, selectedTypes);
     statusEl.textContent = '';
   } catch (e) {
@@ -260,7 +280,7 @@ async function queryPartial(connections, resourceTypes) {
   document.getElementById('sync-elapsed').textContent = '';
   summary.style.display = '';
 
-  populateSyncProviderCheckboxes();
+  setQueryScope('partial', resourceTypes);
   renderOverviewTable(AppState.overviewRows, resourceTypes);
   statusEl.textContent = '';
 }
@@ -292,7 +312,7 @@ function renderOverviewTable(data, resourceTypes) {
     placeholder: 'Click the Query button to fetch the status.',
     pagination: 'local',
     paginationSize: 10,
-    selectable: true,
+    selectable: true, // false로 두면 Tabulator 내부 cap-check 버그(isNaN(false)===false)로 다중선택 자체가 깨진다
     rowFormatter: (row) => {
       if (row.getData().hasUnsynced) row.getElement().classList.add('table-warning');
     },
@@ -304,19 +324,17 @@ function renderOverviewTable(data, resourceTypes) {
   });
 
   AppState.overviewTable.on('rowClick', (e, row) => {
+    // selectable:true는 row 아무데나 클릭해도 체크박스를 토글하는 내장 동작이 있다.
+    // 체크박스 자체를 클릭한 게 아니면 그 토글을 즉시 되돌려, row 클릭은 Detail Card 오픈 전용으로 만든다.
+    const clickedCell = row.getCells().find(c => c.getElement().contains(e.target));
+    const isCheckboxCol = clickedCell?.getColumn()?.getDefinition()?.formatter === 'rowSelection';
+    if (!isCheckboxCol) {
+      row.toggleSelect();
+    }
     renderDetailCard(row.getData(), resourceTypes || []);
   });
 
-  AppState.overviewTable.on('rowSelectionChanged', (rows) => {
-    const el = document.getElementById('sync-selected-conn');
-    if (!rows || rows.length === 0) {
-      el.textContent = 'Select a Connection from the status table (all if none selected)';
-      el.className = 'form-control bg-light text-secondary';
-    } else {
-      el.textContent = rows.map(r => r.connectionName).join(', ');
-      el.className = 'form-control bg-light text-dark';
-    }
-  });
+  AppState.overviewTable.on('rowSelectionChanged', () => renderSyncTarget());
 }
 
 // ── Detail Card ───────────────────────────────────────────────────────────────
@@ -367,25 +385,82 @@ window.syncFilterTable = function (val) {
   }
 };
 
-// ── 동기화 실행 카드: Provider / ResType toggles ──────────────────────────────
+// ── 동기화 실행 카드: 대상(Query Scope) / ResType ─────────────────────────────
 
-// 동기화 실행 섹션의 provider 체크박스 — 조회 결과에서 추출
-// 기본: disabled + unchecked — "부분 선택" 라디오 클릭 시 활성화
-function populateSyncProviderCheckboxes() {
-  const providers = [...new Set(AppState.overviewRows.map(r => getProvider(r.connectionName)))].sort();
-  const group = document.getElementById('provider-cb-group');
-  group.innerHTML = providers.map(p =>
-    `<label class="form-check mb-0">
-       <input class="form-check-input sync-provider-cb" type="checkbox" value="${p}" disabled>
-       <span class="form-check-label">${p.toUpperCase()}</span>
-     </label>`
-  ).join('');
+const ALL_SYNC_TYPES = ['vNet', 'securityGroup', 'sshKey', 'node', 'dataDisk', 'customImage'];
+
+// Query 성공 시 조회 범위를 저장하고, Run Sync 자원 유형 기본값을 Query 유형에 맞춘다
+function setQueryScope(mode, resourceTypes) {
+  AppState.queryScope = {
+    mode,
+    connections: AppState.overviewRows.map(r => r.connectionName),
+    resourceTypes: resourceTypes.slice(),
+  };
+  AppState.queryScopeStale = false;
+
+  const typeAll = document.querySelector('input[name="query-restype-radio"]:checked')?.value === 'all';
+  document.querySelector(`input[name="restype-radio"][value="${typeAll ? 'all' : 'partial'}"]`).checked = true;
+  document.querySelectorAll('.sync-type-cb').forEach(cb => {
+    cb.checked = !typeAll && resourceTypes.includes(cb.value);
+    cb.disabled = typeAll;
+  });
+
+  renderSyncTarget();
 }
 
-window.syncToggleProvider = function () {
-  const partial = document.querySelector('input[name="provider-radio"]:checked')?.value === 'partial';
-  document.querySelectorAll('.sync-provider-cb').forEach(cb => { cb.disabled = !partial; });
-};
+function markQueryScopeStale() {
+  if (!AppState.queryScope || AppState.queryScopeStale) return;
+  AppState.queryScopeStale = true;
+  renderSyncTarget();
+}
+
+// 표 선택 행 → 없으면 Query 조회 범위. null 이면 전체 connection(Query All)
+function getSyncTargetConnections() {
+  const selectedRows = AppState.overviewTable ? AppState.overviewTable.getSelectedData() : [];
+  if (selectedRows.length > 0) return selectedRows.map(r => r.connectionName);
+  if (AppState.queryScope?.mode === 'partial') return AppState.queryScope.connections.slice();
+  return null;
+}
+
+function listConnections(connNames, max = 10) {
+  if (connNames.length <= max) return connNames.join(', ');
+  return `${connNames.slice(0, max).join(', ')} … (+${connNames.length - max} more)`;
+}
+
+function summarizeConnections(connNames) {
+  const byProvider = {};
+  connNames.forEach(n => { const p = getProvider(n); byProvider[p] = (byProvider[p] || 0) + 1; });
+  return Object.keys(byProvider).sort().map(p => `${p} ${byProvider[p]}`).join(', ');
+}
+
+function renderSyncTarget() {
+  const el   = document.getElementById('sync-target');
+  const warn = document.getElementById('sync-target-warning');
+  const btn  = document.getElementById('sync-exec-btn');
+  const scope = AppState.queryScope;
+
+  warn.style.display = scope && AppState.queryScopeStale ? '' : 'none';
+  btn.disabled = !scope || AppState.queryScopeStale;
+
+  if (!scope) {
+    el.textContent = 'Run Query first. Sync targets the queried Connections (or the rows selected in the status table).';
+    el.className = 'form-control bg-light text-secondary';
+    return;
+  }
+
+  const selectedCount = AppState.overviewTable ? AppState.overviewTable.getSelectedData().length : 0;
+  const conns = getSyncTargetConnections();
+  let label;
+  if (selectedCount > 0) {
+    label = `Selected rows: ${conns.length} Connection(s) (${summarizeConnections(conns)}) — ${listConnections(conns)}`;
+  } else if (conns) {
+    label = `Query scope: ${conns.length} Connection(s) (${summarizeConnections(conns)}) — ${listConnections(conns)}`;
+  } else {
+    label = 'Query scope: All Connections';
+  }
+  el.textContent = label;
+  el.className = 'form-control bg-light text-dark';
+}
 
 window.syncToggleResType = function () {
   const partial = document.querySelector('input[name="restype-radio"]:checked')?.value === 'partial';
@@ -394,36 +469,42 @@ window.syncToggleResType = function () {
 
 // ── 동기화 실행 ───────────────────────────────────────────────────────────────
 
-// connectionName → { provider, region } — allConnections의 regionZoneInfo 우선 사용
-// string split 방식은 "alibaba-us-east-1-us-east-1b" → region="us-east-1-us-east-1b" 오파싱 발생
-function getProviderRegion(connectionName) {
+// connectionName → tumblebug RegisterCspNativeResources 필터 1개.
+// provider+region 만 보내면 tumblebug 이 그 region 의 모든 zone connection 으로 넓혀 잡으므로
+// zone 까지 지정해 connection 1개로 좁힌다. regionZoneInfo 가 없으면 connectionName(deprecated지만 지원)으로 지정.
+// (string split 방식은 "alibaba-us-east-1-us-east-1b" → region 오파싱이 있어 쓰지 않는다)
+function getConnectionFilter(connectionName) {
   const conn = AppState.allConnections.find(c => c.configName === connectionName);
-  if (conn) {
-    return {
-      provider: conn.providerName,
-      region:   conn.regionZoneInfo?.assignedRegion || '',
-    };
-  }
-  // fallback: provider만 추출 (region 필터 없음)
-  return { provider: connectionName.split('-')[0], region: '' };
+  const region = conn?.regionZoneInfo?.assignedRegion;
+  if (!conn?.providerName || !region) return { connectionName };
+  const filter = { provider: conn.providerName, region };
+  if (conn.regionZoneInfo.assignedZone) filter.zone = conn.regionZoneInfo.assignedZone;
+  return filter;
 }
 
-// 연결 목록 → 중복 제거된 { provider, region } 필터 배열 반환
+// 연결 목록 → 중복 제거된 필터 배열
 function buildFilters(connNames) {
   const seen = new Set();
   const filters = [];
   for (const name of connNames) {
-    const { provider, region } = getProviderRegion(name);
-    const key = `${provider}|${region}`;
+    const filter = getConnectionFilter(name);
+    const key = filter.connectionName || `${filter.provider}|${filter.region}|${filter.zone || ''}`;
     if (!seen.has(key)) {
       seen.add(key);
-      filters.push({ provider, region });
+      filters.push(filter);
     }
   }
   return filters;
 }
 
+function describeFilter(filter) {
+  if (filter.connectionName) return filter.connectionName;
+  if (!filter.provider) return 'All';
+  return [filter.provider, filter.region, filter.zone].filter(Boolean).join('/');
+}
+
 window.syncExecute = async function () {
+  if (!AppState.queryScope || AppState.queryScopeStale) { alert('Run Query first. Sync targets the queried Connections.'); return; }
   const nsId = document.getElementById('sync-ns').value;
   if (!nsId) { alert('Please select a Namespace first.'); return; }
 
@@ -432,35 +513,24 @@ window.syncExecute = async function () {
   if (restypePartial) {
     types = Array.from(document.querySelectorAll('.sync-type-cb:checked')).map(c => c.value);
     if (types.length === 0) { alert('Please select at least one resource type.'); return; }
-  } else {
-    types = ['vNet', 'securityGroup', 'sshKey', 'vm', 'dataDisk', 'customImage'];
-  }
-
-  // 대상 connection 결정 → provider/region 필터 목록 생성
-  let filters;
-  const selectedRows = AppState.overviewTable ? AppState.overviewTable.getSelectedData() : [];
-  if (selectedRows.length > 0) {
-    filters = buildFilters(selectedRows.map(r => r.connectionName));
-  } else {
-    const providerPartial = document.querySelector('input[name="provider-radio"]:checked')?.value === 'partial';
-    if (providerPartial) {
-      const selProviders = new Set(
-        Array.from(document.querySelectorAll('.sync-provider-cb:checked')).map(c => c.value)
-      );
-      const conns = AppState.overviewRows
-        .filter(r => selProviders.has(getProvider(r.connectionName)))
-        .map(r => r.connectionName);
-      filters = buildFilters(conns);
-    } else {
-      filters = [{}]; // All — provider/region 필터 없음
+    const missing = api().findMissingResourceTypeDeps(types);
+    if (missing.length > 0) {
+      alert('Some resource types require others to be selected together:\n\n' + missing.join('\n'));
+      return;
     }
+  } else {
+    types = ALL_SYNC_TYPES.slice();
   }
 
-  const filterDesc = filters.length === 1 && !filters[0].provider
-    ? 'All'
-    : filters.map(f => `${f.provider}/${f.region}`).join(', ');
+  // 대상: 표 선택 행 → Query 조회 범위 → (Query All 일 때만) 전체
+  const targetConns = getSyncTargetConnections();
+  const filters = targetConns ? buildFilters(targetConns) : [{}];
 
-  if (!confirm(`Running sync.\nNS: ${nsId}\nTarget: ${filterDesc}\nResource Type: ${types.join(', ')}\n\nDo you want to continue?`)) return;
+  const targetDesc = targetConns
+    ? `${targetConns.length} Connection(s)\n  ${targetConns.join('\n  ')}`
+    : 'All Connections';
+
+  if (!confirm(`Running sync.\nNS: ${nsId}\nTarget: ${targetDesc}\nResource Type: ${types.join(', ')}\n\nDo you want to continue?`)) return;
 
   const statusEl = document.getElementById('sync-exec-status');
   statusEl.className = 'text-secondary small';
@@ -487,7 +557,8 @@ window.syncExecute = async function () {
   statusEl.className = totalFailed > 0 ? 'text-warning small' : 'text-success small';
   statusEl.textContent = `Completed: ${totalSucceeded} registered, ${totalFailed} failed`;
 
-  const resultTabLink = document.querySelector('#sync-tabs .nav-item:last-child .nav-link');
+  // 마지막 탭은 NS Sync 이므로 위치가 아니라 대상 탭으로 찾는다
+  const resultTabLink = document.querySelector('#sync-tabs .nav-link[onclick*="\'result\'"]');
   syncShowTab('result', resultTabLink);
 };
 
@@ -540,9 +611,7 @@ function renderResultTab() {
   const rows = [];
   for (const entry of AppState.lastSyncResult) {
     if (!entry.success) {
-      const filterLabel = entry.filter?.provider
-        ? `${entry.filter.provider}/${entry.filter.region}`
-        : 'All';
+      const filterLabel = describeFilter(entry.filter || {});
       rows.push({ connectionName: filterLabel, resourceType: '—', resourceId: entry.error, status: 'Error', message: '', _failed: true });
       continue;
     }
@@ -610,10 +679,514 @@ function renderResultTab() {
   });
 }
 
+// ══ Resources 탭 (구 CSP Overview) ═══════════════════════════════════════════
+
+function httpStatus(err) {
+  return err?.response?.status;
+}
+
+// Provider / Region 드롭다운 — 조회 대상 connection 을 여기서 좁힌다.
+// (구 CSP Overview 는 전 커넥션 × 전 타입을 무조건 조회해 매우 무거웠다)
+function populateResourceProviderSelect() {
+  const sel = document.getElementById('res-provider');
+  const providers = [...new Set(
+    AppState.allConnections.map(c => (c.providerName || getProvider(c.configName)).toLowerCase())
+  )].sort();
+  providers.forEach(p => sel.appendChild(new Option(p.toUpperCase(), p)));
+}
+
+window.syncResOnProviderChange = function () {
+  const provider = document.getElementById('res-provider').value;
+  const sel = document.getElementById('res-region');
+  sel.innerHTML = '<option value="">All Regions of the Provider</option>';
+  if (!provider) return;
+
+  const regions = [...new Set(
+    AppState.allConnections
+      .filter(c => (c.providerName || getProvider(c.configName)).toLowerCase() === provider)
+      .map(c => c.regionZoneInfo?.assignedRegion || '')
+      .filter(Boolean)
+  )].sort();
+  regions.forEach(r => sel.appendChild(new Option(r, r)));
+};
+
+// 선택한 provider/region 에 해당하는 connection 이름 목록
+function resourceTargetConnections() {
+  const provider = document.getElementById('res-provider').value;
+  const region   = document.getElementById('res-region').value;
+  if (!provider) return [];
+  return AppState.allConnections
+    .filter(c => (c.providerName || getProvider(c.configName)).toLowerCase() === provider)
+    .filter(c => !region || (c.regionZoneInfo?.assignedRegion || '') === region)
+    .map(c => c.configName)
+    .filter(Boolean);
+}
+
+function selectedResourceFilterTypes() {
+  return Array.from(document.querySelectorAll('.res-filter-type-cb:checked')).map(cb => cb.value);
+}
+
+window.syncResQuery = async function () {
+  const connections = resourceTargetConnections();
+  if (connections.length === 0) { alert('Please select a Provider first.'); return; }
+
+  const types = selectedResourceFilterTypes();
+  if (types.length === 0) { alert('Please select at least one resource type.'); return; }
+
+  const loading = document.getElementById('res-loading');
+  const loadingText = document.getElementById('res-loading-text');
+  loading.style.display = '';
+
+  AppState.resUnmanaged = [];
+  AppState.resRegistered = [];
+
+  const total = connections.length * types.length;
+  let done = 0;
+  loadingText.textContent = `0 / ${total} Querying…`;
+
+  const tasks = [];
+  for (const conn of connections) {
+    for (const rt of types) {
+      tasks.push(
+        api().inspectResources(conn, rt)
+          .then(data => {
+            (data?.resources?.onCspOnly?.info || []).forEach(item => {
+              AppState.resUnmanaged.push({
+                connectionName: conn,
+                resourceType: rt,
+                cspResourceId: item.cspResourceId || item.idByCsp || '',
+                refNameOrId: item.refNameOrId || item.name || '',
+              });
+            });
+            (data?.resources?.onTumblebug?.info || []).forEach(item => {
+              AppState.resRegistered.push({
+                connectionName: conn,
+                resourceType: rt,
+                idByTb: item.idByTb || '',
+                nsId: item.nsId || '',
+                mciId: item.mciId || '',
+                cspResourceId: item.cspResourceId || item.idByCsp || '',
+                refNameOrId: item.refNameOrId || item.name || '',
+              });
+            });
+          })
+          .catch(() => {})
+          .finally(() => {
+            done++;
+            loadingText.textContent = `${done} / ${total} Querying…`;
+          })
+      );
+    }
+  }
+
+  await Promise.allSettled(tasks);
+  loading.style.display = 'none';
+  applyResourceFilter();
+  renderResRegisteredTable(AppState.resRegistered);
+};
+
+window.syncResApplyFilter = applyResourceFilter;
+function applyResourceFilter() {
+  const checkedTypes = selectedResourceFilterTypes();
+  const rows = AppState.resUnmanaged.filter(item => checkedTypes.includes(item.resourceType));
+
+  if (AppState.resTable) {
+    AppState.resTable.replaceData(rows);
+  } else {
+    renderResUnmanagedTable(rows);
+  }
+}
+
+function renderResUnmanagedTable(data) {
+  AppState.resTable = new Tabulator('#res-unmanaged-table', {
+    data,
+    layout: 'fitColumns',
+    pagination: 'local',
+    paginationSize: 20,
+    placeholder: 'No unmanaged resources found. Select a Provider and click Query.',
+    selectable: true,
+    columns: [
+      { formatter: 'rowSelection', titleFormatter: 'rowSelection', hozAlign: 'center', headerHozAlign: 'center', width: 40, headerSort: false },
+      { title: 'Connection', field: 'connectionName', sorter: 'string' },
+      { title: 'Type', field: 'resourceType', sorter: 'string', width: 130,
+        formatter: (cell) => api().RESOURCE_TYPE_LABELS[cell.getValue()] || cell.getValue() },
+      { title: 'CSP Resource ID', field: 'cspResourceId', sorter: 'string' },
+      { title: 'Name / Ref ID', field: 'refNameOrId', sorter: 'string' },
+    ],
+  });
+  AppState.resTable.on('rowSelectionChanged', (rows) => {
+    // Node 가 선택된 경우에만 Infra Name 입력을 노출한다
+    const hasNode = rows.some(r => r.resourceType === 'node');
+    document.getElementById('res-infra-name-group').style.display = hasNode ? '' : 'none';
+  });
+}
+
+function renderResRegisteredTable(data) {
+  if (AppState.resRegisteredTable) {
+    AppState.resRegisteredTable.replaceData(data);
+    return;
+  }
+  AppState.resRegisteredTable = new Tabulator('#res-registered-table', {
+    data,
+    layout: 'fitColumns',
+    pagination: 'local',
+    paginationSize: 20,
+    placeholder: 'No registered resources found.',
+    selectable: 1,
+    columns: [
+      { title: 'Connection', field: 'connectionName', sorter: 'string' },
+      { title: 'Type', field: 'resourceType', sorter: 'string', width: 130,
+        formatter: (cell) => api().RESOURCE_TYPE_LABELS[cell.getValue()] || cell.getValue() },
+      { title: 'MCMP ID', field: 'idByTb', sorter: 'string' },
+      { title: 'NS', field: 'nsId', sorter: 'string', width: 90 },
+      { title: 'CSP Resource ID', field: 'cspResourceId', sorter: 'string' },
+    ],
+  });
+  AppState.resRegisteredTable.on('rowSelectionChanged', (rows) => {
+    const btn = document.getElementById('res-btn-unregister');
+    if (btn) btn.disabled = rows.length === 0;
+  });
+}
+
+// 선행 의존성까지 채운 자원유형 집합 (securityGroup 단독 등록은 cb-tumblebug 이 거부)
+function expandResourceTypeDeps(types) {
+  const deps = api().RESOURCE_TYPE_DEPS;
+  const out = new Set(types);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const t of [...out]) {
+      for (const d of (deps[t] || [])) {
+        if (!out.has(d)) { out.add(d); changed = true; }
+      }
+    }
+  }
+  return [...out];
+}
+
+window.syncResRegister = async function () {
+  const nsId = document.getElementById('res-ns').value;
+  if (!nsId) { alert('Please select a Namespace.'); return; }
+
+  const selected = AppState.resTable ? AppState.resTable.getSelectedData() : [];
+  if (selected.length === 0) { alert('Please select at least one resource to register.'); return; }
+
+  const infraName = document.getElementById('res-infra-name').value.trim();
+  const nodes = selected.filter(r => r.resourceType === 'node');
+  if (nodes.length > 0 && !infraName) {
+    alert('Please enter an Infra Name for Node registration.');
+    return;
+  }
+
+  // securityGroup / sshKey 는 개별 등록 API 가 없어 connection 단위로만 등록된다.
+  // 선택한 한 건이 아니라 해당 connection 의 그 유형 전체가 등록되므로 먼저 확인받는다.
+  const bulkTypes = ['securityGroup', 'sshKey'].filter(t => selected.some(r => r.resourceType === t));
+  const bulkConns = [...new Set(selected.filter(r => bulkTypes.includes(r.resourceType)).map(r => r.connectionName))];
+  const expanded = bulkTypes.length > 0 ? expandResourceTypeDeps(bulkTypes) : [];
+
+  if (bulkTypes.length > 0) {
+    const label = (t) => api().RESOURCE_TYPE_LABELS[t] || t;
+    const added = expanded.filter(t => !bulkTypes.includes(t));
+    const lines = [
+      `${bulkTypes.map(label).join(' / ')} cannot be registered individually.`,
+      '',
+      `Registering will register ALL resources of the types below in the selected connection(s), not just the rows you picked.`,
+      '',
+      `Namespace: ${nsId}`,
+      `Connections: ${bulkConns.join(', ')}`,
+      `Resource types: ${expanded.map(label).join(', ')}`,
+    ];
+    if (added.length > 0) {
+      lines.push('', `${added.map(label).join(', ')} is included automatically because the selected types require it.`);
+    }
+    lines.push('', 'Do you want to continue?');
+    if (!confirm(lines.join('\n'))) return;
+  }
+
+  const statusEl = document.getElementById('res-register-status');
+  statusEl.className = 'text-secondary small ms-2';
+  statusEl.textContent = 'Registering…';
+
+  // 자원 유형별 등록 건수를 실제 응답에서 집계한다 (API 호출 수가 아니라 자원 수)
+  const tally = {};
+  let failedCount = 0;
+  const errors = [];
+  const failedOutputs = [];
+
+  function addOverview(result) {
+    const ov = result?.registerationOverview || {};
+    for (const [k, v] of Object.entries(ov)) {
+      if (k === 'failed') { failedCount += Number(v) || 0; continue; }
+      const n = Number(v) || 0;
+      if (n > 0) tally[k] = (tally[k] || 0) + n;
+    }
+    for (const line of (result?.registerationOutputs?.output || [])) {
+      if (String(line).includes('[Failed]')) failedOutputs.push(String(line));
+    }
+  }
+
+  // vNet — 개별 등록 API 가 있어 선택한 자원만 등록한다
+  for (const row of selected.filter(r => r.resourceType === 'vNet')) {
+    try {
+      await api().registerVNet(nsId, row.connectionName, row.cspResourceId, row.refNameOrId);
+      tally.vNet = (tally.vNet || 0) + 1;
+    } catch (e) {
+      if (httpStatus(e) === 409) continue;   // 이미 등록됨
+      failedCount++;
+      errors.push(`vNet ${row.cspResourceId}: ${e?.response?.data?.message || e.message}`);
+    }
+  }
+
+  // securityGroup / sshKey — connection 단위 일괄 등록
+  for (const connectionName of bulkConns) {
+    try {
+      const result = await api().registerCspNativeResources(nsId, { connectionName }, expanded);
+      addOverview(result);
+    } catch (e) {
+      if (httpStatus(e) === 409) continue;
+      failedCount++;
+      errors.push(`${connectionName}: ${e?.response?.data?.message || e.message}`);
+    }
+  }
+
+  // node — Infra 단위 등록
+  if (nodes.length > 0) {
+    const byConn = {};
+    nodes.forEach(r => { (byConn[r.connectionName] ||= []).push(r); });
+    for (const [connectionName, rows] of Object.entries(byConn)) {
+      try {
+        await api().registerCspVm(nsId, infraName, rows.map(r => ({
+          connectionName,
+          cspResourceId: r.cspResourceId,
+          name: r.refNameOrId,
+        })));
+        tally.node = (tally.node || 0) + rows.length;
+      } catch (e) {
+        if (httpStatus(e) === 409) continue;
+        failedCount++;
+        errors.push(`Node (${connectionName}): ${e?.response?.data?.message || e.message}`);
+      }
+    }
+  }
+
+  const summary = Object.entries(tally)
+    .map(([k, v]) => `${api().RESOURCE_TYPE_LABELS[k] || k} ${v}`)
+    .join(', ');
+  const registeredTotal = Object.values(tally).reduce((a, b) => a + b, 0);
+
+  statusEl.className = failedCount > 0 ? 'text-warning small ms-2' : 'text-success small ms-2';
+  statusEl.textContent = registeredTotal > 0
+    ? `Registered ${registeredTotal} resource(s) — ${summary}. Failed: ${failedCount}`
+    : `No resource was registered. Failed: ${failedCount}`;
+
+  if (failedCount > 0) {
+    alert(['Some resources failed to register.', '', ...errors, ...failedOutputs.slice(0, 20)].join('\n'));
+  }
+
+  await window.syncResQuery();
+};
+
+window.syncResUnregister = async function () {
+  const rows = AppState.resRegisteredTable ? AppState.resRegisteredTable.getSelectedData() : [];
+  if (rows.length === 0) { alert('Please select a resource to unregister.'); return; }
+
+  const row = rows[0];
+  if (!confirm(`Unregister "${row.idByTb}" from MCMP?\n\nThe actual CSP resource will NOT be deleted.`)) return;
+
+  try {
+    const { nsId, idByTb, mciId, resourceType } = row;
+    switch (resourceType) {
+      case 'vNet':          await api().deregisterVNet(nsId, idByTb); break;
+      case 'securityGroup': await api().deregisterSecurityGroup(nsId, idByTb); break;
+      case 'sshKey':        await api().deregisterSshKey(nsId, idByTb); break;
+      case 'node':          await api().deregisterMciVm(nsId, mciId, idByTb); break;
+      default: alert(`Unregister is not supported for type: ${resourceType}`); return;
+    }
+    alert('Unregistered successfully.');
+    await window.syncResQuery();
+  } catch (e) {
+    alert('Failed to unregister: ' + (e?.response?.data?.message || e.message));
+  }
+};
+
+// ══ Schedule 탭 (구 CSP Schedule) ════════════════════════════════════════════
+
+window.scheduleShowTab = function (tab, link) {
+  document.getElementById('tab-schedule-list').style.display    = tab === 'list'    ? '' : 'none';
+  document.getElementById('tab-schedule-history').style.display = tab === 'history' ? '' : 'none';
+  document.querySelectorAll('#schedule-tabs .nav-link').forEach(a => a.classList.remove('active'));
+  if (link) link.classList.add('active');
+  if (tab === 'history') loadScheduleHistory();
+};
+
+function statusBadge(job) {
+  if (job.autoDisabled) return '<span class="badge bg-danger">Error (auto-disabled)</span>';
+  if (!job.enabled)     return '<span class="badge bg-secondary">Stopped</span>';
+  if (job.status === 'Executing') return '<span class="badge bg-blue">Executing</span>';
+  return '<span class="badge bg-success">Scheduled</span>';
+}
+
+async function loadScheduleList() {
+  try {
+    const data = await api().getScheduleList();
+    const list = Array.isArray(data) ? data : (data?.scheduleInfo || []);
+    AppState.schedules = list;
+    renderScheduleTable(list);
+  } catch (e) {
+    console.error('Failed to load schedule list', e);
+    renderScheduleTable([]);
+  }
+}
+
+function renderScheduleTable(data) {
+  if (AppState.scheduleTable) {
+    AppState.scheduleTable.replaceData(data);
+    return;
+  }
+  AppState.scheduleTable = new Tabulator('#schedule-table', {
+    data,
+    layout: 'fitColumns',
+    placeholder: 'No schedules. Click [+ Add Schedule] to create one.',
+    columns: [
+      { title: 'Job ID',         field: 'jobId',           sorter: 'string' },
+      { title: 'NS',             field: 'nsId',            sorter: 'string', width: 90 },
+      { title: 'Connection',     field: 'connectionName',  sorter: 'string' },
+      { title: 'Resource Types', field: 'option',          sorter: 'string' },
+      { title: 'Interval (s)',   field: 'intervalSeconds', sorter: 'number', width: 100 },
+      { title: 'Status', headerSort: false, width: 160,
+        formatter: (cell) => statusBadge(cell.getRow().getData()) },
+      { title: 'Next Execution', field: 'nextExecutionAt', sorter: 'string',
+        formatter: (cell) => cell.getValue() ? new Date(cell.getValue()).toLocaleString() : '—' },
+      { title: 'Actions', headerSort: false, width: 100,
+        formatter: (cell) => {
+          const job = cell.getRow().getData();
+          const jobId = job.jobId;
+          if (!job.enabled || job.autoDisabled) {
+            return `<button class="btn btn-sm btn-outline-success me-1" onclick="schedulePause_resume('${jobId}', 'resume')">▶</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="scheduleDelete('${jobId}')">🗑</button>`;
+          }
+          return `<button class="btn btn-sm btn-outline-warning me-1" onclick="schedulePause_resume('${jobId}', 'pause')">⏸</button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="scheduleDelete('${jobId}')">🗑</button>`;
+        },
+      },
+    ],
+  });
+}
+
+window.schedulePause_resume = async function (jobId, action) {
+  try {
+    if (action === 'pause') await api().pauseSchedule(jobId);
+    else                    await api().resumeSchedule(jobId);
+    await loadScheduleList();
+  } catch (e) {
+    alert(`Failed to ${action}: ` + (e?.response?.data?.message || e.message));
+  }
+};
+
+window.scheduleDelete = async function (jobId) {
+  if (!confirm(`Delete schedule "${jobId}"?`)) return;
+  try {
+    await api().deleteSchedule(jobId);
+    await loadScheduleList();
+  } catch (e) {
+    alert('Failed to delete: ' + (e?.response?.data?.message || e.message));
+  }
+};
+
+function loadScheduleHistory() {
+  const historyRows = AppState.schedules.map(job => ({
+    jobId: job.jobId,
+    lastExecutionAt: job.lastExecutionAt || '—',
+    executionCount: job.executionCount || 0,
+    successCount: job.successCount || 0,
+    failureCount: job.failureCount || 0,
+    lastError: job.lastError || '—',
+  }));
+
+  if (AppState.historyTable) {
+    AppState.historyTable.replaceData(historyRows);
+    return;
+  }
+  AppState.historyTable = new Tabulator('#history-table', {
+    data: historyRows,
+    layout: 'fitColumns',
+    placeholder: 'No execution history.',
+    columns: [
+      { title: 'Job ID',         field: 'jobId',           sorter: 'string' },
+      { title: 'Last Execution', field: 'lastExecutionAt',
+        formatter: (c) => c.getValue() && c.getValue() !== '—' ? new Date(c.getValue()).toLocaleString() : '—' },
+      { title: 'Total Runs',     field: 'executionCount',  sorter: 'number', width: 90 },
+      { title: 'Success',        field: 'successCount',    sorter: 'number', width: 80 },
+      { title: 'Failure',        field: 'failureCount',    sorter: 'number', width: 80 },
+      { title: 'Last Error',     field: 'lastError' },
+    ],
+  });
+}
+
+window.scheduleToggleModalMci = function () {
+  const nodeOn = document.querySelector('.modal-type-cb[value="node"]')?.checked;
+  document.getElementById('modal-mci-group').style.display = nodeOn ? '' : 'none';
+};
+
+let _modalDropdownsLoaded = false;
+window.loadModalDropdownsOnce = async function () {
+  if (_modalDropdownsLoaded) return;
+  const selConn = document.getElementById('modal-connection');
+  const selNs   = document.getElementById('modal-ns');
+  selConn.innerHTML = '<option value="">Select Connection</option>';
+  selNs.innerHTML   = '<option value="">Select Namespace</option>';
+
+  AppState.allConnections.forEach(c => {
+    const name = c.configName || c.connectionName || c.name;
+    if (name) selConn.appendChild(new Option(name, name));
+  });
+  const nsList = await api().getAllNs().catch(() => []);
+  nsList.forEach(n => {
+    const id = n.id || n.nsId || n.name;
+    if (id) selNs.appendChild(new Option(id, id));
+  });
+  _modalDropdownsLoaded = true;
+};
+
+window.scheduleSubmitCreate = async function () {
+  const nsId           = document.getElementById('modal-ns').value;
+  const connectionName = document.getElementById('modal-connection').value;
+  const types          = Array.from(document.querySelectorAll('.modal-type-cb:checked')).map(c => c.value);
+  const interval       = parseInt(document.getElementById('modal-interval').value) || 60;
+  const nodeOn         = types.includes('node');
+  const infraPrefix    = document.getElementById('modal-mci-prefix').value.trim();
+
+  if (!nsId)           { alert('Please select a Namespace.');  return; }
+  if (!connectionName) { alert('Please select a Connection.'); return; }
+  if (types.length === 0) { alert('Please select at least one resource type.'); return; }
+
+  const missing = api().findMissingResourceTypeDeps(types);
+  if (missing.length > 0) {
+    alert('Some resource types require others to be selected together:\n\n' + missing.join('\n'));
+    return;
+  }
+
+  try {
+    await api().createSchedule({
+      jobType: 'registerCspResources',
+      nsId,
+      connectionName,
+      option: types.join(','),
+      intervalSeconds: interval,
+      infraFlag: nodeOn ? 'y' : 'n',
+      infraNamePrefix: nodeOn ? infraPrefix : undefined,
+    });
+    bootstrap.Modal.getInstance(document.getElementById('modal-add-schedule'))?.hide();
+    await loadScheduleList();
+  } catch (e) {
+    alert('Failed to create schedule: ' + (e?.response?.data?.message || e.message));
+  }
+};
+
 // ── NS 드롭다운 ───────────────────────────────────────────────────────────────
 
-async function loadNsDropdown() {
-  const sel = document.getElementById('sync-ns');
+async function loadNsDropdown(selectId) {
+  const sel = document.getElementById(selectId);
   const wsApi = webconsolejs['common/api/services/workspace_api'];
   const curWs = wsApi.getCurrentWorkspace();
   if (curWs?.Id) {
@@ -728,19 +1301,17 @@ window.nsSyncApply = async function () {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async function () {
-  const btnList = document.getElementById('page-header-btn-list');
-  if (btnList) {
-    btnList.innerHTML = `
-      <a href="/webconsole/settings/environment/cloudresources/csp" class="btn btn-outline-secondary me-2">CSP Import</a>
-      <a href="/webconsole/settings/environment/cloudresources/cspschedule" class="btn btn-outline-secondary">CSP Schedule</a>`;
-  }
-
-  // connection 목록 로드 (빠름) — provider 체크박스 생성용
+  // connection 목록 로드 (빠름) — provider 체크박스/드롭다운 생성용
   const conns = await api().getConnConfigList().catch(() => []);
   AppState.allConnections = conns;
   populateQueryProviderCheckboxes();
+  populateResourceProviderSelect();
+
+  // Query 이후 조회 조건(라디오/체크박스, 동적 생성분 포함)이 바뀌면 Run Sync 대상이 어긋나므로 stale 처리
+  document.getElementById('qry-conditions')?.addEventListener('change', markQueryScopeStale);
 
   // NS 드롭다운
-  await loadNsDropdown();
+  await loadNsDropdown('sync-ns');
+  await loadNsDropdown('res-ns');
   // 자동 조회 없음 — 사용자가 조회 버튼 클릭 시 실행
 });

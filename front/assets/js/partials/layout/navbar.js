@@ -55,11 +55,11 @@ projectListselectBox.addEventListener('change', function () {
     webconsolejs["common/api/services/workspace_api"].setCurrentProject(project);//세션에 저장
 });
 
-// refresh 버튼 클릭시 user의 workspace, project 목록 조회
+// refresh 버튼 클릭시 user의 workspace, project 목록을 다시 조회해 세션 캐시 갱신
 workspaceRefreshBtn.addEventListener('click', async function () {
     webconsolejs["common/api/services/workspace_api"].setCurrentWorkspace("");
     webconsolejs["common/api/services/workspace_api"].setCurrentProject("");
-    await workspaceProjectInit()
+    await workspaceProjectInit({ forceRefresh: true })
 });
 
 export async function setPrjSelectBox(workspaceId) {
@@ -93,8 +93,9 @@ export async function setPrjSelectBox(workspaceId) {
 
 // 기본은 local storage에 저장된 값 사용 -> 없으면 조회
 // navbar에 workspace 목록 selectbox와 project 목록 select box set
-export async function workspaceProjectInit() {
-    let userWorkspaceList = await webconsolejs["common/api/services/workspace_api"].getWorkspaceListByUser();
+// forceRefresh: true면 세션 캐시를 무시하고 목록을 다시 조회한다 (refresh 버튼 전용)
+export async function workspaceProjectInit({ forceRefresh = false } = {}) {
+    let userWorkspaceList = await webconsolejs["common/api/services/workspace_api"].getWorkspaceListByUser(forceRefresh);
     
     // workspace 목록이 비어있는 경우 처리
     if (!userWorkspaceList || !Array.isArray(userWorkspaceList) || userWorkspaceList.length === 0) {

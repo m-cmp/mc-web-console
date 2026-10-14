@@ -1,4 +1,18 @@
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import {
+	K8S_SCALING_PATHS,
+	getRules,
+	getScalingMessage,
+	isCreateNodeGroupSupported,
+	getCreateNodeGroupUnsupportedReason,
+	readBackScaling,
+	buildCreateScaling,
+	validateScalingForm,
+} from "../../../common/utils/k8sScalingRules.js";
+import {
+	isVersionOutsideAvailableList,
+	buildVersionQueryParams,
+} from "../../../common/utils/k8sVersionRules.js";
 //import { selectedMciObj } from "./mci";
 //document.addEventListener("DOMContentLoaded", iniClusterkCreate) // page가 아닌 partials에서는 제거
 
@@ -18,6 +32,7 @@ function setupDesiredNodeSizeButtons() {
 	// 기존 이벤트 핸들러 제거 (중복 방지)
 	$(document).off('click', '#nodegroup_configuration .input-number-decrement');
 	$(document).off('click', '#nodegroup_configuration .input-number-increment');
+	$(document).off('change', '#node_autoscaling');
 	$(document).off('change', '#node_minnodesize');
 	$(document).off('change', '#node_maxnodesize');
 
@@ -43,37 +58,93 @@ function setupDesiredNodeSizeButtons() {
 
 		const input = $(this).siblings('.input-number');
 		const currentValue = parseInt(input.val()) || 1;
-		const maxNodeSize = parseInt($('#node_maxnodesize').val()) || 5;
 
-		// maxNodeSize 이하로 유지
-		if (currentValue < maxNodeSize) {
+		// 상한은 두지 않는다 — 범위 검증은 CSP 규칙이 한다
+		if (true) {
 			input.val(currentValue + 1);
 		}
 	});
 
-	// minNodeSize 변경 시 Desired Node Size 자동 조정
-	$(document).on('change', '#node_minnodesize', function () {
-		const minNodeSize = parseInt($(this).val()) || 1;
-		const desiredInput = $('#node_desirednodesize');
-		const currentDesired = parseInt(desiredInput.val()) || 1;
-
-		// Desired Node Size가 minNodeSize보다 작으면 minNodeSize로 설정
-		if (currentDesired < minNodeSize) {
-			desiredInput.val(minNodeSize);
-		}
+	// autoscaling 체크박스 — 체크했을 때만 Min/Max 를 보여준다.
+	// 값 자동 보정은 하지 않는다(입력을 말없이 바꾸면 사용자가 무엇이 전송되는지 알 수 없다).
+	$(document).off('change', '#node_autoscaling_enabled');
+	$(document).on('change', '#node_autoscaling_enabled', function () {
+		syncCreateScalingVisibility();
 	});
+}
 
-	// maxNodeSize 변경 시 Desired Node Size 자동 조정
-	$(document).on('change', '#node_maxnodesize', function () {
-		const maxNodeSize = parseInt($(this).val()) || 5;
-		const desiredInput = $('#node_desirednodesize');
-		const currentDesired = parseInt(desiredInput.val()) || 1;
-
-		// Desired Node Size가 maxNodeSize보다 크면 maxNodeSize로 설정
-		if (currentDesired > maxNodeSize) {
-			desiredInput.val(maxNodeSize);
+// 체크 상태에 따라 Min/Max 입력을 열고 닫는다
+function syncCreateScalingVisibility() {
+	const checked = $('#node_autoscaling_enabled').is(':checked');
+	$('#node_autoscaling_range').toggle(checked);
+	if (checked && !$('#node_minnodesize').val() && !$('#node_maxnodesize').val()) {
+		// 해제 상태에서 처음 켜면 현재 노드 수를 기준으로 채워준다
+		const desired = parseInt($('#node_desirednodesize').val(), 10);
+		if (Number.isFinite(desired)) {
+			$('#node_minnodesize').val(desired);
+			$('#node_maxnodesize').val(desired + 1);
 		}
-	});
+	}
+}
+
+// 생성 경로: expert(클러스터 생성) | add(기존 클러스터에 NodeGroup 추가)
+let createPath = K8S_SCALING_PATHS.EXPERT;
+function setCreatePath(path) { createPath = path; }
+export function getCreatePath() { return createPath; }
+
+// 생성 폼의 provider. expert 는 폼에서 고른 값, add 는 선택된 클러스터의 값을 쓴다.
+// (currentProvider 는 목록에서 클러스터를 선택했을 때만 채워져 생성 흐름에서는 신뢰할 수 없다)
+function resolveCreateProvider() {
+	if (createPath === K8S_SCALING_PATHS.ADD) {
+		const selected = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
+		return (selected && selected.provider) || "";
+	}
+	return $("#cluster_provider").val() || "";
+}
+
+// CSP 규칙을 폼에 반영한다 — NodeGroup 영역 노출, 체크박스 강제, 안내 문구
+export function applyScalingFormRules() {
+	const provider = resolveCreateProvider();
+	const rules = getRules(provider);
+	const $hint = $('#node_autoscaling_hint');
+
+	// 클러스터 생성 시 NodeGroup 을 받지 않는 CSP(AWS/Alibaba/Tencent)는 영역 자체를 숨긴다
+	if (provider && createPath !== K8S_SCALING_PATHS.ADD
+		&& !isCreateNodeGroupSupported(provider, createPath)) {
+		$('#nodegroup_configuration').hide();
+		$('#nodegroup_plusIcon').hide();
+		$('#cluster_nodegroup_unavailable_hint')
+			.text(getCreateNodeGroupUnsupportedReason(provider)).show();
+		return;
+	}
+	$('#nodegroup_plusIcon').show();
+	$('#cluster_nodegroup_unavailable_hint').text('').hide();
+	// 위에서 숨길 때 남긴 인라인 display:none 을 걷어낸다. 폼의 열림/닫힘은 .active 클래스가 맡는데
+	// 인라인 스타일이 클래스를 이겨, 걷어내지 않으면 + nodeGroup 을 눌러도 폼이 열리지 않는다.
+	// (.show() 로 강제로 펼치지 않는다 — 사용자가 열기 전까지는 닫혀 있어야 한다)
+	$('#nodegroup_configuration').css('display', '');
+
+	if (!rules) {
+		$('#node_autoscaling_enabled').prop('disabled', false);
+		$hint.text('').hide();
+		syncCreateScalingVisibility();
+		return;
+	}
+
+	// NCP 는 생성 경로에서 autoscale 을 전송하지 않아 항상 off 로 만들어진다
+	const forceUnchecked = createPath !== K8S_SCALING_PATHS.ADD
+		&& rules.create.forceUncheckedAtClusterCreate === true;
+	if (forceUnchecked) {
+		$('#node_autoscaling_enabled').prop('checked', false).prop('disabled', true);
+		$hint.text(rules.create.forceUncheckedReason || '').show();
+	} else {
+		$('#node_autoscaling_enabled').prop('disabled', false);
+		const note = $('#node_autoscaling_enabled').is(':checked')
+			? getScalingMessage(provider, 'rangeRule')
+			: getScalingMessage(provider, 'fixedSize');
+		if (note) $hint.text(note).show(); else $hint.text('').hide();
+	}
+	syncCreateScalingVisibility();
 }
 
 // callback PopupData
@@ -146,105 +217,84 @@ export async function setProviderList(providerList) {
 
 }
 
-// region 목록 SET
-export async function setRegionList(regionList) {
-	// TODO: simple form
-
-	// expert form
-	if (Array.isArray(regionList) && typeof regionList[0] === 'string') {
-		var html = '<option value="">Select Region</option>'
-		myRegionList.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#expert_region").empty();
-		$("#expert_region").append(html);
-	} else if (Array.isArray(regionList)) {
-		// object에서 [providerName] + regionName 형태로 배열 생성
-		regionList.forEach(region => {
-			var providerName = region.ProviderName
-			var regionName = region.RegionName
-
-			var myRegionName = `[${providerName}] ${regionName}`
-
-			myRegionList.push(myRegionName)
-		})
-
-		var html = '<option value="">Select Region</option>'
-		myRegionList.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_region").empty();
-		$("#cluster_region").append(html);
-	}
+// Region 목록 SET — Connection에서 파생시킨다.
+// RetrieveRegionListFromCsp는 zone 단위 항목까지 내려주는데(전체의 약 76%) 그 대부분은
+// 대응하는 Connection이 없어, 그런 Region을 고르면 Connection 목록이 빈 채로 남았다.
+// Connection에서 파생하면 목록에 뜨는 Region은 항상 Connection을 하나 갖는다.
+export async function setRegionList(provider) {
+	const regionOptions = webconsolejs["common/api/services/k8s_api"]
+		.listRegionOptions(myCloudConnection, provider);
+	webconsolejs["common/api/services/k8s_api"]
+		.fillSelectOptions("#cluster_region", "Select Region", regionOptions);
 }
 
-export async function setCloudConnection(cloudConnection) {
-	// TODO: simple form
+// Connection 목록 SET — provider(+region)로 좁힌다.
+// region은 regionZoneInfoName 정확 일치로 비교한다(startsWith 금지 — "azure-eastus"가
+// "azure-eastus2"를, "gcp-europe-west1"이 "...west10/12"를 끌고 온다).
+export async function setCloudConnection(provider, regionZoneInfoName) {
+	const names = webconsolejs["common/api/services/k8s_api"]
+		.listConnectionNames(myCloudConnection, provider, regionZoneInfoName);
+	webconsolejs["common/api/services/k8s_api"]
+		.fillSelectOptions("#cluster_cloudconnection", "Select Connection", names, true);
+}
 
-	// expert form
-	if (Array.isArray(cloudConnection) && typeof cloudConnection[0] === 'string') {
-		// 배열이고 첫 번째 요소가 문자열인 경우 / filter에서 사용
+// tumblebug 이 내려준 가용 버전 목록 — 입력값이 목록 밖인지 판단하는 기준.
+// 목록 밖이면 생성 요청에 skipVersionCheck 를 붙인다.
+var availableK8sVersions = [];
 
-		// 알파벳 순으로 정렬
-		cloudConnection.sort();
+export function getAvailableK8sVersions() {
+	return availableK8sVersions;
+}
 
-		var html = '<option value="">Select Connection</option>';
-		cloudConnection.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>';
-		});
+// 목록 밖 버전을 입력하면 검증을 건너뛴다는 사실을 미리 알린다 —
+// 실패한 뒤에야 알게 되면 사용자가 오타와 의도적 입력을 구분할 수 없다.
+export function onClusterVersionInput() {
+	const entered = $("#cluster_version").val();
+	const outside = isVersionOutsideAvailableList(entered, availableK8sVersions);
+	const hint = $("#cluster_version_hint");
 
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(html);
-
-	} else if (Array.isArray(cloudConnection)) {
-		// array 형태일 때
-
-		myCloudConnection = cloudConnection.map(item => item.configName);
-		// 알파벳 순으로 정렬
-		myCloudConnection.sort()
-
-		var html = '<option value="">Select Connection</option>'
-		myCloudConnection.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(html);
-
+	if (outside) {
+		hint.text(
+			"This version is not in the list reported by the platform. " +
+			"It will be sent to the CSP without version validation."
+		);
+		hint.show();
 	} else {
-		console.error("Unknown cloudConnection format");
-		return;
+		hint.hide();
 	}
 }
 
 export async function checkAvailableK8sClusterVersion(providerName, regionName){
 	try {
-        var availableVersions = await webconsolejs["common/api/services/pmk_api"].getAvailableK8sClusterVersion(providerName, regionName);
+        var availableVersions = await webconsolejs["common/api/services/k8s_api"].getAvailableK8sClusterVersion(providerName, regionName);
 
         // k8s 생성 가능
         if (availableVersions && Array.isArray(availableVersions)) {
+            availableK8sVersions = availableVersions;
 
-            let html = '<option value="">Select Version</option>';
+            // select 가 아니라 datalist 다 — 목록은 제안일 뿐이고 직접 입력도 받는다
+            let html = '';
             availableVersions.forEach(version => {
-                html += `<option value="${version.id}">${version.id}</option>`;
+                html += `<option value="${version.id}"></option>`;
             });
 
-            $("#cluster_version").empty();
-            $("#cluster_version").append(html);
+            $("#cluster_version_options").empty();
+            $("#cluster_version_options").append(html);
+            onClusterVersionInput();
         } else {
+            availableK8sVersions = [];
             // 데이터가 없거나 응답이 올바르지 않은 경우
-            alert("Failed to retrieve Kubernetes cluster versions. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve Kubernetes cluster versions. Please try again.');
         }
 
     } catch (error) {
         console.error("Failed to retrieve Kubernetes cluster versions. Please try again.", error);
+        availableK8sVersions = [];
 
         if (error.response && error.response.status === 500) {
-            alert("Failed to retrieve available Kubernetes cluster versions due to server error. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Failed to retrieve available Kubernetes cluster versions due to server error. Please try again.');
         } else {
-            alert("An unexpected error occurred. Please try again.");
+            webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'An unexpected error occurred. Please try again.');
         }
     }
 }
@@ -252,97 +302,62 @@ export async function checkAvailableK8sClusterVersion(providerName, regionName){
 // for filterRegion func
 // set된 값들
 var myProviderList = []
-var myRegionList = []
+// ConnConfig 객체 배열 — Provider/Region/Connection 목록의 정본
 var myCloudConnection = []
 
-// provider region cloudconnection filtering
+// provider / region / connection 필터링
+// (#cluster_connection 은 존재하지 않는 id다 — 실제 id는 #cluster_cloudconnection)
 var providerSelect = document.getElementById('cluster_provider');
 var regionSelect = document.getElementById('cluster_region');
-var connectionSelect = document.getElementById('cluster_connection');
 providerSelect.addEventListener('change', updateConfigurationFilltering);
 regionSelect.addEventListener('change', updateConfigurationFilltering);
-// connectionSelect.addEventListener('change', updateConfigurationFilltering);
 
 async function updateConfigurationFilltering() {
 
 	var selectedProvider = providerSelect.value; // 선택된 provider
-	var selectedRegion = regionSelect.value; // 선택된 region
-	// var selectedConnection = connectionSelect.value; // 선택된 connection
+	var selectedRegion = regionSelect.value;     // 선택된 region ("[NHN] nhn-kr1")
 
-	//초기화 했을 시 
+	// CSP 규칙을 폼에 반영한다(NodeGroup 영역 노출·체크박스 강제·안내 문구).
+	// 여기서 예외가 나면 Region/Connection 필터링 전체가 멈추므로 방어적으로 호출한다.
+	try {
+		applyScalingFormRules();
+	} catch (error) {
+		console.error("Failed to apply scaling form rules:", error);
+	}
+
+	// Provider 미선택 — 전체 목록으로 되돌린다
 	if (selectedProvider === "") {
-		await setRegionList(myRegionList)
-		await setCloudConnection(myCloudConnection)
-
-		return
+		await setRegionList("");
+		await setCloudConnection("", "");
+		return;
 	}
 
-	// providr 선택시 region, connection filtering
-	if (selectedProvider !== "" && selectedRegion === "") {
+	// Provider가 바뀌면 이전 Region 값이 select에 그대로 남아 있다.
+	// 그 값으로 Connection을 거르면 빈 목록이 되고 Region 목록도 옛 provider 것에 고착되므로,
+	// provider가 맞지 않는 Region은 미선택으로 취급해 목록부터 다시 만든다.
+	var parsed = webconsolejs["common/api/services/k8s_api"].parseRegionOption(selectedRegion);
+	var regionBelongsToProvider = selectedRegion !== ""
+		&& parsed.provider.toLowerCase() === selectedProvider.toLowerCase();
 
-		// region filter
-		var filteredRegion = myRegionList.filter(region => {
-			return region.startsWith(`[${selectedProvider}]`)
-		})
-
-		var html = '<option value="">Select Region</option>'
-		filteredRegion.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_region").empty();
-		$("#cluster_region").append(html);
-
-		// connection filter
-
-		// 비교를 위해 소문자로 변환
-		var lowerSelectedProvider = selectedProvider.toLowerCase();
-		var filteredConnection = myCloudConnection.filter(connection => {
-
-			return connection.startsWith(lowerSelectedProvider);
-		});
-
-		var nhtml = '<option value="">Select Connection</option>'
-		filteredConnection.forEach(item => {
-			nhtml += '<option value="' + item + '">' + item + '</option>'
-		})
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(nhtml);
-
+	if (!regionBelongsToProvider) {
+		await setRegionList(selectedProvider);
+		await setCloudConnection(selectedProvider, "");
+		return;
 	}
 
-	// region 선택시 connection filtering
-	if (selectedRegion != "") {
+	// Region까지 선택 — Connection을 그 Region 하나로 확정한다
+	await setCloudConnection(selectedProvider, parsed.regionZoneInfoName);
 
-		var cspRegex = /^\[(.*?)\]/; // "[CSP]" 형식의 문자열에서 CSP 이름 추출
-		var cspMatch = selectedRegion.match(cspRegex);
-		var provider = cspMatch ? cspMatch[1].toLowerCase() : null; // CSP 이름 추출 및 소문자 변환
-
-		// Region 이름 추출 (예: "[AWS] us-east-1" → "us-east-1")
-		var regionName = selectedRegion.replace(cspRegex, '').trim();
-
-		// Provider + Region으로 정확한 Connection 필터링
-		var filteredConnections = myCloudConnection.filter(connection => {
-			// "provider-region" 또는 "provider-region-zone" 형태와 매칭
-			return connection.startsWith(regionName);
-		});
-
-		var html = '<option value="">Select Connection</option>';
-		filteredConnections.forEach(item => {
-			html += '<option value="' + item + '">' + item + '</option>';
-		});
-
-		$("#cluster_cloudconnection").empty();
-		$("#cluster_cloudconnection").append(html);
-
-		checkAvailableK8sClusterVersion(selectedProvider, selectedRegion);
-	}
-
+	// GetAvailableK8sVersion은 CSP 원본 region 이름을 받는다.
+	// "nhn-kr1"을 그대로 넘기면 NHN이 500("no entry for provider(nhn):region(nhn-kr1)")을 반환한다.
+	var cspRegionName = webconsolejs["common/api/services/k8s_api"]
+		.toCspRegionName(selectedProvider, parsed.regionZoneInfoName);
+	checkAvailableK8sClusterVersion(selectedProvider, cspRegionName);
 }
 
 var createMciListObj = new Object();
-var isNodeGroup = false // mci 생성(false) / vm 추가(true)
+// 생성 경로는 createPath 가 정본이다 (이전의 isNodeGroup 플래그는 true 로만 바뀌고 되돌지 않아
+// Expert 생성에서 add 경로의 payload 가 나가는 함정이 있었다)
 var Create_Cluster_Config_Arr = new Array();
 var Create_Node_Config_Arr = new Array();
 var nodeGroup_data_cnt = 0
@@ -353,19 +368,46 @@ var currentEditingNodeGroupIndex = null; // Edit 모드 추적용 변수
 // isExpert의 체크 여부에 따라 바뀜.
 // newServers 와 simpleServers가 있음.
 export async function displayNewNodeForm() {
-	
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
+
+	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+	var selectedNsId = getSelectedNsId();
 	
 	// Get selected cluster's provider information for SSH Key filtering
-	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
-	var clusterProvider = null;
-	if (selectedCluster && selectedCluster.length > 0) {
-		clusterProvider = selectedCluster[0].provider; // e.g., "aws", "azure", "gcp"
+	var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
+	var clusterProvider = webconsolejs["pages/operation/manage/k8sworkloads"].currentProvider
+		|| (selectedCluster && selectedCluster.provider)
+		|| null; // e.g., "aws", "azure", "gcp"
+	// 신규 클러스터 생성 중에는 선택된 클러스터가 없다 — 폼에서 고른 Connection 을 쓴다.
+	// (currentProvider 는 목록에서 클러스터를 선택했을 때 세팅되는 값이라, 생성 흐름에서는
+	//  비어 있거나 직전에 보던 클러스터의 값이 남아 있어 신뢰할 수 없다)
+	var clusterConnection = (selectedCluster && selectedCluster.connectionName)
+		|| $("#cluster_cloudconnection").val()
+		|| null;
+
+	// Root Disk Type 옵션을 provider/connection 기준으로 동적 조회 (이미 알려진 값 사용)
+	// ssh key 조회보다 먼저 실행해, 이후 블록의 예외와 무관하게 항상 호출되도록 한다
+	if (clusterProvider) {
+		try {
+			const diskResp = await webconsolejs["common/api/services/disk_api"]
+				.getCommonLookupDiskInfo(clusterProvider, clusterConnection);
+			applyNodeRootDiskTypeOptions(clusterProvider, diskResp);
+		} catch (error) {
+			console.error("Failed to look up disk types:", error);
+		}
 	}
-	
-	// getSSHKEY with provider filter
-	var sshKeyList = await webconsolejs["common/api/services/pmk_api"].getSshKey(selectedNsId, clusterProvider);
+
+	// NodeGroup 폼이 열릴 때 CSP 규칙을 다시 적용한다.
+	// provider 변경 시점에만 적용하면, 그 뒤 폼이 새로 렌더될 때 상태가 풀린다.
+	try {
+		applyScalingFormRules();
+	} catch (error) {
+		console.error("Failed to apply scaling form rules:", error);
+	}
+
+	// SSH Key 는 Connection 기준으로 거른다 — 다른 Connection 의 키를 고르면
+	// "VM KeyPair '...' does not exist in connection '...'" 로 생성이 실패한다.
+	var sshKeyList = await webconsolejs["common/api/services/k8s_api"]
+		.getSshKey(selectedNsId, clusterProvider, clusterConnection);
 	var mysshKeyList = sshKeyList.data.responseData.sshKey;
 	if (mysshKeyList && mysshKeyList.length > 0) {
 		var html = '<option value="">Select sshKey</option>';
@@ -383,11 +425,11 @@ export async function displayNewNodeForm() {
 
 	// availablek8sclusternodeimage
 	// provider값과 region값 내려주기 전까지 임시
-	// var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj
+	// var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].selectedPmkObj
 	// var providerString = selectedCluster[0].provider
 	// var {provider, region} = extractProviderRegion(providerString)
 
-	// var availableK8sClusterNodeImageList = await webconsolejs["common/api/services/pmk_api"].getAvailablek8sClusterNodeImage(provider, region)
+	// var availableK8sClusterNodeImageList = await webconsolejs["common/api/services/k8s_api"].getAvailablek8sClusterNodeImage(provider, region)
 	// console.log("availableK8sClusterNodeImageList",availableK8sClusterNodeImageList)
 	// if (availableK8sClusterNodeImageList && availableK8sClusterNodeImageList.length > 0) {
     //     var html = '<option value="">Select Image</option>';
@@ -407,8 +449,8 @@ export async function displayNewNodeForm() {
 	
 	// Spec 모달이 열릴 때 콜백 설정 (기존 폼용)
 	// 모달 열기 전에 콜백 설정
-	if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-		webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(
+	if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+		webconsolejs["partials/operation/manage/k8s_serverrecommendation"].initServerRecommendationPmk(
 			webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
 		);
 	}
@@ -416,11 +458,12 @@ export async function displayNewNodeForm() {
 	// Spec 모달 콜백 설정 (jQuery 방식 - 중복 방지용 네임스페이스 사용)
 	if (typeof $ !== 'undefined') {
 		$("#spec-search-pmk").off('shown.bs.modal.nodegroup').on('shown.bs.modal.nodegroup', function () {
-			if (webconsolejs["partials/operation/manage/pmk_serverrecommendation"]) {
-				webconsolejs["partials/operation/manage/pmk_serverrecommendation"].initServerRecommendationPmk(
+			if (webconsolejs["partials/operation/manage/k8s_serverrecommendation"]) {
+				webconsolejs["partials/operation/manage/k8s_serverrecommendation"].initServerRecommendationPmk(
 					webconsolejs["partials/operation/manage/clustercreate"].callbackNodegroupServerRecommendation
 				);
 			}
+			// provider 필터는 k8s_serverrecommendation.js의 shown.bs.modal 핸들러가 selectedPmkObj로 처리
 		});
 	}
 
@@ -471,20 +514,45 @@ export async function deployNode() {
 
 export async function createNode() {
 
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
-	var k8sClusterId = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj[0].id
-	
-	// NodeGroup 생성 요청만 보내고 결과를 기다리지 않음 (fire and forget)
-	webconsolejs["common/api/services/pmk_api"].createNode(
-		k8sClusterId, 
-		selectedNsId, 
-		Create_Node_Config_Arr
+	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+	var selectedNsId = getSelectedNsId();
+	if (!selectedNsId) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.');
+		return;
+	}
+	var selectedPmk = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
+	if (!selectedPmk) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Cluster Selection Required',
+			'Please select a cluster first before adding a NodeGroup.'
+		);
+		return;
+	}
+	var k8sClusterId = selectedPmk.id;
+	var provider = selectedPmk.provider; // CSP별 동시 전송 정책 판단용
+
+	// 스펙 ↔ 클러스터 Connection 정합성 검증.
+	// NodeGroup은 클러스터와 같은 Connection이어야 한다 — 스펙 검색이 Provider로만 거르기 때문에
+	// 다른 리전 스펙이 선택될 수 있고, 그대로 보내면 cb-tumblebug이 400으로 거부한다.
+	var specConnection = $("#node_connectionName").val();
+	if (specConnection && selectedPmk.connectionName && specConnection !== selectedPmk.connectionName) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Spec / Connection Mismatch',
+			"The selected spec belongs to connection '" + specConnection +
+			"' but the cluster uses '" + selectedPmk.connectionName +
+			"'. Select a spec from the same connection.");
+		return;
+	}
+
+	const result = await webconsolejs["common/api/services/k8s_api"].createNode(
+		k8sClusterId,
+		selectedNsId,
+		Create_Node_Config_Arr,
+		provider
 	);
-	
-	// 즉시 메시지 표시
-	webconsolejs['common/util'].showToast('NodeGroup creation request has been sent', 'info');
-	
+
+	// 사전 검증 실패 — 사용자가 값을 고칠 수 있도록 폼을 닫지 않는다
+	if (result === false) return;
+
 	// NodeGroup Configuration 폼 닫기
 	var nodeGroupConfigDiv = document.getElementById("nodegroup_configuration");
 	if (nodeGroupConfigDiv) {
@@ -522,21 +590,20 @@ export async function createNode() {
 	}
 	
 	// PMK 목록 새로고침
-	if (webconsolejs["pages/operation/manage/pmk"] && 
-	    typeof webconsolejs["pages/operation/manage/pmk"].refreshPmkList === 'function') {
-		await webconsolejs["pages/operation/manage/pmk"].refreshPmkList();
+	if (webconsolejs["pages/operation/manage/k8sworkloads"] && 
+	    typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
+		await webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
 	}
 	
 	console.log("NodeGroup creation request sent and PMK list refreshed");
 }
 
-// Extract region from connectionName
-// e.g., "aws-ap-northeast-2" -> "[aws] aws-ap-northeast-2"
+// connectionName에서 Region 표시값을 만든다 (표시 전용, disabled select).
+// Connection의 configName이 곧 regionZoneInfoName이므로 그대로 쓴다.
+// e.g. ("nhn-kr1", "nhn") -> "[NHN] nhn-kr1"
 function extractRegionFromConnection(connectionName, provider) {
 	if (!connectionName || !provider) return '';
-
-	// Return in the format: [provider] connectionName
-	return '[' + provider + '] ' + connectionName;
+	return webconsolejs["common/api/services/k8s_api"].formatRegionOption(provider, connectionName);
 }
 
 export async function addNewNodeGroup() {
@@ -544,10 +611,10 @@ export async function addNewNodeGroup() {
 	Create_Node_Config_Arr = new Array();
 	currentEditingNodeGroupIndex = null; // Create 모드로 초기화
 
-	var selectedCluster = webconsolejs["pages/operation/manage/pmk"].selectedPmkObj;
+	var selectedCluster = webconsolejs["pages/operation/manage/k8sworkloads"].getSelectedClusterContext();
 
 	// Validation: Check if cluster is selected
-	if (!selectedCluster || selectedCluster.length === 0) {
+	if (!selectedCluster) {
 		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
 			'Cluster Selection Required',
 			'Please select a cluster first before adding a NodeGroup.'
@@ -559,17 +626,28 @@ export async function addNewNodeGroup() {
 	// The button is only enabled when cluster status is Active
 	// See updateAddNodeGroupButtonState() in pmk.js
 
-	var cluster_name = selectedCluster[0].name;
-	var cluster_desc = selectedCluster[0].description;
-	var cluster_provider = selectedCluster[0].provider;
-	var cluster_connection = selectedCluster[0].connectionName;
-	var cluster_vpc = selectedCluster[0].vpc;
-	var cluster_subnet = selectedCluster[0].subnet;
-	var cluster_securitygroup = selectedCluster[0].securitygroup;
-	var cluster_version = selectedCluster[0].version;
+	var cluster_name = selectedCluster.name;
+	var cluster_desc = selectedCluster.description;
+	var cluster_provider = webconsolejs["pages/operation/manage/k8sworkloads"].currentProvider || selectedCluster.provider;
+	var cluster_connection = selectedCluster.connectionName;
+	var cluster_vpc = selectedCluster.vpc;
+	var cluster_subnet = selectedCluster.subnet;
+	var cluster_securitygroup = selectedCluster.securitygroup;
+	var cluster_version = selectedCluster.version;
 
 	// Extract region from connectionName
 	var cluster_region = extractRegionFromConnection(cluster_connection, cluster_provider);
+
+	// Root Disk Type 옵션을 provider/connection 기준으로 동적 조회 (이후 DOM 조작 코드의 예외와 무관하게 먼저 실행)
+	if (cluster_provider) {
+		try {
+			const diskResp = await webconsolejs["common/api/services/disk_api"]
+				.getCommonLookupDiskInfo(cluster_provider, cluster_connection);
+			applyNodeRootDiskTypeOptions(cluster_provider, diskResp);
+		} catch (error) {
+			console.error("Failed to look up disk types:", error);
+		}
+	}
 
 	// Set basic cluster information
 	$("#node_cluster_name").val(cluster_name);
@@ -621,35 +699,61 @@ export async function addNewNodeGroup() {
 	// Navigate to Add NodeGroup section (following existing pattern)
 	window.location.hash = "#addnode";
 
-	isNodeGroup = true;
+	setCreatePath(K8S_SCALING_PATHS.ADD);
+	applyScalingFormRules();
+}
+
+// provider에 맞는 Root Disk Type 옵션으로 #node_rootdisk 드롭다운을 채운다
+function applyNodeRootDiskTypeOptions(provider, diskInfoList) {
+	const providerId = (provider || "").toUpperCase();
+	const matched = Array.isArray(diskInfoList)
+		? diskInfoList.find(item => item.providerId === providerId)
+		: null;
+
+	let html = '<option value="">Select Root Disk Type</option><option value="default">default</option>';
+	if (matched && Array.isArray(matched.rootdisktype)) {
+		matched.rootdisktype.forEach(type => {
+			html += '<option value="' + type + '">' + type + '</option>';
+		});
+	}
+
+	$("#node_rootdisk").empty().append(html);
 }
 
 export async function addNewPmk() {
 	// isNode = false
 
-	var providerList = await webconsolejs["common/api/services/pmk_api"].getProviderList()
+	var providerList = await webconsolejs["common/api/services/k8s_api"].getProviderList()
 	// provider set
 	await setProviderList(providerList)
 
-	// call getRegion API (백그라운드, 로더 없음)
-	var regionList = await webconsolejs["common/api/services/pmk_api"].getRegionList({ loaderType: 'none' })
-	// region set
-	await setRegionList(regionList)
-
-	// call cloudconnection (백그라운드, 로더 없음)
-	var connectionList = await webconsolejs["common/api/services/pmk_api"].getCloudConnection({ loaderType: 'none' })
-	// cloudconnection set
-	await setCloudConnection(connectionList)
+	// Connection이 Region/Connection 목록의 정본이다 (백그라운드, 로더 없음).
+	// RetrieveRegionListFromCsp는 더 이상 호출하지 않는다 — zone 항목까지 수백 건을 받아오는데
+	// 그중 Connection이 있는 Region만 쓸 수 있어 결국 Connection에서 파생시키면 된다.
+	myCloudConnection = await webconsolejs["common/api/services/k8s_api"].getCloudConnection({ loaderType: 'none' }) || []
+	await setRegionList("")
+	await setCloudConnection("", "")
 
 	Create_Cluster_Config_Arr = new Array();
 
-	
-	// isNodeGroup = true
+	setCreatePath(K8S_SCALING_PATHS.EXPERT);
+	applyScalingFormRules();
+}
+
+// 현재 선택된 project의 nsId — 세션에 저장된 project object가 정본이다.
+// (세션 키는 NsId, workspaceProjectInit() 반환값은 nsId 로 표기가 다르다)
+function getSelectedNsId() {
+	const project = webconsolejs["common/api/services/workspace_api"].getCurrentProject();
+	if (!project) return "";
+	return project.NsId || project.nsId || "";
 }
 
 export async function changeCloudConnection(connectionName) {
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
+	const selectedNsId = getSelectedNsId();
+	if (!selectedNsId) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.');
+		return;
+	}
 	await setVpcList(connectionName, selectedNsId)
 
 }
@@ -658,7 +762,7 @@ export async function changeCloudConnection(connectionName) {
 export async function setVpcList(connectionName, nsId) {
 
 	// api 호출	
-	var vpcList = await webconsolejs["common/api/services/pmk_api"].getVpcList(connectionName, nsId)
+	var vpcList = await webconsolejs["common/api/services/k8s_api"].getVpcList(connectionName, nsId)
 	// select box에 SET
 	var vNetList = []
 	var res_item = vpcList.vNet
@@ -676,33 +780,82 @@ export async function setVpcList(connectionName, nsId) {
 
 	$("#cluster_vpc").empty();
 	$("#cluster_vpc").append(html);
+	setSubnetList([]);
 
 	// vpcId 선택 시
 	$("#cluster_vpc").on("change", async function () {
 		var selectedVpcId = $(this).val();  
 		if (selectedVpcId) {
 			// get subnetList
-			var subnetList = await webconsolejs["common/api/services/pmk_api"].getSubnetList(selectedVpcId, nsId);
+			var subnetList = await webconsolejs["common/api/services/k8s_api"].getSubnetList(selectedVpcId, nsId);
 			setSubnetList(subnetList)
 
 			// get securityGroupList
-			var securityGroupList = await webconsolejs["common/api/services/pmk_api"].getSecurityGroupList(selectedVpcId, nsId);
+			var securityGroupList = await webconsolejs["common/api/services/k8s_api"].getSecurityGroupList(selectedVpcId, nsId);
 			setSecurityGroupList(securityGroupList)
 		}
 	});
 }
 
+// 클러스터 생성 시 서로 다른 AZ의 subnet이 최소 몇 개 필요한지 (CSP별).
+// AWS EKS는 2개 AZ 미만이면 "Subnets specified must be in at least two different AZs"로 거부한다.
+const CLUSTER_SUBNET_MIN_ZONES = { aws: 2 };
+
+function getClusterSubnetMinZones(provider) {
+	return CLUSTER_SUBNET_MIN_ZONES[String(provider || "").toLowerCase()] || 0;
+}
+
+// 현재 VPC의 subnet 목록 (zone 확인용)
+var clusterSubnetList = [];
+
 export async function setSubnetList(subnetList) {
+	clusterSubnetList = Array.isArray(subnetList) ? subnetList : [];
+	const minZones = getClusterSubnetMinZones($("#cluster_provider").val());
+	const multiple = minZones > 1;
 
-	var html = '<option value="">Select Subnet</option>';
-
-	subnetList.forEach(subnet => {
-		html += '<option value="' + subnet.id + '">' + subnet.id + '</option>';
+	var html = multiple ? '' : '<option value="">Select Subnet</option>';
+	clusterSubnetList.forEach(subnet => {
+		const detail = [subnet.zone, subnet.ipv4_CIDR].filter(Boolean).join(', ');
+		html += '<option value="' + subnet.id + '">' + subnet.id + (detail ? ' (' + detail + ')' : '') + '</option>';
 	});
 
-	$("#cluster_subnet").empty();
-	$("#cluster_subnet").append(html);
+	const $subnet = $("#cluster_subnet");
+	$subnet.prop("multiple", multiple);
+	if (multiple) {
+		$subnet.attr("size", Math.min(Math.max(clusterSubnetList.length, 2), 6));
+	} else {
+		$subnet.removeAttr("size");
+	}
+	$subnet.empty();
+	$subnet.append(html);
 
+	$("#cluster_subnet_hint")
+		.text(multiple ? 'Select at least ' + minZones + ' subnets in different availability zones (Ctrl/Cmd + click).' : '')
+		.toggle(multiple);
+}
+
+// 선택된 subnet id 배열 (단일/다중 선택 공통)
+function getSelectedClusterSubnetIds() {
+	const value = $("#cluster_subnet").val();
+	return (Array.isArray(value) ? value : [value]).filter(Boolean);
+}
+
+// subnet 선택 검증 — 통과하면 null, 실패하면 안내 문구
+function validateClusterSubnets(provider, subnetIds) {
+	if (subnetIds.length === 0) {
+		return 'Subnet is required.';
+	}
+	const minZones = getClusterSubnetMinZones(provider);
+	if (minZones > 1) {
+		const zones = new Set(subnetIds
+			.map(id => (clusterSubnetList.find(subnet => subnet.id === id) || {}).zone)
+			.filter(Boolean));
+		if (zones.size < minZones) {
+			return String(provider).toUpperCase() + ' requires subnets in at least ' + minZones +
+				' different availability zones. Selected zones: ' + (zones.size ? Array.from(zones).join(', ') : 'none') + '.';
+		}
+	}
+	return null;
 }
 
 export async function setSecurityGroupList(securityGroupList) {
@@ -718,48 +871,146 @@ export async function setSecurityGroupList(securityGroupList) {
 }
 
 export async function createCluster() {
-	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
-	// nsid = namespace.Name
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-
-	var selectedNsId = selectedWorkspaceProject.nsId;
-	var projectId = $("#select-current-project").text()
-	var projectName = $('#select-current-project').find('option:selected').text();
-	var nsId = projectName;
+	// nsId는 상단에 이미 선택돼 있는 project object에 들어 있다. 재조회하지 않는다.
+	// workspaceProjectInit()은 목록을 다시 읽어 셀렉트를 재구성하는 초기화 루틴이라,
+	// 세션이 비어 있으면 내부에서 현재 프로젝트를 지워 nsId가 ""로 전송된다(400).
+	var selectedNsId = getSelectedNsId();
+	if (!selectedNsId) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Project Selection Required', 'Please select a project first.');
+		return;
+	}
 
 	var clusterName = $("#cluster_name").val()
 	var selectedConnection = $("#cluster_cloudconnection").val()
 	var clusterVersion = $("#cluster_version").val()
+
+	// 스펙 ↔ Connection 정합성 검증.
+	// 스펙 검색은 Provider로만 거르기 때문에 다른 리전의 스펙이 후보에 섞인다.
+	// 선택된 스펙이 자기 connectionName을 들고 있으므로, 클러스터 Connection과
+	// 다르면 여기서 잡는다 (예: kr1 스펙 + jp1 Connection → cb-tumblebug 400).
+	// SSH Key 는 클러스터 Connection 에 속한 것이어야 한다. 다른 Connection 의 키를 보내면
+	// "VM KeyPair '...' does not exist in connection '...'" 로 생성이 실패한다.
+	var selectedSshKey = $("#node_sshkey").val()
+	if (selectedSshKey && selectedConnection && !selectedSshKey.includes(selectedConnection)) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('SSH Key Mismatch',
+			"The selected SSH Key '" + selectedSshKey + "' does not belong to connection '" +
+			selectedConnection + "'. Select a key from the same connection.");
+		return;
+	}
+
+	var specConnection = $("#node_connectionName").val()
+	if (specConnection && selectedConnection && specConnection !== selectedConnection) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Spec / Connection Mismatch',
+			"The selected spec belongs to connection '" + specConnection +
+			"' but the cluster uses '" + selectedConnection +
+			"'. Select a spec from the same connection.");
+		return;
+	}
 	var selectedVpc = $("#cluster_vpc").val()
-	var selectedSubnet = $("#cluster_subnet").val()
+	var selectedSubnetIds = getSelectedClusterSubnetIds()
 	var selectedSecurityGroup = $("#cluster_sg").val()
 
 	if (!clusterName) {
-		alert("Please Input Cluster Name!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Cluster name is required.')
 		return;
 	}
 	if (!selectedConnection) {
-		alert("Please Select Connection!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Connection is required.')
 		return;
 	}
 	if (!clusterVersion) {
-		alert("Please Select Cluster Version!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Cluster version is required.')
 		return;
 	}
 	if (!selectedVpc) {
-		alert("Please Select VPC!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'VPC is required.')
 		return;
 	}
-	if (!selectedSubnet) {
-		alert("Please Select Subnet!!!!!")
+	var subnetError = validateClusterSubnets($("#cluster_provider").val(), selectedSubnetIds);
+	if (subnetError) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Subnet Selection', subnetError)
 		return;
 	}
 	if (!selectedSecurityGroup) {
-		alert("Please Select Security Group!!!!!")
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Security Group is required.')
 		return;
 	}
 
-	webconsolejs["common/api/services/pmk_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnet, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId)
+	// 생성 시점에 NodeGroup 이 필요한 CSP(Azure/GCP/NCP/NHN/IBM)는 NodeGroup 없이 보내면
+	// tumblebug 이 "NodeGroups are required at K8sCluster creation" 으로 거부한다 — 폼에서 먼저 알린다.
+	// (NodeGroup 을 받지 않는 AWS/Alibaba/Tencent 는 NodeGroup 영역 자체가 숨겨져 있다)
+	var selectedProvider = $("#cluster_provider").val();
+	var addedNodeGroups = (Create_Cluster_Config_Arr[0] && Create_Cluster_Config_Arr[0].k8sNodeGroupList) || [];
+	if (selectedProvider && isCreateNodeGroupSupported(selectedProvider, K8S_SCALING_PATHS.EXPERT)
+		&& addedNodeGroups.length === 0) {
+		var providerLabel = (getRules(selectedProvider) && getRules(selectedProvider).label) || selectedProvider;
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('NodeGroup Required',
+			providerLabel + ' needs at least one NodeGroup when the cluster is created. Add a NodeGroup before deploying.');
+		return;
+	}
+
+	// 목록 밖 버전을 직접 입력한 경우에만 tumblebug 의 정적 목록 대조를 건너뛴다.
+	// 목록에서 고른 값이면 queryParams 는 undefined 라 평소와 동일하게 검증된다.
+	const versionQueryParams = buildVersionQueryParams(clusterVersion, availableK8sVersions);
+
+	// 생성 요청만 보내고 결과는 기다리지 않는다 — 진행/완료는 asyncRequestTracker가 알린다.
+	// 다만 요청을 만드는 단계에서 실패하면 요청이 나가지 않으므로, 그때는 전송 토스트 대신 실패를 알린다.
+	var dispatch;
+	try {
+		dispatch = await webconsolejs["common/api/services/k8s_api"].CreateCluster(clusterName, selectedConnection, clusterVersion, selectedVpc, selectedSubnetIds, selectedSecurityGroup, Create_Cluster_Config_Arr, selectedNsId, versionQueryParams)
+	} catch (error) {
+		console.error('Failed to build cluster creation request:', error);
+	}
+	if (!dispatch || !dispatch.dispatched) {
+		webconsolejs['common/util'].showToast('Failed to send cluster creation request', 'error');
+		return;
+	}
+
+	webconsolejs['common/util'].showToast('Cluster creation request has been sent', 'info');
+
+	// 폼 초기화
+	$("#cluster_name").val("");
+	$("#cluster_desc").val("");
+	$("#cluster_cloudconnection").val("");
+	$("#cluster_version").val("");
+	$("#cluster_version_hint").hide();
+	$("#cluster_vpc").val("");
+	$("#cluster_subnet").val($("#cluster_subnet").prop("multiple") ? [] : "");
+	$("#cluster_sg").val("");
+	Create_Cluster_Config_Arr = new Array();
+	Create_Node_Config_Arr = new Array();
+
+	// CSP에 생성 명령이 전달되는 시간을 고려해 잠시 뒤 목록을 갱신한다
+	// (완료 시점 갱신은 pmk.js의 asyncRequestTracker 구독이 처리한다)
+	await new Promise(resolve => setTimeout(resolve, 2000));
+	if (webconsolejs["pages/operation/manage/k8sworkloads"] &&
+		typeof webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList === 'function') {
+		await webconsolejs["pages/operation/manage/k8sworkloads"].refreshPmkList();
+	}
+
+	// #createcluster(Simple)와 #createcluster-original(Expert)는 형제 섹션이고,
+	// Expert 전환은 style.display 인라인 스타일로만 토글된다(.active class 무관).
+	// 인라인 style이 남은 채로 .active만 지우면 .section.active{display:block} 규칙보다
+	// 인라인 style이 우선해 실제로는 숨겨지지 않는다 — 두 폼 모두 정리한다.
+	const originalForm = document.getElementById("createcluster-original");
+	if (originalForm) {
+		originalForm.style.display = "none";
+		const expertBtn = document.querySelector('button[onclick*="toggleExpertCreation"]');
+		if (expertBtn) {
+			expertBtn.classList.remove("btn-primary");
+			expertBtn.classList.add("btn-outline-primary");
+			expertBtn.textContent = "Expert Creation";
+		}
+	}
+
+	// 클러스터 생성 섹션 닫기 (이미 pmkworkloads 화면이므로 페이지 이동은 하지 않는다)
+	const createClusterSection = document.querySelector('#createcluster');
+	if (createClusterSection) {
+		createClusterSection.style.removeProperty('display');
+		if (createClusterSection.classList.contains('active')) {
+			webconsolejs["partials/layout/navigatePages"].toggleElement(createClusterSection);
+		}
+	}
 }
 
 // nodegroup configuration done 클릭시
@@ -814,25 +1065,41 @@ export function clusterFormDone_btn() {
 		{ id: '#node_name', message: 'NodeGroup name is required' },
 		{ id: '#node_specid', message: 'Spec is required' },
 		{ id: '#node_imageid', message: 'Image is required' },
-		{ id: '#node_minnodesize', message: 'Min Node Size is required' },
-		{ id: '#node_maxnodesize', message: 'Max Node Size is required' },
-		{ id: '#node_sshkey', message: 'SSH Key is required' },
-		{ id: '#node_autoscaling', message: 'AutoScaling option is required' }
+		{ id: '#node_sshkey', message: 'SSH Key is required' }
 	];
-	
+
 	for (var field of requiredFields) {
 		if (!$(field.id).val() || $(field.id).val().trim() === '') {
-			alert(field.message);
+			webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', field.message);
 			$(field.id).focus();
 			return;
 		}
 	}
 
+	// 스케일 값은 CSP 규칙으로 검증한다 (범위·최소값이 CSP마다 다르다)
+	const createProvider = resolveCreateProvider();
+	const scalingForm = {
+		checked: $('#node_autoscaling_enabled').is(':checked'),
+		desired: $('#node_desirednodesize').val(),
+		min: $('#node_minnodesize').val(),
+		max: $('#node_maxnodesize').val(),
+	};
+	const scalingCheck = validateScalingForm(
+		createProvider, 'create:' + createPath, scalingForm,
+		{ nodeGroupCountSoFar: Create_Node_Config_Arr.length });
+	if (!scalingCheck.ok) {
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+			'Invalid Node Scaling', scalingCheck.errors[0].message);
+		$('#node_' + (scalingCheck.errors[0].field === 'desired' ? 'desirednodesize'
+			: scalingCheck.errors[0].field + 'nodesize')).focus();
+		return;
+	}
+
     // 2. 클러스터 기본 정보 할당
-    const connectionName = $("#cluster_connection").val();
+    const connectionName = $("#cluster_cloudconnection").val();
     const clusterName = $("#cluster_name").val();
     const vNetId = $("#cluster_vpc").val();
-    const subnetId = $("#subnet").val();
+    const subnetIds = getSelectedClusterSubnetIds();
     const securityGroupId = $("#cluster_sg").val();
     const version = $("#cluster_version").val();
     const description = $("#cluster_desc").val();
@@ -841,7 +1108,7 @@ export function clusterFormDone_btn() {
         connectionName: connectionName || "", 
         name: clusterName || "",
         vNetId: vNetId || "", 
-        subnetIds: [subnetId || ""],
+        subnetIds: subnetIds.length ? subnetIds : [""],
         securityGroupIds: [securityGroupId || ""],
         version: version || "", 
         description: description || ""
@@ -853,7 +1120,7 @@ export function clusterFormDone_btn() {
     const imageId = $("#node_imageid").val();
     const maxNodeSize = $("#node_maxnodesize").val();
     const minNodeSize = $("#node_minnodesize").val();
-    const onAutoScaling = $("#node_autoscaling").val();
+    const onAutoScaling = $("#node_autoscaling_enabled").is(':checked') ? "true" : "false";
     const rootDiskSize = $("#node_rootdisksize").val();
     const rootDiskType = $("#node_rootdisk").val();
     // specId는 commonSpecId를 사용 (search로 선택한 경우)
@@ -873,22 +1140,22 @@ export function clusterFormDone_btn() {
 	$("#n_desirednodesize").val(desiredNodeSize || "1");
 
     // 4. NodeGroup 데이터 객체 생성
+    // 체크 해제(고정 크기)를 CSP가 받아들이는 형태로 번역한다 — 진짜 off 이거나 min=max=desired.
+    // 네 값을 항상 함께 보낸다(일부만 보내면 하위 계층의 기본값 치환이 끼어든다).
+    const scalingPayload = buildCreateScaling(createProvider, createPath, scalingForm);
     var nodeGroupData = {
-        "desiredNodeSize": desiredNodeSize || "",
+        "desiredNodeSize": scalingPayload.desiredNodeSize,
         "imageId": imageId || "",
-        "maxNodeSize": maxNodeSize || "",
-        "minNodeSize": minNodeSize || "",
         "name": nodeGroupName,
-        "onAutoScaling": onAutoScaling || "false",
+        "onAutoScaling": scalingPayload.onAutoScaling,
+        "minNodeSize": scalingPayload.minNodeSize,
+        "maxNodeSize": scalingPayload.maxNodeSize,
         "rootDiskSize": rootDiskSize || "",
         "rootDiskType": rootDiskType || "",
         "specId": specId || "",
         "sshKeyId": sshKeyId || ""
     };
 
-    if (nodeGroupName) {
-        cluster_form["k8sNodeGroupList"] = [nodeGroupData];
-    }
 	
 	var nodeGroup_name = nodeGroupName;
 	var nodeGroup_cnt = parseInt(desiredNodeSize) || 1;
@@ -899,9 +1166,8 @@ export function clusterFormDone_btn() {
 		// **Edit 모드**: 기존 NodeGroup 업데이트
 		console.log("Edit mode: Updating NodeGroup at index", currentEditingNodeGroupIndex);
 		
-		// 배열의 기존 데이터 업데이트
+		// NodeGroup 만 해당 인덱스를 갱신한다. cluster_form 은 단일이므로 아래에서 일괄 반영.
 		Create_Node_Config_Arr[currentEditingNodeGroupIndex] = nodeGroupData;
-		Create_Cluster_Config_Arr[currentEditingNodeGroupIndex] = cluster_form;
 		
 		// HTML 리스트 항목 업데이트 (기존 항목 찾아서 텍스트만 변경)
 		var targetLi = $("#nodegroup_list li").eq(currentEditingNodeGroupIndex + 1); // +1은 plusIcon 때문
@@ -918,30 +1184,30 @@ export function clusterFormDone_btn() {
 		// **Create 모드**: 새 NodeGroup 추가
 		console.log("Create mode: Adding new NodeGroup");
 		
-		// 배열에 저장
-		Create_Cluster_Config_Arr.push(cluster_form);
-		if (isNodeGroup) {
-			Create_Node_Config_Arr.push(nodeGroupData);
-		}
+		// NodeGroup 을 배열에 누적한다 (cluster_form 은 아래에서 단일로 반영)
+		Create_Node_Config_Arr.push(nodeGroupData);
 
 		// HTML 생성 (NodeGroup 리스트 항목)
 		var add_nodegroup_html = '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
 			+ nodeGroup_name + displayNodegroupCnt
 			+ '</li>';
 
-		// plusIcon 제거 및 리스트 업데이트
-		var ngEleId = "nodegroup";
-		if (isNodeGroup) {
-			ngEleId = "addnodegroup";
-		}
-		
-		$("#" + ngEleId + "_plusIcon").remove();
+		// 리스트 업데이트 — 기존 + NodeGroup 버튼(#..._plusIcon)은 유지하고 항목만 추가
+		// (remove 후 getPlusVm으로 재생성하면 id가 _plusVmIcon으로 바뀌어 다음 Done의
+		//  remove가 실패하고, Done마다 + NodeGroup 버튼이 하나씩 증식한다)
+		var ngEleId = createPath === K8S_SCALING_PATHS.ADD ? "addnodegroup" : "nodegroup";
+
 		$("#" + ngEleId + "_list").append(add_nodegroup_html);
-		$("#" + ngEleId + "_list").prepend(getPlusVm(ngEleId));
 
 		// 카운터 증가
 		nodeGroup_data_cnt++;
 	}
+
+	// cluster_form 은 클러스터 하나에 대한 값이므로 항상 슬롯 0 을 현재 값으로 덮어쓴다.
+	// push 하면 Deploy 가 읽는 [0] 이 첫 Done 시점의 낡은 값으로 고정된다.
+	// NodeGroup 목록은 지금까지 누적된 전체를 싣는다 — 여러 개 만들어도 모두 전송된다.
+	cluster_form["k8sNodeGroupList"] = Create_Node_Config_Arr.slice();
+	Create_Cluster_Config_Arr[0] = cluster_form;
 
 	// 폼 토글
     var div = document.getElementById("nodegroup_configuration");
@@ -973,76 +1239,57 @@ export function clusterFormDone_btn() {
 	$("#node_sshkey").val("");
 	$("#node_rootdisk").val("");
 	$("#node_rootdisksize").val("");
-	$("#node_autoscaling").val("");
+	$("#node_autoscaling_enabled").prop('checked', false);
 	$("#node_desirednodesize").val("1"); // 기본값 1로 설정
+	syncCreateScalingVisibility();
+	applyScalingFormRules();
 }
 
-export function addNodeFormDone_btn() {
-	// 1. 필수 필드 검증
-	var requiredFields = [
-		{ id: '#node_name', message: 'NodeGroup name is required' },
-		{ id: '#node_specid', message: 'Spec is required' },
-		{ id: '#node_imageid', message: 'Image is required' },
-		{ id: '#node_sshkey', message: 'SSH Key is required' },
-		{ id: '#node_autoscaling', message: 'AutoScaling option is required' },
-		{ id: '#node_minnodesize', message: 'Min Node Size is required' },
-		{ id: '#node_maxnodesize', message: 'Max Node Size is required' }
-	];
-	
-	for (var field of requiredFields) {
-		if (!$(field.id).val() || $(field.id).val().trim() === '') {
-			alert(field.message);
-			$(field.id).focus();
-			return;
-		}
+// 값이 select에 존재할 때만 세팅한다.
+// sshKey/Root Disk Type은 조회 결과로 채워지므로, 없는 값을 억지로 넣기보다
+// 비워 두고 사용자가 유효한 값을 고르게 하는 편이 안전하다.
+function setSelectIfOptionExists(selector, value) {
+	const $sel = $(selector);
+	if ($sel.length === 0) return false;
+	if (!value || $sel.find('option[value="' + value + '"]').length === 0) {
+		$sel.val("");
+		return false;
 	}
+	$sel.val(value);
+	return true;
+}
 
-	// 2. hidden 필드에 값 설정
-	$("#n_name").val($("#node_name").val())
-	$("#n_specid").val($("#node_specid").val())
-	$("#n_imageid").val($("#node_imageid").val())
-	$("#n_minnodesize").val($("#node_minnodesize").val())
-	$("#n_maxnodesize").val($("#node_maxnodesize").val())
-	$("#n_sshkey").val($("#node_sshkey").val())
-	$("#n_rootdisk").val($("#node_rootdisk").val())
-	$("#n_rootdisksize").val($("#node_rootdisksize").val())
-	$("#n_autoscaling").val($("#node_autoscaling").val())
-	$("#n_desirednodesize").val($("#node_desirednodesize").val())
-	
-	var node_form = {}
-	node_form["desiredNodeSize"] = $("#n_desirednodesize").val();
-    node_form["imageId"] = $("#n_imageid").val();
-    node_form["maxNodeSize"] = $("#n_maxnodesize").val();
-    node_form["minNodeSize"] = $("#n_minnodesize").val();
-    node_form["name"] = $("#n_name").val();
-    node_form["onAutoScaling"] = $("#n_autoscaling").val();
-    node_form["rootDiskSize"] = $("#n_rootdisksize").val();
-    node_form["rootDiskType"] = $("#n_rootdisk").val();
-    node_form["specId"] = $("#n_specid").val();
-    node_form["sshKeyId"] = $("#n_sshkey").val(); 
+// NodeGroup Configuration 폼(#node_*)과 hidden 필드(#n_*)를 하나의 NodeGroup 데이터로 채운다.
+// Edit 모드(view_ngForm)와 JSON Import가 공유한다.
+// 인자는 model.K8sNodeGroupReq 형태:
+//   {name, specId, imageId, sshKeyId, rootDiskType, rootDiskSize,
+//    desiredNodeSize, minNodeSize, maxNodeSize, onAutoScaling}
+export function prefillNodeGroupForm(nodeGroupData) {
+	if (!nodeGroupData) return { sshKeyMatched: false, rootDiskTypeMatched: false };
 
-	var nodeGroup_name = node_form.name
-	var nodeGroup_cnt = parseInt(node_form.desiredNodeSize)
-	var add_nodegroup_html = ""
+	$("#node_name").val(nodeGroupData.name || "");
+	$("#node_specid").val(nodeGroupData.specId || "");
+	$("#node_commonSpecId").val(nodeGroupData.specId || "");
+	$("#node_imageid").val(nodeGroupData.imageId || "");
 
-    Create_Node_Config_Arr.push(node_form)
-	
-	var displayNodegroupCnt = '(' + nodeGroup_cnt + ')'
+	// 저장된 값 → 폼 상태. 고정 크기(min=max)는 체크 해제로 복원된다.
+	const scalingState = readBackScaling(resolveCreateProvider(), {
+		onAutoScaling: nodeGroupData.onAutoScaling,
+		desiredNodeSize: nodeGroupData.desiredNodeSize,
+		minNodeSize: nodeGroupData.minNodeSize,
+		maxNodeSize: nodeGroupData.maxNodeSize,
+	});
+	$("#node_autoscaling_enabled").prop('checked', scalingState.checked);
+	$("#node_minnodesize").val(scalingState.checked ? scalingState.min : "");
+	$("#node_maxnodesize").val(scalingState.checked ? scalingState.max : "");
+	syncCreateScalingVisibility();
 
-	add_nodegroup_html += '<li class="removebullet btn btn-info" onclick="webconsolejs[\'partials/operation/manage/clustercreate\'].view_ngForm(\'' + nodeGroup_data_cnt + '\')">'
+	const sshKeyMatched = setSelectIfOptionExists("#node_sshkey", nodeGroupData.sshKeyId);
+	const rootDiskTypeMatched = setSelectIfOptionExists("#node_rootdisk", nodeGroupData.rootDiskType);
+	$("#node_rootdisksize").val(nodeGroupData.rootDiskSize || "");
+	$("#node_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
 
-		+ nodeGroup_name + displayNodegroupCnt
-
-		+ '</li>';
-
-	var div = document.getElementById("nodegroup_configuration");
-	webconsolejs["partials/layout/navigatePages"].toggleSubElement(div)
-
-	// TODO: + 박스 추가
-	var ngEleId = "nodegroup"
-	$("#" + ngEleId + "_plusVmIcon").remove();
-	$("#" + ngEleId + "_list").append(add_nodegroup_html)
-	$("#" + ngEleId + "_list").prepend(getPlusVm(vmEleId));
+	return { sshKeyMatched, rootDiskTypeMatched };
 }
 
 export function view_ngForm(cnt){
@@ -1056,32 +1303,10 @@ export function view_ngForm(cnt){
 		currentEditingNodeGroupIndex = cnt;
 		
 		var nodeGroupData = Create_Node_Config_Arr[cnt];
-		
+
 		// Form 필드에 기존 데이터 채우기
-		$("#node_name").val(nodeGroupData.name || "");
-		$("#node_specid").val(nodeGroupData.specId || "");
-		$("#node_commonSpecId").val(nodeGroupData.specId || "");
-		$("#node_imageid").val(nodeGroupData.imageId || "");
-		$("#node_minnodesize").val(nodeGroupData.minNodeSize || "");
-		$("#node_maxnodesize").val(nodeGroupData.maxNodeSize || "");
-		$("#node_sshkey").val(nodeGroupData.sshKeyId || "");
-		$("#node_rootdisk").val(nodeGroupData.rootDiskType || "");
-		$("#node_rootdisksize").val(nodeGroupData.rootDiskSize || "");
-		$("#node_autoscaling").val(nodeGroupData.onAutoScaling || "false");
-		$("#node_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
-		
-		// Hidden 필드에도 설정
-		$("#n_name").val(nodeGroupData.name || "");
-		$("#n_specid").val(nodeGroupData.specId || "");
-		$("#n_imageid").val(nodeGroupData.imageId || "");
-		$("#n_minnodesize").val(nodeGroupData.minNodeSize || "");
-		$("#n_maxnodesize").val(nodeGroupData.maxNodeSize || "");
-		$("#n_sshkey").val(nodeGroupData.sshKeyId || "");
-		$("#n_rootdisk").val(nodeGroupData.rootDiskType || "");
-		$("#n_rootdisksize").val(nodeGroupData.rootDiskSize || "");
-		$("#n_autoscaling").val(nodeGroupData.onAutoScaling || "false");
-		$("#n_desirednodesize").val(nodeGroupData.desiredNodeSize || "1");
-		
+		prefillNodeGroupForm(nodeGroupData);
+
 		console.log("Edit mode: Loaded NodeGroup data at index", cnt, ":", nodeGroupData);
 	} else {
 		// Create 모드 (+ NodeGroup 클릭 시)
@@ -1122,13 +1347,28 @@ export function callbackNodegroupServerRecommendation(vmSpec) {
 }
 
 // PMK용 Image 모달 검증 및 열기 (기존 nodegroup_configuration 폼용)
+// CSP 기본 노드 이미지를 쓴다 — 목록에서 고르지 않고 "default" 를 넣는다.
+// 이미지 목록이 CSP마다 수십 건이고 이름이 UUID인 경우(NHN)가 있어 고르기 어렵다.
+// cb-tumblebug이 "default" 를 빈 문자열로 바꿔 넘기면 각 CSP 드라이버가 자기 기본값을 고른다.
+export function useDefaultImage(event) {
+	if (event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	const defaultId = webconsolejs["partials/operation/manage/k8s_imagerecommendation"].DEFAULT_IMAGE_ID || "default";
+	// 모달 콜백(setImageSelectionCallbackPmk)과 동일하게 hidden 미러도 함께 채운다
+	$("#node_imageid").val(defaultId);
+	$("#n_imageid").val(defaultId);
+	return false;
+}
+
 export function validateAndOpenImageModal(event) {
 	// Spec 입력 필드 값 확인
 	var specValue = $("#node_specid").val();
 	
 	if (!specValue || specValue.trim() === "") {
 		console.warn("No PMK spec selected - validation failed");
-		alert("Please select a server specification first before opening the image recommendation modal.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		if (event) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -1139,7 +1379,7 @@ export function validateAndOpenImageModal(event) {
 	// 전역 변수에서 spec 정보 확인
 	if (!window.selectedPmkSpecInfo) {
 		console.warn("No PMK spec info in global variable - validation failed");
-		alert("Please select a server specification first before opening the image recommendation modal.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Required Field', 'Select a node specification first.');
 		if (event) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -1155,8 +1395,8 @@ export function validateAndOpenImageModal(event) {
 	
 	try {
 		// PMK용 이미지 선택 콜백 함수 설정
-		if (webconsolejs["partials/operation/manage/pmk_imagerecommendation"]) {
-			webconsolejs["partials/operation/manage/pmk_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
+		if (webconsolejs["partials/operation/manage/k8s_imagerecommendation"]) {
+			webconsolejs["partials/operation/manage/k8s_imagerecommendation"].setImageSelectionCallbackPmk(function (selectedImage) {
 				// 기존 nodegroup_configuration 폼의 이미지 필드에 설정
 				$("#node_imageid").val(selectedImage.name || selectedImage.cspImageName || "");
 				$("#n_imageid").val(selectedImage.name || selectedImage.cspImageName || "");
@@ -1179,17 +1419,17 @@ export function validateAndOpenImageModal(event) {
 					}
 				} else {
 					console.error("Bootstrap is not loaded");
-					alert("could not open modal because Bootstrap is not loaded");
+					webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Could not open the modal because Bootstrap is not loaded.');
 				}
 			} catch (error) {
 				console.error("failed to open PMK image modal:", error);
-				alert("Error opening PMK image recommendation modal. Please try again.");
+				webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error opening the K8s image recommendation modal. Please try again.');
 			}
 		}, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
 		
 	} catch (error) {
 		console.error("failed to validate and open image modal:", error);
-		alert("Error opening image recommendation modal. Please try again.");
+		webconsolejs['partials/layout/modal'].commonShowDefaultModal('Error', 'Error opening the image recommendation modal. Please try again.');
 		return false;
 	}
 	

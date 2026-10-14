@@ -23,35 +23,64 @@ function unwrapResponse(response) {
     return response.data.responseData;
 }
 
+// mc-iam-manager CspAccount 응답은 snake_case(csp_type/account_info/is_active/created_at) —
+// 화면 코드는 camelCase(cspType/accountInfo/isActive/createdAt)를 사용하므로 여기서 정규화한다.
+function normalizeCspAccount(raw) {
+    if (!raw) return raw;
+    return {
+        ...raw,
+        cspType: raw.cspType ?? raw.csp_type,
+        accountInfo: raw.accountInfo ?? raw.account_info,
+        isActive: raw.isActive ?? raw.is_active,
+        createdAt: raw.createdAt ?? raw.created_at,
+        updatedAt: raw.updatedAt ?? raw.updated_at,
+    };
+}
+
 export async function listCspAccounts(filter = {}) {
     const controller = "/api/mc-iam-manager/listCspAccounts";
     const data = Object.keys(filter).length > 0 ? { request: filter } : {};
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return unwrapResponse(response) || [];
+    const list = unwrapResponse(response) || [];
+    return list.map(normalizeCspAccount);
 }
 
 export async function createCspAccount(accountData) {
     const controller = "/api/mc-iam-manager/createCspAccount";
-    const data = { request: accountData };
+    // mc-iam-manager CreateCspAccountRequest는 snake_case(csp_type/account_info) 필드를 기대한다.
+    const data = {
+        request: {
+            name: accountData.name,
+            csp_type: (accountData.cspType || '').toLowerCase(),
+            account_info: accountData.credential,
+            description: accountData.description,
+        }
+    };
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return unwrapResponse(response);
+    return normalizeCspAccount(unwrapResponse(response));
 }
 
 export async function getCspAccountById(accountId) {
     const controller = "/api/mc-iam-manager/getCspAccountByID";
     const data = { pathParams: { accountId: accountId.toString() } };
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return unwrapResponse(response);
+    return normalizeCspAccount(unwrapResponse(response));
 }
 
 export async function updateCspAccount(accountId, accountData) {
     const controller = "/api/mc-iam-manager/updateCspAccount";
+    // UpdateCspAccountRequest도 CreateCspAccountRequest와 동일하게 snake_case 필드를 기대한다.
     const data = {
         pathParams: { accountId: accountId.toString() },
-        request: accountData
+        request: {
+            name: accountData.name,
+            account_info: accountData.credential ?? accountData.accountInfo,
+            is_active: accountData.isActive,
+            description: accountData.description,
+        }
     };
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return unwrapResponse(response);
+    return normalizeCspAccount(unwrapResponse(response));
 }
 
 export async function deleteCspAccount(accountId) {

@@ -277,3 +277,12 @@
   border-radius: 10px;
   overflow: hidden;
 }
+
+// NLB Detail 등 잘린(ellipsis) 값의 hover 툴팁 — 긴 DNS/ARN이 한눈에 보이도록 폭 확장 + 강제 줄바꿈
+.nlb-full-text-tooltip .tooltip-inner {
+  max-width: 560px;
+  text-align: left;
+  word-break: break-all;
+  font-family: var(--tblr-font-monospace, monospace);
+  font-size: 0.8125rem;
+}

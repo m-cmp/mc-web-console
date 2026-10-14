@@ -3,7 +3,7 @@
 <div class="card section" id="server_info">
   <div class="card-header">
     <h3 class="card-title">
-      Server Info<span id="server_info_text" class="text-info"> </span>
+      Node Info<span id="server_info_text" class="text-info"> </span>
     </h3>
     <div class="card-actions btn-actions gap-2">
       <!-- <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#cmdtestmodal">
@@ -12,9 +12,13 @@
 
 
       <a
-        href="#installsw"
-        class="btn btn-outline-dark"
-        onclick="webconsolejs['common/util'].installSwtoVm()"
+        href="#"
+        id="installsw-node-server-btn"
+        aria-disabled="true"
+        title="Available only when the node is Running"
+        style="pointer-events: auto; cursor: not-allowed;"
+        class="btn btn-outline-dark disabled"
+        onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNode('server')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -96,11 +100,11 @@
             "
           >
             <div class="datagrid-item mb-3">
-              <div class="datagrid-title">VMID</div>
+              <div class="datagrid-title">NodeID</div>
               <div class="datagrid-content" id="server_info_cspVMID"></div>
             </div>
             <div class="datagrid-item mb-3">
-              <div class="datagrid-title">VM Spec</div>
+              <div class="datagrid-title">Node Spec</div>
               <div class="datagrid-content" id="server_info_vmspec_name"></div>
             </div>
             <div class="datagrid-item mb-3">
@@ -126,7 +130,7 @@
                   class="btn btn-sm btn-outline-primary"
                   data-bs-toggle="modal"
                   data-bs-target="#commonDefaultModal"
-                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Terminal', 'Would you like to connect?', 'pages/operation/manage/mci.initremotecmdModal', 'vm')"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Terminal', 'Would you like to connect?', 'pages/operation/manage/infraworkloads.initremotecmdModal', 'vm')"
                 >
                   Terminal
                 </a>

@@ -1,0 +1,781 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "mc-web-console BFF API server (Echo). Auth, disk lookup, admin BFF, and multi-cloud proxy via /api/{subsystemName}/{operationId}.",
+        "title": "mc-web-console API",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "host": "localhost:3100",
+    "basePath": "/",
+    "paths": {
+        "/api/admin/setup-yaml-check": {
+            "get": {
+                "description": "Probe external raw YAML URLs (menu or api catalog) for admin setup status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Setup YAML reachability check",
+                "parameters": [
+                    {
+                        "enum": [
+                            "menu",
+                            "api"
+                        ],
+                        "type": "string",
+                        "description": "Target YAML",
+                        "name": "which",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "responseData": {
+                                            "$ref": "#/definitions/internal_handler.SetupYamlCheckResult"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "description": "Authenticate user. MCIAM_USE=true proxies to mc-iam-manager; false issues local JWT.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Invalidate session and remove stored tokens",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "description": "Refresh access token. Accepts flat or CommonRequest wrapper body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh token",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.RefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/signup": {
+            "post": {
+                "description": "Register a new user. MCIAM_USE=true proxies to mc-iam-manager.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Sign up",
+                "parameters": [
+                    {
+                        "description": "Signup payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.SignupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/userinfo": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Return authenticated user profile from JWT",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get user info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/validate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Validate the current access token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Validate token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/disklookup": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Lookup root disk types and size ranges by cloud provider",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bff"
+                ],
+                "summary": "Disk type lookup",
+                "parameters": [
+                    {
+                        "description": "Provider filter (optional)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.diskLookupReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/getapihosts": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Return backend service BaseURL map from api.yaml and registry cache",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bff"
+                ],
+                "summary": "Get API hosts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{subsystemName}/{operationId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Forward request to backend service defined in conf/api.yaml by subsystemName and operationId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "proxy"
+                ],
+                "summary": "Proxy to backend service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)",
+                        "name": "subsystemName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation ID from api.yaml serviceActions",
+                        "name": "operationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload forwarded to backend",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Forward request to backend service defined in conf/api.yaml by subsystemName and operationId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "proxy"
+                ],
+                "summary": "Proxy to backend service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)",
+                        "name": "subsystemName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation ID from api.yaml serviceActions",
+                        "name": "operationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload forwarded to backend",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Forward request to backend service defined in conf/api.yaml by subsystemName and operationId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "proxy"
+                ],
+                "summary": "Proxy to backend service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)",
+                        "name": "subsystemName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation ID from api.yaml serviceActions",
+                        "name": "operationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload forwarded to backend",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Forward request to backend service defined in conf/api.yaml by subsystemName and operationId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "proxy"
+                ],
+                "summary": "Proxy to backend service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)",
+                        "name": "subsystemName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation ID from api.yaml serviceActions",
+                        "name": "operationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload forwarded to backend",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Forward request to backend service defined in conf/api.yaml by subsystemName and operationId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "proxy"
+                ],
+                "summary": "Proxy to backend service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)",
+                        "name": "subsystemName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation ID from api.yaml serviceActions",
+                        "name": "operationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload forwarded to backend",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/mc_web_console_api_internal_model.CommonResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "internal_handler.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "$ref": "#/definitions/internal_handler.LoginRequestBody"
+                }
+            }
+        },
+        "internal_handler.LoginRequestBody": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.RefreshRequest": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.SetupYamlCheckResult": {
+            "type": "object",
+            "properties": {
+                "checkedAt": {
+                    "description": "RFC3339",
+                    "type": "string"
+                },
+                "contentLength": {
+                    "description": "-1 = 알 수 없음",
+                    "type": "integer"
+                },
+                "errorMessage": {
+                    "description": "네트워크/타임아웃 에러",
+                    "type": "string"
+                },
+                "etag": {
+                    "description": "원본 ETag (양 끝 따옴표 포함)",
+                    "type": "string"
+                },
+                "httpStatus": {
+                    "description": "실제 HTTP status",
+                    "type": "integer"
+                },
+                "lastModified": {
+                    "description": "RFC1123",
+                    "type": "string"
+                },
+                "reachable": {
+                    "description": "200~299 응답 여부",
+                    "type": "boolean"
+                },
+                "url": {
+                    "description": "검사 대상 raw URL",
+                    "type": "string"
+                },
+                "which": {
+                    "description": "\"menu\" | \"api\"",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.SignupRequest": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "$ref": "#/definitions/internal_handler.SignupRequestBody"
+                }
+            }
+        },
+        "internal_handler.SignupRequestBody": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "organization": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.diskLookupReq": {
+            "type": "object",
+            "properties": {
+                "queryParams": {
+                    "type": "object",
+                    "properties": {
+                        "connectionName": {
+                            "type": "string"
+                        },
+                        "provider": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "mc_web_console_api_internal_model.CommonResponse": {
+            "type": "object",
+            "properties": {
+                "responseData": {},
+                "status": {
+                    "$ref": "#/definitions/mc_web_console_api_internal_model.Status"
+                }
+            }
+        },
+        "mc_web_console_api_internal_model.Status": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT Bearer token (Authorization header or AccessToken cookie)",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

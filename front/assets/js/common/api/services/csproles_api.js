@@ -1,6 +1,16 @@
 // CSP Roles API Service
 // mc-iam-manager API를 통한 CSP Roles 관리
 
+// mc-iam-manager CspRole 응답은 csp_type(snake_case) — 화면 코드는 provider 필드를 읽으므로 정규화한다.
+function normalizeCspRole(raw) {
+    if (!raw) return raw;
+    return { ...raw, provider: raw.provider ?? raw.cspType ?? raw.csp_type };
+}
+
+function normalizeCspRoleList(list) {
+    return Array.isArray(list) ? list.map(normalizeCspRole) : list;
+}
+
 // CSP Roles 목록 조회
 export async function getCspRoleList(provider = null, limit = 50, offset = 0) {
     const controller = "/api/mc-iam-manager/listCSPRoles";
@@ -12,7 +22,7 @@ export async function getCspRoleList(provider = null, limit = 50, offset = 0) {
         }
     };
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return response.data.responseData;
+    return normalizeCspRoleList(response.data.responseData);
 }
 
 // 특정 CSP Role 조회
@@ -24,7 +34,7 @@ export async function getCspRoleById(roleId) {
         }
     };
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
-    return response.data.responseData;
+    return normalizeCspRole(response.data.responseData);
 }
 
 // CSP Role 생성
@@ -35,10 +45,12 @@ export async function createCspRole(roleData) {
             cspRoleName: roleData.cspRoleName,
             description: roleData.description,
             cspType: roleData.cspType,
+            authMethod: roleData.authMethod,
             idpIdentifier: roleData.idpIdentifier,
             iamIdentifier: roleData.iamIdentifier,
             iamRoleId: roleData.iamRoleId,
             path: roleData.path,
+            cspIdpConfigId: roleData.cspIdpConfigId,
             tags: roleData.tags || []
         }
     };
@@ -49,7 +61,34 @@ export async function createCspRole(roleData) {
         const errMsg = errData?.responseData?.error || errData?.status?.message || 'Failed to create CSP Role';
         throw new Error(errMsg);
     }
-    return response.data.responseData;
+    return normalizeCspRole(response.data.responseData);
+}
+
+// CSP Role 수정
+export async function updateCspRole(roleId, roleData) {
+    const controller = "/api/mc-iam-manager/UpdateCspRole";
+    const data = {
+        pathParams: {
+            roleId: roleId.toString()
+        },
+        Request: {
+            cspRoleName: roleData.cspRoleName,
+            description: roleData.description,
+            authMethod: roleData.authMethod,
+            idpIdentifier: roleData.idpIdentifier,
+            iamIdentifier: roleData.iamIdentifier,
+            iamRoleId: roleData.iamRoleId,
+            path: roleData.path,
+            cspIdpConfigId: roleData.cspIdpConfigId,
+        }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    if (response?.response) {
+        const errData = response.response.data;
+        const errMsg = errData?.responseData?.error || errData?.status?.message || 'Failed to update CSP Role';
+        throw new Error(errMsg);
+    }
+    return normalizeCspRole(response.data.responseData);
 }
 
 // CSP Role 삭제

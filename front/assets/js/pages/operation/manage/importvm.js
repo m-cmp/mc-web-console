@@ -20,9 +20,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const btn = document.createElement('button');
         btn.className = 'btn btn-secondary ms-2';
         btn.id = 'import-vm-btn';
-        btn.textContent = 'Import VM';
+        btn.textContent = 'Import Node';
         btn.disabled = !_nsId;
-        btn.title = _nsId ? 'Import Unmanaged VMs from CSP' : 'Select a project first';
+        btn.title = _nsId ? 'Import Unmanaged Nodes from CSP' : 'Select a project first';
         btn.onclick = () => openImportVmModal();
         btnList.appendChild(btn);
     }
@@ -54,7 +54,7 @@ export async function openImportVmModal() {
 export async function nextStep() {
     if (_currentStep === 1) {
         const checked = Array.from(document.querySelectorAll('.import-vm-check:checked'));
-        if (checked.length === 0) { alert('Please select VMs to import.'); return; }
+        if (checked.length === 0) { alert('Please select Nodes to import.'); return; }
 
         const connectionName = document.getElementById('import-vm-connection').value;
         _selectedVMs = checked.map(cb => ({
@@ -93,7 +93,7 @@ function showStep(step) {
     });
 
     document.getElementById('import-vm-modal-title').textContent =
-        ['', 'VM Import (1/3 — Select Target VM)', 'VM Import (2/3 — Dependent Resource Status)', 'VM Import (3/3 — Configure Target MCI)'][step];
+        ['', 'Node Import (1/3 — Select Target Node)', 'Node Import (2/3 — Dependent Resource Status)', 'Node Import (3/3 — Configure Target Infra)'][step];
 
     document.getElementById('import-vm-prev-btn').classList.toggle('d-none', step === 1);
     document.getElementById('import-vm-next-btn').classList.toggle('d-none', step === 3);
@@ -113,7 +113,7 @@ export async function loadCspVMs() {
         const cspVMs = await importApi().getCspVMs(connectionName);
         renderVMTable(cspVMs, connectionName);
     } catch (err) {
-        showToast(TOAST_TYPES.ERROR, 'Failed to load VM list: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to load Node list: ' + (err.message || ''));
     } finally {
         document.getElementById('import-vm-step1-loading').classList.add('d-none');
     }
@@ -228,7 +228,7 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 async function loadMciRefList() {
     const select = document.getElementById('import-vm-mci-ref');
-    select.innerHTML = '<option value="">Select existing MCI (for name reference)</option>';
+    select.innerHTML = '<option value="">Select existing Infra (for name reference)</option>';
     try {
         const mciList = await importApi().getMciListSimple(_nsId);
         mciList.forEach(mci => {
@@ -250,7 +250,7 @@ export function toggleMciMode(mode) {
 
 export async function executeImportVMs() {
     const mciName = document.getElementById('import-vm-mci-name').value.trim();
-    if (!mciName) { alert('Please enter an MCI name.'); return; }
+    if (!mciName) { alert('Please enter an Infra name.'); return; }
 
     const spinner = document.getElementById('import-vm-spinner');
     const btn = document.getElementById('import-vm-execute-btn');
@@ -281,23 +281,23 @@ export async function executeImportVMs() {
 
         showToast(
             failCount > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
-            `${successCount} VMs imported (MCI: ${mciName})${failCount > 0 ? `, ${failCount} failed` : ''}`
+            `${successCount} Nodes imported (Infra: ${mciName})${failCount > 0 ? `, ${failCount} failed` : ''}`
         );
 
         bootstrap.Modal.getInstance(document.getElementById('import-vm-modal'))?.hide();
 
         // MCI 목록 새로고침
         if (window.currentNsId && typeof window.getMciListCallbackSuccess === 'function') {
-            const mciList = await webconsolejs["common/api/services/mci_api"].getMciList(window.currentNsId);
+            const mciList = await webconsolejs["common/api/services/infra_api"].getMciList(window.currentNsId);
             getMciListCallbackSuccess(window.currentNsId, mciList);
         }
 
     } catch (err) {
         const errMsg = err.response?.data?.message || err.message || 'Unknown error';
         if (err.response?.status === 409) {
-            showToast(TOAST_TYPES.ERROR, `MCI name "${mciName}" is already in use. Please enter a different name.`);
+            showToast(TOAST_TYPES.ERROR, `Infra name "${mciName}" is already in use. Please enter a different name.`);
         } else {
-            showToast(TOAST_TYPES.ERROR, 'VM import failed: ' + errMsg);
+            showToast(TOAST_TYPES.ERROR, 'Node import failed: ' + errMsg);
         }
     } finally {
         spinner.classList.add('d-none');

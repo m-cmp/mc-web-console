@@ -1,0 +1,156 @@
+<!-- Group 탭 -->
+<div class="card section" id="nodeGroup_vm_info">
+  <div class="card-header">
+    <h3 class="card-title">
+      Node Info<span id="nodegroup_server_info_text" class="text-info"> </span>
+    </h3>
+    <div class="card-actions btn-actions gap-2">
+      <!-- <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#cmdtestmodal">
+        Terminal
+      </a> -->
+
+
+      <a
+        href="#"
+        id="installsw-node-nodegroup-btn"
+        aria-disabled="true"
+        title="Available only when the node is Running"
+        style="pointer-events: auto; cursor: not-allowed;"
+        class="btn btn-outline-dark disabled"
+        onclick="event.preventDefault(); webconsolejs['pages/operation/manage/infraworkloads'].installSwToNode('nodegroup')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M12 5l0 14"></path>
+          <path d="M5 12l14 0"></path>
+        </svg>
+        Install SW
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="container">
+      <div class="row align-items-start">
+        <!-- Left Column: Connection Info -->
+        <div class="col-lg-2">
+          <div class="form-group mb-2">
+            <span id="nodegroup_mci_server_info_connection"></span>
+          </div>
+        </div>
+
+        <!-- Right Column: Main Info -->
+        <div class="col-lg-10">
+          <!-- Row 1: CSP -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: 1fr;
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">CSP</div>
+              <div class="datagrid-content" id="nodegroup_server_info_csp"></div>
+            </div>
+          </div>
+
+          <!-- Row 2: Region / Zone / Config Name -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Region</div>
+              <div class="datagrid-content" id="nodegroup_server_info_region"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Zone</div>
+              <div class="datagrid-content" id="nodegroup_server_info_zone"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Config Name</div>
+              <div class="datagrid-content" id="nodegroup_server_info_connection_name"></div>
+            </div>
+          </div>
+
+          <!-- Row 3: VMID / VM Spec / Operating System/Architecture -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">VMID</div>
+              <div class="datagrid-content" id="nodegroup_server_info_cspVMID"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Node Spec</div>
+              <div class="datagrid-content" id="nodegroup_server_info_vmspec_name"></div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Architecture</div>
+              <div class="datagrid-content" id="nodegroup_server_info_archi"></div>
+            </div>
+          </div>
+
+          <!-- Row 4: Public IP + Terminal Button / Private IP / (Empty) -->
+          <div
+            class="datagrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-gap: 1.5rem;
+            "
+          >
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Public IP</div>
+              <div class="datagrid-content d-flex align-items-center">
+                <span id="nodegroup_server_info_public_ip" class="me-2"></span>
+                <a
+                  class="btn btn-sm btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#commonDefaultModal"
+                  onclick="webconsolejs['partials/layout/modal'].commonModal(this,'Terminal', 'Would you like to connect?', 'pages/operation/manage/infraworkloads.initremotecmdModal', 'nodegroupvm')"
+                >
+                  Terminal
+                </a>
+              </div>
+            </div>
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title">Private IP</div>
+              <div class="datagrid-content" id="nodegroup_server_info_private_ip"></div>
+            </div>
+            <!-- Empty column to maintain alignment -->
+            <div class="datagrid-item mb-3">
+              <div class="datagrid-title"></div>
+              <div class="datagrid-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{ partial("partials/operation/manage/nodegroup_servertabcards.html") | raw }}
+  </div>
+  <!-- body end -->
+</div>
+
+{{ javascriptTag("partials/operation/manage/remotecmd.js") | raw }}

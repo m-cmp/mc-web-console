@@ -1,6 +1,6 @@
 /*
     <a class="btn" data-bs-toggle="modal" data-bs-target="#commonDefaultModal"
-        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/mci_api.commoncallbac','Arg')">
+        onclick="webconsolejs['partials/layout/modal'].commonModal(this,'customeTitle','Here Modal content','common/api/services/infra_api.commoncallbac','Arg')">
         commonSimpleModal
     </a>
 */
@@ -76,7 +76,6 @@ function commonConfirmOpen(targetAction, caller) {
     //  [ id , 문구]
     let confirmModalTextMap = new Map(
         [
-            ["CreateSnapshot", "Would you like to Create Snapshot?"],
             ["DeleteDataDisk", "Would you like to Delete Disk?"],
             ["DeleteMyImage", "Would you like to Delete MyImage?"],
             ["Logout", "Would you like to logout?"],
@@ -121,37 +120,37 @@ function commonConfirmOpen(targetAction, caller) {
             ["DeleteVmSpec", "Would you like to un-register Spec <br />Resource ?"],
             ["FetchSpecs", "Would you like to fetch Spec <br /> to this NameSpace ?"],
 
-            ["GotoMonitoringPerformance", "Would you like to view performance <br />for MCIS ?"],
-            ["GotoMonitoringFault", "Would you like to view fault <br />for MCIS ?"],
-            ["GotoMonitoringCost", "Would you like to view cost <br />for MCIS ?"],
-            ["GotoMonitoringUtilize", "Would you like to view utilize <br />for MCIS ?"],
+            ["GotoMonitoringPerformance", "Would you like to view performance <br />for Infra ?"],
+            ["GotoMonitoringFault", "Would you like to view fault <br />for Infra ?"],
+            ["GotoMonitoringCost", "Would you like to view cost <br />for Infra ?"],
+            ["GotoMonitoringUtilize", "Would you like to view utilize <br />for Infra ?"],
 
-            ["MciLifeCycleReboot", "Would you like to reboot MCIS ?"],// mci_life_cycle('reboot')
-            ["MciLifeCycleSuspend", "Would you like to suspend MCIS ?"],//onclick="mci_life_cycle('suspend')
-            ["MciLifeCycleResume", "Would you like to resume MCIS ?"],//onclick="mci_life_cycle('resume')"
-            ["MciLifeCycleTerminate", "Would you like to terminate MCIS ?"],//onclick="mci_life_cycle('terminate')
-            ["MciManagement", "Would you like to manage MCIS ?"],// 해당 function 없음...
-            ["MoveToMciManagement", "Would you like to manage MCIS ?"],
-            ["MoveToMciManagementFromDashboard", "Would you like to manage MCIS ?"],
+            ["MciLifeCycleReboot", "Would you like to reboot Infra ?"],// mci_life_cycle('reboot')
+            ["MciLifeCycleSuspend", "Would you like to suspend Infra ?"],//onclick="mci_life_cycle('suspend')
+            ["MciLifeCycleResume", "Would you like to resume Infra ?"],//onclick="mci_life_cycle('resume')"
+            ["MciLifeCycleTerminate", "Would you like to terminate Infra ?"],//onclick="mci_life_cycle('terminate')
+            ["MciManagement", "Would you like to manage Infra ?"],// 해당 function 없음...
+            ["MoveToMciManagement", "Would you like to manage Infra ?"],
+            ["MoveToMciManagementFromDashboard", "Would you like to manage Infra ?"],
 
-            ["AddNewMci", "Would you like to create MCIS ?"],
-            ["AddNewMciDynamic", "Would you like to create MCIS ?"],
-            ["DeleteMci", "Are you sure to delete this MCIS? "],
-            ["ImportScriptOfMci", "Would you like to import MCIS script? "],
-            ["ExportScriptOfMci", "Would you like to export MCIS script? "],
+            ["AddNewMci", "Would you like to create Infra ?"],
+            ["AddNewMciDynamic", "Would you like to create Infra ?"],
+            ["DeleteMci", "Are you sure to delete this Infra? "],
+            ["ImportScriptOfMci", "Would you like to import Infra script? "],
+            ["ExportScriptOfMci", "Would you like to export Infra script? "],
             ["ShowMonitoring", "Would you like to go to the Monitoring page?"],
 
-            ["AddNewVmOfMci", "Would you like to add a new VM to this MCIS ?"],
+            ["AddNewVmOfMci", "Would you like to add a new Node to this Infra ?"],
             ["DeployServer", "Would you like to deploy?"],
 
-            ["VmLifeCycle", "Would you like to view Server ?"],
-            ["VmLifeCycleReboot", "Would you like to reboot VM ?"], //onclick="vm_life_cycle('reboot')"
-            ["VmLifeCycleSuspend", "Would you like to suspend VM ?"], // onclick="vm_life_cycle('suspend')"
-            ["VmLifeCycleResume", "Would you like to resume VM ?"], // onclick="vm_life_cycle('resume')"
-            ["VmLifeCycleTerminate", "Would you like to terminate VM ?"], // onclick="vm_life_cycle('terminate')"
-            ["VmManagement", "Would you like to manage VM ?"], // 해당 function 없음
-            ["AddNewVm", "Would you like to add VM ?"], //onclick="vm_add()"
-            ["ExportVmScriptOfMci", "Would you like to export VM script ?"], //onclick="vm_add()"
+            ["VmLifeCycle", "Would you like to view Node ?"],
+            ["VmLifeCycleReboot", "Would you like to reboot Node ?"], //onclick="vm_life_cycle('reboot')"
+            ["VmLifeCycleSuspend", "Would you like to suspend Node ?"], // onclick="vm_life_cycle('suspend')"
+            ["VmLifeCycleResume", "Would you like to resume Node ?"], // onclick="vm_life_cycle('resume')"
+            ["VmLifeCycleTerminate", "Would you like to terminate Node ?"], // onclick="vm_life_cycle('terminate')"
+            ["VmManagement", "Would you like to manage Node ?"], // 해당 function 없음
+            ["AddNewVm", "Would you like to add Node ?"], //onclick="vm_add()"
+            ["ExportVmScriptOfMci", "Would you like to export Node script ?"], //onclick="vm_add()"
 
 
             ["DifferentConnection", "Do you want to set different connectionName?"],
@@ -395,10 +394,6 @@ function commonConfirmOk() {
     } else if (targetAction == "DeleteMyImage") {
         deleteMyImageDisk();
 
-    } else if (targetAction == "CreateSnapshot") {
-        commonPromptOk
-        createSnapshot();
-
     } else if (targetAction == "DeleteNlb") {
         deleteNlb();
     } else if (targetAction == "AddNewPmk") {
@@ -576,8 +571,6 @@ function commonPromptOk() {
     } else if (targetAction == 'AddNewMciDynamic') {
         $("#mci_name").val(targetValue)
         dynamicMci()
-    } else if (targetAction == 'CreateSnapshot') {
-        createSnapshot(targetValue);
     }
 
 

@@ -1,0 +1,401 @@
+<!-- exporess form -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card sub_section" id="server_configuration">
+        <div class="card-header">
+          <h3 class="text-info">Node Configuration</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label required">Node Name</label>
+                <input
+                  class="form-control"
+                  name="server_name"
+                  rows="1"
+                  placeholder="Input Name"
+                  id="ep_name"
+                />
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label required">Spec</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please Use Search"
+                      name="spec"
+                      id="ep_specId"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="provider"
+                      id="ep_provider"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="connectionName"
+                      id="ep_connectionName"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="imageId"
+                      id="ep_imageId"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="commonImageId"
+                      id="ep_commonImageId"
+                      value=""
+                    />
+                    <input
+                      type="hidden"
+                      name="commonSpecId"
+                      id="ep_commonSpecId"
+                      value=""
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
+                      class="btn"
+                      data-bs-toggle="modal"
+                      data-bs-target="#spec-search"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label required">Image</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Please Use Search"
+                      name="image"
+                      id="ep_imageId_input"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      href="#"
+                      class="btn"
+                      onclick="webconsolejs['partials/operation/manage/imagerecommendation'].validateAndOpenImageModal(event)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"
+                        ></path>
+                        <path d="M21 21l-6 -6"></path>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group mb-2">
+                <label class="form-label">Root Disk</label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <select
+                      class="form-select"
+                      name="rootDiskType"
+                      onchange="webconsolejs['partials/operation/manage/infracreate'].changeDiskSize(this.value)"
+                      id="ep_root_disk_type"
+                    >
+                      <option value="">Select Root Disk Type</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <input
+                      class="form-control"
+                      name="rootDiskSize"
+                      rows="1"
+                      placeholder="Root Disk Size(GB)"
+                      id="ep_root_disk_size"
+                    />
+                  </div>
+                </div>
+                <div
+                  class="text-muted small mt-1"
+                  id="ep_root_disk_myimage_notice"
+                  style="display: none"
+                >
+                  Root disk type/size follow the MyImage; values entered here
+                  will not be applied.
+                </div>
+              </div>
+              <div class="form-group mb-2" id="ep_disk_attach_section">
+                <label class="form-label">Data Disk</label>
+                <select class="form-select" id="ep_disk_attach_mode">
+                  <option value="none" selected>None</option>
+                  <option value="existing">Attach Existing Disk</option>
+                  <option value="new">Create New &amp; Attach</option>
+                </select>
+                <div id="ep_disk_attach_existing" class="mt-2 d-none">
+                  <select class="form-select" id="ep_disk_attach_existing_select">
+                    <option value="">Select</option>
+                  </select>
+                </div>
+                <div id="ep_disk_attach_new" class="mt-2 d-none">
+                  <input
+                    type="text"
+                    class="form-control mb-2"
+                    id="ep_disk_attach_new_name"
+                    placeholder="Disk name"
+                  />
+                  <input
+                    type="number"
+                    class="form-control mb-2"
+                    id="ep_disk_attach_new_size"
+                    min="1"
+                    placeholder="Size (GB)"
+                  />
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="ep_disk_attach_new_type"
+                    placeholder="Disk type (optional)"
+                  />
+                </div>
+                <div
+                  class="text-muted small mt-1 d-none"
+                  id="ep_disk_attach_multinode_notice"
+                >
+                  Data disk attach is only supported when NodeGroup Size is 1.
+                  Use the Node Detail tab to attach disks individually for
+                  multi-node NodeGroups.
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label">NodeGroup Size</label>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <div class="input-number-container">
+                      <button class="input-number-decrement" style="height: calc(1.5em + 0.75rem + 2px); border: 1px solid #ced4da;">-</button>
+                      <input
+                        type="number"
+                        class="input-number form-control"
+                        value="1"
+                        min="1"
+                        id="ep_vm_add_cnt"
+                      />
+                      <button class="input-number-increment" style="height: calc(1.5em + 0.75rem + 2px); border: 1px solid #ced4da;">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--
+                Node User Password — Express(dynamic) 모드에서는 숨긴다.
+                cb-tumblebug v0.12.28이 dynamic 경로에서 이 필드를 의도적으로 폐지했다
+                (Linux는 SSH 키페어로 접근, Windows용 패스워드는 서버가 랜덤 생성).
+                입력을 받아도 서버가 무시하므로 노출하면 거짓 UI가 된다.
+                엘리먼트는 남겨둔다 — 비-dynamic PostInfra를 쓰는 Expert 모드(WEB-TECH-052)에서
+                모드 게이팅으로 다시 노출할 예정이다.
+              -->
+              <div class="form-group mb-2" id="ep_node_user_password_group" style="display: none">
+                <label class="form-label">Node User Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="ep_node_user_password"
+                  autocomplete="new-password"
+                  placeholder="optional"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-2">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  name="server_description"
+                  id="ep_description"
+                  rows="3"
+                  placeholder="type Description"
+                ></textarea>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label">Command</label>
+                <textarea
+                  class="form-control"
+                  name="command"
+                  id="ep_command"
+                  rows="3"
+                  placeholder="client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH client IP is: $client_ip"
+                ></textarea>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label">Node Labels</label>
+                <div class="input-group mb-2">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="ep_label_key"
+                    placeholder="key"
+                  />
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="ep_label_value"
+                    placeholder="value"
+                  />
+                  <button
+                    type="button"
+                    class="btn"
+                    id="ep_label_add_btn"
+                    onclick="webconsolejs['partials/operation/manage/infracreate'].addNodeLabel()"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div id="ep_label_list"></div>
+              </div>
+            </div>
+          </div>
+          <!--
+            Expert 모드 전용 리소스 직접 선택 (WEB-TECH-052).
+            cb-tumblebug 비-dynamic PostInfra/PostInfraNode(model.CreateNodeGroupReq)는
+            vNetId/subnetId/securityGroupIds/sshKeyId를 정확한 리소스 ID로 요구한다.
+            Spec/Image 선택으로 connection이 정해지기 전까지 비활성 상태를 유지한다.
+            zone은 별도 입력이 아니라 선택한 Subnet(SubnetInfo.zone)으로 결정된다.
+          -->
+          <div class="mb-2" id="ep_expert_resources_section" style="display: none">
+            <hr />
+            <h4 class="text-info">Network &amp; Security (Expert Mode)</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">VNet</label>
+                  <select
+                    class="form-select"
+                    id="ep_expert_vnet"
+                    disabled
+                    onchange="webconsolejs['partials/operation/manage/infracreate'].onExpertVNetChange()"
+                  >
+                    <option value="">Select Spec/Image first</option>
+                  </select>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required">Subnet</label>
+                  <select
+                    class="form-select"
+                    id="ep_expert_subnet"
+                    disabled
+                    onchange="webconsolejs['partials/operation/manage/infracreate'].onExpertSubnetChange()"
+                  >
+                    <option value="">Select a VNet first</option>
+                  </select>
+                  <div class="form-text" id="ep_expert_subnet_zone_hint"></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-2">
+                  <label class="form-label required">Security Groups</label>
+                  <select class="form-select" id="ep_expert_sg" multiple disabled size="4">
+                  </select>
+                  <div class="form-text">Ctrl/Cmd-click to select multiple.</div>
+                </div>
+                <div class="form-group mb-2">
+                  <label class="form-label required">SSH Key</label>
+                  <select class="form-select" id="ep_expert_sshkey" disabled>
+                    <option value="">Select Spec/Image first</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- template Add NodeGroup carry-through 필드 read-only 표시 — 5필드 항상 렌더, 잠김은 스타일로 구분 -->
+          <div class="form-group mb-2 d-none" id="carry_through_section">
+            <label class="form-label">Template-defined Fields</label>
+            <div class="row g-2" id="carry_through_fields"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div align="right">
+            <button type="button" class="btn btn-secondary" onclick="webconsolejs['partials/operation/manage/infracreate'].clearExpressForm()">Clear</button>
+            <button
+              type="submit"
+              class="btn btn-info"
+              id="express_done_btn"
+              onclick="webconsolejs['partials/operation/manage/infracreate'].expressDone_btn()"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden fields for processing -->
+<input type="hidden" id="p_provider" value="" />
+<input type="hidden" id="p_connectionName" value="" />
+<input type="hidden" id="p_name" value="" />
+<input type="hidden" id="p_description" value="" />
+<input type="hidden" id="p_imageId" value="" />
+<input type="hidden" id="p_commonImageId" value="" />
+<input type="hidden" id="p_commonSpecId" value="" />
+<input type="hidden" id="p_root_disk_type" value="" />
+<input type="hidden" id="p_root_disk_size" value="" />
+<input type="hidden" id="p_specId" value="" />
+<input type="hidden" id="p_subGroupSize" value="" />
+<input type="hidden" id="p_vm_cnt" value="" />
+<input type="hidden" id="p_command" value="" />
+
+{{ partial("partials/operation/manage/imagerecommendation.html") | raw }}
+
+{{ javascriptTag("partials/operation/manage/infracreate.js") | raw }} {{ javascriptTag("common/api/services/infra_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("common/api/services/disk_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("common/api/services/vmimage_api.js") | raw }}<!--API 호출-->
+{{ javascriptTag("common/api/services/vpc_api.js") | raw }}<!--API 호출: Expert Mode VNet/Subnet 선택-->
+{{ javascriptTag("common/api/services/securitygroup_api.js") | raw }}<!--API 호출: Expert Mode Security Group 선택-->
+{{ javascriptTag("common/api/services/sshkey_api.js") | raw }}<!--API 호출: Expert Mode SSH Key 선택-->

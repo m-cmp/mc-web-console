@@ -85,6 +85,11 @@ conf/selfiamauthsetting.yaml
 conf/selfiamuser.dat
 conf/serverinfo
 
+# menu export artifacts (WEB-TECH-067) - 브라우저 다운로드 산출물이 conf/에 실수로 반입되는 것 방지
+conf/menu-export-*.json
+conf/menu-export-*.yaml
+conf/menu-export-*.yml
+
 # scripts
 !scripts/.env
 scripts/container-volume

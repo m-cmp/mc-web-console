@@ -1,27 +1,38 @@
 <div class="page-body">
-  <div class="container-xl">
+  <div class="container-fluid">
     <div class="row row-cards">
       <div class="col-12 col-md-8">
 
         <!-- Info Card -->
         <div class="card" id="companyinfo-view-card">
           <div class="card-header">
-            <h3 class="card-title">Organization Info</h3>
+            <h3 class="card-title">Company Info</h3>
             <div class="card-actions btn-actions">
-              <button class="btn btn-outline-warning" id="companyinfo-edit-btn" onclick="companyInfoPage.enterEditMode()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <button class="btn btn-outline-secondary d-none" id="companyinfo-activate-btn"
+                onclick="companyInfoPage.activate()">Activate</button>
+              <button class="btn btn-outline-warning d-none" id="companyinfo-edit-btn"
+                onclick="companyInfoPage.enterEditMode()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                  viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                   <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
-                  <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
+                  <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z">
+                  </path>
                   <path d="M16 5l3 3"></path>
                 </svg>
                 Edit
               </button>
+              <button class="btn btn-primary d-none" id="companyinfo-create-btn"
+                onclick="companyInfoPage.enterCreateMode()">Create Company</button>
             </div>
           </div>
           <div class="card-body">
             <div id="companyinfo-loading" class="text-center py-4">
               <div class="spinner-border text-primary" role="status"></div>
+            </div>
+            <div id="companyinfo-empty" class="text-secondary py-3" style="display:none;">
+              No company is registered. Create the platform company to continue.
             </div>
             <div id="companyinfo-data" style="display:none;">
               <div class="datagrid">
@@ -30,24 +41,32 @@
                   <div class="datagrid-content" id="ci-name"></div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Code</div>
-                  <div class="datagrid-content"><code id="ci-code"></code></div>
-                </div>
-                <div class="datagrid-item">
-                  <div class="datagrid-title">Level</div>
-                  <div class="datagrid-content" id="ci-level"></div>
-                </div>
-                <div class="datagrid-item">
-                  <div class="datagrid-title">Path</div>
-                  <div class="datagrid-content" id="ci-path"></div>
-                </div>
-                <div class="datagrid-item">
                   <div class="datagrid-title">Description</div>
                   <div class="datagrid-content" id="ci-description"></div>
                 </div>
                 <div class="datagrid-item">
-                  <div class="datagrid-title">Members</div>
-                  <div class="datagrid-content" id="ci-user-count"></div>
+                  <div class="datagrid-title">Status</div>
+                  <div class="datagrid-content" id="ci-status"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Created At</div>
+                  <div class="datagrid-content" id="ci-created-at"></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Updated At</div>
+                  <div class="datagrid-content" id="ci-updated-at"></div>
+                </div>
+              </div>
+
+              <h4 class="mt-4 mb-2">Keycloak Settings</h4>
+              <div class="datagrid">
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Realm Name</div>
+                  <div class="datagrid-content"><code id="ci-realm"></code></div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Keycloak Client ID</div>
+                  <div class="datagrid-content"><code id="ci-client-id"></code></div>
                 </div>
               </div>
             </div>
@@ -57,21 +76,75 @@
         <!-- Edit Card -->
         <div class="card" id="companyinfo-edit-card" style="display:none;">
           <div class="card-header">
-            <h3 class="card-title">Edit Organization Info</h3>
+            <h3 class="card-title">Edit Company Info</h3>
           </div>
           <div class="card-body">
             <div class="mb-3">
               <label class="form-label required">Name</label>
-              <input type="text" class="form-control" id="ci-edit-name" placeholder="Organization name" />
+              <input type="text" class="form-control" id="ci-edit-name" placeholder="Company name" />
             </div>
             <div class="mb-3">
               <label class="form-label">Description</label>
-              <textarea class="form-control" id="ci-edit-description" rows="3" placeholder="Organization description"></textarea>
+              <textarea class="form-control" id="ci-edit-description" rows="3"
+                placeholder="Company description"></textarea>
+            </div>
+
+            <h4 class="mt-4 mb-2">Keycloak Settings</h4>
+            <div class="mb-3">
+              <label class="form-label">Realm Name</label>
+              <input type="text" class="form-control" id="ci-edit-realm" readonly disabled />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Keycloak Client ID</label>
+              <input type="text" class="form-control" id="ci-edit-client-id" readonly disabled />
             </div>
           </div>
           <div class="card-footer text-end">
-            <button type="button" class="btn btn-secondary me-2" onclick="companyInfoPage.cancelEdit()">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="companyInfoPage.saveEdit()">Save</button>
+            <button type="button" class="btn btn-secondary me-2"
+              onclick="companyInfoPage.cancelEdit()">Cancel</button>
+            <button type="button" class="btn btn-primary"
+              onclick="companyInfoPage.saveEdit()">Save</button>
+          </div>
+        </div>
+
+        <!-- Create Card -->
+        <div class="card" id="companyinfo-create-card" style="display:none;">
+          <div class="card-header">
+            <h3 class="card-title">Create Company</h3>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label required">Name</label>
+              <input type="text" class="form-control" id="ci-create-name" placeholder="Company name" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" id="ci-create-description" rows="3"
+                placeholder="Company description"></textarea>
+            </div>
+
+            <h4 class="mt-4 mb-2">Keycloak Settings</h4>
+            <div class="mb-3">
+              <label class="form-label required">Realm Name</label>
+              <input type="text" class="form-control" id="ci-create-realm"
+                placeholder="Keycloak realm name" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label required">Keycloak Client ID</label>
+              <input type="text" class="form-control" id="ci-create-client-id"
+                placeholder="Keycloak client id" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label required">Keycloak Client Secret</label>
+              <input type="password" class="form-control" id="ci-create-client-secret"
+                placeholder="Keycloak client secret" autocomplete="new-password" />
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <button type="button" class="btn btn-secondary me-2"
+              onclick="companyInfoPage.cancelCreate()">Cancel</button>
+            <button type="button" class="btn btn-primary"
+              onclick="companyInfoPage.saveCreate()">Create</button>
           </div>
         </div>
 
@@ -82,5 +155,5 @@
 
 {{ partial("partials/layout/pageloader.html") | raw }}
 
-{{ javascriptTag("common/api/services/groups_api.js") | raw }}
+{{ javascriptTag("common/api/services/company_api.js") | raw }}
 {{ javascriptTag("pages/settings/accountnaccess/organizations/companyinfo.js") | raw }}

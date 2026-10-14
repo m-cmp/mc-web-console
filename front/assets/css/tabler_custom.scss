@@ -25,3 +25,9 @@
 .card-header {
   padding: 15px;
 }
+// template carry-through read-only 필드 — "(read-only)" 문구 대신 스타일로 잠김 표현
+#carry_through_fields .carry-through-readonly {
+  background-color: var(--tblr-bg-surface-secondary);
+  color: var(--tblr-secondary);
+  cursor: default;
+}

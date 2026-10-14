@@ -15,7 +15,7 @@ export function initClusterRecommendation(callbackfunction) {
 	}
 
 	// 팝업 열릴 때마다 provider 체크박스 초기화 (All 체크, 나머지 해제)
-	const modalEl = document.getElementById('image-search');
+	const modalEl = document.getElementById('cluster-spec-search');
 	if (modalEl) {
 		modalEl.addEventListener('shown.bs.modal', function () {
 			document.querySelectorAll('.spec-provider-check-cluster').forEach(cb => cb.checked = false);
@@ -25,8 +25,20 @@ export function initClusterRecommendation(callbackfunction) {
 	}
 }
 
+// 값이 없거나 0/-1인 숫자 필드는 "-"로 표시
+function dashIfEmpty(cell) {
+	var v = cell.getValue();
+	if (v === undefined || v === null || v === "" || v === 0 || v === -1) {
+		return "-";
+	}
+	return v;
+}
+
 function initRecommendSpecTable() {
-	var tableObjParams = {};
+	// MCI용(serverrecommendation.js)과 동일 — fitColumns는 가로 스크롤이 생기지 않아 fitData로 전환
+	var tableObjParams = {
+		layout: "fitData",
+	};
 
 	var columns = [
 		{
@@ -45,12 +57,6 @@ function initRecommendSpecTable() {
 			visible: false
 		},
 		{
-			title: "EVALUATIONSCORE",
-			field: "evaluationScore10",
-			headerSort: false,
-			visible: false
-		},
-		{
 			title: "PROVIDER",
 			field: "providerName",
 			vertAlign: "middle",
@@ -62,7 +68,8 @@ function initRecommendSpecTable() {
 		{
 			title: "REGION",
 			field: "regionName",
-			vertAlign: "middle"
+			vertAlign: "middle",
+			minWidth: 140,
 		},
 		{
 			title: "PRICE",
@@ -84,6 +91,73 @@ function initRecommendSpecTable() {
 			hozAlign: "center",
 			headerHozAlign: "center",
 			maxWidth: 135,
+		},
+		{
+			title: "ARCHITECTURE",
+			field: "architecture",
+			vertAlign: "middle",
+			hozAlign: "center",
+			formatter: dashIfEmpty,
+		},
+		{
+			title: "DISK (GB)",
+			field: "diskSizeGB",
+			vertAlign: "middle",
+			hozAlign: "center",
+			formatter: dashIfEmpty,
+		},
+		{
+			title: "ROOT DISK",
+			field: "rootDiskType",
+			vertAlign: "middle",
+			hozAlign: "center",
+			formatter: function (cell) {
+				var row = cell.getRow().getData();
+				var type = row.rootDiskType;
+				var size = row.rootDiskSize;
+				if (!type && (!size || size <= 0)) {
+					return "-";
+				}
+				if (size && size > 0) {
+					return (type ? type + " " : "") + size + " GB";
+				}
+				return type;
+			},
+		},
+		{
+			title: "NET BW (Gbps)",
+			field: "netBwGbps",
+			vertAlign: "middle",
+			hozAlign: "center",
+			formatter: dashIfEmpty,
+		},
+		{
+			title: "GPU",
+			field: "acceleratorModel",
+			vertAlign: "middle",
+			hozAlign: "center",
+			formatter: function (cell) {
+				var row = cell.getRow().getData();
+				var model = row.acceleratorModel;
+				if (!model || model === "NA" || row.acceleratorType === "") {
+					return "-";
+				}
+				var count = row.acceleratorCount;
+				return count && count > 1 ? model + " x" + count : model;
+			},
+		},
+		{
+			title: "GPU MEM (GB)",
+			field: "acceleratorMemoryGB",
+			vertAlign: "middle",
+			hozAlign: "center",
+			formatter: dashIfEmpty,
+		},
+		{
+			title: "SCORE",
+			field: "evaluationScore10",
+			vertAlign: "middle",
+			hozAlign: "center",
 		}
 	];
 
@@ -357,7 +431,7 @@ export async function getRecommendVmInfo() {
 		}
 	}
 
-	var respData = await webconsolejs["common/api/services/mci_api"].mciRecommendVm(data);
+	var respData = await webconsolejs["common/api/services/infra_api"].mciRecommendVm(data);
 	if (respData.status.code != 200) {
 		console.error(respData.status)
 		// TODO : Error 표시

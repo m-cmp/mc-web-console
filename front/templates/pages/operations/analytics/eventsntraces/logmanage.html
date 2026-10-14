@@ -1,5 +1,5 @@
 <div class="page-body">
-    <div class="container-xl">
+    <div class="container-fluid">
   
       <div class="row row-cards">
         <div class="col-md-12">
@@ -18,9 +18,9 @@
                     </select>
                   </div>
 
-                  <!-- Server -->
+                  <!-- Node -->
                   <div class="col-md-3">
-                    <label for="log_targetlist" class="form-label required">Server</label>
+                    <label for="log_targetlist" class="form-label required">Node</label>
                     <select class="form-select" id="log_targetlist">
                       <option value="">Select</option>
                     </select>
@@ -244,7 +244,7 @@
                                 <div class="form-description" id="log_tag_host"></div>
                             </div>
                             <div class="datagrid-item">
-                                <div class="form-label">MCI ID</div>
+                                <div class="form-label">Infra ID</div>
                                 <div class="form-description" id="log_tag_mci_id"></div>
                             </div>
                             <div class="datagrid-item">
@@ -306,7 +306,7 @@
                           <div>
                               <pre style=" overflow: auto; white-space: pre-wrap;">
 Host&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="log_tag_host"></span><br>
-MCI ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="log_mci_id"></span><br>
+Infra ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="log_mci_id"></span><br>
 NS ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="log_ns_id"></span><br>
 Path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="log_path"></span><br>
 Target ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="log_target_id"></span><br>
@@ -336,5 +336,5 @@ Timestamp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
   
   {{ javascriptTag("pages/operation/analytics/logmanage.js") | raw }} 
   {{ javascriptTag("common/api/services/monitoring_api.js") | raw }}
-  {{ javascriptTag("common/api/services/mci_api.js") | raw }}
+  {{ javascriptTag("common/api/services/infra_api.js") | raw }}
   

@@ -61,7 +61,7 @@ async function initLog() {
     var selectedNsId = selectedWorkspaceProject.nsId;
     
     // MCI 목록 로드
-    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(selectedNsId);
     getMciListCallbackSuccess(selectedProjectId, respMciList);
   }
   
@@ -98,13 +98,13 @@ function setMciList(mciList) {
 
 // MCI 선택 시 서버 목록 업데이트
 async function displayLogMci(nsId, mciId) {
-  var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+  var respMci = await webconsolejs["common/api/services/infra_api"].getMci(nsId, mciId);
 
   var vmList = respMci.responseData.vm;
   if (Array.isArray(vmList) && vmList.length > 0) {
     displayServerStatusList(mciId, respMci.responseData.vm);
   } else {
-    alert("There is no VM List !!");
+    alert("There is no Node List !!");
   }
 }
 
@@ -252,14 +252,14 @@ function initLogTable() {
       width: 100
     },
     {
-      title: "MCI",
+      title: "Infra",
       field: "labels",
       formatter: labelsMciIdFormatter,
       vertAlign: "middle",
       width: 120
     },
     {
-      title: "VM",
+      title: "Node",
       field: "labels",
       formatter: labelsVMIdFormatter,
       vertAlign: "middle",
@@ -434,7 +434,7 @@ export async function getCollectedLog() {
   }
 
   if (!selectedVmId) {
-    alert("Please select a Server");
+    alert("Please select a Node");
     return;
   }
 

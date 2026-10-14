@@ -17,6 +17,8 @@ const PROVIDER_BADGE = {
     AWS: '<span class="badge bg-orange-lt">AWS</span>',
     GCP: '<span class="badge bg-blue-lt">GCP</span>',
     AZURE: '<span class="badge bg-indigo-lt">Azure</span>',
+    ALIBABA: '<span class="badge bg-yellow-lt">Alibaba Cloud</span>',
+    TENCENT: '<span class="badge bg-azure-lt">Tencent Cloud</span>',
 };
 
 function getProviderBadge(provider) {

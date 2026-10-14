@@ -25,7 +25,10 @@ export async function refreshCspRolesList() {
 
 // Tabulator 테이블 초기화
 function initCspRolesTable() {
-  var tableObjParams = {};
+  // Tabulator 자체에 height를 지정해야 헤더/페이지네이션 footer는 고정되고
+  // 데이터 영역만 내부적으로 스크롤된다(외부 div에 overflow를 거는 방식은
+  // 헤더·footer까지 통째로 스크롤되어 버림).
+  var tableObjParams = { height: "400px" };
   var columns = [
     {
       formatter: "rowSelection",
@@ -39,6 +42,7 @@ function initCspRolesTable() {
     {
       title: "Id",
       field: "id",
+      sorter: "number",
       vertAlign: "middle",
       hozAlign: "center",
       width: 300,
@@ -123,6 +127,7 @@ function setCspRolesTabulator(
   var columnHeaderVertAlign = "middle";
   var paginationCounter = "rows";
   var layout = "fitColumns";
+  var height = undefined;
 
   if (tableObjParamMap.hasOwnProperty("placeholder")) {
     placeholder = tableObjParamMap.placeholder;
@@ -156,15 +161,22 @@ function setCspRolesTabulator(
     layout = tableObjParamMap.layout;
   }
 
+  if (tableObjParamMap.hasOwnProperty("height")) {
+    height = tableObjParamMap.height;
+  }
+
   var tabulatorTable = new Tabulator("#" + tableObjId, {
     placeholder,
     pagination,
     paginationSize,
     paginationSizeSelector,
+    // 신규 생성 role이 페이지네이션 뒷페이지에 가려 "목록에 없다"고 오인되지 않도록 최신순 기본 정렬
+    initialSort: [{ column: "id", dir: "desc" }],
     movableColumns,
     columnHeaderVertAlign,
     paginationCounter,
     layout,
+    height,
     columns: columnsParams,
     selectableRows: isMultiSelect == false ? 1 : true,
   });
@@ -1334,16 +1346,10 @@ async function editCSPRole() {
     // 편집 모달의 폼에 현재 데이터 채우기
     document.getElementById('editCspRoleName').value = cspRole.name || '';
     document.getElementById('editCspRoleDescription').value = cspRole.description || '';
-
-    // Trust Policy를 JSON 문자열로 변환하여 표시
-    if (cspRole.trust_policy) {
-      const trustPolicyText = typeof cspRole.trust_policy === 'string'
-        ? cspRole.trust_policy
-        : JSON.stringify(cspRole.trust_policy, null, 2);
-      document.getElementById('editCspRoleTrustPolicy').value = trustPolicyText;
-    } else {
-      document.getElementById('editCspRoleTrustPolicy').value = '';
-    }
+    document.getElementById('editCspIdpIdentifier').value = cspRole.idp_identifier || cspRole.idpIdentifier || '';
+    document.getElementById('editCspIamIdentifier').value = cspRole.iam_identifier || cspRole.iamIdentifier || '';
+    document.getElementById('editCspIamRoleId').value = cspRole.iam_role_id || cspRole.iamRoleId || '';
+    document.getElementById('editCspPath').value = cspRole.path || '';
 
     // 편집 모달 열기
     const editModal = new bootstrap.Modal(document.getElementById('editCspRoleModal'));
@@ -1358,28 +1364,25 @@ async function editCSPRole() {
 // 편집된 CSP Role 저장
 async function saveEditedCspRole() {
   const description = document.getElementById('editCspRoleDescription').value.trim();
-  const trustPolicyText = document.getElementById('editCspRoleTrustPolicy').value.trim();
+  const idpIdentifier = document.getElementById('editCspIdpIdentifier').value.trim();
+  const iamIdentifier = document.getElementById('editCspIamIdentifier').value.trim();
+  const iamRoleId = document.getElementById('editCspIamRoleId').value.trim();
+  const path = document.getElementById('editCspPath').value.trim();
 
   // 필수 필드 검증
-  if (!description || !trustPolicyText) {
+  if (!description) {
     alert('Please fill in all required fields');
     return;
   }
 
   try {
-    // Trust Policy JSON 파싱 검증
-    let trustPolicy;
-    try {
-      trustPolicy = JSON.parse(trustPolicyText);
-    } catch (error) {
-      alert('Invalid JSON format in Trust Policy. Please check your JSON syntax.');
-      return;
-    }
-
-    // API 요구사항에 맞는 데이터 구조 (name 제외)
+    // API 요구사항(CreateCspRoleRequest 스키마)에 맞는 데이터 구조 (name 제외 — 편집 불가)
     const roleData = {
       description: description,
-      trust_policy: trustPolicy
+      idpIdentifier: idpIdentifier,
+      iamIdentifier: iamIdentifier,
+      iamRoleId: iamRoleId,
+      path: path,
     };
 
     const result = await window.webconsolejs["common/api/services/csproles_api"].updateCspRole(currentCspRoleId, roleData);
@@ -1417,6 +1420,7 @@ async function saveEditedCspRole() {
 async function addSelectedCspRole() {
   const cspType = document.getElementById('addCspType').value.trim();
   const cspRoleName = document.getElementById('addCspRoleName').value.trim();
+  const authMethod = document.getElementById('addCspAuthMethod').value.trim();
   const description = document.getElementById('addCspRoleDescription').value.trim();
   const idpIdentifier = document.getElementById('addCspIdpIdentifier').value.trim();
   const iamIdentifier = document.getElementById('addCspIamIdentifier').value.trim();
@@ -1434,6 +1438,7 @@ async function addSelectedCspRole() {
       cspRoleName: cspRoleName,
       description: description,
       cspType: cspType,
+      authMethod: authMethod,
       idpIdentifier: idpIdentifier,
       iamIdentifier: iamIdentifier,
       iamRoleId: iamRoleId,

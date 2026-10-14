@@ -29,7 +29,9 @@ type cmdCommonRequest struct {
 
 // PostCmdInfraHandler forwards a remote command request to mc-infra-manager.
 // The JS sends JSON with pathParams/Request; this handler calls mc-infra-manager
-// directly with Basic auth, bypassing the API proxy which lacks this action.
+// directly (bypassing the API proxy) so the raw command payload passes through
+// unchanged. The target BaseURL/auth type come from the API server's getapihosts
+// (api.yaml + registry), so no address is hardcoded here.
 func PostCmdInfraHandler(c echo.Context) error {
 	var req cmdCommonRequest
 	if err := json.NewDecoder(c.Request().Body).Decode(&req); err != nil {
@@ -42,10 +44,14 @@ func PostCmdInfraHandler(c echo.Context) error {
 		return respondCmdError(c, http.StatusBadRequest, "nsId and infraId are required")
 	}
 
-	// Build mc-infra-manager URL
-	targetURL := fmt.Sprintf("%s/ns/%s/cmd/infra/%s", INFRA_MANAGER_URL, nsId, mciId)
+	// Build mc-infra-manager URL (getapihosts → env → localhost fallback)
+	baseURL, authType := ResolveFramework(c, "mc-infra-manager", "http://localhost:1323/tumblebug")
+	if authType == "" {
+		authType = "basic" // legacy default for mc-infra-manager (cb-tumblebug)
+	}
+	targetURL := fmt.Sprintf("%s/ns/%s/cmd/infra/%s", baseURL, nsId, mciId)
 
-	// Forward optional queryParams (subGroupId, vmId, etc.)
+	// Forward optional queryParams (nodeGroupId, nodeId, etc.)
 	if len(req.QueryParams) > 0 {
 		params := []string{}
 		for k, v := range req.QueryParams {
@@ -65,7 +71,7 @@ func PostCmdInfraHandler(c echo.Context) error {
 		return respondCmdError(c, http.StatusInternalServerError, "failed to build request: "+err.Error())
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.SetBasicAuth(INFRA_MANAGER_USER, INFRA_MANAGER_PASS)
+	applyFrameworkAuth(httpReq, c, "mc-infra-manager", authType)
 
 	client := &http.Client{}
 	resp, err := client.Do(httpReq)

@@ -6,6 +6,7 @@ var imageSelectionCallback;// 이미지 선택 시 호출될 콜백 함수
 
 var recommendImageListObj = new Object();
 var selectedSpecInfo = null; // 선택된 spec 정보
+var imageSource = 'public'; // 조회 소스: 'public'(SearchImage, ns=system) | 'myimage'(GetAllCustomImage, 선택 ns)
 
 export function initImageRecommendation(callbackfunction) {
 	initRecommendImageTable();
@@ -27,6 +28,97 @@ export function initImageModal() {
 	
 	// 초기 테이블 초기화만 수행 (필드 설정은 Apply 시점에 미리 완료됨)
 	initRecommendImageTable();
+
+	// 조회 소스를 Public으로 리셋 + 모달이 열릴 때마다 리셋 (항상 기본 소스로 시작)
+	resetImageSource();
+	if (!imageModal.dataset.sourceResetBound) {
+		imageModal.addEventListener('show.bs.modal', function () {
+			resetImageSource();
+			recommendImageListObj = [];
+			safeSetTableData([]);
+		});
+		imageModal.dataset.sourceResetBound = "true";
+	}
+}
+
+// 조회 소스 리셋 (Public 기본)
+function resetImageSource() {
+	imageSource = 'public';
+	var publicRadio = document.getElementById('image-source-public');
+	if (publicRadio) {
+		publicRadio.checked = true;
+	}
+	togglePublicFilterRow(true);
+}
+
+// Public 전용 필터 행(OS Type/GPU/Search) 표시 토글
+function togglePublicFilterRow(visible) {
+	var filterRow = document.getElementById('image-public-filter-row');
+	if (filterRow) {
+		filterRow.style.display = visible ? '' : 'none';
+	}
+}
+
+// 조회 소스 라디오 변경 핸들러
+export async function onImageSourceChange(source) {
+	imageSource = source;
+	togglePublicFilterRow(source === 'public');
+	safeSetTableData([]);
+	recommendImageListObj = [];
+	if (source === 'myimage') {
+		await loadMyImageList();
+	}
+	// public: 기존 Search 버튼 흐름 유지 (사용자가 조건 입력 후 검색)
+}
+
+// 워크스페이스 ns의 MyImage(customImage) 목록 로딩
+async function loadMyImageList() {
+	try {
+		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
+		var nsId = selectedWorkspaceProject.nsId;
+
+		var response = await webconsolejs["common/api/services/infra_api"].getCustomImageList(nsId);
+
+		if (!(response.status && response.status.code === 200)) {
+			console.error("MyImage list API call failed:", response);
+			webconsolejs["common/util"].showToast("Failed to load MyImage list. Switching back to Public Image.", 'warning', 5000);
+			fallbackToPublicSource();
+			return;
+		}
+
+		var imageList = (response.responseData && response.responseData.customImage) || [];
+
+		// spec 매칭 정합: 선택 spec의 connectionName 기준 클라이언트 필터
+		var connectionName = window.selectedSpecInfo && window.selectedSpecInfo.connectionName;
+		if (connectionName) {
+			imageList = imageList.filter(function (image) {
+				return image.connectionName === connectionName;
+			});
+		}
+
+		if (imageList.length === 0) {
+			webconsolejs["common/util"].showToast("No MyImage found for the selected connection. Create one from a node first.", 'warning', 5000);
+			safeSetTableData([]);
+			return;
+		}
+
+		var processedImageList = imageList.map(function (image) {
+			return mapImageInfoToRow(image);
+		});
+		recommendImageListObj = processedImageList;
+		safeSetTableData(processedImageList);
+	} catch (error) {
+		console.error("Error in loadMyImageList:", error);
+		webconsolejs["common/util"].showToast("Error loading MyImage list. Switching back to Public Image.", 'warning', 5000);
+		fallbackToPublicSource();
+	}
+}
+
+// 조회 실패 시 Public 소스로 폴백
+function fallbackToPublicSource() {
+	resetImageSource();
+	safeSetTableData([]);
+	recommendImageListObj = [];
 }
 
 // 이 함수는 더 이상 사용하지 않음 (PMK와 동일한 방식으로 단순화)
@@ -128,6 +220,14 @@ function initRecommendImageTable() {
 			headerSort: true,
 		},
 		{
+			title: "STATUS",
+			field: "imageStatus",
+			vertAlign: "middle",
+			hozAlign: "center",
+			maxWidth: 110,
+			headerSort: true,
+		},
+		{
 			title: "GPU",
 			field: "isGPUImage",
 			vertAlign: "middle",
@@ -170,12 +270,39 @@ export function setImageSelectionCallback(callback) {
 	imageSelectionCallback = callback;
 }
 
+// tumblebug ImageInfo → 테이블 행 매핑 (Public/MyImage 공용 — 동일 통합 모델)
+function mapImageInfoToRow(image, fallback) {
+	fallback = fallback || {};
+	return {
+		namespace: image.namespace || fallback.namespace || "system",
+		providerName: image.providerName || fallback.provider || "",
+		cspImageName: image.cspImageName || image.name || "",
+		regionList: image.regionList || (fallback.region ? [fallback.region] : []),
+		id: image.id || image.name || "",
+		name: image.name || "",
+		connectionName: image.connectionName || fallback.connectionName || "",
+		fetchedTime: image.fetchedTime || new Date().toLocaleString(),
+		creationDate: image.creationDate || new Date().toISOString(),
+		osType: image.osType || fallback.osType || "",
+		osArchitecture: image.osArchitecture,
+		osPlatform: image.osPlatform || "Linux/UNIX",
+		osDistribution: image.osDistribution || "",
+		osDiskType: image.osDiskType || "ebs",
+		osDiskSizeGB: image.osDiskSizeGB || -1,
+		imageStatus: image.imageStatus || "Available",
+		description: image.description || image.name,
+		isBasicImage: image.isBasicImage || false,
+		isGPUImage: image.isGPUImage || false,
+		resourceType: image.resourceType || "" // "customImage"면 MyImage — root disk 안내에 사용
+	};
+}
+
 // recommened Image 조회
 export async function getRecommendImageInfo() {
 
 	// 전역 변수에서 spec 정보 확인
 	if (!window.selectedSpecInfo) {
-		alert("Please select a server specification first.");
+		alert("Please select a node specification first.");
 		return;
 	}
 
@@ -239,7 +366,7 @@ export async function getRecommendImageInfo() {
 		console.log("=== End Debug ===");
 
 		// 이미지 검색 API 호출
-		var response = await webconsolejs["common/api/services/mci_api"].searchImage(nsId, searchParams);
+		var response = await webconsolejs["common/api/services/infra_api"].searchImage(nsId, searchParams);
 
 		if (response.status && response.status.code === 200) {
 			var imageList = response.responseData.imageList || [];
@@ -254,27 +381,12 @@ export async function getRecommendImageInfo() {
 			
 			// API 응답을 테이블 형식에 맞게 변환
 			var processedImageList = imageList.map(function(image) {
-				return {
-					namespace: image.namespace || "system",
-					providerName: image.providerName || provider,
-					cspImageName: image.cspImageName || image.name || "",
-					regionList: image.regionList || [region],
-					id: image.id || image.name || "",
-					name: image.name || "",
-					connectionName: image.connectionName || connectionName,
-					fetchedTime: image.fetchedTime || new Date().toLocaleString(),
-					creationDate: image.creationDate || new Date().toISOString(),
-					osType: image.osType || osType,
-					osArchitecture: image.osArchitecture,
-					osPlatform: image.osPlatform || "Linux/UNIX",
-					osDistribution: image.osDistribution || "",
-				osDiskType: image.osDiskType || "ebs",
-				osDiskSizeGB: image.osDiskSizeGB || -1,
-				imageStatus: image.imageStatus || "Available",
-				description: image.description || image.name,
-				isBasicImage: image.isBasicImage || false,
-				isGPUImage: image.isGPUImage || false
-			};
+				return mapImageInfoToRow(image, {
+					provider: provider,
+					region: region,
+					osType: osType,
+					connectionName: connectionName
+				});
 			});
 
 			recommendImageListObj = processedImageList;
@@ -340,6 +452,17 @@ export async function applyImageInfo() {
 
 	var selectedImage = recommendImages[0]; // 첫 번째 선택된 이미지 사용
 
+	// 준비되지 않은 MyImage(Creating 등)로 배포 시 실패 가능(커버리지 실증: Tencent/NHN) — 안내 후 진행/취소 선택
+	if (selectedImage.resourceType === "customImage" &&
+		selectedImage.imageStatus && selectedImage.imageStatus !== "Available") {
+		var proceed = confirm(
+			"This MyImage is not ready yet (status: " + selectedImage.imageStatus + ").\n" +
+			"Deploying with an unprepared image may fail.\n" +
+			"Continue anyway?"
+		);
+		if (!proceed) return;
+	}
+
 	// 콜백 함수가 설정되어 있으면 먼저 호출
 	if (imageSelectionCallback) {
 		imageSelectionCallback(selectedImage);
@@ -380,7 +503,7 @@ export function validateAndOpenImageModal(event) {
 	
 	if (!specValue || specValue.trim() === "") {
 		console.warn("No spec selected - validation failed");
-		alert("Please select a server specification first before opening the image recommendation modal.");
+		alert("Please select a node specification first before opening the image recommendation modal.");
 		// 이벤트 전파 중단 및 기본 동작 방지
 		event.preventDefault();
 		event.stopPropagation();
@@ -390,7 +513,7 @@ export function validateAndOpenImageModal(event) {
 	// 전역 변수에서 spec 정보 확인
 	if (!window.selectedSpecInfo) {
 		console.warn("No spec info in global variable - validation failed");
-		alert("Please select a server specification first before opening the image recommendation modal.");
+		alert("Please select a node specification first before opening the image recommendation modal.");
 		// 이벤트 전파 중단 및 기본 동작 방지
 		event.preventDefault();
 		event.stopPropagation();
@@ -411,7 +534,7 @@ export function validateAndOpenImageModal(event) {
 			$("#image-provider").val(window.selectedSpecInfo.provider || "");
 			$("#image-region").val(window.selectedSpecInfo.regionName || "");
 			$("#image-os-architecture").val(window.selectedSpecInfo.osArchitecture || "");
-			$("#matched_spec_id").val(window.selectedSpecInfo.id || "");
+			$("#matched_spec_id").val(window.selectedSpecInfo.commonSpecId || "");
 		}
 			
 			// Bootstrap 5 방식으로 모달 열기
@@ -421,7 +544,7 @@ export function validateAndOpenImageModal(event) {
 					var imageModal = new bootstrap.Modal(imageModalEl);
 					imageModal.show();
 				} else {
-					throw new Error("MCI Image modal element not found");
+					throw new Error("Infra Image modal element not found");
 				}
 			} else {
 				console.error("Bootstrap is not loaded.");
@@ -430,7 +553,7 @@ export function validateAndOpenImageModal(event) {
 			
 		} catch (error) {
 			console.error("Error opening MCI image modal:", error);
-			alert("Error opening MCI image recommendation modal. Please try again.");
+			alert("Error opening Infra image recommendation modal. Please try again.");
 		}
 	}, 100); // 100ms 지연으로 이벤트 처리 완료 후 모달 열기
 	

@@ -3,6 +3,8 @@
 
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { showToast, TOAST_TYPES } from "../../../../common/utils/toast.js";
+import { getProvider, getRegion, populateProviderFilterOptions, populateRegionFilterOptions } from "../../../../common/utils/cspResource.js";
+import { usedByCount, usedByBadgeHtml, showAssociatedNodes, cancelAssociatedNodes, extractErrorMessage } from "../../../../common/utils/resourceUsage.js";
 
 const sshKeyApi = () => webconsolejs["common/api/services/sshkey_api"];
 const importApi = () => webconsolejs["common/api/services/import_api"];
@@ -11,9 +13,10 @@ const importApi = () => webconsolejs["common/api/services/import_api"];
 const AppState = {
     ns: '',
     tables: { keyTable: null },
-    resources: { selected: null },
+    resources: { selected: null, all: [] },
     ui: { viewMode: false, privKeyVisible: false },
-    _lastCreatedPrivKey: null,
+    // 상세에 표시 중인 Private Key 원문 (화면에는 기본 ****** 로 가린다)
+    _privKey: null,
 };
 
 // ─── 페이지 초기화 ────────────────────────────────────────────────────────
@@ -58,7 +61,11 @@ export async function loadKeyList() {
     if (!AppState.ns) return;
     try {
         const data = await sshKeyApi().list(AppState.ns);
-        const items = data?.sshKey || (Array.isArray(data) ? data : []);
+        const rawItems = data?.sshKey || (Array.isArray(data) ? data : []);
+        const items = rawItems.map((v) => ({ ...v, _provider: getProvider(v), _region: getRegion(v), _usedBy: usedByCount(v) }));
+        AppState.resources.all = items;
+        populateProviderFilterOptions(items, 'filter-provider');
+        populateRegionFilterOptions(items, 'filter-provider', 'filter-region');
         if (AppState.tables.keyTable) {
             AppState.tables.keyTable.replaceData(items);
         } else {
@@ -82,19 +89,30 @@ function initTable(items) {
         paginationSizeSelector: [10, 20, 50],
         paginationCounter: 'rows',
         movableColumns: true,
+        selectableRows: true, // false로 두면 Tabulator 내부 cap-check 버그(isNaN(false)===false)로 다중선택 자체가 깨진다
         initialSort: [{ column: 'name', dir: 'asc' }],
         columns: [
+            { formatter: 'rowSelection', titleFormatter: 'rowSelection', headerSort: false, hozAlign: 'center', width: 40 },
             { title: 'Name',        field: 'name',           widthGrow: 2, sorter: 'string' },
-            { title: 'Connection',  field: 'connectionName', widthGrow: 1, sorter: 'string' },
+            { title: 'Provider',    field: '_provider',      widthGrow: 1, sorter: 'string' },
+            { title: 'Region',      field: '_region',        widthGrow: 1, sorter: 'string' },
             { title: 'Fingerprint', field: 'fingerprint',    widthGrow: 2 },
+            { title: 'Used By',     field: '_usedBy',        sorter: 'number', hozAlign: 'center', width: 120,
+              formatter: (cell) => usedByBadgeHtml(cell.getValue()) },
             { title: 'CSP Resource ID', field: 'cspResourceId', widthGrow: 2 },
         ],
     });
 
     AppState.tables.keyTable.on('rowClick', async function (e, row) {
+        // selectableRows:true는 row 아무데나 클릭해도 체크박스를 토글하는 내장 동작이 있다.
+        // 체크박스 자체를 클릭한 게 아니면 그 토글을 즉시 되돌려, row 클릭은 Detail Panel 오픈 전용으로 만든다.
+        const clickedCell = row.getCells().find(c => c.getElement().contains(e.target));
+        const isCheckboxCol = clickedCell?.getColumn()?.getDefinition()?.formatter === 'rowSelection';
+        if (!isCheckboxCol) {
+            row.toggleSelect();
+        }
+
         const data = row.getData();
-        // 행 클릭 시 private key 초기화 (생성 직후가 아닌 경우)
-        AppState._lastCreatedPrivKey = null;
         AppState.resources.selected = data;
         renderDetail(data, null);
         showDetail();
@@ -107,6 +125,7 @@ function initTable(items) {
         } catch (err) {
             console.error('SSH Key 상세 조회 실패:', err);
         }
+        await showAssociatedNodes(AppState.ns, AppState.resources.selected);
     });
 }
 
@@ -115,7 +134,8 @@ function initTable(items) {
 function renderDetail(data, privateKey) {
     document.getElementById('detail-name').textContent            = data.name || '-';
     document.getElementById('detail-key-name').textContent        = data.name || '-';
-    document.getElementById('detail-key-connection').textContent  = data.connectionName || '-';
+    document.getElementById('detail-key-provider').textContent    = getProvider(data);
+    document.getElementById('detail-key-region').textContent      = getRegion(data);
     document.getElementById('detail-key-fingerprint').textContent = data.fingerprint || '-';
     document.getElementById('detail-key-csp-id').textContent      = data.cspResourceId || '-';
 
@@ -131,16 +151,20 @@ function renderDetail(data, privateKey) {
         pubEmptyEl.classList.remove('d-none');
     }
 
-    const privSection = document.getElementById('detail-privkey-section');
-    if (privateKey) {
-        privSection.style.display = '';
-        document.getElementById('detail-privkey').textContent = privateKey;
-        document.getElementById('detail-privkey').style.filter = 'blur(4px)';
-        document.getElementById('toggle-privkey-btn').textContent = 'Show';
-        AppState.ui.privKeyVisible = false;
-    } else {
-        privSection.style.display = 'none';
-    }
+    // Private Key — 생성 응답뿐 아니라 cb-tumblebug 목록·상세 응답에도 들어 있다. 기본은 가려서 보여 준다.
+    AppState._privKey = privateKey || data.privateKey || data.privateKeyMaterial || null;
+    AppState.ui.privKeyVisible = false;
+    const hasPrivKey = !!AppState._privKey;
+    document.getElementById('detail-privkey').style.display = hasPrivKey ? '' : 'none';
+    document.getElementById('detail-privkey-actions').classList.toggle('d-none', !hasPrivKey);
+    document.getElementById('detail-privkey-empty').classList.toggle('d-none', hasPrivKey);
+    renderPrivateKey();
+}
+
+function renderPrivateKey() {
+    const visible = AppState.ui.privKeyVisible && AppState._privKey;
+    document.getElementById('detail-privkey').textContent = visible ? AppState._privKey : '******';
+    document.getElementById('toggle-privkey-btn').textContent = visible ? 'Hide' : 'Show';
 }
 
 function showDetail() {
@@ -150,59 +174,168 @@ function showDetail() {
 }
 
 export function hideDetail() {
+    cancelAssociatedNodes();
     document.getElementById('view-mode-cards')?.classList.remove('show');
     AppState.ui.viewMode = false;
     AppState.resources.selected = null;
-    AppState._lastCreatedPrivKey = null;
+    AppState._privKey = null;
+    AppState.ui.privKeyVisible = false;
+    document.getElementById('detail-privkey').textContent = '******';
 }
 
 export function togglePrivateKey() {
-    const preEl  = document.getElementById('detail-privkey');
-    const btnEl  = document.getElementById('toggle-privkey-btn');
     AppState.ui.privKeyVisible = !AppState.ui.privKeyVisible;
-    preEl.style.filter    = AppState.ui.privKeyVisible ? 'none' : 'blur(4px)';
-    preEl.style.userSelect = AppState.ui.privKeyVisible ? 'text' : 'none';
-    btnEl.textContent = AppState.ui.privKeyVisible ? 'Hide' : 'Show';
+    renderPrivateKey();
+}
+
+// 화면 표시 여부와 관계없이 원문을 복사한다
+export function copyPrivateKey() {
+    const btnEl = document.getElementById('copy-privkey-btn');
+    const done = (label) => {
+        btnEl.textContent = label;
+        setTimeout(() => { btnEl.textContent = 'Copy'; }, 1500);
+    };
+    if (!AppState._privKey || !navigator.clipboard) {
+        done('Copy failed');
+        return;
+    }
+    navigator.clipboard.writeText(AppState._privKey).then(() => done('Copied!')).catch(() => done('Copy failed'));
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────
 
-export async function confirmDeleteSshKey() {
+export function confirmDeleteSshKey() {
     const selected = AppState.resources.selected;
     if (!selected) return;
-    if (!confirm(`SSH Key "${selected.name}" — confirm delete?`)) return;
+    // 사용 중 SSH Key는 tumblebug이 삭제를 거부하므로 요청하지 않는다
+    const usedBy = usedByCount(selected);
+    if (usedBy > 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+            'Cannot Delete',
+            `SSH Key "${selected.name}" is used by ${usedBy} node(s) and cannot be deleted.`
+        );
+        return;
+    }
+    webconsolejs['partials/layout/modal'].commonConfirmModal(
+        'commonDefaultModal',
+        'Delete SSH Key',
+        `SSH Key "${selected.name}" — confirm delete?`,
+        'pages/settings/environment/cloudresources/sshkeys.executeDeleteSshKey'
+    );
+}
+
+export async function executeDeleteSshKey() {
+    const selected = AppState.resources.selected;
+    if (!selected) return;
     try {
-        await sshKeyApi().del(AppState.ns, selected.name);
+        await sshKeyApi().del(AppState.ns, selected.name, { suppressErrorToast: true });
         showToast(TOAST_TYPES.SUCCESS, `SSH Key "${selected.name}" deleted successfully`);
         hideDetail();
         await loadKeyList();
     } catch (err) {
         console.error('SSH Key 삭제 실패:', err);
-        showToast(TOAST_TYPES.ERROR, 'Failed to delete SSH Key: ' + (err.message || ''));
+        showToast(TOAST_TYPES.ERROR, 'Failed to delete SSH Key: ' + extractErrorMessage(err));
     }
+}
+
+// ─── 다중선택 삭제 ───────────────────────────────────────────────────────
+
+export function confirmBulkDelete() {
+    const table = AppState.tables.keyTable;
+    const selected = table ? table.getSelectedData() : [];
+    if (selected.length === 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+            'Nothing Selected',
+            'Please select at least one item to delete.'
+        );
+        return;
+    }
+    // 사용 중 SSH Key는 tumblebug이 삭제를 거부하므로 요청하지 않는다
+    const inUse = selected.filter((v) => v._usedBy > 0);
+    const deletable = selected.filter((v) => !(v._usedBy > 0));
+    const inUseLines = inUse.map((v) => `· ${v.name} — used by ${v._usedBy} node(s)`).join('\n');
+    if (deletable.length === 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal(
+            'Cannot Delete',
+            `The selected SSH Key(s) are in use and cannot be deleted:\n${inUseLines}`
+        );
+        return;
+    }
+    AppState.resources.bulkSelected = deletable;
+    const skipNote = inUse.length > 0
+        ? `\n\n${inUse.length} SSH Key(s) are in use and will be skipped:\n${inUseLines}`
+        : '';
+    webconsolejs['partials/layout/modal'].commonConfirmModal(
+        'commonDefaultModal',
+        'Delete Selected',
+        `Delete ${deletable.length} SSH Key(s)?${skipNote}`,
+        'pages/settings/environment/cloudresources/sshkeys.executeBulkDelete'
+    );
+}
+
+export async function executeBulkDelete() {
+    const items = AppState.resources.bulkSelected || [];
+    if (items.length === 0) return;
+    const results = await Promise.allSettled(
+        items.map((item) => sshKeyApi().del(AppState.ns, item.name, { suppressErrorToast: true }))
+    );
+    const failures = results
+        .map((r, i) => (r.status === 'rejected' ? `· ${items[i].name}: ${extractErrorMessage(r.reason)}` : null))
+        .filter(Boolean);
+    const succeeded = results.length - failures.length;
+    showToast(
+        failures.length > 0 ? TOAST_TYPES.WARNING : TOAST_TYPES.SUCCESS,
+        `${succeeded} SSH Key(s) deleted${failures.length > 0 ? `, ${failures.length} failed` : ''}`
+    );
+    if (failures.length > 0) {
+        webconsolejs['partials/layout/modal'].commonShowDefaultModal('Delete Failed', failures.join('\n'));
+    }
+    AppState.resources.bulkSelected = [];
+    AppState.tables.keyTable?.deselectRow();
+    hideDetail();
+    await loadKeyList();
 }
 
 // ─── Filter ───────────────────────────────────────────────────────────────
 
 function initFilter() {
+    const providerEl = document.getElementById('filter-provider');
+    const regionEl   = document.getElementById('filter-region');
+    const usageEl    = document.getElementById('filter-usage');
     const fieldEl = document.getElementById('filter-field');
     const typeEl  = document.getElementById('filter-type');
     const valueEl = document.getElementById('filter-value');
     if (!fieldEl || !typeEl || !valueEl) return;
 
     function updateFilter() {
-        const field = fieldEl.value;
-        const type  = typeEl.value;
-        if (field && AppState.tables.keyTable) {
-            AppState.tables.keyTable.setFilter(field, type, valueEl.value);
+        if (!AppState.tables.keyTable) return;
+        const filters = [];
+        if (providerEl?.value) filters.push({ field: '_provider', type: '=', value: providerEl.value });
+        if (regionEl?.value) filters.push({ field: '_region', type: '=', value: regionEl.value });
+        if (usageEl?.value === 'in-use') filters.push({ field: '_usedBy', type: '>', value: 0 });
+        if (usageEl?.value === 'unused') filters.push({ field: '_usedBy', type: '=', value: 0 });
+        if (fieldEl.value) filters.push({ field: fieldEl.value, type: typeEl.value, value: valueEl.value });
+        if (filters.length > 0) {
+            AppState.tables.keyTable.setFilter(filters);
+        } else {
+            AppState.tables.keyTable.clearFilter();
         }
     }
 
+    providerEl?.addEventListener('change', function () {
+        populateRegionFilterOptions(AppState.resources.all, 'filter-provider', 'filter-region');
+        updateFilter();
+    });
+    regionEl?.addEventListener('change', updateFilter);
+    usageEl?.addEventListener('change', updateFilter);
     fieldEl.addEventListener('change', updateFilter);
     typeEl.addEventListener('change', updateFilter);
     valueEl.addEventListener('keyup', updateFilter);
 
     document.getElementById('filter-clear').addEventListener('click', function () {
+        if (providerEl) providerEl.value = '';
+        if (regionEl) regionEl.value = '';
+        if (usageEl) usageEl.value = '';
         fieldEl.value = '';
         typeEl.value  = 'like';
         valueEl.value = '';
@@ -237,9 +370,7 @@ export async function executeCreateSshKey() {
         showToast(TOAST_TYPES.SUCCESS, `SSH Key "${name}" created successfully`);
         bootstrap.Modal.getInstance(document.getElementById('create-sshkey-modal'))?.hide();
 
-        // Private Key는 생성 응답에만 포함 — 즉시 상세 패널에 표시
         const privateKey = created?.privateKey || created?.privateKeyMaterial || null;
-        AppState._lastCreatedPrivKey = privateKey;
 
         await loadKeyList();
 
@@ -277,7 +408,9 @@ export async function executeImportSshKey() {
     }
 
     const spinner = document.getElementById('import-sshkey-spinner');
+    const btn     = document.getElementById('import-sshkey-execute-btn');
     spinner.classList.remove('d-none');
+    if (btn) btn.disabled = true;
 
     try {
         const result = await importApi().registerCspResources(['sshKey'], connectionName, AppState.ns);
@@ -293,12 +426,13 @@ export async function executeImportSshKey() {
         showToast(TOAST_TYPES.ERROR, 'SSH Key import failed: ' + (err.message || ''));
     } finally {
         spinner.classList.add('d-none');
+        if (btn) btn.disabled = false;
     }
 }
 
 async function _loadConnectionOptions(selectId) {
     const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">Select</option>';
+    select.innerHTML = '<option value="">-- Select --</option>';
     try {
         const result = await webconsolejs['common/api/http'].commonAPIPost(
             '/api/mc-infra-manager/GetConnConfigList', {}
@@ -321,7 +455,11 @@ webconsolejs['pages/settings/environment/cloudresources/sshkeys'] = {
     loadKeyList,
     hideDetail,
     togglePrivateKey,
+    copyPrivateKey,
     confirmDeleteSshKey,
+    executeDeleteSshKey,
+    confirmBulkDelete,
+    executeBulkDelete,
     executeCreateSshKey,
     openImportSshKeyModal,
     executeImportSshKey,

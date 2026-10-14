@@ -26,8 +26,22 @@ import (
 )
 
 // SubsystemAnyController Buffalo SubsystemAnyController 호환 프록시 핸들러
-// POST /api/:subsystemName/:operationId
-// conf/api.yaml의 serviceActions를 기반으로 백엔드 서비스에 프록시
+// @Summary     Proxy to backend service
+// @Description Forward request to backend service defined in conf/api.yaml by subsystemName and operationId
+// @Tags        proxy
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       subsystemName path string true "Backend subsystem name (e.g. mc-iam-manager, mc-infra-manager)"
+// @Param       operationId path string true "Operation ID from api.yaml serviceActions"
+// @Param       body body object false "Request payload forwarded to backend"
+// @Success     200 {object} object
+// @Failure     404 {object} model.CommonResponse
+// @Router      /api/{subsystemName}/{operationId} [post]
+// @Router      /api/{subsystemName}/{operationId} [get]
+// @Router      /api/{subsystemName}/{operationId} [put]
+// @Router      /api/{subsystemName}/{operationId} [delete]
+// @Router      /api/{subsystemName}/{operationId} [patch]
 func SubsystemAnyController(c echo.Context) error {
 	subsystemName := c.Param("subsystemName")
 	operationId := c.Param("operationId")
@@ -44,6 +58,15 @@ func SubsystemAnyController(c echo.Context) error {
 	cfg, _ := c.Get("config").(*config.Config)
 	if cfg == nil {
 		return errors.NewInternalServerError("config not available", fmt.Errorf("config is nil"))
+	}
+
+	// MC_WEB_CONSOLE_USE_IAM=false(self 모드): 메뉴 조회 op는 mc-iam-manager로 프록시하지 않고
+	// 로컬 yaml 기반 목록을 반환한다. self 모드는 "전체 메뉴 = 역할별 메뉴"이므로
+	// 사용자 메뉴(GetAllAvailableMenus)와 전체 메뉴(Getmenuresources/listMenus)가 같은 응답이다.
+	if !cfg.MCIAM.Use &&
+		strings.EqualFold(subsystemName, "mc-iam-manager") &&
+		isLocalMenuOperation(operationId) {
+		return handleLocalAvailableMenus(c, cfg)
 	}
 
 	// api.yaml에서 기본 Service + ActionSpec 조회 (fallback 및 Auth 설정 소스)
@@ -169,8 +192,14 @@ func SubsystemAnyController(c echo.Context) error {
 		if credHolder != "" {
 			httpReq.Header.Set("x-credential-holder", credHolder)
 		}
+		trackedReqID := ""
 		if reqID := c.Request().Header.Get("x-request-id"); reqID != "" {
 			httpReq.Header.Set("x-request-id", reqID)
+			trackedReqID = reqID
+		}
+		// Persist allowlisted async request before Do so Handling is visible immediately.
+		if trackedReqID != "" {
+			PersistTrackedProxyRequest(c, subsystemName, operationId, trackedReqID)
 		}
 	}
 
@@ -179,6 +208,9 @@ func SubsystemAnyController(c echo.Context) error {
 	client := &http.Client{}
 	resp, err := client.Do(httpReq)
 	if err != nil {
+		if reqID := c.Request().Header.Get("x-request-id"); reqID != "" {
+			MarkTrackedProxyError(reqID, "Failed to reach backend service: "+subsystemName)
+		}
 		return errors.NewInternalServerError("Failed to reach backend service: "+subsystemName, err)
 	}
 	defer resp.Body.Close()

@@ -1,5 +1,5 @@
 export async function list(ns) {
-  const controller = '/api/mc-infra-manager/Getallsshkey';
+  const controller = '/api/mc-infra-manager/GetAllSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns }
   });
@@ -7,7 +7,7 @@ export async function list(ns) {
 }
 
 export async function create(ns, body) {
-  const controller = '/api/mc-infra-manager/Postsshkey';
+  const controller = '/api/mc-infra-manager/PostSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns },
     request: body
@@ -16,17 +16,18 @@ export async function create(ns, body) {
 }
 
 export async function get(ns, name) {
-  const controller = '/api/mc-infra-manager/Getsshkey';
+  const controller = '/api/mc-infra-manager/GetSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, sshKeyId: name }
   });
   return response?.data?.responseData;
 }
 
-export async function del(ns, name) {
-  const controller = '/api/mc-infra-manager/Delsshkey';
+// options는 commonAPIPost로 그대로 전달 (예: 호출부가 실패 사유를 직접 표시할 때 { suppressErrorToast: true })
+export async function del(ns, name, options = {}) {
+  const controller = '/api/mc-infra-manager/DelSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, sshKeyId: name }
-  });
+  }, undefined, options);
   return response?.data;
 }

@@ -1,81 +1,147 @@
+import { refreshAvailableMenus } from "../../common/api/services/menus_api";
+
 document.addEventListener("DOMContentLoaded", function () {
     updatemenu();
-    document.querySelectorAll('div[name^="sidebar_"]').forEach(function(item) {
-        item.addEventListener('click', function(e) {
-            const hrefStr = this.getAttribute('href')
-            if( hrefStr && "#navbar-extra" !== hrefStr) {
-                window.location = hrefStr
-                return
-            }
-            // Bootstrap이 두 번 로드되어 toggle이 즉시 취소되는 문제 방지:
-            // document까지 이벤트 전파를 막고 수동으로 show/hide 처리
-            if (this.classList.contains('dropdown-toggle')) {
-                e.stopPropagation()
-                const menu = this.nextElementSibling
-                if (menu && menu.classList.contains('dropdown-menu')) {
-                    menu.classList.toggle('show')
-                    this.classList.toggle('show')
-                    this.setAttribute('aria-expanded', this.classList.contains('show'))
-                }
-            }
-        });
-    });
+    bindSidebarClicks();
     setActiveMenu();
 
     document.addEventListener("refresh-sidebar", function () {
         updatemenu();
+        bindSidebarClicks();
+        setActiveMenu();
     });
 
+    // localStorage 메뉴는 로그인 시점 캐시라 DB 메뉴 변경(displayName 등)이 재로그인 전까지
+    // 반영되지 않는다 — 페이지 로드마다 백그라운드로 재동기화 (실패 시 기존 캐시 유지)
+    refreshAvailableMenus().catch(function () { /* keep cached menu */ });
 });
 
-function updatemenu(){
-    var  menuData = webconsolejs["common/storage/localstorage"].getMenuLocalStorage()
+function bindSidebarClicks() {
+    document.querySelectorAll('a[name^="sidebar_"], div[name^="sidebar_"]').forEach(function (item) {
+        item.addEventListener('click', async function (e) {
+            const viewType = this.getAttribute('data-viewtype');
+            if (viewType === 'popup') {
+                e.preventDefault();
+                e.stopPropagation();
+                await openPopupMenu(this);
+                return;
+            }
+            const hrefStr = this.getAttribute('href');
+            if (hrefStr && hrefStr !== '#navbar-extra' && hrefStr !== '#' && !hrefStr.startsWith('#popup')) {
+                window.location = hrefStr;
+                return;
+            }
+            if (this.classList.contains('dropdown-toggle')) {
+                e.stopPropagation();
+                const menu = this.nextElementSibling;
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    menu.classList.toggle('show');
+                    this.classList.toggle('show');
+                    this.setAttribute('aria-expanded', this.classList.contains('show'));
+                }
+            }
+        });
+    });
+}
+
+async function openPopupMenu(el) {
+    const framework = el.getAttribute('data-framework') || '';
+    const path = el.getAttribute('data-path') || '/';
+    if (!framework) {
+        alert('Menu resource: frameworkService is required for popup viewType');
+        return;
+    }
+    const host = await webconsolejs['common/iframe/iframe'].GetApiHosts(framework);
+    if (!host) {
+        alert(framework + ' service URL not found.');
+        return;
+    }
+    const loader = webconsolejs['pages/operation/plugins/genericMenuLoader'];
+    const url = loader && loader.joinFrameworkUrl
+        ? loader.joinFrameworkUrl(host, path)
+        : host.replace(/\/$/, '') + (path.startsWith('/') ? path : '/' + path);
+    window.open(url, '_blank');
+}
+
+function updatemenu() {
+    var menuData = webconsolejs['common/storage/localstorage'].getMenuLocalStorage();
     const menuHTML = generateMenuHTML(menuData);
-    document.getElementById("sidebar-menu-inner").innerHTML = menuHTML;
+    document.getElementById('sidebar-menu-inner').innerHTML = menuHTML;
+}
+
+/** WEB-FIX-002: viewType 기반 href / data attrs */
+function resolveMenuHref(title, category, menu, parentMenu) {
+    const viewType = (menu.viewType || 'local').toLowerCase();
+    const convention = parentMenu
+        ? `/webconsole/${title.id}/${category.id}/${parentMenu.id}/${menu.id}`
+        : `/webconsole/${title.id}/${category.id}/${menu.id}`;
+
+    if (viewType === 'iframe') {
+        return { href: `/webconsole/_view/${menu.id}`, viewType, framework: menu.frameworkService || '', path: menu.path || '/' };
+    }
+    if (viewType === 'popup') {
+        return { href: '#', viewType, framework: menu.frameworkService || '', path: menu.path || '/' };
+    }
+    // local
+    if (menu.path) {
+        const p = menu.path.startsWith('/') ? menu.path : '/' + menu.path;
+        return { href: '/webconsole' + p, viewType: 'local', framework: '', path: menu.path };
+    }
+    return { href: convention, viewType: 'local', framework: '', path: '' };
+}
+
+function actionAttrs(resolved, nameAttr, idAttr) {
+    if (!resolved) return '';
+    const idPart = idAttr ? ` id="${idAttr}"` : '';
+    const data =
+        ` data-viewtype="${resolved.viewType}"` +
+        (resolved.framework ? ` data-framework="${resolved.framework}"` : '') +
+        (resolved.path != null ? ` data-path="${resolved.path}"` : '');
+    return `href="${resolved.href}" name="${nameAttr}"${idPart}${data}`;
 }
 
 function generateMenuHTML(menus) {
     let html = '';
-    let debugMenu = document.getElementById("sidebar-menu-inner").innerHTML ; // 디버그 용도
-    menus.forEach(title => {
-        html += ` <li class="nav-item">`
-        html += ` <div class="hr-text fs-3">${title.displayName}</div>`
-        html += ` </li>`
-        title.menus.forEach(category => {
-            html += ` <li class="nav-item">`
-            html += ` <span class="nav-link hr-text-color" id="sidebar_${category.id}">${category.displayName}</span>`
-            html += ` </li>`
+    if (!menus || !menus.length) return html;
+    menus.forEach((title) => {
+        html += ` <li class="nav-item">`;
+        html += ` <div class="hr-text fs-3">${title.displayName}</div>`;
+        html += ` </li>`;
+        (title.menus || []).forEach((category) => {
+            html += ` <li class="nav-item">`;
+            html += ` <span class="nav-link hr-text-color" id="sidebar_${category.id}">${category.displayName}</span>`;
+            html += ` </li>`;
             if (category.menus && category.menus.length > 0) {
-                category.menus.forEach(menu => {
-                    if (!menu.menus || menu.menus.length === 0){
-                        html +=`<li class="nav-item">`
-                        html +=`<a class="nav-link" ${stringToBool(menu.isAction) ? `href="/webconsole/${title.id}/${category.id}/${menu.id}"` : ""}" name="sidebar_${menu.id}">`
-                        html +=`<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
-                        html +=`<span class="nav-link-title">${menu.displayName}</span>`
-                        html +=`</a>`
-                        html +=`</li>`
-                    }else {
+                category.menus.forEach((menu) => {
+                    if (!menu.menus || menu.menus.length === 0) {
+                        const resolved = stringToBool(menu.isAction)
+                            ? resolveMenuHref(title, category, menu, null)
+                            : null;
+                        html += `<li class="nav-item">`;
+                        html += `<a class="nav-link" ${resolved ? actionAttrs(resolved, 'sidebar_' + menu.id) : `name="sidebar_${menu.id}"`}>`;
+                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${resolveMenuIcon(menu)}</span>`;
+                        html += `<span class="nav-link-title">${menu.displayName}</span>`;
+                        html += `</a>`;
+                        html += `</li>`;
+                    } else {
                         html += `<li class="nav-item box-link dropdown" name="sidebar_${menu.id}">`;
-                        html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${stringToBool(menu.isAction) ? `/webconsole/${title.id}/${category.id}/${menu.id}` : "#navbar-extra"}" role="button" aria-expanded="false">`;
-                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${iconsArr[menu.id] ? iconsArr[menu.id] : iconsArr["undefined"] }</span>`; // svg
+                        const parentHref = stringToBool(menu.isAction)
+                            ? resolveMenuHref(title, category, menu, null).href
+                            : '#navbar-extra';
+                        html += `<div class="nav-link dropdown-toggle" name="sidebar_${menu.id}" href="${parentHref}" role="button" aria-expanded="false">`;
+                        html += `<span class="nav-link-icon d-md-none d-lg-inline-block">${resolveMenuIcon(menu)}</span>`;
                         html += `<span class="nav-link-title">${menu.displayName}</span>`;
                         html += `</div>`;
                     }
                     if (menu.menus && menu.menus.length > 0) {
                         html += `<div class="dropdown-menu" name="sidebar_${menu.id}"><div class="dropdown-menu-columns">`;
-                        menu.menus.forEach(subMenu => {
-                            if (stringToBool(subMenu.isAction)){
-                                html += `<div class="dropdown-menu-column">`;
-                                html += `<a class="dropdown-item" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
-                                html += `${subMenu.displayName}</a>`;
-                                html += `</div>`;
-                            }else {
-                                html += `<div class="dropdown-menu-column">`;
-                                html += `<a class="dropdown-item disabled" href="/webconsole/${title.id}/${category.id}/${menu.id}/${subMenu.id}" id="sidebar_${menu.id}_${subMenu.id}">`;
-                                html += `${subMenu.displayName}</a>`;
-                                html += `</div>`;
-                            }
-
+                        menu.menus.forEach((subMenu) => {
+                            const resolved = resolveMenuHref(title, category, subMenu, menu);
+                            const disabled = stringToBool(subMenu.isAction) ? '' : ' disabled';
+                            html += `<div class="dropdown-menu-column">`;
+                            html += `<a class="dropdown-item${disabled}" ${actionAttrs(resolved, 'sidebar_' + menu.id, 'sidebar_' + menu.id + '_' + subMenu.id)}>`;
+                            html += `${subMenu.displayName}</a>`;
+                            html += `</div>`;
                         });
                         html += `</div></div>`;
                     }
@@ -84,116 +150,100 @@ function generateMenuHTML(menus) {
             }
         });
     });
-    // return html+debugMenu;
     return html;
 }
 
-
-
-
 function setActiveMenu() {
-    // try {
-        const path = window.location.pathname.split('/');
-        const depth3 = path[3] ? `sidebar_${path[3]}` : null;
-        const depth4 = path[4] ? `sidebar_${path[4]}` : null;
-        const depth5 = path[5] ? `sidebar_${path[4]}_${path[5]}` : null;
-        if (depth4) {
-            const elements = document.querySelectorAll(`[name="${depth4}"]`);
-            elements.forEach(i => {
-                if (!i.classList.contains('show')) i.classList.add('show');
-                if (!i.classList.contains('active')) i.classList.add('active');
-            });
+    const path = window.location.pathname.split('/');
+    // /webconsole/_view/{menuId}
+    if (path[2] === '_view' && path[3]) {
+        // 하위 메뉴 항목의 name 은 부모 id(sidebar_{parentId}) 라서 URL 의 menuId 로는 부모를 못 찾는다
+        // — href 로 항목을 찾아 그 name 으로 부모 드롭다운까지 펼친다
+        const item = document.querySelector(`[data-viewtype="iframe"][href="/webconsole/_view/${path[3]}"]`);
+        const name = (item && item.getAttribute('name')) || `sidebar_${path[3]}`;
+        document.querySelectorAll(`[name="${name}"]:not(.dropdown-item)`).forEach((i) => {
+            i.classList.add('show', 'active');
+        });
+        if (item) item.classList.add('active');
+        return;
+    }
+    const depth3 = path[3] ? `sidebar_${path[3]}` : null;
+    const depth4 = path[4] ? `sidebar_${path[4]}` : null;
+    const depth5 = path[5] ? `sidebar_${path[4]}_${path[5]}` : null;
+    if (depth4) {
+        // 하위 메뉴 항목도 부모와 같은 name 을 쓰므로 제외 — 현재 항목은 아래 depth5 에서 active 처리
+        document.querySelectorAll(`[name="${depth4}"]:not(.dropdown-item)`).forEach((i) => {
+            if (!i.classList.contains('show')) i.classList.add('show');
+            if (!i.classList.contains('active')) i.classList.add('active');
+        });
+    }
+    if (depth5) {
+        const element = document.getElementById(depth5);
+        if (element && !element.classList.contains('active')) {
+            element.classList.add('active');
         }
-        if (depth5) {
-            const element = document.getElementById(depth5);
-            if (element && !element.classList.contains('active')) {
-                element.classList.add('active');
+    }
+    if (depth4 && depth5) {
+        var pretitle = document.getElementById('page-pretitle');
+        var title = document.getElementById('page-title');
+        if (pretitle && title) {
+            const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`);
+            if (navLinkTitle) {
+                const innerText = navLinkTitle.querySelector('.nav-link-title').innerText;
+                pretitle.innerHTML = innerText;
+            }
+            const depth5Element = document.getElementById(depth5);
+            if (depth5Element) {
+                title.innerHTML = depth5Element.innerHTML;
             }
         }
-        if (depth4&&depth5) {
-            var pretitle = document.getElementById("page-pretitle");
-            var title = document.getElementById("page-title");
-            if (pretitle && title) {
-                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`);
-                if (navLinkTitle) {
-                    const innerText = navLinkTitle.querySelector('.nav-link-title').innerText;
-                    pretitle.innerHTML = innerText 
-                }
-                const depth5Element = document.getElementById(depth5);
-                if (depth5Element) {
-                    title.innerHTML = depth5Element.innerHTML;
-                }
-            }
-        } else if (depth3&&depth4) {
-            var pretitle = document.getElementById("page-pretitle");
-            var title = document.getElementById("page-title");
-            if (pretitle && title) {
-                pretitle.innerHTML = document.getElementById(depth3).innerHTML
-                const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`);
-                if (navLinkTitle) {
-                    const innerText = navLinkTitle.querySelector('.nav-link-title').innerText;
-                    title.innerHTML = innerText 
-                }else {
-                    const navLinkTitle2 = document.querySelector(`[name="${depth4}"].nav-link`);
-                    if (navLinkTitle2) {
-                        const innerText = navLinkTitle2.querySelector('.nav-link-title').innerText;
-                        title.innerHTML = innerText 
-                    }
+    } else if (depth3 && depth4) {
+        var pretitle2 = document.getElementById('page-pretitle');
+        var title2 = document.getElementById('page-title');
+        if (pretitle2 && title2) {
+            const d3 = document.getElementById(depth3);
+            if (d3) pretitle2.innerHTML = d3.innerHTML;
+            const navLinkTitle = document.querySelector(`[name="${depth4}"].dropdown-toggle`);
+            if (navLinkTitle) {
+                title2.innerHTML = navLinkTitle.querySelector('.nav-link-title').innerText;
+            } else {
+                const navLinkTitle2 = document.querySelector(`[name="${depth4}"].nav-link`);
+                if (navLinkTitle2) {
+                    title2.innerHTML = navLinkTitle2.querySelector('.nav-link-title').innerText;
                 }
             }
         }
-        
-    // } catch (error) {
-    //     console.log('An error occurred in setActiveMenu:', error.message);
-    // }
+    }
 }
 
 function stringToBool(value) {
-    // boolean 타입인 경우
-    if (typeof value === 'boolean') {
-        return value;
-    }
-    // 문자열인 경우
-    if (typeof value === 'string') {
-        return value.toLowerCase() === 'true';
-    }
-    // 기타 타입은 false로 처리
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
     return false;
 }
 
 const iconsArr = {
-
-    "workloads" : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+    workloads: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-layout-dashboard">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
         <path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
-        <path
-            d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
+        <path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
         <path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
         </svg>`,
-
-    "undefined" : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+    undefined: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-layout-dashboard">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
         <path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
-        <path
-            d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
+        <path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
         <path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
         </svg>`,
-
-    "single" : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 11l3 3l8 -8">
-        </path><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"></path>
-        </svg>`,
-
-    "approvals" : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+    approvals: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-user-check">
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -201,4 +251,9 @@ const iconsArr = {
         <path d="M6 21v-2a4 4 0 0 1 4 -4h4"/>
         <path d="M15 19l2 2l4 -4"/>
         </svg>`,
+};
+
+// 메뉴 아이콘 조회 — 데이터 필드(menu.icon) 우선, 없으면 기존 id 기반 조회로 하위호환, 그마저 없으면 기본 아이콘
+function resolveMenuIcon(menu) {
+    return iconsArr[menu.icon] || iconsArr[menu.id] || iconsArr['undefined'];
 }

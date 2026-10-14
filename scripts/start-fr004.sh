@@ -1,7 +1,7 @@
 #!/bin/bash
 # FR-004 개발 환경 기동 스크립트
 # 포트 충돌 방지: front=3104, api=3105
-# mc-iam-manager: 52.79.163.111:5006
+# mc-iam-manager 주소는 conf/api.yaml(services.mc-iam-manager.baseurl)이 원본 — 하드코딩 금지, 아래서 그 값을 읽어온다.
 
 set -e
 
@@ -14,12 +14,14 @@ LOG_DIR="$WORKTREE_DIR/scripts/logs"
 FRONT_PORT=3104
 API_PORT=3105
 
+IAM_BASEURL="$(grep -A2 '^  mc-iam-manager:' "$WORKTREE_DIR/conf/api.yaml" | grep baseurl | awk '{print $2}')"
+
 mkdir -p "$LOG_DIR"
 
 echo "=== FR-004 mc-web-console 기동 ==="
 echo "Front : http://localhost:$FRONT_PORT"
 echo "API   : http://localhost:$API_PORT"
-echo "IAM   : http://52.79.163.111:5006"
+echo "IAM   : ${IAM_BASEURL:-(conf/api.yaml에서 확인 불가)}"
 echo ""
 
 # 기존 프로세스 정리

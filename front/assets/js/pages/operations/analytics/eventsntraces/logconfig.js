@@ -74,7 +74,7 @@ const LogConfigManager = {
                 ? webconsolejs["partials/layout/navbar"].workspaceProjectInit()
                 : { nsId: 'system' };
             const nsId = (workspace && workspace.nsId) ? workspace.nsId : 'system';
-            const respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(nsId);
+            const respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(nsId);
             const mciList = (respMciList && respMciList.infra) ? respMciList.infra : [];
 
             if (DOM.mciSelect) {
@@ -93,16 +93,16 @@ const LogConfigManager = {
 
     async loadVmList(mciId) {
         if (!mciId) {
-            if (DOM.targetSelect) DOM.targetSelect.innerHTML = '<option value="">Select Server</option>';
+            if (DOM.targetSelect) DOM.targetSelect.innerHTML = '<option value="">Select Node</option>';
             return;
         }
         try {
             const workspace = { nsId: 'system' };
-            const respMci = await webconsolejs["common/api/services/mci_api"].getMci(workspace.nsId, mciId);
+            const respMci = await webconsolejs["common/api/services/infra_api"].getMci(workspace.nsId, mciId);
             const vms = (respMci && respMci.vm) ? respMci.vm : [];
 
             if (DOM.targetSelect) {
-                DOM.targetSelect.innerHTML = '<option value="">Select Server</option>';
+                DOM.targetSelect.innerHTML = '<option value="">Select Node</option>';
                 vms.forEach(vm => {
                     const opt = document.createElement('option');
                     opt.value = vm.id;
@@ -151,7 +151,7 @@ const LogConfigManager = {
         const tag = document.getElementById('logconfig-tag').value.trim();
 
         if (!AppState.selectedMciId || !AppState.selectedTargetId) {
-            webconsolejs['common/util'].showToast('Please select a workload and server first.', 'warning');
+            webconsolejs['common/util'].showToast('Please select a workload and node first.', 'warning');
             return;
         }
 

@@ -2220,7 +2220,7 @@ function initCspRoleMappingTable() {
             title: "CSP",
             field: "csp_type",
             headerSort: false,
-            width: "40%",
+            width: "30%",
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -2231,7 +2231,16 @@ function initCspRoleMappingTable() {
             title: "Role Name",
             field: "name",
             headerSort: false,
-            width: "60%"
+            width: "45%"
+          },
+          {
+            title: "Auth Method",
+            field: "auth_method",
+            headerSort: false,
+            width: "25%",
+            formatter: function (cell) {
+              return cell.getValue() || "OIDC";
+            }
           }
         ]
       });
@@ -2276,7 +2285,7 @@ function initCspRoleMappingEditTable(roleId) {
             title: "CSP",
             field: "csp_type",
             headerSort: false,
-            width: "30%",
+            width: "25%",
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -2287,12 +2296,21 @@ function initCspRoleMappingEditTable(roleId) {
             title: "Role Name",
             field: "name",
             headerSort: false,
-            width: "50%"
+            width: "35%"
+          },
+          {
+            title: "Auth Method",
+            field: "auth_method",
+            headerSort: false,
+            width: "20%",
+            formatter: function (cell) {
+              return cell.getValue() || "OIDC";
+            }
           },
           {
             title: "Actions",
             headerSort: false,
-            width: "30%",
+            width: "20%",
             formatter: function (cell) {
               const rowData = cell.getRow().getData();
               return '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewEditCspRolePolicies(' + rowData.id + ', \'' + rowData.csp_type + '\', \'' + rowData.name + '\')">View</button>' +
@@ -2615,7 +2633,7 @@ async function initCreateCspRoleMappingTable() {
             title: "CSP",
             field: "csp_type",
             headerSort: false,
-            width: "25%",
+            width: "20%",
             formatter: function (cell) {
               const cspType = cell.getValue();
               if (!cspType) return "N/A";
@@ -2626,7 +2644,16 @@ async function initCreateCspRoleMappingTable() {
             title: "Role Name",
             field: "name",
             headerSort: false,
-            width: "50%"
+            width: "35%"
+          },
+          {
+            title: "Auth Method",
+            field: "auth_method",
+            headerSort: false,
+            width: "20%",
+            formatter: function (cell) {
+              return cell.getValue() || "OIDC";
+            }
           },
           {
             title: "Actions",
@@ -2693,10 +2720,12 @@ function handleAddCspRole() {
   }
 
   // 새 CSP Role 추가
+  const authMethodSelect = document.getElementById('csp-auth-method-select');
   const newCspRole = {
     id: Date.now(), // 임시 ID
     csp_type: cspProvider,
-    name: cspRoleName.trim()
+    name: cspRoleName.trim(),
+    auth_method: authMethodSelect ? authMethodSelect.value : 'OIDC'
   };
 
   AppState.cspRoleMappings.create.push(newCspRole);
@@ -2796,6 +2825,7 @@ async function saveRole() {
         formData.cspSelection.cspRoles.map(cspRole => ({
           roleName: cspRole.name,
           cspType: cspRole.csp_type,
+          authMethod: cspRole.auth_method || "OIDC",
           idpIdentifier: "", // 향후 확장 가능
           iamIdentifier: "", // 향후 확장 가능
           iamRoleId: cspRole.name,
@@ -3116,10 +3146,12 @@ function handleAddCspMapping() {
   }
 
   // 새로운 CSP 매핑을 테이블에 추가
+  const editAuthMethodSelect = document.getElementById('edit-csp-auth-method-select');
   const newMapping = {
     id: Date.now(), // 임시 ID
     csp_type: cspProvider,
-    name: cspRoleName.trim()
+    name: cspRoleName.trim(),
+    auth_method: editAuthMethodSelect ? editAuthMethodSelect.value : 'OIDC'
   };
 
   if (AppState.tables.cspRoleMappingEditTable) {
@@ -3194,6 +3226,7 @@ async function updateRole() {
     const cspRoles = cspRolesRaw.map(cspRole => ({
       roleName: cspRole.name,
       cspType: cspRole.csp_type,
+      authMethod: cspRole.auth_method || "OIDC",
       idpIdentifier: cspRole.idp_identifier || "",
       iamIdentifier: cspRole.iam_identifier || "",
       iamRoleId: cspRole.name,

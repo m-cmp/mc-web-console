@@ -1,5 +1,5 @@
 <div class="page-body">
-  <div class="container-xl">
+  <div class="container-fluid">
     <div class="row row-cards">
       <!-- Log Collection Configuration -->
       <div class="col-12">
@@ -23,16 +23,16 @@
             <div class="row g-3">
               <!-- Workload selector -->
               <div class="col-md-4">
-                <label for="logconfig-mci-select" class="form-label">Workload (MCI)</label>
+                <label for="logconfig-mci-select" class="form-label">Workload (Infra)</label>
                 <select class="form-select" id="logconfig-mci-select">
                   <option value="">Select Workload</option>
                 </select>
               </div>
               <!-- Target selector -->
               <div class="col-md-4">
-                <label for="logconfig-target-select" class="form-label">Target Server</label>
+                <label for="logconfig-target-select" class="form-label">Target Node</label>
                 <select class="form-select" id="logconfig-target-select">
-                  <option value="">Select Server</option>
+                  <option value="">Select Node</option>
                 </select>
               </div>
               <div class="col-md-4 d-flex align-items-end">
@@ -118,4 +118,4 @@
 
 {{ javascriptTag("common/utils/formvalidation.js") | raw }}
 {{ javascriptTag("pages/operations/analytics/eventsntraces/logconfig.js") | raw }}
-{{ javascriptTag("common/api/services/mci_api.js") | raw }}
+{{ javascriptTag("common/api/services/infra_api.js") | raw }}

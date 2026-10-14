@@ -1,15 +1,69 @@
 <div class="page-body">
-  <div class="container-xl">
+  <div class="container-fluid">
 
     <div class="row row-cards">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Server Spec List</h3>
+            <h3 class="card-title">Node Spec List</h3>
             <div class="card-options ms-auto d-flex gap-2 align-items-center">
-              <span id="serverspecs-context-label" class="text-secondary small"></span>
+              <span id="serverspecs-context-label" class="badge bg-blue-lt">Namespace: system</span>
+              <!-- Delete selected -->
+              <a class="btn-action" type="button" title="Delete selected"
+                onclick="webconsolejs['pages/settings/environment/cloudresources/serverspecs'].confirmBulkDelete()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M4 7l16 0"/>
+                  <path d="M10 11l0 6"/>
+                  <path d="M14 11l0 6"/>
+                  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </a>
+              <!-- Filter toggle -->
+              <a class="btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#filter-body" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M5.5 5h13a1 1 0 0 1 .5 1.5L14 12L14 19L10 16L10 12L5 6.5a1 1 0 0 1 .5 -1.5"/>
+                </svg>
+              </a>
             </div>
           </div>
+
+          <div class="collapse" id="filter-body">
+            <div class="card-body border-bottom py-3">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <label class="form-label mb-1">Field</label>
+                  <select id="filter-field" class="form-select form-select-sm">
+                    <option value="">-- select --</option>
+                    <option value="name">Spec Name</option>
+                    <option value="_provider">Provider</option>
+                    <option value="_region">Region</option>
+                    <option value="cspSpecName">CSP Spec Name</option>
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <label class="form-label mb-1">Type</label>
+                  <select id="filter-type" class="form-select form-select-sm">
+                    <option value="like">like</option>
+                    <option value="=">=</option>
+                    <option value="!=">!=</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label class="form-label mb-1">Value</label>
+                  <input type="text" id="filter-value" class="form-control form-control-sm" placeholder="filter...">
+                </div>
+                <div class="col-auto">
+                  <button id="filter-clear" class="btn btn-sm btn-outline-secondary">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="card-body p-0">
             <div id="spec-table"></div>
           </div>
@@ -24,8 +78,8 @@
             <div class="card-header">
               <h3 class="card-title">Spec Info — <span id="detail-name" class="text-primary"></span></h3>
               <div class="card-options">
-                <button class="btn btn-sm btn-ghost-danger" onclick="deleteSpec()">Delete</button>
-                <a href="#" class="card-options-remove" onclick="hideDetail()">
+                <a href="#" class="card-options-remove"
+                  onclick="webconsolejs['pages/settings/environment/cloudresources/serverspecs'].hideDetail()">
                   <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
                     stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -39,6 +93,14 @@
                 <div class="datagrid-item">
                   <div class="datagrid-title">Spec Name</div>
                   <div class="datagrid-content" id="detail-specName">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Provider</div>
+                  <div class="datagrid-content" id="detail-provider">-</div>
+                </div>
+                <div class="datagrid-item">
+                  <div class="datagrid-title">Region</div>
+                  <div class="datagrid-content" id="detail-region">-</div>
                 </div>
                 <div class="datagrid-item">
                   <div class="datagrid-title">vCPU</div>
@@ -62,7 +124,7 @@
                 </div>
                 <div class="datagrid-item">
                   <div class="datagrid-title">Namespace</div>
-                  <div class="datagrid-content" id="detail-ns">-</div>
+                  <div class="datagrid-content" id="detail-ns">system</div>
                 </div>
               </div>
             </div>
@@ -79,10 +141,13 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Register Server Spec</h5>
+        <h5 class="modal-title">Register Node Spec</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <div class="mb-3">
+          <span class="badge bg-blue-lt">Namespace: system</span>
+        </div>
         <div class="mb-3">
           <label class="form-label required">Spec Name</label>
           <input type="text" id="modal-specName" class="form-control" placeholder="my-spec">
@@ -91,7 +156,8 @@
           <label class="form-label required">CSP Spec Name</label>
           <div class="input-group">
             <input type="text" id="modal-cspSpecName" class="form-control" placeholder="Select from popup" readonly>
-            <button class="btn btn-outline-secondary" type="button" onclick="openSpecSelectPopup()">Select</button>
+            <button class="btn btn-outline-secondary" type="button"
+              onclick="webconsolejs['pages/settings/environment/cloudresources/serverspecs'].openSpecSelectPopup()">Select</button>
           </div>
         </div>
         <div class="mb-3">
@@ -101,7 +167,8 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="submitRegisterSpec()">Register</button>
+        <button type="button" class="btn btn-primary"
+          onclick="webconsolejs['pages/settings/environment/cloudresources/serverspecs'].submitRegisterSpec()">Register</button>
       </div>
     </div>
   </div>
@@ -116,15 +183,23 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Connection</label>
-          <select id="popup-connection" class="form-select" onchange="loadSpecList(this.value)"></select>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Provider</label>
+            <select id="popup-provider" class="form-select"></select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Connection</label>
+            <select id="popup-connection" class="form-select"></select>
+          </div>
         </div>
         <div id="popup-spec-table"></div>
       </div>
     </div>
   </div>
 </div>
+
+{{ partial("partials/layout/pageloader.html") | raw }}
 
 {{ javascriptTag("common/api/services/serverspec_api.js") | raw }}
 {{ javascriptTag("pages/settings/environment/cloudresources/serverspecs.js") | raw }}

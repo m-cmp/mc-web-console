@@ -1,0 +1,89 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title summary">Infra Status</h3>
+    <div class="card-options">
+      <span class="text-muted" style="font-size: 0.75rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Updated: <span id="mci_status_updated_at">-</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="row row-cards">
+      <div class="col-md" style="border: 0px">
+        <div
+          class="card-body"
+          style="display: flex; flex-direction: column; align-items: center"
+        >
+          <h1 class="card-title mx-auto summary" id="total_mci">0</h1>
+          <span>Total</span>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="bg-green-lt card" style="border: 0px">
+          <div
+            class="card-body text-center"
+            style="border: 0px; display: flex; flex-direction: column"
+          >
+            <h1 class="card-title mx-auto summary" id="mci_status_running">
+              0
+            </h1>
+            <span>Running</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="card bg-yellow-lt" style="border: 0px">
+          <div
+            class="card-body"
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <p class="card-title mx-auto summary" id="mci_status_stopped">0</p>
+            <span>Stopped</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="card bg-muted-lt" style="border: 0px">
+          <div
+            class="card-body"
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <h1 class="card-title mx-auto summary" id="mci_status_terminated">
+              0
+            </h1>
+            <span>Terminated</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="card bg-red-lt" style="border: 0px">
+          <div
+            class="card-body"
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <h1 class="card-title mx-auto summary" id="mci_status_failed">0</h1>
+            <span>Failed</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md">
+        <div class="card bg-azure-lt" style="border: 0px">
+          <div
+            class="card-body"
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <h1 class="card-title mx-auto summary" id="mci_status_etc">0</h1>
+            <span>ETC</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

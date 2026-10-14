@@ -4,7 +4,7 @@ import ApexCharts from "apexcharts"
 $("#select-current-project").on('change', async function () {
   let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
   webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
-  var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(project.NsId);
+  var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(project.NsId);
   getMciListCallbackSuccess(project.NsId, respMciList);
 })
 
@@ -51,7 +51,7 @@ async function initMonitoring() {
     var selectedNsId = selectedWorkspaceProject.nsId;
 
     //getPmkList();// project가 선택되어 있으면 pmk목록을 조회한다.
-    var respMciList = await webconsolejs["common/api/services/mci_api"].getMciList(selectedNsId);
+    var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(selectedNsId);
     getMciListCallbackSuccess(selectedProjectId, respMciList);
 
 
@@ -115,13 +115,13 @@ $("#monitoring_mcilist").on('change', async function () {
 
 async function displayMonitoringMci(nsId, mciId) {
 
-  var respMci = await webconsolejs["common/api/services/mci_api"].getMci(nsId, mciId);
+  var respMci = await webconsolejs["common/api/services/infra_api"].getMci(nsId, mciId);
 
   var vmList = respMci.responseData.vm
   if (Array.isArray(vmList) && vmList.length > 0) {
     displayServerStatusList(mciId, respMci.responseData.vm)
   } else {
-    alert("There is no VM List !!")
+    alert("There is no Node List !!")
   }
 
 
@@ -293,7 +293,7 @@ export async function startMonitoring() {
 
   // VM이 선택되지 않은 경우 처리
   if (!selectedVMId) {
-    alert("Please select a VM first.");
+    alert("Please select a Node first.");
     return;
   }
   

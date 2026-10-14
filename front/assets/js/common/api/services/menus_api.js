@@ -80,6 +80,10 @@ export async function refreshAvailableMenus() {
     // 응답 자체가 빈 배열이면 기존 사이드바 유지 (실수로 localStorage 소거 방지)
     if (menuList.length === 0) return;
 
+    // 변경이 없으면 재렌더하지 않음 (사이드바 열림 상태 유지, 불필요한 깜빡임 방지)
+    const nextMenuJSON = JSON.stringify(rootMenus);
+    if (nextMenuJSON === localStorage.getItem('menuList')) return;
+
     webconsolejs["common/storage/localstorage"].setMenuLocalStorage(rootMenus);
     document.dispatchEvent(new CustomEvent('refresh-sidebar'));
 }

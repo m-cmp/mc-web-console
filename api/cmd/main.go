@@ -1,3 +1,16 @@
+// mc-web-console BFF API server.
+//
+// @title           mc-web-console API
+// @version         1.0.0
+// @description     mc-web-console BFF API server (Echo). Auth, disk lookup, admin BFF, and multi-cloud proxy via /api/{subsystemName}/{operationId}.
+// @host            localhost:3100
+// @BasePath        /
+// @schemes         http
+//
+// @securityDefinitions.apikey BearerAuth
+// @in              header
+// @name            Authorization
+// @description     JWT Bearer token (Authorization header or AccessToken cookie)
 package main
 
 import (
@@ -36,6 +49,7 @@ func main() {
 	jwt.SetSecretKey(jwtSecret)
 
 	// 데이터베이스 초기화 (MC_WEB_CONSOLE_POSTGRES_HOST 환경변수가 설정된 경우에만 활성화)
+	dbEnabled := false
 	if os.Getenv("MC_WEB_CONSOLE_POSTGRES_HOST") != "" {
 		if err := repository.InitDatabase(cfg); err != nil {
 			log.Fatalf("Failed to initialize database: %v", err)
@@ -46,6 +60,7 @@ func main() {
 		if err := repository.AutoMigrate(); err != nil {
 			log.Fatalf("Failed to migrate database: %v", err)
 		}
+		dbEnabled = true
 	} else {
 		log.Println("⚠️  MC_WEB_CONSOLE_POSTGRES_HOST not configured, running without database (session management disabled)")
 	}
@@ -72,6 +87,12 @@ func main() {
 	})
 
 	// Health check 엔드포인트
+	// @Summary     Health check
+	// @Description Server readiness probe
+	// @Tags        system
+	// @Produce     json
+	// @Success     200 {object} map[string]interface{}
+	// @Router      /readyz [get]
 	e.GET("/readyz", func(c echo.Context) error {
 		return c.JSON(200, map[string]interface{}{
 			"status":      "OK",
@@ -101,6 +122,17 @@ func main() {
 	api.POST("/disklookup", handler.DiskLookup)
 	api.POST("/getapihosts", handler.GetApiHosts)
 
+	// Async request history (WEB-TECH-017) — must register before subsystem wildcard
+	asyncReq := api.Group("/async-requests")
+	asyncReq.GET("", handler.ListAsyncRequests)
+	asyncReq.DELETE("", handler.ClearFinishedAsyncRequests)
+	asyncReq.PATCH("/:requestId", handler.PatchAsyncRequest)
+	asyncReq.DELETE("/:requestId", handler.DeleteAsyncRequest)
+
+	if dbEnabled {
+		service.StartAsyncRequestPoller(cfg)
+	}
+
 	// 관리자 전용 BFF 라우트 (와일드카드보다 먼저 등록되어야 정적 매칭됨)
 	// FR-CLOUD-ADMIN-006-08: 외부 raw YAML 도달성 확인 (CORS 우회 + 토큰 노출 방지)
 	// 인증 모델: SubsystemAnyController와 동일 — front Buffalo의 IsTokenExistMiddleware(cookie 검증)
@@ -113,6 +145,11 @@ func main() {
 	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController)
 
 	// 테스트 엔드포인트들
+	// @Summary     Hello
+	// @Tags        test
+	// @Produce     json
+	// @Success     200 {object} map[string]interface{}
+	// @Router      /api/hello [get]
 	api.GET("/hello", func(c echo.Context) error {
 		requestID := middleware.GetRequestID(c)
 		return c.JSON(200, map[string]interface{}{

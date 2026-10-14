@@ -58,6 +58,7 @@ func AutoMigrate() error {
 	// 모델 등록
 	models := []interface{}{
 		&model.UserSession{},
+		&model.AsyncRequest{},
 	}
 
 	for _, model := range models {
