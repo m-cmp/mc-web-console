@@ -61,6 +61,23 @@ export async function registerCredential({ credentialHolder, providerName, crede
             credentialKeyValueList,
         },
     };
-    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    // 거부 사유는 호출부가 토스트로 노출하므로 공통 "Server error" 토스트는 띄우지 않는다
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, undefined, { suppressErrorToast: true });
     return unwrapResponse(response);
+}
+
+/**
+ * Provider별 Credential 등록 허용 key 목록 (cloudos metainfo의 CredentialCSP)
+ * ForwardAnyReqToAny → CB-Spider GET /cloudos/metainfo/{provider}
+ *
+ * @param {string} provider - CSP 이름 (예: "aws")
+ * @returns {Promise<string[]>}
+ */
+export async function getProviderCredentialKeys(provider) {
+    const controller = "/api/mc-infra-manager/ForwardAnyReqToAny";
+    // request는 빈 객체라도 보내야 한다 (tumblebug이 body를 JSON 파싱함)
+    const data = { pathParams: { path: `cloudos/metainfo/${provider}` }, request: {} };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, undefined, { loaderType: 'none', suppressErrorToast: true });
+    const metainfo = unwrapResponse(response);
+    return (metainfo && Array.isArray(metainfo.CredentialCSP)) ? metainfo.CredentialCSP : [];
 }
