@@ -57,6 +57,14 @@
                     <option value="">-- all regions --</option>
                   </select>
                 </div>
+                <div class="col-auto" style="min-width: 160px;">
+                  <label class="form-label mb-1">Usage</label>
+                  <select id="filter-usage" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    <option value="in-use">In use</option>
+                    <option value="unused">Unused</option>
+                  </select>
+                </div>
               </div>
               <div class="row g-2 align-items-end">
                 <div class="col-auto">
@@ -170,6 +178,30 @@
                 </div>
               </div>
 
+              <!-- Associated Nodes (associatedObjectList 기준, 현재 project 범위) -->
+              <div class="mt-3">
+                <h4 class="mb-1">Associated Nodes <span id="detail-assoc-count" class="badge bg-secondary-lt ms-1">0</span></h4>
+                <div class="text-muted small mb-2">Usage tracked within this project. Resources may still be in use outside MCMP (e.g., registered in another project or used directly on the CSP).</div>
+                <div id="detail-assoc-loading" class="text-muted small d-none">
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>Loading nodes...
+                </div>
+                <div id="detail-assoc-empty" class="text-muted small d-none">Not used by any Node in this project.</div>
+                <div class="table-responsive d-none" id="detail-assoc-table-wrap">
+                  <table class="table table-sm table-vcenter">
+                    <thead>
+                      <tr>
+                        <th>Infra</th>
+                        <th>Node</th>
+                        <th>Status</th>
+                        <th>Private IP</th>
+                        <th>Public IP</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detail-assoc-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+
               <!-- CSP Detail Info (keyValueList) -->
               <div class="mt-3">
                 <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none"
@@ -211,6 +243,8 @@
                 이 SecurityGroup에는 <code>ALL</code> 프로토콜 규칙이 있어 현재 저장(Save)이 불가능합니다.
                 (백엔드가 Update 시 <code>ALL</code> 프로토콜의 포트 검증을 지원하지 않는 알려진 문제)
               </div>
+              <!-- 사용 중 경고 (규칙 변경이 연관 Node에 즉시 적용됨) -->
+              <div id="edit-sg-inuse-warning" class="alert alert-info d-none mb-3"></div>
               <!-- Read-only 정보 -->
               <div class="row g-3 mb-4">
                 <div class="col-md-3">
