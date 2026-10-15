@@ -21,15 +21,15 @@ func resetMenuGuardCache() {
 var testCatalog = []menuItem{
 	{ID: "operations", ParentID: "home", ViewType: "local"},
 	{ID: "manage", ParentID: "operations", ViewType: "local"},
-	{ID: "workspaces", ParentID: "manage", ViewType: "local"},
-	{ID: "roles", ParentID: "workspaces", ViewType: "local"},
+	{ID: "workspaces", ParentID: "manage", ViewType: "local", IsAction: true},
+	{ID: "roles", ParentID: "workspaces", ViewType: "local", IsAction: true},
 	{ID: "workloads", ParentID: "manage", ViewType: "local"},
-	{ID: "infraworkloads", ParentID: "workloads", ViewType: "local"},
+	{ID: "infraworkloads", ParentID: "workloads", ViewType: "local", IsAction: true},
 	{ID: "workflows", ParentID: "manage", ViewType: "local"},
-	{ID: "mcworkflows", ParentID: "workflows", ViewType: "iframe", Path: "/web/workflow/list"},
+	{ID: "mcworkflows", ParentID: "workflows", ViewType: "iframe", Path: "/web/workflow/list", IsAction: true},
 	{ID: "settings", ParentID: "home", ViewType: "local"},
 	{ID: "environment", ParentID: "settings", ViewType: "local"},
-	{ID: "credentials", ParentID: "environment", ViewType: "local", Path: "/settings/environment/cloudsps/credentials"},
+	{ID: "credentials", ParentID: "environment", ViewType: "local", Path: "/settings/environment/cloudsps/credentials", IsAction: true},
 	{ID: "costpopup", ParentID: "manage", ViewType: "popup", Path: "/cost"},
 }
 
@@ -185,5 +185,25 @@ func TestMenuAccessRedirect_DeniedGoesToUnauthorized(t *testing.T) {
 	c.Set("Authorization", "user-token")
 	if got := menuAccessRedirect(c, "/webconsole/operations/manage/workspaces/roles"); got != menuDeniedPath {
 		t.Fatalf("redirect = %q, want %q", got, menuDeniedPath)
+	}
+}
+
+func TestMenuAccessRedirect_NoMenuPagesGoesToPending(t *testing.T) {
+	// 가입 승인 직후처럼 역할이 없어 사용자 메뉴가 비어 있는 경우: 기본 화면·메뉴 화면 모두 대기 화면으로
+	newMenuAPI(t, []menuItem{}, http.StatusOK, nil)
+	c := newTestContext()
+	c.Set("Authorization", "user-token")
+
+	for _, path := range []string{
+		RootPathForRedirectString,
+		"/webconsole/operations/manage/workspaces/roles",
+		"/webconsole/_view/mcworkflows",
+	} {
+		if got := menuAccessRedirect(c, path); got != menuPendingPath {
+			t.Errorf("menuAccessRedirect(%q) = %q, want %q", path, got, menuPendingPath)
+		}
+	}
+	if got := menuAccessRedirect(c, "/webconsole/operations/manage/workloads/infraworkloads/detail"); got != "" {
+		t.Errorf("non-menu page redirected to %q", got)
 	}
 }

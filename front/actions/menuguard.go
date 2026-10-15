@@ -271,6 +271,19 @@ func menuAccessRedirect(c echo.Context, path string) string {
 		}
 	}
 
+	// 화면 메뉴가 하나도 없는 사용자(가입 승인 직후 역할 미배정 등)는 역할 배정 대기 화면으로 보낸다
+	hasPage := false
+	for _, p := range catalog.ordered {
+		if allowed[p.id] {
+			hasPage = true
+			break
+		}
+	}
+	if !hasPage {
+		log.Printf("[MenuGuard] no menu pages for user, redirecting %s to %s", path, menuPendingPath)
+		return menuPendingPath
+	}
+
 	if path == RootPathForRedirectString {
 		for _, p := range catalog.ordered {
 			if allowed[p.id] {
@@ -283,7 +296,10 @@ func menuAccessRedirect(c echo.Context, path string) string {
 	return menuDeniedPath
 }
 
-const menuDeniedPath = "/auth/unauthorized#menuNotAllowed"
+const (
+	menuDeniedPath  = "/auth/unauthorized#menuNotAllowed"
+	menuPendingPath = "/auth/pending"
+)
 
 // isMenuAccessDenied 요청 경로가 사용자에게 할당되지 않은 메뉴 화면이면 true.
 func isMenuAccessDenied(c echo.Context, path string) bool {
