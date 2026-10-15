@@ -56,6 +56,7 @@ func App() *echo.Echo {
 		auth.GET("/logout", UserLogout)
 		auth.GET("/unauthorized", UserUnauthorized)
 		auth.GET("/signup", UserSignup)
+		auth.GET("/pending", UserPending)
 
 		// API auth endpoints (no auth required)
 		authapi := app.Group("/api")
