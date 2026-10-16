@@ -3213,7 +3213,8 @@ export async function deployPolicy() {
     const response = await webconsolejs["common/api/services/infra_api"].createPolicy(
       window.currentNsId,
       window.currentMciId,
-      requestData.policy
+      requestData.policy,
+      requestData.description
     );
 
 
@@ -3295,9 +3296,10 @@ function collectPolicyData() {
   return {
     // AutoAction 데이터
     actionType: "ScaleOut", // 기본값
-    placementAlgo: $("#policy_ep_placementAlgo").val() || "random",
-    command: $("#policy_ep_command").val() || "",
-    userName: $("#policy_ep_username").val() || "",
+    placementAlgo: $("#policy_placementAlgo").val() || "random",
+    command: $("#policy_command").val() || "",
+    userName: $("#policy_username").val() || "",
+    policyDescription: $("#policy_desc").val() || "",
 
     // VM Dynamic Request 데이터
     commonImage: $("#policy_ep_commonImageId").val() || "",
@@ -3357,6 +3359,16 @@ function validatePolicyData(data) {
     }
   }
 
+  // cb-tumblebug는 숫자 필드를 숫자 타입으로만 받는다 (문자열이면 400)
+  if (!Number.isFinite(Number(data.operand))) {
+    alert("Operand must be a number.");
+    return false;
+  }
+  if (data.rootDiskSize !== "" && !/^\d+$/.test(String(data.rootDiskSize).trim())) {
+    alert("Root Disk Size must be a whole number (GB).");
+    return false;
+  }
+
   return true;
 }
 
@@ -3381,19 +3393,21 @@ function buildPolicyRequestData(data) {
             "role": "worker"
           },
           name: data.name,
-          rootDiskSize: data.rootDiskSize,
+          // 비어 있으면 생략 → cb-tumblebug 기본값 0(CSP 기본 디스크 크기)
+          ...(data.rootDiskSize !== "" ? { rootDiskSize: parseInt(data.rootDiskSize, 10) } : {}),
           rootDiskType: data.rootDiskType,
-          nodeGroupSize: data.nodeGroupSize
+          nodeGroupSize: parseInt(data.nodeGroupSize, 10) || 1
         }
       },
       autoCondition: {
-        evaluationPeriod: data.evaluationPeriod,
+        evaluationPeriod: parseInt(data.evaluationPeriod, 10) || 10,
         metric: data.metric,
-        operand: data.operand,
+        operand: parseFloat(data.operand),
         operator: normalizeOperator(data.operator)
       },
       status: "active"
-    }]
+    }],
+    description: data.policyDescription
   };
 }
 

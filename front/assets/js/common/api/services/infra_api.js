@@ -1089,7 +1089,7 @@ export async function deletePolicy(nsId, mciId) {
   );
 }
 
-export async function createPolicy(nsId, mciId, policy) {
+export async function createPolicy(nsId, mciId, policy, description = "") {
   if (nsId == "") {
     alert("Project has not set")
     return;
@@ -1100,7 +1100,8 @@ export async function createPolicy(nsId, mciId, policy) {
       infraId: mciId,
     },
     Request: {
-      policy: policy
+      policy: policy,
+      description: description
     }
   };
   let controller = "/api/" + "mc-infra-manager/" + "PostInfraPolicy";
