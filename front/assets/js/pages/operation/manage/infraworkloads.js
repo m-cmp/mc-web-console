@@ -3235,14 +3235,15 @@ export async function getKeypair(el, contextType) {
     const key = await webconsolejs["common/api/services/sshkey_api"].get(
       window.currentNsId, sshkeyId, { sensitive: true }
     );
-    const privateKey = key?.privateKey || key?.privateKeyMaterial || "";
+    // 없는 항목도 줄을 남겨 "Not provided"로 보여 준다
     modal.render({
       title,
-      meta: [
-        { label: "Keypair Name", value: sshkeyId },
-        { label: "Username", value: key?.username || key?.verifiedUsername || "" },
+      meta: [{ label: "Keypair Name", value: sshkeyId }],
+      fields: [
+        { label: "Private Key", value: key?.privateKey || key?.privateKeyMaterial || "", kind: "pem" },
+        { label: "Public Key", value: key?.publicKey || key?.publicKeyMaterial || "", kind: "plain" },
+        { label: "Username", value: key?.username || key?.verifiedUsername || "", kind: "plain" },
       ],
-      fields: [{ label: "Private Key", value: privateKey, secret: true }],
       emptyText: "Not available",
     }, session);
   } catch (err) {
@@ -3287,6 +3288,46 @@ function credentialEnvLines(cred, region) {
       return "";
   }
   return lines.join("\n");
+}
+
+// CSP별 기대 필드 — 이 목록에 있는데 값이 없으면 "Not provided" 행, 목록에 없는 필드(다른 CSP 전용)는 표시하지 않는다.
+// identifier(앞뒤 4자 노출)는 비밀이 아닌 키 ID만, 나머지는 길이만 보이는 secret.
+function credentialFields(csp, cred) {
+  const accessToken = { label: "Access Token" + (cred.tokenType ? " (" + cred.tokenType + ")" : ""), value: cred.accessToken, kind: "secret" };
+  switch (csp) {
+    case "aws":
+      return [
+        { label: "Access Key ID", value: cred.accessKeyId, kind: "identifier" },
+        { label: "Secret Access Key", value: cred.secretAccessKey, kind: "secret" },
+        { label: "Session Token", value: cred.sessionToken, kind: "secret" },
+      ];
+    case "alibaba":
+      return [
+        { label: "Access Key ID", value: cred.accessKeyId, kind: "identifier" },
+        { label: "Access Key Secret", value: cred.accessKeySecret || cred.secretAccessKey, kind: "secret" },
+        { label: "Security Token", value: cred.securityToken || cred.sessionToken, kind: "secret" },
+      ];
+    case "tencent":
+      return [
+        { label: "Secret ID", value: cred.accessKeyId, kind: "identifier" },
+        { label: "Secret Key", value: cred.secretAccessKey, kind: "secret" },
+        { label: "Session Token", value: cred.sessionToken, kind: "secret" },
+      ];
+    case "gcp":
+      return [accessToken];
+    default: {
+      // 그 밖의 CSP(Azure·IBM 토큰, NCP·NHN·KT SECRET_KEY 등)는 응답 형태가 인증 방식마다 달라 기대 목록을 정하지 않고 받은 값만 표시
+      const all = [
+        { label: "Access Key ID", value: cred.accessKeyId, kind: "identifier" },
+        { label: "Secret Access Key", value: cred.secretAccessKey, kind: "secret" },
+        { label: "Access Key Secret", value: cred.accessKeySecret, kind: "secret" },
+        { label: "Session Token", value: cred.sessionToken, kind: "secret" },
+        { label: "Security Token", value: cred.securityToken, kind: "secret" },
+        accessToken,
+      ];
+      return all.filter((f) => f.value);
+    }
+  }
 }
 
 function formatRemaining(expiration) {
@@ -3367,14 +3408,7 @@ export async function getCspCredential(contextType) {
     "The account of this credential is decided by the CSP role mapping in IAM and may differ from the account " +
     "this node runs in" + (ctx.credentialName ? " (node credential: " + ctx.credentialName + ")" : "") + ".";
 
-  const fields = [
-    { label: "Access Key ID", value: cred.accessKeyId },
-    { label: "Secret Access Key", value: cred.secretAccessKey },
-    { label: "Access Key Secret", value: cred.accessKeySecret },
-    { label: "Session Token", value: cred.sessionToken },
-    { label: "Security Token", value: cred.securityToken },
-    { label: "Access Token" + (cred.tokenType ? " (" + cred.tokenType + ")" : ""), value: cred.accessToken },
-  ];
+  const fields = credentialFields(issuedCsp, cred);
 
   const actions = [];
   if (credentialEnvLines(cred, issuedRegion)) {

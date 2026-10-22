@@ -3,16 +3,23 @@
 //
 // 보안 원칙
 //  - 비밀값은 이 모듈의 메모리(state)에만 둔다. localStorage/sessionStorage/console에 남기지 않는다.
-//  - 화면에는 기본적으로 가려서 표시하고(Show/Hide), 복사는 표시 여부와 관계없이 원문을 복사한다.
+//  - 화면에는 기본적으로 가려서 표시하되, 값의 존재·형태는 알 수 있게 한다
+//      identifier : 앞 4자 + •••••••• + 뒤 4자 (8자 이하는 전부 가림)  — 예: Access Key ID
+//      secret     : ••••••  (N chars)                                    — 예: Secret Access Key, Session Token
+//      pem        : 첫 줄(PEM 헤더) + ••••••  (N chars), 헤더가 없으면 secret 규칙 — 예: Private Key
+//      plain      : 가리지 않음                                         — 예: Username, Public Key
+//  - 항목별 Show/Hide 와 전체 Show all/Hide all. 복사는 표시 여부와 관계없이 원문을 복사한다.
+//  - 값이 없는 항목은 줄을 남기고 "Not provided" (Copy·Show 비활성).
 //  - DOM에는 textContent로만 넣는다(innerHTML 금지). 모달이 닫히면 값과 DOM을 모두 비운다.
 
-const MASK = '******';
 const MODAL_ID = 'secretModal';
+const DOTS = '••••••';
+const NOT_PROVIDED = 'Not provided';
+const KINDS = ['identifier', 'secret', 'pem', 'plain'];
 
 const state = {
   session: 0,        // 모달을 열 때마다 증가 — 닫힌 뒤 도착한 비동기 응답은 무시한다
-  visible: false,
-  fields: [],        // [{ label, value, secret }]
+  fields: [],        // [{ label, value, kind, visible }]
   actions: [],       // [{ id, label, getText }]
   liveTimer: null,
   liveItems: [],     // [{ el, render }]
@@ -50,10 +57,38 @@ function stopLiveTimer() {
   state.liveItems = [];
 }
 
+// ─── 마스크 ────────────────────────────────────────────────────────────
+
+function secretMask(value) {
+  return `${DOTS}  (${value.length} chars)`;
+}
+
+/** 값의 존재·형태만 보이도록 가린 문자열 (원문은 노출하지 않는다) */
+export function maskValue(value, kind) {
+  const v = String(value ?? '');
+  if (!v) return NOT_PROVIDED;
+  switch (kind) {
+    case 'plain':
+      return v;
+    case 'identifier':
+      return v.length <= 8 ? '••••••••' : v.slice(0, 4) + '••••••••' + v.slice(-4);
+    case 'pem': {
+      const firstLine = v.split(/\r?\n/, 1)[0].trim();
+      if (/^-----BEGIN [A-Z0-9 ]+-----$/.test(firstLine)) {
+        return `${firstLine} ${secretMask(v)}`;
+      }
+      return secretMask(v);
+    }
+    default:
+      return secretMask(v);
+  }
+}
+
+const isMaskable = (f) => !!f.value && f.kind !== 'plain';
+
 // 모달 내용·메모리 값을 모두 지운다 (hidden.bs.modal 및 새로 열 때)
 export function clearModal() {
   state.session += 1;
-  state.visible = false;
   state.fields = [];
   state.actions = [];
   stopLiveTimer();
@@ -68,7 +103,7 @@ export function clearModal() {
   ['secretModal-error', 'secretModal-notice', 'secretModal-warning'].forEach((id) => setText(id, ''));
   ['secretModal-loading', 'secretModal-error', 'secretModal-notice', 'secretModal-warning',
     'secretModal-meta', 'secretModal-toolbar', 'secretModal-empty'].forEach((id) => setHidden(id, true));
-  setText('secretModal-toggle-btn', 'Show');
+  setText('secretModal-toggle-btn', 'Show all');
 }
 
 /**
@@ -117,6 +152,16 @@ function renderMeta(meta) {
   }
 }
 
+function smallButton(id, label, onClick) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn btn-sm btn-outline-primary';
+  btn.id = id;
+  btn.textContent = label;
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
 function renderFields() {
   const box = $id('secretModal-fields');
   if (!box) return;
@@ -124,29 +169,35 @@ function renderFields() {
   state.fields.forEach((field, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'mb-3';
+    wrap.id = 'secretModal-field-' + i;
 
     const head = document.createElement('div');
-    head.className = 'd-flex align-items-center mb-1';
+    head.className = 'd-flex align-items-center gap-2 mb-1';
     const label = document.createElement('label');
-    label.className = 'form-label mb-0';
+    label.className = 'form-label mb-0 me-auto';
     label.textContent = field.label;
-    const copyBtn = document.createElement('button');
-    copyBtn.type = 'button';
-    copyBtn.className = 'btn btn-sm btn-outline-primary ms-auto';
-    copyBtn.id = 'secretModal-copy-' + i;
-    copyBtn.textContent = 'Copy';
-    copyBtn.addEventListener('click', () => copyField(i));
-    head.append(label, copyBtn);
+    head.append(label);
+
+    if (field.kind !== 'plain') {
+      const showBtn = smallButton('secretModal-show-' + i, 'Show', () => toggleField(i));
+      showBtn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
+      showBtn.disabled = !field.value;
+      head.append(showBtn);
+    }
+    const copyBtn = smallButton('secretModal-copy-' + i, 'Copy', () => copyField(i));
+    copyBtn.disabled = !field.value;
+    head.append(copyBtn);
 
     const pre = document.createElement('pre');
     pre.id = 'secretModal-value-' + i;
     // Tabler 기본 pre 는 어두운 배경·밝은 글자라 bg-light 만 주면 글자가 안 보인다 — 글자색도 함께 지정
-    pre.className = 'bg-light text-dark p-2 rounded small mb-0';
+    pre.className = 'bg-light p-2 rounded small mb-0 ' + (field.value ? 'text-dark' : 'text-muted fst-italic');
     pre.style.whiteSpace = 'pre-wrap';
     pre.style.wordBreak = 'break-all';
     pre.style.maxHeight = '320px';
     pre.style.overflowY = 'auto';
-    pre.dataset.secret = field.secret ? 'true' : 'false';
+    pre.dataset.kind = field.kind;
+    pre.dataset.provided = field.value ? 'true' : 'false';
 
     wrap.append(head, pre);
     box.append(wrap);
@@ -157,10 +208,16 @@ function renderFields() {
 function renderVisibility() {
   state.fields.forEach((field, i) => {
     const pre = $id('secretModal-value-' + i);
-    if (!pre) return;
-    pre.textContent = (!field.secret || state.visible) ? field.value : MASK;
+    if (pre) {
+      pre.textContent = field.value && field.visible ? field.value : maskValue(field.value, field.kind);
+      pre.dataset.visible = field.value && field.visible ? 'true' : 'false';
+    }
+    const btn = $id('secretModal-show-' + i);
+    if (btn) btn.textContent = field.visible ? 'Hide' : 'Show';
   });
-  setText('secretModal-toggle-btn', state.visible ? 'Hide' : 'Show');
+  const maskable = state.fields.filter(isMaskable);
+  setHidden('secretModal-toggle-btn', maskable.length === 0);
+  setText('secretModal-toggle-btn', maskable.length && maskable.every((f) => f.visible) ? 'Hide all' : 'Show all');
 }
 
 function renderActions() {
@@ -168,13 +225,8 @@ function renderActions() {
   if (!box) return;
   const toggle = $id('secretModal-toggle-btn');
   state.actions.forEach((action, i) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn btn-sm btn-outline-primary';
-    btn.id = 'secretModal-action-' + (action.id || i);
+    const btn = smallButton('secretModal-action-' + (action.id || i), action.label, () => runAction(i));
     btn.dataset.secretAction = 'true';
-    btn.textContent = action.label;
-    btn.addEventListener('click', () => runAction(i));
     box.insertBefore(btn, toggle);
   });
 }
@@ -186,9 +238,10 @@ function renderActions() {
  * @param {Array<{label:string,value?:string,render?:Function,key?:string}>} [opts.meta]
  * @param {string} [opts.notice]   정보 안내(alert-info)
  * @param {string} [opts.warning]  주의(alert-warning)
- * @param {Array<{label:string,value:string,secret?:boolean}>} [opts.fields] 값이 빈 항목은 표시하지 않는다
+ * @param {Array<{label:string,value?:string,kind?:'identifier'|'secret'|'pem'|'plain'}>} [opts.fields]
+ *        표시할 항목(기대 필드). 값이 비면 "Not provided" 행으로 남는다.
  * @param {Array<{id:string,label:string,getText:Function}>} [opts.actions] 복사 액션 (예: 환경변수 형식)
- * @param {string} [opts.emptyText] 표시할 값이 없을 때 문구 (기본 "Not available")
+ * @param {string} [opts.emptyText] 항목이 하나도 없을 때 문구 (기본 "Not available")
  * @param {number} [session] openLoading이 돌려준 값
  */
 export function render(opts = {}, session) {
@@ -197,22 +250,26 @@ export function render(opts = {}, session) {
   setText('secretModal-title', opts.title || 'Secret');
 
   state.fields = (opts.fields || [])
-    .filter((f) => f && f.value != null && String(f.value) !== '')
-    .map((f) => ({ label: f.label, value: String(f.value), secret: f.secret !== false }));
+    .filter((f) => f && f.label)
+    .map((f) => ({
+      label: f.label,
+      value: f.value == null ? '' : String(f.value),
+      kind: KINDS.includes(f.kind) ? f.kind : 'secret',
+      visible: false,
+    }));
   state.actions = (opts.actions || []).filter(Boolean);
-  state.visible = false;
 
   renderMeta(opts.meta);
   if (opts.notice) { setText('secretModal-notice', opts.notice); setHidden('secretModal-notice', false); }
   if (opts.warning) { setText('secretModal-warning', opts.warning); setHidden('secretModal-warning', false); }
 
   const hasFields = state.fields.length > 0;
+  const hasValue = state.fields.some((f) => f.value);
   setText('secretModal-empty', opts.emptyText || 'Not available');
   setHidden('secretModal-empty', hasFields);
   setHidden('secretModal-toolbar', !hasFields);
-  setHidden('secretModal-toggle-btn', !state.fields.some((f) => f.secret));
   renderFields();
-  if (hasFields) renderActions();
+  if (hasValue) renderActions();
 
   const inst = modalInstance();
   if (inst) inst.show();
@@ -232,8 +289,19 @@ export function renderError(title, message, { meta, notice } = {}, session) {
   return true;
 }
 
+// 항목 하나의 표시 상태를 바꾼다
+export function toggleField(index) {
+  const field = state.fields[index];
+  if (!field || !isMaskable(field)) return;
+  field.visible = !field.visible;
+  renderVisibility();
+}
+
+// Show all / Hide all — 하나라도 가려져 있으면 전부 보이기, 모두 보이면 전부 가리기
 export function toggleSecrets() {
-  state.visible = !state.visible;
+  const maskable = state.fields.filter(isMaskable);
+  const showAll = !maskable.every((f) => f.visible);
+  maskable.forEach((f) => { f.visible = showAll; });
   renderVisibility();
 }
 
@@ -256,7 +324,8 @@ function writeClipboard(text, btn, original) {
 // 화면 표시 여부와 관계없이 원문을 복사한다
 export function copyField(index) {
   const field = state.fields[index];
-  return writeClipboard(field && field.value, $id('secretModal-copy-' + index), 'Copy');
+  if (!field || !field.value) return Promise.resolve(false);
+  return writeClipboard(field.value, $id('secretModal-copy-' + index), 'Copy');
 }
 
 export function runAction(index) {
