@@ -1259,6 +1259,7 @@ export async function vmDetailInfo(vmId) {
   var vmStatus = data.status;
   currentServerNodeStatus = vmStatus;
   nodeDetailContext.server = buildNodeDetailContext(data);
+  updateCspCredentialVisibility("server");
   updateInstallSwNodeButton("installsw-node-server-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
@@ -1492,6 +1493,7 @@ export async function nodeGroup_vmDetailInfo(vmId) {
   var vmStatus = data.status;
   currentNodeGroupVmStatus = vmStatus;
   nodeDetailContext.nodegroup = buildNodeDetailContext(data);
+  updateCspCredentialVisibility("nodegroup");
   updateInstallSwNodeButton("installsw-node-nodegroup-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
@@ -3218,6 +3220,29 @@ function buildNodeDetailContext(data) {
 
 function nodeContextOf(contextType) {
   return nodeDetailContext[contextType === "nodegroup" ? "nodegroup" : "server"];
+}
+
+// "Get CSP Credential" 행은 내 워크스페이스 역할에 이 노드 CSP의 CSP Role 매핑이 설정돼 있을 때만 보인다.
+// 판정 결과는 워크스페이스 단위로 캐시된다(csp_credential_api.getIssuableCspTypes). 판정 전·실패 시에는 숨긴다.
+async function updateCspCredentialVisibility(contextType) {
+  const itemId = contextType === "nodegroup"
+    ? "nodegroup_server_detail_view_csp_credential_item"
+    : "server_detail_view_csp_credential_item";
+  const item = document.getElementById(itemId);
+  if (!item) return;
+  item.classList.add("d-none");
+  const ctx = nodeContextOf(contextType);
+  if (!ctx || !ctx.provider) return;
+  try {
+    const workspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
+    const workspaceId = workspace?.id ?? workspace?.Id ?? "";
+    const types = await webconsolejs["common/api/services/csp_credential_api"].getIssuableCspTypes(workspaceId);
+    // 판정 중에 다른 노드로 바뀌었으면 그 노드의 판정에 맡긴다
+    if (nodeContextOf(contextType) !== ctx) return;
+    item.classList.toggle("d-none", !types.has(ctx.provider));
+  } catch (e) {
+    item.classList.add("d-none");
+  }
 }
 
 export async function getKeypair(el, contextType) {

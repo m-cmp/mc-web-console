@@ -92,7 +92,8 @@
           title="Show the private key of this keypair"
           id="server_detail_view_keypair_name" class="badge badge-outline text-secondary fw-normal badge-pill"></a>
         </div>
-        <div class="datagrid-item mb-3">
+        <!-- 내 워크스페이스 역할에 이 노드 CSP의 CSP Role 매핑이 설정된 경우에만 표시 (infraworkloads.js updateCspCredentialVisibility) -->
+        <div class="datagrid-item mb-3 d-none" id="server_detail_view_csp_credential_item">
           <div class="datagrid-title">CSP Credential</div>
           <div class="datagrid-content">
             <button type="button" class="btn btn-sm btn-outline-primary"

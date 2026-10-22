@@ -1102,6 +1102,10 @@ serviceActions:
       method: put
       resourcePath: /api/users/me/password
       description: 사용자 본인 비밀번호 변경
+    GetMyWorkspaceRoles:
+      method: get
+      resourcePath: /api/users/me/workspace-roles
+      description: 로그인 사용자 본인의 워크스페이스별 역할 목록
     Createorganization:
       method: post
       resourcePath: /api/organizations
