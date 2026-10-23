@@ -100,12 +100,13 @@ export async function getTemporaryCredentials({ workspaceId, cspType, region, au
   return cred;
 }
 
-// ─── 발급 가능 CSP 판정 (버튼 표시용) ─────────────────────────────────────
-// 현재 워크스페이스에서 내 역할에 "설정된" CSP Role 매핑이 있는 CSP만 버튼을 보여 준다.
-//   1) GET /api/users/me/workspace-roles → 현재 워크스페이스의 role_id
+// ─── 발급 가능 CSP 판정 (CSP 선택 목록용) ─────────────────────────────────
+// 발급 근거는 platform 역할이 아니라 "현재 워크스페이스에서의 내 역할(직접 배정 우선, 없으면 그룹 상속)"이다
+// (mc-iam-manager csp_credential_service.GetTemporaryCredentials). 그 역할에 "설정된" CSP Role 매핑이 있는 CSP만 고를 수 있게 한다.
+//   1) GET /api/users/me/workspace-roles → 현재 워크스페이스의 role_id (그룹 상속 포함 유효 역할)
 //   2) GET /api/roles/csp-roles/id/{roleId} → cspRoles 중 status=created 이고 idp/iam identifier 가 있는 csp_type
-// "설정됨" 판정일 뿐 발급 보장은 아니다(클릭 후 403 등은 getTemporaryCredentials 쪽에서 안내).
-// 조회 실패·역할 없음은 빈 집합(버튼 숨김). identifier 값은 판정에만 쓰고 보관·출력하지 않는다.
+// "설정됨" 판정일 뿐 발급 보장은 아니다(발급 후 403 등은 getTemporaryCredentials 쪽에서 안내).
+// 조회 실패·역할 없음은 빈 목록. identifier 값은 판정에만 쓰고 보관·출력하지 않는다.
 // IAM readiness API 도입 시 이 판정을 교체한다.
 
 const QUIET = { loaderType: 'none', sensitive: true, silentErrors: true };
@@ -118,16 +119,17 @@ function pick(obj, ...keys) {
   return undefined;
 }
 
-async function fetchIssuableCspTypes(workspaceId) {
+// 현재 워크스페이스에서의 내 역할(콘솔 역할) 이름과, 그 역할에 CSP Role 매핑이 설정된 csp_type 집합.
+// 화면에는 콘솔 역할만 보여 준다 — 매핑된 CSP Role 은 역할 관리(Workspaces > Roles)에서 확인한다.
+async function fetchCspCredentialAccess(workspaceId) {
   const http = webconsolejs['common/api/http'];
   const rolesResp = await http.commonAPIPost('/api/mc-iam-manager/GetMyWorkspaceRoles', {}, undefined, QUIET);
-  const roles = Array.isArray(rolesResp?.data?.responseData) ? rolesResp.data.responseData : [];
-  const roleIds = [...new Set(roles
-    .filter((r) => String(pick(r, 'workspace_id', 'workspaceId')) === String(workspaceId))
-    .map((r) => pick(r, 'role_id', 'roleId'))
-    .filter((id) => id != null))];
+  const roles = (Array.isArray(rolesResp?.data?.responseData) ? rolesResp.data.responseData : [])
+    .filter((r) => String(pick(r, 'workspace_id', 'workspaceId')) === String(workspaceId));
+  const roleNames = [...new Set(roles.map((r) => String(pick(r, 'role_name', 'roleName') || '')).filter(Boolean))];
+  const roleIds = [...new Set(roles.map((r) => pick(r, 'role_id', 'roleId')).filter((id) => id != null))];
 
-  const types = new Set();
+  const cspTypes = new Set();
   for (const roleId of roleIds) {
     const resp = await http.commonAPIPost('/api/mc-iam-manager/Getrolescsproles', {
       pathParams: { roleId: String(roleId) },
@@ -138,29 +140,37 @@ async function fetchIssuableCspTypes(workspaceId) {
         && !!pick(c, 'idp_identifier', 'idpIdentifier')
         && !!pick(c, 'iam_identifier', 'iamIdentifier');
       const type = String(pick(c, 'csp_type', 'cspType') || '').toLowerCase();
-      if (configured && type) types.add(type);
+      if (configured && type) cspTypes.add(type);
     });
   }
-  return types;
+  return { roleNames, cspTypes };
 }
 
+const EMPTY_ACCESS = () => ({ roleNames: [], cspTypes: new Set() });
+
 /**
- * 현재 워크스페이스에서 임시자격증명 버튼을 보여 줄 CSP 집합 (소문자 csp_type).
- * 워크스페이스 단위로 1회만 조회해 캐시하고, 워크스페이스가 바뀌면 다시 조회한다. 실패하면 빈 집합.
+ * 현재 워크스페이스에서의 내 역할 이름과 임시자격증명을 발급받을 수 있는 CSP.
+ * @returns {Promise<{roleNames: string[], cspTypes: Set<string>}>} cspTypes 는 소문자 csp_type
+ * 워크스페이스 단위로 1회만 조회해 캐시하고, 워크스페이스가 바뀌면 다시 조회한다. 실패하면 빈 값.
  */
-export function getIssuableCspTypes(workspaceId) {
-  if (!workspaceId) return Promise.resolve(new Set());
+export function getCspCredentialAccess(workspaceId) {
+  if (!workspaceId) return Promise.resolve(EMPTY_ACCESS());
   if (issuableCache.workspaceId !== String(workspaceId) || !issuableCache.promise) {
     issuableCache = {
       workspaceId: String(workspaceId),
-      promise: fetchIssuableCspTypes(workspaceId).catch(() => {
-        // 실패는 캐시하지 않는다(다음 노드 열 때 재시도)
+      promise: fetchCspCredentialAccess(workspaceId).catch(() => {
+        // 실패는 캐시하지 않는다(다음에 열 때 재시도)
         issuableCache = { workspaceId: null, promise: null };
-        return new Set();
+        return EMPTY_ACCESS();
       }),
     };
   }
   return issuableCache.promise;
+}
+
+/** 발급 가능한 CSP 집합 (소문자 csp_type) */
+export async function getIssuableCspTypes(workspaceId) {
+  return (await getCspCredentialAccess(workspaceId)).cspTypes;
 }
 
 export function clearIssuableCspTypesCache() {

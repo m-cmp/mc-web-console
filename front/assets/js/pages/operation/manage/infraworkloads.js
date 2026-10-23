@@ -37,7 +37,7 @@ var currentServerNodeGroupId = "";
 var currentServerNodeStatus = "";
 // Group 탭 Node Info 에 표시 중인 Node 상태
 var currentNodeGroupVmStatus = "";
-// node detail(Detail 탭)의 Keypair·CSP Credential 버튼이 쓰는 노드 컨텍스트 — 'server'(Node 상세) / 'nodegroup'(NodeGroup 상세)
+// node detail(Detail 탭)의 Keypair 배지가 쓰는 노드 컨텍스트 — 'server'(Node 상세) / 'nodegroup'(NodeGroup 상세)
 var nodeDetailContext = { server: null, nodegroup: null };
 var currentGroupedVmList = [];
 var vmListGroupedByNodeGroup = [];
@@ -1259,7 +1259,6 @@ export async function vmDetailInfo(vmId) {
   var vmStatus = data.status;
   currentServerNodeStatus = vmStatus;
   nodeDetailContext.server = buildNodeDetailContext(data);
-  updateCspCredentialVisibility("server");
   updateInstallSwNodeButton("installsw-node-server-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
@@ -1493,7 +1492,6 @@ export async function nodeGroup_vmDetailInfo(vmId) {
   var vmStatus = data.status;
   currentNodeGroupVmStatus = vmStatus;
   nodeDetailContext.nodegroup = buildNodeDetailContext(data);
-  updateCspCredentialVisibility("nodegroup");
   updateInstallSwNodeButton("installsw-node-nodegroup-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
@@ -3193,56 +3191,25 @@ export async function initMciRemoteCmdModal() {
 }
 
 
-// ─── node detail: Keypair / CSP Credential (공통 비밀값 모달 #secretModal) ─────────────────
+// ─── node detail: Keypair (공통 비밀값 모달 #secretModal) ─────────────────
 
 function secretModal() {
   return webconsolejs["partials/operation/manage/secretmodal"];
 }
 
-// node 응답에서 Keypair·CSP Credential 버튼에 필요한 값만 추린다 (비밀값 없음)
+// node 응답에서 Keypair 배지에 필요한 값만 추린다 (비밀값 없음)
+// CSP 임시 자격 증명은 노드가 아니라 워크스페이스 역할 기준이라 사용자 메뉴(partials/layout/cspcredential.js)로 옮겼다
 function buildNodeDetailContext(data) {
   if (!data) return null;
-  const connectionName = data.connectionName || data.connectionConfig?.configName || "";
-  const provider = String(
-    data.connectionConfig?.providerName || connectionName.split("-")[0] || ""
-  ).toLowerCase();
   return {
     nodeId: data.id || "",
     nodeName: data.name || data.id || "",
     sshKeyId: data.sshKeyId || "",
-    provider,
-    region: data.region?.region ?? data.region?.Region ?? "",
-    connectionName,
-    credentialName: data.connectionConfig?.credentialName || "",
-    credentialHolder: data.connectionConfig?.credentialHolder || "",
   };
 }
 
 function nodeContextOf(contextType) {
   return nodeDetailContext[contextType === "nodegroup" ? "nodegroup" : "server"];
-}
-
-// "Get CSP Credential" 행은 내 워크스페이스 역할에 이 노드 CSP의 CSP Role 매핑이 설정돼 있을 때만 보인다.
-// 판정 결과는 워크스페이스 단위로 캐시된다(csp_credential_api.getIssuableCspTypes). 판정 전·실패 시에는 숨긴다.
-async function updateCspCredentialVisibility(contextType) {
-  const itemId = contextType === "nodegroup"
-    ? "nodegroup_server_detail_view_csp_credential_item"
-    : "server_detail_view_csp_credential_item";
-  const item = document.getElementById(itemId);
-  if (!item) return;
-  item.classList.add("d-none");
-  const ctx = nodeContextOf(contextType);
-  if (!ctx || !ctx.provider) return;
-  try {
-    const workspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
-    const workspaceId = workspace?.id ?? workspace?.Id ?? "";
-    const types = await webconsolejs["common/api/services/csp_credential_api"].getIssuableCspTypes(workspaceId);
-    // 판정 중에 다른 노드로 바뀌었으면 그 노드의 판정에 맡긴다
-    if (nodeContextOf(contextType) !== ctx) return;
-    item.classList.toggle("d-none", !types.has(ctx.provider));
-  } catch (e) {
-    item.classList.add("d-none");
-  }
 }
 
 export async function getKeypair(el, contextType) {
@@ -3275,184 +3242,6 @@ export async function getKeypair(el, contextType) {
     const msg = err?.response?.data?.responseData?.message || err?.message || "";
     modal.renderError(title, "Failed to load the keypair" + (msg ? ": " + msg : "."), {}, session);
   }
-}
-
-// CSP별 환경변수 export 문 — 값은 작은따옴표로 감싸 셸 특수문자를 막는다
-function shellQuote(v) {
-  return "'" + String(v).replace(/'/g, "'\\''") + "'";
-}
-
-function credentialEnvLines(cred, region) {
-  const csp = String(cred?.cspType || "").toLowerCase();
-  const lines = [];
-  const add = (name, value) => { if (value) lines.push("export " + name + "=" + shellQuote(value)); };
-  const reg = cred?.region || region || "";
-  switch (csp) {
-    case "aws":
-      add("AWS_ACCESS_KEY_ID", cred.accessKeyId);
-      add("AWS_SECRET_ACCESS_KEY", cred.secretAccessKey);
-      add("AWS_SESSION_TOKEN", cred.sessionToken);
-      add("AWS_DEFAULT_REGION", reg);
-      break;
-    case "gcp":
-      add("GOOGLE_OAUTH_ACCESS_TOKEN", cred.accessToken);
-      break;
-    case "alibaba":
-      add("ALIBABA_CLOUD_ACCESS_KEY_ID", cred.accessKeyId);
-      add("ALIBABA_CLOUD_ACCESS_KEY_SECRET", cred.accessKeySecret || cred.secretAccessKey);
-      add("ALIBABA_CLOUD_SECURITY_TOKEN", cred.securityToken || cred.sessionToken);
-      add("ALIBABA_CLOUD_REGION_ID", reg);
-      break;
-    case "tencent":
-      add("TENCENTCLOUD_SECRET_ID", cred.accessKeyId);
-      add("TENCENTCLOUD_SECRET_KEY", cred.secretAccessKey);
-      add("TENCENTCLOUD_SESSION_TOKEN", cred.sessionToken);
-      add("TENCENTCLOUD_REGION", reg);
-      break;
-    default:
-      return "";
-  }
-  return lines.join("\n");
-}
-
-// CSP별 기대 필드 — 이 목록에 있는데 값이 없으면 "Not provided" 행, 목록에 없는 필드(다른 CSP 전용)는 표시하지 않는다.
-// identifier(앞뒤 4자 노출)는 비밀이 아닌 키 ID만, 나머지는 길이만 보이는 secret.
-function credentialFields(csp, cred) {
-  const accessToken = { label: "Access Token" + (cred.tokenType ? " (" + cred.tokenType + ")" : ""), value: cred.accessToken, kind: "secret" };
-  switch (csp) {
-    case "aws":
-      return [
-        { label: "Access Key ID", value: cred.accessKeyId, kind: "identifier" },
-        { label: "Secret Access Key", value: cred.secretAccessKey, kind: "secret" },
-        { label: "Session Token", value: cred.sessionToken, kind: "secret" },
-      ];
-    case "alibaba":
-      return [
-        { label: "Access Key ID", value: cred.accessKeyId, kind: "identifier" },
-        { label: "Access Key Secret", value: cred.accessKeySecret || cred.secretAccessKey, kind: "secret" },
-        { label: "Security Token", value: cred.securityToken || cred.sessionToken, kind: "secret" },
-      ];
-    case "tencent":
-      return [
-        { label: "Secret ID", value: cred.accessKeyId, kind: "identifier" },
-        { label: "Secret Key", value: cred.secretAccessKey, kind: "secret" },
-        { label: "Session Token", value: cred.sessionToken, kind: "secret" },
-      ];
-    case "gcp":
-      return [accessToken];
-    default: {
-      // 그 밖의 CSP(Azure·IBM 토큰, NCP·NHN·KT SECRET_KEY 등)는 응답 형태가 인증 방식마다 달라 기대 목록을 정하지 않고 받은 값만 표시
-      const all = [
-        { label: "Access Key ID", value: cred.accessKeyId, kind: "identifier" },
-        { label: "Secret Access Key", value: cred.secretAccessKey, kind: "secret" },
-        { label: "Access Key Secret", value: cred.accessKeySecret, kind: "secret" },
-        { label: "Session Token", value: cred.sessionToken, kind: "secret" },
-        { label: "Security Token", value: cred.securityToken, kind: "secret" },
-        accessToken,
-      ];
-      return all.filter((f) => f.value);
-    }
-  }
-}
-
-function formatRemaining(expiration) {
-  const exp = new Date(expiration);
-  if (isNaN(exp.getTime())) return "-";
-  const ms = exp.getTime() - Date.now();
-  if (ms <= 0) return "Expired";
-  const totalMin = Math.floor(ms / 60000);
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return (h > 0 ? h + "h " : "") + m + "m remaining";
-}
-
-function formatExpiration(expiration) {
-  const exp = new Date(expiration);
-  if (!expiration || isNaN(exp.getTime()) || exp.getFullYear() < 2000) return "";
-  return exp.toLocaleString();
-}
-
-const CSP_CREDENTIAL_SCOPE_NOTICE =
-  "This credential is issued for the CSP role mapped to your role in the current workspace. " +
-  "Its permissions follow that CSP role (account-wide), not this node.";
-
-export async function getCspCredential(contextType) {
-  const ctx = nodeContextOf(contextType);
-  const modal = secretModal();
-  const csp = ctx?.provider || "";
-  const title = "CSP Credential" + (csp ? " - " + csp.toUpperCase() : "");
-  const session = modal.openLoading(title, "Issuing temporary credentials...");
-
-  const workspace = webconsolejs["common/api/services/workspace_api"].getCurrentWorkspace();
-  const workspaceId = workspace?.id ?? workspace?.Id ?? "";
-  const workspaceName = workspace?.name || workspace?.Name || "";
-  const requestMeta = [
-    { label: "CSP", value: csp ? csp.toUpperCase() : "" },
-    { label: "Region", value: ctx?.region || "" },
-    { label: "Workspace", value: workspaceName || String(workspaceId || "") },
-  ];
-
-  if (!ctx) {
-    modal.renderError(title, "Select a node first.", {}, session);
-    return;
-  }
-
-  let cred;
-  try {
-    cred = await webconsolejs["common/api/services/csp_credential_api"].getTemporaryCredentials({
-      workspaceId,
-      cspType: csp,
-      region: ctx.region,
-    });
-  } catch (err) {
-    modal.renderError(title, err?.message || "Failed to issue temporary credentials.", { meta: requestMeta }, session);
-    return;
-  }
-
-  const issuedCsp = String(cred.cspType || csp).toLowerCase();
-  const issuedRegion = cred.region || ctx.region || "";
-  const expirationText = formatExpiration(cred.expiration);
-  const meta = [
-    { label: "CSP", value: issuedCsp.toUpperCase() },
-    { label: "Region", value: issuedRegion },
-    { label: "Workspace", value: workspaceName || String(workspaceId) },
-    { label: "Expiration", value: expirationText || "Not provided", key: "expiration" },
-  ];
-  if (expirationText) {
-    meta.push({ label: "Time left", key: "remaining", render: () => formatRemaining(cred.expiration) });
-  }
-  if (ctx.credentialName || ctx.connectionName) {
-    meta.push({
-      label: "Node connection",
-      value: [ctx.connectionName, ctx.credentialName ? "credential " + ctx.credentialName : ""].filter(Boolean).join(" / "),
-    });
-  }
-
-  // 응답에 발급 계정 정보가 없고, 노드 쪽도 계정 ID를 알 수 없어 일치 여부를 판정하지 않는다 — 대신 차이 가능성을 안내한다
-  const warning =
-    "The account of this credential is decided by the CSP role mapping in IAM and may differ from the account " +
-    "this node runs in" + (ctx.credentialName ? " (node credential: " + ctx.credentialName + ")" : "") + ".";
-
-  const fields = credentialFields(issuedCsp, cred);
-
-  const actions = [];
-  if (credentialEnvLines(cred, issuedRegion)) {
-    actions.push({
-      id: "copy-env",
-      label: "Copy as environment variables",
-      getText: () => credentialEnvLines(cred, issuedRegion),
-    });
-  }
-
-  modal.render({
-    title,
-    meta,
-    notice: CSP_CREDENTIAL_SCOPE_NOTICE,
-    warning,
-    fields,
-    actions,
-    emptyText: "The response did not contain any credential values.",
-  }, session);
 }
 
 // Policy 배포 함수

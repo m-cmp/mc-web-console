@@ -92,18 +92,6 @@
           title="Show the private key of this keypair"
           id="nodegroup_server_detail_view_keypair_name" class="badge badge-outline text-secondary fw-normal badge-pill"></a>
         </div>
-        <!-- 내 워크스페이스 역할에 이 노드 CSP의 CSP Role 매핑이 설정된 경우에만 표시 (infraworkloads.js updateCspCredentialVisibility) -->
-        <div class="datagrid-item mb-3 d-none" id="nodegroup_server_detail_view_csp_credential_item">
-          <div class="datagrid-title">CSP Credential</div>
-          <div class="datagrid-content">
-            <button type="button" class="btn btn-sm btn-outline-primary"
-              id="nodegroup_server_detail_view_csp_credential_btn"
-              title="Issue temporary credentials for this node's CSP with the CSP role mapped to your workspace role"
-              onclick="webconsolejs['pages/operation/manage/infraworkloads'].getCspCredential('nodegroup')">
-              Get CSP Credential
-            </button>
-          </div>
-        </div>
         <div class="datagrid-item mb-3">
           <div class="datagrid-title">Access ID / Pwd</div>
           <div class="datagrid-content" id="nodegroup_server_detail_view_access_id_pass"></div>
