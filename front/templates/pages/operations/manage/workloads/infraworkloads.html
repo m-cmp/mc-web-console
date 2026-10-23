@@ -1418,6 +1418,8 @@
 {{ partial("partials/operation/manage/cspspeclist.html") | raw }}
 <!-- Install SW : mc-application-manager iframe popup -->
 {{ partial("partials/operation/manage/installsw_modal.html") | raw }}
+<!-- Node 상세 Keypair 배지: 공통 비밀값 모달 (SSH 접속 키) -->
+{{ partial("partials/operation/manage/secret_modal.html") | raw }}
 
 <!-- Label Editor Modal -->
 <div
@@ -1973,3 +1975,5 @@
 {{ javascriptTag("common/api/services/import_api.js") | raw }}
 {{ javascriptTag("pages/operation/manage/importvm.js") | raw }}
 {{ javascriptTag("common/api/services/infratemplate_api.js") | raw }}
+{{ javascriptTag("partials/operation/manage/secretmodal.js") | raw }}
+{{ javascriptTag("common/api/services/sshkey_api.js") | raw }}
