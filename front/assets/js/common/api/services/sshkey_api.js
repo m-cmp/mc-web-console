@@ -15,11 +15,12 @@ export async function create(ns, body) {
   return response?.data;
 }
 
-export async function get(ns, name) {
+// options는 commonAPIPost로 그대로 전달 (예: private key가 콘솔에 남지 않도록 { sensitive: true })
+export async function get(ns, name, options = {}) {
   const controller = '/api/mc-infra-manager/GetSshKey';
   const response = await webconsolejs['common/api/http'].commonAPIPost(controller, {
     pathParams: { nsId: ns, sshKeyId: name }
-  });
+  }, undefined, options);
   return response?.data?.responseData;
 }
 

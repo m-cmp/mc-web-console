@@ -109,6 +109,7 @@ function initTable(items) {
       { title: 'Name', field: 'name', widthGrow: 2, sorter: 'string' },
       { title: 'Provider', field: '_provider', widthGrow: 1, sorter: 'string' },
       { title: 'Region', field: '_region', widthGrow: 1, sorter: 'string' },
+      { title: 'Zone', field: 'zone', widthGrow: 1, sorter: 'string', formatter: (cell) => cell.getValue() || '-' },
       { title: 'Disk Type', field: 'diskType', widthGrow: 1 },
       {
         title: 'Size (GB)',
@@ -155,6 +156,7 @@ function renderDetail(data) {
   document.getElementById('detail-disk-name').textContent = data.name || '-';
   document.getElementById('detail-disk-provider').textContent = getProvider(data);
   document.getElementById('detail-disk-region').textContent = getRegion(data);
+  document.getElementById('detail-disk-zone').textContent = data.zone || '-';
   document.getElementById('detail-disk-type').textContent = data.diskType || '-';
   document.getElementById('detail-disk-size').textContent =
     data.diskSize != null ? String(data.diskSize) : '-';
@@ -233,6 +235,7 @@ export async function openAttachDiskModal() {
   document.getElementById('attach-disk-name').value = selected.name || '-';
   document.getElementById('attach-disk-nodegroup').innerHTML = '<option value="">Select</option>';
   document.getElementById('attach-disk-vm').innerHTML = '<option value="">Select</option>';
+  _updateAttachZoneHint();
   await _loadAttachMciOptions();
   new bootstrap.Modal(document.getElementById('attach-disk-modal')).show();
 }
@@ -268,6 +271,7 @@ async function _loadAttachNodeGroupOptions(infraId) {
   const vmSelect = document.getElementById('attach-disk-vm');
   nodeGroupSelect.innerHTML = '<option value="">Select</option>';
   vmSelect.innerHTML = '<option value="">Select</option>';
+  _updateAttachZoneHint();
   if (!infraId) return;
   try {
     const nlbApi = webconsolejs['common/api/services/nlb_api'];
@@ -293,6 +297,7 @@ document.getElementById('attach-disk-nodegroup')?.addEventListener('change', asy
 async function _loadAttachVmOptions(infraId, nodeGroupId) {
   const select = document.getElementById('attach-disk-vm');
   select.innerHTML = '<option value="">Select</option>';
+  _updateAttachZoneHint();
   if (!infraId || !nodeGroupId) return;
   const selected = AppState.resources.selected;
   try {
@@ -305,14 +310,35 @@ async function _loadAttachVmOptions(infraId, nodeGroupId) {
       if (node.nodeGroupId !== nodeGroupId) continue;
       if (getProvider(node) !== diskProvider || getRegion(node) !== diskRegion) continue;
       if (String(node.status || '').toLowerCase() !== 'running') continue; // 중지된 VM은 attach 불가
+      const nodeZone = node.region?.zone || '';
       const opt = document.createElement('option');
       opt.value = node.id;
-      opt.textContent = `${node.id} (${node.status})`;
+      opt.dataset.zone = nodeZone;
+      opt.textContent = nodeZone ? `${node.id} (${node.status}, ${nodeZone})` : `${node.id} (${node.status})`;
       select.appendChild(opt);
     }
   } catch (err) {
     console.error('Node 목록 조회 실패:', err);
   }
+}
+
+document.getElementById('attach-disk-vm')?.addEventListener('change', function () {
+  _updateAttachZoneHint(this.selectedOptions[0]?.dataset.zone || '');
+});
+
+// 디스크와 노드의 zone 이 다르면 CSP 가 attach 를 거부한다(예: Azure "not in zone '1'"). 선택 전에 미리 알린다.
+function _updateAttachZoneHint(nodeZone = '') {
+  const hint = document.getElementById('attach-disk-zone-hint');
+  if (!hint) return;
+  const diskZone = AppState.resources.selected?.zone || '';
+  let message = '';
+  if (nodeZone && diskZone && nodeZone !== diskZone) {
+    message = `This disk is in zone "${diskZone}" but the node is in zone "${nodeZone}". The attach will fail. Select a node in the same zone.`;
+  } else if (nodeZone && !diskZone) {
+    message = `This disk has no zone. Some CSPs (e.g. Azure) cannot attach it to a node in zone "${nodeZone}".`;
+  }
+  hint.textContent = message;
+  hint.classList.toggle('d-none', !message);
 }
 
 export async function executeAttachDisk() {
@@ -429,10 +455,12 @@ document.getElementById('create-disk-modal')?.addEventListener('show.bs.modal', 
   document.getElementById('create-disk-size').value = '';
   document.getElementById('create-disk-description').value = '';
   document.getElementById('create-disk-type').innerHTML = '<option value="">Select (optional)</option>';
+  _loadZoneOptions('');
   await _loadConnectionOptions('create-disk-connection');
 });
 
 document.getElementById('create-disk-connection')?.addEventListener('change', async function () {
+  _loadZoneOptions(this.value);
   await _loadDiskTypeOptions(this.value);
 });
 
@@ -442,9 +470,14 @@ export async function executeCreateDisk() {
   const diskType = document.getElementById('create-disk-type').value.trim();
   const diskSize = parseInt(document.getElementById('create-disk-size').value, 10);
   const description = document.getElementById('create-disk-description').value.trim();
+  const zone = document.getElementById('create-disk-zone').value;
 
   if (!connectionName || !name || !diskSize) {
     showToast(TOAST_TYPES.WARNING, 'Connection, disk name, and size are required.');
+    return;
+  }
+  if (!zone && document.getElementById('create-disk-zone').dataset.required === 'true') {
+    showToast(TOAST_TYPES.WARNING, 'Please select a zone. This connection has no default zone.');
     return;
   }
 
@@ -456,6 +489,7 @@ export async function executeCreateDisk() {
   const body = { connectionName, name, diskSize };
   if (diskType) body.diskType = diskType;
   if (description) body.description = description;
+  if (zone) body.zone = zone; // 비우면 connection 에 지정된 zone 사용(기존 동작)
 
   try {
     await diskApi().postDataDisk(AppState.ns, body);
@@ -469,6 +503,31 @@ export async function executeCreateDisk() {
     spinner.classList.add('d-none');
     btn.disabled = false;
   }
+}
+
+// 선택한 connection 의 region 에 속한 zone 목록. 기본값은 connection 에 지정된 zone(없으면 Not specified)
+// zone 이 있는 region 인데 connection 에 기본 zone 이 없으면(Azure) 필수로 받는다 —
+// 비우면 zone 없는 disk 가 만들어져 zone 이 정해진 node 에 attach 되지 않는다.
+function _loadZoneOptions(connectionName) {
+  const select = document.getElementById('create-disk-zone');
+  const conn = AppState.connections.find((c) => c.configName === connectionName);
+  const assignedZone = conn?.regionZoneInfo?.assignedZone || '';
+  const zones = [...(conn?.regionDetail?.zones || [])];
+  if (assignedZone && !zones.includes(assignedZone)) zones.unshift(assignedZone);
+
+  const required = zones.length > 0 && !assignedZone;
+  select.dataset.required = String(required);
+  document.getElementById('create-disk-zone-label')?.classList.toggle('required', required);
+  select.innerHTML = `<option value="">${required ? 'Select' : 'Not specified'}</option>`;
+  if (!conn) return;
+
+  for (const zone of zones) {
+    const opt = document.createElement('option');
+    opt.value = zone;
+    opt.textContent = zone === assignedZone ? `${zone} (connection default)` : zone;
+    select.appendChild(opt);
+  }
+  select.value = assignedZone;
 }
 
 async function _loadDiskTypeOptions(connectionName) {

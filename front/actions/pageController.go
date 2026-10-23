@@ -16,6 +16,11 @@ func PageController(c echo.Context) error {
 	path := c.Request().URL.Path
 	trimmed := strings.TrimSuffix(strings.TrimPrefix(path, "/webconsole"), "/")
 
+	// 사용자 메뉴에 없는 메뉴 화면은 URL 직접 입력으로도 열지 않는다
+	if target := menuAccessRedirect(c, path); target != "" {
+		return c.Redirect(http.StatusSeeOther, target)
+	}
+
 	// WEB-FIX-002: /webconsole/_view/{menuId} → generic iframe shell
 	if strings.HasPrefix(trimmed, "/_view/") {
 		menuID := strings.Trim(strings.TrimPrefix(trimmed, "/_view/"), "/")

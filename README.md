@@ -45,6 +45,8 @@ See mc-admin-cli's [README](https://github.com/m-cmp/mc-admin-cli#readme) (Quick
 
 mc-web-console runs as **two separate Echo servers**: `api/` (backend API / proxy to mc-iam-manager, mc-infra-manager, and the other microservices, default port 3000) and `front/` (HTML templates + static assets, default port 3001).
 
+**API access** — `api/` (3000) is a public API, not only a backend for `front/`: other frameworks and clients sign in with `POST /api/auth/login` and call the services with the returned `access_token`. Every `api/` route except `/readyz` and `/api/auth/{login,refresh,signup}` requires that token (`Authorization: Bearer <token>`); requests without a valid token get `401`. With `MC_WEB_CONSOLE_USE_IAM=true` the token is verified against mc-iam-manager's `/api/auth/certs`, otherwise against the local `MC_WEB_CONSOLE_JWT_SECRET`. Browsers use `front/` (3001), which forwards `/api/*` to `api/` with the signed-in user's token.
+
 **Prerequisites**
 - Go 1.25+ ([install guide](https://go.dev/doc/install))
 - Node.js (for `front/`'s webpack build)
