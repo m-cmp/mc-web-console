@@ -37,6 +37,8 @@ var currentServerNodeGroupId = "";
 var currentServerNodeStatus = "";
 // Group 탭 Node Info 에 표시 중인 Node 상태
 var currentNodeGroupVmStatus = "";
+// node detail(Detail 탭)의 Keypair 배지가 쓰는 노드 컨텍스트 — 'server'(Node 상세) / 'nodegroup'(NodeGroup 상세)
+var nodeDetailContext = { server: null, nodegroup: null };
 var currentGroupedVmList = [];
 var vmListGroupedByNodeGroup = [];
 
@@ -1256,6 +1258,7 @@ export async function vmDetailInfo(vmId) {
   var vmName = data.name;
   var vmStatus = data.status;
   currentServerNodeStatus = vmStatus;
+  nodeDetailContext.server = buildNodeDetailContext(data);
   updateInstallSwNodeButton("installsw-node-server-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
@@ -1488,6 +1491,7 @@ export async function nodeGroup_vmDetailInfo(vmId) {
   var vmName = data.name;
   var vmStatus = data.status;
   currentNodeGroupVmStatus = vmStatus;
+  nodeDetailContext.nodegroup = buildNodeDetailContext(data);
   updateInstallSwNodeButton("installsw-node-nodegroup-btn", vmStatus);
   var vmDescription = data.description;
   var vmPublicIp = data.publicIP == undefined ? "" : data.publicIP;
@@ -3187,11 +3191,57 @@ export async function initMciRemoteCmdModal() {
 }
 
 
-export async function getKeypair(el) {
-  const sshkeyId = el.innerText
-  $("#keypairModal-bodytitle").text(sshkeyId);
-  var respSSHkey = await webconsolejs["common/api/services/infra_api"].getsshkey(window.currentNsId, sshkeyId);
-  $("#keypairModal-textarea").val(respSSHkey.privateKey);
+// ─── node detail: Keypair (공통 비밀값 모달 #secretModal) ─────────────────
+
+function secretModal() {
+  return webconsolejs["partials/operation/manage/secretmodal"];
+}
+
+// node 응답에서 Keypair 배지에 필요한 값만 추린다 (비밀값 없음)
+// CSP 임시 자격 증명은 노드가 아니라 워크스페이스 역할 기준이라 사용자 메뉴(partials/layout/cspcredential.js)로 옮겼다
+function buildNodeDetailContext(data) {
+  if (!data) return null;
+  return {
+    nodeId: data.id || "",
+    nodeName: data.name || data.id || "",
+    sshKeyId: data.sshKeyId || "",
+  };
+}
+
+function nodeContextOf(contextType) {
+  return nodeDetailContext[contextType === "nodegroup" ? "nodegroup" : "server"];
+}
+
+export async function getKeypair(el, contextType) {
+  const ctx = nodeContextOf(contextType);
+  const sshkeyId = (ctx && ctx.sshKeyId) || (el && el.innerText ? el.innerText.trim() : "");
+  const title = "Keypair" + (sshkeyId ? " - " + sshkeyId : "");
+  const modal = secretModal();
+  if (!sshkeyId) {
+    modal.openLoading(title);
+    modal.render({ title, emptyText: "No keypair is associated with this node." });
+    return;
+  }
+  const session = modal.openLoading(title, "Loading keypair...");
+  try {
+    const key = await webconsolejs["common/api/services/sshkey_api"].get(
+      window.currentNsId, sshkeyId, { sensitive: true }
+    );
+    // 없는 항목도 줄을 남겨 "Not provided"로 보여 준다
+    modal.render({
+      title,
+      meta: [{ label: "Keypair Name", value: sshkeyId }],
+      fields: [
+        { label: "Private Key", value: key?.privateKey || key?.privateKeyMaterial || "", kind: "pem" },
+        { label: "Public Key", value: key?.publicKey || key?.publicKeyMaterial || "", kind: "plain" },
+        { label: "Username", value: key?.username || key?.verifiedUsername || "", kind: "plain" },
+      ],
+      emptyText: "Not available",
+    }, session);
+  } catch (err) {
+    const msg = err?.response?.data?.responseData?.message || err?.message || "";
+    modal.renderError(title, "Failed to load the keypair" + (msg ? ": " + msg : "."), {}, session);
+  }
 }
 
 // Policy 배포 함수
@@ -3213,7 +3263,8 @@ export async function deployPolicy() {
     const response = await webconsolejs["common/api/services/infra_api"].createPolicy(
       window.currentNsId,
       window.currentMciId,
-      requestData.policy
+      requestData.policy,
+      requestData.description
     );
 
 
@@ -3295,9 +3346,10 @@ function collectPolicyData() {
   return {
     // AutoAction 데이터
     actionType: "ScaleOut", // 기본값
-    placementAlgo: $("#policy_ep_placementAlgo").val() || "random",
-    command: $("#policy_ep_command").val() || "",
-    userName: $("#policy_ep_username").val() || "",
+    placementAlgo: $("#policy_placementAlgo").val() || "random",
+    command: $("#policy_command").val() || "",
+    userName: $("#policy_username").val() || "",
+    policyDescription: $("#policy_desc").val() || "",
 
     // VM Dynamic Request 데이터
     commonImage: $("#policy_ep_commonImageId").val() || "",
@@ -3357,6 +3409,16 @@ function validatePolicyData(data) {
     }
   }
 
+  // cb-tumblebug는 숫자 필드를 숫자 타입으로만 받는다 (문자열이면 400)
+  if (!Number.isFinite(Number(data.operand))) {
+    alert("Operand must be a number.");
+    return false;
+  }
+  if (data.rootDiskSize !== "" && !/^\d+$/.test(String(data.rootDiskSize).trim())) {
+    alert("Root Disk Size must be a whole number (GB).");
+    return false;
+  }
+
   return true;
 }
 
@@ -3381,19 +3443,21 @@ function buildPolicyRequestData(data) {
             "role": "worker"
           },
           name: data.name,
-          rootDiskSize: data.rootDiskSize,
+          // 비어 있으면 생략 → cb-tumblebug 기본값 0(CSP 기본 디스크 크기)
+          ...(data.rootDiskSize !== "" ? { rootDiskSize: parseInt(data.rootDiskSize, 10) } : {}),
           rootDiskType: data.rootDiskType,
-          nodeGroupSize: data.nodeGroupSize
+          nodeGroupSize: parseInt(data.nodeGroupSize, 10) || 1
         }
       },
       autoCondition: {
-        evaluationPeriod: data.evaluationPeriod,
+        evaluationPeriod: parseInt(data.evaluationPeriod, 10) || 10,
         metric: data.metric,
-        operand: data.operand,
+        operand: parseFloat(data.operand),
         operator: normalizeOperator(data.operator)
       },
       status: "active"
-    }]
+    }],
+    description: data.policyDescription
   };
 }
 

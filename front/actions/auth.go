@@ -94,6 +94,11 @@ func UserUnauthorized(c echo.Context) error {
 	return RenderWithoutLayout(c, http.StatusOK, "pages/auth/unauthorized.html", nil)
 }
 
+// UserPending 승인은 됐지만 그룹·역할이 없어 볼 수 있는 메뉴가 없는 사용자 안내 화면
+func UserPending(c echo.Context) error {
+	return RenderWithoutLayout(c, http.StatusOK, "pages/auth/pending.html", nil)
+}
+
 func UserSignup(c echo.Context) error {
 	return RenderWithoutLayout(c, http.StatusOK, "pages/auth/signup.html", nil)
 }
