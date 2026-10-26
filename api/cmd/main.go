@@ -118,12 +118,16 @@ func main() {
 	authProtected.POST("/logout", handler.Logout)
 	authProtected.GET("/userinfo", handler.UserInfo)
 
+	// 이하 라우트는 front(ApiCaller)를 거치지 않고 API 포트로 직접 호출될 수 있으므로
+	// 요청마다 토큰을 검증한다 (front의 IsTokenExistMiddleware는 쿠키 존재만 확인).
+	protect := middleware.ProxyAuthMiddleware
+
 	// 단일 세그먼트 내부 핸들러
-	api.POST("/disklookup", handler.DiskLookup)
-	api.POST("/getapihosts", handler.GetApiHosts)
+	api.POST("/disklookup", handler.DiskLookup, protect)
+	api.POST("/getapihosts", handler.GetApiHosts, protect)
 
 	// Async request history (WEB-TECH-017) — must register before subsystem wildcard
-	asyncReq := api.Group("/async-requests")
+	asyncReq := api.Group("/async-requests", protect)
 	asyncReq.GET("", handler.ListAsyncRequests)
 	asyncReq.DELETE("", handler.ClearFinishedAsyncRequests)
 	asyncReq.PATCH("/:requestId", handler.PatchAsyncRequest)
@@ -135,22 +139,21 @@ func main() {
 
 	// 관리자 전용 BFF 라우트 (와일드카드보다 먼저 등록되어야 정적 매칭됨)
 	// FR-CLOUD-ADMIN-006-08: 외부 raw YAML 도달성 확인 (CORS 우회 + 토큰 노출 방지)
-	// 인증 모델: SubsystemAnyController와 동일 — front Buffalo의 IsTokenExistMiddleware(cookie 검증)
-	// 가 1차 게이트 역할을 하므로 BFF는 별도 JWT 검증을 수행하지 않는다.
-	adminBFF := api.Group("/admin")
+	adminBFF := api.Group("/admin", protect)
 	adminBFF.GET("/setup-yaml-check", handler.GetSetupYamlCheck)
 
 	// 서브시스템 프록시 라우트 (Buffalo SubsystemAnyController 호환)
 	// POST /api/:subsystemName/:operationId → conf/api.yaml 기반으로 백엔드 서비스에 프록시
-	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController)
+	api.Any("/:subsystemName/:operationId", handler.SubsystemAnyController, protect)
 
-	// 테스트 엔드포인트들
+	// 테스트 엔드포인트들 (generate-token이 로컬 서명 토큰을 발급하므로 함께 보호)
+	test := api.Group("", protect)
 	// @Summary     Hello
 	// @Tags        test
 	// @Produce     json
 	// @Success     200 {object} map[string]interface{}
 	// @Router      /api/hello [get]
-	api.GET("/hello", func(c echo.Context) error {
+	test.GET("/hello", func(c echo.Context) error {
 		requestID := middleware.GetRequestID(c)
 		return c.JSON(200, map[string]interface{}{
 			"message":    "Hello from Echo API!",
@@ -159,7 +162,7 @@ func main() {
 		})
 	})
 
-	api.GET("/test/response", func(c echo.Context) error {
+	test.GET("/test/response", func(c echo.Context) error {
 		resp := model.CommonResponseStatusOK(map[string]interface{}{
 			"test":  "data",
 			"items": []string{"item1", "item2"},
@@ -168,7 +171,7 @@ func main() {
 	})
 
 	// JWT 토큰 생성 테스트
-	api.POST("/test/generate-token", func(c echo.Context) error {
+	test.POST("/test/generate-token", func(c echo.Context) error {
 		token, err := jwt.GenerateToken("testuser", "Test User", "test@example.com", "user", 3600*1000000000)
 		if err != nil {
 			return errors.NewInternalServerError("Failed to generate token", err)
@@ -179,8 +182,7 @@ func main() {
 		return c.JSON(resp.Status.Code, resp)
 	})
 
-	// 공개 테스트 엔드포인트 (인증 불필요)
-	api.GET("/test/error", func(c echo.Context) error {
+	test.GET("/test/error", func(c echo.Context) error {
 		return errors.NewBadRequest("This is a test error")
 	})
 

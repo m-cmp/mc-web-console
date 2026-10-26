@@ -70,6 +70,9 @@
                 <!-- <div class="dropdown-divider"></div> -->
                 <!-- <a href="./settings.html" class="dropdown-item">Settings</a> -->
                 <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#change-password-modal">Change Password</button>
+                <button class="dropdown-item" id="navbar-csp-credential-btn"
+                    title="Issue temporary credentials with the CSP role mapped to your role in the current workspace"
+                    onclick="webconsolejs['partials/layout/cspcredential'].openCspCredentialModal()">CSP Credentials</button>
                 <div class="dropdown-divider"></div>
                 <button id="logoutbtn" class="dropdown-item">Logout</a>
                 </div>
@@ -109,6 +112,10 @@
 {{ javascriptTag("partials/layout/navbar.js") | raw }}
 {{ javascriptTag("common/api/services/workspace_api.js") | raw }}
 {{ javascriptTag("pages/auth/changepassword.js") | raw }}
+<!-- CSP 임시 자격 증명(사용자 메뉴) 전용 모달. 두 레이아웃(application/iframe) 모두 navbar 를 포함한다 -->
+{{ partial("partials/layout/csp_credential_modal.html") | raw }}
+{{ javascriptTag("common/api/services/csp_credential_api.js") | raw }}
+{{ javascriptTag("partials/layout/cspcredential.js") | raw }}
 
 <!-- Change Password Modal -->
 <div class="modal modal-blur fade" id="change-password-modal" tabindex="-1" role="dialog" aria-hidden="true">

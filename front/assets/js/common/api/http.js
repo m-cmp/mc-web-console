@@ -78,9 +78,12 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
     attempt = false;
   }
   
+  // options.sensitive: 응답에 비밀값(임시자격증명, private key 등)이 들어 있는 호출 — 요청/응답 본문을 콘솔에 남기지 않는다
+  const sensitive = options.sensitive === true;
+
   console.log("#### commonAPIPost");
   console.log("Request URL :", url);
-  console.log("Request Data :", JSON.stringify(data));
+  console.log("Request Data :", sensitive ? "[redacted]" : JSON.stringify(data));
   console.log("Loader Type :", loaderType);
   console.log("-----------------------");
   
@@ -122,7 +125,7 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
     
     console.log("#### commonAPIPost Response");
     console.log("Response status : ", response.status);
-    console.log("Response from : ", url, response.data);
+    console.log("Response from : ", url, sensitive ? "[redacted]" : response.data);
     console.log("----------------------------");
     
     // Loader 종료 / End loader
@@ -195,7 +198,9 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
         } else if (loaderType === 'page') {
           deactivePageLoader();
         }
-        webconsolejs["common/util"].showToast("Insufficient permissions. Please contact your administrator.", 'error');
+        if (!options.silentErrors) {
+          webconsolejs["common/util"].showToast("Insufficient permissions. Please contact your administrator.", 'error');
+        }
         throw error;
       }
       // 500 Internal Server Error는 서버 오류
@@ -207,7 +212,7 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
           deactivePageLoader();
         }
         // 호출부가 서버 메시지를 직접 노출하는 경우(options.suppressErrorToast) 일반 문구로 덮지 않는다.
-        if (!options.suppressErrorToast) {
+        if (!options.suppressErrorToast && !options.silentErrors) {
           webconsolejs["common/util"].showToast("Server error occurred. Please try again later.", 'error');
         }
         throw error;
@@ -221,6 +226,12 @@ export async function commonAPIPost(url, data, attempt, options = {}) {
       deactivePageLoader();
     }
     
+    // options.silentErrors: 호출부가 모든 HTTP 오류(403·4xx 포함)의 사유를 직접 표시 — 공통 오류 toast를 띄우지 않는다
+    // (suppressErrorToast는 500 toast만 억제한다)
+    if (options.silentErrors && error.response) {
+      throw error;
+    }
+
     // 네트워크 오류나 기타 예외 상황 처리
     if (!error.response) {
       // 네트워크 오류 (서버에 연결할 수 없음)
