@@ -178,8 +178,16 @@ export async function initTerminal(id, nsId, mciId, targetId, targetType) {
         term.write('\r\n\r\n $ ');
     }
 
-    const ipcmd = "client_ip=$(echo $SSH_CLIENT | awk '{print $1}'); echo SSH Private IP is: $client_ip";
-    await processCommand(nsId, mciId, targetId, [ipcmd], term, () => {
+    // 접속한 노드 자신의 hostname·주 IP 를 보여준다.
+    // ($SSH_CLIENT 는 SSH 접속을 건 쪽 주소라 tumblebug 호스트나 bastion 노드 IP 가 찍힌다)
+    const nodeInfoCmd = [
+        // hostname 에 -I 가 없으면 사용법이 stdout 으로 나오므로 IPv4 형식인 첫 값만 받는다
+        "node_ip=$(hostname -I 2>/dev/null | awk '{for (i = 1; i <= NF; i++) if ($i ~ /^[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+$/) {print $i; exit}}')",
+        "[ -z \"$node_ip\" ] && node_ip=$(ip -4 addr show scope global 2>/dev/null | awk '/inet / && $NF != \"lo\" {split($2, a, \"/\"); print a[1]; exit}')",
+        "[ -z \"$node_ip\" ] && node_ip=unknown",
+        "echo \"Connected to: $(hostname) / Private IP: $node_ip\""
+    ].join('; ');
+    await processCommand(nsId, mciId, targetId, [nodeInfoCmd], term, () => {
         prompt();
     }, targetType);
 
@@ -933,15 +941,21 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
 
         const callErr = toErrorMessage(response.error) || toErrorMessage(response.err);
         const stdout = toOutputChunks(response.stdout);
-        const stderr = toOutputChunks(response.stderr);
+        // tumblebug 은 명령이 0 이 아닌 코드로 끝나면 stderr 앞에 "(Process exited with status N)" / "Stderr: " 를 붙인다
+        const stderr = toOutputChunks(response.stderr).map(stripExitStatusPrefix);
 
-        if (callErr) {
+        // 명령은 실행됐지만 0 이 아닌 코드로 끝난 경우 — 접속 오류가 아니므로 출력은 그대로 보여주고 종료 코드를 덧붙인다
+        const exitStatus = parseExitStatus(callErr);
+        if (callErr && exitStatus === null) {
             writeAutoWrap(term, " > connect Error: \x1b[1m\x1b[31m" + callErr + "\x1b[0m");
             callback({ error: callErr });
             return;
         }
 
-        if (stderr.some(value => value.trim() !== '')) {
+        const hasStderr = stderr.some(value => value.trim() !== '');
+        const hasStdout = stdout.some(value => value.trim() !== '');
+
+        if (hasStderr) {
             term.write('\r\n\x1b[1m\x1b[31mSTDERR RESPONSE:\r\n');
             stderr.forEach(value => {
                 writeAutoWrap(term, value);
@@ -949,12 +963,16 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
             term.write("\x1b[0m\r\n");
         }
 
-        if (stdout.some(value => value.trim() !== '')) {
+        if (hasStdout) {
             stdout.forEach(value => {
                 writeAutoWrap(term, value);
             });
-        } else {
+        } else if (!hasStderr) {
             term.write('\r\nSTDOUT RESPONSE: (No output)\r\n');
+        }
+
+        if (exitStatus !== null) {
+            writeAutoWrap(term, " > \x1b[1m\x1b[33mCommand exited with status " + exitStatus + "\x1b[0m");
         }
 
         callback(result);
@@ -964,6 +982,18 @@ async function processCommand(nsid, resourceId, targetId, command, term, callbac
         term.write(`Error: ${error.message}\r\n`);
         callback({ error: error.message });
     }
+}
+
+// "Process exited with status N" → N (명령이 실행된 뒤 0 이 아닌 코드로 끝남). 그 밖의 오류는 null
+function parseExitStatus(message) {
+    const match = /^Process exited with status (\d+)$/.exec((message || '').trim());
+    return match ? match[1] : null;
+}
+
+function stripExitStatusPrefix(value) {
+    return value
+        .replace(/^\(Process exited with status \d+\)\r?\n/, '')
+        .replace(/^Stderr: /, '');
 }
 
 // PostCmdInfra는 실패 사유를 `error`(문자열)로 돌려준다. 이전 응답 형태인 `err`(객체)도 받아준다.

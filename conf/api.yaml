@@ -1154,6 +1154,10 @@ serviceActions:
       method: get
       resourcePath: /api/groups/id/{groupId}/platform-roles
       description: 그룹의 Platform Role 목록 조회
+    getUserEffectivePlatformRoles:
+      method: get
+      resourcePath: /api/users/id/{userId}/effective-platform-roles
+      description: 사용자 유효 Platform Role 목록 (직접 + 그룹 상속, source=direct|group:<name>)
     getCompany:
       method: get
       resourcePath: /api/company

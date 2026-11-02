@@ -46,6 +46,110 @@ const AppState = {
 // 선택된 행들을 관리하는 배열 (roles.js와 동일한 패턴)
 var checked_array = [];
 
+// HTML 이스케이프 (IAM 에서 받은 역할·그룹 이름을 innerHTML 로 그릴 때 사용)
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Platform Role 표시 — 직접 부여 역할 + 그룹(조직)에서 상속된 역할
+// 목록 API(platform_roles)는 직접 부여 역할만 주므로, IAM effective-platform-roles 로 상속분까지 받아 표시한다.
+const PlatformRoleResolver = {
+  // 목록 응답의 직접 부여 역할
+  directRoles(user) {
+    if (!user) return [];
+    return user.platform_roles || user.platformRoles || user.PlatformRoles || [];
+  },
+
+  // 화면에 표시할 역할: 유효 역할을 받았으면 그것, 아니면 직접 부여 역할
+  displayRoles(user) {
+    if (user && Array.isArray(user.effectivePlatformRoles)) return user.effectivePlatformRoles;
+    return this.directRoles(user);
+  },
+
+  // effective-platform-roles 응답 → 화면용 역할 객체
+  normalize(items) {
+    return (Array.isArray(items) ? items : []).map(item => {
+      const source = item.source || 'direct';
+      const inherited = source.startsWith('group:');
+      return {
+        id: item.role_id,
+        name: item.role_name,
+        description: item.description,
+        source,
+        inherited,
+        groupName: inherited ? source.slice('group:'.length) : ''
+      };
+    });
+  },
+
+  async fetch(userId) {
+    const items = await webconsolejs["common/api/services/users_api"].getUserEffectivePlatformRoles(
+      userId,
+      { loaderType: 'none', silentErrors: true }
+    );
+    return this.normalize(items);
+  },
+
+  // 사용자 한 명의 유효 역할을 받아 user 객체와 목록 행에 반영. 실패하면 직접 부여 역할 표시를 유지한다.
+  async load(user) {
+    if (!user || user.id === undefined || user.id === null) return false;
+    try {
+      const roles = await this.fetch(user.id);
+      user.effectivePlatformRoles = roles;
+      this.reformatRow(user, roles);
+      return true;
+    } catch (error) {
+      console.warn(`Failed to load effective platform roles for user ${user.id}:`, error);
+      return false;
+    }
+  },
+
+  reformatRow(user, roles) {
+    const table = AppState.tables.usersTable;
+    if (!table) return;
+    const row = table.getRow(user.id);
+    if (!row) return;
+    row.getData().effectivePlatformRoles = roles;
+    row.reformat();
+  },
+
+  // 목록 전체의 유효 역할을 배경에서 채운다 (동시 호출 수 제한)
+  async loadForList(users, concurrency = 5) {
+    const queue = [...(users || [])];
+    const worker = async () => {
+      while (queue.length > 0) {
+        await this.load(queue.shift());
+      }
+    };
+    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, worker);
+    await Promise.all(workers);
+  }
+};
+
+// 선택된 사용자의 역할 카드 렌더링 (Platform 은 유효 역할 우선)
+function renderUserRoles(user) {
+  UIManager.updateRoleLists(
+    PlatformRoleResolver.displayRoles(user),
+    user.workspace_roles || user.workspaceRoles || [],
+    user.csp_roles || user.cspRoles || []
+  );
+}
+
+// 선택된 사용자의 유효 Platform Role 을 다시 받아 카드에 반영
+async function refreshSelectedUserPlatformRoles() {
+  const user = AppState.users.selectedUser;
+  if (!user) return;
+  const loaded = await PlatformRoleResolver.load(user);
+  if (loaded && AppState.users.selectedUser && AppState.users.selectedUser.id === user.id) {
+    renderUserRoles(AppState.users.selectedUser);
+  }
+}
+
 // 유틸리티 함수들
 const Utils = {
   showAlert(message, type = 'info') {
@@ -385,15 +489,19 @@ const UIManager = {
       `;
     } else {
       // 역할이 있을 때 - 그리드 형태에 맞게 스타일 조정
-      const roleNames = roles.map(role => `<span class="badge bg-primary me-1 mb-1">${role.name}</span>`).join('');
+      // 그룹에서 상속된 역할은 출처 그룹과 함께 표시 (Groups 화면에서만 해제 가능)
+      const roleNames = roles.map(role => role.inherited
+        ? `<span class="badge bg-azure-lt me-1 mb-1" title="Inherited from group ${escapeHtml(role.groupName)}">${escapeHtml(role.name)} <span class="fw-normal">(via group ${escapeHtml(role.groupName)})</span></span>`
+        : `<span class="badge bg-primary me-1 mb-1">${escapeHtml(role.name)}</span>`
+      ).join('');
       namesElement.innerHTML = roleNames || '<span class="text-muted">-</span>';
       
-      const roleDescriptions = roles.map(role => `<div class="text-muted small mb-1">${role.description || 'No description'}</div>`).join('');
+      const roleDescriptions = roles.map(role => `<div class="text-muted small mb-1">${escapeHtml(role.description || 'No description')}</div>`).join('');
       descriptionsElement.innerHTML = roleDescriptions || '<span class="text-muted">-</span>';
       
-      // Actions 컬럼 (삭제 버튼들 + 추가 버튼)
-      const removeButtons = roles.map(role => `
-        <button class="btn btn-outline-danger btn-sm me-1" onclick="removeUserRole('${role.id}')" title="Remove ${role.name}">
+      // Actions 컬럼 (삭제 버튼들 + 추가 버튼) — 삭제는 직접 부여 역할에만
+      const removeButtons = roles.filter(role => !role.inherited).map(role => `
+        <button class="btn btn-outline-danger btn-sm me-1" onclick="removeUserRole('${escapeHtml(role.id)}')" title="Remove ${escapeHtml(role.name)}">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
             <path d="M4 7l16 0"></path>
@@ -541,7 +649,7 @@ const TableManager = {
         field: "platformRoles",
         formatter: function(cell) {
           const user = cell.getRow().getData();
-          const roles = user.platformRoles || user.platform_roles || user.PlatformRoles || [];
+          const roles = PlatformRoleResolver.displayRoles(user);
           return roles.length > 0 ? 'Y' : 'N';
         }
       },
@@ -754,11 +862,10 @@ window.submitUserRoleMapping = async function() {
 
     if (updatedUser) {
       AppState.users.selectedUser = updatedUser;
-      UIManager.updateRoleLists(
-        updatedUser.platform_roles || updatedUser.platformRoles || [],
-        updatedUser.workspace_roles || updatedUser.workspaceRoles || [],
-        updatedUser.csp_roles || updatedUser.cspRoles || []
-      );
+      renderUserRoles(updatedUser);
+      if (roleType === 'platform') {
+        await refreshSelectedUserPlatformRoles();
+      }
     }
 
     if (roleType === 'workspace') {
@@ -807,14 +914,14 @@ window.removeUserRole = async function(roleId) {
       
       Utils.showAlert('Role removed successfully.');
       
-      // 유저 상세 정보 새로고침
-      const userDetails = await UserManager.loadUserDetails(AppState.users.selectedUser.id);
+      // 유저 상세 정보 새로고침 (목록을 다시 받아 직접 부여 역할 갱신 후 유효 역할 재조회)
+      const selectedUserId = AppState.users.selectedUser.id;
+      AppState.users.list = (await UserManager.loadUsers()) || [];
+      const userDetails = AppState.users.list.find((user) => user.id === selectedUserId);
       if (userDetails) {
-        UIManager.updateRoleLists(
-          userDetails.platformRoles || [],
-          userDetails.workspaceRoles || [],
-          userDetails.cspRoles || []
-        );
+        AppState.users.selectedUser = userDetails;
+        renderUserRoles(userDetails);
+        await refreshSelectedUserPlatformRoles();
       }
       
     } catch (error) {
@@ -981,12 +1088,9 @@ async function getSelectedUserData(userID) {
     UIManager.showViewMode();
     UIManager.updateUserDetail(user);
     
-    // 유저의 역할 정보 로드 (API 응답 구조에 맞게 필드명 조정)
-    UIManager.updateRoleLists(
-      user.platform_roles || [],
-      user.workspace_roles || [],
-      user.csp_roles || []
-    );
+    // 유저의 역할 정보 로드 — Platform 은 그룹 상속분 포함 유효 역할로 다시 그린다
+    renderUserRoles(user);
+    refreshSelectedUserPlatformRoles();
     
     // Workspace 정보 로드 (getUserWorkspacesByUserID API 호출)
     try {
@@ -1113,6 +1217,8 @@ async function initUsers() {
     if (userList && userList.length > 0) {
       AppState.users.list = userList;
       TableManager.setTableData(AppState.tables.usersTable, userList);
+      // 목록 Platform Roles 열: 그룹 상속 역할 반영 (배경 로드)
+      PlatformRoleResolver.loadForList(userList);
     } else {
       // 데이터가 없는 경우 빈 배열로 설정
       AppState.users.list = [];
@@ -1380,6 +1486,7 @@ window.submitAssignGroup = async function() {
 
         alert("Group assigned successfully.");
         await loadUserGroups(AppState.users.selectedUser.id);
+        await refreshSelectedUserPlatformRoles();
     } catch (error) {
         console.error("Error assigning group:", error);
         alert("Failed to assign group: " + (error.message || "Unknown error"));
@@ -1399,6 +1506,7 @@ window.removeUserGroupById = async function(orgId) {
         );
         alert("Group removed successfully.");
         await loadUserGroups(AppState.users.selectedUser.id);
+        await refreshSelectedUserPlatformRoles();
     } catch (error) {
         console.error("Error removing group:", error);
         // BUG-E6: 없는 매핑 삭제 → 400, 이미 제거된 것으로 처리
