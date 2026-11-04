@@ -3603,7 +3603,7 @@ function createLabelRow(key, value, index) {
       <input type="text" class="${valueInputClass}" placeholder="Value" value="${value}" ${isReadonly}>
     </div>
     <div class="col-md-4">
-      <button type="button" class="btn btn-outline-danger remove-label" ${index === 'new' || isSystemLabel ? 'style="display:none"' : ''}>
+      <button type="button" class="btn btn-outline-danger remove-label" ${isSystemLabel ? 'style="display:none"' : ''}>
         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="10" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
           <path d="M4 7l16 0"></path>
@@ -3628,25 +3628,7 @@ function setupLabelEditorEvents() {
       row.remove();
     }
   });
-  
-  // 새 Label 행 추가 이벤트
-  document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('label-key') || e.target.classList.contains('label-value')) {
-      const row = e.target.closest('.row');
-      const isNewRow = row.getAttribute('data-index') === 'new';
-      
-      if (isNewRow && (e.target.value.trim() !== '')) {
-        // 새 행이 입력되면 또 다른 빈 행 추가
-        const container = document.getElementById('label-editor-content');
-        const existingNewRow = container.querySelector('[data-index="new"]');
-        if (existingNewRow === row) {
-          const newEmptyRow = createLabelRow('', '', 'new');
-          container.appendChild(newEmptyRow);
-          row.setAttribute('data-index', Date.now()); // 고유 인덱스 부여
-        }
-      }
-    }
-  });
+  // 새 행은 Add 버튼(addNewLabelRow)으로만 추가한다 (입력 시 자동 추가하지 않음)
 }
 
 // Label Editor 결과 알림 (공통 Toast, type: success | warning | error)
@@ -3764,8 +3746,11 @@ export async function saveLabels() {
 // 새 Label 행 추가 함수 (전역 함수로 등록)
 window.addNewLabelRow = function() {
   const container = document.getElementById('label-editor-content');
-  const newRow = createLabelRow('', '', 'new');
+  const newRow = createLabelRow('', '', `added-${Date.now()}`);
   container.appendChild(newRow);
+  // 목록이 스크롤되는 경우에도 새 행이 보이도록 이동 후 Key 입력으로 포커스
+  newRow.scrollIntoView({ block: 'nearest' });
+  newRow.querySelector('.label-key')?.focus();
 };
 
 
