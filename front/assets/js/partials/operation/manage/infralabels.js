@@ -5,7 +5,7 @@ window.openMciLabelEditor = function() {
   const mciName = document.getElementById('mci_info_name')?.textContent || 'Unknown Infra';
 
   if (!mciId || mciId === "" || mciId === "undefined") {
-    alert('Please select an Infra first.');
+    webconsolejs["common/utils/toast"].showToast('warning', 'Please select an Infra first.');
     return;
   }
   

@@ -3649,6 +3649,11 @@ function setupLabelEditorEvents() {
   });
 }
 
+// Label Editor 결과 알림 (공통 Toast, type: success | warning | error)
+function showLabelToast(type, message) {
+  webconsolejs["common/utils/toast"].showToast(type, message);
+}
+
 // Label 저장
 export async function saveLabels() {
   const container = document.getElementById('label-editor-content');
@@ -3680,7 +3685,7 @@ export async function saveLabels() {
     const uid = currentMci ? currentMci.uid : null;
     
     if (!uid) {
-      alert('Please select a resource.');
+      showLabelToast('warning', 'Please select a resource.');
       return;
     }
     
@@ -3721,20 +3726,20 @@ export async function saveLabels() {
       if (response && response.data && response.data.status && response.data.status.code === 200) {
       } else {
         console.error('Failed to save labels:', response);
-        alert('Failed to save labels.');
+        showLabelToast('error', 'Failed to save labels.');
         return;
       }
     }
     
     // 성공 메시지 표시
     if (deletedLabels.length > 0 && hasValidLabels) {
-      alert(`${deletedLabels.length} labels were deleted and ${Object.keys(labels).length} labels were saved.`);
+      showLabelToast('success', `${deletedLabels.length} labels were deleted and ${Object.keys(labels).length} labels were saved.`);
     } else if (deletedLabels.length > 0) {
-      alert(`${deletedLabels.length} labels were deleted.`);
+      showLabelToast('success', `${deletedLabels.length} labels were deleted.`);
     } else if (hasValidLabels) {
-      alert('Labels were successfully saved.');
+      showLabelToast('success', 'Labels were successfully saved.');
     } else {
-      alert('No changes were made.');
+      showLabelToast('warning', 'No changes were made.');
       return;
     }
     
@@ -3752,7 +3757,7 @@ export async function saveLabels() {
     
   } catch (error) {
     console.error("Error saving labels:", error);
-    alert('Error saving labels occurred.');
+    showLabelToast('error', 'Error saving labels occurred.');
   }
 }
 
