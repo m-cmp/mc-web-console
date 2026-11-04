@@ -3551,7 +3551,7 @@ function toggleSystemLabelsInEditor() {
     const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
     const uid = currentMci ? currentMci.uid : null;
     if (uid) {
-      loadLabelsForEditor('mci', uid);
+      loadLabelsForEditor('infra', uid);
     }
   }
 }
@@ -3665,7 +3665,8 @@ export async function saveLabels() {
       const key = keyInput.value.trim();
       const value = valueInput.value.trim();
       
-      if (key && value) {
+      // 시스템 라벨(sys.)은 tumblebug 이 관리하므로 저장 대상에서 제외
+      if (key && value && !key.startsWith('sys.')) {
         labels[key] = value;
         hasValidLabels = true;
       }
@@ -3674,7 +3675,7 @@ export async function saveLabels() {
   
   try {
     // 현재 선택된 리소스 정보 가져오기
-    const labelType = 'mci';
+    const labelType = 'infra';
     const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
     const uid = currentMci ? currentMci.uid : null;
     
@@ -3710,18 +3711,11 @@ export async function saveLabels() {
       }
     }
     
-    // 시스템 라벨을 현재 저장할 라벨에 추가 (원본에서 가져옴)
+    // 사용자 라벨만 전송 (tumblebug 이 기존 라벨과 병합하므로 sys. 라벨은 그대로 유지됨)
     const finalLabels = { ...labels };
     
-    // 시스템 라벨들을 최종 라벨에 포함
-    for (const key in originalLabels) {
-      if (key.startsWith('sys.')) {
-        finalLabels[key] = originalLabels[key];
-      }
-    }
-    
     // 현재 Label들 저장 (추가/수정)
-    if (hasValidLabels || Object.keys(finalLabels).length > 0) {
+    if (hasValidLabels) {
       const response = await webconsolejs["common/api/services/infra_api"].createOrUpdateLabel(labelType, uid, finalLabels);
       
       if (response && response.data && response.data.status && response.data.status.code === 200) {
