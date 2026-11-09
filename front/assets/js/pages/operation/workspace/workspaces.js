@@ -171,7 +171,7 @@ function initWorkspacesUsersInfoTable() {
     },
     {
       title: "Id",
-      field: "username",
+      field: "id",
       visible: true,
     },
     {
@@ -212,9 +212,10 @@ function initWorkspacesUsersInfoTable() {
       visible: true
     },
     {
+      // Members 목록 응답에는 UUID 가 없다
       title: "UUID",
-      field: "id",
-      visible: true
+      field: "uuid",
+      visible: false
     },
   ];
   workspacesUserInfo = setWorkspacesUsersInfoTabulator("WorkspacesUserInfo-table", tableObjParams, columns, true);
@@ -240,7 +241,9 @@ function userEnabledFormatter(data) {
 }
 function userNameFormatter(data) {
   var userinfo = data.getData()
-  return userinfo.firstName + " " + userinfo.lastName;
+  // Members 목록 응답에는 firstName/lastName 이 없다 → 이름이 없으면 username 을 표시
+  var fullName = [userinfo.firstName, userinfo.lastName].filter(Boolean).join(" ");
+  return fullName || userinfo.name || userinfo.username || "";
 }
 
 // initWorkspacesRolesInfoTable()
