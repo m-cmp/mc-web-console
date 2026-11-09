@@ -3551,7 +3551,7 @@ function toggleSystemLabelsInEditor() {
     const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
     const uid = currentMci ? currentMci.uid : null;
     if (uid) {
-      loadLabelsForEditor('mci', uid);
+      loadLabelsForEditor('infra', uid);
     }
   }
 }
@@ -3603,7 +3603,7 @@ function createLabelRow(key, value, index) {
       <input type="text" class="${valueInputClass}" placeholder="Value" value="${value}" ${isReadonly}>
     </div>
     <div class="col-md-4">
-      <button type="button" class="btn btn-outline-danger remove-label" ${index === 'new' || isSystemLabel ? 'style="display:none"' : ''}>
+      <button type="button" class="btn btn-outline-danger remove-label" ${isSystemLabel ? 'style="display:none"' : ''}>
         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="10" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
           <path d="M4 7l16 0"></path>
@@ -3628,25 +3628,12 @@ function setupLabelEditorEvents() {
       row.remove();
     }
   });
-  
-  // 새 Label 행 추가 이벤트
-  document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('label-key') || e.target.classList.contains('label-value')) {
-      const row = e.target.closest('.row');
-      const isNewRow = row.getAttribute('data-index') === 'new';
-      
-      if (isNewRow && (e.target.value.trim() !== '')) {
-        // 새 행이 입력되면 또 다른 빈 행 추가
-        const container = document.getElementById('label-editor-content');
-        const existingNewRow = container.querySelector('[data-index="new"]');
-        if (existingNewRow === row) {
-          const newEmptyRow = createLabelRow('', '', 'new');
-          container.appendChild(newEmptyRow);
-          row.setAttribute('data-index', Date.now()); // 고유 인덱스 부여
-        }
-      }
-    }
-  });
+  // 새 행은 Add 버튼(addNewLabelRow)으로만 추가한다 (입력 시 자동 추가하지 않음)
+}
+
+// Label Editor 결과 알림 (공통 Toast, type: success | warning | error)
+function showLabelToast(type, message) {
+  webconsolejs["common/utils/toast"].showToast(type, message);
 }
 
 // Label 저장
@@ -3665,7 +3652,8 @@ export async function saveLabels() {
       const key = keyInput.value.trim();
       const value = valueInput.value.trim();
       
-      if (key && value) {
+      // 시스템 라벨(sys.)은 tumblebug 이 관리하므로 저장 대상에서 제외
+      if (key && value && !key.startsWith('sys.')) {
         labels[key] = value;
         hasValidLabels = true;
       }
@@ -3674,12 +3662,12 @@ export async function saveLabels() {
   
   try {
     // 현재 선택된 리소스 정보 가져오기
-    const labelType = 'mci';
+    const labelType = 'infra';
     const currentMci = window.totalMciListObj.find(mci => mci.id === window.currentMciId);
     const uid = currentMci ? currentMci.uid : null;
     
     if (!uid) {
-      alert('Please select a resource.');
+      showLabelToast('warning', 'Please select a resource.');
       return;
     }
     
@@ -3710,37 +3698,30 @@ export async function saveLabels() {
       }
     }
     
-    // 시스템 라벨을 현재 저장할 라벨에 추가 (원본에서 가져옴)
+    // 사용자 라벨만 전송 (tumblebug 이 기존 라벨과 병합하므로 sys. 라벨은 그대로 유지됨)
     const finalLabels = { ...labels };
     
-    // 시스템 라벨들을 최종 라벨에 포함
-    for (const key in originalLabels) {
-      if (key.startsWith('sys.')) {
-        finalLabels[key] = originalLabels[key];
-      }
-    }
-    
     // 현재 Label들 저장 (추가/수정)
-    if (hasValidLabels || Object.keys(finalLabels).length > 0) {
+    if (hasValidLabels) {
       const response = await webconsolejs["common/api/services/infra_api"].createOrUpdateLabel(labelType, uid, finalLabels);
       
       if (response && response.data && response.data.status && response.data.status.code === 200) {
       } else {
         console.error('Failed to save labels:', response);
-        alert('Failed to save labels.');
+        showLabelToast('error', 'Failed to save labels.');
         return;
       }
     }
     
     // 성공 메시지 표시
     if (deletedLabels.length > 0 && hasValidLabels) {
-      alert(`${deletedLabels.length} labels were deleted and ${Object.keys(labels).length} labels were saved.`);
+      showLabelToast('success', `${deletedLabels.length} labels were deleted and ${Object.keys(labels).length} labels were saved.`);
     } else if (deletedLabels.length > 0) {
-      alert(`${deletedLabels.length} labels were deleted.`);
+      showLabelToast('success', `${deletedLabels.length} labels were deleted.`);
     } else if (hasValidLabels) {
-      alert('Labels were successfully saved.');
+      showLabelToast('success', 'Labels were successfully saved.');
     } else {
-      alert('No changes were made.');
+      showLabelToast('warning', 'No changes were made.');
       return;
     }
     
@@ -3758,15 +3739,18 @@ export async function saveLabels() {
     
   } catch (error) {
     console.error("Error saving labels:", error);
-    alert('Error saving labels occurred.');
+    showLabelToast('error', 'Error saving labels occurred.');
   }
 }
 
 // 새 Label 행 추가 함수 (전역 함수로 등록)
 window.addNewLabelRow = function() {
   const container = document.getElementById('label-editor-content');
-  const newRow = createLabelRow('', '', 'new');
+  const newRow = createLabelRow('', '', `added-${Date.now()}`);
   container.appendChild(newRow);
+  // 목록이 스크롤되는 경우에도 새 행이 보이도록 이동 후 Key 입력으로 포커스
+  newRow.scrollIntoView({ block: 'nearest' });
+  newRow.querySelector('.label-key')?.focus();
 };
 
 

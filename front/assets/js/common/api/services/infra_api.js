@@ -1191,7 +1191,7 @@ export async function removeLabel(labelType, uid, key) {
 export async function getResourcesByLabelSelector(labelSelector) {
   const data = {
     pathParams: {
-      labelType: "mci"
+      labelType: "infra"
     },
     queryParams: {
       labelSelector: labelSelector
