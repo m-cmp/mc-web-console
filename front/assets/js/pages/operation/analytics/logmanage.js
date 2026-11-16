@@ -134,8 +134,8 @@ function setupEventListeners() {
     var selectedMci = $("#log_mcilist").val();
     
     if (selectedMci) {
-      selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-      var selectedNsId = selectedWorkspaceProject.nsId;
+      var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+      if (!selectedNsId) return;
       
       displayLogMci(selectedNsId, selectedMci);
     } else {
@@ -439,8 +439,8 @@ export async function getCollectedLog() {
   }
 
   // 선택된 워크스페이스 정보 가져오기
-  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  var selectedNsId = selectedWorkspaceProject.nsId;
+  var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+  if (!selectedNsId) return;
 
   try{
     console.log("Fetching log data...", { nsId: selectedNsId, mciId: selectedMciId, vmId: selectedVmId, keyword: keyword });

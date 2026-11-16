@@ -986,8 +986,8 @@ async function precheckNodeGroup(express_form) {
   }
 
   try {
-    var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-    var nsId = selectedWorkspaceProject.nsId;
+    var nsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+    if (!nsId) return false;
 
     var review = null;
     if (isVm) {
@@ -1441,9 +1441,8 @@ export async function createMciDynamic() {
 
 	// var namespace = webconsolejs["common/api/services/workspace_api"].getCurrentProject()
 	// nsid = namespace.Name
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-
-	var selectedNsId = selectedWorkspaceProject.nsId;
+	var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+	if (!selectedNsId) return;
 	var projectId = $("#select-current-project").text()
 	var projectName = $('#select-current-project').find('option:selected').text();
 	var nsId = projectName;
@@ -1538,8 +1537,8 @@ export async function createMciDynamic() {
 async function createMciStatic() {
 	if (!validateNodeGroupNamesBeforeDeploy()) return;
 
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var selectedNsId = selectedWorkspaceProject.nsId;
+	var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+	if (!selectedNsId) return;
 
 	var mciName = $("#mci_name").val();
 	var mciDesc = $("#mci_desc").val();
@@ -1570,8 +1569,8 @@ export async function createVmDynamic() {
     // vmDynamic 호출 전에 막아야 scheduleDiskAttachForConfigs·완료 alert·페이지 이동이 실행되지 않는다.
     if (!validateNodeGroupNamesBeforeDeploy()) return;
 
-    var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-    var selectedNsId = selectedWorkspaceProject.nsId;
+    var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+    if (!selectedNsId) return;
     var mciId = window.currentMciId;
 
     await webconsolejs["common/api/services/infra_api"].vmDynamic(mciId, selectedNsId, Express_Server_Config_Arr)
@@ -1587,8 +1586,8 @@ export async function createVmDynamic() {
 async function createVmStatic() {
     if (!validateNodeGroupNamesBeforeDeploy()) return;
 
-    var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-    var selectedNsId = selectedWorkspaceProject.nsId;
+    var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+    if (!selectedNsId) return;
     var mciId = window.currentMciId;
 
     await webconsolejs["common/api/services/infra_api"].vmStatic(mciId, selectedNsId, Express_Server_Config_Arr)
@@ -1962,10 +1961,8 @@ function initTemplateDeploySelect() {
 }
 
 export async function openTemplateSelectModal() {
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var nsId = selectedWorkspaceProject.nsId;
+	var nsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
 	if (!nsId) {
-		webconsolejs["common/utils/toast"].showToast(webconsolejs["common/utils/toast"].TOAST_TYPES.ERROR, "Please select a project first");
 		revertDeployAlgorithmSelect();
 		return;
 	}
@@ -2036,8 +2033,8 @@ export async function deployFromSelectedTemplate() {
 	}
 	const template = selected[0];
 
-	var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-	var nsId = selectedWorkspaceProject.nsId;
+	var nsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+	if (!nsId) return;
 
 	var mciName = ($("#mci_name").val() || "").trim();
 	var mciDesc = $("#mci_desc").val();

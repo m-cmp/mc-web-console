@@ -105,8 +105,8 @@ $("#monitoring_mcilist").on('change', async function () {
 
   var selectedMci = $("#monitoring_mcilist").val()
 
-  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  var selectedNsId = selectedWorkspaceProject.nsId;
+  var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+  if (!selectedNsId) return;
 
   displayMonitoringMci(selectedNsId, selectedMci)
 
@@ -151,9 +151,6 @@ function displayServerStatusList(mciId, vmList) {
 $("#monitoring_serverlist").on('change', async function () {
 
   var selectedVm = $("#monitoring_serverlist").val()
-
-  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  var selectedNsId = selectedWorkspaceProject.nsId;
 
   setMonitoringMesurement()
 })
@@ -268,14 +265,8 @@ export async function setMonitoringMetric(selectedMeasurement, selectId = "monit
 }
 
 export async function startMonitoring() {
-  selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-  var selectedNsId = selectedWorkspaceProject.nsId;
-
-  // NS가 선택되지 않은 경우 처리
-  if (!selectedNsId) {
-      alert("Please select a Workspace first.");
-      return;
-  }
+  var selectedNsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+  if (!selectedNsId) return;
 
   var selectedMci = $("#monitoring_mcilist").val()
 
