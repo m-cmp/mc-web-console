@@ -2,8 +2,22 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 // navBar에 있는 object인데 직접 handling( onchange)
 $("#select-current-project").on('change', async function () {
-  let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": this.options[this.selectedIndex].text }
-  webconsolejs["common/api/services/workspace_api"].setCurrentProject(project)// 세션에 저장
+  const workspaceApi = webconsolejs["common/api/services/workspace_api"];
+  // 이전 project 를 비운 뒤 상단 셀렉트 기준으로 nsId 를 읽는다(data-nsid, 없으면 텍스트).
+  // "Please select a project"(value "")를 고르면 "" 가 되어, 그 문구가 nsId 로 저장·전송되지 않는다.
+  workspaceApi.setCurrentProject("");
+  const nsId = workspaceApi.getSelectedNsId();
+
+  // project 가 바뀌면 이전 project 의 Workload·Node 목록은 비운다
+  $("#log_mcilist").empty().append('<option value="">Select</option>');
+  $("#log_targetlist").empty().append('<option value="">Select</option>');
+  if (!nsId) return;
+
+  let project = { "Id": this.value, "Name": this.options[this.selectedIndex].text, "NsId": nsId }
+  workspaceApi.setCurrentProject(project)// 세션에 저장
+  var respMciList = await webconsolejs["common/api/services/infra_api"].getMciList(nsId);
+  if (workspaceApi.getSelectedNsId() !== nsId) return; // 조회 중 project 가 다시 바뀌었으면 버린다
+  getMciListCallbackSuccess(nsId, respMciList);
 })
 
 
