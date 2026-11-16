@@ -17,6 +17,35 @@ export function setCurrentProject(project) {
   webconsolejs["common/storage/sessionstorage"].setSessionCurrentProject(project)
 }
 
+// 현재 선택된 project의 nsId — 세션에 저장된 project object가 정본이다.
+// 액션·모달 도중 nsId가 필요하면 navbar의 workspaceProjectInit()을 다시 부르지 말고 이것을 쓴다.
+// (workspaceProjectInit()은 셀렉트를 재구성하는 초기화 루틴이라, 세션이 비어 있으면
+//  현재 프로젝트를 지워 nsId가 ""로 전송된다.)
+// 세션 키는 NsId, workspaceProjectInit() 반환값은 nsId 로 표기가 다르다.
+// 세션이 비어 있으면 화면 상단 project 셀렉트에 선택돼 있는 값으로 보완한다
+// (사용자에게 보이는 선택과 어긋나지 않도록 — navbar의 change 핸들러와 같은 규칙).
+export function getSelectedNsId() {
+  const project = getCurrentProject();
+  const fromSession = project ? (project.NsId || project.nsId || "") : "";
+  if (fromSession) return fromSession;
+
+  const prjSel = document.getElementById("select-current-project");
+  if (!prjSel || !prjSel.value) return "";
+  const opt = prjSel.options[prjSel.selectedIndex];
+  if (!opt) return "";
+  return opt.getAttribute("data-nsid") || opt.textContent || "";
+}
+
+// getSelectedNsId()와 같되, 세션·셀렉트 어디에도 없으면 토스트로 알린다. 호출부는 "" 이면 중단한다.
+export function requireSelectedNsId() {
+  const nsId = getSelectedNsId();
+  if (!nsId) {
+    const toast = webconsolejs["common/utils/toast"];
+    toast.showToast(toast.TOAST_TYPES.ERROR, "Please select a project first");
+  }
+  return nsId;
+}
+
 // 세션에서 workspace project 목록 찾기
 function getWorkspaceProjectList() {
   webconsolejs["common/storage/sessionstorage"].getSessionWorkspaceProjectList();
