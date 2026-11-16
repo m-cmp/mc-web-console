@@ -18,6 +18,7 @@ import {
   isVersionOutsideAvailableList,
   buildVersionQueryParams,
 } from "../../../common/utils/k8sVersionRules.js";
+import { getK8sStatusStyle } from "../../../common/utils/statusStyle.js";
 
 /**
  * ===================================================================
@@ -1315,18 +1316,8 @@ function setPmkInfoData(pmkData, kubeconfigText) {
         // 상태 배지 렌더링
         const statusEl = document.getElementById("cluster_info_status");
         if (statusEl) {
-            const statusLower = (pmkStatus || "").toLowerCase();
-            let badgeClass = "bg-muted-lt text-muted";
-            if (statusLower === "active") {
-                badgeClass = "bg-green-lt text-green";
-            } else if (statusLower.includes("creat") || statusLower.includes("pending")) {
-                badgeClass = "bg-azure-lt text-azure";
-            } else if (statusLower.includes("delet") || statusLower.includes("terminat")) {
-                badgeClass = "bg-red-lt text-red";
-            } else if (statusLower.includes("inactive") || statusLower.includes("stop")) {
-                badgeClass = "bg-yellow-lt text-yellow";
-            }
-            statusEl.innerHTML = `<span class="badge ${badgeClass}" style="font-size: 0.8rem;">${pmkStatus}</span>`;
+            const statusStyle = getK8sStatusStyle(pmkStatus);
+            statusEl.innerHTML = `<span class="badge ${statusStyle.bgClass} ${statusStyle.textClass}" style="font-size: 0.8rem;">${statusStyle.label}</span>`;
         }
 
         // 네트워크 정보
@@ -1418,7 +1409,8 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
             var nodeIDParts = nodeID.split("/");
             nodeID = nodeIDParts[nodeIDParts.length - 1];
         }
-        var nodeStatusClass = webconsolejs["common/api/services/k8s_api"].getVmStatusStyleClass(nodeStatus);
+        var nodeStatusStyle = getK8sStatusStyle(nodeStatus);
+        var nodeStatusClass = nodeStatusStyle.bgClass;
 
         // 텍스트 길이 제한 (10자 초과 시 ... 표시)
         var displayName = nodeName.length > 10 ? nodeName.substring(0, 10) + '...' : nodeName;
@@ -1435,7 +1427,7 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
                    min-height: 60px;
                    cursor: pointer;" 
             onclick="webconsolejs['pages/operation/manage/k8sworkloads'].toggleNodeCheck('${pmkID}', '${nodeID}')"
-            title="${nodeName}">
+            title="${nodeName} (${nodeStatusStyle.label})">
           
           <input type="checkbox" 
                  id="node_checkbox_${nodeID}" 
@@ -1444,11 +1436,11 @@ function displayNodeGroupStatusList(pmkID, clusterProvider, clusterData) {
                  onclick="event.stopPropagation()" 
                  onchange="webconsolejs['pages/operation/manage/k8sworkloads'].handleNodeCheck('${pmkID}', '${nodeID}')">
           
-          <span class="text-dark-fg" 
+          <span class="${nodeStatusStyle.textClass}" 
                 style="overflow: hidden; 
                        text-overflow: ellipsis; 
                        white-space: nowrap; 
-                       flex: 1;">${displayName}</span>
+                       flex: 1;">${displayName}<br><small>${nodeStatusStyle.label}</small></span>
         </li>
       `;
 
@@ -1606,9 +1598,10 @@ function displayNodeStatusList(nodeData) {
         var nodeId = aNode.SystemId
         var nodeName = aNode.NameId
         var nodeStatus = nodeData.Status
-        var nodeStatusClass = webconsolejs["common/api/services/k8s_api"].getVmStatusStyleClass(nodeStatus)
+        // cb-spider 는 Node 별 상태를 주지 않는다(IID 만 준다). NodeGroup 상태를 그대로 쓴다.
+        var nodeStatusStyle = getK8sStatusStyle(nodeStatus)
 
-        nodeLi += '<li id="node_status_icon_' + nodeId + '" class="card ' + nodeStatusClass + '"><span class="text-dark-fg">' + nodeName + '</span></li>';
+        nodeLi += '<li id="node_status_icon_' + nodeId + '" class="card ' + nodeStatusStyle.bgClass + '" title="' + nodeStatusStyle.label + '"><span class="' + nodeStatusStyle.textClass + '">' + nodeName + '</span></li>';
 
         $("#pmk_node_info_box").empty();
         $("#pmk_node_info_box").append(nodeLi);
@@ -1900,6 +1893,7 @@ function initPmkTable() {
         {
             title: "Status",
             field: "status",
+            formatter: statusFormatter,
             vertAlign: "middle",
             hozAlign: "center",
         },
@@ -2018,19 +2012,15 @@ function toggleRowSelection(id) {
     }
 }
 
-// 상태값을 table에서 표시하기 위해 감싸기
+// 상태값을 table에서 배지로 표시 (Infra 목록 테이블과 같은 모양)
 function statusFormatter(cell) {
-    var pmkDispStatus = webconsolejs["common/api/services/k8s_api"].getPmkStatusFormatter(
-        cell.getData().status
-    ); // 화면 표시용 status
-    var pmkStatusCell =
-        '<img title="' +
-        cell.getData().status +
-        '" src="/assets/images/common/icon_' +
-        pmkDispStatus +
-        '.svg" class="icon" alt="">';
+    var statusStyle = getK8sStatusStyle(cell.getData().status);
+    if (!statusStyle.label) return "";
 
-    return pmkStatusCell;
+    return `
+      <div class="${statusStyle.bgClass} card" style="border: 0px; display: flex; align-items: center; justify-content: center; width: 90px; height: 25px;">
+        <span class="${statusStyle.textClass}" style="font-size: 12px;">${statusStyle.label}</span>
+      </div>`;
 }
 
 // provider를 table에서 표시하기 위해 감싸기
