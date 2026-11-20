@@ -330,7 +330,7 @@ const RoleManager = {
       async () => {
         const response = await webconsolejs["common/api/services/roles_api"].createRole(roleData);
         if (response) {
-          Utils.showAlert('role created successfully');
+          Utils.showAlert('role created successfully' + formatCspRoleSaveResults(response));
           return response;
         } else {
           throw new Error('failed to create role');
@@ -346,7 +346,7 @@ const RoleManager = {
       async () => {
         const response = await webconsolejs["common/api/services/roles_api"].updateRole(roleId, roleData);
         if (response) {
-          Utils.showAlert('role updated successfully');
+          Utils.showAlert('role updated successfully' + formatCspRoleSaveResults(response));
           return response;
         } else {
           throw new Error('failed to update role');
@@ -582,8 +582,7 @@ const UIManager = {
       DOM.editCspProviderSelect.value = '';
     }
     if (DOM.editCspRoleNameSelect) {
-      DOM.editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-      DOM.editCspRoleNameSelect.disabled = true;
+      resetCspRoleNameField(DOM.editCspRoleNameSelect);
     }
     selectedEditCspProvider = '';
     selectedEditCspRoleName = '';
@@ -2308,6 +2307,12 @@ function initCspRoleMappingEditTable(roleId) {
             }
           },
           {
+            title: "Status",
+            field: "check_status",
+            headerSort: false,
+            formatter: cspRoleCheckFormatter
+          },
+          {
             title: "Actions",
             headerSort: false,
             width: "20%",
@@ -2441,6 +2446,109 @@ async function loadEditCspRoleMapping(roleId, table) {
 
 // CSP Role Mapping 관련 변수
 let selectedCspProvider = '';
+// ===== 대상 CSP Role 이름 입력·존재 확인·저장 결과 (WEB-BUG-129, IAM 여정 1) =====
+
+// 이름 입력란 초기화 (자동완성 목록도 비운다)
+function resetCspRoleNameField(input) {
+  if (!input) return;
+  input.value = '';
+  input.disabled = true;
+  if (input.list) input.list.innerHTML = '';
+}
+
+// 등록된 CSP Role 이름을 자동완성 후보로 채우고 입력을 연다. 없는 이름도 직접 입력할 수 있다.
+function fillCspRoleNameOptions(input, names) {
+  if (!input) return;
+  if (input.list) {
+    input.list.innerHTML = '';
+    names.forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      input.list.appendChild(option);
+    });
+  }
+  input.disabled = false;
+}
+
+const CSP_ROLE_CHECK_BADGES = {
+  checking: { cls: 'bg-secondary-lt', label: 'Checking...' },
+  exists_in_db: { cls: 'bg-green-lt', label: 'Registered' },
+  exists_in_csp: { cls: 'bg-blue-lt', label: 'Exists in CSP - will register' },
+  not_found: { cls: 'bg-yellow-lt', label: 'Not found - will create' },
+  protected: { cls: 'bg-red-lt', label: 'Protected - cannot map' },
+  invalid: { cls: 'bg-red-lt', label: 'Invalid' },
+  error: { cls: 'bg-red-lt', label: 'Check failed' },
+  mapped: { cls: 'bg-green-lt', label: 'Mapped' }
+};
+
+function escapeHtml(text) {
+  return String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// 확인 결과 배지 (메시지는 툴팁)
+function cspRoleCheckFormatter(cell) {
+  const data = cell.getRow().getData();
+  const badge = CSP_ROLE_CHECK_BADGES[data.check_status || 'mapped'] || CSP_ROLE_CHECK_BADGES.error;
+  const title = data.check_message ? ` title="${escapeHtml(data.check_message)}"` : '';
+  return `<span class="badge ${badge.cls}"${title}>${badge.label}</span>`;
+}
+
+// 추가한 행의 대상 CSP Role 이 어디에 있는지 확인해 배지로 표시한다 (쓰기 없음). 이름은 IAM 이 정규화한 값(mciam-)으로 바꾼다.
+async function annotateCspRoleCheck(table, row) {
+  if (!table) return;
+  table.updateData([{ id: row.id, check_status: 'checking', check_message: '' }]);
+  try {
+    const results = await webconsolejs["common/api/services/csproles_api"].checkCspRoles([
+      { cspRoleName: row.name, cspType: row.csp_type, authMethod: row.auth_method || 'OIDC' }
+    ]);
+    const result = Array.isArray(results) ? results[0] : null;
+    if (!result) throw new Error('empty check result');
+    // 저장 시 보낼 이름도 정규화된 값으로 맞춘다 (create 는 AppState 배열의 같은 객체를 쓴다)
+    row.name = result.cspRoleName || row.name;
+    row.check_status = result.status;
+    row.check_message = result.message || result.arn || '';
+    table.updateData([{ id: row.id, name: row.name, check_status: row.check_status, check_message: row.check_message }]);
+  } catch (error) {
+    console.error('failed to check CSP role:', error);
+    table.updateData([{ id: row.id, check_status: 'error', check_message: error.message || String(error) }]);
+  }
+}
+
+const CSP_ROLE_RESULT_LABELS = {
+  mapped: 'mapped',
+  registered_and_mapped: 'registered and mapped',
+  created_and_mapped: 'created in CSP and mapped',
+  unchanged: 'unchanged',
+  unmapped: 'mapping removed',
+  failed: 'NOT mapped'
+};
+
+// 저장 응답의 cspRoleResults·warnings 를 알림 문구로 만든다. 실패 항목은 매핑만 빠지고 역할은 저장된 상태다.
+function formatCspRoleSaveResults(response) {
+  const results = Array.isArray(response && response.cspRoleResults) ? response.cspRoleResults : [];
+  const warnings = Array.isArray(response && response.warnings) ? response.warnings : [];
+  if (results.length === 0 && warnings.length === 0) return '';
+  const lines = results.map(r => {
+    const label = CSP_ROLE_RESULT_LABELS[r.result] || r.result;
+    const detail = r.result === 'failed' && r.error ? ` (${r.error})` : '';
+    return `- [${(r.cspType || '').toUpperCase()}] ${r.cspRoleName}: ${label}${detail}`;
+  });
+  let text = '\n\nCSP roles:\n' + lines.join('\n');
+  if (warnings.length > 0) {
+    text += '\n\nWarnings: the role was saved, but the items above marked NOT mapped were skipped. Fix them (for example create the role in the CSP console) and save again.';
+  }
+  return text;
+}
+
+// 화면 행 → IAM cspRoles 요청 항목. cspRoleName 으로 보낸다 (WEB-BUG-129: 예전에는 roleName 으로 보내 IAM 이 무시했다)
+function toCspRoleRequest(cspRole) {
+  return {
+    cspRoleName: cspRole.name,
+    cspType: cspRole.csp_type,
+    authMethod: cspRole.auth_method || 'OIDC'
+  };
+}
+
 let selectedCspRoleName = '';
 
 // Edit CSP Role Mapping 관련 변수
@@ -2469,8 +2577,7 @@ async function initCspRoleMappingForm() {
   
   // CSP Role 드롭다운 초기 상태 설정
   if (DOM.cspRoleNameSelect) {
-    DOM.cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-    DOM.cspRoleNameSelect.disabled = true;
+    resetCspRoleNameField(DOM.cspRoleNameSelect);
   }
 
   // CSP Provider 선택 이벤트
@@ -2485,8 +2592,7 @@ async function initCspRoleMappingForm() {
         // Provider가 선택되지 않으면 Role 드롭다운 초기화
         const cspRoleNameSelect = DOM.cspRoleNameSelect;
         if (cspRoleNameSelect) {
-          cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-          cspRoleNameSelect.disabled = true;
+          resetCspRoleNameField(cspRoleNameSelect);
         }
       }
     });
@@ -2494,7 +2600,7 @@ async function initCspRoleMappingForm() {
 
   // CSP Role Name 선택 이벤트
   if (DOM.cspRoleNameSelect) {
-    DOM.cspRoleNameSelect.addEventListener('change', function () {
+    DOM.cspRoleNameSelect.addEventListener('input', function () {
       selectedCspRoleName = this.value;
     });
   }
@@ -2534,28 +2640,15 @@ async function initCspProviderDropdown() {
 
 // CSP Role 드롭다운 초기화
 async function initCspRoleDropdown(provider) {
+  const input = DOM.cspRoleNameSelect;
   try {
     const cspRoles = await window.webconsolejs["common/api/services/csproles_api"].getCspRoleList(provider);
-    const cspRoleNameSelect = DOM.cspRoleNameSelect;
-
-    if (cspRoleNameSelect && cspRoles && Array.isArray(cspRoles)) {
-      // 기존 옵션 제거
-      cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-
-      // 해당 Provider의 Role만 필터링하여 옵션 추가
-      const filteredRoles = cspRoles.filter(role => role.provider === provider);
-      filteredRoles.forEach(role => {
-        const option = document.createElement('option');
-        option.value = role.name;
-        option.textContent = role.name;
-        cspRoleNameSelect.appendChild(option);
-      });
-
-      // 드롭다운 활성화
-      cspRoleNameSelect.disabled = false;
-    }
+    const names = Array.isArray(cspRoles) ? cspRoles.filter(role => role.provider === provider).map(role => role.name) : [];
+    fillCspRoleNameOptions(input, names);
   } catch (error) {
-    console.error('failed to initialize CSP Role dropdown:', error);
+    // 목록을 못 불러와도 이름을 직접 입력할 수 있게 둔다
+    console.error('failed to load CSP roles for suggestions:', error);
+    fillCspRoleNameOptions(input, []);
   }
 }
 
@@ -2584,28 +2677,15 @@ async function initEditCspProviderDropdown() {
 
 // Edit CSP Role 드롭다운 초기화
 async function initEditCspRoleDropdown(provider) {
+  const input = DOM.editCspRoleNameSelect;
   try {
     const cspRoles = await window.webconsolejs["common/api/services/csproles_api"].getCspRoleList(provider);
-    const editCspRoleNameSelect = DOM.editCspRoleNameSelect;
-
-    if (editCspRoleNameSelect && cspRoles && Array.isArray(cspRoles)) {
-      // 기존 옵션 제거
-      editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-
-      // 해당 Provider의 Role만 필터링하여 옵션 추가
-      const filteredRoles = cspRoles.filter(role => role.provider === provider);
-      filteredRoles.forEach(role => {
-        const option = document.createElement('option');
-        option.value = role.name;
-        option.textContent = role.name;
-        editCspRoleNameSelect.appendChild(option);
-      });
-
-      // 드롭다운 활성화
-      editCspRoleNameSelect.disabled = false;
-    }
+    const names = Array.isArray(cspRoles) ? cspRoles.filter(role => role.provider === provider).map(role => role.name) : [];
+    fillCspRoleNameOptions(input, names);
   } catch (error) {
-    console.error('failed to initialize Edit CSP Role dropdown:', error);
+    // 목록을 못 불러와도 이름을 직접 입력할 수 있게 둔다
+    console.error('failed to load CSP roles for suggestions:', error);
+    fillCspRoleNameOptions(input, []);
   }
 }
 
@@ -2654,6 +2734,12 @@ async function initCreateCspRoleMappingTable() {
             formatter: function (cell) {
               return cell.getValue() || "OIDC";
             }
+          },
+          {
+            title: "Status",
+            field: "check_status",
+            headerSort: false,
+            formatter: cspRoleCheckFormatter
           },
           {
             title: "Actions",
@@ -2734,14 +2820,14 @@ function handleAddCspRole() {
   if (AppState.tables.createCspRoleMappingTable) {
     AppState.tables.createCspRoleMappingTable.addData(newCspRole);
   }
+  annotateCspRoleCheck(AppState.tables.createCspRoleMappingTable, newCspRole);
 
   // 입력 필드 초기화
   if (DOM.cspProviderSelect) {
     DOM.cspProviderSelect.value = '';
   }
   if (DOM.cspRoleNameSelect) {
-    DOM.cspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-    DOM.cspRoleNameSelect.disabled = true;
+    resetCspRoleNameField(DOM.cspRoleNameSelect);
     selectedCspRoleName = '';
   }
   selectedCspProvider = '';
@@ -2822,15 +2908,7 @@ async function saveRole() {
       roleTypes: roleTypes,
       menuIds: formData.platformPermissions,
       cspRoles: formData.cspSelection && formData.cspSelection.cspRoles && formData.cspSelection.cspRoles.length > 0 ?
-        formData.cspSelection.cspRoles.map(cspRole => ({
-          roleName: cspRole.name,
-          cspType: cspRole.csp_type,
-          authMethod: cspRole.auth_method || "OIDC",
-          idpIdentifier: "", // 향후 확장 가능
-          iamIdentifier: "", // 향후 확장 가능
-          iamRoleId: cspRole.name,
-          tags: [{ "key": "mciam-role", "value": "csp-role" }]
-        })) : []
+        formData.cspSelection.cspRoles.map(toCspRoleRequest) : []
     };
 
     // API 호출
@@ -3055,8 +3133,7 @@ async function initEditCspRoleMappingForm() {
   
   // Edit CSP Role 드롭다운 초기 상태 설정
   if (DOM.editCspRoleNameSelect) {
-    DOM.editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-    DOM.editCspRoleNameSelect.disabled = true;
+    resetCspRoleNameField(DOM.editCspRoleNameSelect);
   }
 
   // Edit CSP Provider 선택 이벤트
@@ -3071,8 +3148,7 @@ async function initEditCspRoleMappingForm() {
         // Provider가 선택되지 않으면 Role 드롭다운 초기화
         const editCspRoleNameSelect = DOM.editCspRoleNameSelect;
         if (editCspRoleNameSelect) {
-          editCspRoleNameSelect.innerHTML = '<option value="">Select CSP Role</option>';
-          editCspRoleNameSelect.disabled = true;
+          resetCspRoleNameField(editCspRoleNameSelect);
         }
       }
     });
@@ -3080,7 +3156,7 @@ async function initEditCspRoleMappingForm() {
 
   // Edit CSP Role Name 선택 이벤트
   if (DOM.editCspRoleNameSelect) {
-    DOM.editCspRoleNameSelect.addEventListener('change', function () {
+    DOM.editCspRoleNameSelect.addEventListener('input', function () {
       selectedEditCspRoleName = this.value;
     });
   }
@@ -3156,6 +3232,7 @@ function handleAddCspMapping() {
 
   if (AppState.tables.cspRoleMappingEditTable) {
     AppState.tables.cspRoleMappingEditTable.addData(newMapping);
+    annotateCspRoleCheck(AppState.tables.cspRoleMappingEditTable, newMapping);
   }
 
   // 폼 초기화
@@ -3222,16 +3299,8 @@ async function updateRole() {
     if (workspaceEnabled) roleTypes.push('workspace');
     if (cspRolesRaw.length > 0) roleTypes.push('csp');
 
-    // cspRoles 변환
-    const cspRoles = cspRolesRaw.map(cspRole => ({
-      roleName: cspRole.name,
-      cspType: cspRole.csp_type,
-      authMethod: cspRole.auth_method || "OIDC",
-      idpIdentifier: cspRole.idp_identifier || "",
-      iamIdentifier: cspRole.iam_identifier || "",
-      iamRoleId: cspRole.name,
-      tags: [{ key: "mciam-role", value: "csp-role" }]
-    }));
+    // cspRoles 변환 (cspRoleName 으로 전송, IAM 은 바뀐 부분만 반영)
+    const cspRoles = cspRolesRaw.map(toCspRoleRequest);
 
     // 최종 req
     const roleData = {
