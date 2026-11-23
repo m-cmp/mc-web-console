@@ -71,6 +71,17 @@ export async function getUserWorkspacesByUserID(userId) {
     return response.data.responseData;
 }
 
+// 사용자 유효 Platform Role (직접 부여 + 그룹 상속)
+// 응답 항목: { role_id, role_name, description, source: "direct" | "group:<groupName>" }
+export async function getUserEffectivePlatformRoles(userId, options = {}) {
+    const controller = "/api/mc-iam-manager/getUserEffectivePlatformRoles";
+    const data = {
+        pathParams: { "userId": userId.toString() },
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data, undefined, options);
+    return response.data.responseData;
+}
+
 export async function updateUser(userId, userData) {
     const controller = "/api/mc-iam-manager/Updateuser";
     const data = {

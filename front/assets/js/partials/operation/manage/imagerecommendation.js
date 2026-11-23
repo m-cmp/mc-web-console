@@ -74,8 +74,11 @@ export async function onImageSourceChange(source) {
 // 워크스페이스 ns의 MyImage(customImage) 목록 로딩
 async function loadMyImageList() {
 	try {
-		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-		var nsId = selectedWorkspaceProject.nsId;
+		var nsId = webconsolejs["common/api/services/workspace_api"].requireSelectedNsId();
+		if (!nsId) {
+			fallbackToPublicSource();
+			return;
+		}
 
 		var response = await webconsolejs["common/api/services/infra_api"].getCustomImageList(nsId);
 
@@ -324,8 +327,9 @@ export async function getRecommendImageInfo() {
 	
 	// 현재 workspace/project 정보 가져오기
 	try {
-		var selectedWorkspaceProject = await webconsolejs["partials/layout/navbar"].workspaceProjectInit();
-		var nsId = selectedWorkspaceProject.nsId;
+		// 공용 Image 검색은 project 와 무관하게 system 네임스페이스만 조회한다.
+		// (선택된 project 의 nsId 가 필요한 것은 MyImage 목록 — loadMyImageList)
+		var nsId = "system";
 
 		// API 호출을 위한 파라미터 구성 - 필수 항목만 포함
 		var searchParams = {

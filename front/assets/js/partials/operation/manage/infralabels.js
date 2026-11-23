@@ -5,12 +5,12 @@ window.openMciLabelEditor = function() {
   const mciName = document.getElementById('mci_info_name')?.textContent || 'Unknown Infra';
 
   if (!mciId || mciId === "" || mciId === "undefined") {
-    alert('Please select an Infra first.');
+    webconsolejs["common/utils/toast"].showToast('warning', 'Please select an Infra first.');
     return;
   }
   
   // Label Editor 모달 열기
-  webconsolejs['pages/operation/manage/infraworkloads'].openLabelEditorModal('mci', mciId, mciName);
+  webconsolejs['pages/operation/manage/infraworkloads'].openLabelEditorModal('infra', mciId, mciName);
 }
 
 // MCI Labels 표시 함수 (전역으로 등록)

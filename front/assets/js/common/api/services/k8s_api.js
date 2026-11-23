@@ -1,4 +1,5 @@
 // PMK API 관련 
+import { getK8sStatusStyle } from "../../utils/statusStyle.js";
 
 // 받아온 project(namespace)로 PmkList GET
 export async function getClusterList(nsId, options = {}) {
@@ -835,23 +836,10 @@ export function getPmkInfoProviderNames(pmkData) {
 }
 
 
-// VM 상태 별로 Style class로 색 설정
+// NodeGroup / Node 상태 별 배경 Style class
+// 색 규칙은 common/utils/statusStyle.js 한 곳에서 관리한다.
 export function getVmStatusStyleClass(nodeStatus) {
-  var nodeStatusClass = "bg-info";
-  if (nodeStatus == "Active") {
-    nodeStatusClass = "bg-info"
-  } else if (nodeStatus == "Creating") {
-    nodeStatusClass = "bg-info"
-  } else if (nodeStatus == "Inactive") {
-    nodeStatusClass = "bg-red"
-  } else if (nodeStatus == "Updating") {
-    nodeStatusClass = "bg-red"
-  } else if (nodeStatus == "Deleting") {
-    nodeStatusClass = "bg-secondary"
-  } else {
-    nodeStatusClass = "bg-secondary"
-  }
-  return nodeStatusClass;
+  return getK8sStatusStyle(nodeStatus).bgClass;
 }
 
 
