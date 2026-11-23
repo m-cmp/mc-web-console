@@ -243,3 +243,18 @@ export async function syncPolicies(roleId = null) {
     const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
     return response.data.responseData;
 }
+
+// 대상 CSP Role 존재 확인 (IAM 은 DB·CSP 에 쓰지 않는다)
+// cspRoles: [{ cspRoleName, cspType, authMethod, cspIdpConfigId? }]
+// 결과: [{ cspRoleName(정규화), cspType, status: exists_in_db|exists_in_csp|not_found|protected|invalid|error, cspRoleId, arn, message }]
+export async function checkCspRoles(cspRoles) {
+    const controller = "/api/mc-iam-manager/checkCspRoles";
+    const data = {
+        Request: {
+            cspRoles: cspRoles
+        }
+    };
+    const response = await webconsolejs["common/api/http"].commonAPIPost(controller, data);
+    const body = response.data.responseData;
+    return body && Array.isArray(body.results) ? body.results : [];
+}

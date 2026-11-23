@@ -457,9 +457,9 @@
                           <div class="col-md-6">
                             <div class="mb-3">
                               <label class="form-label required">CSP Role Name</label>
-                              <select class="form-select" id="csp-role-name-select" name="csp-role-name" required>
-                                <option value="">Select CSP Role</option>
-                              </select>
+                              <input type="text" class="form-control" id="csp-role-name-select" name="csp-role-name" list="csp-role-name-options" placeholder="Select or type a role name" autocomplete="off" disabled required>
+                              <datalist id="csp-role-name-options"></datalist>
+                              <small class="form-hint">Pick a registered role or type a new name. The mciam- prefix is added automatically, and a role missing in the CSP is created on save.</small>
                             </div>
                           </div>
                           <div class="col-md-2">
@@ -625,9 +625,9 @@
                           <div class="col-md-6">
                               <div class="mb-3">
                               <label class="form-label required">CSP Role Name</label>
-                              <select class="form-select" id="edit-csp-role-name-select" name="edit-csp-role-name" required>
-                                <option value="">Select CSP Role</option>
-                              </select>
+                              <input type="text" class="form-control" id="edit-csp-role-name-select" name="edit-csp-role-name" list="edit-csp-role-name-options" placeholder="Select or type a role name" autocomplete="off" disabled required>
+                              <datalist id="edit-csp-role-name-options"></datalist>
+                              <small class="form-hint">Pick a registered role or type a new name. The mciam- prefix is added automatically, and a role missing in the CSP is created on save.</small>
                             </div>
                           </div>
                           <div class="col-md-2">
